@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2020, RTE (http://www.rte-france.com)
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.powsybl</groupId>
+        <artifactId>powsybl-parent</artifactId>
+        <version>3</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.gridsuite</groupId>
+    <artifactId>gridpy</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <graalvm.version>20.1.0</graalvm.version>
+        <gridsuite-dependencies.version>3</gridsuite-dependencies.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.graalvm.nativeimage</groupId>
+                <artifactId>native-image-maven-plugin</artifactId>
+                <version>${graalvm.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>native-image</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <imageName>libgridpy-java</imageName>
+                    <buildArgs>
+                        --no-fallback
+                        --allow-incomplete-classpath
+                        --shared
+                    </buildArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- overrides of imports -->
+
+            <!-- imports -->
+            <dependency>
+                <groupId>org.gridsuite</groupId>
+                <artifactId>gridsuite-dependencies</artifactId>
+                <version>${gridsuite-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- project specific dependencies -->
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>alternateBuildDir</id>
+            <activation>
+                <property>
+                    <name>alt.build.dir</name>
+                </property>
+            </activation>
+            <build>
+                <directory>${alt.build.dir}</directory>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
