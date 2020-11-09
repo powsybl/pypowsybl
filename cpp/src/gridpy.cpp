@@ -9,7 +9,7 @@
 
 namespace gridpy {
 
-void hello() {
+void printVersion() {
     graal_isolate_t* isolate = nullptr;
     graal_isolatethread_t* thread = nullptr;
 
@@ -17,7 +17,7 @@ void hello() {
         throw std::runtime_error("graal_create_isolate error");
     }
 
-    hello(thread, (char*) "geo");
+    printVersion(thread);
 
     if (graal_detach_thread(thread) != 0) {
         throw std::runtime_error("graal_detach_thread error");

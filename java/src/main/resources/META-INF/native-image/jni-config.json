@@ -1,0 +1,19 @@
+[
+{
+  "name":"com.powsybl.math.matrix.SparseMatrix",
+  "methods":[{"name":"<init>","parameterTypes":["int","int","int[]","int[]","double[]"] }]
+},
+{
+  "name":"java.lang.ClassLoader",
+  "methods":[
+    {"name":"getPlatformClassLoader","parameterTypes":[] }, 
+    {"name":"loadClass","parameterTypes":["java.lang.String"] }
+  ]
+},
+{
+  "name":"java.lang.ClassNotFoundException"
+},
+{
+  "name":"java.lang.NoSuchMethodError"
+}
+]

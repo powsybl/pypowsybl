@@ -9,7 +9,7 @@
 
 namespace gridpy {
 
-    void hello();
+    void printVersion();
 }
 
 #endif //GRIDPY_H

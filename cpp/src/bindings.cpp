@@ -11,5 +11,5 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(gridpy, m) {
-    m.def("hello", &gridpy::hello);
+    m.def("printVersion", &gridpy::printVersion);
 }

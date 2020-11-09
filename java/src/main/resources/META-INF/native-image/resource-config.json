@@ -1,0 +1,31 @@
+{
+  "resources":[
+    {"pattern":"META-INF/services/com.powsybl.commons.config.PlatformConfigProvider"},
+    {"pattern":"META-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider"},
+    {"pattern":"META-INF/services/com.powsybl.commons.extensions.ExtensionXmlSerializer"},
+    {"pattern":"META-INF/services/com.powsybl.iidm.export.Exporter"},
+    {"pattern":"META-INF/services/com.powsybl.iidm.import_.Importer"},
+    {"pattern":"META-INF/services/com.powsybl.iidm.network.NetworkFactoryService"},
+    {"pattern":"META-INF/services/com.powsybl.loadflow.LoadFlowProvider"},
+    {"pattern":"META-INF/services/com.powsybl.openloadflow.network.LfNetworkLoader"},
+    {"pattern":"META-INF/services/com.powsybl.openloadflow.network.SlackBusSelectorParametersReader"},
+    {"pattern":"META-INF/services/com.powsybl.tools.Tool"},
+    {"pattern":"META-INF/services/com.powsybl.cgmes.conversion.CgmesImportPostProcessor"},
+    {"pattern":"META-INF/services/com.powsybl.triplestore.api.TripleStoreFactoryService"},
+    {"pattern":"META-INF/services/org.eclipse.rdf4j.query.parser.QueryParserFactory"},
+    {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.DatatypeHandler"},
+    {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.LanguageHandler"},
+    {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.RDFParserFactory"},
+    {"pattern":"natives/linux_64/libmath.so"},
+    {"pattern":"natives/osx_64/libmath.dylib"},
+    {"pattern":"natives/windows_64/math.dll"},
+    {"pattern":"org/joda/time/tz/data/.*"},
+    {"pattern":"org/joda/time/tz/data/ZoneInfoMap"},
+    {"pattern":"org/slf4j/impl/StaticLoggerBinder.class"},
+    {"pattern":"logback.xml"},
+    {"pattern":"CIM16.sparql"}
+  ],
+  "bundles":[
+    {"name": "net.java.truecommons.key.spec.common.AesKeyStrength"}
+  ]
+}
