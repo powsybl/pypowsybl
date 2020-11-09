@@ -20,6 +20,7 @@ ExternalProject_Add(gridpy-java
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
 )
+set(GRIDPY_JAVA_LIB gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 set(SOURCE_DIR "src")
 
@@ -32,4 +33,4 @@ add_subdirectory(lib/pybind11)
 pybind11_add_module(gridpy ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
 
 add_dependencies(gridpy gridpy-java)
-target_link_libraries(gridpy PRIVATE gridpy-java.so)
+target_link_libraries(gridpy PRIVATE ${GRIDPY_JAVA_LIB})
