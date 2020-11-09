@@ -11,6 +11,10 @@ include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# change shared librairy rpath to resolve java library in same directory
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+
 set(MAVEN_TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/java)
 
 ExternalProject_Add(gridpy-java
@@ -20,7 +24,7 @@ ExternalProject_Add(gridpy-java
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
 )
-set(GRIDPY_JAVA_LIB gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(GRIDPY_JAVA_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 set(SOURCE_DIR "src")
 
@@ -34,3 +38,8 @@ pybind11_add_module(gridpy ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
 
 add_dependencies(gridpy gridpy-java)
 target_link_libraries(gridpy PRIVATE ${GRIDPY_JAVA_LIB})
+
+# copy auxiliary java lib so that it can be installed with module one
+if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    add_custom_command(TARGET gridpy POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
