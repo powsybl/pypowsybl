@@ -17,15 +17,17 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 set(MAVEN_TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/java)
+set(GRIDPY_JAVA_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 
+# as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
+# it in the install command step
 ExternalProject_Add(gridpy-java
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java/
     PATCH_COMMAND mvn -PalternateBuildDir -Dalt.build.dir=${MAVEN_TARGET_DIR} package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ""
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB}
 )
-set(GRIDPY_JAVA_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}gridpy-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 set(SOURCE_DIR "src")
 
