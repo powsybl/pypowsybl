@@ -22,7 +22,6 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v1
         with:
-          persist-credentials: false
           submodules: true
 
       - name: Set up python
@@ -52,3 +51,6 @@ jobs:
 
       - name: Build and install package
         run: python -m pip install . --user
+
+      - name: Run tests
+        run: python -m unittest tests/test.py

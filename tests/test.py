@@ -10,7 +10,7 @@ import gridpy
 
 class GridPyTestCase(unittest.TestCase):
     def test_hello(self):
-        gridpy.hello()
+        gridpy.print_version()
 
 
 if __name__ == '__main__':
