@@ -55,9 +55,9 @@ jobs:
       - name: Fix rpath on MacOS
         if: matrix.config.os == 'macos-latest'
         run: |
-          libGridpyJavaPath=$(otool -L $HOME/.local/lib/python3.7/site-packages/gridpy.cpython-37m-darwin.so | grep libgridpy-java.dylib | cut -f 1 -d " ")
-          install_name_tool -id "@loader_path/libgridpy-java.dylib" $HOME/.local/lib/python3.7/site-packages/libgridpy-java.dylib
-          install_name_tool -change $libGridpyJavaPath "@loader_path/libgridpy-java.dylib" $HOME/.local/lib/python3.7/site-packages/gridpy.cpython-37m-darwin.so
+          libGridpyJavaPath=$(otool -L $HOME/.local/lib/python3.7/site-packages/gridpy.cpython-37m-darwin.so | grep gridpy-java.dylib | cut -f 1 -d " ")
+          install_name_tool -id "@loader_path/gridpy-java.dylib" $HOME/.local/lib/python3.7/site-packages/gridpy-java.dylib
+          install_name_tool -change $libGridpyJavaPath "@loader_path/gridpy-java.dylib" $HOME/.local/lib/python3.7/site-packages/gridpy.cpython-37m-darwin.so
 
       - name: Run tests
         run: python -m unittest tests/test.py
