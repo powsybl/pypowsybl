@@ -9,7 +9,7 @@ import gridpy
 
 
 class GridPyTestCase(unittest.TestCase):
-    def test_hello(self):
+    def test_print_version(self):
         gridpy.print_version()
 
 
