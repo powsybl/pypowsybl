@@ -82,6 +82,9 @@ jobs:
       - name: Install python dependencies
         run: python -m pip install --upgrade pip
 
+      - name: Install wget
+        run: choco install wget --no-progress
+
       - name: Download GraalVM JDK 11
         run: wget -nv https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-windows-amd64-20.1.0.zip
 
