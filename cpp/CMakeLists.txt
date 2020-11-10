@@ -9,6 +9,7 @@ project(gridpy-cpp)
 
 include(ExternalProject)
 
+set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
 
 # no need to do anything on windows as current path is automatically used
