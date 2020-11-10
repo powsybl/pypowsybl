@@ -9,19 +9,12 @@ project(gridpy-cpp)
 
 include(ExternalProject)
 
-set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
 
-# no need to do anything on windows as current path is automatically used
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(RPATH "$ORIGIN")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    set(RPATH "@loader_path")
-endif()
-
-# change shared librairy rpath to resolve java library in same directory
+# change shared library rpath to resolve java library in same directory
+# only works on linux
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH ${RPATH})
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 set(MAVEN_TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/java)
 
