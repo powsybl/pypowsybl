@@ -88,6 +88,19 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-ieee-cdf-converter</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-loadflow-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
         </dependency>
 
@@ -103,6 +116,15 @@
             <artifactId>log4j-over-slf4j</artifactId>
             <version>${slf4j.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-open-loadflow</artifactId>
         </dependency>
     </dependencies>
 

@@ -6,9 +6,17 @@
  */
 package org.gridsuite.gridpy;
 
+import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.loadflow.LoadFlow;
+import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
+import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -21,5 +29,25 @@ public final class GridPyApi {
     @CEntryPoint(name = "printVersion")
     public static void printVersion(IsolateThread thread) {
         System.out.println(Version.getTableString());
+    }
+
+    @CEntryPoint(name = "createNetwork")
+    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer id) {
+        String idStr = CTypeConversion.toJavaString(id);
+        Network network = Network.create(idStr, "");
+        return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "createIeee14Network")
+    public static ObjectHandle createIeee14Network(IsolateThread thread) {
+        Network network = IeeeCdfNetworkFactory.create14();
+        return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "runLoadFlow")
+    public static void runLoadFlow(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        LoadFlowResult result = LoadFlow.run(network);
+        System.out.println(result.getMetrics());
     }
 }

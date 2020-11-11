@@ -9,7 +9,15 @@
 
 namespace gridpy {
 
+    void init();
+
     void printVersion();
+
+    void* createNetwork(const std::string& id);
+
+    void* createIeee14Network();
+
+    void runLoadFlow(void* network);
 }
 
 #endif //GRIDPY_H

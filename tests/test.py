@@ -12,6 +12,13 @@ class GridPyTestCase(unittest.TestCase):
     def test_print_version(self):
         gridpy.print_version()
 
+    def test_create_network(self):
+        n = gridpy.create_network("test")
+        self.assertIsNotNone(n)
+
+    def test_run_lf(self):
+        n = gridpy.create_ieee14_network()
+        gridpy.run_lf(n)
 
 if __name__ == '__main__':
     unittest.main()
