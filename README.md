@@ -6,6 +6,7 @@ Prerequisite:
  - Maven >= 3.5
  - Cmake >= 3.14
  - C++ compiler
+ - Python >= 3.7
  - [GraalVM 20.1](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.1.0)
 
 To build from sources and install GrydPy package:
