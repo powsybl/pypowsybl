@@ -31,8 +31,8 @@ public final class GridPyApi {
         System.out.println(Version.getTableString());
     }
 
-    @CEntryPoint(name = "createNetwork")
-    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer id) {
+    @CEntryPoint(name = "createEmptyNetwork")
+    public static ObjectHandle createEmptyNetwork(IsolateThread thread, CCharPointer id) {
         String idStr = CTypeConversion.toJavaString(id);
         Network network = Network.create(idStr, "");
         return ObjectHandles.getGlobal().create(network);

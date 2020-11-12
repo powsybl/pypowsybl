@@ -17,7 +17,7 @@ PYBIND11_MODULE(gridpy, m) {
 
     m.def("print_version", &gridpy::printVersion, "Print a table with all PowSybBl modules version");
 
-    m.def("create_network", &gridpy::createNetwork, "Create an empty network",
+    m.def("create_empty_network", &gridpy::createEmptyNetwork, "Create an empty network",
           py::arg("id") = "Default");
 
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");

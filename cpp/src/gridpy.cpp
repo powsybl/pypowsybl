@@ -49,9 +49,9 @@ void printVersion() {
     printVersion(guard.thread());
 }
 
-void* createNetwork(const std::string& id) {
+void* createEmptyNetwork(const std::string& id) {
     GraalVmGuard guard;
-    return createNetwork(guard.thread(), (char*) id.data());
+    return createEmptyNetwork(guard.thread(), (char*) id.data());
 }
 
 void* createIeee14Network() {

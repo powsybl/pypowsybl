@@ -12,8 +12,8 @@ class GridPyTestCase(unittest.TestCase):
     def test_print_version(self):
         gridpy.print_version()
 
-    def test_create_network(self):
-        n = gridpy.create_network("test")
+    def test_create_empty_network(self):
+        n = gridpy.create_empty_network("test")
         self.assertIsNotNone(n)
 
     def test_run_lf(self):

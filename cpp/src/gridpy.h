@@ -13,7 +13,7 @@ namespace gridpy {
 
     void printVersion();
 
-    void* createNetwork(const std::string& id);
+    void* createEmptyNetwork(const std::string& id);
 
     void* createIeee14Network();
 
