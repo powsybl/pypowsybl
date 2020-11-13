@@ -7,8 +7,14 @@
 import _gridpy
 
 
-def create_empty(id = "Default"):
-    return _gridpy.create_empty_network(id)
+class Network:
+    def __init__(self, ptr):
+        self.ptr = ptr
 
-def create_ieee14():
-    return _gridpy.create_ieee14_network()
+
+def create_empty(id: str = "Default") -> Network:
+    return Network(_gridpy.create_empty_network(id))
+
+
+def create_ieee14() -> Network:
+    return Network(_gridpy.create_ieee14_network())
