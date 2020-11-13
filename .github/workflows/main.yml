@@ -70,7 +70,7 @@ jobs:
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: gridpy-${{ matrix.config.name }}-${{ matrix.python.name }}
+          name: gridpy-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
 
   package:
@@ -87,5 +87,5 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
-          name: wheels
+          name: gridpy-wheels
           path: download/**/*.whl
