@@ -30,7 +30,7 @@ endif()
 # it in the install command step
 ExternalProject_Add(gridpy-java
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java/
-    PATCH_COMMAND mvn -PalternateBuildDir -Dalt.build.dir=${MAVEN_TARGET_DIR} package
+    PATCH_COMMAND mvn --batch-mode -PalternateBuildDir -Dalt.build.dir=${MAVEN_TARGET_DIR} package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_OLD_LIB} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}
