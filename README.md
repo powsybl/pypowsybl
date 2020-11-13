@@ -23,8 +23,12 @@ python3 -m unittest tests/test.py
 
 Usage example:
 ```python
->>> import gridpy
->>> gridpy.print_version()
+import gridpy.network
+import gridpy.loadflow
+import gridpy as gp
+gp.print_version()
+```
+```bash
 Powsybl versions:
 +-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
 | Repository name       | Maven project version | Git branch | Git version                              | Build timestamp               |
@@ -32,8 +36,11 @@ Powsybl versions:
 | powsybl-open-loadflow | 0.7.0                 | UNKNOWN    | 56e24b2262aaae28a065e3947caeb5759d753f97 | 2020-10-19T16:39:20.924+02:00 |
 | powsybl-core          | 3.7.1                 | v3.7.1     | 44627f289a1ae0e7535f12ae9c3378f9a17182a1 | 2020-10-16T23:04:45.020+02:00 |
 +-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-
->>> n = gridpy.create_ieee14_network()
->>> gridpy.run_lf(n)
+```
+```python
+n = gp.network.create_ieee14()
+gp.loadflow.run(n)
+```
+```bash
 {network_0_iterations=3, network_0_status=CONVERGED}
 ```

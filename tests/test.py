@@ -5,20 +5,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import unittest
-import gridpy
+import gridpy.network
+import gridpy.loadflow
+import gridpy as gp
 
 
 class GridPyTestCase(unittest.TestCase):
     def test_print_version(self):
-        gridpy.print_version()
+        gp.print_version()
 
     def test_create_empty_network(self):
-        n = gridpy.create_empty_network("test")
+        n = gp.network.create_empty("test")
         self.assertIsNotNone(n)
 
     def test_run_lf(self):
-        n = gridpy.create_ieee14_network()
-        gridpy.run_lf(n)
+        n = gp.network.create_ieee14()
+        gp.loadflow.run(n)
+
 
 if __name__ == '__main__':
     unittest.main()

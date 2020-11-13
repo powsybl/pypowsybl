@@ -44,12 +44,12 @@ set(SOURCES "${SOURCE_DIR}/gridpy.cpp")
 link_directories(${MAVEN_TARGET_DIR})
 
 add_subdirectory(lib/pybind11)
-pybind11_add_module(gridpy ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
+pybind11_add_module(_gridpy ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
 
-add_dependencies(gridpy gridpy-java)
-target_link_libraries(gridpy PRIVATE ${GRIDPY_JAVA_LIB})
+add_dependencies(_gridpy gridpy-java)
+target_link_libraries(_gridpy PRIVATE ${GRIDPY_JAVA_LIB})
 
 # copy auxiliary java lib so that it can be installed with module one
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    add_custom_command(TARGET gridpy POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_custom_command(TARGET _gridpy POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)

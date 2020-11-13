@@ -10,7 +10,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(gridpy, m) {
+PYBIND11_MODULE(_gridpy, m) {
     gridpy::init();
 
     m.doc() = "PowSyBl Python API";

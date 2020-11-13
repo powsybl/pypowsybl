@@ -10,14 +10,14 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, Extension
+from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
 class GridPyExtension(Extension):
     def __init__(self):
-        Extension.__init__(self, 'gridpy', sources=[])
+        Extension.__init__(self, '_gridpy', sources=[])
 
 
 class GridPyBuild(build_ext):
@@ -73,6 +73,7 @@ setup(
     author='Geoffroy Jamgotchian',
     description='',
     long_description='',
+    packages=find_packages(),
     ext_modules=[GridPyExtension()],
     cmdclass=dict(build_ext=GridPyBuild),
     zip_safe=False,
