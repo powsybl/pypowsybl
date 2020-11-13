@@ -21,6 +21,7 @@ jobs:
             name: windows,
             os: windows-latest,
           }
+        python: ['3.7']
 
     steps:
       - name: Checkout sources
@@ -45,7 +46,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: ${{ matrix.python }}
 
       - name: Install Python dependencies
         run: |
