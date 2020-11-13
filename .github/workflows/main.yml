@@ -84,6 +84,8 @@ jobs:
         with:
           path: download
 
-      - name: Package wheels
-        run: ls -R
-        working-directory: download
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: download/**/*.whl
