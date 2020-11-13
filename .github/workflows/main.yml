@@ -61,7 +61,7 @@ jobs:
         run: python -m unittest tests/test.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: gridpy-${{ matrix.config.name }}
           path: dist/*.whl
@@ -119,7 +119,7 @@ jobs:
         run: python -m unittest tests/test.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: gridpy-windows
           path: dist/*.whl
