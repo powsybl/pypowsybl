@@ -12,10 +12,12 @@ jobs:
           - {
             name: linux,
             os: ubuntu-latest,
+            wheel_os: linux_x86_64,
           }
           - {
             name: darwin,
             os: macos-latest,
+            wheel_os: macosx_10_15_x86_64,
           }
 
     steps:
@@ -55,10 +57,16 @@ jobs:
         run: python setup.py bdist_wheel
 
       - name: Install package
-        run: python -m pip install dist/*.whl --user
+        run: python -m pip install dist/gridpy-1.0.0-cp37-cp37m-${{ matrix.config.wheel_os }}.whl --user
 
       - name: Run tests
         run: python -m unittest tests/test.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: gridpy-${{ matrix.config.name }}
+          path: dist/gridpy-1.0.0-cp37-cp37m-${{ matrix.config.wheel_os }}.whl
 
   windows_build:
     name: Build (windows)
@@ -106,7 +114,13 @@ jobs:
         run: python setup.py bdist_wheel
 
       - name: Install package
-        run: python -m pip install dist/*.whl --user
+        run: python -m pip install dist/gridpy-1.0.0-cp37-cp37m-win_amd64.whl --user
 
       - name: Run tests
         run: python -m unittest tests/test.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: gridpy-windows
+          path: dist/gridpy-1.0.0-cp37-cp37m-win_amd64.whl
