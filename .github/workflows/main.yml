@@ -120,7 +120,6 @@ jobs:
 
       - name: Upload artifact
         uses: actions/upload-artifact@v1
-        shell: bash
         with:
           name: gridpy-windows
           path: dist/*.whl
