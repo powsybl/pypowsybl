@@ -23,7 +23,7 @@ jobs:
           }
         python:
           - {
-            name: cp37
+            name: cp37,
             version: '3.7',
           }
 
