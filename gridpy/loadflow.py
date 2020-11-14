@@ -6,7 +6,16 @@
 #
 import _gridpy
 from gridpy.network import Network
+from gridpy.util import ObjectHandle
+
+
+class LoadFlowResult(ObjectHandle):
+    def __init__(self, ptr):
+        ObjectHandle.__init__(self, ptr)
+
+    def is_ok(self) -> bool:
+        return _gridpy.is_load_flow_result_ok(self.ptr)
 
 
 def run(network: Network):
-    return _gridpy.run_lf(network.ptr)
+    return LoadFlowResult(_gridpy.run_load_flow(network.ptr))

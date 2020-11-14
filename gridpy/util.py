@@ -5,17 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
-from gridpy.util import ObjectHandle
 
 
-class Network(ObjectHandle):
+class ObjectHandle:
     def __init__(self, ptr):
-        ObjectHandle.__init__(self, ptr)
+        self.ptr = ptr
 
-
-def create_empty(id: str = "Default") -> Network:
-    return Network(_gridpy.create_empty_network(id))
-
-
-def create_ieee14() -> Network:
-    return Network(_gridpy.create_ieee14_network())
+    def __del__(self):
+        _gridpy.destroy_object_handle(self.ptr)

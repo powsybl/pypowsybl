@@ -17,7 +17,11 @@ namespace gridpy {
 
     void* createIeee14Network();
 
-    void runLoadFlow(void* network);
+    void* runLoadFlow(void* network);
+
+    bool isLoadFlowResultOk(void* loadFlowResult);
+
+    void destroyObjectHandle(void* objectHandle);
 }
 
 #endif //GRIDPY_H

@@ -45,9 +45,21 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static void runLoadFlow(IsolateThread thread, ObjectHandle networkHandle) {
+    public static ObjectHandle runLoadFlow(IsolateThread thread, ObjectHandle networkHandle) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowResult result = LoadFlow.run(network);
         System.out.println(result.getMetrics());
+        return ObjectHandles.getGlobal().create(result);
+    }
+
+    @CEntryPoint(name = "isLoadFlowResultOk")
+    public static boolean isLoadFlowResultOk(IsolateThread thread, ObjectHandle loadFlowResultHandle) {
+        LoadFlowResult loadFlowResult = ObjectHandles.getGlobal().get(loadFlowResultHandle);
+        return loadFlowResult.isOk();
+    }
+
+    @CEntryPoint(name = "destroyObjectHandle")
+    public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle) {
+        ObjectHandles.getGlobal().destroy(objectHandle);
     }
 }

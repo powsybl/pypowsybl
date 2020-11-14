@@ -22,5 +22,9 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
 
-    m.def("run_lf", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"));
+    m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"));
+
+    m.def("is_load_flow_result_ok", &gridpy::isLoadFlowResultOk, "Check if load flow result is ok", py::arg("loadflow_result"));
+
+    m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

@@ -59,9 +59,19 @@ void* createIeee14Network() {
     return createIeee14Network(guard.thread());
 }
 
-void runLoadFlow(void* network) {
+void* runLoadFlow(void* network) {
     GraalVmGuard guard;
-    runLoadFlow(guard.thread(), network);
+    return runLoadFlow(guard.thread(), network);
+}
+
+bool isLoadFlowResultOk(void* loadFlowResult) {
+    GraalVmGuard guard;
+    return isLoadFlowResultOk(guard.thread(), loadFlowResult);
+}
+
+void destroyObjectHandle(void* objectHandle) {
+    GraalVmGuard guard;
+    destroyObjectHandle(guard.thread(), objectHandle);
 }
 
 }
