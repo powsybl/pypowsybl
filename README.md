@@ -39,7 +39,8 @@ Powsybl versions:
 ```
 ```python
 n = gp.network.create_ieee14()
-gp.loadflow.run(n)
+r = gp.loadflow.run(n)
+print(r.is_ok())
 ```
 ```bash
 {network_0_iterations=3, network_0_status=CONVERGED}
