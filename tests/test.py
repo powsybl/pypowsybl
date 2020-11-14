@@ -20,7 +20,8 @@ class GridPyTestCase(unittest.TestCase):
 
     def test_run_lf(self):
         n = gp.network.create_ieee14()
-        gp.loadflow.run(n)
+        r = gp.loadflow.run(n)
+        self.assertTrue(r.is_ok())
 
 
 if __name__ == '__main__':
