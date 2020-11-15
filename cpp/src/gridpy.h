@@ -7,7 +7,21 @@
 #ifndef GRIDPY_H
 #define GRIDPY_H
 
+#include <string>
+#include "classes/gridpy-api.h"
+
 namespace gridpy {
+
+    struct LoadFlowResult {
+
+        load_flow_result* ptr_;
+
+        explicit LoadFlowResult(load_flow_result* ptr)
+          : ptr_(ptr) {
+        }
+
+        ~LoadFlowResult();
+    };
 
     void init();
 
@@ -17,9 +31,7 @@ namespace gridpy {
 
     void* createIeee14Network();
 
-    void* runLoadFlow(void* network);
-
-    bool isLoadFlowResultOk(void* loadFlowResult);
+    LoadFlowResult* runLoadFlow(void* network);
 
     void destroyObjectHandle(void* objectHandle);
 }

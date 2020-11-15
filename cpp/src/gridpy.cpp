@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+#include "gridpy.h"
 #include "gridpy-java.h"
 #include <iostream>
 
@@ -44,6 +45,11 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
+LoadFlowResult::~LoadFlowResult() {
+    GraalVmGuard guard;
+    freeLoadFlowResultPointer(guard.thread(), ptr_);
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());
@@ -59,14 +65,9 @@ void* createIeee14Network() {
     return createIeee14Network(guard.thread());
 }
 
-void* runLoadFlow(void* network) {
+LoadFlowResult* runLoadFlow(void* network) {
     GraalVmGuard guard;
-    return runLoadFlow(guard.thread(), network);
-}
-
-bool isLoadFlowResultOk(void* loadFlowResult) {
-    GraalVmGuard guard;
-    return isLoadFlowResultOk(guard.thread(), loadFlowResult);
+    return new LoadFlowResult(runLoadFlow(guard.thread(), network));
 }
 
 void destroyObjectHandle(void* objectHandle) {
