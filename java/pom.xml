@@ -26,7 +26,9 @@
     <properties>
         <graalvm.version>20.1.0</graalvm.version>
         <gridsuite-dependencies.version>3</gridsuite-dependencies.version>
+        <janino.version>3.1.0</janino.version>
         <logback.version>1.2.3</logback.version>
+        <mapdb.version>3.0.8</mapdb.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
@@ -76,6 +78,13 @@
 
     <dependencies>
         <!-- compile -->
+
+        <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>${janino.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
@@ -88,7 +97,21 @@
             <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!--
+             rdf4j depends on a very old version of mapdb. It is using ObjectStream which is not yet supported
+             by GraalVM native image (https://github.com/oracle/graal/issues/2192). New version of mapdb seems to not
+             rely on ObjectStream anymore
+        -->
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>${mapdb.version}</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-cgmes-conversion</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-config-classic</artifactId>
@@ -104,11 +127,31 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-xml-converter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-loadflow-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-matpower-converter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-psse-converter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-ucte-converter</artifactId>
         </dependency>
 
         <!-- runtime -->

@@ -23,6 +23,10 @@ class GridPyTestCase(unittest.TestCase):
         r = gp.loadflow.run(n)
         self.assertTrue(r.is_ok())
 
+    def test_load_network(self):
+        n = gp.network.load("empty-network.xml")
+        self.assertIsNotNone(n)
+
 
 if __name__ == '__main__':
     unittest.main()

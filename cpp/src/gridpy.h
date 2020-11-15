@@ -33,6 +33,8 @@ namespace gridpy {
 
     void* createIeee14Network();
 
+    void* loadNetwork(const std::string& file);
+
     LoadFlowResult* runLoadFlow(void* network);
 
     void destroyObjectHandle(void* objectHandle);

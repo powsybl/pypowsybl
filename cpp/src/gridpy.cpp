@@ -65,6 +65,11 @@ void* createIeee14Network() {
     return createIeee14Network(guard.thread());
 }
 
+void* loadNetwork(const std::string& file) {
+    GraalVmGuard guard;
+    return loadNetwork(guard.thread(), (char*) file.data());
+}
+
 LoadFlowResult* runLoadFlow(void* network) {
     GraalVmGuard guard;
     return new LoadFlowResult(runLoadFlow(guard.thread(), network));

@@ -8,6 +8,7 @@ package org.gridsuite.gridpy;
 
 import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
+import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -60,6 +61,13 @@ public final class GridPyApi {
     @CEntryPoint(name = "createIeee14Network")
     public static ObjectHandle createIeee14Network(IsolateThread thread) {
         Network network = IeeeCdfNetworkFactory.create14();
+        return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "loadNetwork")
+    public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file) {
+        String fileStr = CTypeConversion.toJavaString(file);
+        Network network = Importers.loadNetwork(fileStr);
         return ObjectHandles.getGlobal().create(network);
     }
 
