@@ -22,9 +22,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
 
     py::class_<gridpy::LoadFlowResult>(m, "LoadFlowResult")
-        .def("is_ok",  [](const gridpy::LoadFlowResult& a) {
-            return a.ptr_->ok == 1;
-        });
+        .def("is_ok", &gridpy::LoadFlowResult::isOk);
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"));
 

@@ -20,6 +20,8 @@ namespace gridpy {
           : ptr_(ptr) {
         }
 
+        bool isOk() { return ptr_->ok; }
+
         ~LoadFlowResult();
     };
 

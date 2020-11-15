@@ -54,6 +54,7 @@ class GridPyExtension(Extension):
                                                      'cpp/lib/pybind11/include/pybind11/stl_bind.h',
                                                      'java/pom.xml',
                                                      'java/src/main/java/org/gridsuite/gridpy/GridPyApi.java',
+                                                     'java/src/main/resources/gridpy-api.h',
                                                      'java/src/main/resources/logback.xml',
                                                      'java/src/main/resources/META-INF/native-image/jni-config.json',
                                                      'java/src/main/resources/META-INF/native-image/proxy-config.json',
