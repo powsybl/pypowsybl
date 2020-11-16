@@ -11,6 +11,7 @@ import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
@@ -88,9 +89,11 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle) {
+    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        LoadFlowResult result = LoadFlow.run(network);
+        LoadFlowParameters parameters = LoadFlowParameters.load()
+                .setDistributedSlack(distributedSlack);
+        LoadFlowResult result = LoadFlow.run(network, parameters);
         LoadFlowResultPointer resultPointer = createPointer(result);
         System.out.println(result.getMetrics());
         return resultPointer;

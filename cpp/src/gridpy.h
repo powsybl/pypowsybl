@@ -35,7 +35,7 @@ namespace gridpy {
 
     void* loadNetwork(const std::string& file);
 
-    LoadFlowResult* runLoadFlow(void* network);
+    LoadFlowResult* runLoadFlow(void* network, bool distributedSlack);
 
     void destroyObjectHandle(void* objectHandle);
 }
