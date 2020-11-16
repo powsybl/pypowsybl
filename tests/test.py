@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import os
 import unittest
 import gridpy.network
 import gridpy.loadflow
@@ -24,7 +25,8 @@ class GridPyTestCase(unittest.TestCase):
         self.assertTrue(r.is_ok())
 
     def test_load_network(self):
-        n = gp.network.load("empty-network.xml")
+        dir = os.path.dirname(os.path.realpath(__file__))
+        n = gp.network.load(dir + "/empty-network.xml")
         self.assertIsNotNone(n)
 
 
