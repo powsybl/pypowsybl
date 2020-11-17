@@ -80,9 +80,9 @@ LoadFlowResult* runLoadFlow(void* network) {
     return new LoadFlowResult(runLoadFlow(guard.thread(), network));
 }
 
-BusArray* getBusArray(void* network) {
+BusArray* getBusArray(void* network, bool busBreakerView) {
     GraalVmGuard guard;
-    return new BusArray(getBusArray(guard.thread(), network));
+    return new BusArray(getBusArray(guard.thread(), network, busBreakerView));
 }
 
 void destroyObjectHandle(void* objectHandle) {

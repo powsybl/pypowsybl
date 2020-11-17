@@ -32,6 +32,7 @@ class GridPyTestCase(unittest.TestCase):
     def test_get_buses(self):
         n = gp.network.create_ieee14()
         self.assertEqual(14, len(n.get_buses()))
+        self.assertEqual(14, len(n.get_buses(bus_breaker_view=True)))
 
 
 if __name__ == '__main__':

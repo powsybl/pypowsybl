@@ -47,7 +47,8 @@ PYBIND11_MODULE(_gridpy, m) {
             return py::make_iterator(a.begin(), a.end());
         }, py::keep_alive<0, 1>());
 
-    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"));
+    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
+          py::arg("bus_breaker_view"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

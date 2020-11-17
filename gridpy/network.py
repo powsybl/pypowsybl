@@ -12,8 +12,8 @@ class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
-    def get_buses(self):
-        return _gridpy.get_buses(self.ptr)
+    def get_buses(self, bus_breaker_view: bool = False):
+        return _gridpy.get_buses(self.ptr, bus_breaker_view)
 
 
 def create_empty(id: str = "Default") -> Network:

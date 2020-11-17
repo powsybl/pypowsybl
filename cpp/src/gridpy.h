@@ -54,7 +54,7 @@ namespace gridpy {
 
     LoadFlowResult* runLoadFlow(void* network);
 
-    BusArray* getBusArray(void* network);
+    BusArray* getBusArray(void* network, bool busBreakerView);
 
     void destroyObjectHandle(void* objectHandle);
 }

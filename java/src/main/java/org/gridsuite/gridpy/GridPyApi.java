@@ -30,6 +30,7 @@ import org.graalvm.word.PointerBase;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -144,9 +145,10 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "getBusArray")
-    public static BusArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle) {
+    public static BusArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
+        Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
+        List<Bus> buses = busStream.collect(Collectors.toList());
         BusPointer busesPtr = UnmanagedMemory.calloc(buses.size() * SizeOf.get(BusPointer.class));
         for (int index = 0; index < buses.size(); index++) {
             Bus bus = buses.get(index);
