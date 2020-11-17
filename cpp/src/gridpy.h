@@ -33,6 +33,10 @@ namespace gridpy {
 
     void* createIeee14Network();
 
+    void updateSwitchPosition(void* network, const std::string& id, bool open);
+
+    void updateConnectableStatus(void* network, const std::string& id, bool connected);
+
     void* loadNetwork(const std::string& file);
 
     LoadFlowResult* runLoadFlow(void* network);

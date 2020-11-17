@@ -7,9 +7,10 @@
 package org.gridsuite.gridpy;
 
 import com.oracle.svm.core.c.ProjectHeaderFile;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.tools.Version;
@@ -99,6 +100,47 @@ public final class GridPyApi {
     @CEntryPoint(name = "freeLoadFlowResultPointer")
     public static void freeLoadFlowResultPointer(IsolateThread thread, LoadFlowResultPointer resultPointer) {
         UnmanagedMemory.free(resultPointer);
+    }
+
+    @CEntryPoint(name = "updateSwitchPosition")
+    public static void updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String idStr = CTypeConversion.toJavaString(id);
+        Switch sw = network.getSwitch(idStr);
+        if (sw == null) {
+            throw new PowsyblException("Switch '" + idStr + "' not found");
+        }
+        sw.setOpen(open);
+    }
+
+    @CEntryPoint(name = "updateConnectableStatus")
+    public static void updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String idStr = CTypeConversion.toJavaString(id);
+        Identifiable<?> equipment = network.getIdentifiable(idStr);
+        if (equipment == null) {
+            throw new PowsyblException("Equipment '" + idStr + "' not found");
+        }
+        if (!(equipment instanceof Connectable)) {
+            throw new PowsyblException("Equipment '" + idStr + "' is not a connectable");
+        }
+        if (equipment instanceof Injection) {
+            Injection<?> injection = (Injection<?>) equipment;
+            if (connected) {
+                injection.getTerminal().connect();
+            } else {
+                injection.getTerminal().disconnect();
+            }
+        } else if (equipment instanceof Branch) {
+            Branch<?> branch = (Branch<?>) equipment;
+            if (connected) {
+                branch.getTerminal1().connect();
+                branch.getTerminal2().connect();
+            } else {
+                branch.getTerminal1().disconnect();
+                branch.getTerminal2().disconnect();
+            }
+        }
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
