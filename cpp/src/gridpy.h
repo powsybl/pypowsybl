@@ -20,7 +20,7 @@ namespace gridpy {
           : ptr_(ptr) {
         }
 
-        bool isOk() { return ptr_->ok; }
+        bool isOk() const { return ptr_->ok; }
 
         ~LoadFlowResult();
     };
@@ -35,7 +35,7 @@ namespace gridpy {
 
     void* loadNetwork(const std::string& file);
 
-    LoadFlowResult* runLoadFlow(void* network);
+    LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
 
     void destroyObjectHandle(void* objectHandle);
 }
