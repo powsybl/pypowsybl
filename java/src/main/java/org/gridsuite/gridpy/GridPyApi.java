@@ -9,6 +9,7 @@ package org.gridsuite.gridpy;
 import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.import_.Importers;
+import com.powsybl.iidm.network.Bus;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -28,6 +29,7 @@ import org.graalvm.word.PointerBase;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -99,6 +101,71 @@ public final class GridPyApi {
     @CEntryPoint(name = "freeLoadFlowResultPointer")
     public static void freeLoadFlowResultPointer(IsolateThread thread, LoadFlowResultPointer resultPointer) {
         UnmanagedMemory.free(resultPointer);
+    }
+
+    @CStruct("bus")
+    interface BusPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("v_magnitude")
+        double getVoltageMagnitude();
+
+        @CField("v_magnitude")
+        void setVoltageMagnitude(double voltageMagnitude);
+
+        @CField("v_angle")
+        double getVoltageAngle();
+
+        @CField("v_angle")
+        void setVoltageAngle(double voltageAngle);
+
+        BusPointer addressOf(int index);
+    }
+
+    @CStruct("bus_array")
+    interface BusArrayPointer extends PointerBase {
+
+        @CField("ptr")
+        BusPointer getPtr();
+
+        @CField("ptr")
+        void setPtr(BusPointer ptr);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+    }
+
+    @CEntryPoint(name = "getBusArray")
+    public static BusArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
+        BusPointer busesPtr = UnmanagedMemory.calloc(buses.size() * SizeOf.get(BusPointer.class));
+        for (int index = 0; index < buses.size(); index++) {
+            Bus bus = buses.get(index);
+            BusPointer busPtr = busesPtr.addressOf(index);
+            busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
+            busPtr.setVoltageMagnitude(bus.getV());
+            busPtr.setVoltageAngle(bus.getAngle());
+        }
+        BusArrayPointer busArrayPtr = UnmanagedMemory.calloc(SizeOf.get(BusArrayPointer.class));
+        busArrayPtr.setPtr(busesPtr);
+        busArrayPtr.setLength(buses.size());
+        return busArrayPtr;
+    }
+
+    @CEntryPoint(name = "freeBusArray")
+    public static void freeBusArray(IsolateThread thread, BusArrayPointer busArrayPointer) {
+        // don't need to free char* from id field as it is done by python
+        UnmanagedMemory.free(busArrayPointer.getPtr());
+        UnmanagedMemory.free(busArrayPointer);
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

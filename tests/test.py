@@ -29,6 +29,10 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.load(dir + "/empty-network.xml")
         self.assertIsNotNone(n)
 
+    def test_get_buses(self):
+        n = gp.network.create_ieee14()
+        self.assertEqual(14, len(n.get_buses()))
+
 
 if __name__ == '__main__':
     unittest.main()

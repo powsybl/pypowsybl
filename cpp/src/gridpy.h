@@ -25,6 +25,23 @@ namespace gridpy {
         ~LoadFlowResult();
     };
 
+    struct BusArray {
+
+        bus_array* delegate_;
+
+        explicit BusArray(bus_array* delegate)
+          : delegate_(delegate) {
+        }
+
+        int length() const { return delegate_->length; }
+
+        bus* begin() const { return delegate_->ptr; }
+
+        bus* end() const { return delegate_->ptr + delegate_->length; }
+
+        ~BusArray();
+    };
+
     void init();
 
     void printVersion();
@@ -36,6 +53,8 @@ namespace gridpy {
     void* loadNetwork(const std::string& file);
 
     LoadFlowResult* runLoadFlow(void* network);
+
+    BusArray* getBusArray(void* network);
 
     void destroyObjectHandle(void* objectHandle);
 }
