@@ -50,6 +50,11 @@ LoadFlowResult::~LoadFlowResult() {
     freeLoadFlowResultPointer(guard.thread(), ptr_);
 }
 
+BusArray::~BusArray() {
+    GraalVmGuard guard;
+    freeBusArray(guard.thread(), delegate_);
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());
@@ -73,6 +78,11 @@ void* loadNetwork(const std::string& file) {
 LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc) {
     GraalVmGuard guard;
     return new LoadFlowResult(runLoadFlow(guard.thread(), network, distributedSlack, dc));
+}
+
+BusArray* getBusArray(void* network, bool busBreakerView) {
+    GraalVmGuard guard;
+    return new BusArray(getBusArray(guard.thread(), network, busBreakerView));
 }
 
 void destroyObjectHandle(void* objectHandle) {

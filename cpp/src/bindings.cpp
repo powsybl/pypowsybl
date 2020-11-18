@@ -29,5 +29,27 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("distributed_slack"), py::arg("dc"));
 
+    py::class_<bus>(m, "Bus")
+        .def("get_id", [](const bus& b) {
+            return b.id;
+        })
+        .def("get_v_magnitude", [](const bus& b) {
+            return b.v_magnitude;
+        })
+        .def("get_v_angle", [](const bus& b) {
+            return b.v_angle;
+        });
+
+    py::class_<gridpy::BusArray>(m, "BusArray")
+        .def("__len__", [](const gridpy::BusArray& a) {
+            return a.length();
+        })
+        .def("__iter__", [](gridpy::BusArray& a) {
+            return py::make_iterator(a.begin(), a.end());
+        }, py::keep_alive<0, 1>());
+
+    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
+          py::arg("bus_breaker_view"));
+
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

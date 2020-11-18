@@ -12,32 +12,54 @@
 
 namespace gridpy {
 
-    struct LoadFlowResult {
+class LoadFlowResult {
+public:
+    explicit LoadFlowResult(load_flow_result* ptr)
+      : ptr_(ptr) {
+    }
 
-        load_flow_result* ptr_;
+    bool isOk() const { return ptr_->ok; }
 
-        explicit LoadFlowResult(load_flow_result* ptr)
-          : ptr_(ptr) {
-        }
+    ~LoadFlowResult();
 
-        bool isOk() const { return ptr_->ok; }
+private:
+    load_flow_result* ptr_;
+};
 
-        ~LoadFlowResult();
-    };
+class BusArray {
+public:
+    explicit BusArray(bus_array* delegate)
+      : delegate_(delegate) {
+    }
 
-    void init();
+    int length() const { return delegate_->length; }
 
-    void printVersion();
+    bus* begin() const { return delegate_->ptr; }
 
-    void* createEmptyNetwork(const std::string& id);
+    bus* end() const { return delegate_->ptr + delegate_->length; }
 
-    void* createIeee14Network();
+    ~BusArray();
 
-    void* loadNetwork(const std::string& file);
+private:
+    bus_array* delegate_;
+};
 
-    LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
+void init();
 
-    void destroyObjectHandle(void* objectHandle);
+void printVersion();
+
+void* createEmptyNetwork(const std::string& id);
+
+void* createIeee14Network();
+
+void* loadNetwork(const std::string& file);
+
+LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
+
+BusArray* getBusArray(void* network, bool busBreakerView);
+
+void destroyObjectHandle(void* objectHandle);
+
 }
 
 #endif //GRIDPY_H
