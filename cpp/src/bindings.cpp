@@ -17,7 +17,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("print_version", &gridpy::printVersion, "Print a table with all PowSybBl modules version");
 
     m.def("create_empty_network", &gridpy::createEmptyNetwork, "Create an empty network",
-          py::arg("id") = "Default");
+          py::arg("id"));
 
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
 
@@ -26,7 +26,8 @@ PYBIND11_MODULE(_gridpy, m) {
     py::class_<gridpy::LoadFlowResult>(m, "LoadFlowResult")
         .def("is_ok", &gridpy::LoadFlowResult::isOk);
 
-    m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"));
+    m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
+          py::arg("distributed_slack"), py::arg("dc"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

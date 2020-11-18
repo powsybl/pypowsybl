@@ -70,9 +70,9 @@ void* loadNetwork(const std::string& file) {
     return loadNetwork(guard.thread(), (char*) file.data());
 }
 
-LoadFlowResult* runLoadFlow(void* network) {
+LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc) {
     GraalVmGuard guard;
-    return new LoadFlowResult(runLoadFlow(guard.thread(), network));
+    return new LoadFlowResult(runLoadFlow(guard.thread(), network, distributedSlack, dc));
 }
 
 void destroyObjectHandle(void* objectHandle) {

@@ -36,9 +36,10 @@ $> python3 -m unittest tests/test.py
 +-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
 
 .{network_0_iterations=3, network_0_status=CONVERGED}
+{}
 .
 ----------------------------------------------------------------------
-Ran 4 tests in 0.015s
+Ran 4 tests in 0.036s
 
 OK
 ```
@@ -68,7 +69,7 @@ Powsybl versions:
 +-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
 ```
 
-Finally, we can create an IEEE 14 buses network and run a load flow computation:
+We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
 r = gp.loadflow.run(n)
@@ -78,6 +79,18 @@ print(r.is_ok())
 This will produce the following output:
 ```bash
 {network_0_iterations=3, network_0_status=CONVERGED}
+True
+```
+
+We can re-run the load flow computation in DC mode:
+```python
+r = gp.loadflow.run(n, dc = True)
+print(r.is_ok())
+```
+
+This will produce the following output:
+```bash
+{}
 True
 ```
 
