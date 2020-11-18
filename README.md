@@ -27,21 +27,6 @@ $> pip3 install . --user
 To run unit tests:
 ```bash
 $> python3 -m unittest tests/test.py
-..Powsybl versions:
-+-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-| Repository name       | Maven project version | Git branch | Git version                              | Build timestamp               |
-+-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-| powsybl-open-loadflow | 0.7.0                 | UNKNOWN    | 56e24b2262aaae28a065e3947caeb5759d753f97 | 2020-10-19T16:39:20.924+02:00 |
-| powsybl-core          | 3.7.1                 | v3.7.1     | 44627f289a1ae0e7535f12ae9c3378f9a17182a1 | 2020-10-16T23:04:45.020+02:00 |
-+-----------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-
-.{network_0_iterations=3, network_0_status=CONVERGED}
-{}
-.
-----------------------------------------------------------------------
-Ran 4 tests in 0.036s
-
-OK
 ```
 
 ## Usage
@@ -120,4 +105,3 @@ To go further, you can also load a case file instead of creating the IEEE 14 bus
 ```python
 n = gp.network.load('test.uct')
 ```
-
