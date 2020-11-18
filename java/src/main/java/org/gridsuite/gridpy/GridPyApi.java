@@ -12,6 +12,7 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Bus;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
@@ -85,18 +86,22 @@ public final class GridPyApi {
     }
 
     static LoadFlowResultPointer createPointer(LoadFlowResult result) {
-        LoadFlowResultPointer resultPointer = UnmanagedMemory.calloc(SizeOf.get(LoadFlowResultPointer.class));
-        resultPointer.setOk(result.isOk());
-        return resultPointer;
+        LoadFlowResultPointer resultPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowResultPointer.class));
+        resultPtr.setOk(result.isOk());
+        return resultPtr;
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle) {
+    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack,
+                                                    boolean dc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        LoadFlowResult result = LoadFlow.run(network);
-        LoadFlowResultPointer resultPointer = createPointer(result);
+        LoadFlowParameters parameters = LoadFlowParameters.load()
+                .setDistributedSlack(distributedSlack)
+                .setDc(dc);
+        LoadFlowResult result = LoadFlow.run(network, parameters);
+        LoadFlowResultPointer resultPtr = createPointer(result);
         System.out.println(result.getMetrics());
-        return resultPointer;
+        return resultPtr;
     }
 
     @CEntryPoint(name = "freeLoadFlowResultPointer")

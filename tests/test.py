@@ -12,7 +12,8 @@ import gridpy as gp
 
 
 class GridPyTestCase(unittest.TestCase):
-    def test_print_version(self):
+    @staticmethod
+    def test_print_version():
         gp.print_version()
 
     def test_create_empty_network(self):
@@ -22,6 +23,8 @@ class GridPyTestCase(unittest.TestCase):
     def test_run_lf(self):
         n = gp.network.create_ieee14()
         r = gp.loadflow.run(n)
+        self.assertTrue(r.is_ok())
+        r = gp.loadflow.run(n, distributed_slack=False, dc=True)
         self.assertTrue(r.is_ok())
 
     def test_load_network(self):
