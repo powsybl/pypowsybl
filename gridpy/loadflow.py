@@ -8,5 +8,5 @@ import _gridpy
 from gridpy.network import Network
 
 
-def run(network: Network):
-    return _gridpy.run_load_flow(network.ptr)
+def run(network: Network, distributed_slack: bool = True, dc: bool = False):
+    return _gridpy.run_load_flow(network.ptr, distributed_slack, dc)

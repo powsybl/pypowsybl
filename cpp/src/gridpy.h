@@ -12,36 +12,57 @@
 
 namespace gridpy {
 
-    struct LoadFlowResult {
+class LoadFlowResult {
+public:
+    explicit LoadFlowResult(load_flow_result* ptr)
+      : ptr_(ptr) {
+    }
 
-        load_flow_result* ptr_;
+    bool isOk() const { return ptr_->ok; }
 
-        explicit LoadFlowResult(load_flow_result* ptr)
-          : ptr_(ptr) {
-        }
+    ~LoadFlowResult();
 
-        bool isOk() { return ptr_->ok; }
+private:
+    load_flow_result* ptr_;
+};
 
-        ~LoadFlowResult();
-    };
+class BusArray {
+public:
+    explicit BusArray(bus_array* delegate)
+      : delegate_(delegate) {
+    }
 
-    void init();
+    int length() const { return delegate_->length; }
 
-    void printVersion();
+    bus* begin() const { return delegate_->ptr; }
 
-    void* createEmptyNetwork(const std::string& id);
+    bus* end() const { return delegate_->ptr + delegate_->length; }
 
-    void* createIeee14Network();
+    ~BusArray();
 
-    void updateSwitchPosition(void* network, const std::string& id, bool open);
+private:
+    bus_array* delegate_;
+};
 
-    void updateConnectableStatus(void* network, const std::string& id, bool connected);
+void init();
 
-    void* loadNetwork(const std::string& file);
+void printVersion();
 
-    LoadFlowResult* runLoadFlow(void* network);
+void* createEmptyNetwork(const std::string& id);
 
-    void destroyObjectHandle(void* objectHandle);
+void* createIeee14Network();
+
+void updateSwitchPosition(void* network, const std::string& id, bool open);
+
+void updateConnectableStatus(void* network, const std::string& id, bool connected);
+
+void* loadNetwork(const std::string& file);
+
+LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
+
+BusArray* getBusArray(void* network, bool busBreakerView);
+
+void destroyObjectHandle(void* objectHandle);
 }
 
 #endif //GRIDPY_H
