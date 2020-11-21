@@ -75,14 +75,14 @@ void* loadNetwork(const std::string& file) {
     return loadNetwork(guard.thread(), (char*) file.data());
 }
 
-void updateSwitchPosition(void* network, const std::string& id, bool open) {
+bool updateSwitchPosition(void* network, const std::string& id, bool open) {
     GraalVmGuard guard;
-    updateSwitchPosition(guard.thread(), network, (char*) id.data(), open);
+    return updateSwitchPosition(guard.thread(), network, (char*) id.data(), open);
 }
 
-void updateConnectableStatus(void* network, const std::string& id, bool connected) {
+bool updateConnectableStatus(void* network, const std::string& id, bool connected) {
     GraalVmGuard guard;
-    updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
+    return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
 LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc) {

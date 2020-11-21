@@ -39,8 +39,8 @@ class GridPyTestCase(unittest.TestCase):
 
     def test_connect_disconnect(self):
         n = gp.network.create_ieee14()
-        n.disconnect('L1-2-1')
-        n.connect('L1-2-1')
+        self.assertTrue(n.disconnect('L1-2-1'))
+        self.assertTrue(n.connect('L1-2-1'))
 
 
 if __name__ == '__main__':
