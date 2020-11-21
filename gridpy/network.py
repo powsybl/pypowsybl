@@ -15,6 +15,9 @@ class Network(ObjectHandle):
     def get_buses(self, bus_breaker_view: bool = False):
         return _gridpy.get_buses(self.ptr, bus_breaker_view)
 
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
+        _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))

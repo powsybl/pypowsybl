@@ -9,6 +9,8 @@
     {"pattern":"META-INF/services/com.powsybl.loadflow.LoadFlowProvider"},
     {"pattern":"META-INF/services/com.powsybl.openloadflow.network.LfNetworkLoader"},
     {"pattern":"META-INF/services/com.powsybl.openloadflow.network.SlackBusSelectorParametersReader"},
+    {"pattern":"META-INF/services/com.powsybl.sld.layout.VoltageLevelLayoutFactorySmartSelector"},
+    {"pattern":"META-INF/services/com.powsybl.sld.postprocessor.GraphBuildPostProcessor"},
     {"pattern":"META-INF/services/com.powsybl.tools.Tool"},
     {"pattern":"META-INF/services/com.powsybl.cgmes.conversion.CgmesImportPostProcessor"},
     {"pattern":"META-INF/services/com.powsybl.triplestore.api.TripleStoreFactoryService"},
@@ -16,17 +18,21 @@
     {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.DatatypeHandler"},
     {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.LanguageHandler"},
     {"pattern":"META-INF/services/org.eclipse.rdf4j.rio.RDFParserFactory"},
+    {"pattern":"META-INF/services/java.nio.charset.spi.CharsetProvider"},
+    {"pattern":"META-INF/services/javax.xml.bind.JAXBContext"},
     {"pattern":"natives/linux_64/libmath.so"},
     {"pattern":"natives/osx_64/libmath.dylib"},
     {"pattern":"natives/windows_64/math.dll"},
     {"pattern":"org/joda/time/tz/data/.*"},
     {"pattern":"org/joda/time/tz/data/ZoneInfoMap"},
     {"pattern":"org/slf4j/impl/StaticLoggerBinder.class"},
+    {"pattern":"ConvergenceLibrary/.*"},
     {"pattern":"logback.xml"},
     {"pattern":"CIM16.sparql"},
     {"pattern":"ieee14cdf.txt"}
   ],
   "bundles":[
-    {"name": "net.java.truecommons.key.spec.common.AesKeyStrength"}
+    {"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}, 
+    {"name":"net.java.truecommons.key.spec.common.AesKeyStrength"}
   ]
 }

@@ -7,6 +7,7 @@
 package org.gridsuite.gridpy;
 
 import com.oracle.svm.core.c.ProjectHeaderFile;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Bus;
@@ -14,6 +15,16 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.sld.NetworkGraphBuilder;
+import com.powsybl.sld.VoltageLevelDiagram;
+import com.powsybl.sld.layout.LayoutParameters;
+import com.powsybl.sld.layout.SmartVoltageLevelLayoutFactory;
+import com.powsybl.sld.layout.VoltageLevelLayoutFactory;
+import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.ResourcesComponentLibrary;
+import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
+import com.powsybl.sld.svg.DefaultSVGWriter;
+import com.powsybl.sld.util.TopologicalStyleProvider;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -28,6 +39,7 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -173,6 +185,28 @@ public final class GridPyApi {
         // don't need to free char* from id field as it is done by python
         UnmanagedMemory.free(busArrayPointer.getPtr());
         UnmanagedMemory.free(busArrayPointer);
+    }
+
+    @CEntryPoint(name = "writeSingleLineDiagramSvg")
+    public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
+                                                 CCharPointer svgFile) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String containerIdStr = CTypeConversion.toJavaString(containerId);
+        String svgFileStr = CTypeConversion.toJavaString(svgFile);
+        ComponentLibrary componentLibrary = new ResourcesComponentLibrary("/ConvergenceLibrary");
+        if (network.getVoltageLevel(containerIdStr) != null) {
+            VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
+            VoltageLevelDiagram voltageLevelDiagram = VoltageLevelDiagram.build(new NetworkGraphBuilder(network), containerIdStr, voltageLevelLayoutFactory, false);
+            LayoutParameters layoutParameters = new LayoutParameters()
+                    .setAdaptCellHeightToContent(true);
+            voltageLevelDiagram.writeSvg("",
+                    new DefaultSVGWriter(componentLibrary, layoutParameters),
+                    new DefaultDiagramLabelProvider(network, componentLibrary, layoutParameters),
+                    new TopologicalStyleProvider(network),
+                    Paths.get(svgFileStr));
+        } else {
+            throw new PowsyblException("Container '" + containerIdStr + "' not found");
+        }
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

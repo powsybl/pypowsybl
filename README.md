@@ -101,6 +101,11 @@ Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
 Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
 ```
 
+We can generate a single line diagram for a voltage level in the SVG format:
+```python
+n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
+```
+
 To go further, you can also load a case file instead of creating the IEEE 14 buses network:
 ```python
 n = gp.network.load('test.uct')
