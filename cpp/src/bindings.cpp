@@ -23,7 +23,7 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("update_switch_position", &gridpy::updateSwitchPosition, "Update a switch position");
 
-    m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable status");
+    m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
