@@ -63,6 +63,7 @@ LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
 BusArray* getBusArray(void* network, bool busBreakerView);
 
 void destroyObjectHandle(void* objectHandle);
+
 }
 
 #endif //GRIDPY_H
