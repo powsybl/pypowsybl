@@ -101,6 +101,18 @@ Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
 Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
 ```
 
+To disconnect or reconnect a line:
+```python
+n.disconnect('L1-2-1')
+n.connect('L1-2-1')
+```
+
+To open or close a switch:
+```python
+n.open_switch('a_switch')
+n.close_switch('a_switch')
+```
+
 To go further, you can also load a case file instead of creating the IEEE 14 buses network:
 ```python
 n = gp.network.load('test.uct')

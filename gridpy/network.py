@@ -15,6 +15,18 @@ class Network(ObjectHandle):
     def get_buses(self, bus_breaker_view: bool = False):
         return _gridpy.get_buses(self.ptr, bus_breaker_view)
 
+    def open_switch(self, id: str):
+        return _gridpy.update_switch_position(self.ptr, id, True)
+
+    def close_switch(self, id: str):
+        return _gridpy.update_switch_position(self.ptr, id, False)
+
+    def connect(self, id: str):
+        return _gridpy.update_connectable_status(self.ptr, id, True)
+
+    def disconnect(self, id: str):
+        return _gridpy.update_connectable_status(self.ptr, id, False)
+
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))

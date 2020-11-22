@@ -37,6 +37,11 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(14, len(n.get_buses()))
         self.assertEqual(14, len(n.get_buses(bus_breaker_view=True)))
 
+    def test_connect_disconnect(self):
+        n = gp.network.create_ieee14()
+        self.assertTrue(n.disconnect('L1-2-1'))
+        self.assertTrue(n.connect('L1-2-1'))
+
 
 if __name__ == '__main__':
     unittest.main()
