@@ -75,6 +75,11 @@ void* loadNetwork(const std::string& file) {
     return loadNetwork(guard.thread(), (char*) file.data());
 }
 
+void dumpNetwork(void* network, const std::string& file, const std::string& format) {
+    GraalVmGuard guard;
+    dumpNetwork(guard.thread(), network, (char*) file.data(), (char*) format.data());
+}
+
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
     GraalVmGuard guard;
     return updateSwitchPosition(guard.thread(), network, (char*) id.data(), open);

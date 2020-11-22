@@ -58,6 +58,8 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
 
 void* loadNetwork(const std::string& file);
 
+void dumpNetwork(void* network, const std::string& file, const std::string& format);
+
 LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
 
 BusArray* getBusArray(void* network, bool busBreakerView);

@@ -27,6 +27,8 @@ class Network(ObjectHandle):
     def disconnect(self, id: str):
         return _gridpy.update_connectable_status(self.ptr, id, False)
 
+    def dump(self, file: str, format: str = 'XIIDM'):
+        _gridpy.dump_network(self.ptr, file, format)
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))

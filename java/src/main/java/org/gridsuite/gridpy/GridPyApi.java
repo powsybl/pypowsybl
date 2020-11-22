@@ -9,6 +9,7 @@ package org.gridsuite.gridpy;
 import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
+import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
@@ -28,6 +29,7 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,6 +75,14 @@ public final class GridPyApi {
         String fileStr = CTypeConversion.toJavaString(file);
         Network network = Importers.loadNetwork(fileStr);
         return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "dumpNetwork")
+    public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String fileStr = CTypeConversion.toJavaString(file);
+        String formatStr = CTypeConversion.toJavaString(format);
+        Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
     @CStruct("load_flow_result")
