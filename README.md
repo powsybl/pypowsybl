@@ -117,3 +117,8 @@ To go further, you can also load a case file instead of creating the IEEE 14 bus
 ```python
 n = gp.network.load('test.uct')
 ```
+
+And dump the network to another format:
+```python
+n.dump('test.xiidm', 'XIIDM')
+```
