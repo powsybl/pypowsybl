@@ -58,7 +58,7 @@ We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
 r = gp.loadflow.run(n)
-print(r.is_ok())
+print(r.ok)
 ```
 
 This will produce the following output:
@@ -70,7 +70,7 @@ True
 We can re-run the load flow computation in DC mode:
 ```python
 r = gp.loadflow.run(n, dc = True)
-print(r.is_ok())
+print(r.ok)
 ```
 
 This will produce the following output:
@@ -82,7 +82,7 @@ True
 We can now iterate over buses and print calculated voltage
 ```python
 for bus in n.get_buses():
-    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.get_id(), v_mag=bus.get_v_magnitude(), v_ang=bus.get_v_angle()))
+    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))
 ```
 ```bash
 Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664

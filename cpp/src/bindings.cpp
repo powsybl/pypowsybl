@@ -28,19 +28,19 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
     py::class_<gridpy::LoadFlowResult>(m, "LoadFlowResult")
-        .def("is_ok", &gridpy::LoadFlowResult::isOk);
+        .def_property_readonly("ok", &gridpy::LoadFlowResult::isOk);
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("distributed_slack"), py::arg("dc"));
 
     py::class_<bus>(m, "Bus")
-        .def("get_id", [](const bus& b) {
+        .def_property_readonly("id", [](const bus& b) {
             return b.id;
         })
-        .def("get_v_magnitude", [](const bus& b) {
+        .def_property_readonly("v_magnitude", [](const bus& b) {
             return b.v_magnitude;
         })
-        .def("get_v_angle", [](const bus& b) {
+        .def_property_readonly("v_angle", [](const bus& b) {
             return b.v_angle;
         });
 
