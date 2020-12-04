@@ -26,19 +26,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(INSTALL_EXTRA_COMMAND COMMAND install_name_tool -id @loader_path/${GRIDPY_JAVA_LIB} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB})
 endif()
 
+set(JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java)
+
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
 ExternalProject_Add(gridpy-java
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java/
-    PATCH_COMMAND mvn --batch-mode -PalternateBuildDir -Dalt.build.dir=${MAVEN_TARGET_DIR} package
+    SOURCE_DIR ${JAVA_SRC_DIR}
+    BINARY_DIR ${MAVEN_TARGET_DIR}
+    PATCH_COMMAND mvn --batch-mode package
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
+    BUILD_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${JAVA_SRC_DIR}/target/gridpy-java.jar --no-fallback --allow-incomplete-classpath --shared -H:Name=gridpy-java -H:CLibraryPath=${JAVA_SRC_DIR}/src/main/resources
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_OLD_LIB} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}
 )
 
 set(SOURCE_DIR "src")
 
-include_directories(${SOURCE_DIR} ${MAVEN_TARGET_DIR})
+include_directories(${SOURCE_DIR} ${MAVEN_TARGET_DIR} ${JAVA_SRC_DIR}/src/main/resources)
 set(SOURCES "${SOURCE_DIR}/gridpy.cpp")
 
 link_directories(${MAVEN_TARGET_DIR})
