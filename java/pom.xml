@@ -24,8 +24,8 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <graalvm.version>20.1.0</graalvm.version>
-        <gridsuite-dependencies.version>3</gridsuite-dependencies.version>
+        <graalvm.version>20.3.0</graalvm.version>
+        <gridsuite-dependencies.version>4</gridsuite-dependencies.version>
         <janino.version>3.1.0</janino.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
