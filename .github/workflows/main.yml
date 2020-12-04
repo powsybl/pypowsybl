@@ -40,13 +40,6 @@ jobs:
           graalvm-version: 20.3.0
           native-image: true
 
-      - name: Fix GraalVM Native Image on Windows
-        if: matrix.config.name == 'windows'
-        shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          call "%JAVA_HOME%\bin\native-image.cmd" -jar "%JAVA_HOME%\lib\graalvm\svm-driver.jar" -H:Path="%JAVA_HOME%\bin"
-
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
