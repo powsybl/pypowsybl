@@ -32,11 +32,11 @@ set(JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java)
 # it in the install command step
 ExternalProject_Add(gridpy-java
     SOURCE_DIR ${JAVA_SRC_DIR}
-    BINARY_DIR ${MAVEN_TARGET_DIR}
+    INSTALL_DIR ${MAVEN_TARGET_DIR}
     PATCH_COMMAND mvn --batch-mode package
-    CONFIGURE_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${JAVA_SRC_DIR}/target/gridpy-java.jar --no-fallback --allow-incomplete-classpath --shared -H:Name=gridpy-java -H:CLibraryPath=${JAVA_SRC_DIR}/src/main/resources
+    CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_OLD_LIB} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}
+    INSTALL_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${JAVA_SRC_DIR}/target/gridpy-java.jar --no-fallback --allow-incomplete-classpath --shared -H:Name=gridpy-java -H:CLibraryPath=${JAVA_SRC_DIR}/src/main/resources COMMAND ${CMAKE_COMMAND} -E copy ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_OLD_LIB} ${MAVEN_TARGET_DIR}/${GRIDPY_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}
 )
 
 set(SOURCE_DIR "src")
