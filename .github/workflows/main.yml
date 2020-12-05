@@ -59,7 +59,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          python setup.py bdist_wheel
+          call python setup.py bdist_wheel
 
       - name: Install wheel
         shell: bash
