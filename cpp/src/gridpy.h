@@ -8,7 +8,7 @@
 #define GRIDPY_H
 
 #include <string>
-#include "classes/gridpy-api.h"
+#include "gridpy-api.h"
 
 namespace gridpy {
 
@@ -52,7 +52,13 @@ void* createEmptyNetwork(const std::string& id);
 
 void* createIeee14Network();
 
+bool updateSwitchPosition(void* network, const std::string& id, bool open);
+
+bool updateConnectableStatus(void* network, const std::string& id, bool connected);
+
 void* loadNetwork(const std::string& file);
+
+void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
 LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
 

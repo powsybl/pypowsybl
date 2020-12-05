@@ -9,9 +9,9 @@ package org.gridsuite.gridpy;
 import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
+import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Bus;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -85,6 +85,14 @@ public final class GridPyApi {
         String fileStr = CTypeConversion.toJavaString(file);
         Network network = Importers.loadNetwork(fileStr);
         return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "dumpNetwork")
+    public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String fileStr = CTypeConversion.toJavaString(file);
+        String formatStr = CTypeConversion.toJavaString(format);
+        Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
     @CStruct("load_flow_result")
@@ -185,6 +193,57 @@ public final class GridPyApi {
         // don't need to free char* from id field as it is done by python
         UnmanagedMemory.free(busArrayPointer.getPtr());
         UnmanagedMemory.free(busArrayPointer);
+    }
+
+    @CEntryPoint(name = "updateSwitchPosition")
+    public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String idStr = CTypeConversion.toJavaString(id);
+        Switch sw = network.getSwitch(idStr);
+        if (sw == null) {
+            throw new PowsyblException("Switch '" + idStr + "' not found");
+        }
+        if (open && !sw.isOpen()) {
+            sw.setOpen(true);
+            return true;
+        } else if (!open && sw.isOpen()) {
+            sw.setOpen(false);
+            return true;
+        }
+        return false;
+    }
+
+    @CEntryPoint(name = "updateConnectableStatus")
+    public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String idStr = CTypeConversion.toJavaString(id);
+        Identifiable<?> equipment = network.getIdentifiable(idStr);
+        if (equipment == null) {
+            throw new PowsyblException("Equipment '" + idStr + "' not found");
+        }
+        if (!(equipment instanceof Connectable)) {
+            throw new PowsyblException("Equipment '" + idStr + "' is not a connectable");
+        }
+        if (equipment instanceof Injection) {
+            Injection<?> injection = (Injection<?>) equipment;
+            if (connected) {
+                return injection.getTerminal().connect();
+            } else {
+                return injection.getTerminal().disconnect();
+            }
+        } else if (equipment instanceof Branch) {
+            Branch<?> branch = (Branch<?>) equipment;
+            if (connected) {
+                boolean done1 = branch.getTerminal1().connect();
+                boolean done2 = branch.getTerminal2().connect();
+                return done1 || done2;
+            } else {
+                boolean done1 = branch.getTerminal1().disconnect();
+                boolean done2 = branch.getTerminal2().disconnect();
+                return done1 || done2;
+            }
+        }
+        return false;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")

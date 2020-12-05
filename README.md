@@ -58,7 +58,7 @@ We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
 r = gp.loadflow.run(n)
-print(r.is_ok())
+print(r.ok)
 ```
 
 This will produce the following output:
@@ -70,7 +70,7 @@ True
 We can re-run the load flow computation in DC mode:
 ```python
 r = gp.loadflow.run(n, dc = True)
-print(r.is_ok())
+print(r.ok)
 ```
 
 This will produce the following output:
@@ -82,7 +82,7 @@ True
 We can now iterate over buses and print calculated voltage
 ```python
 for bus in n.get_buses():
-    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.get_id(), v_mag=bus.get_v_magnitude(), v_ang=bus.get_v_angle()))
+    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))
 ```
 ```bash
 Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664
@@ -101,12 +101,29 @@ Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
 Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
 ```
 
-We can generate a single line diagram for a voltage level in the SVG format:
+To disconnect or reconnect a line:
 ```python
-n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
+n.disconnect('L1-2-1')
+n.connect('L1-2-1')
+```
+
+To open or close a switch:
+```python
+n.open_switch('a_switch')
+n.close_switch('a_switch')
 ```
 
 To go further, you can also load a case file instead of creating the IEEE 14 buses network:
 ```python
 n = gp.network.load('test.uct')
+```
+
+And dump the network to another format:
+```python
+n.dump('test.xiidm', 'XIIDM')
+```
+
+We can generate a single line diagram for a voltage level in the SVG format:
+```python
+n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
 ```

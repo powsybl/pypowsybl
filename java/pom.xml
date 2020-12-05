@@ -24,37 +24,49 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <graalvm.version>20.1.0</graalvm.version>
-        <gridsuite-dependencies.version>3</gridsuite-dependencies.version>
+        <graalvm.version>20.3.0</graalvm.version>
+        <gridsuite-dependencies.version>4</gridsuite-dependencies.version>
         <janino.version>3.1.0</janino.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
+        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.graalvm.nativeimage</groupId>
-                <artifactId>native-image-maven-plugin</artifactId>
-                <version>${graalvm.version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
+                    <!-- Run shade goal on package phase -->
                     <execution>
-                        <goals>
-                            <goal>native-image</goal>
-                        </goals>
                         <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <finalName>gridpy-java</finalName>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>standalone</shadedClassifierName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <imageName>gridpy-java</imageName>
-                    <buildArgs>
-                        --no-fallback
-                        --allow-incomplete-classpath
-                        --shared
-                        -H:CLibraryPath=${project.basedir}/src/main/resources
-                    </buildArgs>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -144,7 +156,6 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
-            <version>1.9.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -182,19 +193,5 @@
             <artifactId>powsybl-open-loadflow</artifactId>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>alternateBuildDir</id>
-            <activation>
-                <property>
-                    <name>alt.build.dir</name>
-                </property>
-            </activation>
-            <build>
-                <directory>${alt.build.dir}</directory>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

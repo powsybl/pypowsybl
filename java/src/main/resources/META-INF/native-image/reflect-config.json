@@ -80,42 +80,36 @@
   "name":"com.powsybl.ieeecdf.model.IeeeCdfBranch",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.ieeecdf.model.IeeeCdfBus",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.ieeecdf.model.IeeeCdfInterchangeData",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.ieeecdf.model.IeeeCdfLossZone",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.ieeecdf.model.IeeeCdfTieLine",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.ieeecdf.model.IeeeCdfTitle",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
@@ -131,66 +125,77 @@
   "name":"com.powsybl.psse.model.PsseArea",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseBus",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseCaseIdentification",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseFixedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseGenerator",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseLoad",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseNonTransformerBranch",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseOwner",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$FirstRecord",
+  "name":"com.powsybl.psse.model.PsseSwitchedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$SecondRecord",
+  "name":"com.powsybl.psse.model.PsseTransformer",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$ThirdRecord",
+  "name":"com.powsybl.psse.model.PsseTransformer$WindingRecord",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
@@ -425,7 +430,7 @@
 {
   "name":"java.beans.PropertyDescriptor",
   "methods":[
-    {"name":"getReadMethod","parameterTypes":[] }, 
+    {"name":"getReadMethod","parameterTypes":[] },
     {"name":"getWriteMethod","parameterTypes":[] }
   ]
 },
@@ -476,6 +481,9 @@
   "name":"java.lang.RuntimePermission"
 },
 {
+  "name":"java.lang.String[]"
+},
+{
   "name":"java.net.NetPermission"
 },
 {
@@ -490,6 +498,12 @@
 },
 {
   "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
 },
 {
   "name":"java.security.SecurityPermission"
@@ -547,6 +561,14 @@
 },
 {
   "name":"org.jgrapht.graph.DefaultWeightedEdge",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

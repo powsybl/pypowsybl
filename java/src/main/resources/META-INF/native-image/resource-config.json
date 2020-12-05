@@ -1,5 +1,6 @@
 {
-  "resources":[
+  "resources":{
+  "includes":[
     {"pattern":"META-INF/services/com.powsybl.commons.config.PlatformConfigProvider"},
     {"pattern":"META-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider"},
     {"pattern":"META-INF/services/com.powsybl.commons.extensions.ExtensionXmlSerializer"},
@@ -30,7 +31,7 @@
     {"pattern":"logback.xml"},
     {"pattern":"CIM16.sparql"},
     {"pattern":"ieee14cdf.txt"}
-  ],
+  ]},
   "bundles":[
     {"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}, 
     {"name":"net.java.truecommons.key.spec.common.AesKeyStrength"}
