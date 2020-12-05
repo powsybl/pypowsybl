@@ -6,7 +6,7 @@
 {
   "name":"java.lang.ClassLoader",
   "methods":[
-    {"name":"getPlatformClassLoader","parameterTypes":[] }, 
+    {"name":"getPlatformClassLoader","parameterTypes":[] },
     {"name":"loadClass","parameterTypes":["java.lang.String"] }
   ]
 },
@@ -15,5 +15,8 @@
 },
 {
   "name":"java.lang.NoSuchMethodError"
+},
+{
+  "name":"java.lang.String"
 }
 ]

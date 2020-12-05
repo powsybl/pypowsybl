@@ -101,72 +101,84 @@
   "name":"com.powsybl.psse.model.PsseArea",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseBus",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseCaseIdentification",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseFixedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseGenerator",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseLoad",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseNonTransformerBranch",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseOwner",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$FirstRecord",
+  "name":"com.powsybl.psse.model.PsseSwitchedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$SecondRecord",
+  "name":"com.powsybl.psse.model.PsseTransformer",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$ThirdRecord",
+  "name":"com.powsybl.psse.model.PsseTransformer$WindingRecord",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.psse.model.PsseZone",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
@@ -208,16 +220,50 @@
 {
   "name":"java.beans.PropertyDescriptor",
   "methods":[
-    {"name":"getReadMethod","parameterTypes":[] }, 
+    {"name":"getReadMethod","parameterTypes":[] },
     {"name":"getWriteMethod","parameterTypes":[] }
   ]
 },
 {
+  "name":"java.beans.PropertyVetoException"
+},
+{
+  "name":"java.io.FilePermission"
+},
+{
   "name":"java.lang.Object",
   "methods":[
-    {"name":"<init>","parameterTypes":[] }, 
+    {"name":"<init>","parameterTypes":[] },
     {"name":"hashCode","parameterTypes":[] }
   ]
+},
+{
+  "name":"java.lang.RuntimePermission"
+},
+{
+  "name":"java.lang.String[]"
+},
+{
+  "name":"java.net.NetPermission"
+},
+{
+  "name":"java.net.SocketPermission"
+},
+{
+  "name":"java.net.URLPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+},
+{
+  "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.security.SecurityPermission"
 },
 {
   "name":"java.sql.Date"
@@ -226,10 +272,29 @@
   "name":"java.sql.Timestamp"
 },
 {
+  "name":"java.util.PropertyPermission"
+},
+{
   "name":"javax.management.ObjectName"
 },
 {
   "name":"net.java.truevfs.comp.zip.WinZipAesExtraField",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.jgrapht.graph.DefaultEdge",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.jgrapht.graph.DefaultWeightedEdge",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

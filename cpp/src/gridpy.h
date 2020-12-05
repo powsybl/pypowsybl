@@ -8,7 +8,7 @@
 #define GRIDPY_H
 
 #include <string>
-#include "classes/gridpy-api.h"
+#include "gridpy-api.h"
 
 namespace gridpy {
 
