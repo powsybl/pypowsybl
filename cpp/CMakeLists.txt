@@ -8,8 +8,7 @@ cmake_minimum_required(VERSION 3.14)
 project(gridpy-cpp)
 
 include(ExternalProject)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_VERBOSE_BUILD ON)
+
 set(CMAKE_CXX_STANDARD 11)
 
 # change shared library rpath to resolve java library in same directory
