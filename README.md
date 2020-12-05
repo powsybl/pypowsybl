@@ -13,7 +13,7 @@ To build this project, you need:
 - Cmake >= 3.14
 - C++ compiler
 - Python >= 3.7
-- [GraalVM 20.1](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.1.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
+- [GraalVM 20.3](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 ## Build from sources
 
