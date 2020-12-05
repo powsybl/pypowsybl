@@ -2,6 +2,10 @@
 .idea
 *.iml
 
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+
 # Distribution
 /dist
 /gridpy.egg-info

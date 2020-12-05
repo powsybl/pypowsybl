@@ -30,6 +30,9 @@ class Network(ObjectHandle):
     def dump(self, file: str, format: str = 'XIIDM'):
         _gridpy.dump_network(self.ptr, file, format)
 
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
+        _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))
 

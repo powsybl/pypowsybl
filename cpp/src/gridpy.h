@@ -64,6 +64,8 @@ LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
 
 BusArray* getBusArray(void* network, bool busBreakerView);
 
+void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
+
 void destroyObjectHandle(void* objectHandle);
 
 }

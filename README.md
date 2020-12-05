@@ -122,3 +122,8 @@ And dump the network to another format:
 ```python
 n.dump('test.xiidm', 'XIIDM')
 ```
+
+We can generate a single line diagram for a voltage level in the SVG format:
+```python
+n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
+```

@@ -100,6 +100,11 @@ BusArray* getBusArray(void* network, bool busBreakerView) {
     return new BusArray(getBusArray(guard.thread(), network, busBreakerView));
 }
 
+void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
+    GraalVmGuard guard;
+    writeSingleLineDiagramSvg(guard.thread(), network, (char*) containerId.data(), (char*) svgFile.data());
+}
+
 void destroyObjectHandle(void* objectHandle) {
     GraalVmGuard guard;
     destroyObjectHandle(guard.thread(), objectHandle);
