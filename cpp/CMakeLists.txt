@@ -33,7 +33,7 @@ ExternalProject_Add(mvn
     PATCH_COMMAND mvn --batch-mode package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${GRIDPY_JAVA_SRC_DIR}/target/gridpy-java.jar ${GRIDPY_JAVA_BIN_DIR}/gridpy-java.jar
+    INSTALL_COMMAND ""
 )
 
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
@@ -42,7 +42,7 @@ ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${GRIDPY_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${GRIDPY_JAVA_BIN_DIR}/gridpy-java.jar --no-fallback --allow-incomplete-classpath --shared -H:Name=gridpy-java -H:CLibraryPath=${GRIDPY_JAVA_SRC_DIR}/src/main/resources
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${GRIDPY_JAVA_SRC_DIR}/target/gridpy-java.jar --no-fallback --allow-incomplete-classpath --shared -H:Name=gridpy-java -H:CLibraryPath=${GRIDPY_JAVA_SRC_DIR}/src/main/resources
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${GRIDPY_JAVA_BIN_DIR}/${GRIDPY_JAVA_OLD_LIB} ${GRIDPY_JAVA_BIN_DIR}/${GRIDPY_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}
