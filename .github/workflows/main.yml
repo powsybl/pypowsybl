@@ -6,7 +6,7 @@ jobs:
   build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
-    container: quay.io/pypa/manylinux1_x86_64
+    container: quay.io/pypa/manylinux2014_x86_64
     strategy:
       matrix:
         config:
