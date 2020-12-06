@@ -33,11 +33,6 @@ jobs:
           graalvm-version: 20.3.0
           native-image: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python.version }}
-
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
