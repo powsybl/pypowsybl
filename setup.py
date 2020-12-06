@@ -113,7 +113,7 @@ setup(
     name='gridpy',
     version='0.0.1',
     author='Geoffroy Jamgotchian',
-    author_email="geoffroy.jamgotchian at gmail.com",
+    author_email="geoffroy.jamgotchian@gmail.com",
     description='A PowSyBl Python API',
     long_description='',
     long_description_content_type="text/markdown",
