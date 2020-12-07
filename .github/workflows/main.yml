@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  build:
+  manylinux_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     container: quay.io/pypa/manylinux2014_x86_64
@@ -17,6 +17,7 @@ jobs:
         python:
           - {
             name: cp37,
+            abi: cp37m,
             version: '3.7',
           }
 
@@ -37,14 +38,14 @@ jobs:
           native-image: true
 
       - name: Build wheel
-        run: /opt/python/cp37-cp37m/bin/python3 setup.py bdist_wheel
+        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel
 
       - name: Install wheel
         shell: bash
-        run: /opt/python/cp37-cp37m/bin/pip3 install dist/*.whl --user
+        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/pip3 install dist/*.whl --user
 
       - name: Run tests
-        run: /opt/python/cp37-cp37m/bin/python3 -m unittest tests/test.py
+        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 -m unittest tests/test.py
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
