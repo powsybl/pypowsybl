@@ -33,11 +33,13 @@ jobs:
           native-image: true
 
       - name: Build wheel
-        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel
+        run: |
+          /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
 
       - name: Install wheel
         shell: bash
-        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/pip3 install dist/*.whl --user
+        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/pip3 install wheelhouse/*.whl --user
 
       - name: Run tests
         run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 -m unittest tests/test.py
@@ -46,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gridpy-wheel-linux-${{ matrix.python.name }}
-          path: dist/*.whl
+          path: wheelhouse/*.whl
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
