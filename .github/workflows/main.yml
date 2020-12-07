@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: yum install maven zlib-devel.x86_64
+        run: yum install -y maven zlib-devel.x86_64
 
       - name: Checkout sources
         uses: actions/checkout@v1
