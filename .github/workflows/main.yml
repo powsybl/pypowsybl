@@ -4,16 +4,11 @@ on: [push]
 
 jobs:
   manylinux_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
-    runs-on: ${{ matrix.config.os }}
+    name: Build linux ${{ matrix.python.name }} wheel
+    runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux2014_x86_64
     strategy:
       matrix:
-        config:
-          - {
-            name: linux,
-            os: ubuntu-latest,
-          }
         python:
           - {
             name: cp37,
@@ -46,6 +41,65 @@ jobs:
 
       - name: Run tests
         run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 -m unittest tests/test.py
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: gridpy-wheel-linux-${{ matrix.python.name }}
+          path: dist/*.whl
+
+  macos_windows_build:
+    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - {
+            name: darwin,
+            os: macos-latest,
+          }
+          - {
+            name: windows,
+            os: windows-latest,
+          }
+        python:
+          - {
+            name: cp37,
+            version: '3.7',
+          }
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Setup GraalVM
+        uses: ayltai/setup-graalvm@v1
+        with:
+          java-version: 11
+          graalvm-version: 20.3.0
+          native-image: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python.version }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+
+      - name: Build wheel
+        run: python setup.py bdist_wheel
+
+      - name: Install wheel
+        shell: bash
+        run: python -m pip install dist/*.whl --user
+
+      - name: Run tests
+        run: python -m unittest tests/test.py
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
