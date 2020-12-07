@@ -21,6 +21,9 @@ jobs:
           }
 
     steps:
+      - name: Install Linux packages
+        run: yum install maven zlib-devel.x86_64
+
       - name: Checkout sources
         uses: actions/checkout@v1
         with:
@@ -33,20 +36,15 @@ jobs:
           graalvm-version: 20.3.0
           native-image: true
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel
-
       - name: Build wheel
-        run: python setup.py bdist_wheel
+        run: /opt/python/cp37-cp37m/bin/python3 setup.py bdist_wheel
 
       - name: Install wheel
         shell: bash
-        run: python -m pip install dist/*.whl --user
+        run: /opt/python/cp37-cp37m/bin/pip3 install dist/*.whl --user
 
       - name: Run tests
-        run: python -m unittest tests/test.py
+        run: /opt/python/cp37-cp37m/bin/python3 -m unittest tests/test.py
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
