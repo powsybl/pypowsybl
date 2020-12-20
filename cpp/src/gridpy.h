@@ -12,18 +12,22 @@
 
 namespace gridpy {
 
-class LoadFlowResult {
+class LoadFlowComponentResultArray {
 public:
-    explicit LoadFlowResult(load_flow_result* ptr)
-      : ptr_(ptr) {
+    explicit LoadFlowComponentResultArray(load_flow_component_result_array * delegate)
+      : delegate_(delegate) {
     }
 
-    bool isOk() const { return ptr_->ok; }
+    int length() const { return delegate_->length; }
 
-    ~LoadFlowResult();
+    load_flow_component_result* begin() const { return delegate_->ptr; }
+
+    load_flow_component_result* end() const { return delegate_->ptr + delegate_->length; }
+
+    ~LoadFlowComponentResultArray();
 
 private:
-    load_flow_result* ptr_;
+    load_flow_component_result_array* delegate_;
 };
 
 class BusArray {
@@ -60,7 +64,7 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
-LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc);
 
 BusArray* getBusArray(void* network, bool busBreakerView);
 

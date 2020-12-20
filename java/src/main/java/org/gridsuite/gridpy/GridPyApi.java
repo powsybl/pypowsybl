@@ -95,38 +95,92 @@ public final class GridPyApi {
         Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
-    @CStruct("load_flow_result")
-    interface LoadFlowResultPointer extends PointerBase {
+    @CStruct("load_flow_component_result")
+    interface LoadFlowComponentResultPointer extends PointerBase {
 
-        @CField("ok")
-        boolean isOk();
+        @CField("component_num")
+        int geComponentNum();
 
-        @CField("ok")
-        void setOk(boolean ok);
+        @CField("component_num")
+        void setComponentNum(int componentNum);
+
+        @CField("status")
+        CCharPointer geStatus();
+
+        @CField("status")
+        void setStatus(CCharPointer status);
+
+        @CField("iteration_count")
+        int getIterationCount();
+
+        @CField("iteration_count")
+        void setIterationCount(int iterationCount);
+
+        @CField("slack_bus_id")
+        CCharPointer getSlackBusId();
+
+        @CField("slack_bus_id")
+        void setSlackBusId(CCharPointer slackBusId);
+
+        @CField("slack_bus_active_power_mismatch")
+        double getSlackBusActivePowerMismatch();
+
+        @CField("slack_bus_active_power_mismatch")
+        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+
+        LoadFlowComponentResultPointer addressOf(int index);
     }
 
-    static LoadFlowResultPointer createPointer(LoadFlowResult result) {
-        LoadFlowResultPointer resultPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowResultPointer.class));
-        resultPtr.setOk(result.isOk());
-        return resultPtr;
+    @CStruct("load_flow_component_result_array")
+    interface LoadFlowComponentResultArrayPointer extends PointerBase {
+
+        @CField("ptr")
+        LoadFlowComponentResultPointer getPtr();
+
+        @CField("ptr")
+        void setPtr(LoadFlowComponentResultPointer ptr);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+    }
+
+    static LoadFlowComponentResultArrayPointer createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
+        List<LoadFlowResult.ComponentResult> componentResults = result.getComponentResults();
+        LoadFlowComponentResultPointer componentResultPtr = UnmanagedMemory.calloc(componentResults.size() * SizeOf.get(LoadFlowComponentResultPointer.class));
+        for (int index = 0; index < componentResults.size(); index++) {
+            LoadFlowResult.ComponentResult componentResult = componentResults.get(index);
+            LoadFlowComponentResultPointer ptr = componentResultPtr.addressOf(index);
+            ptr.setComponentNum(componentResult.getComponentNum());
+            ptr.setStatus(CTypeConversion.toCString(componentResult.getStatus().name()).get());
+            ptr.setIterationCount(componentResult.getIterationCount());
+            ptr.setSlackBusId(CTypeConversion.toCString(componentResult.getSlackBusId()).get());
+            ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
+        }
+        LoadFlowComponentResultArrayPointer componentResultArrayPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowComponentResultArrayPointer.class));
+        componentResultArrayPtr.setPtr(componentResultPtr);
+        componentResultArrayPtr.setLength(componentResults.size());
+        return componentResultArrayPtr;
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack,
-                                                    boolean dc) {
+    public static LoadFlowComponentResultArrayPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack,
+                                                                  boolean dc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
                 .setDistributedSlack(distributedSlack)
                 .setDc(dc);
         LoadFlowResult result = LoadFlow.run(network, parameters);
-        LoadFlowResultPointer resultPtr = createPointer(result);
-        System.out.println(result.getMetrics());
-        return resultPtr;
+        return createLoadFlowComponentResultArrayPointer(result);
     }
 
-    @CEntryPoint(name = "freeLoadFlowResultPointer")
-    public static void freeLoadFlowResultPointer(IsolateThread thread, LoadFlowResultPointer resultPointer) {
-        UnmanagedMemory.free(resultPointer);
+    @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
+    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, LoadFlowComponentResultArrayPointer componentResultArrayPtr) {
+        // don't need to free char* from id field as it is done by python
+        UnmanagedMemory.free(componentResultArrayPtr.getPtr());
+        UnmanagedMemory.free(componentResultArrayPtr);
     }
 
     @CStruct("bus")

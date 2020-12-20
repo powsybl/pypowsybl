@@ -45,9 +45,9 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
-LoadFlowResult::~LoadFlowResult() {
+LoadFlowComponentResultArray::~LoadFlowComponentResultArray() {
     GraalVmGuard guard;
-    freeLoadFlowResultPointer(guard.thread(), ptr_);
+    freeLoadFlowComponentResultPointer(guard.thread(), delegate_);
 }
 
 BusArray::~BusArray() {
@@ -90,9 +90,9 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc) {
     GraalVmGuard guard;
-    return new LoadFlowResult(runLoadFlow(guard.thread(), network, distributedSlack, dc));
+    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, distributedSlack, dc));
 }
 
 BusArray* getBusArray(void* network, bool busBreakerView) {
