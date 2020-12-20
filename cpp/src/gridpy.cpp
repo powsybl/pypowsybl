@@ -45,12 +45,14 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
-LoadFlowComponentResultArray::~LoadFlowComponentResultArray() {
+template<>
+Array<load_flow_component_result, load_flow_component_result_array>::~Array() {
     GraalVmGuard guard;
     freeLoadFlowComponentResultPointer(guard.thread(), delegate_);
 }
 
-BusArray::~BusArray() {
+template<>
+Array<bus, bus_array>::~Array() {
     GraalVmGuard guard;
     freeBusArray(guard.thread(), delegate_);
 }
