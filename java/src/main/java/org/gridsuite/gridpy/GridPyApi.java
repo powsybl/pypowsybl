@@ -6,7 +6,6 @@
  */
 package org.gridsuite.gridpy;
 
-import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
@@ -40,7 +39,6 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,16 +46,8 @@ import java.util.stream.Stream;
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
-@CContext(GridPyApi.Directives.class)
+@CContext(Directives.class)
 public final class GridPyApi {
-
-    static class Directives implements CContext.Directives {
-
-        @Override
-        public List<String> getHeaderFiles() {
-            return Collections.singletonList(ProjectHeaderFile.resolve("org.gridsuite.gridpy", "gridpy-api.h"));
-        }
-    }
 
     private GridPyApi() {
     }
