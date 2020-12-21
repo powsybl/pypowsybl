@@ -7,6 +7,8 @@
 package org.gridsuite.gridpy;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.contingency.EmptyContingencyListProvider;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -14,6 +16,10 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
+import com.powsybl.security.SecurityAnalysis;
+import com.powsybl.security.SecurityAnalysisParameters;
+import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.sld.NetworkGraphBuilder;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.LayoutParameters;
@@ -297,6 +303,16 @@ public final class GridPyApi {
         } else {
             throw new PowsyblException("Container '" + containerIdStr + "' not found");
         }
+    }
+
+    @CEntryPoint(name = "runSecurityAnalysis")
+    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
+        SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
+        SecurityAnalysisResult result = securityAnalysis
+                .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, new EmptyContingencyListProvider())
+                .join();
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

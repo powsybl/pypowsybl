@@ -107,6 +107,11 @@ void writeSingleLineDiagramSvg(void* network, const std::string& containerId, co
     writeSingleLineDiagramSvg(guard.thread(), network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
+void runSecurityAnalysis(void* network) {
+    GraalVmGuard guard;
+    runSecurityAnalysis(guard.thread(), network);
+}
+
 void destroyObjectHandle(void* objectHandle) {
     GraalVmGuard guard;
     destroyObjectHandle(guard.thread(), objectHandle);

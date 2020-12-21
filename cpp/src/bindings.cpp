@@ -99,5 +99,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("write_single_line_diagram_svg", &gridpy::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
+    m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis", py::arg("network"));
+
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }
