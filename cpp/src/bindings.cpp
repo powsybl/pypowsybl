@@ -9,6 +9,16 @@
 
 namespace py = pybind11;
 
+template<typename... Args>
+std::string format(const char* fmt, Args... args) {
+    size_t size = snprintf(nullptr, 0, fmt, args...);
+    std::string buf;
+    buf.reserve(size + 1);
+    buf.resize(size);
+    snprintf(&buf[0], size + 1, fmt, args...);
+    return buf;
+}
+
 PYBIND11_MODULE(_gridpy, m) {
     gridpy::init();
 
@@ -29,8 +39,34 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
 
-    py::class_<gridpy::LoadFlowResult>(m, "LoadFlowResult")
-        .def_property_readonly("ok", &gridpy::LoadFlowResult::isOk);
+    py::class_<load_flow_component_result>(m, "LoadFlowComponentResult")
+            .def_property_readonly("component_num", [](const load_flow_component_result& r) {
+                return r.component_num;
+            })
+            .def_property_readonly("status", [](const load_flow_component_result& r) {
+                return r.status;
+            })
+            .def_property_readonly("iteration_count", [](const load_flow_component_result& r) {
+                return r.iteration_count;
+            })
+            .def_property_readonly("slack_bus_id", [](const load_flow_component_result& r) {
+                return r.slack_bus_id;
+            })
+            .def_property_readonly("slack_bus_active_power_mismatch", [](const load_flow_component_result& r) {
+                return r.slack_bus_active_power_mismatch;
+            })
+            .def("__repr__", [](const load_flow_component_result& r) {
+                return format("LoadFlowComponentResult(component_num=%d, status='%s', iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
+                              r.component_num, r.status, r.iteration_count, r.slack_bus_id, r.slack_bus_active_power_mismatch);
+            });
+
+    py::class_<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray")
+            .def("__len__", [](const gridpy::LoadFlowComponentResultArray& a) {
+                return a.length();
+            })
+            .def("__iter__", [](gridpy::LoadFlowComponentResultArray& a) {
+                return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>());
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("distributed_slack"), py::arg("dc"));
@@ -44,6 +80,9 @@ PYBIND11_MODULE(_gridpy, m) {
         })
         .def_property_readonly("v_angle", [](const bus& b) {
             return b.v_angle;
+        })
+        .def("__repr__", [](const bus& b) {
+            return format("Bus(id='%s', v_magnitude=%f, v_angle=%f)", b.id, b.v_magnitude, b.v_angle);
         });
 
     py::class_<gridpy::BusArray>(m, "BusArray")
