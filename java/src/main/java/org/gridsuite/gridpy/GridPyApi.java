@@ -118,7 +118,7 @@ public final class GridPyApi {
         return arrayPtr;
     }
 
-    static void freeArrayPtr(ArrayPointer arrayPointer) {
+    static void freeArrayPointer(ArrayPointer arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
     }
@@ -187,7 +187,7 @@ public final class GridPyApi {
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
     public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer componentResultArrayPtr) {
         // don't need to free char* from id field as it is done by python
-        freeArrayPtr(componentResultArrayPtr);
+        freeArrayPointer(componentResultArrayPtr);
     }
 
     @CStruct("bus")
@@ -233,7 +233,7 @@ public final class GridPyApi {
     @CEntryPoint(name = "freeBusArray")
     public static void freeBusArray(IsolateThread thread, ArrayPointer busArrayPointer) {
         // don't need to free char* from id field as it is done by python
-        freeArrayPtr(busArrayPointer);
+        freeArrayPointer(busArrayPointer);
     }
 
     @CEntryPoint(name = "updateSwitchPosition")
