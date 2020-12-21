@@ -12,27 +12,27 @@
 
 namespace gridpy {
 
-template<typename T, typename A>
+template<typename T>
 class Array {
 public:
-    explicit Array(A * delegate)
+    explicit Array(array* delegate)
         : delegate_(delegate) {
     }
 
     int length() const { return delegate_->length; }
 
-    T* begin() const { return delegate_->ptr; }
+    T* begin() const { return (T*) delegate_->ptr; }
 
-    T* end() const { return delegate_->ptr + delegate_->length; }
+    T* end() const { return (T*) delegate_->ptr + delegate_->length; }
 
     ~Array();
 
 private:
-    A* delegate_;
+    array* delegate_;
 };
 
-typedef Array<load_flow_component_result, load_flow_component_result_array> LoadFlowComponentResultArray;
-typedef Array<bus , bus_array> BusArray;
+typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
+typedef Array<bus> BusArray;
 
 void init();
 

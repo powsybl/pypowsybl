@@ -46,13 +46,13 @@ private:
 };
 
 template<>
-Array<load_flow_component_result, load_flow_component_result_array>::~Array() {
+Array<load_flow_component_result>::~Array() {
     GraalVmGuard guard;
     freeLoadFlowComponentResultPointer(guard.thread(), delegate_);
 }
 
 template<>
-Array<bus, bus_array>::~Array() {
+Array<bus>::~Array() {
     GraalVmGuard guard;
     freeBusArray(guard.thread(), delegate_);
 }
