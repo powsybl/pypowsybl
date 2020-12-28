@@ -86,13 +86,13 @@ public final class GridPyApi {
     }
 
     @CStruct("array")
-    interface ArrayPointer extends PointerBase {
+    interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
         @CField("ptr")
-        PointerBase getPtr();
+        T getPtr();
 
         @CField("ptr")
-        void setPtr(PointerBase ptr);
+        void setPtr(T ptr);
 
         @CField("length")
         int getLength();
@@ -101,14 +101,14 @@ public final class GridPyApi {
         void setLength(int length);
     }
 
-    static ArrayPointer allocArrayPointer(PointerBase ptr, int length) {
-        ArrayPointer arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+    static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
+        ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
         arrayPtr.setPtr(ptr);
         arrayPtr.setLength(length);
         return arrayPtr;
     }
 
-    static void freeArrayPointer(ArrayPointer arrayPointer) {
+    static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
     }
@@ -149,7 +149,7 @@ public final class GridPyApi {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
-    static ArrayPointer createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
+    static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
         List<LoadFlowResult.ComponentResult> componentResults = result.getComponentResults();
         LoadFlowComponentResultPointer componentResultPtr = UnmanagedMemory.calloc(componentResults.size() * SizeOf.get(LoadFlowComponentResultPointer.class));
         for (int index = 0; index < componentResults.size(); index++) {
@@ -165,7 +165,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static ArrayPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack, boolean dc) {
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack, boolean dc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
                 .setDistributedSlack(distributedSlack)
@@ -175,7 +175,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
-    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer componentResultArrayPtr) {
+    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(componentResultArrayPtr);
     }
@@ -205,7 +205,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "getBusArray")
-    public static ArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
+    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
         List<Bus> buses = busStream.collect(Collectors.toList());
@@ -221,7 +221,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "freeBusArray")
-    public static void freeBusArray(IsolateThread thread, ArrayPointer busArrayPointer) {
+    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(busArrayPointer);
     }
