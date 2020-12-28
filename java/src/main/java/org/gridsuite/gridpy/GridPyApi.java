@@ -8,7 +8,9 @@ package org.gridsuite.gridpy;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.contingency.EmptyContingencyListProvider;
+import com.powsybl.contingency.BranchContingency;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingencyElement;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -17,6 +19,7 @@ import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
+import com.powsybl.security.LimitViolation;
 import com.powsybl.security.SecurityAnalysis;
 import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisResult;
@@ -38,6 +41,7 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.CField;
+import org.graalvm.nativeimage.c.struct.CFieldAddress;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -45,6 +49,7 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -92,13 +97,13 @@ public final class GridPyApi {
     }
 
     @CStruct("array")
-    interface ArrayPointer extends PointerBase {
+    interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
         @CField("ptr")
-        PointerBase getPtr();
+        T getPtr();
 
         @CField("ptr")
-        void setPtr(PointerBase ptr);
+        void setPtr(T ptr);
 
         @CField("length")
         int getLength();
@@ -107,14 +112,14 @@ public final class GridPyApi {
         void setLength(int length);
     }
 
-    static ArrayPointer allocArrayPointer(PointerBase ptr, int length) {
-        ArrayPointer arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+    static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
+        ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
         arrayPtr.setPtr(ptr);
         arrayPtr.setLength(length);
         return arrayPtr;
     }
 
-    static void freeArrayPointer(ArrayPointer arrayPointer) {
+    static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
     }
@@ -155,7 +160,7 @@ public final class GridPyApi {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
-    static ArrayPointer createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
+    static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
         List<LoadFlowResult.ComponentResult> componentResults = result.getComponentResults();
         LoadFlowComponentResultPointer componentResultPtr = UnmanagedMemory.calloc(componentResults.size() * SizeOf.get(LoadFlowComponentResultPointer.class));
         for (int index = 0; index < componentResults.size(); index++) {
@@ -171,7 +176,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static ArrayPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack, boolean dc) {
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack, boolean dc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
                 .setDistributedSlack(distributedSlack)
@@ -181,7 +186,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
-    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer componentResultArrayPtr) {
+    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(componentResultArrayPtr);
     }
@@ -211,7 +216,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "getBusArray")
-    public static ArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
+    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
         List<Bus> buses = busStream.collect(Collectors.toList());
@@ -227,7 +232,7 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "freeBusArray")
-    public static void freeBusArray(IsolateThread thread, ArrayPointer busArrayPointer) {
+    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(busArrayPointer);
     }
@@ -305,14 +310,57 @@ public final class GridPyApi {
         }
     }
 
+    @CStruct("contingency")
+    interface ContingencyPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CFieldAddress("elements")
+        ArrayPointer<CCharPointer> elements();
+
+        ContingencyPointer addressOf(int index);
+    }
+
+    private static List<Contingency> createContingencies(ArrayPointer<ContingencyPointer> contingencyArrayPtr, Network network) {
+        List<Contingency> contingencies = new ArrayList<>(contingencyArrayPtr.getLength());
+        for (int i = 0; i < contingencyArrayPtr.getLength(); i++) {
+            ContingencyPointer contingencyPtr = contingencyArrayPtr.getPtr().addressOf(i);
+            String contingencyId = CTypeConversion.toJavaString(contingencyPtr.geId());
+            List<ContingencyElement> elements = new ArrayList<>(contingencyPtr.elements().getLength());
+            for (int j = 0; j < contingencyPtr.elements().getLength(); j++) {
+                CCharPointer elementPtr = contingencyPtr.elements().getPtr().addressOf(i);
+                String elementId = CTypeConversion.toJavaString(elementPtr);
+                Identifiable<?> identifiable = network.getIdentifiable(elementId);
+                if (identifiable == null) {
+                    throw new PowsyblException("Element '" + elementId + "' not found");
+                }
+                if (identifiable instanceof Branch) {
+                    elements.add(new BranchContingency(elementId));
+                } else {
+                    throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
+                }
+            }
+            contingencies.add(new Contingency(contingencyId, elements));
+        }
+        return contingencies;
+    }
+
     @CEntryPoint(name = "runSecurityAnalysis")
-    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle networkHandle) {
+    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle networkHandle, ArrayPointer<ContingencyPointer> contingencyArrayPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
         SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
+        List<Contingency> contingencies = createContingencies(contingencyArrayPtr, network);
         SecurityAnalysisResult result = securityAnalysis
-                .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, new EmptyContingencyListProvider())
+                .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
                 .join();
+        for (LimitViolation limitViolation : result.getPreContingencyResult().getLimitViolations()) {
+            System.out.println(limitViolation);
+        }
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

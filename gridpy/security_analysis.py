@@ -8,5 +8,13 @@ import _gridpy
 from gridpy.network import Network
 
 
-def run(network: Network):
-    return _gridpy.run_security_analysis(network.ptr)
+class SecurityAnalysis:
+    def run(self, network: Network):
+        return _gridpy.run_security_analysis(network.ptr)
+
+    def add_contingency(self, id: str, *elements: str):
+        pass
+
+
+def create():
+    return SecurityAnalysis()

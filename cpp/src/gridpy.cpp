@@ -109,7 +109,7 @@ void writeSingleLineDiagramSvg(void* network, const std::string& containerId, co
 
 void runSecurityAnalysis(void* network) {
     GraalVmGuard guard;
-    runSecurityAnalysis(guard.thread(), network);
+    runSecurityAnalysis(guard.thread(), network, nullptr);
 }
 
 void destroyObjectHandle(void* objectHandle) {
