@@ -99,7 +99,13 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("write_single_line_diagram_svg", &gridpy::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
-    m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis", py::arg("network"));
+    m.def("create_security_analysis", &gridpy::createSecurityAnalysis, "Create a security analysis");
+
+    m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
+          py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("element_id"));
+
+    m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
+          py::arg("security_analysis_context"), py::arg("network"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

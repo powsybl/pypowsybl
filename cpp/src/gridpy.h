@@ -56,7 +56,11 @@ BusArray* getBusArray(void* network, bool busBreakerView);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
-void runSecurityAnalysis(void* network);
+void* createSecurityAnalysis();
+
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::string& elementId);
+
+void runSecurityAnalysis(void* securityAnalysisContext, void* network);
 
 void destroyObjectHandle(void* objectHandle);
 

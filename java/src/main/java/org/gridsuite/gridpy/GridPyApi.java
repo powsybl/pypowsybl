@@ -41,16 +41,18 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.CField;
-import org.graalvm.nativeimage.c.struct.CFieldAddress;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -310,51 +312,55 @@ public final class GridPyApi {
         }
     }
 
-    @CStruct("contingency")
-    interface ContingencyPointer extends PointerBase {
+    private static class SecurityAnalysisContext {
 
-        @CField("id")
-        CCharPointer geId();
-
-        @CField("id")
-        void setId(CCharPointer id);
-
-        @CFieldAddress("elements")
-        ArrayPointer<CCharPointer> elements();
-
-        ContingencyPointer addressOf(int index);
+        private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
     }
 
-    private static List<Contingency> createContingencies(ArrayPointer<ContingencyPointer> contingencyArrayPtr, Network network) {
-        List<Contingency> contingencies = new ArrayList<>(contingencyArrayPtr.getLength());
-        for (int i = 0; i < contingencyArrayPtr.getLength(); i++) {
-            ContingencyPointer contingencyPtr = contingencyArrayPtr.getPtr().addressOf(i);
-            String contingencyId = CTypeConversion.toJavaString(contingencyPtr.geId());
-            List<ContingencyElement> elements = new ArrayList<>(contingencyPtr.elements().getLength());
-            for (int j = 0; j < contingencyPtr.elements().getLength(); j++) {
-                CCharPointer elementPtr = contingencyPtr.elements().getPtr().addressOf(i);
-                String elementId = CTypeConversion.toJavaString(elementPtr);
-                Identifiable<?> identifiable = network.getIdentifiable(elementId);
-                if (identifiable == null) {
-                    throw new PowsyblException("Element '" + elementId + "' not found");
-                }
-                if (identifiable instanceof Branch) {
-                    elements.add(new BranchContingency(elementId));
-                } else {
-                    throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
-                }
-            }
-            contingencies.add(new Contingency(contingencyId, elements));
+    @CEntryPoint(name = "createSecurityAnalysis")
+    public static ObjectHandle createSecurityAnalysis(IsolateThread thread) {
+        return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
+    }
+
+    @CEntryPoint(name = "addContingencyToSecurityAnalysis")
+    public static void addContingencyToSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, CCharPointer contingencyIdPtr,
+                                                        CCharPointerPointer elementIdPtrPtr, int elementCount) {
+        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        List<String> elementIds = new ArrayList<>(elementCount);
+        for (int i = 0; i < elementCount; i++) {
+            CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+            String elementId = CTypeConversion.toJavaString(elementIdPtr);
+            elementIds.add(elementId);
         }
-        return contingencies;
+        securityAnalysisContext.elementIdsByContingencyId.put(contingencyId, elementIds);
     }
 
     @CEntryPoint(name = "runSecurityAnalysis")
-    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle networkHandle, ArrayPointer<ContingencyPointer> contingencyArrayPtr) {
+    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, ObjectHandle networkHandle) {
+        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
         SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
-        List<Contingency> contingencies = createContingencies(contingencyArrayPtr, network);
+        List<Contingency> contingencies = new ArrayList<>(securityAnalysisContext.elementIdsByContingencyId.size());
+        for (Map.Entry<String, List<String>> e : securityAnalysisContext.elementIdsByContingencyId.entrySet()) {
+            String contingencyId = e.getKey();
+            List<String> elementIds = e.getValue();
+            List<ContingencyElement> elements = elementIds.stream()
+                .map(elementId -> {
+                    Identifiable<?> identifiable = network.getIdentifiable(elementId);
+                    if (identifiable == null) {
+                        throw new PowsyblException("Element '" + elementId + "' not found");
+                    }
+                    if (identifiable instanceof Branch) {
+                        return new BranchContingency(elementId);
+                    } else {
+                        throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
+                    }
+                })
+                .collect(Collectors.toList());
+            contingencies.add(new Contingency(contingencyId, elements));
+        }
         SecurityAnalysisResult result = securityAnalysis
                 .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
                 .join();

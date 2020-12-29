@@ -107,9 +107,23 @@ void writeSingleLineDiagramSvg(void* network, const std::string& containerId, co
     writeSingleLineDiagramSvg(guard.thread(), network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
-void runSecurityAnalysis(void* network) {
+void* createSecurityAnalysis() {
     GraalVmGuard guard;
-    runSecurityAnalysis(guard.thread(), network, nullptr);
+    return createSecurityAnalysis(guard.thread());
+}
+
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::string& elementId) {
+    GraalVmGuard guard;
+    int elementCount = 1;
+    char** elementIds = new char*[elementCount];
+    elementIds[0] = (char*) elementId.data();
+    addContingencyToSecurityAnalysis(guard.thread(), securityAnalysisContext, (char*) contingencyId.data(), elementIds, elementCount);
+    delete[] elementIds;
+}
+
+void runSecurityAnalysis(void* securityAnalysisContext, void* network) {
+    GraalVmGuard guard;
+    runSecurityAnalysis(guard.thread(), securityAnalysisContext, network);
 }
 
 void destroyObjectHandle(void* objectHandle) {
