@@ -112,13 +112,14 @@ void* createSecurityAnalysis() {
     return createSecurityAnalysis(guard.thread());
 }
 
-void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::string& elementId) {
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     GraalVmGuard guard;
-    int elementCount = 1;
-    char** elementIds = new char*[elementCount];
-    elementIds[0] = (char*) elementId.data();
-    addContingencyToSecurityAnalysis(guard.thread(), securityAnalysisContext, (char*) contingencyId.data(), elementIds, elementCount);
-    delete[] elementIds;
+    char** elementIdPtr = new char*[elementsIds.size()];
+    for (int i = 0; i < elementsIds.size(); i++) {
+        elementIdPtr[i] = (char *) elementsIds[i].data();
+    }
+    addContingencyToSecurityAnalysis(guard.thread(), securityAnalysisContext, (char*) contingencyId.data(), elementIdPtr, elementsIds.size());
+    delete[] elementIdPtr;
 }
 
 void runSecurityAnalysis(void* securityAnalysisContext, void* network) {

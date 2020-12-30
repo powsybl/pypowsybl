@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include "gridpy.h"
 
 namespace py = pybind11;
@@ -102,7 +103,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("create_security_analysis", &gridpy::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
-          py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("element_id"));
+          py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"));

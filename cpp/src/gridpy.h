@@ -8,6 +8,7 @@
 #define GRIDPY_H
 
 #include <string>
+#include <vector>
 #include "gridpy-api.h"
 
 namespace gridpy {
@@ -58,7 +59,7 @@ void writeSingleLineDiagramSvg(void* network, const std::string& containerId, co
 
 void* createSecurityAnalysis();
 
-void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::string& elementId);
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
 void runSecurityAnalysis(void* securityAnalysisContext, void* network);
 
