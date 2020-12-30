@@ -105,6 +105,8 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
           py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    py::class_<gridpy::SecurityAnalysisResult>(m, "SecurityAnalysisResult");
+
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"));
 

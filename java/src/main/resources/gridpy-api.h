@@ -16,3 +16,6 @@ typedef struct load_flow_component_result_struct {
     char* slack_bus_id;
     double slack_bus_active_power_mismatch;
 } load_flow_component_result;
+
+typedef struct security_analysis_result_struct {
+} security_analysis_result;

@@ -336,37 +336,56 @@ public final class GridPyApi {
         securityAnalysisContext.elementIdsByContingencyId.put(contingencyId, elementIds);
     }
 
+    @CStruct("security_analysis_result")
+    interface SecurityAnalysisResultPointer extends PointerBase {
+
+        SecurityAnalysisResultPointer addressOf(int index);
+    }
+
+    private static SecurityAnalysisResultPointer createSecurityAnalysisResultPointer(SecurityAnalysisResult result) {
+        SecurityAnalysisResultPointer securityAnalysisResultPtr = UnmanagedMemory.calloc(SizeOf.get(SecurityAnalysisResultPointer.class));
+        for (LimitViolation limitViolation : result.getPreContingencyResult().getLimitViolations()) {
+            System.out.println(limitViolation);
+        }
+        return securityAnalysisResultPtr;
+    }
+
+    private static ContingencyElement createContingencyElement(Network network, String elementId) {
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable == null) {
+            throw new PowsyblException("Element '" + elementId + "' not found");
+        }
+        if (identifiable instanceof Branch) {
+            return new BranchContingency(elementId);
+        } else {
+            throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
+        }
+    }
+
     @CEntryPoint(name = "runSecurityAnalysis")
-    public static void runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, ObjectHandle networkHandle) {
+    public static SecurityAnalysisResultPointer runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, ObjectHandle networkHandle) {
         SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
-        SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
+        SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
         List<Contingency> contingencies = new ArrayList<>(securityAnalysisContext.elementIdsByContingencyId.size());
         for (Map.Entry<String, List<String>> e : securityAnalysisContext.elementIdsByContingencyId.entrySet()) {
             String contingencyId = e.getKey();
             List<String> elementIds = e.getValue();
             List<ContingencyElement> elements = elementIds.stream()
-                .map(elementId -> {
-                    Identifiable<?> identifiable = network.getIdentifiable(elementId);
-                    if (identifiable == null) {
-                        throw new PowsyblException("Element '" + elementId + "' not found");
-                    }
-                    if (identifiable instanceof Branch) {
-                        return new BranchContingency(elementId);
-                    } else {
-                        throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
-                    }
-                })
+                .map(elementId -> createContingencyElement(network, elementId))
                 .collect(Collectors.toList());
             contingencies.add(new Contingency(contingencyId, elements));
         }
         SecurityAnalysisResult result = securityAnalysis
                 .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
                 .join();
-        for (LimitViolation limitViolation : result.getPreContingencyResult().getLimitViolations()) {
-            System.out.println(limitViolation);
-        }
+        return createSecurityAnalysisResultPointer(result);
+    }
+
+    @CEntryPoint(name = "freeSecurityAnalysisResultPointer")
+    public static void freeSecurityAnalysisResultPointer(IsolateThread thread, SecurityAnalysisResultPointer securityAnalysisResultPtr) {
+        UnmanagedMemory.free(securityAnalysisResultPtr);
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

@@ -122,9 +122,14 @@ void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::
     delete[] elementIdPtr;
 }
 
-void runSecurityAnalysis(void* securityAnalysisContext, void* network) {
+SecurityAnalysisResult::~SecurityAnalysisResult() {
     GraalVmGuard guard;
-    runSecurityAnalysis(guard.thread(), securityAnalysisContext, network);
+    freeSecurityAnalysisResultPointer(guard.thread(), delegate_);
+}
+
+SecurityAnalysisResult* runSecurityAnalysis(void* securityAnalysisContext, void* network) {
+    GraalVmGuard guard;
+    return new SecurityAnalysisResult(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network));
 }
 
 void destroyObjectHandle(void* objectHandle) {
