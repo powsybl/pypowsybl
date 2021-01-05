@@ -63,6 +63,10 @@ Array<security_analysis_result>::~Array() {
     freeSecurityAnalysisResultArrayPointer(guard.thread(), delegate_);
 }
 
+template<>
+Array<limit_violation>::~Array() {
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());

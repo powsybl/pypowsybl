@@ -35,6 +35,7 @@ private:
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
 typedef Array<security_analysis_result> SecurityAnalysisResultArray;
+typedef Array<limit_violation> LimitViolationArray;
 
 void init();
 

@@ -20,6 +20,17 @@ std::string format(const char* fmt, Args... args) {
     return buf;
 }
 
+template<typename T>
+void bindArray(py::module_& m, const std::string& className) {
+    py::class_<T>(m, className.c_str())
+            .def("__len__", [](const T& a) {
+                return a.length();
+            })
+            .def("__iter__", [](T& a) {
+                return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>());
+}
+
 PYBIND11_MODULE(_gridpy, m) {
     gridpy::init();
 
@@ -61,13 +72,7 @@ PYBIND11_MODULE(_gridpy, m) {
                               r.component_num, r.status, r.iteration_count, r.slack_bus_id, r.slack_bus_active_power_mismatch);
             });
 
-    py::class_<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray")
-            .def("__len__", [](const gridpy::LoadFlowComponentResultArray& a) {
-                return a.length();
-            })
-            .def("__iter__", [](gridpy::LoadFlowComponentResultArray& a) {
-                return py::make_iterator(a.begin(), a.end());
-            }, py::keep_alive<0, 1>());
+    bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("distributed_slack"), py::arg("dc"));
@@ -86,13 +91,7 @@ PYBIND11_MODULE(_gridpy, m) {
             return format("Bus(id='%s', v_magnitude=%f, v_angle=%f)", b.id, b.v_magnitude, b.v_angle);
         });
 
-    py::class_<gridpy::BusArray>(m, "BusArray")
-        .def("__len__", [](const gridpy::BusArray& a) {
-            return a.length();
-        })
-        .def("__iter__", [](gridpy::BusArray& a) {
-            return py::make_iterator(a.begin(), a.end());
-        }, py::keep_alive<0, 1>());
+    bindArray<gridpy::BusArray>(m, "BusArray");
 
     m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
           py::arg("bus_breaker_view"));
@@ -105,24 +104,37 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
           py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    py::class_<limit_violation>(m, "LimitViolation")
+            .def_property_readonly("subject_id", [](const limit_violation& v) {
+                return v.subject_id;
+            })
+            .def_property_readonly("limit", [](const limit_violation& v) {
+                return v.limit;
+            })
+            .def_property_readonly("value", [](const limit_violation& v) {
+                return v.value;
+            })
+            .def("__repr__", [](const limit_violation & v) {
+                return format("LimitViolation(subject_id='%s', limit=%f, value=%f)", v.subject_id, v.limit, v.value);
+            });
+
+    bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");
+
     py::class_<security_analysis_result>(m, "SecurityAnalysisResult")
             .def_property_readonly("contingency_id", [](const security_analysis_result& r) {
                 return r.contingency_id;
             })
-            .def_property_readonly("status", [](const security_analysis_result & r) {
+            .def_property_readonly("status", [](const security_analysis_result& r) {
                 return r.status;
             })
+            .def_property_readonly("limit_violations", [](const security_analysis_result& r) {
+                return gridpy::LimitViolationArray((array*) &r.limit_violations);
+            })
             .def("__repr__", [](const security_analysis_result& r) {
-                return format("SecurityAnalysisResult(contingency_id='%s', status='%s')", r.contingency_id, r.status);
+                return format("SecurityAnalysisResult(contingency_id='%s', status='%s', limit_violations=...)", r.contingency_id, r.status);
             });
 
-    py::class_<gridpy::SecurityAnalysisResultArray>(m, "SecurityAnalysisResultArray")
-            .def("__len__", [](const gridpy::SecurityAnalysisResultArray& a) {
-                return a.length();
-            })
-            .def("__iter__", [](gridpy::SecurityAnalysisResultArray& a) {
-                return py::make_iterator(a.begin(), a.end());
-            }, py::keep_alive<0, 1>());
+    bindArray<gridpy::SecurityAnalysisResultArray>(m, "SecurityAnalysisResultArray");
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"));
