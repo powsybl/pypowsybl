@@ -120,21 +120,22 @@ PYBIND11_MODULE(_gridpy, m) {
 
     bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");
 
-    py::class_<security_analysis_result>(m, "SecurityAnalysisResult")
-            .def_property_readonly("contingency_id", [](const security_analysis_result& r) {
+    py::class_<contingency_result>(m, "ContingencyResult")
+            .def_property_readonly("contingency_id", [](const contingency_result& r) {
                 return r.contingency_id;
             })
-            .def_property_readonly("status", [](const security_analysis_result& r) {
+            .def_property_readonly("status", [](const contingency_result& r) {
                 return r.status;
             })
-            .def_property_readonly("limit_violations", [](const security_analysis_result& r) {
+            .def_property_readonly("limit_violations", [](const contingency_result& r) {
                 return gridpy::LimitViolationArray((array*) &r.limit_violations);
             })
-            .def("__repr__", [](const security_analysis_result& r) {
-                return format("SecurityAnalysisResult(contingency_id='%s', status='%s', limit_violations=...)", r.contingency_id, r.status);
+            .def("__repr__", [](const contingency_result& r) {
+                return format("ContingencyResult(contingency_id='%s', status='%s', limit_violations=[%d])",
+                              r.contingency_id, r.status, r.limit_violations.length);
             });
 
-    bindArray<gridpy::SecurityAnalysisResultArray>(m, "SecurityAnalysisResultArray");
+    bindArray<gridpy::ContingencyResultArray>(m, "ContingencyResultArray");
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"));

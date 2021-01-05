@@ -358,8 +358,8 @@ public final class GridPyApi {
         LimitViolationPointer addressOf(int index);
     }
 
-    @CStruct("security_analysis_result")
-    interface SecurityAnalysisResultPointer extends PointerBase {
+    @CStruct("contingency_result")
+    interface ContingencyResultPointer extends PointerBase {
 
         @CField("contingency_id")
         CCharPointer getContingencyId();
@@ -376,16 +376,16 @@ public final class GridPyApi {
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
 
-        SecurityAnalysisResultPointer addressOf(int index);
+        ContingencyResultPointer addressOf(int index);
     }
 
     private static String getStatus(LimitViolationsResult result) {
         return result.isComputationOk() ? "CONVERGED" : "DIVERGED";
     }
 
-    private static void setSecurityAnalysisResultPointer(SecurityAnalysisResultPointer resultPtr, String contingencyId, LimitViolationsResult limitViolationsResult) {
-        resultPtr.setContingencyId(CTypeConversion.toCString(contingencyId).get());
-        resultPtr.setStatus(CTypeConversion.toCString(getStatus(limitViolationsResult)).get());
+    private static void setSecurityAnalysisResultPointer(ContingencyResultPointer contingencyPtr, String contingencyId, LimitViolationsResult limitViolationsResult) {
+        contingencyPtr.setContingencyId(CTypeConversion.toCString(contingencyId).get());
+        contingencyPtr.setStatus(CTypeConversion.toCString(getStatus(limitViolationsResult)).get());
         List<LimitViolation> limitViolations = limitViolationsResult.getLimitViolations();
         LimitViolationPointer limitViolationPtr = UnmanagedMemory.calloc(limitViolations.size() * SizeOf.get(LimitViolationPointer.class));
         for (int i = 0; i < limitViolations.size(); i++) {
@@ -395,20 +395,20 @@ public final class GridPyApi {
             limitViolationPtrPlus.setLimit(limitViolation.getLimit());
             limitViolationPtrPlus.setValue(limitViolation.getValue());
         }
-        resultPtr.limitViolations().setLength(limitViolations.size());
-        resultPtr.limitViolations().setPtr(limitViolationPtr);
+        contingencyPtr.limitViolations().setLength(limitViolations.size());
+        contingencyPtr.limitViolations().setPtr(limitViolationPtr);
     }
 
-    private static ArrayPointer<SecurityAnalysisResultPointer> createSecurityAnalysisResultArrayPointer(SecurityAnalysisResult result) {
+    private static ArrayPointer<ContingencyResultPointer> createContingencyResultArrayPointer(SecurityAnalysisResult result) {
         int resultCount = result.getPostContingencyResults().size() + 1; // + 1 for pre-contingency result
-        SecurityAnalysisResultPointer resultPtr = UnmanagedMemory.calloc(resultCount * SizeOf.get(SecurityAnalysisResultPointer.class));
-        setSecurityAnalysisResultPointer(resultPtr, "", result.getPreContingencyResult());
+        ContingencyResultPointer contingencyPtr = UnmanagedMemory.calloc(resultCount * SizeOf.get(ContingencyResultPointer.class));
+        setSecurityAnalysisResultPointer(contingencyPtr, "", result.getPreContingencyResult());
         for (int i = 0; i < result.getPostContingencyResults().size(); i++) {
             PostContingencyResult postContingencyResult = result.getPostContingencyResults().get(i);
-            SecurityAnalysisResultPointer resultPtrPlus = resultPtr.addressOf(i + 1);
-            setSecurityAnalysisResultPointer(resultPtrPlus, postContingencyResult.getContingency().getId(), postContingencyResult.getLimitViolationsResult());
+            ContingencyResultPointer contingencyPtrPlus = contingencyPtr.addressOf(i + 1);
+            setSecurityAnalysisResultPointer(contingencyPtrPlus, postContingencyResult.getContingency().getId(), postContingencyResult.getLimitViolationsResult());
         }
-        return allocArrayPointer(resultPtr, resultCount);
+        return allocArrayPointer(contingencyPtr, resultCount);
     }
 
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
@@ -424,8 +424,8 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "runSecurityAnalysis")
-    public static ArrayPointer<SecurityAnalysisResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                                  ObjectHandle networkHandle) {
+    public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                                             ObjectHandle networkHandle) {
         SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
@@ -442,16 +442,17 @@ public final class GridPyApi {
         SecurityAnalysisResult result = securityAnalysis
                 .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
                 .join();
-        return createSecurityAnalysisResultArrayPointer(result);
+        return createContingencyResultArrayPointer(result);
     }
 
-    @CEntryPoint(name = "freeSecurityAnalysisResultArrayPointer")
-    public static void freeSecurityAnalysisResultPointer(IsolateThread thread, ArrayPointer<SecurityAnalysisResultPointer> securityAnalysisResultArrayPtr) {
+    @CEntryPoint(name = "freeContingencyResultArrayPointer")
+    public static void freeContingencyResultArrayPointer(IsolateThread thread, ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr) {
         // don't need to free char* from id field as it is done by python
-        for (int i = 0; i < securityAnalysisResultArrayPtr.getLength(); i++) {
-            UnmanagedMemory.free(securityAnalysisResultArrayPtr.getPtr().addressOf(i).limitViolations().getPtr());
+        for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
+            ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
         }
-        freeArrayPointer(securityAnalysisResultArrayPtr);
+        freeArrayPointer(contingencyResultArrayPtr);
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

@@ -23,8 +23,8 @@ typedef struct limit_violation_struct {
     double value;
 } limit_violation;
 
-typedef struct security_analysis_result_struct {
+typedef struct contingency_result_struct {
     char* contingency_id;
     char* status;
     array limit_violations;
-} security_analysis_result;
+} contingency_result;
