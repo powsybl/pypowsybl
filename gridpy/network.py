@@ -42,5 +42,9 @@ def create_ieee14() -> Network:
     return Network(_gridpy.create_ieee14_network())
 
 
+def create_eurostag_tutorial_example1_network() -> Network:
+    return Network(_gridpy.create_ieee14_network())
+
+
 def load(file: str) -> Network:
     return Network(_gridpy.load_network(file))

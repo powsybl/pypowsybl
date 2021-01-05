@@ -42,7 +42,7 @@ class SecurityAnalysis(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
-    def run(self, network: Network):
+    def run(self, network: Network) -> SecurityAnalysisResult:
         return SecurityAnalysisResult(_gridpy.run_security_analysis(self.ptr, network.ptr))
 
     def add_contingency(self, id: str, elements_ids: List[str]):
@@ -52,5 +52,5 @@ class SecurityAnalysis(ObjectHandle):
         _gridpy.add_contingency_to_security_analysis(self.ptr, id, [first_element_id] + list(other_elements_ids))
 
 
-def create():
+def create() -> SecurityAnalysis:
     return SecurityAnalysis(_gridpy.create_security_analysis())

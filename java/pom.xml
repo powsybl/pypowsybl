@@ -139,6 +139,10 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-xml-converter</artifactId>
         </dependency>
         <dependency>

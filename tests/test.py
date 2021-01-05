@@ -8,6 +8,7 @@ import os
 import unittest
 import gridpy.network
 import gridpy.loadflow
+import gridpy.security_analysis
 import gridpy as gp
 
 
@@ -42,6 +43,13 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_ieee14()
         self.assertTrue(n.disconnect('L1-2-1'))
         self.assertTrue(n.connect('L1-2-1'))
+
+    def test_security_analysis(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        sa = gp.security_analysis.create()
+        sa.add_contingency('First contingency', 'L1-2-1')
+#        sa_result = sa.run(n)
+#        self.assertEqual(1, sa_result.contingencies)
 
 
 if __name__ == '__main__':

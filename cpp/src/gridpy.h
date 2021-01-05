@@ -45,6 +45,8 @@ void* createEmptyNetwork(const std::string& id);
 
 void* createIeee14Network();
 
+void* createEurostagTutorialExample1Network();
+
 bool updateSwitchPosition(void* network, const std::string& id, bool open);
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected);
