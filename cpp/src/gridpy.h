@@ -34,6 +34,7 @@ private:
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
+typedef Array<security_analysis_result> SecurityAnalysisResultArray;
 
 void init();
 
@@ -61,19 +62,7 @@ void* createSecurityAnalysis();
 
 void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-class SecurityAnalysisResult {
-public:
-    explicit SecurityAnalysisResult(security_analysis_result* delegate)
-            : delegate_(delegate) {
-    }
-
-    ~SecurityAnalysisResult();
-
-private:
-    security_analysis_result* delegate_;
-};
-
-SecurityAnalysisResult* runSecurityAnalysis(void* securityAnalysisContext, void* network);
+SecurityAnalysisResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network);
 
 void destroyObjectHandle(void* objectHandle);
 

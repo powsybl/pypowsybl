@@ -105,7 +105,24 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
           py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
-    py::class_<gridpy::SecurityAnalysisResult>(m, "SecurityAnalysisResult");
+    py::class_<security_analysis_result>(m, "SecurityAnalysisResult")
+            .def_property_readonly("contingency_id", [](const security_analysis_result& r) {
+                return r.contingency_id;
+            })
+            .def_property_readonly("status", [](const security_analysis_result & r) {
+                return r.status;
+            })
+            .def("__repr__", [](const security_analysis_result& r) {
+                return format("SecurityAnalysisResult(contingency_id='%s', status='%s')", r.contingency_id, r.status);
+            });
+
+    py::class_<gridpy::SecurityAnalysisResultArray>(m, "SecurityAnalysisResultArray")
+            .def("__len__", [](const gridpy::SecurityAnalysisResultArray& a) {
+                return a.length();
+            })
+            .def("__iter__", [](gridpy::SecurityAnalysisResultArray& a) {
+                return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>());
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"));

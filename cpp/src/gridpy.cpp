@@ -57,6 +57,12 @@ Array<bus>::~Array() {
     freeBusArray(guard.thread(), delegate_);
 }
 
+template<>
+Array<security_analysis_result>::~Array() {
+    GraalVmGuard guard;
+    freeSecurityAnalysisResultArrayPointer(guard.thread(), delegate_);
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());
@@ -122,14 +128,9 @@ void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::
     delete[] elementIdPtr;
 }
 
-SecurityAnalysisResult::~SecurityAnalysisResult() {
+SecurityAnalysisResultArray * runSecurityAnalysis(void* securityAnalysisContext, void* network) {
     GraalVmGuard guard;
-    freeSecurityAnalysisResultPointer(guard.thread(), delegate_);
-}
-
-SecurityAnalysisResult* runSecurityAnalysis(void* securityAnalysisContext, void* network) {
-    GraalVmGuard guard;
-    return new SecurityAnalysisResult(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network));
+    return new SecurityAnalysisResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network));
 }
 
 void destroyObjectHandle(void* objectHandle) {
