@@ -44,6 +44,18 @@ enum LoadFlowComponentStatus {
     FAILED,
 };
 
+enum LimitType {
+    CURRENT = 0,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+};
+
+enum Side {
+    NONE = -1,
+    ONE,
+    TWO,
+};
+
 void init();
 
 void printVersion();

@@ -35,12 +35,22 @@ class SecurityAnalysisResult:
 
     def get_table(self):
         table = PrettyTable()
-        table.field_names = ["Contingency ID", "Status", "Equipment ID", "Limit", "Value"]
+        table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
+                             "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
         for contingency_id in self._post_contingency_results:
             post_contingency_result = self._post_contingency_results[contingency_id]
-            table.add_row([contingency_id, post_contingency_result.status.name, '', '', ''])
+            table.add_row([contingency_id, post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
             for limit_violation in post_contingency_result.limit_violations:
-                table.add_row(['', '', limit_violation.subject_id, "{:.1f}".format(limit_violation.limit), "{:.1f}".format(limit_violation.value)])
+                table.add_row(['', '',
+                               limit_violation.subject_id,
+                               limit_violation.subject_name,
+                               limit_violation.limit_type.name,
+                               "{:.1f}".format(limit_violation.limit),
+                               limit_violation.limit_name,
+                               limit_violation.acceptable_duration,
+                               limit_violation.limit_reduction,
+                               "{:.1f}".format(limit_violation.value),
+                               limit_violation.side.name])
         return table
 
 

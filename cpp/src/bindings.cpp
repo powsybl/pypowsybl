@@ -113,18 +113,50 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
           py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    py::enum_<gridpy::LimitType>(m, "LimitType")
+            .value("CURRENT", gridpy::LimitType::CURRENT)
+            .value("LOW_VOLTAGE", gridpy::LimitType::LOW_VOLTAGE)
+            .value("HIGH_VOLTAGE", gridpy::LimitType::HIGH_VOLTAGE)
+            .export_values();
+
+    py::enum_<gridpy::Side>(m, "Side")
+            .value("NONE", gridpy::Side::NONE)
+            .value("ONE", gridpy::Side::ONE)
+            .value("TWO", gridpy::Side::TWO)
+            .export_values();
+
     py::class_<limit_violation>(m, "LimitViolation")
             .def_property_readonly("subject_id", [](const limit_violation& v) {
                 return v.subject_id;
             })
+            .def_property_readonly("subject_name", [](const limit_violation& v) {
+                return v.subject_name;
+            })
+            .def_property_readonly("limit_type", [](const limit_violation& v) {
+                return static_cast<gridpy::LimitType>(v.limit_type);
+            })
             .def_property_readonly("limit", [](const limit_violation& v) {
                 return v.limit;
+            })
+            .def_property_readonly("limit_name", [](const limit_violation& v) {
+                return v.limit_name;
+            })
+            .def_property_readonly("acceptable_duration", [](const limit_violation& v) {
+                return v.acceptable_duration;
+            })
+            .def_property_readonly("limit_reduction", [](const limit_violation& v) {
+                return v.limit_reduction;
             })
             .def_property_readonly("value", [](const limit_violation& v) {
                 return v.value;
             })
+            .def_property_readonly("side", [](const limit_violation& v) {
+                return static_cast<gridpy::Side>(v.side);
+            })
             .def("__repr__", [](const limit_violation & v) {
-                return format("LimitViolation(subject_id='%s', limit=%f, value=%f)", v.subject_id, v.limit, v.value);
+                return format("LimitViolation(subject_id='%s', subject_name='%s', limit_type=%d, limit=%f, limit_name='%s', acceptable_duration=%d, limit_reduction=%f, value=%f, side=%d)",
+                              v.subject_id, v.subject_name, v.limit_type, v.limit, v.limit_name, v.acceptable_duration,
+                              v.limit_reduction, v.value, v.side);
             });
 
     bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");

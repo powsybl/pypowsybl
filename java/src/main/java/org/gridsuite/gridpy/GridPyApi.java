@@ -48,10 +48,7 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -350,17 +347,53 @@ public final class GridPyApi {
         @CField("subject_id")
         void setSubjectId(CCharPointer subjectId);
 
+        @CField("subject_name")
+        CCharPointer getSubjectName();
+
+        @CField("subject_name")
+        void setSubjectName(CCharPointer subjectName);
+
+        @CField("limit_type")
+        int getLimitType();
+
+        @CField("limit_type")
+        void setLimitType(int limitType);
+
         @CField("limit")
         double getLimit();
 
         @CField("limit")
         void setLimit(double limit);
 
+        @CField("limit_name")
+        CCharPointer getLimitName();
+
+        @CField("limit_name")
+        void setLimitName(CCharPointer limitName);
+
+        @CField("acceptable_duration")
+        int getAcceptableDuration();
+
+        @CField("acceptable_duration")
+        void setAcceptableDuration(int acceptableDuration);
+
+        @CField("limit_reduction")
+        float getLimitReduction();
+
+        @CField("limit_reduction")
+        void setLimitReduction(float limitReduction);
+
         @CField("value")
         double getValue();
 
         @CField("value")
         void setValue(double value);
+
+        @CField("side")
+        int getSide();
+
+        @CField("side")
+        void setSide(int side);
 
         LimitViolationPointer addressOf(int index);
     }
@@ -399,8 +432,14 @@ public final class GridPyApi {
             LimitViolation limitViolation = limitViolations.get(i);
             LimitViolationPointer limitViolationPtrPlus = limitViolationPtr.addressOf(i);
             limitViolationPtrPlus.setSubjectId(CTypeConversion.toCString(limitViolation.getSubjectId()).get());
+            limitViolationPtrPlus.setSubjectName(CTypeConversion.toCString(Objects.toString(limitViolation.getSubjectName(), "")).get());
+            limitViolationPtrPlus.setLimitType(limitViolation.getLimitType().ordinal());
             limitViolationPtrPlus.setLimit(limitViolation.getLimit());
+            limitViolationPtrPlus.setLimitName(CTypeConversion.toCString(Objects.toString(limitViolation.getLimitName(), "")).get());
+            limitViolationPtrPlus.setAcceptableDuration(limitViolation.getAcceptableDuration());
+            limitViolationPtrPlus.setLimitReduction(limitViolation.getLimitReduction());
             limitViolationPtrPlus.setValue(limitViolation.getValue());
+            limitViolationPtrPlus.setSide(limitViolation.getSide() != null ? limitViolation.getSide().ordinal() : -1);
         }
         contingencyPtr.limitViolations().setLength(limitViolations.size());
         contingencyPtr.limitViolations().setPtr(limitViolationPtr);
