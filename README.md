@@ -121,3 +121,12 @@ We can generate a single line diagram for a voltage level in the SVG format:
 ```python
 n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
 ```
+
+To run a security analysis:
+```python
+sa = gp.security_analysis.create()
+sa.add_contingency('c1', 'L1-2-1')
+sa.add_contingency('c2', 'L1-3-1')
+sa.add_contingency('c3', 'L1-2-1', 'L1-3-1')
+sa_result = sa.run(n)
+```
