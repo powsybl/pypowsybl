@@ -11,7 +11,7 @@ typedef struct bus_struct {
 
 typedef struct load_flow_component_result_struct {
     int component_num;
-    char* status;
+    int status;
     int iteration_count;
     char* slack_bus_id;
     double slack_bus_active_power_mismatch;
@@ -25,6 +25,6 @@ typedef struct limit_violation_struct {
 
 typedef struct contingency_result_struct {
     char* contingency_id;
-    char* status;
+    int status;
     array limit_violations;
 } contingency_result;

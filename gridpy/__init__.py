@@ -6,6 +6,8 @@
 #
 import _gridpy
 
+from _gridpy import LoadFlowComponentStatus
+
 
 def print_version():
     _gridpy.print_version()

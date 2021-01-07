@@ -37,6 +37,13 @@ typedef Array<bus> BusArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 
+enum LoadFlowComponentStatus {
+    CONVERGED = 0,
+    MAX_ITERATION_REACHED,
+    SOLVER_FAILED,
+    FAILED,
+};
+
 void init();
 
 void printVersion();

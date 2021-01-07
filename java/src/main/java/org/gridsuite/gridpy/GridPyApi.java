@@ -141,10 +141,10 @@ public final class GridPyApi {
         void setComponentNum(int componentNum);
 
         @CField("status")
-        CCharPointer geStatus();
+        int getStatus();
 
         @CField("status")
-        void setStatus(CCharPointer status);
+        void setStatus(int status);
 
         @CField("iteration_count")
         int getIterationCount();
@@ -174,7 +174,7 @@ public final class GridPyApi {
             LoadFlowResult.ComponentResult componentResult = componentResults.get(index);
             LoadFlowComponentResultPointer ptr = componentResultPtr.addressOf(index);
             ptr.setComponentNum(componentResult.getComponentNum());
-            ptr.setStatus(CTypeConversion.toCString(componentResult.getStatus().name()).get());
+            ptr.setStatus(componentResult.getStatus().ordinal());
             ptr.setIterationCount(componentResult.getIterationCount());
             ptr.setSlackBusId(CTypeConversion.toCString(componentResult.getSlackBusId()).get());
             ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
@@ -375,10 +375,10 @@ public final class GridPyApi {
         void setContingencyId(CCharPointer contingencyId);
 
         @CField("status")
-        CCharPointer geStatus();
+        int geStatus();
 
         @CField("status")
-        void setStatus(CCharPointer status);
+        void setStatus(int status);
 
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
@@ -386,13 +386,13 @@ public final class GridPyApi {
         ContingencyResultPointer addressOf(int index);
     }
 
-    private static String getStatus(LimitViolationsResult result) {
-        return result.isComputationOk() ? "CONVERGED" : "DIVERGED";
+    private static LoadFlowResult.ComponentResult.Status getStatus(LimitViolationsResult result) {
+        return result.isComputationOk() ? LoadFlowResult.ComponentResult.Status.CONVERGED : LoadFlowResult.ComponentResult.Status.FAILED;
     }
 
     private static void setSecurityAnalysisResultPointer(ContingencyResultPointer contingencyPtr, String contingencyId, LimitViolationsResult limitViolationsResult) {
         contingencyPtr.setContingencyId(CTypeConversion.toCString(contingencyId).get());
-        contingencyPtr.setStatus(CTypeConversion.toCString(getStatus(limitViolationsResult)).get());
+        contingencyPtr.setStatus(getStatus(limitViolationsResult).ordinal());
         List<LimitViolation> limitViolations = limitViolationsResult.getLimitViolations();
         LimitViolationPointer limitViolationPtr = UnmanagedMemory.calloc(limitViolations.size() * SizeOf.get(LimitViolationPointer.class));
         for (int i = 0; i < limitViolations.size(); i++) {
