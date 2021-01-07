@@ -8,14 +8,14 @@ import _gridpy
 from gridpy.network import Network
 from gridpy.util import ObjectHandle
 from typing import List
-
+from prettytable import PrettyTable
 
 class SecurityAnalysisResult:
     def __init__(self, results):
-        self._post_contingency_result = {}
+        self._post_contingency_results = {}
         for result in results:
             if result.contingency_id:
-                self._post_contingency_result[result.contingency_id] = result
+                self._post_contingency_results[result.contingency_id] = result
             else:
                 self._pre_contingency_result = result
 
@@ -25,17 +25,23 @@ class SecurityAnalysisResult:
 
     @property
     def post_contingency_results(self):
-        return self._post_contingency_result.values()
-
-    @property
-    def contingencies(self):
-        return self._post_contingency_result.keys()
+        return self._post_contingency_results.values()
 
     def find_post_contingency_result(self, contingency_id: str):
-        result = self._post_contingency_result[contingency_id]
+        result = self._post_contingency_results[contingency_id]
         if not result:
             raise Exception("Contingency '%s' not found".format(contingency_id))
         return result
+
+    def get_table(self):
+        table = PrettyTable()
+        table.field_names = ["Contingency ID", "Status", "Equipment ID", "Limit", "Value"]
+        for contingency_id in self._post_contingency_results:
+            post_contingency_result = self._post_contingency_results[contingency_id]
+            table.add_row([contingency_id, post_contingency_result.status.name, '', '', ''])
+            for limit_violation in post_contingency_result.limit_violations:
+                table.add_row(['', '', limit_violation.subject_id, "{:.1f}".format(limit_violation.limit), "{:.1f}".format(limit_violation.value)])
+        return table
 
 
 class SecurityAnalysis(ObjectHandle):

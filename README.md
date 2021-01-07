@@ -130,3 +130,8 @@ sa.add_contingency('c2', 'L1-3-1')
 sa.add_contingency('c3', 'L1-2-1', 'L1-3-1')
 sa_result = sa.run(n)
 ```
+
+And print results table:
+```python
+print(sa_result.get_table())
+```
