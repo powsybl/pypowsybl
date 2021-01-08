@@ -5,8 +5,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import LoadFlowParameters
 from gridpy.network import Network
 
 
-def run(network: Network, distributed_slack: bool = True, dc: bool = False):
-    return _gridpy.run_load_flow(network.ptr, distributed_slack, dc)
+def run_ac(network: Network, parameters: LoadFlowParameters = LoadFlowParameters()):
+    return _gridpy.run_load_flow(network.ptr, False, parameters)
+
+
+def run_dc(network: Network, parameters: LoadFlowParameters = LoadFlowParameters()):
+    return _gridpy.run_load_flow(network.ptr, True, parameters)

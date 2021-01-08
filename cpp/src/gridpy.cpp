@@ -67,6 +67,47 @@ template<>
 Array<limit_violation>::~Array() {
 }
 
+std::string str(const LoadFlowComponentStatus& status) {
+    switch (status) {
+        case CONVERGED:
+            return "CONVERGED";
+        case MAX_ITERATION_REACHED:
+            return "MAX_ITERATION_REACHED";
+        case SOLVER_FAILED:
+            return "SOLVER_FAILED";
+        case FAILED:
+            return "FAILED";
+        default:
+            return "???";
+    }
+}
+
+std::string str(const LimitType& limitType) {
+    switch (limitType) {
+        case CURRENT:
+            return "CURRENT";
+        case HIGH_VOLTAGE:
+            return "HIGH_VOLTAGE";
+        case LOW_VOLTAGE:
+            return "LOW_VOLTAGE";
+        default:
+            return "???";
+    }
+}
+
+std::string str(const Side& side) {
+    switch (side) {
+        case NONE:
+            return "NONE";
+        case ONE:
+            return "ONE";
+        case TWO:
+            return "TWO";
+        default:
+            return "???";
+    }
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());
@@ -107,9 +148,9 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, distributedSlack, dc));
+    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
 }
 
 BusArray* getBusArray(void* network, bool busBreakerView) {
@@ -137,9 +178,9 @@ void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::
     delete[] elementIdPtr;
 }
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network) {
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network));
+    return new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network, &parameters));
 }
 
 void destroyObjectHandle(void* objectHandle) {

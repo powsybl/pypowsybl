@@ -9,7 +9,7 @@ gp.print_version()
 n = gp.network.create_ieee14()
 
 # Run a load flow computation and print the result
-results = gp.loadflow.run(n)
+results = gp.loadflow.run_ac(n)
 for result in results:
     print(result)
 

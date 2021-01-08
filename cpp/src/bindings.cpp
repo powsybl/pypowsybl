@@ -77,14 +77,30 @@ PYBIND11_MODULE(_gridpy, m) {
                 return r.slack_bus_active_power_mismatch;
             })
             .def("__repr__", [](const load_flow_component_result& r) {
-                return format("LoadFlowComponentResult(component_num=%d, status='%d', iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
-                              r.component_num, r.status, r.iteration_count, r.slack_bus_id, r.slack_bus_active_power_mismatch);
+                return format("LoadFlowComponentResult(component_num=%d, status=%s, iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
+                              r.component_num, gridpy::str(static_cast<gridpy::LoadFlowComponentStatus>(r.status)).c_str(), r.iteration_count,
+                              r.slack_bus_id, r.slack_bus_active_power_mismatch);
             });
 
     bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
+    py::class_<load_flow_parameters>(m, "LoadFlowParameters")
+            .def(py::init([](bool distributedSlack) {
+                auto parameters = new load_flow_parameters();
+                parameters->distributed_slack = distributedSlack;
+                return parameters;
+            }), py::arg("distributed_slack") = true)
+            .def_property("distributed_slack", [](const load_flow_parameters& p) {
+                return p.distributed_slack != 0;
+            }, [](load_flow_parameters& p, bool distributedSlack) {
+                p.distributed_slack = distributedSlack;
+            })
+            .def("__repr__", [](const load_flow_parameters& p) {
+                return format("LoadFlowParameters(distributed_slack=%s)", p.distributed_slack ? "true" : "false");
+            });
+
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("distributed_slack"), py::arg("dc"));
+          py::arg("dc"), py::arg("parameters"));
 
     py::class_<bus>(m, "Bus")
         .def_property_readonly("id", [](const bus& b) {
@@ -154,9 +170,9 @@ PYBIND11_MODULE(_gridpy, m) {
                 return static_cast<gridpy::Side>(v.side);
             })
             .def("__repr__", [](const limit_violation & v) {
-                return format("LimitViolation(subject_id='%s', subject_name='%s', limit_type=%d, limit=%f, limit_name='%s', acceptable_duration=%d, limit_reduction=%f, value=%f, side=%d)",
-                              v.subject_id, v.subject_name, v.limit_type, v.limit, v.limit_name, v.acceptable_duration,
-                              v.limit_reduction, v.value, v.side);
+                return format("LimitViolation(subject_id='%s', subject_name='%s', limit_type=%s, limit=%f, limit_name='%s', acceptable_duration=%d, limit_reduction=%f, value=%f, side=%s)",
+                              v.subject_id, v.subject_name, gridpy::str(static_cast<gridpy::LimitType>(v.limit_type)).c_str(), v.limit,
+                              v.limit_name, v.acceptable_duration, v.limit_reduction, v.value, gridpy::str(static_cast<gridpy::Side>(v.side)).c_str());
             });
 
     bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");
@@ -172,14 +188,15 @@ PYBIND11_MODULE(_gridpy, m) {
                 return gridpy::LimitViolationArray((array*) &r.limit_violations);
             })
             .def("__repr__", [](const contingency_result& r) {
-                return format("ContingencyResult(contingency_id='%s', status='%d', limit_violations=[%d])",
-                              r.contingency_id, r.status, r.limit_violations.length);
+                return format("ContingencyResult(contingency_id='%s', status=%s, limit_violations=[%d])",
+                              r.contingency_id, gridpy::str(static_cast<gridpy::LoadFlowComponentStatus>(r.status)).c_str(),
+                              r.limit_violations.length);
             });
 
     bindArray<gridpy::ContingencyResultArray>(m, "ContingencyResultArray");
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
-          py::arg("security_analysis_context"), py::arg("network"));
+          py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

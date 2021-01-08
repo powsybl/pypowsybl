@@ -44,17 +44,23 @@ enum LoadFlowComponentStatus {
     FAILED,
 };
 
+std::string str(const LoadFlowComponentStatus& status);
+
 enum LimitType {
     CURRENT = 0,
     LOW_VOLTAGE,
     HIGH_VOLTAGE,
 };
 
+std::string str(const LimitType& limitType);
+
 enum Side {
     NONE = -1,
     ONE,
     TWO,
 };
+
+std::string str(const Side& side);
 
 void init();
 
@@ -74,7 +80,7 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
 BusArray* getBusArray(void* network, bool busBreakerView);
 
@@ -84,7 +90,7 @@ void* createSecurityAnalysis();
 
 void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network);
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters);
 
 void destroyObjectHandle(void* objectHandle);
 

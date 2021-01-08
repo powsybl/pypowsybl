@@ -58,19 +58,25 @@ Powsybl versions:
 We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
-results = gp.loadflow.run(n)
+results = gp.loadflow.run_ac(n)
 for result in results:
     print(result)
 ```
 
 This will produce the following output:
 ```bash
-LoadFlowComponentResult(component_num=0, status='CONVERGED', iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
+LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
 ```
 
 We can re-run the load flow computation in DC mode:
 ```python
-gp.loadflow.run(n, dc = True)
+gp.loadflow.run_dc(n)
+```
+
+Or with different parameters:
+```python
+parameters = gp.loadflow.LoadFlowParameters(distributed_slack=False)
+gp.loadflow.run_ac(n, parameters)
 ```
 
 We can now iterate over buses and print calculated voltage
@@ -128,7 +134,7 @@ sa = gp.security_analysis.create()
 sa.add_contingency('c1', 'L1-2-1')
 sa.add_contingency('c2', 'L1-3-1')
 sa.add_contingency('c3', 'L1-2-1', 'L1-3-1')
-sa_result = sa.run(n)
+sa_result = sa.run_ac(n)
 ```
 
 And print results table:
