@@ -5,13 +5,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
-from _gridpy import LoadFlowParameters
+from _gridpy import LoadFlowParameters as Parameters
+from _gridpy import LoadFlowComponentStatus as ComponentStatus
 from gridpy.network import Network
 
 
-def run_ac(network: Network, parameters: LoadFlowParameters = LoadFlowParameters()):
+def run_ac(network: Network, parameters: Parameters = Parameters()):
     return _gridpy.run_load_flow(network.ptr, False, parameters)
 
 
-def run_dc(network: Network, parameters: LoadFlowParameters = LoadFlowParameters()):
+def run_dc(network: Network, parameters: Parameters = Parameters()):
     return _gridpy.run_load_flow(network.ptr, True, parameters)

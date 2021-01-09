@@ -6,7 +6,7 @@
 #
 import _gridpy
 from gridpy.network import Network
-from gridpy.loadflow import LoadFlowParameters
+from gridpy.loadflow import Parameters
 from gridpy.util import ObjectHandle
 from typing import List
 from prettytable import PrettyTable
@@ -60,7 +60,7 @@ class SecurityAnalysis(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
-    def run_ac(self, network: Network, parameters: LoadFlowParameters = LoadFlowParameters()) -> SecurityAnalysisResult:
+    def run_ac(self, network: Network, parameters: Parameters = Parameters()) -> SecurityAnalysisResult:
         return SecurityAnalysisResult(_gridpy.run_security_analysis(self.ptr, network.ptr, parameters))
 
     def add_contingency(self, id: str, elements_ids: List[str]):

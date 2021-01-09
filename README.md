@@ -75,7 +75,7 @@ gp.loadflow.run_dc(n)
 
 Or with different parameters:
 ```python
-parameters = gp.loadflow.LoadFlowParameters(distributed_slack=False)
+parameters = gp.loadflow.Parameters(distributed_slack=False)
 gp.loadflow.run_ac(n, parameters)
 ```
 

@@ -25,8 +25,8 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_ieee14()
         results = gp.loadflow.run_ac(n)
         self.assertEqual(1, len(results))
-        self.assertEqual(gp.LoadFlowComponentStatus.CONVERGED, list(results)[0].status)
-        parameters = gp.loadflow.LoadFlowParameters(distributed_slack=False)
+        self.assertEqual(gp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
+        parameters = gp.loadflow.Parameters(distributed_slack=False)
         results = gp.loadflow.run_dc(n, parameters)
         self.assertEqual(0, len(results))
 
