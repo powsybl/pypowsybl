@@ -5,11 +5,32 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import ContingencyResult
+from _gridpy import LimitViolation
 from gridpy.network import Network
 from gridpy.loadflow import Parameters
 from gridpy.util import ObjectHandle
 from typing import List
 from prettytable import PrettyTable
+
+
+ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                                          f"contingency_id={self.contingency_id!r}"\
+                                          f", status={self.status.name}"\
+                                          f", limit_violations=[{len(self.limit_violations)}]"\
+                                          f")"
+
+LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                                   f"subject_id={self.subject_id!r}"\
+                                   f", subject_name={self.subject_name!r}"\
+                                   f", limit_type={self.limit_type.name}"\
+                                   f", limit={self.limit!r}"\
+                                   f", limit_name={self.limit_name!r}"\
+                                   f", acceptable_duration={self.acceptable_duration!r}"\
+                                   f", limit_reduction={self.limit_reduction!r}"\
+                                   f", value={self.value!r}"\
+                                   f", side={self.side.name}"\
+                                   f")"
 
 
 class SecurityAnalysisResult:

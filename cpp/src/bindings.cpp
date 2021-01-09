@@ -147,11 +147,6 @@ PYBIND11_MODULE(_gridpy, m) {
             })
             .def_property_readonly("side", [](const limit_violation& v) {
                 return static_cast<gridpy::Side>(v.side);
-            })
-            .def("__repr__", [](const limit_violation & v) {
-                return format("LimitViolation(subject_id='%s', subject_name='%s', limit_type=%s, limit=%f, limit_name='%s', acceptable_duration=%d, limit_reduction=%f, value=%f, side=%s)",
-                              v.subject_id, v.subject_name, gridpy::str(static_cast<gridpy::LimitType>(v.limit_type)).c_str(), v.limit,
-                              v.limit_name, v.acceptable_duration, v.limit_reduction, v.value, gridpy::str(static_cast<gridpy::Side>(v.side)).c_str());
             });
 
     bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");
@@ -165,11 +160,6 @@ PYBIND11_MODULE(_gridpy, m) {
             })
             .def_property_readonly("limit_violations", [](const contingency_result& r) {
                 return gridpy::LimitViolationArray((array*) &r.limit_violations);
-            })
-            .def("__repr__", [](const contingency_result& r) {
-                return format("ContingencyResult(contingency_id='%s', status=%s, limit_violations=[%d])",
-                              r.contingency_id, gridpy::str(static_cast<gridpy::LoadFlowComponentStatus>(r.status)).c_str(),
-                              r.limit_violations.length);
             });
 
     bindArray<gridpy::ContingencyResultArray>(m, "ContingencyResultArray");

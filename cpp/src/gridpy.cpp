@@ -65,6 +65,7 @@ Array<contingency_result>::~Array() {
 
 template<>
 Array<limit_violation>::~Array() {
+    // already freed by contingency_result
 }
 
 void printVersion() {
