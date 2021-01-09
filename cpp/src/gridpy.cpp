@@ -67,47 +67,6 @@ template<>
 Array<limit_violation>::~Array() {
 }
 
-std::string str(const LoadFlowComponentStatus& status) {
-    switch (status) {
-        case CONVERGED:
-            return "CONVERGED";
-        case MAX_ITERATION_REACHED:
-            return "MAX_ITERATION_REACHED";
-        case SOLVER_FAILED:
-            return "SOLVER_FAILED";
-        case FAILED:
-            return "FAILED";
-        default:
-            return "???";
-    }
-}
-
-std::string str(const LimitType& limitType) {
-    switch (limitType) {
-        case CURRENT:
-            return "CURRENT";
-        case HIGH_VOLTAGE:
-            return "HIGH_VOLTAGE";
-        case LOW_VOLTAGE:
-            return "LOW_VOLTAGE";
-        default:
-            return "???";
-    }
-}
-
-std::string str(const Side& side) {
-    switch (side) {
-        case NONE:
-            return "NONE";
-        case ONE:
-            return "ONE";
-        case TWO:
-            return "TWO";
-        default:
-            return "???";
-    }
-}
-
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());

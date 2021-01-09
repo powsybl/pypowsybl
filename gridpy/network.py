@@ -5,7 +5,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import Bus
 from gridpy.util import ObjectHandle
+
+
+Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                            f"id={self.id!r}"\
+                            f", v_magnitude={self.v_magnitude!r}"\
+                            f", v_angle={self.v_angle!r}"\
+                            f")"
 
 
 class Network(ObjectHandle):

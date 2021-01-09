@@ -44,23 +44,17 @@ enum LoadFlowComponentStatus {
     FAILED,
 };
 
-std::string str(const LoadFlowComponentStatus& status);
-
 enum LimitType {
     CURRENT = 0,
     LOW_VOLTAGE,
     HIGH_VOLTAGE,
 };
 
-std::string str(const LimitType& limitType);
-
 enum Side {
     NONE = -1,
     ONE,
     TWO,
 };
-
-std::string str(const Side& side);
 
 void init();
 
