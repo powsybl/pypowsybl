@@ -62,15 +62,6 @@ enum Side {
 
 std::string str(const Side& side);
 
-enum LoadFlowComponentStatus {
-    CONVERGED = 0,
-    MAX_ITERATION_REACHED,
-    SOLVER_FAILED,
-    FAILED,
-};
-
-std::string str(const LoadFlowComponentStatus& status);
-
 void init();
 
 void printVersion();
