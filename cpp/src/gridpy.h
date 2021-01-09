@@ -61,7 +61,7 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
 BusArray* getBusArray(void* network, bool busBreakerView);
 

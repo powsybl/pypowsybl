@@ -58,7 +58,7 @@ Powsybl versions:
 We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
-results = gp.loadflow.run(n)
+results = gp.loadflow.run_ac(n)
 for result in results:
     print(result)
 ```
@@ -70,7 +70,13 @@ LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, sl
 
 We can re-run the load flow computation in DC mode:
 ```python
-gp.loadflow.run(n, dc = True)
+gp.loadflow.run_dc(n)
+```
+
+Or with different parameters:
+```python
+parameters = gp.loadflow.Parameters(distributed_slack=False)
+gp.loadflow.run_ac(n, parameters)
 ```
 
 We can now iterate over buses and print calculated voltage

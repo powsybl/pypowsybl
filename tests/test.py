@@ -22,10 +22,11 @@ class GridPyTestCase(unittest.TestCase):
 
     def test_run_lf(self):
         n = gp.network.create_ieee14()
-        results = gp.loadflow.run(n)
+        results = gp.loadflow.run_ac(n)
         self.assertEqual(1, len(results))
         self.assertEqual(gp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
-        results = gp.loadflow.run(n, distributed_slack=False, dc=True)
+        parameters = gp.loadflow.Parameters(distributed_slack=False)
+        results = gp.loadflow.run_dc(n, parameters)
         self.assertEqual(0, len(results))
 
     def test_load_network(self):

@@ -112,9 +112,9 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool distributedSlack, bool dc) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, distributedSlack, dc));
+    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
 }
 
 BusArray* getBusArray(void* network, bool busBreakerView) {

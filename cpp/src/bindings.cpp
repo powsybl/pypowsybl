@@ -83,8 +83,23 @@ PYBIND11_MODULE(_gridpy, m) {
 
     bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
+    py::class_<load_flow_parameters>(m, "LoadFlowParameters")
+            .def(py::init([](bool distributedSlack) {
+                auto parameters = new load_flow_parameters();
+                parameters->distributed_slack = distributedSlack;
+                return parameters;
+            }), py::arg("distributed_slack") = true)
+            .def_property("distributed_slack", [](const load_flow_parameters& p) {
+                return p.distributed_slack != 0;
+            }, [](load_flow_parameters& p, bool distributedSlack) {
+                p.distributed_slack = distributedSlack;
+            })
+            .def("__repr__", [](const load_flow_parameters& p) {
+                return format("LoadFlowParameters(distributed_slack=%s)", p.distributed_slack ? "true" : "false");
+            });
+
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("distributed_slack"), py::arg("dc"));
+          py::arg("dc"), py::arg("parameters"));
 
     py::class_<bus>(m, "Bus")
         .def_property_readonly("id", [](const bus& b) {
