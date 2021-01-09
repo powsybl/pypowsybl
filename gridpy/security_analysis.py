@@ -21,16 +21,16 @@ ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                           f")"
 
 LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}("\
-                                   f"subject_id={self.subject_id!r}"\
-                                   f", subject_name={self.subject_name!r}"\
-                                   f", limit_type={self.limit_type.name}"\
-                                   f", limit={self.limit!r}"\
-                                   f", limit_name={self.limit_name!r}"\
-                                   f", acceptable_duration={self.acceptable_duration!r}"\
-                                   f", limit_reduction={self.limit_reduction!r}"\
-                                   f", value={self.value!r}"\
-                                   f", side={self.side.name}"\
-                                   f")"
+                                       f"subject_id={self.subject_id!r}"\
+                                       f", subject_name={self.subject_name!r}"\
+                                       f", limit_type={self.limit_type.name}"\
+                                       f", limit={self.limit!r}"\
+                                       f", limit_name={self.limit_name!r}"\
+                                       f", acceptable_duration={self.acceptable_duration!r}"\
+                                       f", limit_reduction={self.limit_reduction!r}"\
+                                       f", value={self.value!r}"\
+                                       f", side={self.side.name}"\
+                                       f")"
 
 
 class SecurityAnalysisResult:
