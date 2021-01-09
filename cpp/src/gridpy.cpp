@@ -57,6 +57,21 @@ Array<bus>::~Array() {
     freeBusArray(guard.thread(), delegate_);
 }
 
+std::string str(const LoadFlowComponentStatus& status) {
+    switch (status) {
+        case CONVERGED:
+            return "CONVERGED";
+        case MAX_ITERATION_REACHED:
+            return "MAX_ITERATION_REACHED";
+        case SOLVER_FAILED:
+            return "SOLVER_FAILED";
+        case FAILED:
+            return "FAILED";
+        default:
+            return "???";
+    }
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());

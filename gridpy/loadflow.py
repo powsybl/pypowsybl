@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import LoadFlowComponentStatus as ComponentStatus
 from gridpy.network import Network
 
 

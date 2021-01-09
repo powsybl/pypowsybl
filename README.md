@@ -65,7 +65,7 @@ for result in results:
 
 This will produce the following output:
 ```bash
-LoadFlowComponentResult(component_num=0, status='CONVERGED', iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
+LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
 ```
 
 We can re-run the load flow computation in DC mode:
