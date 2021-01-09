@@ -22,6 +22,7 @@ ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                         f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
                                         f")"
 
+
 def run_ac(network: Network, parameters: Parameters = Parameters()):
     return _gridpy.run_load_flow(network.ptr, False, parameters)
 
