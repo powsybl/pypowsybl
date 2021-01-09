@@ -41,8 +41,6 @@ enum LoadFlowComponentStatus {
     FAILED,
 };
 
-std::string str(const LoadFlowComponentStatus& status);
-
 void init();
 
 void printVersion();

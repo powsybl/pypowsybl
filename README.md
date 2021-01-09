@@ -82,7 +82,7 @@ gp.loadflow.run_ac(n, parameters)
 We can now iterate over buses and print calculated voltage
 ```python
 for bus in n.get_buses():
-    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))
+    print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
 ```
 ```bash
 Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664
