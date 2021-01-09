@@ -70,6 +70,12 @@ public final class GridPyApi {
         return ObjectHandles.getGlobal().create(network);
     }
 
+    @CEntryPoint(name = "createEurostagTutorialExample1Network")
+    public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread) {
+        Network network = EurostagTutorialExample1Factory.create();
+        return ObjectHandles.getGlobal().create(network);
+    }
+
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file) {
         String fileStr = CTypeConversion.toJavaString(file);
