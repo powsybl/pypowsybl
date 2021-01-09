@@ -19,6 +19,17 @@ std::string format(const char* fmt, Args... args) {
     return buf;
 }
 
+template<typename T>
+void bindArray(py::module_& m, const std::string& className) {
+    py::class_<T>(m, className.c_str())
+            .def("__len__", [](const T& a) {
+                return a.length();
+            })
+            .def("__iter__", [](T& a) {
+                return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>());
+}
+
 PYBIND11_MODULE(_gridpy, m) {
     gridpy::init();
 
@@ -60,13 +71,7 @@ PYBIND11_MODULE(_gridpy, m) {
                               r.component_num, r.status, r.iteration_count, r.slack_bus_id, r.slack_bus_active_power_mismatch);
             });
 
-    py::class_<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray")
-            .def("__len__", [](const gridpy::LoadFlowComponentResultArray& a) {
-                return a.length();
-            })
-            .def("__iter__", [](gridpy::LoadFlowComponentResultArray& a) {
-                return py::make_iterator(a.begin(), a.end());
-            }, py::keep_alive<0, 1>());
+    bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("distributed_slack"), py::arg("dc"));
@@ -85,13 +90,7 @@ PYBIND11_MODULE(_gridpy, m) {
             return format("Bus(id='%s', v_magnitude=%f, v_angle=%f)", b.id, b.v_magnitude, b.v_angle);
         });
 
-    py::class_<gridpy::BusArray>(m, "BusArray")
-        .def("__len__", [](const gridpy::BusArray& a) {
-            return a.length();
-        })
-        .def("__iter__", [](gridpy::BusArray& a) {
-            return py::make_iterator(a.begin(), a.end());
-        }, py::keep_alive<0, 1>());
+    bindArray<gridpy::BusArray>(m, "BusArray");
 
     m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
           py::arg("bus_breaker_view"));
