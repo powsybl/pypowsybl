@@ -11,6 +11,7 @@ import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -67,6 +68,12 @@ public final class GridPyApi {
     @CEntryPoint(name = "createIeee14Network")
     public static ObjectHandle createIeee14Network(IsolateThread thread) {
         Network network = IeeeCdfNetworkFactory.create14();
+        return ObjectHandles.getGlobal().create(network);
+    }
+
+    @CEntryPoint(name = "createEurostagTutorialExample1Network")
+    public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread) {
+        Network network = EurostagTutorialExample1Factory.create();
         return ObjectHandles.getGlobal().create(network);
     }
 

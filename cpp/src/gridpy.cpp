@@ -72,6 +72,11 @@ void* createIeee14Network() {
     return createIeee14Network(guard.thread());
 }
 
+void* createEurostagTutorialExample1Network() {
+    GraalVmGuard guard;
+    return createEurostagTutorialExample1Network(guard.thread());
+}
+
 void* loadNetwork(const std::string& file) {
     GraalVmGuard guard;
     return loadNetwork(guard.thread(), (char*) file.data());

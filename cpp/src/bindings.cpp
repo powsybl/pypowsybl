@@ -42,6 +42,8 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
 
+    m.def("create_eurostag_tutorial_example1_network", &gridpy::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
+
     m.def("update_switch_position", &gridpy::updateSwitchPosition, "Update a switch position");
 
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
