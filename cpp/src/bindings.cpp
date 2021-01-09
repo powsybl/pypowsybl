@@ -9,16 +9,6 @@
 
 namespace py = pybind11;
 
-template<typename... Args>
-std::string format(const char* fmt, Args... args) {
-    size_t size = snprintf(nullptr, 0, fmt, args...);
-    std::string buf;
-    buf.reserve(size + 1);
-    buf.resize(size);
-    snprintf(&buf[0], size + 1, fmt, args...);
-    return buf;
-}
-
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
     py::class_<T>(m, className.c_str())
@@ -74,11 +64,6 @@ PYBIND11_MODULE(_gridpy, m) {
             })
             .def_property_readonly("slack_bus_active_power_mismatch", [](const load_flow_component_result& r) {
                 return r.slack_bus_active_power_mismatch;
-            })
-            .def("__repr__", [](const load_flow_component_result& r) {
-                return format("LoadFlowComponentResult(component_num=%d, status=%s, iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
-                              r.component_num, gridpy::str(static_cast<gridpy::LoadFlowComponentStatus>(r.status)).c_str(), r.iteration_count,
-                              r.slack_bus_id, r.slack_bus_active_power_mismatch);
             });
 
     bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
@@ -93,9 +78,6 @@ PYBIND11_MODULE(_gridpy, m) {
                 return p.distributed_slack != 0;
             }, [](load_flow_parameters& p, bool distributedSlack) {
                 p.distributed_slack = distributedSlack;
-            })
-            .def("__repr__", [](const load_flow_parameters& p) {
-                return format("LoadFlowParameters(distributed_slack=%s)", p.distributed_slack ? "true" : "false");
             });
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
@@ -110,9 +92,6 @@ PYBIND11_MODULE(_gridpy, m) {
         })
         .def_property_readonly("v_angle", [](const bus& b) {
             return b.v_angle;
-        })
-        .def("__repr__", [](const bus& b) {
-            return format("Bus(id='%s', v_magnitude=%f, v_angle=%f)", b.id, b.v_magnitude, b.v_angle);
         });
 
     bindArray<gridpy::BusArray>(m, "BusArray");
