@@ -14,6 +14,7 @@ from gridpy.network import Network
 Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                    f"distributed_slack={self.distributed_slack!r}"\
                                    f")"
+
 ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                         f"component_num={self.component_num!r}"\
                                         f", status={self.status.name}"\
