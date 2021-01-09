@@ -130,10 +130,10 @@ public final class GridPyApi {
         void setComponentNum(int componentNum);
 
         @CField("status")
-        CCharPointer geStatus();
+        int getStatus();
 
         @CField("status")
-        void setStatus(CCharPointer status);
+        void setStatus(int status);
 
         @CField("iteration_count")
         int getIterationCount();
@@ -163,7 +163,7 @@ public final class GridPyApi {
             LoadFlowResult.ComponentResult componentResult = componentResults.get(index);
             LoadFlowComponentResultPointer ptr = componentResultPtr.addressOf(index);
             ptr.setComponentNum(componentResult.getComponentNum());
-            ptr.setStatus(CTypeConversion.toCString(componentResult.getStatus().name()).get());
+            ptr.setStatus(componentResult.getStatus().ordinal());
             ptr.setIterationCount(componentResult.getIterationCount());
             ptr.setSlackBusId(CTypeConversion.toCString(componentResult.getSlackBusId()).get());
             ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());

@@ -52,12 +52,19 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
 
+    py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
+            .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)
+            .value("FAILED", gridpy::LoadFlowComponentStatus::FAILED)
+            .value("MAX_ITERATION_REACHED", gridpy::LoadFlowComponentStatus::MAX_ITERATION_REACHED)
+            .value("SOLVER_FAILED", gridpy::LoadFlowComponentStatus::SOLVER_FAILED)
+            .export_values();
+
     py::class_<load_flow_component_result>(m, "LoadFlowComponentResult")
             .def_property_readonly("component_num", [](const load_flow_component_result& r) {
                 return r.component_num;
             })
             .def_property_readonly("status", [](const load_flow_component_result& r) {
-                return r.status;
+                return static_cast<gridpy::LoadFlowComponentStatus>(r.status);
             })
             .def_property_readonly("iteration_count", [](const load_flow_component_result& r) {
                 return r.iteration_count;
@@ -69,8 +76,9 @@ PYBIND11_MODULE(_gridpy, m) {
                 return r.slack_bus_active_power_mismatch;
             })
             .def("__repr__", [](const load_flow_component_result& r) {
-                return format("LoadFlowComponentResult(component_num=%d, status='%s', iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
-                              r.component_num, r.status, r.iteration_count, r.slack_bus_id, r.slack_bus_active_power_mismatch);
+                return format("LoadFlowComponentResult(component_num=%d, status=%s, iteration_count=%d, slack_bus_id='%s', slack_bus_active_power_mismatch=%f)",
+                              r.component_num, gridpy::str(static_cast<gridpy::LoadFlowComponentStatus>(r.status)).c_str(), r.iteration_count,
+                              r.slack_bus_id, r.slack_bus_active_power_mismatch);
             });
 
     bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
