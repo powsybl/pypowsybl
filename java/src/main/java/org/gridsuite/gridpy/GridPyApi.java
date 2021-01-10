@@ -159,6 +159,12 @@ public final class GridPyApi {
     @CStruct("load_flow_parameters")
     interface LoadFlowParametersPointer extends PointerBase {
 
+        @CField("voltage_init_mode")
+        int getVoltageInitMode();
+
+        @CField("voltage_init_mode")
+        void setVoltageInitMode(int voltageInitMode);
+
         @CField("transformer_voltage_control_on")
         boolean isTransformerVoltageControlOn();
 
@@ -206,6 +212,12 @@ public final class GridPyApi {
 
         @CField("distributed_slack")
         void setDistributedSlack(boolean distributedSlack);
+
+        @CField("balance_type")
+        int getBalanceType();
+
+        @CField("balance_type")
+        void setBalanceType(int balanceType);
     }
 
     static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -227,8 +239,17 @@ public final class GridPyApi {
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
+                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
+                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
+                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
+                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
+                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
+                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
-                .setDc(dc);
+                .setDc(dc)
+                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()]);
         LoadFlowResult result = LoadFlow.run(network, parameters);
         return createLoadFlowComponentResultArrayPointer(result);
     }

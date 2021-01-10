@@ -18,6 +18,7 @@ typedef struct load_flow_component_result_struct {
 } load_flow_component_result;
 
 typedef struct load_flow_parameters_struct {
+    int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
     unsigned char no_generator_reactive_limits;
     unsigned char phase_shifter_regulation_on;
@@ -26,4 +27,5 @@ typedef struct load_flow_parameters_struct {
     unsigned char read_slack_bus;
     unsigned char write_slack_bus;
     unsigned char distributed_slack;
+    int balance_type;
 } load_flow_parameters;
