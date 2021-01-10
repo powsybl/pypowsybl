@@ -41,6 +41,19 @@ enum LoadFlowComponentStatus {
     FAILED,
 };
 
+enum VoltageInitMode {
+    UNIFORM_VALUES = 0,
+    PREVIOUS_VALUES,
+    DC_VALUES,
+};
+
+enum BalanceType {
+    PROPORTIONAL_TO_GENERATION_P = 0,
+    PROPORTIONAL_TO_GENERATION_P_MAX,
+    PROPORTIONAL_TO_LOAD,
+    PROPORTIONAL_TO_CONFORM_LOAD,
+};
+
 void init();
 
 void printVersion();
