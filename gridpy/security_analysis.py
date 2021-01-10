@@ -11,6 +11,7 @@ from gridpy.network import Network
 from gridpy.loadflow import Parameters
 from gridpy.util import ObjectHandle
 from typing import List
+from typing import Callable
 from prettytable import PrettyTable
 
 
@@ -84,11 +85,16 @@ class SecurityAnalysis(ObjectHandle):
     def run_ac(self, network: Network, parameters: Parameters = Parameters()) -> SecurityAnalysisResult:
         return SecurityAnalysisResult(_gridpy.run_security_analysis(self.ptr, network.ptr, parameters))
 
-    def add_contingency(self, id: str, elements_ids: List[str]):
-        _gridpy.add_contingency_to_security_analysis(self.ptr, id, elements_ids)
+    def add_single_element_contingency(self, element_id: str, contingency_id: str = None):
+        _gridpy.add_contingency_to_security_analysis(self.ptr, contingency_id if contingency_id else element_id, [element_id])
 
-    def add_contingency(self, id: str, first_element_id: str, *other_elements_ids: str):
-        _gridpy.add_contingency_to_security_analysis(self.ptr, id, [first_element_id] + list(other_elements_ids))
+    def add_multiple_elements_contingency(self, elements_ids: List[str], contingency_id: str):
+        _gridpy.add_contingency_to_security_analysis(self.ptr, contingency_id, elements_ids)
+
+    def add_single_element_contingencies(self, elements_ids: List[str], contingency_id_provider: Callable[[str], str] = None):
+        for element_id in elements_ids:
+            contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
+            _gridpy.add_contingency_to_security_analysis(self.ptr, contingency_id, [element_id])
 
 
 def create() -> SecurityAnalysis:

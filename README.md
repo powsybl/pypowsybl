@@ -131,9 +131,9 @@ n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
 To run a security analysis:
 ```python
 sa = gp.security_analysis.create()
-sa.add_contingency('c1', 'L1-2-1')
-sa.add_contingency('c2', 'L1-3-1')
-sa.add_contingency('c3', 'L1-2-1', 'L1-3-1')
+sa.add_single_element_contingency('L1-2-1', 'c1')
+sa.add_single_element_contingency('L1-3-1', 'c2')
+sa.add_multiple_elements_contingency(['L1-2-1', 'L1-3-1'], 'c3')
 sa_result = sa.run_ac(n)
 ```
 
