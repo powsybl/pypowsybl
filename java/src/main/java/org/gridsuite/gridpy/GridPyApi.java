@@ -243,10 +243,8 @@ public final class GridPyApi {
         return allocArrayPointer(componentResultPtr, componentResults.size());
     }
 
-    @CEntryPoint(name = "runLoadFlow")
-    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        Network network = ObjectHandles.getGlobal().get(networkHandle);
-        LoadFlowParameters parameters = LoadFlowParameters.load()
+    private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
+        return LoadFlowParameters.load()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
                 .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
@@ -258,6 +256,12 @@ public final class GridPyApi {
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
                 .setDc(dc)
                 .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()]);
+    }
+
+    @CEntryPoint(name = "runLoadFlow")
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
         LoadFlowResult result = LoadFlow.run(network, parameters);
         return createLoadFlowComponentResultArrayPointer(result);
     }
@@ -549,8 +553,7 @@ public final class GridPyApi {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
         SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
-        LoadFlowParameters loadFlowParameters = LoadFlowParameters.load()
-                .setDistributedSlack(loadFlowParametersPtr.getDistributedSlack() != 0);
+        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = new ArrayList<>(securityAnalysisContext.elementIdsByContingencyId.size());
         for (Map.Entry<String, List<String>> e : securityAnalysisContext.elementIdsByContingencyId.entrySet()) {
