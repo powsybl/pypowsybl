@@ -29,3 +29,21 @@ typedef struct load_flow_parameters_struct {
     unsigned char distributed_slack;
     int balance_type;
 } load_flow_parameters;
+
+typedef struct limit_violation_struct {
+    char* subject_id;
+    char* subject_name;
+    int limit_type;
+    double limit;
+    char* limit_name;
+    int acceptable_duration;
+    float limit_reduction;
+    double value;
+    int side;
+} limit_violation;
+
+typedef struct contingency_result_struct {
+    char* contingency_id;
+    int status;
+    array limit_violations;
+} contingency_result;

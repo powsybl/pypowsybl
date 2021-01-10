@@ -8,6 +8,7 @@
 #define GRIDPY_H
 
 #include <string>
+#include <vector>
 #include "gridpy-api.h"
 
 namespace gridpy {
@@ -33,12 +34,26 @@ private:
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
+typedef Array<contingency_result> ContingencyResultArray;
+typedef Array<limit_violation> LimitViolationArray;
 
 enum LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
     SOLVER_FAILED,
     FAILED,
+};
+
+enum LimitType {
+    CURRENT = 0,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+};
+
+enum Side {
+    NONE = -1,
+    ONE,
+    TWO,
 };
 
 enum VoltageInitMode {
@@ -77,6 +92,12 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_para
 BusArray* getBusArray(void* network, bool busBreakerView);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
+
+void* createSecurityAnalysis();
+
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters);
 
 void destroyObjectHandle(void* objectHandle);
 

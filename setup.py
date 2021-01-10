@@ -136,4 +136,7 @@ setup(
         "Operating System :: Microsoft :: Windows",
     ],
     python_requires='>=3.7',
+    install_requires=[
+        'prettytable',
+    ],
 )

@@ -57,6 +57,17 @@ Array<bus>::~Array() {
     freeBusArray(guard.thread(), delegate_);
 }
 
+template<>
+Array<contingency_result>::~Array() {
+    GraalVmGuard guard;
+    freeContingencyResultArrayPointer(guard.thread(), delegate_);
+}
+
+template<>
+Array<limit_violation>::~Array() {
+    // already freed by contingency_result
+}
+
 void printVersion() {
     GraalVmGuard guard;
     printVersion(guard.thread());
@@ -110,6 +121,26 @@ BusArray* getBusArray(void* network, bool busBreakerView) {
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
     GraalVmGuard guard;
     writeSingleLineDiagramSvg(guard.thread(), network, (char*) containerId.data(), (char*) svgFile.data());
+}
+
+void* createSecurityAnalysis() {
+    GraalVmGuard guard;
+    return createSecurityAnalysis(guard.thread());
+}
+
+void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
+    GraalVmGuard guard;
+    char** elementIdPtr = new char*[elementsIds.size()];
+    for (int i = 0; i < elementsIds.size(); i++) {
+        elementIdPtr[i] = (char *) elementsIds[i].data();
+    }
+    addContingencyToSecurityAnalysis(guard.thread(), securityAnalysisContext, (char*) contingencyId.data(), elementIdPtr, elementsIds.size());
+    delete[] elementIdPtr;
+}
+
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
+    GraalVmGuard guard;
+    return new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network, &parameters));
 }
 
 void destroyObjectHandle(void* objectHandle) {
