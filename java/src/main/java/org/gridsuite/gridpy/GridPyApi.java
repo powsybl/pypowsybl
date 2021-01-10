@@ -159,6 +159,48 @@ public final class GridPyApi {
     @CStruct("load_flow_parameters")
     interface LoadFlowParametersPointer extends PointerBase {
 
+        @CField("transformer_voltage_control_on")
+        boolean isTransformerVoltageControlOn();
+
+        @CField("transformer_voltage_control_on")
+        void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
+
+        @CField("no_generator_reactive_limits")
+        boolean isNoGeneratorReactiveLimits();
+
+        @CField("no_generator_reactive_limits")
+        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+
+        @CField("phase_shifter_regulation_on")
+        boolean isPhaseShifterRegulationOn();
+
+        @CField("phase_shifter_regulation_on")
+        void setPhaseShifterRegulationOn(boolean phaseShifterRegulationOn);
+
+        @CField("twt_split_shunt_admittance")
+        boolean isTwtSplitShuntAdmittance();
+
+        @CField("twt_split_shunt_admittance")
+        void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
+
+        @CField("simul_shunt")
+        boolean isSimulShunt();
+
+        @CField("simul_shunt")
+        void setSimulShunt(boolean simulShunt);
+
+        @CField("read_slack_bus")
+        boolean isReadSlackBus();
+
+        @CField("read_slack_bus")
+        void setReadSlackBus(boolean readSlackBus);
+
+        @CField("write_slack_bus")
+        boolean isWriteSlackBus();
+
+        @CField("write_slack_bus")
+        void setWriteSlackBus(boolean writeSlackBus);
+
         @CField("distributed_slack")
         boolean isDistributedSlack();
 
