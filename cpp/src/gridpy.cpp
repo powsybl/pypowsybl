@@ -45,12 +45,14 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
-LoadFlowResult::~LoadFlowResult() {
+template<>
+Array<load_flow_component_result>::~Array() {
     GraalVmGuard guard;
-    freeLoadFlowResultPointer(guard.thread(), ptr_);
+    freeLoadFlowComponentResultPointer(guard.thread(), delegate_);
 }
 
-BusArray::~BusArray() {
+template<>
+Array<bus>::~Array() {
     GraalVmGuard guard;
     freeBusArray(guard.thread(), delegate_);
 }
@@ -68,6 +70,11 @@ void* createEmptyNetwork(const std::string& id) {
 void* createIeee14Network() {
     GraalVmGuard guard;
     return createIeee14Network(guard.thread());
+}
+
+void* createEurostagTutorialExample1Network() {
+    GraalVmGuard guard;
+    return createEurostagTutorialExample1Network(guard.thread());
 }
 
 void* loadNetwork(const std::string& file) {
@@ -90,9 +97,9 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new LoadFlowResult(runLoadFlow(guard.thread(), network, distributedSlack, dc));
+    return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
 }
 
 BusArray* getBusArray(void* network, bool busBreakerView) {

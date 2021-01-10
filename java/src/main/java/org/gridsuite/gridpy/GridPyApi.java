@@ -6,12 +6,12 @@
  */
 package org.gridsuite.gridpy;
 
-import com.oracle.svm.core.c.ProjectHeaderFile;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -40,7 +40,6 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,16 +47,8 @@ import java.util.stream.Stream;
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
-@CContext(GridPyApi.Directives.class)
+@CContext(Directives.class)
 public final class GridPyApi {
-
-    static class Directives implements CContext.Directives {
-
-        @Override
-        public List<String> getHeaderFiles() {
-            return Collections.singletonList(ProjectHeaderFile.resolve("org.gridsuite.gridpy", "gridpy-api.h"));
-        }
-    }
 
     private GridPyApi() {
     }
@@ -80,6 +71,12 @@ public final class GridPyApi {
         return ObjectHandles.getGlobal().create(network);
     }
 
+    @CEntryPoint(name = "createEurostagTutorialExample1Network")
+    public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread) {
+        Network network = EurostagTutorialExample1Factory.create();
+        return ObjectHandles.getGlobal().create(network);
+    }
+
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file) {
         String fileStr = CTypeConversion.toJavaString(file);
@@ -95,38 +92,172 @@ public final class GridPyApi {
         Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
-    @CStruct("load_flow_result")
-    interface LoadFlowResultPointer extends PointerBase {
+    @CStruct("array")
+    interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
-        @CField("ok")
-        boolean isOk();
+        @CField("ptr")
+        T getPtr();
 
-        @CField("ok")
-        void setOk(boolean ok);
+        @CField("ptr")
+        void setPtr(T ptr);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
     }
 
-    static LoadFlowResultPointer createPointer(LoadFlowResult result) {
-        LoadFlowResultPointer resultPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowResultPointer.class));
-        resultPtr.setOk(result.isOk());
-        return resultPtr;
+    static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
+        ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+        arrayPtr.setPtr(ptr);
+        arrayPtr.setLength(length);
+        return arrayPtr;
+    }
+
+    static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
+        UnmanagedMemory.free(arrayPointer.getPtr());
+        UnmanagedMemory.free(arrayPointer);
+    }
+
+    @CStruct("load_flow_component_result")
+    interface LoadFlowComponentResultPointer extends PointerBase {
+
+        @CField("component_num")
+        int geComponentNum();
+
+        @CField("component_num")
+        void setComponentNum(int componentNum);
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CField("iteration_count")
+        int getIterationCount();
+
+        @CField("iteration_count")
+        void setIterationCount(int iterationCount);
+
+        @CField("slack_bus_id")
+        CCharPointer getSlackBusId();
+
+        @CField("slack_bus_id")
+        void setSlackBusId(CCharPointer slackBusId);
+
+        @CField("slack_bus_active_power_mismatch")
+        double getSlackBusActivePowerMismatch();
+
+        @CField("slack_bus_active_power_mismatch")
+        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+
+        LoadFlowComponentResultPointer addressOf(int index);
+    }
+
+    @CStruct("load_flow_parameters")
+    interface LoadFlowParametersPointer extends PointerBase {
+
+        @CField("voltage_init_mode")
+        int getVoltageInitMode();
+
+        @CField("voltage_init_mode")
+        void setVoltageInitMode(int voltageInitMode);
+
+        @CField("transformer_voltage_control_on")
+        boolean isTransformerVoltageControlOn();
+
+        @CField("transformer_voltage_control_on")
+        void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
+
+        @CField("no_generator_reactive_limits")
+        boolean isNoGeneratorReactiveLimits();
+
+        @CField("no_generator_reactive_limits")
+        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+
+        @CField("phase_shifter_regulation_on")
+        boolean isPhaseShifterRegulationOn();
+
+        @CField("phase_shifter_regulation_on")
+        void setPhaseShifterRegulationOn(boolean phaseShifterRegulationOn);
+
+        @CField("twt_split_shunt_admittance")
+        boolean isTwtSplitShuntAdmittance();
+
+        @CField("twt_split_shunt_admittance")
+        void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
+
+        @CField("simul_shunt")
+        boolean isSimulShunt();
+
+        @CField("simul_shunt")
+        void setSimulShunt(boolean simulShunt);
+
+        @CField("read_slack_bus")
+        boolean isReadSlackBus();
+
+        @CField("read_slack_bus")
+        void setReadSlackBus(boolean readSlackBus);
+
+        @CField("write_slack_bus")
+        boolean isWriteSlackBus();
+
+        @CField("write_slack_bus")
+        void setWriteSlackBus(boolean writeSlackBus);
+
+        @CField("distributed_slack")
+        boolean isDistributedSlack();
+
+        @CField("distributed_slack")
+        void setDistributedSlack(boolean distributedSlack);
+
+        @CField("balance_type")
+        int getBalanceType();
+
+        @CField("balance_type")
+        void setBalanceType(int balanceType);
+    }
+
+    static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
+        List<LoadFlowResult.ComponentResult> componentResults = result.getComponentResults();
+        LoadFlowComponentResultPointer componentResultPtr = UnmanagedMemory.calloc(componentResults.size() * SizeOf.get(LoadFlowComponentResultPointer.class));
+        for (int index = 0; index < componentResults.size(); index++) {
+            LoadFlowResult.ComponentResult componentResult = componentResults.get(index);
+            LoadFlowComponentResultPointer ptr = componentResultPtr.addressOf(index);
+            ptr.setComponentNum(componentResult.getComponentNum());
+            ptr.setStatus(componentResult.getStatus().ordinal());
+            ptr.setIterationCount(componentResult.getIterationCount());
+            ptr.setSlackBusId(CTypeConversion.toCString(componentResult.getSlackBusId()).get());
+            ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
+        }
+        return allocArrayPointer(componentResultPtr, componentResults.size());
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static LoadFlowResultPointer runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean distributedSlack,
-                                                    boolean dc) {
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
-                .setDistributedSlack(distributedSlack)
-                .setDc(dc);
+                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
+                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
+                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
+                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
+                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
+                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
+                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
+                .setDc(dc)
+                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()]);
         LoadFlowResult result = LoadFlow.run(network, parameters);
-        LoadFlowResultPointer resultPtr = createPointer(result);
-        System.out.println(result.getMetrics());
-        return resultPtr;
+        return createLoadFlowComponentResultArrayPointer(result);
     }
 
-    @CEntryPoint(name = "freeLoadFlowResultPointer")
-    public static void freeLoadFlowResultPointer(IsolateThread thread, LoadFlowResultPointer resultPointer) {
-        UnmanagedMemory.free(resultPointer);
+    @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
+    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr) {
+        // don't need to free char* from id field as it is done by python
+        freeArrayPointer(componentResultArrayPtr);
     }
 
     @CStruct("bus")
@@ -153,24 +284,8 @@ public final class GridPyApi {
         BusPointer addressOf(int index);
     }
 
-    @CStruct("bus_array")
-    interface BusArrayPointer extends PointerBase {
-
-        @CField("ptr")
-        BusPointer getPtr();
-
-        @CField("ptr")
-        void setPtr(BusPointer ptr);
-
-        @CField("length")
-        int getLength();
-
-        @CField("length")
-        void setLength(int length);
-    }
-
     @CEntryPoint(name = "getBusArray")
-    public static BusArrayPointer getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
+    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
         List<Bus> buses = busStream.collect(Collectors.toList());
@@ -182,17 +297,13 @@ public final class GridPyApi {
             busPtr.setVoltageMagnitude(bus.getV());
             busPtr.setVoltageAngle(bus.getAngle());
         }
-        BusArrayPointer busArrayPtr = UnmanagedMemory.calloc(SizeOf.get(BusArrayPointer.class));
-        busArrayPtr.setPtr(busesPtr);
-        busArrayPtr.setLength(buses.size());
-        return busArrayPtr;
+        return allocArrayPointer(busesPtr, buses.size());
     }
 
     @CEntryPoint(name = "freeBusArray")
-    public static void freeBusArray(IsolateThread thread, BusArrayPointer busArrayPointer) {
+    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
         // don't need to free char* from id field as it is done by python
-        UnmanagedMemory.free(busArrayPointer.getPtr());
-        UnmanagedMemory.free(busArrayPointer);
+        freeArrayPointer(busArrayPointer);
     }
 
     @CEntryPoint(name = "updateSwitchPosition")

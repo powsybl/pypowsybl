@@ -12,36 +12,46 @@
 
 namespace gridpy {
 
-class LoadFlowResult {
+template<typename T>
+class Array {
 public:
-    explicit LoadFlowResult(load_flow_result* ptr)
-      : ptr_(ptr) {
-    }
-
-    bool isOk() const { return ptr_->ok; }
-
-    ~LoadFlowResult();
-
-private:
-    load_flow_result* ptr_;
-};
-
-class BusArray {
-public:
-    explicit BusArray(bus_array* delegate)
-      : delegate_(delegate) {
+    explicit Array(array* delegate)
+        : delegate_(delegate) {
     }
 
     int length() const { return delegate_->length; }
 
-    bus* begin() const { return delegate_->ptr; }
+    T* begin() const { return (T*) delegate_->ptr; }
 
-    bus* end() const { return delegate_->ptr + delegate_->length; }
+    T* end() const { return (T*) delegate_->ptr + delegate_->length; }
 
-    ~BusArray();
+    ~Array();
 
 private:
-    bus_array* delegate_;
+    array* delegate_;
+};
+
+typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
+typedef Array<bus> BusArray;
+
+enum LoadFlowComponentStatus {
+    CONVERGED = 0,
+    MAX_ITERATION_REACHED,
+    SOLVER_FAILED,
+    FAILED,
+};
+
+enum VoltageInitMode {
+    UNIFORM_VALUES = 0,
+    PREVIOUS_VALUES,
+    DC_VALUES,
+};
+
+enum BalanceType {
+    PROPORTIONAL_TO_GENERATION_P = 0,
+    PROPORTIONAL_TO_GENERATION_P_MAX,
+    PROPORTIONAL_TO_LOAD,
+    PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
 void init();
@@ -52,6 +62,8 @@ void* createEmptyNetwork(const std::string& id);
 
 void* createIeee14Network();
 
+void* createEurostagTutorialExample1Network();
+
 bool updateSwitchPosition(void* network, const std::string& id, bool open);
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected);
@@ -60,7 +72,7 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
-LoadFlowResult* runLoadFlow(void* network, bool distributedSlack, bool dc);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
 BusArray* getBusArray(void* network, bool busBreakerView);
 

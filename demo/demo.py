@@ -9,9 +9,10 @@ gp.print_version()
 n = gp.network.create_ieee14()
 
 # Run a load flow computation and print the result
-r = gp.loadflow.run(n)
-print(r.is_ok())
+results = gp.loadflow.run_ac(n)
+for result in results:
+    print(result)
 
 # Print calculated voltages
 for bus in n.get_buses():
-    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.get_id(), v_mag=bus.get_v_magnitude(), v_ang=bus.get_v_angle()))
+    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))

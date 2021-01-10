@@ -58,32 +58,31 @@ Powsybl versions:
 We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = gp.network.create_ieee14()
-r = gp.loadflow.run(n)
-print(r.ok)
+results = gp.loadflow.run_ac(n)
+for result in results:
+    print(result)
 ```
 
 This will produce the following output:
 ```bash
-{network_0_iterations=3, network_0_status=CONVERGED}
-True
+LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
 ```
 
 We can re-run the load flow computation in DC mode:
 ```python
-r = gp.loadflow.run(n, dc = True)
-print(r.ok)
+gp.loadflow.run_dc(n)
 ```
 
-This will produce the following output:
-```bash
-{}
-True
+Or with different parameters:
+```python
+parameters = gp.loadflow.Parameters(distributed_slack=False)
+gp.loadflow.run_ac(n, parameters)
 ```
 
 We can now iterate over buses and print calculated voltage
 ```python
 for bus in n.get_buses():
-    print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))
+    print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
 ```
 ```bash
 Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664

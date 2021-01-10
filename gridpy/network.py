@@ -5,7 +5,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import Bus
 from gridpy.util import ObjectHandle
+
+
+Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                            f"id={self.id!r}"\
+                            f", v_magnitude={self.v_magnitude!r}"\
+                            f", v_angle={self.v_angle!r}"\
+                            f")"
 
 
 class Network(ObjectHandle):
@@ -33,11 +41,16 @@ class Network(ObjectHandle):
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
+
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))
 
 
 def create_ieee14() -> Network:
+    return Network(_gridpy.create_ieee14_network())
+
+
+def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_gridpy.create_ieee14_network())
 
 

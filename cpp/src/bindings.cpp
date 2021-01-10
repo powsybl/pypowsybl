@@ -9,6 +9,17 @@
 
 namespace py = pybind11;
 
+template<typename T>
+void bindArray(py::module_& m, const std::string& className) {
+    py::class_<T>(m, className.c_str())
+            .def("__len__", [](const T& a) {
+                return a.length();
+            })
+            .def("__iter__", [](T& a) {
+                return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>());
+}
+
 PYBIND11_MODULE(_gridpy, m) {
     gridpy::init();
 
@@ -21,6 +32,8 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
 
+    m.def("create_eurostag_tutorial_example1_network", &gridpy::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
+
     m.def("update_switch_position", &gridpy::updateSwitchPosition, "Update a switch position");
 
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
@@ -29,11 +42,119 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
 
-    py::class_<gridpy::LoadFlowResult>(m, "LoadFlowResult")
-        .def_property_readonly("ok", &gridpy::LoadFlowResult::isOk);
+    py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
+            .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)
+            .value("FAILED", gridpy::LoadFlowComponentStatus::FAILED)
+            .value("MAX_ITERATION_REACHED", gridpy::LoadFlowComponentStatus::MAX_ITERATION_REACHED)
+            .value("SOLVER_FAILED", gridpy::LoadFlowComponentStatus::SOLVER_FAILED)
+            .export_values();
+
+    py::class_<load_flow_component_result>(m, "LoadFlowComponentResult")
+            .def_property_readonly("component_num", [](const load_flow_component_result& r) {
+                return r.component_num;
+            })
+            .def_property_readonly("status", [](const load_flow_component_result& r) {
+                return static_cast<gridpy::LoadFlowComponentStatus>(r.status);
+            })
+            .def_property_readonly("iteration_count", [](const load_flow_component_result& r) {
+                return r.iteration_count;
+            })
+            .def_property_readonly("slack_bus_id", [](const load_flow_component_result& r) {
+                return r.slack_bus_id;
+            })
+            .def_property_readonly("slack_bus_active_power_mismatch", [](const load_flow_component_result& r) {
+                return r.slack_bus_active_power_mismatch;
+            });
+
+    bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
+
+    py::enum_<gridpy::VoltageInitMode>(m, "VoltageInitMode")
+            .value("UNIFORM_VALUES", gridpy::VoltageInitMode::UNIFORM_VALUES)
+            .value("PREVIOUS_VALUES", gridpy::VoltageInitMode::PREVIOUS_VALUES)
+            .value("DC_VALUES", gridpy::VoltageInitMode::DC_VALUES)
+            .export_values();
+
+    py::enum_<gridpy::BalanceType>(m, "BalanceType")
+            .value("PROPORTIONAL_TO_GENERATION_P", gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P)
+            .value("PROPORTIONAL_TO_GENERATION_P_MAX", gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
+            .value("PROPORTIONAL_TO_LOAD", gridpy::BalanceType::PROPORTIONAL_TO_LOAD)
+            .value("PROPORTIONAL_TO_CONFORM_LOAD", gridpy::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD)
+            .export_values();
+
+    py::class_<load_flow_parameters>(m, "LoadFlowParameters")
+            .def(py::init([](gridpy::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
+                    bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
+                    bool distributedSlack, gridpy::BalanceType balanceType) {
+                auto parameters = new load_flow_parameters();
+                parameters->voltage_init_mode = voltageInitMode;
+                parameters->transformer_voltage_control_on = transformerVoltageControlOn;
+                parameters->no_generator_reactive_limits = noGeneratorReactiveLimits;
+                parameters->phase_shifter_regulation_on = phaseShifterRegulationOn;
+                parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance;
+                parameters->simul_shunt = simulShunt;
+                parameters->read_slack_bus = readSlackBus;
+                parameters->write_slack_bus = writeSlackBus;
+                parameters->distributed_slack = distributedSlack;
+                parameters->balance_type = balanceType;
+                return parameters;
+            }), py::arg("voltage_init_mode") = gridpy::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
+                 py::arg("no_generator_reactive_limits") = false, py::arg("phase_shifter_regulation_on") = false,
+                 py::arg("twt_split_shunt_admittance") = false, py::arg("simul_shunt") = false,
+                 py::arg("read_slack_bus") = false, py::arg("write_slack_bus") = false,
+                 py::arg("distributed_slack") = true, py::arg("balance_type") = gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
+            .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
+                return static_cast<gridpy::VoltageInitMode>(p.voltage_init_mode);
+            }, [](load_flow_parameters& p, gridpy::VoltageInitMode voltageInitMode) {
+                p.voltage_init_mode = voltageInitMode;
+            })
+            .def_property("transformer_voltage_control_on", [](const load_flow_parameters& p) {
+                return (bool) p.transformer_voltage_control_on;
+            }, [](load_flow_parameters& p, bool transformerVoltageControlOn) {
+                p.transformer_voltage_control_on = transformerVoltageControlOn;
+            })
+            .def_property("no_generator_reactive_limits", [](const load_flow_parameters& p) {
+                return (bool) p.no_generator_reactive_limits;
+            }, [](load_flow_parameters& p, bool noGeneratorReactiveLimits) {
+                p.no_generator_reactive_limits = noGeneratorReactiveLimits;
+            })
+            .def_property("phase_shifter_regulation_on", [](const load_flow_parameters& p) {
+                return (bool) p.phase_shifter_regulation_on;
+            }, [](load_flow_parameters& p, bool phaseShifterRegulationOn) {
+                p.phase_shifter_regulation_on = phaseShifterRegulationOn;
+            })
+            .def_property("twt_split_shunt_admittance", [](const load_flow_parameters& p) {
+                return (bool) p.twt_split_shunt_admittance;
+            }, [](load_flow_parameters& p, bool twtSplitShuntAdmittance) {
+                p.twt_split_shunt_admittance = twtSplitShuntAdmittance;
+            })
+            .def_property("simul_shunt", [](const load_flow_parameters& p) {
+                return (bool) p.simul_shunt;
+            }, [](load_flow_parameters& p, bool simulShunt) {
+                p.simul_shunt = simulShunt;
+            })
+            .def_property("read_slack_bus", [](const load_flow_parameters& p) {
+                return (bool) p.read_slack_bus;
+            }, [](load_flow_parameters& p, bool readSlackBus) {
+                p.read_slack_bus = readSlackBus;
+            })
+            .def_property("write_slack_bus", [](const load_flow_parameters& p) {
+                return (bool) p.write_slack_bus;
+            }, [](load_flow_parameters& p, bool writeSlackBus) {
+                p.write_slack_bus = writeSlackBus;
+            })
+            .def_property("distributed_slack", [](const load_flow_parameters& p) {
+                return (bool) p.distributed_slack;
+            }, [](load_flow_parameters& p, bool distributedSlack) {
+                p.distributed_slack = distributedSlack;
+            })
+            .def_property("balance_type", [](const load_flow_parameters& p) {
+                return static_cast<gridpy::BalanceType>(p.balance_type);
+            }, [](load_flow_parameters& p, gridpy::BalanceType balanceType) {
+                p.balance_type = balanceType;
+            });
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("distributed_slack"), py::arg("dc"));
+          py::arg("dc"), py::arg("parameters"));
 
     py::class_<bus>(m, "Bus")
         .def_property_readonly("id", [](const bus& b) {
@@ -46,13 +167,7 @@ PYBIND11_MODULE(_gridpy, m) {
             return b.v_angle;
         });
 
-    py::class_<gridpy::BusArray>(m, "BusArray")
-        .def("__len__", [](const gridpy::BusArray& a) {
-            return a.length();
-        })
-        .def("__iter__", [](gridpy::BusArray& a) {
-            return py::make_iterator(a.begin(), a.end());
-        }, py::keep_alive<0, 1>());
+    bindArray<gridpy::BusArray>(m, "BusArray");
 
     m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
           py::arg("bus_breaker_view"));
