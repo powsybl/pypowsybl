@@ -160,10 +160,10 @@ public final class GridPyApi {
     interface LoadFlowParametersPointer extends PointerBase {
 
         @CField("distributed_slack")
-        int getDistributedSlack();
+        boolean isDistributedSlack();
 
         @CField("distributed_slack")
-        void setDistributedSlack(int distributedSlack);
+        void setDistributedSlack(boolean distributedSlack);
     }
 
     static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -185,7 +185,7 @@ public final class GridPyApi {
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
-                .setDistributedSlack(loadFlowParametersPtr.getDistributedSlack() != 0)
+                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
                 .setDc(dc);
         LoadFlowResult result = LoadFlow.run(network, parameters);
         return createLoadFlowComponentResultArrayPointer(result);

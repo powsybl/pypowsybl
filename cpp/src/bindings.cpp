@@ -75,7 +75,7 @@ PYBIND11_MODULE(_gridpy, m) {
                 return parameters;
             }), py::arg("distributed_slack") = true)
             .def_property("distributed_slack", [](const load_flow_parameters& p) {
-                return p.distributed_slack != 0;
+                return (bool) p.distributed_slack;
             }, [](load_flow_parameters& p, bool distributedSlack) {
                 p.distributed_slack = distributedSlack;
             });

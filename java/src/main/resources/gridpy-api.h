@@ -18,5 +18,5 @@ typedef struct load_flow_component_result_struct {
 } load_flow_component_result;
 
 typedef struct load_flow_parameters_struct {
-    int distributed_slack;
+    unsigned char distributed_slack;
 } load_flow_parameters;
