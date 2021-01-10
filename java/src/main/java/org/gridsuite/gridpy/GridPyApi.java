@@ -167,11 +167,65 @@ public final class GridPyApi {
     @CStruct("load_flow_parameters")
     interface LoadFlowParametersPointer extends PointerBase {
 
-        @CField("distributed_slack")
-        int getDistributedSlack();
+        @CField("voltage_init_mode")
+        int getVoltageInitMode();
+
+        @CField("voltage_init_mode")
+        void setVoltageInitMode(int voltageInitMode);
+
+        @CField("transformer_voltage_control_on")
+        boolean isTransformerVoltageControlOn();
+
+        @CField("transformer_voltage_control_on")
+        void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
+
+        @CField("no_generator_reactive_limits")
+        boolean isNoGeneratorReactiveLimits();
+
+        @CField("no_generator_reactive_limits")
+        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+
+        @CField("phase_shifter_regulation_on")
+        boolean isPhaseShifterRegulationOn();
+
+        @CField("phase_shifter_regulation_on")
+        void setPhaseShifterRegulationOn(boolean phaseShifterRegulationOn);
+
+        @CField("twt_split_shunt_admittance")
+        boolean isTwtSplitShuntAdmittance();
+
+        @CField("twt_split_shunt_admittance")
+        void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
+
+        @CField("simul_shunt")
+        boolean isSimulShunt();
+
+        @CField("simul_shunt")
+        void setSimulShunt(boolean simulShunt);
+
+        @CField("read_slack_bus")
+        boolean isReadSlackBus();
+
+        @CField("read_slack_bus")
+        void setReadSlackBus(boolean readSlackBus);
+
+        @CField("write_slack_bus")
+        boolean isWriteSlackBus();
+
+        @CField("write_slack_bus")
+        void setWriteSlackBus(boolean writeSlackBus);
 
         @CField("distributed_slack")
-        void setDistributedSlack(int distributedSlack);
+        boolean isDistributedSlack();
+
+        @CField("distributed_slack")
+        void setDistributedSlack(boolean distributedSlack);
+
+        @CField("balance_type")
+        int getBalanceType();
+
+        @CField("balance_type")
+        void setBalanceType(int balanceType);
     }
 
     static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -193,8 +247,17 @@ public final class GridPyApi {
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         LoadFlowParameters parameters = LoadFlowParameters.load()
-                .setDistributedSlack(loadFlowParametersPtr.getDistributedSlack() != 0)
-                .setDc(dc);
+                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
+                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
+                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
+                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
+                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
+                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
+                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
+                .setDc(dc)
+                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()]);
         LoadFlowResult result = LoadFlow.run(network, parameters);
         return createLoadFlowComponentResultArrayPointer(result);
     }
