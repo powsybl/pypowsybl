@@ -37,6 +37,9 @@ import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
+import org.graalvm.nativeimage.c.constant.CEnum;
+import org.graalvm.nativeimage.c.constant.CEnumLookup;
+import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CFieldAddress;
@@ -367,6 +370,40 @@ public final class GridPyApi {
             }
         }
         return false;
+    }
+
+    @CEnum("element_type")
+    enum ElementType {
+        LINE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ElementType fromCValue(int value);
+    }
+
+    @CEntryPoint(name = "getNetworkElementsIds")
+    public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<String> elementsIds;
+        switch (elementType) {
+            case LINE:
+                elementsIds = network.getLineStream().map(Identifiable::getId).collect(Collectors.toList());
+                break;
+            default:
+                throw new PowsyblException("Unsupported element type:" + elementType);
+        }
+        CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
+        for (int i = 0; i < elementsIds.size(); i++) {
+            elementsIdsPtr.addressOf(i).write(CTypeConversion.toCString(elementsIds.get(i)).get());
+        }
+        return allocArrayPointer(elementsIdsPtr, elementsIds.size());
+    }
+
+    @CEntryPoint(name = "freeNetworkElementsIds")
+    public static void freeNetworkElementsIds(IsolateThread thread, ArrayPointer<CCharPointerPointer> elementsIdsArrayPtr) {
+        freeArrayPointer(elementsIdsArrayPtr);
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")

@@ -6,7 +6,9 @@
 #
 import _gridpy
 from _gridpy import Bus
+from _gridpy import ElementType
 from gridpy.util import ObjectHandle
+from typing import List
 
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -40,6 +42,9 @@ class Network(ObjectHandle):
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+
+    def get_elements_ids(self, element_type: _gridpy.ElementType) -> List[str]:
+        return _gridpy.get_network_elements_ids(self.ptr, element_type)
 
 
 def create_empty(id: str = "Default") -> Network:

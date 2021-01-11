@@ -39,6 +39,12 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
+    py::enum_<element_type>(m, "ElementType")
+            .value("LINE", element_type::LINE)
+            .export_values();
+
+    m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type");
+
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");

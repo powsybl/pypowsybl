@@ -83,6 +83,8 @@ bool updateSwitchPosition(void* network, const std::string& id, bool open);
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected);
 
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType);
+
 void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);

@@ -108,6 +108,19 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType) {
+    GraalVmGuard guard;
+    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType);
+    std::vector<std::string> elementsIds;
+    elementsIds.reserve(elementsIdsArrayPtr->length);
+    for (int i = 0; i < elementsIdsArrayPtr->length; i++) {
+        std::string elementId = *((char**) elementsIdsArrayPtr->ptr + i);
+        elementsIds.emplace_back(elementId);
+    }
+    freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
+    return elementsIds;
+}
+
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
     return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
