@@ -61,9 +61,9 @@ public final class GridPyApi {
     private GridPyApi() {
     }
 
-    @CEntryPoint(name = "printVersion")
-    public static void printVersion(IsolateThread thread) {
-        System.out.println(Version.getTableString());
+    @CEntryPoint(name = "getVersionTable")
+    public static CCharPointer getVersionTable(IsolateThread thread) {
+        return CTypeConversion.toCString(Version.getTableString()).get();
     }
 
     @CEntryPoint(name = "createEmptyNetwork")

@@ -26,7 +26,7 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.doc() = "PowSyBl Python API";
 
-    m.def("print_version", &gridpy::printVersion, "Print a table with all PowSybBl modules version");
+    m.def("get_version_table", &gridpy::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
     m.def("create_empty_network", &gridpy::createEmptyNetwork, "Create an empty network",
           py::arg("id"));

@@ -68,9 +68,9 @@ Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
 
-void printVersion() {
+std::string getVersionTable() {
     GraalVmGuard guard;
-    printVersion(guard.thread());
+    return std::string(getVersionTable(guard.thread()));
 }
 
 void* createEmptyNetwork(const std::string& id) {

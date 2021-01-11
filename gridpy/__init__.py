@@ -8,4 +8,4 @@ import _gridpy
 
 
 def print_version():
-    _gridpy.print_version()
+    print(_gridpy.get_version_table())
