@@ -50,4 +50,5 @@ typedef struct contingency_result_struct {
 
 typedef enum {
     LINE = 0,
+    TWO_WINDINGS_TRANSFORMER,
 } element_type;
