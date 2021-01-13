@@ -39,6 +39,15 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
+    py::enum_<element_type>(m, "ElementType")
+            .value("LINE", element_type::LINE)
+            .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
+            .value("GENERATOR", element_type::GENERATOR)
+            .export_values();
+
+    m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
+          py::arg("network"), py::arg("element_type"), py::arg("nominal_voltage"));
+
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");

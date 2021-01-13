@@ -47,3 +47,9 @@ typedef struct contingency_result_struct {
     int status;
     array limit_violations;
 } contingency_result;
+
+typedef enum {
+    LINE = 0,
+    TWO_WINDINGS_TRANSFORMER,
+    GENERATOR,
+} element_type;
