@@ -57,5 +57,6 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
 
+
 if __name__ == '__main__':
     unittest.main()
