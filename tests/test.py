@@ -52,6 +52,11 @@ class GridPyTestCase(unittest.TestCase):
 #        sa_result = sa.run(n)
 #        self.assertEqual(1, sa_result.contingencies)
 
+    def test_get_network_element_ids(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
+        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
+
 
 if __name__ == '__main__':
     unittest.main()
