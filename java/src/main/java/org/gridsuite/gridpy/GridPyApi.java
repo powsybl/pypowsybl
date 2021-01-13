@@ -21,6 +21,7 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
 import com.powsybl.security.*;
+import com.powsybl.sensitivity.*;
 import com.powsybl.sld.NetworkGraphBuilder;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.LayoutParameters;
@@ -451,9 +452,26 @@ public final class GridPyApi {
         }
     }
 
-    private static class SecurityAnalysisContext {
+    private interface ContingencyContainer {
+
+        void addContingency(String contingencyId, List<String> elementIds);
+
+        Map<String, List<String>> getElementIdsByContingencyId();
+    }
+
+    private static class SecurityAnalysisContext implements ContingencyContainer {
 
         private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
+
+        @Override
+        public void addContingency(String contingencyId, List<String> elementIds) {
+            elementIdsByContingencyId.put(contingencyId, elementIds);
+        }
+
+        @Override
+        public Map<String, List<String>> getElementIdsByContingencyId() {
+            return elementIdsByContingencyId;
+        }
     }
 
     @CEntryPoint(name = "createSecurityAnalysis")
@@ -461,18 +479,23 @@ public final class GridPyApi {
         return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
     }
 
+    private static List<String> createStringList(CCharPointerPointer charPtrPtr, int length) {
+        List<String> stringList = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            CCharPointer charPtr = charPtrPtr.read(i);
+            String str = CTypeConversion.toJavaString(charPtr);
+            stringList.add(str);
+        }
+        return stringList;
+    }
+
     @CEntryPoint(name = "addContingencyToSecurityAnalysis")
     public static void addContingencyToSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, CCharPointer contingencyIdPtr,
                                                         CCharPointerPointer elementIdPtrPtr, int elementCount) {
         SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
-        List<String> elementIds = new ArrayList<>(elementCount);
-        for (int i = 0; i < elementCount; i++) {
-            CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
-            String elementId = CTypeConversion.toJavaString(elementIdPtr);
-            elementIds.add(elementId);
-        }
-        securityAnalysisContext.elementIdsByContingencyId.put(contingencyId, elementIds);
+        List<String> elementIds = createStringList(elementIdPtrPtr, elementCount);
+        securityAnalysisContext.addContingency(contingencyId, elementIds);
     }
 
     @CStruct("limit_violation")
@@ -606,6 +629,20 @@ public final class GridPyApi {
         }
     }
 
+    private static List<Contingency> createContingencies(Network network, ContingencyContainer contingencyContainer) {
+        Map<String, List<String>> elementIdsByContingencyId = contingencyContainer.getElementIdsByContingencyId();
+        List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
+        for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
+            String contingencyId = e.getKey();
+            List<String> elementIds = e.getValue();
+            List<ContingencyElement> elements = elementIds.stream()
+                    .map(elementId -> createContingencyElement(network, elementId))
+                    .collect(Collectors.toList());
+            contingencies.add(new Contingency(contingencyId, elements));
+        }
+        return contingencies;
+    }
+
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
@@ -615,15 +652,7 @@ public final class GridPyApi {
         SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        List<Contingency> contingencies = new ArrayList<>(securityAnalysisContext.elementIdsByContingencyId.size());
-        for (Map.Entry<String, List<String>> e : securityAnalysisContext.elementIdsByContingencyId.entrySet()) {
-            String contingencyId = e.getKey();
-            List<String> elementIds = e.getValue();
-            List<ContingencyElement> elements = elementIds.stream()
-                .map(elementId -> createContingencyElement(network, elementId))
-                .collect(Collectors.toList());
-            contingencies.add(new Contingency(contingencyId, elements));
-        }
+        List<Contingency> contingencies = createContingencies(network, securityAnalysisContext);
         SecurityAnalysisResult result = securityAnalysis
                 .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
                 .join();
@@ -638,6 +667,41 @@ public final class GridPyApi {
             UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
         }
         freeArrayPointer(contingencyResultArrayPtr);
+    }
+
+    private static class SensitivityAnalysisContext implements ContingencyContainer {
+
+        private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
+
+        @Override
+        public void addContingency(String contingencyId, List<String> elementIds) {
+            elementIdsByContingencyId.put(contingencyId, elementIds);
+        }
+
+        @Override
+        public Map<String, List<String>> getElementIdsByContingencyId() {
+            return elementIdsByContingencyId;
+        }
+    }
+
+    @CEntryPoint(name = "createSensitivityAnalysis")
+    public static ObjectHandle createSensitivityAnalysis(IsolateThread thread) {
+        return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
+    }
+
+    @CEntryPoint(name = "runSensitivityAnalysis")
+    public static void runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
+        SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
+        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+        sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
+        SensitivityFactorsProvider factorsProvider = n -> Collections.emptyList();
+        List<Contingency> contingencies = createContingencies(network, sensitivityAnalysisContext);
+        SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
+                                                                   factorsProvider, n -> contingencies, sensitivityAnalysisParameters,
+                                                                   LocalComputationManager.getDefault());
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

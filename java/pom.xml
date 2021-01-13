@@ -31,6 +31,7 @@
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
+        <open-load-flow.version>0.9.0-SNAPSHOT</open-load-flow.version>
     </properties>
 
     <build>
@@ -195,6 +196,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
+            <version>${open-load-flow.version}</version>
         </dependency>
     </dependencies>
 
