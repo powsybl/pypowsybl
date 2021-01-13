@@ -108,9 +108,9 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType) {
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, double nominalVoltage) {
     GraalVmGuard guard;
-    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType);
+    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltage);
     std::vector<std::string> elementsIds;
     elementsIds.reserve(elementsIdsArrayPtr->length);
     for (int i = 0; i < elementsIdsArrayPtr->length; i++) {

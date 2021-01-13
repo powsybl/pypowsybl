@@ -386,19 +386,34 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
-    public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType) {
+    public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
+                                                                          double nominalVoltage) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         List<String> elementsIds;
         switch (elementType) {
             case LINE:
-                elementsIds = network.getLineStream().map(Identifiable::getId).collect(Collectors.toList());
+                elementsIds = network.getLineStream()
+                        .filter(l -> Double.isNaN(nominalVoltage) || l.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .map(Identifiable::getId)
+                        .collect(Collectors.toList());
                 break;
+
             case TWO_WINDINGS_TRANSFORMER:
-                elementsIds = network.getTwoWindingsTransformerStream().map(Identifiable::getId).collect(Collectors.toList());
+                elementsIds = network.getTwoWindingsTransformerStream()
+                        .filter(twt -> Double.isNaN(nominalVoltage)
+                                || twt.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage
+                                || twt.getTerminal2().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .map(Identifiable::getId)
+                        .collect(Collectors.toList());
                 break;
+
             case GENERATOR:
-                elementsIds = network.getGeneratorStream().map(Identifiable::getId).collect(Collectors.toList());
+                elementsIds = network.getGeneratorStream()
+                        .filter(g -> Double.isNaN(nominalVoltage) || g.getTerminal().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .map(Identifiable::getId)
+                        .collect(Collectors.toList());
                 break;
+
             default:
                 throw new PowsyblException("Unsupported element type:" + elementType);
         }

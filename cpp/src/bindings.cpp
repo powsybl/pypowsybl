@@ -45,7 +45,8 @@ PYBIND11_MODULE(_gridpy, m) {
             .value("GENERATOR", element_type::GENERATOR)
             .export_values();
 
-    m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type");
+    m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
+          py::arg("network"), py::arg("element_type"), py::arg("nominal_voltage"));
 
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
