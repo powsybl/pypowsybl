@@ -42,6 +42,7 @@ PYBIND11_MODULE(_gridpy, m) {
     py::enum_<element_type>(m, "ElementType")
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
+            .value("GENERATOR", element_type::GENERATOR)
             .export_values();
 
     m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type");

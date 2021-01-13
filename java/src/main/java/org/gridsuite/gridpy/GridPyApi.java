@@ -375,7 +375,8 @@ public final class GridPyApi {
     @CEnum("element_type")
     enum ElementType {
         LINE,
-        TWO_WINDINGS_TRANSFORMER;
+        TWO_WINDINGS_TRANSFORMER,
+        GENERATOR;
 
         @CEnumValue
         public native int getCValue();
@@ -394,6 +395,9 @@ public final class GridPyApi {
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 elementsIds = network.getTwoWindingsTransformerStream().map(Identifiable::getId).collect(Collectors.toList());
+                break;
+            case GENERATOR:
+                elementsIds = network.getGeneratorStream().map(Identifiable::getId).collect(Collectors.toList());
                 break;
             default:
                 throw new PowsyblException("Unsupported element type:" + elementType);
