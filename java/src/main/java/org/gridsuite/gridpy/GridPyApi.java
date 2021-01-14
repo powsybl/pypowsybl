@@ -394,15 +394,21 @@ public final class GridPyApi {
         public static native ElementType fromCValue(int value);
     }
 
+    private static boolean isInMainCc(Terminal t) {
+        Bus bus = t.getBusView().getBus();
+        return bus != null && bus.getConnectedComponent().getNum() == ComponentConstants.MAIN_NUM;
+    }
+
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                          double nominalVoltage) {
+                                                                          double nominalVoltage, boolean mainCc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         List<String> elementsIds;
         switch (elementType) {
             case LINE:
                 elementsIds = network.getLineStream()
                         .filter(l -> Double.isNaN(nominalVoltage) || l.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
@@ -412,6 +418,7 @@ public final class GridPyApi {
                         .filter(twt -> Double.isNaN(nominalVoltage)
                                 || twt.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage
                                 || twt.getTerminal2().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
@@ -419,6 +426,7 @@ public final class GridPyApi {
             case GENERATOR:
                 elementsIds = network.getGeneratorStream()
                         .filter(g -> Double.isNaN(nominalVoltage) || g.getTerminal().getVoltageLevel().getNominalV() == nominalVoltage)
+                        .filter(g -> !mainCc || isInMainCc(g.getTerminal()))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
