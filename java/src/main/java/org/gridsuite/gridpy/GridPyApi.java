@@ -21,7 +21,15 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
 import com.powsybl.security.*;
-import com.powsybl.sensitivity.*;
+import com.powsybl.sensitivity.SensitivityAnalysis;
+import com.powsybl.sensitivity.SensitivityAnalysisParameters;
+import com.powsybl.sensitivity.SensitivityAnalysisResult;
+import com.powsybl.sensitivity.SensitivityFactor;
+import com.powsybl.sensitivity.factors.BranchFlowPerInjectionIncrease;
+import com.powsybl.sensitivity.factors.BranchFlowPerPSTAngle;
+import com.powsybl.sensitivity.factors.functions.BranchFlow;
+import com.powsybl.sensitivity.factors.variables.InjectionIncrease;
+import com.powsybl.sensitivity.factors.variables.PhaseTapChangerAngle;
 import com.powsybl.sld.NetworkGraphBuilder;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.LayoutParameters;
@@ -489,13 +497,13 @@ public final class GridPyApi {
         return stringList;
     }
 
-    @CEntryPoint(name = "addContingencyToSecurityAnalysis")
-    public static void addContingencyToSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, CCharPointer contingencyIdPtr,
-                                                        CCharPointerPointer elementIdPtrPtr, int elementCount) {
-        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+    @CEntryPoint(name = "addContingency")
+    public static void addContingency(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer contingencyIdPtr,
+                                      CCharPointerPointer elementIdPtrPtr, int elementCount) {
+        ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         List<String> elementIds = createStringList(elementIdPtrPtr, elementCount);
-        securityAnalysisContext.addContingency(contingencyId, elementIds);
+        contingencyContainer.addContingency(contingencyId, elementIds);
     }
 
     @CStruct("limit_violation")
@@ -673,6 +681,10 @@ public final class GridPyApi {
 
         private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
 
+        private List<String> branchsIds;
+
+        private List<String> injectionsOrTransfosIds;
+
         @Override
         public void addContingency(String contingencyId, List<String> elementIds) {
             elementIdsByContingencyId.put(contingencyId, elementIds);
@@ -682,11 +694,59 @@ public final class GridPyApi {
         public Map<String, List<String>> getElementIdsByContingencyId() {
             return elementIdsByContingencyId;
         }
+
+        public void setFactorMatrix(List<String> branchsIds, List<String> injectionsOrTransfosIds) {
+            this.branchsIds = branchsIds;
+            this.injectionsOrTransfosIds = injectionsOrTransfosIds;
+        }
     }
 
     @CEntryPoint(name = "createSensitivityAnalysis")
     public static ObjectHandle createSensitivityAnalysis(IsolateThread thread) {
         return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
+    }
+
+    @CEntryPoint(name = "setFactorMatrix")
+    public static void setFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                       CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                       CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount) {
+        SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        List<String> branchsIds = createStringList(branchIdPtrPtr, branchIdCount);
+        List<String> injectionsOrTransfosIds = createStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
+        sensitivityAnalysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
+    }
+
+    private static List<SensitivityFactor> createFactors(Network network, SensitivityAnalysisContext sensitivityAnalysisContext) {
+        if (sensitivityAnalysisContext.branchsIds == null) {
+            return Collections.emptyList();
+        }
+        List<SensitivityFactor> factors = new ArrayList<>();
+        for (String branchId : sensitivityAnalysisContext.branchsIds) {
+            Branch branch = network.getBranch(branchId);
+            if (branch == null) {
+                throw new PowsyblException("Branch '" + branchId + "' not found");
+            }
+            BranchFlow branchFlow = new BranchFlow(branchId, branch.getName(), branchId);
+            for (String injectionOrTransfoId : sensitivityAnalysisContext.injectionsOrTransfosIds) {
+                Generator generator = network.getGenerator(injectionOrTransfoId);
+                if (generator != null) {
+                    InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, generator.getName(), injectionOrTransfoId);
+                    factors.add(new BranchFlowPerInjectionIncrease(branchFlow, injectionIncrease));
+                } else {
+                    TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
+                    if (twt != null) {
+                        if (twt.getPhaseTapChanger() == null) {
+                            throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
+                        }
+                        PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getName(), injectionOrTransfoId);
+                        factors.add(new BranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle));
+                    } else {
+                        throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
+                    }
+                }
+            }
+        }
+        return factors;
     }
 
     @CEntryPoint(name = "runSensitivityAnalysis")
@@ -697,11 +757,10 @@ public final class GridPyApi {
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        SensitivityFactorsProvider factorsProvider = n -> Collections.emptyList();
+        List<SensitivityFactor> factors = createFactors(network, sensitivityAnalysisContext);
         List<Contingency> contingencies = createContingencies(network, sensitivityAnalysisContext);
         SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
-                                                                   factorsProvider, n -> contingencies, sensitivityAnalysisParameters,
-                                                                   LocalComputationManager.getDefault());
+            n -> factors, n -> contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

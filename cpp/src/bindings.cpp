@@ -187,8 +187,8 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("create_security_analysis", &gridpy::createSecurityAnalysis, "Create a security analysis");
 
-    m.def("add_contingency_to_security_analysis", &gridpy::addContingencyToSecurityAnalysis, "Add a contingency to the security analysis",
-          py::arg("security_analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
+    m.def("add_contingency", &gridpy::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
+          py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
     py::enum_<gridpy::LimitType>(m, "LimitType")
             .value("CURRENT", gridpy::LimitType::CURRENT)
@@ -248,6 +248,14 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"));
+
+    m.def("create_sensitivity_analysis", &gridpy::createSensitivityAnalysis, "Create a sensitivity analysis");
+
+    m.def("set_factor_matrix", &gridpy::setFactorMatrix, "Set a factor matrix to a sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
+
+    m.def("run_sensitivity_analysis", &gridpy::runSensitivityAnalysis, "Run a sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }
