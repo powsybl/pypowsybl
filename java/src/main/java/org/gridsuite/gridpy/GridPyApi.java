@@ -837,7 +837,7 @@ public final class GridPyApi {
         SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
-        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<SensitivityFactor> factors = createFactors(network, sensitivityAnalysisContext);
         List<Contingency> contingencies = createContingencies(network, sensitivityAnalysisContext);
