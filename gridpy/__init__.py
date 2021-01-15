@@ -7,5 +7,9 @@
 import _gridpy
 
 
+def set_debug_mode(debug: bool = True):
+    _gridpy.set_debug_mode(debug)
+
+
 def print_version():
     print(_gridpy.get_version_table())
