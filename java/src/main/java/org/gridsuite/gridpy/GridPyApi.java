@@ -7,10 +7,6 @@
 package org.gridsuite.gridpy;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.contingency.BranchContingency;
-import com.powsybl.contingency.Contingency;
-import com.powsybl.contingency.ContingencyElement;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -19,14 +15,11 @@ import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
-import com.powsybl.security.*;
-import com.powsybl.sensitivity.*;
-import com.powsybl.sensitivity.factors.BranchFlowPerInjectionIncrease;
-import com.powsybl.sensitivity.factors.BranchFlowPerPSTAngle;
-import com.powsybl.sensitivity.factors.functions.BranchFlow;
-import com.powsybl.sensitivity.factors.variables.InjectionIncrease;
-import com.powsybl.sensitivity.factors.variables.PhaseTapChangerAngle;
+import com.powsybl.security.LimitViolation;
+import com.powsybl.security.LimitViolationsResult;
+import com.powsybl.security.PostContingencyResult;
+import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.sensitivity.SensitivityValue;
 import com.powsybl.sld.NetworkGraphBuilder;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.LayoutParameters;
@@ -58,7 +51,9 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -466,41 +461,9 @@ public final class GridPyApi {
         }
     }
 
-    private interface ContingencyContainer {
-
-        void addContingency(String contingencyId, List<String> elementIds);
-
-        Map<String, List<String>> getElementIdsByContingencyId();
-    }
-
-    private static class SecurityAnalysisContext implements ContingencyContainer {
-
-        private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
-
-        @Override
-        public void addContingency(String contingencyId, List<String> elementIds) {
-            elementIdsByContingencyId.put(contingencyId, elementIds);
-        }
-
-        @Override
-        public Map<String, List<String>> getElementIdsByContingencyId() {
-            return elementIdsByContingencyId;
-        }
-    }
-
     @CEntryPoint(name = "createSecurityAnalysis")
     public static ObjectHandle createSecurityAnalysis(IsolateThread thread) {
         return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
-    }
-
-    private static List<String> createStringList(CCharPointerPointer charPtrPtr, int length) {
-        List<String> stringList = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-            CCharPointer charPtr = charPtrPtr.read(i);
-            String str = CTypeConversion.toJavaString(charPtr);
-            stringList.add(str);
-        }
-        return stringList;
     }
 
     @CEntryPoint(name = "addContingency")
@@ -508,7 +471,7 @@ public final class GridPyApi {
                                       CCharPointerPointer elementIdPtrPtr, int elementCount) {
         ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
-        List<String> elementIds = createStringList(elementIdPtrPtr, elementCount);
+        List<String> elementIds = CTypeUtil.createStringList(elementIdPtrPtr, elementCount);
         contingencyContainer.addContingency(contingencyId, elementIds);
     }
 
@@ -631,45 +594,13 @@ public final class GridPyApi {
         return allocArrayPointer(contingencyPtr, resultCount);
     }
 
-    private static ContingencyElement createContingencyElement(Network network, String elementId) {
-        Identifiable<?> identifiable = network.getIdentifiable(elementId);
-        if (identifiable == null) {
-            throw new PowsyblException("Element '" + elementId + "' not found");
-        }
-        if (identifiable instanceof Branch) {
-            return new BranchContingency(elementId);
-        } else {
-            throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
-        }
-    }
-
-    private static List<Contingency> createContingencies(Network network, ContingencyContainer contingencyContainer) {
-        Map<String, List<String>> elementIdsByContingencyId = contingencyContainer.getElementIdsByContingencyId();
-        List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
-        for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
-            String contingencyId = e.getKey();
-            List<String> elementIds = e.getValue();
-            List<ContingencyElement> elements = elementIds.stream()
-                    .map(elementId -> createContingencyElement(network, elementId))
-                    .collect(Collectors.toList());
-            contingencies.add(new Contingency(contingencyId, elements));
-        }
-        return contingencies;
-    }
-
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
-        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
-        SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
-        securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        List<Contingency> contingencies = createContingencies(network, securityAnalysisContext);
-        SecurityAnalysisResult result = securityAnalysis
-                .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
-                .join();
+        SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters);
         return createContingencyResultArrayPointer(result);
     }
 
@@ -683,30 +614,6 @@ public final class GridPyApi {
         freeArrayPointer(contingencyResultArrayPtr);
     }
 
-    private static class SensitivityAnalysisContext implements ContingencyContainer {
-
-        private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
-
-        private List<String> branchsIds;
-
-        private List<String> injectionsOrTransfosIds;
-
-        @Override
-        public void addContingency(String contingencyId, List<String> elementIds) {
-            elementIdsByContingencyId.put(contingencyId, elementIds);
-        }
-
-        @Override
-        public Map<String, List<String>> getElementIdsByContingencyId() {
-            return elementIdsByContingencyId;
-        }
-
-        public void setFactorMatrix(List<String> branchsIds, List<String> injectionsOrTransfosIds) {
-            this.branchsIds = branchsIds;
-            this.injectionsOrTransfosIds = injectionsOrTransfosIds;
-        }
-    }
-
     @CEntryPoint(name = "createSensitivityAnalysis")
     public static ObjectHandle createSensitivityAnalysis(IsolateThread thread) {
         return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
@@ -716,141 +623,19 @@ public final class GridPyApi {
     public static void setFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                        CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                        CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount) {
-        SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-        List<String> branchsIds = createStringList(branchIdPtrPtr, branchIdCount);
-        List<String> injectionsOrTransfosIds = createStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
-        sensitivityAnalysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
-    }
-
-    interface IndexedFactor {
-
-        int getRow();
-
-        int getColumn();
-    }
-
-    static class IndexedBranchFlowPerInjectionIncrease extends BranchFlowPerInjectionIncrease implements IndexedFactor {
-
-        private final int row;
-
-        private final int column;
-
-        IndexedBranchFlowPerInjectionIncrease(BranchFlow sensitivityFunction, InjectionIncrease sensitivityVariable,
-                                              int row, int column) {
-            super(sensitivityFunction, sensitivityVariable);
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public int getRow() {
-            return row;
-        }
-
-        @Override
-        public int getColumn() {
-            return column;
-        }
-    }
-
-    static class IndexedBranchFlowPerPSTAngle extends BranchFlowPerPSTAngle implements IndexedFactor {
-
-        private final int row;
-
-        private final int column;
-
-        IndexedBranchFlowPerPSTAngle(BranchFlow sensitivityFunction, PhaseTapChangerAngle sensitivityVariable,
-                                     int row, int column) {
-            super(sensitivityFunction, sensitivityVariable);
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public int getRow() {
-            return row;
-        }
-
-        @Override
-        public int getColumn() {
-            return column;
-        }
-    }
-
-    private static List<SensitivityFactor> createFactors(Network network, SensitivityAnalysisContext sensitivityAnalysisContext) {
-        if (sensitivityAnalysisContext.branchsIds == null) {
-            return Collections.emptyList();
-        }
-        List<SensitivityFactor> factors = new ArrayList<>();
-        for (int column = 0; column < sensitivityAnalysisContext.branchsIds.size(); column++) {
-            String branchId = sensitivityAnalysisContext.branchsIds.get(column);
-            Branch branch = network.getBranch(branchId);
-            if (branch == null) {
-                throw new PowsyblException("Branch '" + branchId + "' not found");
-            }
-            BranchFlow branchFlow = new BranchFlow(branchId, branch.getName(), branchId);
-            for (int row = 0; row < sensitivityAnalysisContext.injectionsOrTransfosIds.size(); row++) {
-                String injectionOrTransfoId = sensitivityAnalysisContext.injectionsOrTransfosIds.get(row);
-                Generator generator = network.getGenerator(injectionOrTransfoId);
-                if (generator != null) {
-                    InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, generator.getName(), injectionOrTransfoId);
-                    factors.add(new IndexedBranchFlowPerInjectionIncrease(branchFlow, injectionIncrease, row, column));
-                } else {
-                    TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
-                    if (twt != null) {
-                        if (twt.getPhaseTapChanger() == null) {
-                            throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
-                        }
-                        PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getName(), injectionOrTransfoId);
-                        factors.add(new IndexedBranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle, row, column));
-                    } else {
-                        throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
-                    }
-                }
-            }
-        }
-        return factors;
-    }
-
-    static class SensitivityAnalysisResultContext {
-
-        private final int rowCount;
-
-        private final int columnCount;
-
-        private final Collection<SensitivityValue> sensitivityValues;
-
-        private final Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId;
-
-        SensitivityAnalysisResultContext(int rowCount, int columnCount, Collection<SensitivityValue> sensitivityValues,
-                                         Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId) {
-            this.rowCount = rowCount;
-            this.columnCount = columnCount;
-            this.sensitivityValues = sensitivityValues;
-            this.sensitivityValuesByContingencyId = sensitivityValuesByContingencyId;
-        }
+        SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        List<String> branchsIds = CTypeUtil.createStringList(branchIdPtrPtr, branchIdCount);
+        List<String> injectionsOrTransfosIds = CTypeUtil.createStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
+        analysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
     }
 
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
-        SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
-        sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        List<SensitivityFactor> factors = createFactors(network, sensitivityAnalysisContext);
-        List<Contingency> contingencies = createContingencies(network, sensitivityAnalysisContext);
-        SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
-            n -> factors, n -> contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
-        SensitivityAnalysisResultContext resultContext = null;
-        if (result.isOk()) {
-            Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
-            Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            int columnCount = sensitivityAnalysisContext.branchsIds.size();
-            int rowCount = sensitivityAnalysisContext.injectionsOrTransfosIds.size();
-            resultContext = new SensitivityAnalysisResultContext(rowCount, columnCount, sensitivityValues, sensitivityValuesByContingencyId);
-        }
+        SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters);
         return ObjectHandles.getGlobal().create(resultContext);
     }
 
@@ -874,8 +659,6 @@ public final class GridPyApi {
 
         @CField("column_count")
         void setColumnCount(int columnCount);
-
-        MatrixPointer addressOf(int index);
     }
 
     @CEntryPoint(name = "getSensitivityMatrix")
@@ -883,18 +666,17 @@ public final class GridPyApi {
                                                      CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
-        Collection<SensitivityValue> sensitivityValues = contingencyId.isEmpty() ? resultContext.sensitivityValues
-                                                                                 : resultContext.sensitivityValuesByContingencyId.get(contingencyId);
-        CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.rowCount * resultContext.columnCount * SizeOf.get(CDoublePointer.class));
+        Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
         if (sensitivityValues != null) {
             for (SensitivityValue sensitivityValue : sensitivityValues) {
-                IndexedFactor indexedFactor = (IndexedFactor) sensitivityValue.getFactor();
-                valuePtr.addressOf(indexedFactor.getRow() * resultContext.columnCount + indexedFactor.getColumn()).write(sensitivityValue.getValue());
+                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
+                valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
             }
         }
         MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-        matrixPtr.setRowCount(resultContext.rowCount);
-        matrixPtr.setColumnCount(resultContext.columnCount);
+        matrixPtr.setRowCount(resultContext.getRowCount());
+        matrixPtr.setColumnCount(resultContext.getColumnCount());
         matrixPtr.setValues(valuePtr);
         return matrixPtr;
     }
