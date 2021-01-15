@@ -10,8 +10,6 @@ from _gridpy import LimitViolation
 from gridpy.network import Network
 from gridpy.loadflow import Parameters
 from gridpy.util import ContingencyContainer
-from typing import List
-from typing import Callable
 from prettytable import PrettyTable
 
 

@@ -9,19 +9,21 @@ import _gridpy
 from gridpy.loadflow import Parameters
 from gridpy.network import Network
 from gridpy.util import ContingencyContainer
+from gridpy.util import ObjectHandle
 from typing import List
 import numpy as np
 
 
-class SensitivityAnalysisResult:
-    def __init__(self, result_context):
-        self._result_context = result_context
+class SensitivityAnalysisResult(ObjectHandle):
+    def __init__(self, result_context_ptr):
+        ObjectHandle.__init__(self, result_context_ptr)
+        self.result_context_ptr = result_context_ptr
 
     def get_sensitivity_matrix(self):
-        return np.array(_gridpy.get_sensitivity_matrix(self._result_context, ''), copy = False)
+        return np.array(_gridpy.get_sensitivity_matrix(self.result_context_ptr, ''), copy = False)
 
     def get_post_contingency_sensitivity_matrix(self, contingency_id: str):
-        return np.array(_gridpy.get_sensitivity_matrix(self._result_context, contingency_id), copy = False)
+        return np.array(_gridpy.get_sensitivity_matrix(self.result_context_ptr, contingency_id), copy = False)
 
 
 class SensitivityAnalysis(ContingencyContainer):
