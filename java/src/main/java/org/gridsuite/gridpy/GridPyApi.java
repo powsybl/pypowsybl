@@ -6,11 +6,11 @@
  */
 package org.gridsuite.gridpy;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Bus;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -20,29 +20,13 @@ import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.sensitivity.SensitivityValue;
-import com.powsybl.sld.NetworkGraphBuilder;
-import com.powsybl.sld.VoltageLevelDiagram;
-import com.powsybl.sld.layout.LayoutParameters;
-import com.powsybl.sld.layout.SmartVoltageLevelLayoutFactory;
-import com.powsybl.sld.layout.VoltageLevelLayoutFactory;
-import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.library.ResourcesComponentLibrary;
-import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
-import com.powsybl.sld.svg.DefaultSVGWriter;
-import com.powsybl.sld.util.TopologicalStyleProvider;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
-import org.graalvm.nativeimage.c.constant.CEnum;
-import org.graalvm.nativeimage.c.constant.CEnumLookup;
-import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
-import org.graalvm.nativeimage.c.struct.CField;
-import org.graalvm.nativeimage.c.struct.CFieldAddress;
-import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -57,8 +41,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.gridsuite.gridpy.GridPyApiHeader.*;
+
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class GridPyApi {
@@ -105,22 +91,6 @@ public final class GridPyApi {
         Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
-    @CStruct("array")
-    interface ArrayPointer<T extends PointerBase> extends PointerBase {
-
-        @CField("ptr")
-        T getPtr();
-
-        @CField("ptr")
-        void setPtr(T ptr);
-
-        @CField("length")
-        int getLength();
-
-        @CField("length")
-        void setLength(int length);
-    }
-
     static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
         ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
         arrayPtr.setPtr(ptr);
@@ -131,106 +101,6 @@ public final class GridPyApi {
     static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
-    }
-
-    @CStruct("load_flow_component_result")
-    interface LoadFlowComponentResultPointer extends PointerBase {
-
-        @CField("component_num")
-        int geComponentNum();
-
-        @CField("component_num")
-        void setComponentNum(int componentNum);
-
-        @CField("status")
-        int getStatus();
-
-        @CField("status")
-        void setStatus(int status);
-
-        @CField("iteration_count")
-        int getIterationCount();
-
-        @CField("iteration_count")
-        void setIterationCount(int iterationCount);
-
-        @CField("slack_bus_id")
-        CCharPointer getSlackBusId();
-
-        @CField("slack_bus_id")
-        void setSlackBusId(CCharPointer slackBusId);
-
-        @CField("slack_bus_active_power_mismatch")
-        double getSlackBusActivePowerMismatch();
-
-        @CField("slack_bus_active_power_mismatch")
-        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
-
-        LoadFlowComponentResultPointer addressOf(int index);
-    }
-
-    @CStruct("load_flow_parameters")
-    interface LoadFlowParametersPointer extends PointerBase {
-
-        @CField("voltage_init_mode")
-        int getVoltageInitMode();
-
-        @CField("voltage_init_mode")
-        void setVoltageInitMode(int voltageInitMode);
-
-        @CField("transformer_voltage_control_on")
-        boolean isTransformerVoltageControlOn();
-
-        @CField("transformer_voltage_control_on")
-        void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
-
-        @CField("no_generator_reactive_limits")
-        boolean isNoGeneratorReactiveLimits();
-
-        @CField("no_generator_reactive_limits")
-        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
-
-        @CField("phase_shifter_regulation_on")
-        boolean isPhaseShifterRegulationOn();
-
-        @CField("phase_shifter_regulation_on")
-        void setPhaseShifterRegulationOn(boolean phaseShifterRegulationOn);
-
-        @CField("twt_split_shunt_admittance")
-        boolean isTwtSplitShuntAdmittance();
-
-        @CField("twt_split_shunt_admittance")
-        void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
-
-        @CField("simul_shunt")
-        boolean isSimulShunt();
-
-        @CField("simul_shunt")
-        void setSimulShunt(boolean simulShunt);
-
-        @CField("read_slack_bus")
-        boolean isReadSlackBus();
-
-        @CField("read_slack_bus")
-        void setReadSlackBus(boolean readSlackBus);
-
-        @CField("write_slack_bus")
-        boolean isWriteSlackBus();
-
-        @CField("write_slack_bus")
-        void setWriteSlackBus(boolean writeSlackBus);
-
-        @CField("distributed_slack")
-        boolean isDistributedSlack();
-
-        @CField("distributed_slack")
-        void setDistributedSlack(boolean distributedSlack);
-
-        @CField("balance_type")
-        int getBalanceType();
-
-        @CField("balance_type")
-        void setBalanceType(int balanceType);
     }
 
     static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -277,30 +147,6 @@ public final class GridPyApi {
         freeArrayPointer(componentResultArrayPtr);
     }
 
-    @CStruct("bus")
-    interface BusPointer extends PointerBase {
-
-        @CField("id")
-        CCharPointer geId();
-
-        @CField("id")
-        void setId(CCharPointer id);
-
-        @CField("v_magnitude")
-        double getVoltageMagnitude();
-
-        @CField("v_magnitude")
-        void setVoltageMagnitude(double voltageMagnitude);
-
-        @CField("v_angle")
-        double getVoltageAngle();
-
-        @CField("v_angle")
-        void setVoltageAngle(double voltageAngle);
-
-        BusPointer addressOf(int index);
-    }
-
     @CEntryPoint(name = "getBusArray")
     public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -327,106 +173,21 @@ public final class GridPyApi {
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        Switch sw = network.getSwitch(idStr);
-        if (sw == null) {
-            throw new PowsyblException("Switch '" + idStr + "' not found");
-        }
-        if (open && !sw.isOpen()) {
-            sw.setOpen(true);
-            return true;
-        } else if (!open && sw.isOpen()) {
-            sw.setOpen(false);
-            return true;
-        }
-        return false;
+        return NetworkUtil.updateSwitchPosition(network, idStr, open);
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        Identifiable<?> equipment = network.getIdentifiable(idStr);
-        if (equipment == null) {
-            throw new PowsyblException("Equipment '" + idStr + "' not found");
-        }
-        if (!(equipment instanceof Connectable)) {
-            throw new PowsyblException("Equipment '" + idStr + "' is not a connectable");
-        }
-        if (equipment instanceof Injection) {
-            Injection<?> injection = (Injection<?>) equipment;
-            if (connected) {
-                return injection.getTerminal().connect();
-            } else {
-                return injection.getTerminal().disconnect();
-            }
-        } else if (equipment instanceof Branch) {
-            Branch<?> branch = (Branch<?>) equipment;
-            if (connected) {
-                boolean done1 = branch.getTerminal1().connect();
-                boolean done2 = branch.getTerminal2().connect();
-                return done1 || done2;
-            } else {
-                boolean done1 = branch.getTerminal1().disconnect();
-                boolean done2 = branch.getTerminal2().disconnect();
-                return done1 || done2;
-            }
-        }
-        return false;
-    }
-
-    @CEnum("element_type")
-    enum ElementType {
-        LINE,
-        TWO_WINDINGS_TRANSFORMER,
-        GENERATOR;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native ElementType fromCValue(int value);
-    }
-
-    private static boolean isInMainCc(Terminal t) {
-        Bus bus = t.getBusView().getBus();
-        return bus != null && bus.getConnectedComponent().getNum() == ComponentConstants.MAIN_NUM;
+        return NetworkUtil.updateConnectableStatus(network, idStr, connected);
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                          double nominalVoltage, boolean mainCc) {
+                                                                                          double nominalVoltage, boolean mainCc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        List<String> elementsIds;
-        switch (elementType) {
-            case LINE:
-                elementsIds = network.getLineStream()
-                        .filter(l -> Double.isNaN(nominalVoltage) || l.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            case TWO_WINDINGS_TRANSFORMER:
-                elementsIds = network.getTwoWindingsTransformerStream()
-                        .filter(twt -> Double.isNaN(nominalVoltage)
-                                || twt.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage
-                                || twt.getTerminal2().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            case GENERATOR:
-                elementsIds = network.getGeneratorStream()
-                        .filter(g -> Double.isNaN(nominalVoltage) || g.getTerminal().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(g -> !mainCc || isInMainCc(g.getTerminal()))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            default:
-                throw new PowsyblException("Unsupported element type:" + elementType);
-        }
+        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltage, mainCc);
         CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < elementsIds.size(); i++) {
             elementsIdsPtr.addressOf(i).write(CTypeConversion.toCString(elementsIds.get(i)).get());
@@ -445,20 +206,7 @@ public final class GridPyApi {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String containerIdStr = CTypeConversion.toJavaString(containerId);
         String svgFileStr = CTypeConversion.toJavaString(svgFile);
-        ComponentLibrary componentLibrary = new ResourcesComponentLibrary("/ConvergenceLibrary");
-        if (network.getVoltageLevel(containerIdStr) != null) {
-            VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
-            VoltageLevelDiagram voltageLevelDiagram = VoltageLevelDiagram.build(new NetworkGraphBuilder(network), containerIdStr, voltageLevelLayoutFactory, false);
-            LayoutParameters layoutParameters = new LayoutParameters()
-                    .setAdaptCellHeightToContent(true);
-            voltageLevelDiagram.writeSvg("",
-                    new DefaultSVGWriter(componentLibrary, layoutParameters),
-                    new DefaultDiagramLabelProvider(network, componentLibrary, layoutParameters),
-                    new TopologicalStyleProvider(network),
-                    Paths.get(svgFileStr));
-        } else {
-            throw new PowsyblException("Container '" + containerIdStr + "' not found");
-        }
+        SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr);
     }
 
     @CEntryPoint(name = "createSecurityAnalysis")
@@ -473,87 +221,6 @@ public final class GridPyApi {
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         List<String> elementIds = CTypeUtil.createStringList(elementIdPtrPtr, elementCount);
         contingencyContainer.addContingency(contingencyId, elementIds);
-    }
-
-    @CStruct("limit_violation")
-    interface LimitViolationPointer extends PointerBase {
-
-        @CField("subject_id")
-        CCharPointer getSubjectId();
-
-        @CField("subject_id")
-        void setSubjectId(CCharPointer subjectId);
-
-        @CField("subject_name")
-        CCharPointer getSubjectName();
-
-        @CField("subject_name")
-        void setSubjectName(CCharPointer subjectName);
-
-        @CField("limit_type")
-        int getLimitType();
-
-        @CField("limit_type")
-        void setLimitType(int limitType);
-
-        @CField("limit")
-        double getLimit();
-
-        @CField("limit")
-        void setLimit(double limit);
-
-        @CField("limit_name")
-        CCharPointer getLimitName();
-
-        @CField("limit_name")
-        void setLimitName(CCharPointer limitName);
-
-        @CField("acceptable_duration")
-        int getAcceptableDuration();
-
-        @CField("acceptable_duration")
-        void setAcceptableDuration(int acceptableDuration);
-
-        @CField("limit_reduction")
-        float getLimitReduction();
-
-        @CField("limit_reduction")
-        void setLimitReduction(float limitReduction);
-
-        @CField("value")
-        double getValue();
-
-        @CField("value")
-        void setValue(double value);
-
-        @CField("side")
-        int getSide();
-
-        @CField("side")
-        void setSide(int side);
-
-        LimitViolationPointer addressOf(int index);
-    }
-
-    @CStruct("contingency_result")
-    interface ContingencyResultPointer extends PointerBase {
-
-        @CField("contingency_id")
-        CCharPointer getContingencyId();
-
-        @CField("contingency_id")
-        void setContingencyId(CCharPointer contingencyId);
-
-        @CField("status")
-        int getStatus();
-
-        @CField("status")
-        void setStatus(int status);
-
-        @CFieldAddress("limit_violations")
-        ArrayPointer<LimitViolationPointer> limitViolations();
-
-        ContingencyResultPointer addressOf(int index);
     }
 
     private static LoadFlowResult.ComponentResult.Status getStatus(LimitViolationsResult result) {
@@ -637,28 +304,6 @@ public final class GridPyApi {
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
         SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters);
         return ObjectHandles.getGlobal().create(resultContext);
-    }
-
-    @CStruct("matrix")
-    interface MatrixPointer extends PointerBase {
-
-        @CField("values")
-        CDoublePointer getValues();
-
-        @CField("values")
-        void setValues(CDoublePointer values);
-
-        @CField("row_count")
-        int getRowCount();
-
-        @CField("row_count")
-        void setRowCount(int rowCount);
-
-        @CField("column_count")
-        int getColumnCount();
-
-        @CField("column_count")
-        void setColumnCount(int columnCount);
     }
 
     @CEntryPoint(name = "getSensitivityMatrix")

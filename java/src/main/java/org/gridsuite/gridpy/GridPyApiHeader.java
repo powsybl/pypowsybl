@@ -1,0 +1,281 @@
+/**
+ * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package org.gridsuite.gridpy;
+
+import org.graalvm.nativeimage.c.CContext;
+import org.graalvm.nativeimage.c.constant.CEnum;
+import org.graalvm.nativeimage.c.constant.CEnumLookup;
+import org.graalvm.nativeimage.c.constant.CEnumValue;
+import org.graalvm.nativeimage.c.struct.CField;
+import org.graalvm.nativeimage.c.struct.CFieldAddress;
+import org.graalvm.nativeimage.c.struct.CStruct;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.word.PointerBase;
+
+/**
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
+ */
+@CContext(Directives.class)
+public class GridPyApiHeader {
+
+    @CStruct("array")
+    interface ArrayPointer<T extends PointerBase> extends PointerBase {
+
+        @CField("ptr")
+        T getPtr();
+
+        @CField("ptr")
+        void setPtr(T ptr);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+    }
+
+    @CStruct("bus")
+    interface BusPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("v_magnitude")
+        double getVoltageMagnitude();
+
+        @CField("v_magnitude")
+        void setVoltageMagnitude(double voltageMagnitude);
+
+        @CField("v_angle")
+        double getVoltageAngle();
+
+        @CField("v_angle")
+        void setVoltageAngle(double voltageAngle);
+
+        BusPointer addressOf(int index);
+    }
+
+    @CStruct("load_flow_component_result")
+    interface LoadFlowComponentResultPointer extends PointerBase {
+
+        @CField("component_num")
+        int geComponentNum();
+
+        @CField("component_num")
+        void setComponentNum(int componentNum);
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CField("iteration_count")
+        int getIterationCount();
+
+        @CField("iteration_count")
+        void setIterationCount(int iterationCount);
+
+        @CField("slack_bus_id")
+        CCharPointer getSlackBusId();
+
+        @CField("slack_bus_id")
+        void setSlackBusId(CCharPointer slackBusId);
+
+        @CField("slack_bus_active_power_mismatch")
+        double getSlackBusActivePowerMismatch();
+
+        @CField("slack_bus_active_power_mismatch")
+        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+
+        LoadFlowComponentResultPointer addressOf(int index);
+    }
+
+    @CStruct("load_flow_parameters")
+    interface LoadFlowParametersPointer extends PointerBase {
+
+        @CField("voltage_init_mode")
+        int getVoltageInitMode();
+
+        @CField("voltage_init_mode")
+        void setVoltageInitMode(int voltageInitMode);
+
+        @CField("transformer_voltage_control_on")
+        boolean isTransformerVoltageControlOn();
+
+        @CField("transformer_voltage_control_on")
+        void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
+
+        @CField("no_generator_reactive_limits")
+        boolean isNoGeneratorReactiveLimits();
+
+        @CField("no_generator_reactive_limits")
+        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+
+        @CField("phase_shifter_regulation_on")
+        boolean isPhaseShifterRegulationOn();
+
+        @CField("phase_shifter_regulation_on")
+        void setPhaseShifterRegulationOn(boolean phaseShifterRegulationOn);
+
+        @CField("twt_split_shunt_admittance")
+        boolean isTwtSplitShuntAdmittance();
+
+        @CField("twt_split_shunt_admittance")
+        void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
+
+        @CField("simul_shunt")
+        boolean isSimulShunt();
+
+        @CField("simul_shunt")
+        void setSimulShunt(boolean simulShunt);
+
+        @CField("read_slack_bus")
+        boolean isReadSlackBus();
+
+        @CField("read_slack_bus")
+        void setReadSlackBus(boolean readSlackBus);
+
+        @CField("write_slack_bus")
+        boolean isWriteSlackBus();
+
+        @CField("write_slack_bus")
+        void setWriteSlackBus(boolean writeSlackBus);
+
+        @CField("distributed_slack")
+        boolean isDistributedSlack();
+
+        @CField("distributed_slack")
+        void setDistributedSlack(boolean distributedSlack);
+
+        @CField("balance_type")
+        int getBalanceType();
+
+        @CField("balance_type")
+        void setBalanceType(int balanceType);
+    }
+
+    @CStruct("limit_violation")
+    interface LimitViolationPointer extends PointerBase {
+
+        @CField("subject_id")
+        CCharPointer getSubjectId();
+
+        @CField("subject_id")
+        void setSubjectId(CCharPointer subjectId);
+
+        @CField("subject_name")
+        CCharPointer getSubjectName();
+
+        @CField("subject_name")
+        void setSubjectName(CCharPointer subjectName);
+
+        @CField("limit_type")
+        int getLimitType();
+
+        @CField("limit_type")
+        void setLimitType(int limitType);
+
+        @CField("limit")
+        double getLimit();
+
+        @CField("limit")
+        void setLimit(double limit);
+
+        @CField("limit_name")
+        CCharPointer getLimitName();
+
+        @CField("limit_name")
+        void setLimitName(CCharPointer limitName);
+
+        @CField("acceptable_duration")
+        int getAcceptableDuration();
+
+        @CField("acceptable_duration")
+        void setAcceptableDuration(int acceptableDuration);
+
+        @CField("limit_reduction")
+        float getLimitReduction();
+
+        @CField("limit_reduction")
+        void setLimitReduction(float limitReduction);
+
+        @CField("value")
+        double getValue();
+
+        @CField("value")
+        void setValue(double value);
+
+        @CField("side")
+        int getSide();
+
+        @CField("side")
+        void setSide(int side);
+
+        LimitViolationPointer addressOf(int index);
+    }
+
+    @CStruct("contingency_result")
+    interface ContingencyResultPointer extends PointerBase {
+
+        @CField("contingency_id")
+        CCharPointer getContingencyId();
+
+        @CField("contingency_id")
+        void setContingencyId(CCharPointer contingencyId);
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CFieldAddress("limit_violations")
+        ArrayPointer<LimitViolationPointer> limitViolations();
+
+        ContingencyResultPointer addressOf(int index);
+    }
+
+    @CEnum("element_type")
+    enum ElementType {
+        LINE,
+        TWO_WINDINGS_TRANSFORMER,
+        GENERATOR;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ElementType fromCValue(int value);
+    }
+
+    @CStruct("matrix")
+    interface MatrixPointer extends PointerBase {
+
+        @CField("values")
+        CDoublePointer getValues();
+
+        @CField("values")
+        void setValues(CDoublePointer values);
+
+        @CField("row_count")
+        int getRowCount();
+
+        @CField("row_count")
+        void setRowCount(int rowCount);
+
+        @CField("column_count")
+        int getColumnCount();
+
+        @CField("column_count")
+        void setColumnCount(int columnCount);
+    }
+}
