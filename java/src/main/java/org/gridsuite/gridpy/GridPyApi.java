@@ -7,10 +7,6 @@
 package org.gridsuite.gridpy;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.contingency.BranchContingency;
-import com.powsybl.contingency.Contingency;
-import com.powsybl.contingency.ContingencyElement;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -19,8 +15,11 @@ import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
-import com.powsybl.security.*;
+import com.powsybl.security.LimitViolation;
+import com.powsybl.security.LimitViolationsResult;
+import com.powsybl.security.PostContingencyResult;
+import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.sensitivity.SensitivityValue;
 import com.powsybl.sld.NetworkGraphBuilder;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.LayoutParameters;
@@ -47,11 +46,14 @@ import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -459,28 +461,18 @@ public final class GridPyApi {
         }
     }
 
-    private static class SecurityAnalysisContext {
-
-        private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
-    }
-
     @CEntryPoint(name = "createSecurityAnalysis")
     public static ObjectHandle createSecurityAnalysis(IsolateThread thread) {
         return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
     }
 
-    @CEntryPoint(name = "addContingencyToSecurityAnalysis")
-    public static void addContingencyToSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, CCharPointer contingencyIdPtr,
-                                                        CCharPointerPointer elementIdPtrPtr, int elementCount) {
-        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+    @CEntryPoint(name = "addContingency")
+    public static void addContingency(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer contingencyIdPtr,
+                                      CCharPointerPointer elementIdPtrPtr, int elementCount) {
+        ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
-        List<String> elementIds = new ArrayList<>(elementCount);
-        for (int i = 0; i < elementCount; i++) {
-            CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
-            String elementId = CTypeConversion.toJavaString(elementIdPtr);
-            elementIds.add(elementId);
-        }
-        securityAnalysisContext.elementIdsByContingencyId.put(contingencyId, elementIds);
+        List<String> elementIds = CTypeUtil.createStringList(elementIdPtrPtr, elementCount);
+        contingencyContainer.addContingency(contingencyId, elementIds);
     }
 
     @CStruct("limit_violation")
@@ -553,7 +545,7 @@ public final class GridPyApi {
         void setContingencyId(CCharPointer contingencyId);
 
         @CField("status")
-        int geStatus();
+        int getStatus();
 
         @CField("status")
         void setStatus(int status);
@@ -602,39 +594,13 @@ public final class GridPyApi {
         return allocArrayPointer(contingencyPtr, resultCount);
     }
 
-    private static ContingencyElement createContingencyElement(Network network, String elementId) {
-        Identifiable<?> identifiable = network.getIdentifiable(elementId);
-        if (identifiable == null) {
-            throw new PowsyblException("Element '" + elementId + "' not found");
-        }
-        if (identifiable instanceof Branch) {
-            return new BranchContingency(elementId);
-        } else {
-            throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
-        }
-    }
-
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
-        SecurityAnalysisContext securityAnalysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        SecurityAnalysis securityAnalysis = new OpenSecurityAnalysisFactory().create(network, LocalComputationManager.getDefault(), 0);
-        SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
         LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
-        securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        List<Contingency> contingencies = new ArrayList<>(securityAnalysisContext.elementIdsByContingencyId.size());
-        for (Map.Entry<String, List<String>> e : securityAnalysisContext.elementIdsByContingencyId.entrySet()) {
-            String contingencyId = e.getKey();
-            List<String> elementIds = e.getValue();
-            List<ContingencyElement> elements = elementIds.stream()
-                .map(elementId -> createContingencyElement(network, elementId))
-                .collect(Collectors.toList());
-            contingencies.add(new Contingency(contingencyId, elements));
-        }
-        SecurityAnalysisResult result = securityAnalysis
-                .run(VariantManagerConstants.INITIAL_VARIANT_ID, securityAnalysisParameters, n -> contingencies)
-                .join();
+        SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters);
         return createContingencyResultArrayPointer(result);
     }
 
@@ -646,6 +612,76 @@ public final class GridPyApi {
             UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
         }
         freeArrayPointer(contingencyResultArrayPtr);
+    }
+
+    @CEntryPoint(name = "createSensitivityAnalysis")
+    public static ObjectHandle createSensitivityAnalysis(IsolateThread thread) {
+        return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
+    }
+
+    @CEntryPoint(name = "setFactorMatrix")
+    public static void setFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                       CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                       CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount) {
+        SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        List<String> branchsIds = CTypeUtil.createStringList(branchIdPtrPtr, branchIdCount);
+        List<String> injectionsOrTransfosIds = CTypeUtil.createStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
+        analysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
+    }
+
+    @CEntryPoint(name = "runSensitivityAnalysis")
+    public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                      ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
+        SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
+        SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters);
+        return ObjectHandles.getGlobal().create(resultContext);
+    }
+
+    @CStruct("matrix")
+    interface MatrixPointer extends PointerBase {
+
+        @CField("values")
+        CDoublePointer getValues();
+
+        @CField("values")
+        void setValues(CDoublePointer values);
+
+        @CField("row_count")
+        int getRowCount();
+
+        @CField("row_count")
+        void setRowCount(int rowCount);
+
+        @CField("column_count")
+        int getColumnCount();
+
+        @CField("column_count")
+        void setColumnCount(int columnCount);
+    }
+
+    @CEntryPoint(name = "getSensitivityMatrix")
+    public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                     CCharPointer contingencyIdPtr) {
+        SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
+        MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
+        if (sensitivityValues != null) {
+            CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
+            for (SensitivityValue sensitivityValue : sensitivityValues) {
+                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
+                valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
+            }
+            matrixPtr.setRowCount(resultContext.getRowCount());
+            matrixPtr.setColumnCount(resultContext.getColumnCount());
+            matrixPtr.setValues(valuePtr);
+        } else {
+            matrixPtr.setRowCount(0);
+            matrixPtr.setColumnCount(0);
+        }
+        return matrixPtr;
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

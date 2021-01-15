@@ -9,6 +9,7 @@ import unittest
 import gridpy.network
 import gridpy.loadflow
 import gridpy.security_analysis
+import gridpy.sensitivity_analysis
 import gridpy as gp
 
 
@@ -28,7 +29,7 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(gp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
         parameters = gp.loadflow.Parameters(distributed_slack=False)
         results = gp.loadflow.run_dc(n, parameters)
-        self.assertEqual(0, len(results))
+        self.assertEqual(1, len(results))
 
     def test_load_network(self):
         dir = os.path.dirname(os.path.realpath(__file__))
@@ -56,6 +57,26 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
+
+    def test_sensitivity_analysis(self):
+        n = gp.network.create_ieee14()
+        sa = gp.sensitivity_analysis.create()
+        sa.add_single_element_contingency('L1-2-1')
+        sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G'])
+        r = sa.run_dc(n)
+        m = r.get_sensitivity_matrix()
+        self.assertEqual((2, 2), m.shape)
+        self.assertEqual(0.08099067519128486, m[0, 0])
+        self.assertEqual(-0.013674968450008108, m[0, 1])
+        self.assertEqual(-0.08099067519128486, m[1, 0])
+        self.assertEqual(0.013674968450008108, m[1, 1])
+        m2 = r.get_post_contingency_sensitivity_matrix('L1-2-1')
+        self.assertEqual((2, 2), m2.shape)
+        self.assertEqual(0.49999999999999994, m2[0, 0])
+        self.assertEqual(-0.08442310437411704, m2[0, 1])
+        self.assertEqual(-0.49999999999999994, m2[1, 0])
+        self.assertEqual(0.08442310437411704, m2[1, 1])
+        self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
 
 
 if __name__ == '__main__':
