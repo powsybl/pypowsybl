@@ -59,13 +59,24 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
 
     def test_sensitivity_analysis(self):
-        n = gp.network.create_eurostag_tutorial_example1_network()
+        n = gp.network.create_ieee14()
         sa = gp.sensitivity_analysis.create()
-        sa.add_single_element_contingency('NHV1_NHV2_1')
-        sa.set_factor_matrix(['NHV1_NHV2_1', 'NHV1_NHV2_2', 'NGEN_NHV1', 'NHV2_NLOAD'], ['GEN'])
+        sa.add_single_element_contingency('L1-2-1')
+        sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G'])
         r = sa.run_dc(n)
         m = r.get_sensitivity_matrix()
-        print(m)
+        self.assertEqual((2, 2), m.shape)
+        self.assertEqual(0.08099067519128486, m[0, 0])
+        self.assertEqual(-0.013674968450008108, m[0, 1])
+        self.assertEqual(-0.08099067519128486, m[1, 0])
+        self.assertEqual(0.013674968450008108, m[1, 1])
+        m2 = r.get_post_contingency_sensitivity_matrix('L1-2-1')
+        self.assertEqual((2, 2), m2.shape)
+        self.assertEqual(0.49999999999999994, m2[0, 0])
+        self.assertEqual(-0.08442310437411704, m2[0, 1])
+        self.assertEqual(-0.49999999999999994, m2[1, 0])
+        self.assertEqual(0.08442310437411704, m2[1, 1])
+        self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
 
 
 if __name__ == '__main__':

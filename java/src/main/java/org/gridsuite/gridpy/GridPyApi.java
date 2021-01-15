@@ -667,17 +667,20 @@ public final class GridPyApi {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-        CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
+        MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
         if (sensitivityValues != null) {
+            CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
             for (SensitivityValue sensitivityValue : sensitivityValues) {
                 IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
                 valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
             }
+            matrixPtr.setRowCount(resultContext.getRowCount());
+            matrixPtr.setColumnCount(resultContext.getColumnCount());
+            matrixPtr.setValues(valuePtr);
+        } else {
+            matrixPtr.setRowCount(0);
+            matrixPtr.setColumnCount(0);
         }
-        MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-        matrixPtr.setRowCount(resultContext.getRowCount());
-        matrixPtr.setColumnCount(resultContext.getColumnCount());
-        matrixPtr.setValues(valuePtr);
         return matrixPtr;
     }
 
