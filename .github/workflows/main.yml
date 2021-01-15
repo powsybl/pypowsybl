@@ -30,17 +30,26 @@ jobs:
       - name: Install Linux packages
         run: yum install -y maven zlib-devel.x86_64
 
-      - name: Checkout sources
-        uses: actions/checkout@v1
-        with:
-          submodules: true
-
       - name: Setup GraalVM
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
           graalvm-version: 20.3.0
           native-image: true
+
+      - name: Checkout olf sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: gridpy-v0.1.0
+
+      - name: Build and install olf artifact
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
+
+      - name: Checkout sources
+        uses: actions/checkout@v1
+        with:
+          submodules: true
 
       - name: Build wheel
         run: |
@@ -89,17 +98,26 @@ jobs:
           }
 
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
-        with:
-          submodules: true
-
       - name: Setup GraalVM
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
           graalvm-version: 20.3.0
           native-image: true
+
+      - name: Checkout olf sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: gridpy-v0.1.0
+
+      - name: Build and install olf artifact
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
+
+      - name: Checkout sources
+        uses: actions/checkout@v1
+        with:
+          submodules: true
 
       - name: Setup Python
         uses: actions/setup-python@v1

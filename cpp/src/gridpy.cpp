@@ -141,19 +141,60 @@ void* createSecurityAnalysis() {
     return createSecurityAnalysis(guard.thread());
 }
 
-void addContingencyToSecurityAnalysis(void* securityAnalysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
-    GraalVmGuard guard;
-    char** elementIdPtr = new char*[elementsIds.size()];
-    for (int i = 0; i < elementsIds.size(); i++) {
-        elementIdPtr[i] = (char *) elementsIds[i].data();
+class ToCharPtrPtr {
+public:
+    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
+        : charPtrPtr_(new char*[strings.size()])
+    {
+        for (int i = 0; i < strings.size(); i++) {
+            charPtrPtr_[i] = (char *) strings[i].data();
+        }
     }
-    addContingencyToSecurityAnalysis(guard.thread(), securityAnalysisContext, (char*) contingencyId.data(), elementIdPtr, elementsIds.size());
-    delete[] elementIdPtr;
+
+    ~ToCharPtrPtr() {
+        delete[] charPtrPtr_;
+    }
+
+    char** get() const {
+        return charPtrPtr_;
+    }
+
+private:
+    char** charPtrPtr_;
+};
+
+void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
+    GraalVmGuard guard;
+    ToCharPtrPtr elementIdPtr(elementsIds);
+    addContingency(guard.thread(), analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
 }
 
 ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
     return new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network, &parameters));
+}
+
+void* createSensitivityAnalysis() {
+    GraalVmGuard guard;
+    return createSensitivityAnalysis(guard.thread());
+}
+
+void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds) {
+    GraalVmGuard guard;
+    ToCharPtrPtr branchIdPtr(branchesIds);
+    ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
+    setFactorMatrix(guard.thread(), sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                    injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+}
+
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
+    GraalVmGuard guard;
+    return runSensitivityAnalysis(guard.thread(), sensitivityAnalysisContext, network, &parameters);
+}
+
+matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+    GraalVmGuard guard;
+    return getSensitivityMatrix(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
 }
 
 void destroyObjectHandle(void* objectHandle) {
