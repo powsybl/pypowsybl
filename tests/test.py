@@ -48,7 +48,7 @@ class GridPyTestCase(unittest.TestCase):
     def test_security_analysis(self):
         n = gp.network.create_eurostag_tutorial_example1_network()
         sa = gp.security_analysis.create()
-        sa.add_single_element_contingency('L1-2-1', 'First contingency')
+        sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
 #        sa_result = sa.run(n)
 #        self.assertEqual(1, sa_result.contingencies)
 
