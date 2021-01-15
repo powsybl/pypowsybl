@@ -29,7 +29,7 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(gp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
         parameters = gp.loadflow.Parameters(distributed_slack=False)
         results = gp.loadflow.run_dc(n, parameters)
-        self.assertEqual(0, len(results))
+        self.assertEqual(1, len(results))
 
     def test_load_network(self):
         dir = os.path.dirname(os.path.realpath(__file__))
