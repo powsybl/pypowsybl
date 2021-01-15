@@ -53,3 +53,9 @@ typedef enum {
     TWO_WINDINGS_TRANSFORMER,
     GENERATOR,
 } element_type;
+
+typedef struct matrix_struct {
+    int row_count;
+    int column_count;
+    double* values;
+} matrix;

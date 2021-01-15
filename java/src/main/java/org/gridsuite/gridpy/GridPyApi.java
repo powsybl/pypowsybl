@@ -21,10 +21,7 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sa.OpenSecurityAnalysisFactory;
 import com.powsybl.security.*;
-import com.powsybl.sensitivity.SensitivityAnalysis;
-import com.powsybl.sensitivity.SensitivityAnalysisParameters;
-import com.powsybl.sensitivity.SensitivityAnalysisResult;
-import com.powsybl.sensitivity.SensitivityFactor;
+import com.powsybl.sensitivity.*;
 import com.powsybl.sensitivity.factors.BranchFlowPerInjectionIncrease;
 import com.powsybl.sensitivity.factors.BranchFlowPerPSTAngle;
 import com.powsybl.sensitivity.factors.functions.BranchFlow;
@@ -56,6 +53,7 @@ import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
@@ -584,7 +582,7 @@ public final class GridPyApi {
         void setContingencyId(CCharPointer contingencyId);
 
         @CField("status")
-        int geStatus();
+        int getStatus();
 
         @CField("status")
         void setStatus(int status);
@@ -724,22 +722,79 @@ public final class GridPyApi {
         sensitivityAnalysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
     }
 
+    interface IndexedFactor {
+
+        int getRow();
+
+        int getColumn();
+    }
+
+    static class IndexedBranchFlowPerInjectionIncrease extends BranchFlowPerInjectionIncrease implements IndexedFactor {
+
+        private final int row;
+
+        private final int column;
+
+        IndexedBranchFlowPerInjectionIncrease(BranchFlow sensitivityFunction, InjectionIncrease sensitivityVariable,
+                                              int row, int column) {
+            super(sensitivityFunction, sensitivityVariable);
+            this.row = row;
+            this.column = column;
+        }
+
+        @Override
+        public int getRow() {
+            return row;
+        }
+
+        @Override
+        public int getColumn() {
+            return column;
+        }
+    }
+
+    static class IndexedBranchFlowPerPSTAngle extends BranchFlowPerPSTAngle implements IndexedFactor {
+
+        private final int row;
+
+        private final int column;
+
+        IndexedBranchFlowPerPSTAngle(BranchFlow sensitivityFunction, PhaseTapChangerAngle sensitivityVariable,
+                                     int row, int column) {
+            super(sensitivityFunction, sensitivityVariable);
+            this.row = row;
+            this.column = column;
+        }
+
+        @Override
+        public int getRow() {
+            return row;
+        }
+
+        @Override
+        public int getColumn() {
+            return column;
+        }
+    }
+
     private static List<SensitivityFactor> createFactors(Network network, SensitivityAnalysisContext sensitivityAnalysisContext) {
         if (sensitivityAnalysisContext.branchsIds == null) {
             return Collections.emptyList();
         }
         List<SensitivityFactor> factors = new ArrayList<>();
-        for (String branchId : sensitivityAnalysisContext.branchsIds) {
+        for (int column = 0; column < sensitivityAnalysisContext.branchsIds.size(); column++) {
+            String branchId = sensitivityAnalysisContext.branchsIds.get(column);
             Branch branch = network.getBranch(branchId);
             if (branch == null) {
                 throw new PowsyblException("Branch '" + branchId + "' not found");
             }
             BranchFlow branchFlow = new BranchFlow(branchId, branch.getName(), branchId);
-            for (String injectionOrTransfoId : sensitivityAnalysisContext.injectionsOrTransfosIds) {
+            for (int row = 0; row < sensitivityAnalysisContext.injectionsOrTransfosIds.size(); row++) {
+                String injectionOrTransfoId = sensitivityAnalysisContext.injectionsOrTransfosIds.get(row);
                 Generator generator = network.getGenerator(injectionOrTransfoId);
                 if (generator != null) {
                     InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, generator.getName(), injectionOrTransfoId);
-                    factors.add(new BranchFlowPerInjectionIncrease(branchFlow, injectionIncrease));
+                    factors.add(new IndexedBranchFlowPerInjectionIncrease(branchFlow, injectionIncrease, row, column));
                 } else {
                     TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
                     if (twt != null) {
@@ -747,7 +802,7 @@ public final class GridPyApi {
                             throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
                         }
                         PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getName(), injectionOrTransfoId);
-                        factors.add(new BranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle));
+                        factors.add(new IndexedBranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle, row, column));
                     } else {
                         throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
                     }
@@ -757,9 +812,28 @@ public final class GridPyApi {
         return factors;
     }
 
+    static class SensitivityAnalysisResultContext {
+
+        private final int rowCount;
+
+        private final int columnCount;
+
+        private final Collection<SensitivityValue> sensitivityValues;
+
+        private final Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId;
+
+        SensitivityAnalysisResultContext(int rowCount, int columnCount, Collection<SensitivityValue> sensitivityValues,
+                                         Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId) {
+            this.rowCount = rowCount;
+            this.columnCount = columnCount;
+            this.sensitivityValues = sensitivityValues;
+            this.sensitivityValuesByContingencyId = sensitivityValuesByContingencyId;
+        }
+    }
+
     @CEntryPoint(name = "runSensitivityAnalysis")
-    public static void runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
+    public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                      ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
         SensitivityAnalysisContext sensitivityAnalysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
@@ -769,6 +843,60 @@ public final class GridPyApi {
         List<Contingency> contingencies = createContingencies(network, sensitivityAnalysisContext);
         SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
             n -> factors, n -> contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
+        SensitivityAnalysisResultContext resultContext = null;
+        if (result.isOk()) {
+            Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
+            Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
+            int columnCount = sensitivityAnalysisContext.branchsIds.size();
+            int rowCount = sensitivityAnalysisContext.injectionsOrTransfosIds.size();
+            resultContext = new SensitivityAnalysisResultContext(rowCount, columnCount, sensitivityValues, sensitivityValuesByContingencyId);
+        }
+        return ObjectHandles.getGlobal().create(resultContext);
+    }
+
+    @CStruct("matrix")
+    interface MatrixPointer extends PointerBase {
+
+        @CField("values")
+        CDoublePointer getValues();
+
+        @CField("values")
+        void setValues(CDoublePointer values);
+
+        @CField("row_count")
+        int getRowCount();
+
+        @CField("row_count")
+        void setRowCount(int rowCount);
+
+        @CField("column_count")
+        int getColumnCount();
+
+        @CField("column_count")
+        void setColumnCount(int columnCount);
+
+        MatrixPointer addressOf(int index);
+    }
+
+    @CEntryPoint(name = "getSensitivityMatrix")
+    public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                     CCharPointer contingencyIdPtr) {
+        SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        Collection<SensitivityValue> sensitivityValues = contingencyId.isEmpty() ? resultContext.sensitivityValues
+                                                                                 : resultContext.sensitivityValuesByContingencyId.get(contingencyId);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.rowCount * resultContext.columnCount * SizeOf.get(CDoublePointer.class));
+        if (sensitivityValues != null) {
+            for (SensitivityValue sensitivityValue : sensitivityValues) {
+                IndexedFactor indexedFactor = (IndexedFactor) sensitivityValue.getFactor();
+                valuePtr.addressOf(indexedFactor.getRow() * resultContext.columnCount + indexedFactor.getColumn()).write(sensitivityValue.getValue());
+            }
+        }
+        MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
+        matrixPtr.setRowCount(resultContext.rowCount);
+        matrixPtr.setColumnCount(resultContext.columnCount);
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

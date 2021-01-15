@@ -10,6 +10,18 @@ from gridpy.loadflow import Parameters
 from gridpy.network import Network
 from gridpy.util import ContingencyContainer
 from typing import List
+import numpy as np
+
+
+class SensitivityAnalysisResult:
+    def __init__(self, result_context):
+        self._result_context = result_context
+
+    def get_sensitivity_matrix(self):
+        return np.array(_gridpy.get_sensitivity_matrix(self._result_context, ''), copy = False)
+
+    def get_post_contingency_sensitivity_matrix(self, contingency_id: str):
+        return np.array(_gridpy.get_sensitivity_matrix(self._result_context, contingency_id), copy = False)
 
 
 class SensitivityAnalysis(ContingencyContainer):
@@ -19,8 +31,8 @@ class SensitivityAnalysis(ContingencyContainer):
     def set_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
         _gridpy.set_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
 
-    def run_dc(self, network: Network, parameters: Parameters = Parameters()) -> None:
-        return _gridpy.run_sensitivity_analysis(self.ptr, network.ptr, parameters)
+    def run_dc(self, network: Network, parameters: Parameters = Parameters()) -> SensitivityAnalysisResult:
+        return SensitivityAnalysisResult(_gridpy.run_sensitivity_analysis(self.ptr, network.ptr, parameters))
 
 
 def create() -> SensitivityAnalysis:

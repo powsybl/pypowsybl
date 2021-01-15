@@ -258,5 +258,18 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("run_sensitivity_analysis", &gridpy::runSensitivityAnalysis, "Run a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"));
 
+    py::class_<matrix>(m, "Matrix", py::buffer_protocol())
+            .def_buffer([](matrix& m) -> py::buffer_info {
+                return py::buffer_info(m.values,
+                                       sizeof(double),
+                                       py::format_descriptor<double>::format(),
+                                       2,
+                                       { m.row_count, m.column_count },
+                                       { sizeof(double) * m.column_count, sizeof(double) });
+            });
+
+    m.def("get_sensitivity_matrix", &gridpy::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

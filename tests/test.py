@@ -9,6 +9,7 @@ import unittest
 import gridpy.network
 import gridpy.loadflow
 import gridpy.security_analysis
+import gridpy.sensitivity_analysis
 import gridpy as gp
 
 
@@ -48,7 +49,7 @@ class GridPyTestCase(unittest.TestCase):
     def test_security_analysis(self):
         n = gp.network.create_eurostag_tutorial_example1_network()
         sa = gp.security_analysis.create()
-        sa.add_single_element_contingency('L1-2-1', 'First contingency')
+        sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
 #        sa_result = sa.run(n)
 #        self.assertEqual(1, sa_result.contingencies)
 
@@ -56,6 +57,15 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
+
+    def test_sensitivity_analysis(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        sa = gp.sensitivity_analysis.create()
+        sa.add_single_element_contingency('NHV1_NHV2_1')
+        sa.set_factor_matrix(['NHV1_NHV2_1', 'NHV1_NHV2_2', 'NGEN_NHV1', 'NHV2_NLOAD'], ['GEN'])
+        r = sa.run_dc(n)
+        m = r.get_sensitivity_matrix()
+        print(m)
 
 
 if __name__ == '__main__':

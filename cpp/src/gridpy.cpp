@@ -187,9 +187,14 @@ void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::st
                     injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
 }
 
-void runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    runSensitivityAnalysis(guard.thread(), sensitivityAnalysisContext, network, &parameters);
+    return runSensitivityAnalysis(guard.thread(), sensitivityAnalysisContext, network, &parameters);
+}
+
+matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+    GraalVmGuard guard;
+    return getSensitivityMatrix(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
 }
 
 void destroyObjectHandle(void* objectHandle) {

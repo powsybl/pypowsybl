@@ -105,7 +105,9 @@ void* createSensitivityAnalysis();
 
 void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
 
-void runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
+
+matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
 void destroyObjectHandle(void* objectHandle);
 
