@@ -147,9 +147,14 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gridpy-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: |
-            dist/*.whl
-            dist/*.tar.gz
+          path: dist/*.whl
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v2
+        if: matrix.config.name == 'darwin' && matrix.python.name == 'cp39'
+        with:
+          name: gridpy-sources
+          path: dist/*.tar.gz
 
   package:
     name: Package wheels
