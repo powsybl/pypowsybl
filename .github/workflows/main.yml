@@ -132,6 +132,10 @@ jobs:
       - name: Build wheel
         run: python setup.py bdist_wheel
 
+      - name: Build source archive
+        if: matrix.config.os == 'darwin' && matrix.python.name == 'cp39'
+        run: python setup.py sdist
+
       - name: Install wheel
         shell: bash
         run: python -m pip install dist/*.whl --user
@@ -143,7 +147,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gridpy-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
 
   package:
     name: Package wheels
@@ -160,4 +166,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gridpy-wheels
-          path: download/**/*.whl
+          path: |
+            download/**/*.whl
+            download/**/*.tar.gz
