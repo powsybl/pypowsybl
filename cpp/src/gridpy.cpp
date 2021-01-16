@@ -41,6 +41,14 @@ public:
         return thread_;
     }
 
+    void checkException() {
+        char* message = getExceptionMessage(thread_);
+        if (message) {
+            // no need to free message as it is going to be managed on python side by a python str
+            throw std::runtime_error(message);
+        }
+    }
+
 private:
     graal_isolatethread_t* thread_ = nullptr;
 };
@@ -105,7 +113,9 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
     GraalVmGuard guard;
-    return updateSwitchPosition(guard.thread(), network, (char*) id.data(), open);
+    bool done = updateSwitchPosition(guard.thread(), network, (char*) id.data(), open);
+    guard.checkException();
+    return done;
 }
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected) {

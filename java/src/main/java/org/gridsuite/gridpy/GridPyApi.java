@@ -6,6 +6,8 @@
  */
 package org.gridsuite.gridpy;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -34,13 +36,10 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 import org.slf4j.LoggerFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,7 +51,27 @@ import static org.gridsuite.gridpy.GridPyApiHeader.*;
 @CContext(Directives.class)
 public final class GridPyApi {
 
+    private static final Map<Long, String> EXCEPTION_MESSAGES = new HashMap<>();
+
     private GridPyApi() {
+    }
+
+    private static <T> T doTry(Long threadId, T defaultValue, Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            EXCEPTION_MESSAGES.put(threadId, t.getMessage());
+            return defaultValue;
+        }
+    }
+
+    @CEntryPoint(name = "getExceptionMessage")
+    public static CCharPointer getExceptionMessage(IsolateThread thread) {
+        String message = EXCEPTION_MESSAGES.get(thread.rawValue());
+        if (message != null) {
+            EXCEPTION_MESSAGES.remove(thread.rawValue());
+        }
+        return CTypeConversion.toCString(message).get();
     }
 
     @CEntryPoint(name = "setDebugMode")
@@ -182,14 +201,14 @@ public final class GridPyApi {
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        return NetworkUtil.updateSwitchPosition(network, idStr, open);
+        return doTry(thread.rawValue(), false, () -> NetworkUtil.updateSwitchPosition(network, idStr, open));
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        return NetworkUtil.updateConnectableStatus(network, idStr, connected);
+        return doTry(thread.rawValue(), false, () -> NetworkUtil.updateConnectableStatus(network, idStr, connected));
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
