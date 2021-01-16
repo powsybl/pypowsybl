@@ -33,6 +33,9 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -50,6 +53,12 @@ import static org.gridsuite.gridpy.GridPyApiHeader.*;
 public final class GridPyApi {
 
     private GridPyApi() {
+    }
+
+    @CEntryPoint(name = "setDebugMode")
+    public static void setDebugMode(IsolateThread thread, boolean debug) {
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
     }
 
     @CEntryPoint(name = "getVersionTable")

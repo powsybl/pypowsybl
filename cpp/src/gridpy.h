@@ -71,6 +71,8 @@ enum BalanceType {
 
 void init();
 
+void setDebugMode(bool debug);
+
 std::string getVersionTable();
 
 void* createEmptyNetwork(const std::string& id);
