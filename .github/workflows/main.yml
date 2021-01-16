@@ -133,7 +133,7 @@ jobs:
         run: python setup.py bdist_wheel
 
       - name: Build source archive
-        if: matrix.config.os == 'darwin' && matrix.python.name == 'cp39'
+        if: matrix.config.name == 'darwin' && matrix.python.name == 'cp39'
         run: python setup.py sdist
 
       - name: Install wheel
