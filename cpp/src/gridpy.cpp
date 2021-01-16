@@ -68,6 +68,11 @@ Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
 
+void setDebugMode(bool debug) {
+    GraalVmGuard guard;
+    setDebugMode(guard.thread(), debug);
+}
+
 std::string getVersionTable() {
     GraalVmGuard guard;
     return std::string(getVersionTable(guard.thread()));
