@@ -24,8 +24,7 @@ class SensitivityAnalysisResult(ObjectHandle):
 
     def get_post_contingency_sensitivity_matrix(self, contingency_id: str):
         m = _gridpy.get_sensitivity_matrix(self.result_context_ptr, contingency_id)
-        a = np.array(m, copy = False)
-        return None if a.shape == (0, 0) else a
+        return None if m is None else np.array(m, copy = False)
 
 
 class SensitivityAnalysis(ContingencyContainer):
