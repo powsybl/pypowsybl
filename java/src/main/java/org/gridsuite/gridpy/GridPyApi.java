@@ -35,6 +35,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
@@ -340,21 +341,19 @@ public final class GridPyApi {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-        MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
         if (sensitivityValues != null) {
             CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
             for (SensitivityValue sensitivityValue : sensitivityValues) {
                 IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
                 valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
             }
+            MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
             matrixPtr.setRowCount(resultContext.getRowCount());
             matrixPtr.setColumnCount(resultContext.getColumnCount());
             matrixPtr.setValues(valuePtr);
-        } else {
-            matrixPtr.setRowCount(0);
-            matrixPtr.setColumnCount(0);
+            return matrixPtr;
         }
-        return matrixPtr;
+        return WordFactory.nullPointer();
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
