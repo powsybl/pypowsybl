@@ -120,7 +120,9 @@ bool updateSwitchPosition(void* network, const std::string& id, bool open) {
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected) {
     GraalVmGuard guard;
-    return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
+    bool done = updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
+    guard.checkException();
+    return done;
 }
 
 std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, double nominalVoltage, bool mainCc) {
@@ -186,7 +188,9 @@ void addContingency(void* analysisContext, const std::string& contingencyId, con
 
 ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network, &parameters));
+    ContingencyResultArray* contingencyResultArray = new ContingencyResultArray(runSecurityAnalysis(guard.thread(), securityAnalysisContext, network, &parameters));
+    guard.checkException();
+    return contingencyResultArray;
 }
 
 void* createSensitivityAnalysis() {

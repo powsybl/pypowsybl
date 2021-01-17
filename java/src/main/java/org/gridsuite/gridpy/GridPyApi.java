@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,18 +52,13 @@ import static org.gridsuite.gridpy.GridPyApiHeader.*;
 @CContext(Directives.class)
 public final class GridPyApi {
 
-    private static final Map<Long, String> EXCEPTION_MESSAGES = new HashMap<>();
+    private static final Map<Long, String> EXCEPTION_MESSAGES = new ConcurrentHashMap<>();
 
     private GridPyApi() {
     }
 
-    private static <T> T doTry(Long threadId, T defaultValue, Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            EXCEPTION_MESSAGES.put(threadId, t.getMessage());
-            return defaultValue;
-        }
+    private static void addExceptionMessage(long threadId, Throwable t) {
+        EXCEPTION_MESSAGES.put(threadId, t.getMessage());
     }
 
     @CEntryPoint(name = "getExceptionMessage")
@@ -202,14 +197,28 @@ public final class GridPyApi {
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        return doTry(thread.rawValue(), false, () -> NetworkUtil.updateSwitchPosition(network, idStr, open));
+        boolean done;
+        try {
+            done = NetworkUtil.updateSwitchPosition(network, idStr, open);
+        } catch (Throwable t) {
+            addExceptionMessage(thread.rawValue(), t);
+            done = false;
+        }
+        return done;
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeConversion.toJavaString(id);
-        return doTry(thread.rawValue(), false, () -> NetworkUtil.updateConnectableStatus(network, idStr, connected));
+        boolean done;
+        try {
+            done = NetworkUtil.updateConnectableStatus(network, idStr, connected);
+        } catch (Throwable t) {
+            addExceptionMessage(thread.rawValue(), t);
+            done = false;
+        }
+        return done;
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
@@ -293,11 +302,18 @@ public final class GridPyApi {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
-        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-        Network network = ObjectHandles.getGlobal().get(networkHandle);
-        LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
-        SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters);
-        return createContingencyResultArrayPointer(result);
+        ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr;
+        try {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters);
+            contingencyResultArrayPtr = createContingencyResultArrayPointer(result);
+        } catch (Throwable t) {
+            addExceptionMessage(thread.rawValue(), t);
+            contingencyResultArrayPtr = WordFactory.nullPointer();
+        }
+        return  contingencyResultArrayPtr;
     }
 
     @CEntryPoint(name = "freeContingencyResultArrayPointer")

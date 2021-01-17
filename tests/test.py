@@ -50,7 +50,7 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_eurostag_tutorial_example1_network()
         sa = gp.security_analysis.create()
         sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-#        sa_result = sa.run(n)
+#        sa_result = sa.run_ac(n)
 #        self.assertEqual(1, sa_result.contingencies)
 
     def test_get_network_element_ids(self):
