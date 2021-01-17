@@ -111,7 +111,6 @@ class GridPyBuild(build_ext):
 
 setup(
     name='gridpy',
-    version='0.1.0',
     author='Geoffroy Jamgotchian',
     author_email="geoffroy.jamgotchian@gmail.com",
     description='A PowSyBl Python API',
