@@ -58,6 +58,18 @@ Array<bus>::~Array() {
 }
 
 template<>
+Array<generator>::~Array() {
+    GraalVmGuard guard;
+    freeGeneratorArray(guard.thread(), delegate_);
+}
+
+template<>
+Array<load>::~Array() {
+    GraalVmGuard guard;
+    freeLoadArray(guard.thread(), delegate_);
+}
+
+template<>
 Array<contingency_result>::~Array() {
     GraalVmGuard guard;
     freeContingencyResultArrayPointer(guard.thread(), delegate_);
@@ -131,9 +143,19 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_para
     return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
 }
 
-BusArray* getBusArray(void* network, bool busBreakerView) {
+BusArray* getBusArray(void* network) {
     GraalVmGuard guard;
-    return new BusArray(getBusArray(guard.thread(), network, busBreakerView));
+    return new BusArray(getBusArray(guard.thread(), network));
+}
+
+GeneratorArray* getGeneratorArray(void* network) {
+    GraalVmGuard guard;
+    return new GeneratorArray(getGeneratorArray(guard.thread(), network));
+}
+
+LoadArray* getLoadArray(void* network) {
+    GraalVmGuard guard;
+    return new LoadArray(getLoadArray(guard.thread(), network));
 }
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {

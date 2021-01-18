@@ -178,12 +178,62 @@ PYBIND11_MODULE(_gridpy, m) {
         })
         .def_property_readonly("v_angle", [](const bus& b) {
             return b.v_angle;
+        })
+        .def_property_readonly("component_num", [](const bus& b) {
+            return b.component_num;
         });
 
     bindArray<gridpy::BusArray>(m, "BusArray");
 
-    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"),
-          py::arg("bus_breaker_view"));
+    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"));
+
+    py::class_<generator>(m, "Generator")
+            .def_property_readonly("id", [](const generator& g) {
+                return g.id;
+            })
+            .def_property_readonly("target_p", [](const generator& g) {
+                return g.target_p;
+            })
+            .def_property_readonly("min_p", [](const generator& g) {
+                return g.min_p;
+            })
+            .def_property_readonly("max_p", [](const generator& g) {
+                return g.max_p;
+            })
+            .def_property_readonly("nominal_voltage", [](const generator& g) {
+                return g.nominal_voltage;
+            })
+            .def_property_readonly("country", [](const generator& g) {
+                return g.country;
+            })
+            .def_property_readonly("bus", [](const generator& g) {
+                return g.bus_;
+            });
+
+    bindArray<gridpy::GeneratorArray>(m, "GeneratorArray");
+
+    m.def("get_generators", &gridpy::getGeneratorArray, "Get network generators", py::arg("network"));
+
+    py::class_<load>(m, "Load")
+            .def_property_readonly("id", [](const load& l) {
+                return l.id;
+            })
+            .def_property_readonly("p0", [](const load& l) {
+                return l.p0;
+            })
+            .def_property_readonly("nominal_voltage", [](const load& l) {
+                return l.nominal_voltage;
+            })
+            .def_property_readonly("country", [](const load& l) {
+                return l.country;
+            })
+            .def_property_readonly("bus", [](const load& l) {
+                return l.bus_;
+            });
+
+    bindArray<gridpy::LoadArray>(m, "LoadArray");
+
+    m.def("get_loads", &gridpy::getLoadArray, "Get network loads", py::arg("network"));
 
     m.def("write_single_line_diagram_svg", &gridpy::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));

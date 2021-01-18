@@ -14,5 +14,5 @@ for result in results:
     print(result)
 
 # Print calculated voltages
-for bus in n.get_buses():
+for bus in n.buses:
     print("Bus '{id}': v_mag={v_mag}, v_ang={v_ang}".format(id=bus.id, v_mag=bus.v_magnitude, v_ang=bus.v_angle))

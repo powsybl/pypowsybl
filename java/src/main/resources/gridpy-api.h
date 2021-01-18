@@ -7,7 +7,26 @@ typedef struct bus_struct {
     char* id;
     double v_magnitude;
     double v_angle;
+    int component_num;
 } bus;
+
+typedef struct generator_struct {
+    char* id;
+    double target_p;
+    double min_p;
+    double max_p;
+    double nominal_voltage;
+    char* country;
+    bus* bus_;
+} generator;
+
+typedef struct load_struct {
+    char* id;
+    double p0;
+    double nominal_voltage;
+    char* country;
+    bus* bus_;
+} load;
 
 typedef struct load_flow_component_result_struct {
     int component_num;
