@@ -412,6 +412,27 @@ public final class GridPyApi {
         return WordFactory.nullPointer();
     }
 
+    @CEntryPoint(name = "getReferenceValues")
+    public static MatrixPointer getReferenceValues(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                   CCharPointer contingencyIdPtr) {
+        SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
+        if (sensitivityValues != null) {
+            CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
+            for (SensitivityValue sensitivityValue : sensitivityValues) {
+                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
+                valuePtr.addressOf(indexedFactor.getColumn()).write(sensitivityValue.getFunctionReference());
+            }
+            MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
+            matrixPtr.setRowCount(1);
+            matrixPtr.setColumnCount(resultContext.getColumnCount());
+            matrixPtr.setValues(valuePtr);
+            return matrixPtr;
+        }
+        return WordFactory.nullPointer();
+    }
+
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle) {
         ObjectHandles.getGlobal().destroy(objectHandle);

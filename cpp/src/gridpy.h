@@ -117,6 +117,8 @@ void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, lo
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
+matrix* getReferenceValues(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+
 void destroyObjectHandle(void* objectHandle);
 
 }

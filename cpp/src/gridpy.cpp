@@ -224,6 +224,11 @@ matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::
     return getSensitivityMatrix(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
 }
 
+matrix* getReferenceValues(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+    GraalVmGuard guard;
+    return getReferenceValues(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
+}
+
 void destroyObjectHandle(void* objectHandle) {
     GraalVmGuard guard;
     destroyObjectHandle(guard.thread(), objectHandle);
