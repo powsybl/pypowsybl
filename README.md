@@ -128,16 +128,26 @@ We can generate a single line diagram for a voltage level in the SVG format:
 n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
 ```
 
-To run a security analysis:
+To run a security analysis and print results table:
 ```python
+import gridpy.security_analysis
+
 sa = gp.security_analysis.create()
 sa.add_single_element_contingency('L1-2-1', 'c1')
 sa.add_single_element_contingency('L1-3-1', 'c2')
 sa.add_multiple_elements_contingency(['L1-2-1', 'L1-3-1'], 'c3')
 sa_result = sa.run_ac(n)
+print(sa_result.get_table())
 ```
 
-And print results table:
+To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
 ```python
-print(sa_result.get_table())
+import gridpy.sensitivity_analysis
+
+sa = gp.sensitivity_analysis.create()
+sa.add_single_element_contingency('L1-2-1')
+sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+sa_result = sa.run_dc(n)
+df = sa_result.get_post_contingency_sensitivity_matrix('L1-2-1')
+print(df)
 ```
