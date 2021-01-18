@@ -11,9 +11,9 @@ import ch.qos.logback.classic.Logger;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Bus;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.util.ConnectedComponents;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.gridsuite.gridpy.GridPyApiHeader.*;
 
@@ -157,18 +156,22 @@ public final class GridPyApi {
         freeArrayPointer(componentResultArrayPtr);
     }
 
+    private static void fillBus(Bus bus, BusPointer busPtr) {
+        busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
+        busPtr.setVoltageMagnitude(bus.getV());
+        busPtr.setVoltageAngle(bus.getAngle());
+        busPtr.setComponentNum(ConnectedComponents.getCcNum(bus));
+    }
+
     @CEntryPoint(name = "getBusArray")
-    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
+    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
-        List<Bus> buses = busStream.collect(Collectors.toList());
+        List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
         BusPointer busesPtr = UnmanagedMemory.calloc(buses.size() * SizeOf.get(BusPointer.class));
         for (int index = 0; index < buses.size(); index++) {
             Bus bus = buses.get(index);
             BusPointer busPtr = busesPtr.addressOf(index);
-            busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
-            busPtr.setVoltageMagnitude(bus.getV());
-            busPtr.setVoltageAngle(bus.getAngle());
+            fillBus(bus, busPtr);
         }
         return allocArrayPointer(busesPtr, buses.size());
     }
@@ -177,6 +180,78 @@ public final class GridPyApi {
     public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(busArrayPointer);
+    }
+
+    @CEntryPoint(name = "getGeneratorArray")
+    public static ArrayPointer<GeneratorPointer> getGeneratorArray(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
+        GeneratorPointer generatorPtr = UnmanagedMemory.calloc(generators.size() * SizeOf.get(GeneratorPointer.class));
+        for (int index = 0; index < generators.size(); index++) {
+            Generator generator = generators.get(index);
+            GeneratorPointer generatorPtrI = generatorPtr.addressOf(index);
+            generatorPtrI.setId(CTypeConversion.toCString(generator.getId()).get());
+            generatorPtrI.setTargetP(generator.getTargetP());
+            generatorPtrI.setMaxP(generator.getMaxP());
+            generatorPtrI.setMinP(generator.getMinP());
+            VoltageLevel vl = generator.getTerminal().getVoltageLevel();
+            generatorPtrI.setNominalVoltage(vl.getNominalV());
+            generatorPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            Bus bus = generator.getTerminal().getBusView().getBus();
+            if (bus != null) {
+                BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
+                fillBus(bus, busPtr);
+                generatorPtrI.setBus(busPtr);
+            }
+        }
+        return allocArrayPointer(generatorPtr, generators.size());
+    }
+
+    @CEntryPoint(name = "freeGeneratorArray")
+    public static void freeGeneratorArray(IsolateThread thread, ArrayPointer<GeneratorPointer> generatorArrayPtr) {
+        for (int index = 0; index < generatorArrayPtr.getLength(); index++) {
+            GeneratorPointer generatorPtrI = generatorArrayPtr.getPtr().addressOf(index);
+            // don't need to free char* from id field as it is done by python
+            if (generatorPtrI.getBus().isNonNull()) {
+                UnmanagedMemory.free(generatorPtrI.getBus());
+            }
+        }
+        freeArrayPointer(generatorArrayPtr);
+    }
+
+    @CEntryPoint(name = "getLoadArray")
+    public static ArrayPointer<LoadPointer> getLoadArray(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<Load> loads = network.getLoadStream().collect(Collectors.toList());
+        LoadPointer loadPtr = UnmanagedMemory.calloc(loads.size() * SizeOf.get(LoadPointer.class));
+        for (int index = 0; index < loads.size(); index++) {
+            Load load = loads.get(index);
+            LoadPointer loadPtrI = loadPtr.addressOf(index);
+            loadPtrI.setId(CTypeConversion.toCString(load.getId()).get());
+            loadPtrI.setP0(load.getP0());
+            VoltageLevel vl = load.getTerminal().getVoltageLevel();
+            loadPtrI.setNominalVoltage(vl.getNominalV());
+            loadPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            Bus bus = load.getTerminal().getBusView().getBus();
+            if (bus != null) {
+                BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
+                fillBus(bus, busPtr);
+                loadPtrI.setBus(busPtr);
+            }
+        }
+        return allocArrayPointer(loadPtr, loads.size());
+    }
+
+    @CEntryPoint(name = "freeLoadArray")
+    public static void freeLoadArray(IsolateThread thread, ArrayPointer<LoadPointer> loadArrayPtr) {
+        for (int index = 0; index < loadArrayPtr.getLength(); index++) {
+            LoadPointer loadPtrI = loadArrayPtr.getPtr().addressOf(index);
+            // don't need to free char* from id field as it is done by python
+            if (loadPtrI.getBus().isNonNull()) {
+                UnmanagedMemory.free(loadPtrI.getBus());
+            }
+        }
+        freeArrayPointer(loadArrayPtr);
     }
 
     @CEntryPoint(name = "updateSwitchPosition")

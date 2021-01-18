@@ -36,10 +36,38 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.load(dir + "/empty-network.xml")
         self.assertIsNotNone(n)
 
-    def test_get_buses(self):
+    def test_buses(self):
         n = gp.network.create_ieee14()
-        self.assertEqual(14, len(n.get_buses()))
-        self.assertEqual(14, len(n.get_buses(bus_breaker_view=True)))
+        self.assertEqual(14, len(n.buses))
+        b = list(n.buses)[0]
+        self.assertEqual('VL1_0', b.id)
+        self.assertEqual(1.06, b.v_magnitude)
+        self.assertEqual(0.0, b.v_angle)
+        self.assertEqual(0, b.component_num)
+
+    def test_generators(self):
+        n = gp.network.create_ieee14()
+        self.assertEqual(5, len(n.generators))
+        g = list(n.generators)[0]
+        self.assertEqual('B1-G', g.id)
+        self.assertEqual(232.4, g.target_p)
+        self.assertEqual(-9999.0, g.min_p)
+        self.assertEqual(9999.0, g.max_p)
+        self.assertEqual(1.0, g.nominal_voltage)
+        self.assertIsNone(g.country)
+        self.assertIsNotNone(g.bus)
+        self.assertEqual('VL1_0', g.bus.id)
+
+    def test_loads(self):
+        n = gp.network.create_ieee14()
+        self.assertEqual(11, len(n.loads))
+        l = list(n.loads)[0]
+        self.assertEqual('B2-L', l.id)
+        self.assertEqual(21.7, l.p0)
+        self.assertEqual(1.0, l.nominal_voltage)
+        self.assertIsNone(l.country)
+        self.assertIsNotNone(l.bus)
+        self.assertEqual('VL2_0', l.bus.id)
 
     def test_connect_disconnect(self):
         n = gp.network.create_ieee14()

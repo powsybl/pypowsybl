@@ -60,7 +60,97 @@ public class GridPyApiHeader {
         @CField("v_angle")
         void setVoltageAngle(double voltageAngle);
 
+        @CField("component_num")
+        int geComponentNum();
+
+        @CField("component_num")
+        void setComponentNum(int componentNum);
+
         BusPointer addressOf(int index);
+    }
+
+    @CStruct("generator")
+    interface GeneratorPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("target_p")
+        double getTargetP();
+
+        @CField("target_p")
+        void setTargetP(double targetP);
+
+        @CField("min_p")
+        double getMinP();
+
+        @CField("min_p")
+        void setMinP(double minP);
+
+        @CField("max_p")
+        double getMaxP();
+
+        @CField("max_p")
+        void setMaxP(double maxP);
+
+        @CField("nominal_voltage")
+        double getNominalVoltage();
+
+        @CField("nominal_voltage")
+        void setNominalVoltage(double nominalVoltage);
+
+        @CField("country")
+        CCharPointer getCountry();
+
+        @CField("country")
+        void setCountry(CCharPointer country);
+
+        @CField("bus_")
+        BusPointer getBus();
+
+        @CField("bus_")
+        void setBus(BusPointer bus);
+
+        GeneratorPointer addressOf(int index);
+    }
+
+    @CStruct("load")
+    interface LoadPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("p0")
+        double getP0();
+
+        @CField("p0")
+        void setP0(double p0);
+
+        @CField("nominal_voltage")
+        double getNominalVoltage();
+
+        @CField("nominal_voltage")
+        void setNominalVoltage(double nominalVoltage);
+
+        @CField("country")
+        CCharPointer getCountry();
+
+        @CField("country")
+        void setCountry(CCharPointer country);
+
+        @CField("bus_")
+        BusPointer getBus();
+
+        @CField("bus_")
+        void setBus(BusPointer bus);
+
+        LoadPointer addressOf(int index);
     }
 
     @CStruct("load_flow_component_result")

@@ -6,6 +6,8 @@
 #
 import _gridpy
 from _gridpy import Bus
+from _gridpy import Generator
+from _gridpy import Load
 from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
@@ -15,15 +17,43 @@ Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
                             f"id={self.id!r}"\
                             f", v_magnitude={self.v_magnitude!r}"\
                             f", v_angle={self.v_angle!r}"\
+                            f", component_num={self.component_num!r}"\
                             f")"
+
+Generator.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                            f"id={self.id!r}"\
+                            f", target_p={self.target_p!r}"\
+                            f", min_p={self.min_p!r}"\
+                            f", max_p={self.max_p!r}"\
+                            f", nominal_voltage={self.nominal_voltage!r}"\
+                            f", country={self.country!r}"\
+                            f", bus={self.bus!r}"\
+                            f")"
+
+Load.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                             f"id={self.id!r}"\
+                             f", p0={self.p0!r}"\
+                             f", nominal_voltage={self.nominal_voltage!r}"\
+                             f", country={self.country!r}"\
+                             f", bus={self.bus!r}"\
+                             f")"
 
 
 class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
-    def get_buses(self, bus_breaker_view: bool = False):
-        return _gridpy.get_buses(self.ptr, bus_breaker_view)
+    @property
+    def buses(self):
+        return _gridpy.get_buses(self.ptr)
+
+    @property
+    def generators(self):
+        return _gridpy.get_generators(self.ptr)
+
+    @property
+    def loads(self):
+        return _gridpy.get_loads(self.ptr)
 
     def open_switch(self, id: str):
         return _gridpy.update_switch_position(self.ptr, id, True)

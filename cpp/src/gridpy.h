@@ -34,6 +34,8 @@ private:
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
+typedef Array<generator> GeneratorArray;
+typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 
@@ -93,7 +95,11 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
-BusArray* getBusArray(void* network, bool busBreakerView);
+BusArray* getBusArray(void* network);
+
+GeneratorArray* getGeneratorArray(void* network);
+
+LoadArray* getLoadArray(void* network);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
