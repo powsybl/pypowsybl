@@ -391,9 +391,9 @@ public final class GridPyApi {
         return ObjectHandles.getGlobal().create(resultContext);
     }
 
-    @CEntryPoint(name = "getSensitivityFlows")
-    public static MatrixPointer getSensitivityFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                    CCharPointer contingencyIdPtr) {
+    @CEntryPoint(name = "getSensitivityMatrix")
+    public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                     CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
@@ -412,9 +412,9 @@ public final class GridPyApi {
         return WordFactory.nullPointer();
     }
 
-    @CEntryPoint(name = "getReferenceValues")
-    public static MatrixPointer getReferenceValues(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                   CCharPointer contingencyIdPtr) {
+    @CEntryPoint(name = "getReferenceFlows")
+    public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                  CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
