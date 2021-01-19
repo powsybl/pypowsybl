@@ -323,7 +323,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("get_sensitivity_matrix", &gridpy::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
-    m.def("get_reference_values", &gridpy::getReferenceValues, "Get sensitivity analysis result reference values for a given contingency",
+    m.def("get_reference_flows", &gridpy::getReferenceValues, "Get sensitivity analysis result reference flows for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));

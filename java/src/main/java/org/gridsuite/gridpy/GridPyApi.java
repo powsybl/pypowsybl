@@ -391,9 +391,9 @@ public final class GridPyApi {
         return ObjectHandles.getGlobal().create(resultContext);
     }
 
-    @CEntryPoint(name = "getSensitivityMatrix")
-    public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                     CCharPointer contingencyIdPtr) {
+    @CEntryPoint(name = "getSensitivityFlows")
+    public static MatrixPointer getSensitivityFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                    CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
         String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
