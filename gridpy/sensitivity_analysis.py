@@ -33,6 +33,17 @@ class SensitivityAnalysisResult(ObjectHandle):
             data = np.array(m, copy=False)
             return pd.DataFrame(data=data, columns=self.branches_ids, index=self.injections_or_transformers_ids)
 
+    def get_reference_flows(self):
+        return self.get_post_contingency_reference_flows('')
+
+    def get_post_contingency_reference_flows(self, contingency_id: str):
+        m = _gridpy.get_reference_flows(self.result_context_ptr, contingency_id)
+        if m is None:
+            return None
+        else:
+            data = np.array(m, copy=False)
+            return pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
+
 
 class SensitivityAnalysis(ContingencyContainer):
     def __init__(self, ptr):

@@ -92,8 +92,8 @@ class GridPyTestCase(unittest.TestCase):
         sa.add_single_element_contingency('L1-2-1')
         sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
         r = sa.run_dc(n)
+
         df = r.get_sensitivity_matrix()
-        print(df)
         self.assertEqual((3, 2), df.shape)
         self.assertEqual(0.08099067519128486, df['L1-5-1']['B1-G'])
         self.assertEqual(-0.08099067519128486, df['L1-5-1']['B2-G'])
@@ -101,14 +101,27 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(-0.013674968450008108, df['L2-3-1']['B1-G'])
         self.assertEqual(0.013674968450008108, df['L2-3-1']['B2-G'])
         self.assertEqual(-0.5456827116267954, df['L2-3-1']['B3-G'])
-        df2 = r.get_post_contingency_sensitivity_matrix('L1-2-1')
-        self.assertEqual((3, 2), df2.shape)
-        self.assertEqual(0.49999999999999994, df2['L1-5-1']['B1-G'])
-        self.assertEqual(-0.49999999999999994, df2['L1-5-1']['B2-G'])
-        self.assertEqual(-0.49999999999999994, df2['L1-5-1']['B3-G'])
-        self.assertEqual(-0.08442310437411704, df2['L2-3-1']['B1-G'])
-        self.assertEqual(0.08442310437411704, df2['L2-3-1']['B2-G'])
-        self.assertEqual(-0.49038517950037847, df2['L2-3-1']['B3-G'])
+
+        df = r.get_reference_flows()
+        self.assertEqual((1, 2), df.shape)
+        self.assertEqual(72.24667948865367, df['L1-5-1']['reference_flows'])
+        self.assertEqual(69.83139138110104, df['L2-3-1']['reference_flows'])
+
+        df = r.get_post_contingency_sensitivity_matrix('L1-2-1')
+        self.assertEqual((3, 2), df.shape)
+        self.assertEqual(0.49999999999999994, df['L1-5-1']['B1-G'])
+        self.assertEqual(-0.49999999999999994, df['L1-5-1']['B2-G'])
+        self.assertEqual(-0.49999999999999994, df['L1-5-1']['B3-G'])
+        self.assertEqual(-0.08442310437411704, df['L2-3-1']['B1-G'])
+        self.assertEqual(0.08442310437411704, df['L2-3-1']['B2-G'])
+        self.assertEqual(-0.49038517950037847, df['L2-3-1']['B3-G'])
+
+        df = r.get_post_contingency_reference_flows('L1-2-1')
+        self.assertEqual((1, 2), df.shape)
+        # FIXME values are pre contingency ones, it has to be fixed on OLF
+        self.assertEqual(72.24667948865367, df['L1-5-1']['reference_flows'])
+        self.assertEqual(69.83139138110104, df['L2-3-1']['reference_flows'])
+
         self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
 
 
