@@ -11,6 +11,7 @@ import com.powsybl.iidm.network.*;
 import org.gridsuite.gridpy.GridPyApiHeader.ElementType;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -71,31 +72,72 @@ public final class NetworkUtil {
         return bus != null && bus.getConnectedComponent().getNum() == ComponentConstants.MAIN_NUM;
     }
 
-    static List<String> getElementsIds(Network network, ElementType elementType, double nominalVoltage, boolean mainCc) {
+    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc) {
+        Terminal terminal1 = branch.getTerminal1();
+        Terminal terminal2 = branch.getTerminal2();
+        VoltageLevel voltageLevel1 = terminal1.getVoltageLevel();
+        VoltageLevel voltageLevel2 = terminal2.getVoltageLevel();
+        if (!(nominalVoltages.isEmpty()
+                || nominalVoltages.contains(voltageLevel1.getNominalV())
+                || nominalVoltages.contains(voltageLevel2.getNominalV()))) {
+            return false;
+        }
+        if (!(countries.isEmpty()
+                || countries.contains(voltageLevel1.getSubstation().getCountry().map(Country::name).orElse(null))
+                || countries.contains(voltageLevel2.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+            return false;
+        }
+        if (mainCc && !(isInMainCc(terminal1) && isInMainCc(terminal2))) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean filter(Injection injection, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc) {
+        Terminal terminal = injection.getTerminal();
+        VoltageLevel voltageLevel = terminal.getVoltageLevel();
+        if (!(nominalVoltages.isEmpty()
+                || nominalVoltages.contains(voltageLevel.getNominalV()))) {
+            return false;
+        }
+        if (!(countries.isEmpty()
+                || countries.contains(voltageLevel.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+            return false;
+        }
+        if (mainCc && !isInMainCc(terminal)) {
+            return false;
+        }
+        return true;
+    }
+
+    static List<String> getElementsIds(Network network, ElementType elementType, Set<Double> nominalVoltages,
+                                       Set<String> countries, boolean mainCc) {
         List<String> elementsIds;
         switch (elementType) {
             case LINE:
                 elementsIds = network.getLineStream()
-                        .filter(l -> Double.isNaN(nominalVoltage) || l.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
+                        .filter(l -> filter(l, nominalVoltages, countries, mainCc))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case TWO_WINDINGS_TRANSFORMER:
                 elementsIds = network.getTwoWindingsTransformerStream()
-                        .filter(twt -> Double.isNaN(nominalVoltage)
-                                || twt.getTerminal1().getVoltageLevel().getNominalV() == nominalVoltage
-                                || twt.getTerminal2().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(l -> !mainCc || (isInMainCc(l.getTerminal1()) && isInMainCc(l.getTerminal2())))
+                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case GENERATOR:
                 elementsIds = network.getGeneratorStream()
-                        .filter(g -> Double.isNaN(nominalVoltage) || g.getTerminal().getVoltageLevel().getNominalV() == nominalVoltage)
-                        .filter(g -> !mainCc || isInMainCc(g.getTerminal()))
+                        .filter(g -> filter(g, nominalVoltages, countries, mainCc))
+                        .map(Identifiable::getId)
+                        .collect(Collectors.toList());
+                break;
+
+            case LOAD:
+                elementsIds = network.getLoadStream()
+                        .filter(g -> filter(g, nominalVoltages, countries, mainCc))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;

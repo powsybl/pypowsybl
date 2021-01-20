@@ -338,7 +338,8 @@ public class GridPyApiHeader {
     enum ElementType {
         LINE,
         TWO_WINDINGS_TRANSFORMER,
-        GENERATOR;
+        GENERATOR,
+        LOAD;
 
         @CEnumValue
         public native int getCValue();

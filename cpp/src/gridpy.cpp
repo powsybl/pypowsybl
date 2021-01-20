@@ -80,6 +80,57 @@ Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
 
+template<typename T>
+class ToPtr {
+public:
+    ~ToPtr() {
+        delete[] ptr_;
+    }
+
+    T* get() const {
+        return ptr_;
+    }
+
+protected:
+    explicit ToPtr(size_t size)
+            : ptr_(new T[size])
+    {}
+
+    T* ptr_;
+};
+
+class ToCharPtrPtr : public ToPtr<char*> {
+public:
+    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
+            : ToPtr<char*>(strings.size())
+    {
+        for (int i = 0; i < strings.size(); i++) {
+            ptr_[i] = (char *) strings[i].data();
+        }
+    }
+};
+
+class ToDoublePtr : public ToPtr<double> {
+public:
+    explicit ToDoublePtr(const std::vector<double>& doubles)
+            : ToPtr<double>(doubles.size())
+    {
+        for (int i = 0; i < doubles.size(); i++) {
+            ptr_[i] = doubles[i];
+        }
+    }
+};
+
+std::vector<std::string> fromCharPtrPtr(array* arrayPtr) {
+    std::vector<std::string> strings;
+    strings.reserve(arrayPtr->length);
+    for (int i = 0; i < arrayPtr->length; i++) {
+        std::string str = *((char**) arrayPtr->ptr + i);
+        strings.emplace_back(str);
+    }
+    return strings;
+}
+
 void setDebugMode(bool debug) {
     GraalVmGuard guard;
     setDebugMode(guard.thread(), debug);
@@ -125,15 +176,14 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return updateConnectableStatus(guard.thread(), network, (char*) id.data(), connected);
 }
 
-std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, double nominalVoltage, bool mainCc) {
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
+                                               const std::vector<std::string>& countries, bool mainCc) {
     GraalVmGuard guard;
-    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltage, mainCc);
-    std::vector<std::string> elementsIds;
-    elementsIds.reserve(elementsIdsArrayPtr->length);
-    for (int i = 0; i < elementsIdsArrayPtr->length; i++) {
-        std::string elementId = *((char**) elementsIdsArrayPtr->ptr + i);
-        elementsIds.emplace_back(elementId);
-    }
+    ToDoublePtr nominalVoltagePtr(nominalVoltages);
+    ToCharPtrPtr countryPtr(countries);
+    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltagePtr.get(), nominalVoltages.size(),
+                                                       countryPtr.get(), countries.size(), mainCc);
+    std::vector<std::string> elementsIds = fromCharPtrPtr(elementsIdsArrayPtr);
     freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
@@ -167,28 +217,6 @@ void* createSecurityAnalysis() {
     GraalVmGuard guard;
     return createSecurityAnalysis(guard.thread());
 }
-
-class ToCharPtrPtr {
-public:
-    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
-        : charPtrPtr_(new char*[strings.size()])
-    {
-        for (int i = 0; i < strings.size(); i++) {
-            charPtrPtr_[i] = (char *) strings[i].data();
-        }
-    }
-
-    ~ToCharPtrPtr() {
-        delete[] charPtrPtr_;
-    }
-
-    char** get() const {
-        return charPtrPtr_;
-    }
-
-private:
-    char** charPtrPtr_;
-};
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     GraalVmGuard guard;

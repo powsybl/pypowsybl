@@ -11,6 +11,7 @@ from _gridpy import Load
 from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
+from typing import Set
 
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -73,8 +74,10 @@ class Network(ObjectHandle):
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
-    def get_elements_ids(self, element_type: _gridpy.ElementType, nominal_voltage: float = float('NaN'), main_connected_component: bool = True) -> List[str]:
-        return _gridpy.get_network_elements_ids(self.ptr, element_type, nominal_voltage, main_connected_component)
+    def get_elements_ids(self, element_type: _gridpy.ElementType, nominal_voltages: Set[float] = None, countries: Set[str] = None,
+                         main_connected_component: bool = True) -> List[str]:
+        return _gridpy.get_network_elements_ids(self.ptr, element_type, [] if nominal_voltages is None else list(nominal_voltages),
+                                                [] if countries is None else list(countries), main_connected_component)
 
 
 def create_empty(id: str = "Default") -> Network:
