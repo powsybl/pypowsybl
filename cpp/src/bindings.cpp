@@ -45,11 +45,12 @@ PYBIND11_MODULE(_gridpy, m) {
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("GENERATOR", element_type::GENERATOR)
+            .value("LOAD", element_type::LOAD)
             .export_values();
 
     m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
-          py::arg("network"), py::arg("element_type"), py::arg("nominal_voltage"),
-          py::arg("main_connected_component"));
+          py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
+          py::arg("countries"), py::arg("main_connected_component"));
 
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 

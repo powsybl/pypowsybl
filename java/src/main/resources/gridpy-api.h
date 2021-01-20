@@ -71,6 +71,7 @@ typedef enum {
     LINE = 0,
     TWO_WINDINGS_TRANSFORMER,
     GENERATOR,
+    LOAD,
 } element_type;
 
 typedef struct matrix_struct {

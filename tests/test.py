@@ -84,7 +84,13 @@ class GridPyTestCase(unittest.TestCase):
     def test_get_network_element_ids(self):
         n = gp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
-        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, 24))
+        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages=[24]))
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages=[24, 150]))
+        self.assertEqual(['LOAD'], n.get_elements_ids(element_type=gp.network.ElementType.LOAD, nominal_voltages=[150]))
+        self.assertEqual(['LOAD'], n.get_elements_ids(element_type=gp.network.ElementType.LOAD, nominal_voltages=[150], countries=['FR']))
+        self.assertEqual([], n.get_elements_ids(element_type=gp.network.ElementType.LOAD, nominal_voltages=[150], countries=['BE']))
+        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages=[24], countries=['FR']))
+        self.assertEqual([], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages=[24], countries=['BE']))
 
     def test_sensitivity_analysis(self):
         n = gp.network.create_ieee14()
