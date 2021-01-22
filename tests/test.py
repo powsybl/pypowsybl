@@ -92,6 +92,11 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=gp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'BE'}))
 
+    def test_create_generators_data_frame(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_generators_data_frame()
+        print(df)
+
     def test_sensitivity_analysis(self):
         n = gp.network.create_ieee14()
         sa = gp.sensitivity_analysis.create()

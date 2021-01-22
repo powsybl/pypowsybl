@@ -12,6 +12,7 @@ from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
 from typing import Set
+import pandas as pd
 
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -78,6 +79,29 @@ class Network(ObjectHandle):
                          main_connected_component: bool = True) -> List[str]:
         return _gridpy.get_network_elements_ids(self.ptr, element_type, [] if nominal_voltages is None else list(nominal_voltages),
                                                 [] if countries is None else list(countries), main_connected_component)
+
+    def create_elements_data_frame(self, element_type: _gridpy.ElementType) -> pd.DataFrame:
+        columns = _gridpy.create_network_elements_data_frame(self.ptr, element_type)
+        dict = {}
+        index = None
+        for column in columns:
+            if column.type == 0: # string
+                if column.name == 'id':
+                    index = column.str_data
+                else:
+                    dict[column.name] = column.str_data
+            elif column.type == 1: # double
+                dict[column.name] = column.double_data
+            elif column.type == 2:  # int
+                dict[column.name] = column.int_data
+            elif column.type == 3:  # boolean
+                dict[column.name] = column.boolean_data
+            else:
+                raise RuntimeError(f'Unsupported column type ${column.type}')
+        return pd.DataFrame(dict, index = index)
+
+    def create_generators_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.GENERATOR)
 
 
 def create_empty(id: str = "Default") -> Network:

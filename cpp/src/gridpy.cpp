@@ -80,6 +80,12 @@ Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
 
+template<>
+Array<column>::~Array() {
+    GraalVmGuard guard;
+    freeNetworkElementsDataFrame(guard.thread(), delegate_);
+}
+
 template<typename T>
 class ToPtr {
 public:
@@ -255,6 +261,11 @@ matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
     return getReferenceFlows(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
+}
+
+ColumnArray* createNetworkElementsDataFrame(void* network, element_type elementType) {
+    GraalVmGuard guard;
+    return new ColumnArray(createNetworkElementsDataFrame(guard.thread(), network, elementType));
 }
 
 void destroyObjectHandle(void* objectHandle) {

@@ -79,3 +79,9 @@ typedef struct matrix_struct {
     int column_count;
     double* values;
 } matrix;
+
+typedef struct column_struct {
+    char* name;
+    int type;
+    array data;
+} column;
