@@ -48,7 +48,7 @@ class SeriesPointerArrayBuilder<T> {
         seriesPtr = UnmanagedMemory.calloc(seriesCount * SizeOf.get(GridPyApiHeader.SeriesPointer.class));
     }
 
-    private void checkColumnIndex() {
+    private void checkSeriesIndex() {
         if (seriesIndex >= seriesCount) {
             throw new PowsyblException("Not enough series:" + seriesCount);
         }
@@ -57,7 +57,7 @@ class SeriesPointerArrayBuilder<T> {
     SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(stringGetter);
-        checkColumnIndex();
+        checkSeriesIndex();
         GridPyApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
         seriesPtrI.setName(CTypeConversion.toCString(seriesName).get());
         seriesPtrI.setType(STRING_SERIES_TYPE);
@@ -80,7 +80,7 @@ class SeriesPointerArrayBuilder<T> {
     SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(doubleGetter);
-        checkColumnIndex();
+        checkSeriesIndex();
         GridPyApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
         seriesPtrI.setName(CTypeConversion.toCString(seriesName).get());
         seriesPtrI.setType(DOUBLE_SERIES_TYPE);
@@ -102,7 +102,7 @@ class SeriesPointerArrayBuilder<T> {
     private SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter, int type) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(intGetter);
-        checkColumnIndex();
+        checkSeriesIndex();
         GridPyApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
         seriesPtrI.setName(CTypeConversion.toCString(seriesName).get());
         seriesPtrI.setType(type);
