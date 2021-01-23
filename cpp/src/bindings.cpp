@@ -335,16 +335,16 @@ PYBIND11_MODULE(_gridpy, m) {
                 return s.type;
             })
             .def_property_readonly("str_data", [](const series& s) {
-                return gridpy::fromCharPtrPtr((array*) &s.data);
+                return gridpy::toVector<std::string>((array*) &s.data);
             })
             .def_property_readonly("double_data", [](const series& s) {
-                return gridpy::fromNumberPtr<double>((array*) &s.data);
+                return gridpy::toVector<double>((array*) &s.data);
             })
             .def_property_readonly("int_data", [](const series& s) {
-                return gridpy::fromNumberPtr<int>((array*) &s.data);
+                return gridpy::toVector<int>((array*) &s.data);
             })
             .def_property_readonly("boolean_data", [](const series& s) {
-                return gridpy::fromNumberPtr<bool>((array*) &s.data);
+                return gridpy::toVector<bool>((array*) &s.data);
             });
 
     m.def("create_network_elements_series_array", &gridpy::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",

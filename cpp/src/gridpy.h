@@ -40,17 +40,15 @@ typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
-std::vector<std::string> fromCharPtrPtr(array* arrayPtr);
-
 template<typename T>
-std::vector<T> fromNumberPtr(array* arrayPtr) {
-    std::vector<T> numbers;
-    numbers.reserve(arrayPtr->length);
+std::vector<T> toVector(array* arrayPtr) {
+    std::vector<T> values;
+    values.reserve(arrayPtr->length);
     for (int i = 0; i < arrayPtr->length; i++) {
-        T d = *((T*) arrayPtr->ptr + i);
-        numbers.push_back(d);
+        T value = *((T*) arrayPtr->ptr + i);
+        values.push_back(value);
     }
-    return numbers;
+    return values;
 }
 
 enum LoadFlowComponentStatus {

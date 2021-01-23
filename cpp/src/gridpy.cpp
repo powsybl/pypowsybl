@@ -127,7 +127,8 @@ public:
     }
 };
 
-std::vector<std::string> fromCharPtrPtr(array* arrayPtr) {
+template<>
+std::vector<std::string> toVector(array* arrayPtr) {
     std::vector<std::string> strings;
     strings.reserve(arrayPtr->length);
     for (int i = 0; i < arrayPtr->length; i++) {
@@ -189,7 +190,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     ToCharPtrPtr countryPtr(countries);
     array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltagePtr.get(), nominalVoltages.size(),
                                                        countryPtr.get(), countries.size(), mainCc);
-    std::vector<std::string> elementsIds = fromCharPtrPtr(elementsIdsArrayPtr);
+    std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
     freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
