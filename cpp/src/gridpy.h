@@ -38,7 +38,7 @@ typedef Array<generator> GeneratorArray;
 typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
-typedef Array<column> ColumnArray;
+typedef Array<series> SeriesArray;
 
 std::vector<std::string> fromCharPtrPtr(array* arrayPtr);
 
@@ -48,7 +48,7 @@ std::vector<T> fromNumberPtr(array* arrayPtr) {
     numbers.reserve(arrayPtr->length);
     for (int i = 0; i < arrayPtr->length; i++) {
         T d = *((T*) arrayPtr->ptr + i);
-        numbers.emplace_back(d);
+        numbers.push_back(d);
     }
     return numbers;
 }
@@ -134,7 +134,7 @@ matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
-ColumnArray* createNetworkElementsDataFrame(void* network, element_type elementType);
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 
 void destroyObjectHandle(void* objectHandle);
 

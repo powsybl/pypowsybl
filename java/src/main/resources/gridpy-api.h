@@ -80,8 +80,8 @@ typedef struct matrix_struct {
     double* values;
 } matrix;
 
-typedef struct column_struct {
+typedef struct series_struct {
     char* name;
     int type;
     array data;
-} column;
+} series;

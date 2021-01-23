@@ -327,30 +327,30 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("get_reference_flows", &gridpy::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
-    py::class_<column>(m, "Column")
-            .def_property_readonly("name", [](const column& c) {
-                return c.name;
+    py::class_<series>(m, "Series")
+            .def_property_readonly("name", [](const series& s) {
+                return s.name;
             })
-            .def_property_readonly("type", [](const column& c) {
-                return c.type;
+            .def_property_readonly("type", [](const series& s) {
+                return s.type;
             })
-            .def_property_readonly("str_data", [](const column& c) {
-                return gridpy::fromCharPtrPtr((array*) &c.data);
+            .def_property_readonly("str_data", [](const series& s) {
+                return gridpy::fromCharPtrPtr((array*) &s.data);
             })
-            .def_property_readonly("double_data", [](const column& c) {
-                return gridpy::fromNumberPtr<double>((array*) &c.data);
+            .def_property_readonly("double_data", [](const series& s) {
+                return gridpy::fromNumberPtr<double>((array*) &s.data);
             })
-            .def_property_readonly("int_data", [](const column& c) {
-                return gridpy::fromNumberPtr<int>((array*) &c.data);
+            .def_property_readonly("int_data", [](const series& s) {
+                return gridpy::fromNumberPtr<int>((array*) &s.data);
             })
-            .def_property_readonly("boolean_data", [](const column& c) {
-                return gridpy::fromNumberPtr<bool>((array*) &c.data);
+            .def_property_readonly("boolean_data", [](const series& s) {
+                return gridpy::fromNumberPtr<bool>((array*) &s.data);
             });
 
-    m.def("create_network_elements_data_frame", &gridpy::createNetworkElementsDataFrame, "Create a network elements data frame for a given element type",
+    m.def("create_network_elements_series_array", &gridpy::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::arg("network"), py::arg("element_type"));
 
-    bindArray<gridpy::ColumnArray>(m, "ColumnArray");
+    bindArray<gridpy::SeriesArray>(m, "SeriesArray");
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

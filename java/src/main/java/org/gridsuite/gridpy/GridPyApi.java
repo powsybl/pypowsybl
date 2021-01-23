@@ -8,7 +8,6 @@ package org.gridsuite.gridpy;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -38,10 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.gridpy.GridPyApiHeader.*;
@@ -436,113 +431,22 @@ public final class GridPyApi {
         return WordFactory.nullPointer();
     }
 
-    static class ColumnPointerArrayBuilder<T> {
-
-        private static final int STRING_COLUMN_TYPE = 0;
-        private static final int DOUBLE_COLUMN_TYPE = 1;
-        private static final int INT_COLUMN_TYPE = 2;
-        private static final int BOOLEAN_COLUMN_TYPE = 3;
-
-        private final List<T> elements;
-
-        private final GridPyApiHeader.ColumnPointer columnPtr;
-
-        private final int columnCount;
-
-        private int columnIndex = 0;
-
-        ColumnPointerArrayBuilder(List<T> elements, int columnCount) {
-            this.elements = elements;
-            this.columnCount = columnCount;
-            columnPtr = UnmanagedMemory.calloc(columnCount * SizeOf.get(ColumnPointer.class));
-        }
-
-        private void checkColumnIndex() {
-            if (columnIndex >= columnCount) {
-                throw new PowsyblException("Not enough columns:" + columnCount);
-            }
-        }
-
-        ColumnPointerArrayBuilder<T> createStringColumn(String columnName, Function<T, String> getString) {
-            checkColumnIndex();
-            GridPyApiHeader.ColumnPointer columnPtrI = columnPtr.addressOf(columnIndex);
-            columnPtrI.setName(CTypeConversion.toCString(columnName).get());
-            columnPtrI.setType(STRING_COLUMN_TYPE);
-            columnPtrI.data().setLength(elements.size());
-            CCharPointerPointer dataPtr = UnmanagedMemory.calloc(elements.size() * SizeOf.get(CCharPointerPointer.class));
-            for (int i = 0; i < elements.size(); i++) {
-                T element = elements.get(i);
-                dataPtr.addressOf(i).write(CTypeConversion.toCString(getString.apply(element)).get());
-            }
-            columnPtrI.data().setPtr(dataPtr);
-            columnIndex++;
-            return this;
-        }
-
-        ColumnPointerArrayBuilder<T> createEnumColumn(String columnName, Function<T, Enum> getEnum) {
-            return createStringColumn(columnName, element -> getEnum.apply(element).name());
-        }
-
-        ColumnPointerArrayBuilder<T> createDoubleColumn(String columnName, ToDoubleFunction<T> getDouble) {
-            checkColumnIndex();
-            GridPyApiHeader.ColumnPointer columnPtrI = columnPtr.addressOf(columnIndex);
-            columnPtrI.setName(CTypeConversion.toCString(columnName).get());
-            columnPtrI.setType(DOUBLE_COLUMN_TYPE);
-            columnPtrI.data().setLength(elements.size());
-            CDoublePointer dataPtr = UnmanagedMemory.calloc(elements.size() * SizeOf.get(CDoublePointer.class));
-            for (int i = 0; i < elements.size(); i++) {
-                T element = elements.get(i);
-                dataPtr.addressOf(i).write(getDouble.applyAsDouble(element));
-            }
-            columnPtrI.data().setPtr(dataPtr);
-            columnIndex++;
-            return this;
-        }
-
-        ColumnPointerArrayBuilder<T> createIntColumn(String columnName, ToIntFunction<T> getInt) {
-            return createIntColumn(columnName, getInt, INT_COLUMN_TYPE);
-        }
-
-        private ColumnPointerArrayBuilder<T> createIntColumn(String columnName, ToIntFunction<T> getInt, int type) {
-            checkColumnIndex();
-            GridPyApiHeader.ColumnPointer columnPtrI = columnPtr.addressOf(columnIndex);
-            columnPtrI.setName(CTypeConversion.toCString(columnName).get());
-            columnPtrI.setType(type);
-            columnPtrI.data().setLength(elements.size());
-            CIntPointer dataPtr = UnmanagedMemory.calloc(elements.size() * SizeOf.get(CIntPointer.class));
-            for (int i = 0; i < elements.size(); i++) {
-                T element = elements.get(i);
-                dataPtr.addressOf(i).write(getInt.applyAsInt(element));
-            }
-            columnPtrI.data().setPtr(dataPtr);
-            columnIndex++;
-            return this;
-        }
-
-        ColumnPointerArrayBuilder<T> createBooleanColumn(String columnName, Predicate<T> getBool) {
-            return createIntColumn(columnName, element -> getBool.test(element) ? 1 : 0, BOOLEAN_COLUMN_TYPE);
-        }
-
-        ArrayPointer<ColumnPointer> build() {
-            return allocArrayPointer(columnPtr, columnCount);
-        }
-    }
-
-    @CEntryPoint(name = "createNetworkElementsDataFrame")
-    public static ArrayPointer<ColumnPointer> createNetworkElementsDataFrame(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType) {
+    @CEntryPoint(name = "createNetworkElementsSeriesArray")
+    public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                               ElementType elementType) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         switch (elementType) {
             case GENERATOR:
                 List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
-                return new ColumnPointerArrayBuilder<>(generators, 8)
-                        .createStringColumn("id", Generator::getId)
-                        .createEnumColumn("energy_source", Generator::getEnergySource)
-                        .createDoubleColumn("target_p", Generator::getTargetP)
-                        .createDoubleColumn("max_p", Generator::getMaxP)
-                        .createDoubleColumn("min_p", Generator::getMinP)
-                        .createDoubleColumn("target_v", Generator::getTargetV)
-                        .createDoubleColumn("target_q", Generator::getTargetQ)
-                        .createBooleanColumn("voltage_regulator_on", Generator::isVoltageRegulatorOn)
+                return new SeriesPointerArrayBuilder<>(generators, 8)
+                        .addStringSeries("id", Generator::getId)
+                        .addEnumSeries("energy_source", Generator::getEnergySource)
+                        .addDoubleSeries("target_p", Generator::getTargetP)
+                        .addDoubleSeries("max_p", Generator::getMaxP)
+                        .addDoubleSeries("min_p", Generator::getMinP)
+                        .addDoubleSeries("target_v", Generator::getTargetV)
+                        .addDoubleSeries("target_q", Generator::getTargetQ)
+                        .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
                         .build();
 
             default:
@@ -550,8 +454,8 @@ public final class GridPyApi {
         }
     }
 
-    @CEntryPoint(name = "freeNetworkElementsDataFrame")
-    public static void freeNetworkElementsDataFrame(IsolateThread thread, ArrayPointer<ColumnPointer> columnPtrArray) {
+    @CEntryPoint(name = "freeNetworkElementsSeriesArray")
+    public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArray) {
         // TODO
     }
 

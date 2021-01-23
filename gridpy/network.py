@@ -81,24 +81,24 @@ class Network(ObjectHandle):
                                                 [] if countries is None else list(countries), main_connected_component)
 
     def create_elements_data_frame(self, element_type: _gridpy.ElementType) -> pd.DataFrame:
-        columns = _gridpy.create_network_elements_data_frame(self.ptr, element_type)
-        dict = {}
+        series_array = _gridpy.create_network_elements_series_array(self.ptr, element_type)
+        series_dict = {}
         index = None
-        for column in columns:
-            if column.type == 0: # string
-                if column.name == 'id':
-                    index = column.str_data
+        for series in series_array:
+            if series.type == 0: # string
+                if series.name == 'id':
+                    index = series.str_data
                 else:
-                    dict[column.name] = column.str_data
-            elif column.type == 1: # double
-                dict[column.name] = column.double_data
-            elif column.type == 2:  # int
-                dict[column.name] = column.int_data
-            elif column.type == 3:  # boolean
-                dict[column.name] = column.boolean_data
+                    series_dict[series.name] = series.str_data
+            elif series.type == 1: # double
+                series_dict[series.name] = series.double_data
+            elif series.type == 2:  # int
+                series_dict[series.name] = series.int_data
+            elif series.type == 3:  # boolean
+                series_dict[series.name] = series.boolean_data
             else:
-                raise RuntimeError(f'Unsupported column type ${column.type}')
-        return pd.DataFrame(dict, index = index)
+                raise RuntimeError(f'Unsupported series type ${series.type}')
+        return pd.DataFrame(series_dict, index = index)
 
     def create_generators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.GENERATOR)

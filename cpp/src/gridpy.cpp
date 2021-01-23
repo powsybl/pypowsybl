@@ -81,9 +81,9 @@ Array<limit_violation>::~Array() {
 }
 
 template<>
-Array<column>::~Array() {
+Array<series>::~Array() {
     GraalVmGuard guard;
-    freeNetworkElementsDataFrame(guard.thread(), delegate_);
+    freeNetworkElementsSeriesArray(guard.thread(), delegate_);
 }
 
 template<typename T>
@@ -263,9 +263,9 @@ matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::str
     return getReferenceFlows(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
 }
 
-ColumnArray* createNetworkElementsDataFrame(void* network, element_type elementType) {
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
     GraalVmGuard guard;
-    return new ColumnArray(createNetworkElementsDataFrame(guard.thread(), network, elementType));
+    return new SeriesArray(createNetworkElementsSeriesArray(guard.thread(), network, elementType));
 }
 
 void destroyObjectHandle(void* objectHandle) {

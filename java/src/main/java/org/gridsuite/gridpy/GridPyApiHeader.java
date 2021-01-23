@@ -370,8 +370,8 @@ public class GridPyApiHeader {
         void setColumnCount(int columnCount);
     }
 
-    @CStruct("column")
-    interface ColumnPointer extends PointerBase {
+    @CStruct("series")
+    interface SeriesPointer extends PointerBase {
 
         @CField("name")
         CCharPointer getName();
@@ -388,6 +388,6 @@ public class GridPyApiHeader {
         @CFieldAddress("data")
         <T extends PointerBase> ArrayPointer<T> data();
 
-        ColumnPointer addressOf(int index);
+        SeriesPointer addressOf(int index);
     }
 }
