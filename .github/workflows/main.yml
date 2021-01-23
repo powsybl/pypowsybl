@@ -44,7 +44,7 @@ jobs:
           ref: gridpy-v0.1.0
 
       - name: Build and install olf artifact
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -53,7 +53,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel
+          scl enable rh-maven33 '/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel'
           auditwheel repair dist/*.whl
 
       - name: Install wheel
