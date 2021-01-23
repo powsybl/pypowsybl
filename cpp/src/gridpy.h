@@ -51,6 +51,9 @@ std::vector<T> toVector(array* arrayPtr) {
     return values;
 }
 
+template<>
+std::vector<std::string> toVector(array* arrayPtr);
+
 enum LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
