@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: yum install -y maven zlib-devel.x86_64
+        run: yum install -y rh-maven33-maven zlib-devel.x86_64
 
       - name: Setup GraalVM
         uses: ayltai/setup-graalvm@v1
