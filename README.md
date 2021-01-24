@@ -9,11 +9,11 @@ A PowSyBl Python binding POC, based on GraalVM.
 ## Requirements
 
 To build this project, you need:
-- Maven >= 3.5
+- Maven >= 3.1
 - Cmake >= 3.14
-- C++ compiler
+- C++11 compiler 
 - Python >= 3.7
-- [GraalVM 20.3](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
+- [GraalVM 21.0.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.0.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 ## Build from sources
 
