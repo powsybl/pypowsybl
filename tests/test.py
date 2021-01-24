@@ -95,7 +95,8 @@ class GridPyTestCase(unittest.TestCase):
     def test_create_generators_data_frame(self):
         n = gp.network.create_eurostag_tutorial_example1_network()
         df = n.create_generators_data_frame()
-        print(df)
+        self.assertEqual('OTHER', df['energy_source']['GEN'])
+        self.assertEqual(607, df['target_p']['GEN'])
 
     def test_sensitivity_analysis(self):
         n = gp.network.create_ieee14()
