@@ -103,6 +103,8 @@ class Network(ObjectHandle):
     def create_generators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.GENERATOR)
 
+    def create_loads_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.LOAD)
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))

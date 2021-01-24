@@ -30,7 +30,10 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.*;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -438,7 +441,7 @@ public final class GridPyApi {
         switch (elementType) {
             case GENERATOR:
                 List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
-                return new SeriesPointerArrayBuilder<>(generators, 8)
+                return new SeriesPointerArrayBuilder<>(generators, 10)
                         .addStringSeries("id", Generator::getId)
                         .addEnumSeries("energy_source", Generator::getEnergySource)
                         .addDoubleSeries("target_p", Generator::getTargetP)
@@ -447,6 +450,19 @@ public final class GridPyApi {
                         .addDoubleSeries("target_v", Generator::getTargetV)
                         .addDoubleSeries("target_q", Generator::getTargetQ)
                         .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
+                        .addDoubleSeries("p", g -> g.getTerminal().getP())
+                        .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                        .build();
+
+            case LOAD:
+                List<Load> loads = network.getLoadStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(loads, 6)
+                        .addStringSeries("id", Load::getId)
+                        .addEnumSeries("type", Load::getLoadType)
+                        .addDoubleSeries("p0", Load::getP0)
+                        .addDoubleSeries("q0", Load::getQ0)
+                        .addDoubleSeries("p", g -> g.getTerminal().getP())
+                        .addDoubleSeries("q", g -> g.getTerminal().getQ())
                         .build();
 
             default:
