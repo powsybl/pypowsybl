@@ -1,6 +1,11 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - *
+    tags:
+      - v*.*.*
 
 jobs:
   manylinux_build:
@@ -176,6 +181,7 @@ jobs:
             download/**/*.tar.gz
 
       - name: Release on PyPi
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           python -m pip install --user --upgrade twine
