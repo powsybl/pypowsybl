@@ -441,7 +441,7 @@ public final class GridPyApi {
         switch (elementType) {
             case GENERATOR:
                 List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
-                return new SeriesPointerArrayBuilder<>(generators, 10)
+                return new SeriesPointerArrayBuilder<>(generators)
                         .addStringSeries("id", Generator::getId)
                         .addEnumSeries("energy_source", Generator::getEnergySource)
                         .addDoubleSeries("target_p", Generator::getTargetP)
@@ -456,7 +456,7 @@ public final class GridPyApi {
 
             case LOAD:
                 List<Load> loads = network.getLoadStream().collect(Collectors.toList());
-                return new SeriesPointerArrayBuilder<>(loads, 6)
+                return new SeriesPointerArrayBuilder<>(loads)
                         .addStringSeries("id", Load::getId)
                         .addEnumSeries("type", Load::getLoadType)
                         .addDoubleSeries("p0", Load::getP0)
