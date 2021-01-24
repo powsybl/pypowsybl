@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches:
-      - *
+      - '*'
     tags:
-      - v*.*.*
+      - 'v*.*.*'
 
 jobs:
   manylinux_build:
