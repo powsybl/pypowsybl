@@ -336,6 +336,7 @@ public class GridPyApiHeader {
 
     @CEnum("element_type")
     enum ElementType {
+        BUS,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
         GENERATOR,

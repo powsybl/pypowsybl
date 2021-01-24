@@ -42,6 +42,7 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
+            .value("BUS", element_type::BUS)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("GENERATOR", element_type::GENERATOR)

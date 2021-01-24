@@ -434,11 +434,61 @@ public final class GridPyApi {
         return WordFactory.nullPointer();
     }
 
+    private static String getBusId(Terminal t) {
+        Bus bus = t.getBusView().getBus();
+        return bus != null ? bus.getId() : "";
+    }
+
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         switch (elementType) {
+            case BUS:
+                List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(buses)
+                        .addStringSeries("id", Bus::getId)
+                        .addDoubleSeries("v_mag", Bus::getV)
+                        .addDoubleSeries("v_angle", Bus::getAngle)
+                        .build();
+
+            case LINE:
+                List<Line> lines = network.getLineStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(lines)
+                        .addStringSeries("id", Line::getId)
+                        .addDoubleSeries("r", Line::getR)
+                        .addDoubleSeries("x", Line::getX)
+                        .addDoubleSeries("g1", Line::getG1)
+                        .addDoubleSeries("b1", Line::getB1)
+                        .addDoubleSeries("g2", Line::getG2)
+                        .addDoubleSeries("b2", Line::getB2)
+                        .addDoubleSeries("p1", g -> g.getTerminal1().getP())
+                        .addDoubleSeries("q1", g -> g.getTerminal1().getQ())
+                        .addDoubleSeries("p2", g -> g.getTerminal2().getP())
+                        .addDoubleSeries("q2", g -> g.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", g -> getBusId(g.getTerminal1()))
+                        .addStringSeries("bus2_id", g -> getBusId(g.getTerminal2()))
+                        .build();
+
+            case TWO_WINDINGS_TRANSFORMER:
+                List<TwoWindingsTransformer> transformers = network.getTwoWindingsTransformerStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(transformers)
+                        .addStringSeries("id", TwoWindingsTransformer::getId)
+                        .addDoubleSeries("r", TwoWindingsTransformer::getR)
+                        .addDoubleSeries("x", TwoWindingsTransformer::getX)
+                        .addDoubleSeries("g", TwoWindingsTransformer::getG)
+                        .addDoubleSeries("b", TwoWindingsTransformer::getB)
+                        .addDoubleSeries("rated_u1", TwoWindingsTransformer::getRatedU1)
+                        .addDoubleSeries("rated_u2", TwoWindingsTransformer::getRatedU2)
+                        .addDoubleSeries("rated_s", TwoWindingsTransformer::getRatedS)
+                        .addDoubleSeries("p1", g -> g.getTerminal1().getP())
+                        .addDoubleSeries("q1", g -> g.getTerminal1().getQ())
+                        .addDoubleSeries("p2", g -> g.getTerminal2().getP())
+                        .addDoubleSeries("q2", g -> g.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", g -> getBusId(g.getTerminal1()))
+                        .addStringSeries("bus2_id", g -> getBusId(g.getTerminal2()))
+                        .build();
+
             case GENERATOR:
                 List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
                 return new SeriesPointerArrayBuilder<>(generators)
@@ -452,6 +502,7 @@ public final class GridPyApi {
                         .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
                         .addDoubleSeries("p", g -> g.getTerminal().getP())
                         .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                        .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))
                         .build();
 
             case LOAD:
@@ -463,6 +514,7 @@ public final class GridPyApi {
                         .addDoubleSeries("q0", Load::getQ0)
                         .addDoubleSeries("p", g -> g.getTerminal().getP())
                         .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                        .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))
                         .build();
 
             default:
@@ -471,8 +523,13 @@ public final class GridPyApi {
     }
 
     @CEntryPoint(name = "freeNetworkElementsSeriesArray")
-    public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArray) {
-        // TODO
+    public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
+        // don't need to free char* from id field as it is done by python
+        for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
+            SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+        }
+        freeArrayPointer(seriesPtrArrayPtr);
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

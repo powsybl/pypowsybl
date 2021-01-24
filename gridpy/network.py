@@ -100,11 +100,21 @@ class Network(ObjectHandle):
                 raise RuntimeError(f'Unsupported series type ${series.type}')
         return pd.DataFrame(series_dict, index = index)
 
+    def create_buses_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.BUS)
+
     def create_generators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.GENERATOR)
 
     def create_loads_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.LOAD)
+
+    def create_lines_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.LINE)
+
+    def create_2_windings_transformers_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.TWO_WINDINGS_TRANSFORMER)
+
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))
