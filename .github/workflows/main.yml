@@ -174,3 +174,10 @@ jobs:
           path: |
             download/**/*.whl
             download/**/*.tar.gz
+
+      - name: Release on PyPi
+        shell: bash
+        run: |
+          python -m pip install --user --upgrade twine
+          python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} --repository testpypi download/*/*.whl
+          python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} --repository testpypi download/*/*.tar.gz
