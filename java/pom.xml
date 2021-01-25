@@ -26,7 +26,7 @@
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>20.3.0</graalvm.version>
+        <graalvm.version>21.0.0</graalvm.version>
         <gridsuite-dependencies.version>4</gridsuite-dependencies.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
