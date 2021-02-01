@@ -68,10 +68,17 @@ typedef struct contingency_result_struct {
 } contingency_result;
 
 typedef enum {
-    LINE = 0,
+    BUS = 0,
+    LINE,
     TWO_WINDINGS_TRANSFORMER,
+    THREE_WINDINGS_TRANSFORMER,
     GENERATOR,
     LOAD,
+    SHUNT_COMPENSATOR,
+    DANGLING_LINE,
+    LCC_CONVERTER_STATION,
+    VSC_CONVERTER_STATION,
+    STATIC_VAR_COMPENSATOR,
 } element_type;
 
 typedef struct matrix_struct {
@@ -79,3 +86,9 @@ typedef struct matrix_struct {
     int column_count;
     double* values;
 } matrix;
+
+typedef struct series_struct {
+    char* name;
+    int type;
+    array data;
+} series;

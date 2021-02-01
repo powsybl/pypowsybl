@@ -336,10 +336,17 @@ public class GridPyApiHeader {
 
     @CEnum("element_type")
     enum ElementType {
+        BUS,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
+        THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
-        LOAD;
+        LOAD,
+        SHUNT_COMPENSATOR,
+        DANGLING_LINE,
+        LCC_CONVERTER_STATION,
+        VSC_CONVERTER_STATION,
+        STATIC_VAR_COMPENSATOR;
 
         @CEnumValue
         public native int getCValue();
@@ -368,5 +375,26 @@ public class GridPyApiHeader {
 
         @CField("column_count")
         void setColumnCount(int columnCount);
+    }
+
+    @CStruct("series")
+    interface SeriesPointer extends PointerBase {
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("type")
+        int getType();
+
+        @CField("type")
+        void setType(int type);
+
+        @CFieldAddress("data")
+        <T extends PointerBase> ArrayPointer<T> data();
+
+        SeriesPointer addressOf(int index);
     }
 }

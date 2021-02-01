@@ -12,6 +12,7 @@ from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
 from typing import Set
+import pandas as pd
 
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -78,6 +79,59 @@ class Network(ObjectHandle):
                          main_connected_component: bool = True) -> List[str]:
         return _gridpy.get_network_elements_ids(self.ptr, element_type, [] if nominal_voltages is None else list(nominal_voltages),
                                                 [] if countries is None else list(countries), main_connected_component)
+
+    def create_elements_data_frame(self, element_type: _gridpy.ElementType) -> pd.DataFrame:
+        series_array = _gridpy.create_network_elements_series_array(self.ptr, element_type)
+        series_dict = {}
+        index = None
+        for series in series_array:
+            if series.type == 0: # string
+                if series.name == 'id':
+                    index = series.str_data
+                else:
+                    series_dict[series.name] = series.str_data
+            elif series.type == 1: # double
+                series_dict[series.name] = series.double_data
+            elif series.type == 2:  # int
+                series_dict[series.name] = series.int_data
+            elif series.type == 3:  # boolean
+                series_dict[series.name] = series.boolean_data
+            else:
+                raise RuntimeError(f'Unsupported series type ${series.type}')
+        return pd.DataFrame(series_dict, index = index)
+
+    def create_buses_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.BUS)
+
+    def create_generators_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.GENERATOR)
+
+    def create_loads_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.LOAD)
+
+    def create_lines_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.LINE)
+
+    def create_2_windings_transformers_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.TWO_WINDINGS_TRANSFORMER)
+
+    def create_3_windings_transformers_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.THREE_WINDINGS_TRANSFORMER)
+
+    def create_shunt_compensators_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.SHUNT_COMPENSATOR)
+
+    def create_dangling_lines_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.DANGLING_LINE)
+
+    def create_lcc_converter_stations_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.LCC_CONVERTER_STATION)
+
+    def create_vsc_converter_stations_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.VSC_CONVERTER_STATION)
+
+    def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.STATIC_VAR_COMPENSATOR)
 
 
 def create_empty(id: str = "Default") -> Network:

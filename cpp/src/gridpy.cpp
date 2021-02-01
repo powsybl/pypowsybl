@@ -80,6 +80,12 @@ Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
 
+template<>
+Array<series>::~Array() {
+    GraalVmGuard guard;
+    freeNetworkElementsSeriesArray(guard.thread(), delegate_);
+}
+
 template<typename T>
 class ToPtr {
 public:
@@ -121,7 +127,8 @@ public:
     }
 };
 
-std::vector<std::string> fromCharPtrPtr(array* arrayPtr) {
+template<>
+std::vector<std::string> toVector(array* arrayPtr) {
     std::vector<std::string> strings;
     strings.reserve(arrayPtr->length);
     for (int i = 0; i < arrayPtr->length; i++) {
@@ -183,7 +190,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     ToCharPtrPtr countryPtr(countries);
     array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltagePtr.get(), nominalVoltages.size(),
                                                        countryPtr.get(), countries.size(), mainCc);
-    std::vector<std::string> elementsIds = fromCharPtrPtr(elementsIdsArrayPtr);
+    std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
     freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
@@ -255,6 +262,11 @@ matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
     return getReferenceFlows(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
+}
+
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
+    GraalVmGuard guard;
+    return new SeriesArray(createNetworkElementsSeriesArray(guard.thread(), network, elementType));
 }
 
 void destroyObjectHandle(void* objectHandle) {

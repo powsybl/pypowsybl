@@ -38,6 +38,21 @@ typedef Array<generator> GeneratorArray;
 typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
+typedef Array<series> SeriesArray;
+
+template<typename T>
+std::vector<T> toVector(array* arrayPtr) {
+    std::vector<T> values;
+    values.reserve(arrayPtr->length);
+    for (int i = 0; i < arrayPtr->length; i++) {
+        T value = *((T*) arrayPtr->ptr + i);
+        values.push_back(value);
+    }
+    return values;
+}
+
+template<>
+std::vector<std::string> toVector(array* arrayPtr);
 
 enum LoadFlowComponentStatus {
     CONVERGED = 0,
@@ -119,6 +134,8 @@ void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, lo
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 
 void destroyObjectHandle(void* objectHandle);
 

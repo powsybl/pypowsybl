@@ -42,10 +42,17 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
+            .value("BUS", element_type::BUS)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
+            .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)
             .value("GENERATOR", element_type::GENERATOR)
             .value("LOAD", element_type::LOAD)
+            .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
+            .value("DANGLING_LINE", element_type::DANGLING_LINE)
+            .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
+            .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
+            .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
             .export_values();
 
     m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
@@ -326,6 +333,31 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("get_reference_flows", &gridpy::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+
+    py::class_<series>(m, "Series")
+            .def_property_readonly("name", [](const series& s) {
+                return s.name;
+            })
+            .def_property_readonly("type", [](const series& s) {
+                return s.type;
+            })
+            .def_property_readonly("str_data", [](const series& s) {
+                return gridpy::toVector<std::string>((array*) &s.data);
+            })
+            .def_property_readonly("double_data", [](const series& s) {
+                return gridpy::toVector<double>((array*) &s.data);
+            })
+            .def_property_readonly("int_data", [](const series& s) {
+                return gridpy::toVector<int>((array*) &s.data);
+            })
+            .def_property_readonly("boolean_data", [](const series& s) {
+                return gridpy::toVector<bool>((array*) &s.data);
+            });
+
+    m.def("create_network_elements_series_array", &gridpy::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
+          py::arg("network"), py::arg("element_type"));
+
+    bindArray<gridpy::SeriesArray>(m, "SeriesArray");
 
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }
