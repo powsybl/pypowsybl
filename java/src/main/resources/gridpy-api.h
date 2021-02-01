@@ -7,7 +7,26 @@ typedef struct bus_struct {
     char* id;
     double v_magnitude;
     double v_angle;
+    int component_num;
 } bus;
+
+typedef struct generator_struct {
+    char* id;
+    double target_p;
+    double min_p;
+    double max_p;
+    double nominal_voltage;
+    char* country;
+    bus* bus_;
+} generator;
+
+typedef struct load_struct {
+    char* id;
+    double p0;
+    double nominal_voltage;
+    char* country;
+    bus* bus_;
+} load;
 
 typedef struct load_flow_component_result_struct {
     int component_num;
@@ -49,9 +68,17 @@ typedef struct contingency_result_struct {
 } contingency_result;
 
 typedef enum {
-    LINE = 0,
+    BUS = 0,
+    LINE,
     TWO_WINDINGS_TRANSFORMER,
+    THREE_WINDINGS_TRANSFORMER,
     GENERATOR,
+    LOAD,
+    SHUNT_COMPENSATOR,
+    DANGLING_LINE,
+    LCC_CONVERTER_STATION,
+    VSC_CONVERTER_STATION,
+    STATIC_VAR_COMPENSATOR,
 } element_type;
 
 typedef struct matrix_struct {
@@ -59,3 +86,9 @@ typedef struct matrix_struct {
     int column_count;
     double* values;
 } matrix;
+
+typedef struct series_struct {
+    char* name;
+    int type;
+    array data;
+} series;

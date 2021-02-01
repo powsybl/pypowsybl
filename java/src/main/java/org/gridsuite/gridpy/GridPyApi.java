@@ -11,9 +11,9 @@ import ch.qos.logback.classic.Logger;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Bus;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.util.ConnectedComponents;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -42,7 +42,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.gridsuite.gridpy.GridPyApiHeader.*;
 
@@ -171,18 +170,22 @@ public final class GridPyApi {
         freeArrayPointer(componentResultArrayPtr);
     }
 
+    private static void fillBus(Bus bus, BusPointer busPtr) {
+        busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
+        busPtr.setVoltageMagnitude(bus.getV());
+        busPtr.setVoltageAngle(bus.getAngle());
+        busPtr.setComponentNum(ConnectedComponents.getCcNum(bus));
+    }
+
     @CEntryPoint(name = "getBusArray")
-    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, boolean busBreakerView) {
+    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        Stream<Bus> busStream = busBreakerView ? network.getBusBreakerView().getBusStream() : network.getBusView().getBusStream();
-        List<Bus> buses = busStream.collect(Collectors.toList());
+        List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
         BusPointer busesPtr = UnmanagedMemory.calloc(buses.size() * SizeOf.get(BusPointer.class));
         for (int index = 0; index < buses.size(); index++) {
             Bus bus = buses.get(index);
             BusPointer busPtr = busesPtr.addressOf(index);
-            busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
-            busPtr.setVoltageMagnitude(bus.getV());
-            busPtr.setVoltageAngle(bus.getAngle());
+            fillBus(bus, busPtr);
         }
         return allocArrayPointer(busesPtr, buses.size());
     }
@@ -191,6 +194,78 @@ public final class GridPyApi {
     public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
         // don't need to free char* from id field as it is done by python
         freeArrayPointer(busArrayPointer);
+    }
+
+    @CEntryPoint(name = "getGeneratorArray")
+    public static ArrayPointer<GeneratorPointer> getGeneratorArray(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
+        GeneratorPointer generatorPtr = UnmanagedMemory.calloc(generators.size() * SizeOf.get(GeneratorPointer.class));
+        for (int index = 0; index < generators.size(); index++) {
+            Generator generator = generators.get(index);
+            GeneratorPointer generatorPtrI = generatorPtr.addressOf(index);
+            generatorPtrI.setId(CTypeConversion.toCString(generator.getId()).get());
+            generatorPtrI.setTargetP(generator.getTargetP());
+            generatorPtrI.setMaxP(generator.getMaxP());
+            generatorPtrI.setMinP(generator.getMinP());
+            VoltageLevel vl = generator.getTerminal().getVoltageLevel();
+            generatorPtrI.setNominalVoltage(vl.getNominalV());
+            generatorPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            Bus bus = generator.getTerminal().getBusView().getBus();
+            if (bus != null) {
+                BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
+                fillBus(bus, busPtr);
+                generatorPtrI.setBus(busPtr);
+            }
+        }
+        return allocArrayPointer(generatorPtr, generators.size());
+    }
+
+    @CEntryPoint(name = "freeGeneratorArray")
+    public static void freeGeneratorArray(IsolateThread thread, ArrayPointer<GeneratorPointer> generatorArrayPtr) {
+        for (int index = 0; index < generatorArrayPtr.getLength(); index++) {
+            GeneratorPointer generatorPtrI = generatorArrayPtr.getPtr().addressOf(index);
+            // don't need to free char* from id field as it is done by python
+            if (generatorPtrI.getBus().isNonNull()) {
+                UnmanagedMemory.free(generatorPtrI.getBus());
+            }
+        }
+        freeArrayPointer(generatorArrayPtr);
+    }
+
+    @CEntryPoint(name = "getLoadArray")
+    public static ArrayPointer<LoadPointer> getLoadArray(IsolateThread thread, ObjectHandle networkHandle) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        List<Load> loads = network.getLoadStream().collect(Collectors.toList());
+        LoadPointer loadPtr = UnmanagedMemory.calloc(loads.size() * SizeOf.get(LoadPointer.class));
+        for (int index = 0; index < loads.size(); index++) {
+            Load load = loads.get(index);
+            LoadPointer loadPtrI = loadPtr.addressOf(index);
+            loadPtrI.setId(CTypeConversion.toCString(load.getId()).get());
+            loadPtrI.setP0(load.getP0());
+            VoltageLevel vl = load.getTerminal().getVoltageLevel();
+            loadPtrI.setNominalVoltage(vl.getNominalV());
+            loadPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            Bus bus = load.getTerminal().getBusView().getBus();
+            if (bus != null) {
+                BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
+                fillBus(bus, busPtr);
+                loadPtrI.setBus(busPtr);
+            }
+        }
+        return allocArrayPointer(loadPtr, loads.size());
+    }
+
+    @CEntryPoint(name = "freeLoadArray")
+    public static void freeLoadArray(IsolateThread thread, ArrayPointer<LoadPointer> loadArrayPtr) {
+        for (int index = 0; index < loadArrayPtr.getLength(); index++) {
+            LoadPointer loadPtrI = loadArrayPtr.getPtr().addressOf(index);
+            // don't need to free char* from id field as it is done by python
+            if (loadPtrI.getBus().isNonNull()) {
+                UnmanagedMemory.free(loadPtrI.getBus());
+            }
+        }
+        freeArrayPointer(loadArrayPtr);
     }
 
     @CEntryPoint(name = "updateSwitchPosition")
@@ -223,9 +298,12 @@ public final class GridPyApi {
 
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                                          double nominalVoltage, boolean mainCc) {
+                                                                          CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
+                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltage, mainCc);
+        Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.createDoubleList(nominalVoltagePtr, nominalVoltageCount));
+        Set<String> countries = new HashSet<>(CTypeUtil.createStringList(countryPtr, countryCount));
+        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc);
         CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < elementsIds.size(); i++) {
             elementsIdsPtr.addressOf(i).write(CTypeConversion.toCString(elementsIds.get(i)).get());
@@ -370,6 +448,219 @@ public final class GridPyApi {
             return matrixPtr;
         }
         return WordFactory.nullPointer();
+    }
+
+    @CEntryPoint(name = "getReferenceFlows")
+    public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                  CCharPointer contingencyIdPtr) {
+        SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
+        if (sensitivityValues != null) {
+            CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
+            for (SensitivityValue sensitivityValue : sensitivityValues) {
+                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
+                valuePtr.addressOf(indexedFactor.getColumn()).write(sensitivityValue.getFunctionReference());
+            }
+            MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
+            matrixPtr.setRowCount(1);
+            matrixPtr.setColumnCount(resultContext.getColumnCount());
+            matrixPtr.setValues(valuePtr);
+            return matrixPtr;
+        }
+        return WordFactory.nullPointer();
+    }
+
+    private static String getBusId(Terminal t) {
+        Bus bus = t.getBusView().getBus();
+        return bus != null ? bus.getId() : "";
+    }
+
+    @CEntryPoint(name = "createNetworkElementsSeriesArray")
+    public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                               ElementType elementType) {
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        switch (elementType) {
+            case BUS:
+                List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(buses)
+                        .addStringSeries("id", Bus::getId)
+                        .addDoubleSeries("v_mag", Bus::getV)
+                        .addDoubleSeries("v_angle", Bus::getAngle)
+                        .build();
+
+            case LINE:
+                List<Line> lines = network.getLineStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(lines)
+                        .addStringSeries("id", Line::getId)
+                        .addDoubleSeries("r", Line::getR)
+                        .addDoubleSeries("x", Line::getX)
+                        .addDoubleSeries("g1", Line::getG1)
+                        .addDoubleSeries("b1", Line::getB1)
+                        .addDoubleSeries("g2", Line::getG2)
+                        .addDoubleSeries("b2", Line::getB2)
+                        .addDoubleSeries("p1", l -> l.getTerminal1().getP())
+                        .addDoubleSeries("q1", l -> l.getTerminal1().getQ())
+                        .addDoubleSeries("p2", l -> l.getTerminal2().getP())
+                        .addDoubleSeries("q2", l -> l.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", l -> getBusId(l.getTerminal1()))
+                        .addStringSeries("bus2_id", l -> getBusId(l.getTerminal2()))
+                        .build();
+
+            case TWO_WINDINGS_TRANSFORMER:
+                List<TwoWindingsTransformer> transformers2 = network.getTwoWindingsTransformerStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(transformers2)
+                        .addStringSeries("id", TwoWindingsTransformer::getId)
+                        .addDoubleSeries("r", TwoWindingsTransformer::getR)
+                        .addDoubleSeries("x", TwoWindingsTransformer::getX)
+                        .addDoubleSeries("g", TwoWindingsTransformer::getG)
+                        .addDoubleSeries("b", TwoWindingsTransformer::getB)
+                        .addDoubleSeries("rated_u1", TwoWindingsTransformer::getRatedU1)
+                        .addDoubleSeries("rated_u2", TwoWindingsTransformer::getRatedU2)
+                        .addDoubleSeries("rated_s", TwoWindingsTransformer::getRatedS)
+                        .addDoubleSeries("p1", twt -> twt.getTerminal1().getP())
+                        .addDoubleSeries("q1", twt -> twt.getTerminal1().getQ())
+                        .addDoubleSeries("p2", twt -> twt.getTerminal2().getP())
+                        .addDoubleSeries("q2", twt -> twt.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", twt -> getBusId(twt.getTerminal1()))
+                        .addStringSeries("bus2_id", twt -> getBusId(twt.getTerminal2()))
+                        .build();
+
+            case THREE_WINDINGS_TRANSFORMER:
+                List<ThreeWindingsTransformer> transformers3 = network.getThreeWindingsTransformerStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(transformers3)
+                        .addStringSeries("id", ThreeWindingsTransformer::getId)
+                        .addDoubleSeries("rated_u0", ThreeWindingsTransformer::getRatedU0)
+                        .addDoubleSeries("r1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("x1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("g1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("b1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("rated_u1", twt -> twt.getLeg1().getRatedU())
+                        .addDoubleSeries("rated_s1", twt -> twt.getLeg1().getRatedS())
+                        .addDoubleSeries("p1", twt -> twt.getLeg1().getTerminal().getP())
+                        .addDoubleSeries("q1", twt -> twt.getLeg1().getTerminal().getP())
+                        .addStringSeries("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
+                        .addDoubleSeries("r2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("x2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("g2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("b2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("rated_u2", twt -> twt.getLeg2().getRatedU())
+                        .addDoubleSeries("rated_s2", twt -> twt.getLeg2().getRatedS())
+                        .addDoubleSeries("p2", twt -> twt.getLeg2().getTerminal().getP())
+                        .addDoubleSeries("q2", twt -> twt.getLeg2().getTerminal().getP())
+                        .addStringSeries("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
+                        .addDoubleSeries("r3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("x3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("g3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("b3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("rated_u3", twt -> twt.getLeg3().getRatedU())
+                        .addDoubleSeries("rated_s3", twt -> twt.getLeg3().getRatedS())
+                        .addDoubleSeries("p3", twt -> twt.getLeg3().getTerminal().getP())
+                        .addDoubleSeries("q3", twt -> twt.getLeg3().getTerminal().getP())
+                        .addStringSeries("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
+                        .build();
+
+            case GENERATOR:
+                List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(generators)
+                        .addStringSeries("id", Generator::getId)
+                        .addEnumSeries("energy_source", Generator::getEnergySource)
+                        .addDoubleSeries("target_p", Generator::getTargetP)
+                        .addDoubleSeries("max_p", Generator::getMaxP)
+                        .addDoubleSeries("min_p", Generator::getMinP)
+                        .addDoubleSeries("target_v", Generator::getTargetV)
+                        .addDoubleSeries("target_q", Generator::getTargetQ)
+                        .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
+                        .addDoubleSeries("p", g -> g.getTerminal().getP())
+                        .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                        .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))
+                        .build();
+
+            case LOAD:
+                List<Load> loads = network.getLoadStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(loads)
+                        .addStringSeries("id", Load::getId)
+                        .addEnumSeries("type", Load::getLoadType)
+                        .addDoubleSeries("p0", Load::getP0)
+                        .addDoubleSeries("q0", Load::getQ0)
+                        .addDoubleSeries("p", l -> l.getTerminal().getP())
+                        .addDoubleSeries("q", l -> l.getTerminal().getQ())
+                        .addStringSeries("bus_id", l -> getBusId(l.getTerminal()))
+                        .build();
+
+            case SHUNT_COMPENSATOR:
+                List<ShuntCompensator> shunts = network.getShuntCompensatorStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(shunts)
+                        .addStringSeries("id", ShuntCompensator::getId)
+                        .addEnumSeries("model_type", ShuntCompensator::getModelType)
+                        .addDoubleSeries("p", g -> g.getTerminal().getP())
+                        .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                        .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))
+                        .build();
+
+            case DANGLING_LINE:
+                List<DanglingLine> danglingLines = network.getDanglingLineStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(danglingLines)
+                        .addStringSeries("id", DanglingLine::getId)
+                        .addDoubleSeries("r", DanglingLine::getR)
+                        .addDoubleSeries("x", DanglingLine::getX)
+                        .addDoubleSeries("g", DanglingLine::getG)
+                        .addDoubleSeries("b", DanglingLine::getB)
+                        .addDoubleSeries("p0", DanglingLine::getP0)
+                        .addDoubleSeries("q0", DanglingLine::getQ0)
+                        .addDoubleSeries("p", dl -> dl.getTerminal().getP())
+                        .addDoubleSeries("q", dl -> dl.getTerminal().getQ())
+                        .addStringSeries("bus_id", dl -> getBusId(dl.getTerminal()))
+                        .build();
+
+            case LCC_CONVERTER_STATION:
+                List<LccConverterStation> lccStations = network.getLccConverterStationStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(lccStations)
+                        .addStringSeries("id", LccConverterStation::getId)
+                        .addDoubleSeries("power_factor", LccConverterStation::getPowerFactor)
+                        .addDoubleSeries("loss_factor", LccConverterStation::getLossFactor)
+                        .addDoubleSeries("p", st -> st.getTerminal().getP())
+                        .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                        .addStringSeries("bus_id", st -> getBusId(st.getTerminal()))
+                        .build();
+
+            case VSC_CONVERTER_STATION:
+                List<VscConverterStation> vscStations = network.getVscConverterStationStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(vscStations)
+                        .addStringSeries("id", VscConverterStation::getId)
+                        .addDoubleSeries("voltage_setpoint", VscConverterStation::getVoltageSetpoint)
+                        .addDoubleSeries("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint)
+                        .addBooleanSeries("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn)
+                        .addDoubleSeries("p", st -> st.getTerminal().getP())
+                        .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                        .addStringSeries("bus_id", st -> getBusId(st.getTerminal()))
+                        .build();
+
+            case STATIC_VAR_COMPENSATOR:
+                List<StaticVarCompensator> svcs = network.getStaticVarCompensatorStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(svcs)
+                        .addStringSeries("id", StaticVarCompensator::getId)
+                        .addDoubleSeries("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint)
+                        .addDoubleSeries("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint)
+                        .addEnumSeries("regulation_mode", StaticVarCompensator::getRegulationMode)
+                        .addDoubleSeries("p", svc -> svc.getTerminal().getP())
+                        .addDoubleSeries("q", svc -> svc.getTerminal().getQ())
+                        .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal()))
+                        .build();
+
+            default:
+                throw new UnsupportedOperationException("Element type not supported: " + elementType);
+        }
+    }
+
+    @CEntryPoint(name = "freeNetworkElementsSeriesArray")
+    public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
+        // don't need to free char* from id field as it is done by python
+        for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
+            SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+        }
+        freeArrayPointer(seriesPtrArrayPtr);
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

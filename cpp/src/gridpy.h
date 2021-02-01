@@ -34,8 +34,25 @@ private:
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
+typedef Array<generator> GeneratorArray;
+typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
+typedef Array<series> SeriesArray;
+
+template<typename T>
+std::vector<T> toVector(array* arrayPtr) {
+    std::vector<T> values;
+    values.reserve(arrayPtr->length);
+    for (int i = 0; i < arrayPtr->length; i++) {
+        T value = *((T*) arrayPtr->ptr + i);
+        values.push_back(value);
+    }
+    return values;
+}
+
+template<>
+std::vector<std::string> toVector(array* arrayPtr);
 
 enum LoadFlowComponentStatus {
     CONVERGED = 0,
@@ -85,7 +102,8 @@ bool updateSwitchPosition(void* network, const std::string& id, bool open);
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected);
 
-std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, double nominalVoltage, bool mainCc);
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
+                                               const std::vector<std::string>& countries, bool mainCc);
 
 void* loadNetwork(const std::string& file);
 
@@ -93,7 +111,11 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
-BusArray* getBusArray(void* network, bool busBreakerView);
+BusArray* getBusArray(void* network);
+
+GeneratorArray* getGeneratorArray(void* network);
+
+LoadArray* getLoadArray(void* network);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
@@ -110,6 +132,10 @@ void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::st
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 
 void destroyObjectHandle(void* objectHandle);
 

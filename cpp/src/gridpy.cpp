@@ -66,6 +66,18 @@ Array<bus>::~Array() {
 }
 
 template<>
+Array<generator>::~Array() {
+    GraalVmGuard guard;
+    freeGeneratorArray(guard.thread(), delegate_);
+}
+
+template<>
+Array<load>::~Array() {
+    GraalVmGuard guard;
+    freeLoadArray(guard.thread(), delegate_);
+}
+
+template<>
 Array<contingency_result>::~Array() {
     GraalVmGuard guard;
     freeContingencyResultArrayPointer(guard.thread(), delegate_);
@@ -74,6 +86,64 @@ Array<contingency_result>::~Array() {
 template<>
 Array<limit_violation>::~Array() {
     // already freed by contingency_result
+}
+
+template<>
+Array<series>::~Array() {
+    GraalVmGuard guard;
+    freeNetworkElementsSeriesArray(guard.thread(), delegate_);
+}
+
+template<typename T>
+class ToPtr {
+public:
+    ~ToPtr() {
+        delete[] ptr_;
+    }
+
+    T* get() const {
+        return ptr_;
+    }
+
+protected:
+    explicit ToPtr(size_t size)
+            : ptr_(new T[size])
+    {}
+
+    T* ptr_;
+};
+
+class ToCharPtrPtr : public ToPtr<char*> {
+public:
+    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
+            : ToPtr<char*>(strings.size())
+    {
+        for (int i = 0; i < strings.size(); i++) {
+            ptr_[i] = (char *) strings[i].data();
+        }
+    }
+};
+
+class ToDoublePtr : public ToPtr<double> {
+public:
+    explicit ToDoublePtr(const std::vector<double>& doubles)
+            : ToPtr<double>(doubles.size())
+    {
+        for (int i = 0; i < doubles.size(); i++) {
+            ptr_[i] = doubles[i];
+        }
+    }
+};
+
+template<>
+std::vector<std::string> toVector(array* arrayPtr) {
+    std::vector<std::string> strings;
+    strings.reserve(arrayPtr->length);
+    for (int i = 0; i < arrayPtr->length; i++) {
+        std::string str = *((char**) arrayPtr->ptr + i);
+        strings.emplace_back(str);
+    }
+    return strings;
 }
 
 void setDebugMode(bool debug) {
@@ -125,15 +195,14 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
     return done;
 }
 
-std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, double nominalVoltage, bool mainCc) {
+std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
+                                               const std::vector<std::string>& countries, bool mainCc) {
     GraalVmGuard guard;
-    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltage, mainCc);
-    std::vector<std::string> elementsIds;
-    elementsIds.reserve(elementsIdsArrayPtr->length);
-    for (int i = 0; i < elementsIdsArrayPtr->length; i++) {
-        std::string elementId = *((char**) elementsIdsArrayPtr->ptr + i);
-        elementsIds.emplace_back(elementId);
-    }
+    ToDoublePtr nominalVoltagePtr(nominalVoltages);
+    ToCharPtrPtr countryPtr(countries);
+    array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltagePtr.get(), nominalVoltages.size(),
+                                                       countryPtr.get(), countries.size(), mainCc);
+    std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
     freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
@@ -143,9 +212,19 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_para
     return new LoadFlowComponentResultArray(runLoadFlow(guard.thread(), network, dc, &parameters));
 }
 
-BusArray* getBusArray(void* network, bool busBreakerView) {
+BusArray* getBusArray(void* network) {
     GraalVmGuard guard;
-    return new BusArray(getBusArray(guard.thread(), network, busBreakerView));
+    return new BusArray(getBusArray(guard.thread(), network));
+}
+
+GeneratorArray* getGeneratorArray(void* network) {
+    GraalVmGuard guard;
+    return new GeneratorArray(getGeneratorArray(guard.thread(), network));
+}
+
+LoadArray* getLoadArray(void* network) {
+    GraalVmGuard guard;
+    return new LoadArray(getLoadArray(guard.thread(), network));
 }
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
@@ -157,28 +236,6 @@ void* createSecurityAnalysis() {
     GraalVmGuard guard;
     return createSecurityAnalysis(guard.thread());
 }
-
-class ToCharPtrPtr {
-public:
-    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
-        : charPtrPtr_(new char*[strings.size()])
-    {
-        for (int i = 0; i < strings.size(); i++) {
-            charPtrPtr_[i] = (char *) strings[i].data();
-        }
-    }
-
-    ~ToCharPtrPtr() {
-        delete[] charPtrPtr_;
-    }
-
-    char** get() const {
-        return charPtrPtr_;
-    }
-
-private:
-    char** charPtrPtr_;
-};
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     GraalVmGuard guard;
@@ -214,6 +271,16 @@ void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, lo
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
     return getSensitivityMatrix(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
+}
+
+matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+    GraalVmGuard guard;
+    return getReferenceFlows(guard.thread(), sensitivityAnalysisResultContext, (char*) contingencyId.c_str());
+}
+
+SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
+    GraalVmGuard guard;
+    return new SeriesArray(createNetworkElementsSeriesArray(guard.thread(), network, elementType));
 }
 
 void destroyObjectHandle(void* objectHandle) {

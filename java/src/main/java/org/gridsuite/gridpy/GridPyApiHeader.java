@@ -60,7 +60,97 @@ public class GridPyApiHeader {
         @CField("v_angle")
         void setVoltageAngle(double voltageAngle);
 
+        @CField("component_num")
+        int geComponentNum();
+
+        @CField("component_num")
+        void setComponentNum(int componentNum);
+
         BusPointer addressOf(int index);
+    }
+
+    @CStruct("generator")
+    interface GeneratorPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("target_p")
+        double getTargetP();
+
+        @CField("target_p")
+        void setTargetP(double targetP);
+
+        @CField("min_p")
+        double getMinP();
+
+        @CField("min_p")
+        void setMinP(double minP);
+
+        @CField("max_p")
+        double getMaxP();
+
+        @CField("max_p")
+        void setMaxP(double maxP);
+
+        @CField("nominal_voltage")
+        double getNominalVoltage();
+
+        @CField("nominal_voltage")
+        void setNominalVoltage(double nominalVoltage);
+
+        @CField("country")
+        CCharPointer getCountry();
+
+        @CField("country")
+        void setCountry(CCharPointer country);
+
+        @CField("bus_")
+        BusPointer getBus();
+
+        @CField("bus_")
+        void setBus(BusPointer bus);
+
+        GeneratorPointer addressOf(int index);
+    }
+
+    @CStruct("load")
+    interface LoadPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer geId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("p0")
+        double getP0();
+
+        @CField("p0")
+        void setP0(double p0);
+
+        @CField("nominal_voltage")
+        double getNominalVoltage();
+
+        @CField("nominal_voltage")
+        void setNominalVoltage(double nominalVoltage);
+
+        @CField("country")
+        CCharPointer getCountry();
+
+        @CField("country")
+        void setCountry(CCharPointer country);
+
+        @CField("bus_")
+        BusPointer getBus();
+
+        @CField("bus_")
+        void setBus(BusPointer bus);
+
+        LoadPointer addressOf(int index);
     }
 
     @CStruct("load_flow_component_result")
@@ -246,9 +336,17 @@ public class GridPyApiHeader {
 
     @CEnum("element_type")
     enum ElementType {
+        BUS,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
-        GENERATOR;
+        THREE_WINDINGS_TRANSFORMER,
+        GENERATOR,
+        LOAD,
+        SHUNT_COMPENSATOR,
+        DANGLING_LINE,
+        LCC_CONVERTER_STATION,
+        VSC_CONVERTER_STATION,
+        STATIC_VAR_COMPENSATOR;
 
         @CEnumValue
         public native int getCValue();
@@ -277,5 +375,26 @@ public class GridPyApiHeader {
 
         @CField("column_count")
         void setColumnCount(int columnCount);
+    }
+
+    @CStruct("series")
+    interface SeriesPointer extends PointerBase {
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("type")
+        int getType();
+
+        @CField("type")
+        void setType(int type);
+
+        @CFieldAddress("data")
+        <T extends PointerBase> ArrayPointer<T> data();
+
+        SeriesPointer addressOf(int index);
     }
 }

@@ -8,6 +8,7 @@ package org.gridsuite.gridpy;
 
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 import java.util.ArrayList;
@@ -29,5 +30,14 @@ final class CTypeUtil {
             stringList.add(str);
         }
         return stringList;
+    }
+
+    static List<Double> createDoubleList(CDoublePointer doublePtr, int length) {
+        List<Double> doubleList = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            double d = doublePtr.read(i);
+            doubleList.add(d);
+        }
+        return doubleList;
     }
 }
