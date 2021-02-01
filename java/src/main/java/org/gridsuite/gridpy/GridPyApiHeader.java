@@ -339,8 +339,14 @@ public class GridPyApiHeader {
         BUS,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
+        THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
-        LOAD;
+        LOAD,
+        SHUNT_COMPENSATOR,
+        DANGLING_LINE,
+        LCC_CONVERTER_STATION,
+        VSC_CONVERTER_STATION,
+        STATIC_VAR_COMPENSATOR;
 
         @CEnumValue
         public native int getCValue();

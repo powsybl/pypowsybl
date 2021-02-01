@@ -462,17 +462,17 @@ public final class GridPyApi {
                         .addDoubleSeries("b1", Line::getB1)
                         .addDoubleSeries("g2", Line::getG2)
                         .addDoubleSeries("b2", Line::getB2)
-                        .addDoubleSeries("p1", g -> g.getTerminal1().getP())
-                        .addDoubleSeries("q1", g -> g.getTerminal1().getQ())
-                        .addDoubleSeries("p2", g -> g.getTerminal2().getP())
-                        .addDoubleSeries("q2", g -> g.getTerminal2().getQ())
-                        .addStringSeries("bus1_id", g -> getBusId(g.getTerminal1()))
-                        .addStringSeries("bus2_id", g -> getBusId(g.getTerminal2()))
+                        .addDoubleSeries("p1", l -> l.getTerminal1().getP())
+                        .addDoubleSeries("q1", l -> l.getTerminal1().getQ())
+                        .addDoubleSeries("p2", l -> l.getTerminal2().getP())
+                        .addDoubleSeries("q2", l -> l.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", l -> getBusId(l.getTerminal1()))
+                        .addStringSeries("bus2_id", l -> getBusId(l.getTerminal2()))
                         .build();
 
             case TWO_WINDINGS_TRANSFORMER:
-                List<TwoWindingsTransformer> transformers = network.getTwoWindingsTransformerStream().collect(Collectors.toList());
-                return new SeriesPointerArrayBuilder<>(transformers)
+                List<TwoWindingsTransformer> transformers2 = network.getTwoWindingsTransformerStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(transformers2)
                         .addStringSeries("id", TwoWindingsTransformer::getId)
                         .addDoubleSeries("r", TwoWindingsTransformer::getR)
                         .addDoubleSeries("x", TwoWindingsTransformer::getX)
@@ -481,12 +481,46 @@ public final class GridPyApi {
                         .addDoubleSeries("rated_u1", TwoWindingsTransformer::getRatedU1)
                         .addDoubleSeries("rated_u2", TwoWindingsTransformer::getRatedU2)
                         .addDoubleSeries("rated_s", TwoWindingsTransformer::getRatedS)
-                        .addDoubleSeries("p1", g -> g.getTerminal1().getP())
-                        .addDoubleSeries("q1", g -> g.getTerminal1().getQ())
-                        .addDoubleSeries("p2", g -> g.getTerminal2().getP())
-                        .addDoubleSeries("q2", g -> g.getTerminal2().getQ())
-                        .addStringSeries("bus1_id", g -> getBusId(g.getTerminal1()))
-                        .addStringSeries("bus2_id", g -> getBusId(g.getTerminal2()))
+                        .addDoubleSeries("p1", twt -> twt.getTerminal1().getP())
+                        .addDoubleSeries("q1", twt -> twt.getTerminal1().getQ())
+                        .addDoubleSeries("p2", twt -> twt.getTerminal2().getP())
+                        .addDoubleSeries("q2", twt -> twt.getTerminal2().getQ())
+                        .addStringSeries("bus1_id", twt -> getBusId(twt.getTerminal1()))
+                        .addStringSeries("bus2_id", twt -> getBusId(twt.getTerminal2()))
+                        .build();
+
+            case THREE_WINDINGS_TRANSFORMER:
+                List<ThreeWindingsTransformer> transformers3 = network.getThreeWindingsTransformerStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(transformers3)
+                        .addStringSeries("id", ThreeWindingsTransformer::getId)
+                        .addDoubleSeries("rated_u0", ThreeWindingsTransformer::getRatedU0)
+                        .addDoubleSeries("r1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("x1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("g1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("b1", twt -> twt.getLeg1().getR())
+                        .addDoubleSeries("rated_u1", twt -> twt.getLeg1().getRatedU())
+                        .addDoubleSeries("rated_s1", twt -> twt.getLeg1().getRatedS())
+                        .addDoubleSeries("p1", twt -> twt.getLeg1().getTerminal().getP())
+                        .addDoubleSeries("q1", twt -> twt.getLeg1().getTerminal().getP())
+                        .addStringSeries("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
+                        .addDoubleSeries("r2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("x2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("g2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("b2", twt -> twt.getLeg2().getR())
+                        .addDoubleSeries("rated_u2", twt -> twt.getLeg2().getRatedU())
+                        .addDoubleSeries("rated_s2", twt -> twt.getLeg2().getRatedS())
+                        .addDoubleSeries("p2", twt -> twt.getLeg2().getTerminal().getP())
+                        .addDoubleSeries("q2", twt -> twt.getLeg2().getTerminal().getP())
+                        .addStringSeries("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
+                        .addDoubleSeries("r3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("x3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("g3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("b3", twt -> twt.getLeg3().getR())
+                        .addDoubleSeries("rated_u3", twt -> twt.getLeg3().getRatedU())
+                        .addDoubleSeries("rated_s3", twt -> twt.getLeg3().getRatedS())
+                        .addDoubleSeries("p3", twt -> twt.getLeg3().getTerminal().getP())
+                        .addDoubleSeries("q3", twt -> twt.getLeg3().getTerminal().getP())
+                        .addStringSeries("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
                         .build();
 
             case GENERATOR:
@@ -512,9 +546,69 @@ public final class GridPyApi {
                         .addEnumSeries("type", Load::getLoadType)
                         .addDoubleSeries("p0", Load::getP0)
                         .addDoubleSeries("q0", Load::getQ0)
+                        .addDoubleSeries("p", l -> l.getTerminal().getP())
+                        .addDoubleSeries("q", l -> l.getTerminal().getQ())
+                        .addStringSeries("bus_id", l -> getBusId(l.getTerminal()))
+                        .build();
+
+            case SHUNT_COMPENSATOR:
+                List<ShuntCompensator> shunts = network.getShuntCompensatorStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(shunts)
+                        .addStringSeries("id", ShuntCompensator::getId)
+                        .addEnumSeries("model_type", ShuntCompensator::getModelType)
                         .addDoubleSeries("p", g -> g.getTerminal().getP())
                         .addDoubleSeries("q", g -> g.getTerminal().getQ())
                         .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))
+                        .build();
+
+            case DANGLING_LINE:
+                List<DanglingLine> danglingLines = network.getDanglingLineStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(danglingLines)
+                        .addStringSeries("id", DanglingLine::getId)
+                        .addDoubleSeries("r", DanglingLine::getR)
+                        .addDoubleSeries("x", DanglingLine::getX)
+                        .addDoubleSeries("g", DanglingLine::getG)
+                        .addDoubleSeries("b", DanglingLine::getB)
+                        .addDoubleSeries("p0", DanglingLine::getP0)
+                        .addDoubleSeries("q0", DanglingLine::getQ0)
+                        .addDoubleSeries("p", dl -> dl.getTerminal().getP())
+                        .addDoubleSeries("q", dl -> dl.getTerminal().getQ())
+                        .addStringSeries("bus_id", dl -> getBusId(dl.getTerminal()))
+                        .build();
+
+            case LCC_CONVERTER_STATION:
+                List<LccConverterStation> lccStations = network.getLccConverterStationStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(lccStations)
+                        .addStringSeries("id", LccConverterStation::getId)
+                        .addDoubleSeries("power_factor", LccConverterStation::getPowerFactor)
+                        .addDoubleSeries("loss_factor", LccConverterStation::getLossFactor)
+                        .addDoubleSeries("p", st -> st.getTerminal().getP())
+                        .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                        .addStringSeries("bus_id", st -> getBusId(st.getTerminal()))
+                        .build();
+
+            case VSC_CONVERTER_STATION:
+                List<VscConverterStation> vscStations = network.getVscConverterStationStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(vscStations)
+                        .addStringSeries("id", VscConverterStation::getId)
+                        .addDoubleSeries("voltage_setpoint", VscConverterStation::getVoltageSetpoint)
+                        .addDoubleSeries("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint)
+                        .addBooleanSeries("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn)
+                        .addDoubleSeries("p", st -> st.getTerminal().getP())
+                        .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                        .addStringSeries("bus_id", st -> getBusId(st.getTerminal()))
+                        .build();
+
+            case STATIC_VAR_COMPENSATOR:
+                List<StaticVarCompensator> svcs = network.getStaticVarCompensatorStream().collect(Collectors.toList());
+                return new SeriesPointerArrayBuilder<>(svcs)
+                        .addStringSeries("id", StaticVarCompensator::getId)
+                        .addDoubleSeries("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint)
+                        .addDoubleSeries("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint)
+                        .addEnumSeries("regulation_mode", StaticVarCompensator::getRegulationMode)
+                        .addDoubleSeries("p", svc -> svc.getTerminal().getP())
+                        .addDoubleSeries("q", svc -> svc.getTerminal().getQ())
+                        .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal()))
                         .build();
 
             default:
