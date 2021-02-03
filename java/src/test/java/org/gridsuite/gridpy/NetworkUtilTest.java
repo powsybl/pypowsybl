@@ -23,7 +23,7 @@ class NetworkUtilTest {
     @Test
     void test() {
         Network network = EurostagTutorialExample1Factory.create();
-        List<String> elementsIds = NetworkUtil.getElementsIds(network, GridPyApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER, Collections.singleton(24.0), Collections.singleton("FR"), true);
+        List<String> elementsIds = NetworkUtil.getElementsIds(network, GridPyApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER, Collections.singleton(24.0), Collections.singleton("FR"), true, false);
         assertEquals(Collections.singletonList("NGEN_NHV1"), elementsIds);
     }
 }

@@ -269,11 +269,12 @@ public final class GridPyApi {
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
                                                                           CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
-                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc) {
+                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc,
+                                                                          boolean notConnectedToSameBusAtBothSides) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.createDoubleList(nominalVoltagePtr, nominalVoltageCount));
         Set<String> countries = new HashSet<>(CTypeUtil.createStringList(countryPtr, countryCount));
-        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc);
+        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides);
         CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < elementsIds.size(); i++) {
             elementsIdsPtr.addressOf(i).write(CTypeConversion.toCString(elementsIds.get(i)).get());
