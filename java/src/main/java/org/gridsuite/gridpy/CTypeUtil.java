@@ -31,7 +31,7 @@ final class CTypeUtil {
         if (str == null) {
             return WordFactory.nullPointer();
         }
-        // pybind11 convert std::string qnd char* to python utf-8 string
+        // pybind11 convert std::string and char* to python utf-8 string
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         CCharPointer charPtr = UnmanagedMemory.calloc((bytes.length + 1) * SizeOf.get(CCharPointer.class));
         for (int i = 0; i < bytes.length; ++i) {
