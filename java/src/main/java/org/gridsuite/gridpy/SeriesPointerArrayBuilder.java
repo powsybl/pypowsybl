@@ -11,7 +11,6 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
-import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ class SeriesPointerArrayBuilder<T> {
             CCharPointerPointer dataPtr = UnmanagedMemory.calloc(elements.size() * SizeOf.get(CCharPointerPointer.class));
             for (int i = 0; i < elements.size(); i++) {
                 T element = elements.get(i);
-                dataPtr.addressOf(i).write(CTypeConversion.toCString(stringGetter.apply(element)).get());
+                dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringGetter.apply(element)));
             }
             return dataPtr;
         }
@@ -181,7 +180,7 @@ class SeriesPointerArrayBuilder<T> {
         for (int seriesIndex = 0; seriesIndex < seriesList.size(); seriesIndex++) {
             Series<T> series = seriesList.get(seriesIndex);
             GridPyApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
-            seriesPtrI.setName(CTypeConversion.toCString(series.getName()).get());
+            seriesPtrI.setName(CTypeUtil.toCharPtr(series.getName()));
             seriesPtrI.setType(series.getType());
             seriesPtrI.data().setLength(elements.size());
             PointerBase dataPtr = series.createDataPtr(elements);
