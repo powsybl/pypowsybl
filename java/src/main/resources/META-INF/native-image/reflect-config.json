@@ -21,6 +21,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"ch.qos.logback.classic.pattern.MarkerConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"ch.qos.logback.classic.pattern.MessageConverter",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -32,30 +36,6 @@
   "name":"ch.qos.logback.core.ConsoleAppender",
   "allPublicMethods":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.fasterxml.jackson.databind.ext.Java7HandlersImpl",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.google.common.collect.ImmutableCollection",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"com.google.common.collect.ImmutableList",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"com.google.common.collect.RegularImmutableList",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
 },
 {
   "name":"com.powsybl.computation.local.LocalComputationManagerFactory",
@@ -122,278 +102,160 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.powsybl.psse.model.PsseArea",
+  "name":"com.powsybl.psse.model.PsseVersioned",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true
+},
+{
+  "name":"com.powsybl.psse.model.pf.PsseArea",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseBus",
+  "name":"com.powsybl.psse.model.pf.PsseBus",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseCaseIdentification",
+  "name":"com.powsybl.psse.model.pf.PsseCaseIdentification",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseFixedShunt",
+  "name":"com.powsybl.psse.model.pf.PsseFacts",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseGenerator",
+  "name":"com.powsybl.psse.model.pf.PsseFixedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseLoad",
+  "name":"com.powsybl.psse.model.pf.PsseGenerator",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseNonTransformerBranch",
+  "name":"com.powsybl.psse.model.pf.PsseInterareaTransfer",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseOwner",
+  "name":"com.powsybl.psse.model.pf.PsseLineGrouping",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseSwitchedShunt",
+  "name":"com.powsybl.psse.model.pf.PsseLoad",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer",
+  "name":"com.powsybl.psse.model.pf.PsseNonTransformerBranch",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseTransformer$WindingRecord",
+  "name":"com.powsybl.psse.model.pf.PsseOwner",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.psse.model.PsseZone",
+  "name":"com.powsybl.psse.model.pf.PsseOwnership",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
-},
-{
-  "name":"com.powsybl.sld.color.BaseVoltageConfig",
-  "allDeclaredFields":true,
   "allPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
+  "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.color.BaseVoltagesConfig",
+  "name":"com.powsybl.psse.model.pf.PsseRates",
   "allDeclaredFields":true,
+  "allDeclaredMethods":true,
   "allPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.layout.LayoutParameters",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.library.AdaptedAnchorPoint",
+  "name":"com.powsybl.psse.model.pf.PsseSwitchedShunt",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.AdaptedComponentMetadata",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.AdaptedComponentSize",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.AdaptedSubComponent",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.AnchorOrientation",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "fields":[
-    {"name":"HORIZONTAL"}, 
-    {"name":"NONE"}, 
-    {"name":"VERTICAL"}
-  ]
-},
-{
-  "name":"com.powsybl.sld.library.AnchorPoint",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.library.AnchorPointAdapter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.AnchorPointProvider",
-  "allDeclaredMethods":true
-},
-{
-  "name":"com.powsybl.sld.library.Component",
+  "name":"com.powsybl.psse.model.pf.PsseTransformer",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.ComponentMetadata",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.library.ComponentMetadataAdapter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.ComponentSize",
+  "name":"com.powsybl.psse.model.pf.PsseTransformerWinding",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.library.ComponentSizeAdapter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.Components",
+  "name":"com.powsybl.psse.model.pf.PsseZone",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.library.SubComponentAdapter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.powsybl.sld.model.BusCell$Direction",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"com.powsybl.sld.svg.GraphMetadata",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.svg.GraphMetadata$ArrowMetadata",
+  "name":"com.powsybl.psse.model.pf.io.TransformerImpedanceCorrectionTablesData$IOLegacyText33$ZCorr33",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
+  "allPublicMethods":true,
   "allDeclaredConstructors":true
 },
 {
-  "name":"com.powsybl.sld.svg.GraphMetadata$NodeMetadata",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
+  "name":"com.powsybl.psse.model.pf.io.WindingHeaderTransformer",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
 },
 {
-  "name":"com.powsybl.sld.svg.GraphMetadata$WireMetadata",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
-},
-{
-  "name":"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
+  "name":"com.powsybl.psse.model.pf.io.WindingRatesHeaderTransformer",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
 },
 {
   "name":"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.sun.org.apache.xml.internal.utils.FastStringBuffer",
+  "name":"com.sun.org.apache.xerces.internal.jaxp.datatype.DatatypeFactoryImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.org.apache.xpath.internal.functions.FuncNormalizeSpace",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.xml.bind.v2.ContextFactory",
-  "methods":[{"name":"createContext","parameterTypes":["java.lang.Class[]","java.util.Map"] }]
-},
-{
-  "name":"com.sun.xml.bind.v2.model.nav.ReflectionNavigator",
-  "methods":[{"name":"getInstance","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayElementLeafProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayElementNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayReferenceNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleElementLeafProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleElementNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleMapNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleReferenceNodeProperty",
-  "allPublicConstructors":true
 },
 {
   "name":"com.sun.xml.internal.stream.XMLInputFactoryImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.univocity.parsers.conversions.Conversions$1",
+  "allPublicMethods":true
 },
 {
   "name":"com.univocity.parsers.conversions.DoubleConversion",
@@ -404,16 +266,16 @@
   "allPublicMethods":true
 },
 {
+  "name":"com.univocity.parsers.conversions.FloatConversion",
+  "allPublicMethods":true
+},
+{
   "name":"com.univocity.parsers.conversions.IntegerConversion",
   "allPublicMethods":true
 },
 {
   "name":"com.univocity.parsers.conversions.ValidatedConversion",
   "allPublicMethods":true
-},
-{
-  "name":"double",
-  "allDeclaredMethods":true
 },
 {
   "name":"java.beans.BeanInfo",
@@ -430,7 +292,7 @@
 {
   "name":"java.beans.PropertyDescriptor",
   "methods":[
-    {"name":"getReadMethod","parameterTypes":[] },
+    {"name":"getReadMethod","parameterTypes":[] }, 
     {"name":"getWriteMethod","parameterTypes":[] }
   ]
 },
@@ -441,41 +303,11 @@
   "name":"java.io.FilePermission"
 },
 {
-  "name":"java.io.Serializable",
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.lang.Comparable",
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.lang.Double",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
-},
-{
-  "name":"java.lang.Enum",
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.lang.Iterable",
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.lang.Number",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
   "name":"java.lang.Object",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.Object[]"
+  "methods":[
+    {"name":"<init>","parameterTypes":[] }, 
+    {"name":"hashCode","parameterTypes":[] }
+  ]
 },
 {
   "name":"java.lang.RuntimePermission"
@@ -492,9 +324,6 @@
 {
   "name":"java.net.URLPermission",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
-},
-{
-  "name":"java.security.AccessController"
 },
 {
   "name":"java.security.AllPermission"
@@ -515,44 +344,65 @@
   "name":"java.sql.Timestamp"
 },
 {
-  "name":"java.util.AbstractCollection",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.util.Collection",
-  "allDeclaredMethods":true
-},
-{
-  "name":"java.util.List",
-  "allDeclaredMethods":true
-},
-{
   "name":"java.util.PropertyPermission"
-},
-{
-  "name":"java.util.RandomAccess",
-  "allDeclaredMethods":true
 },
 {
   "name":"javax.management.ObjectName"
 },
 {
-  "name":"javax.xml.bind.annotation.XmlAccessorType"
+  "name":"org.apache.commons.compress.archivers.zip.AsiExtraField",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"javax.xml.bind.annotation.XmlElement",
-  "methods":[{"name":"type","parameterTypes":[] }]
+  "name":"org.apache.commons.compress.archivers.zip.JarMarker",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
-  "methods":[
-    {"name":"type","parameterTypes":[] }, 
-    {"name":"value","parameterTypes":[] }
-  ]
+  "name":"org.apache.commons.compress.archivers.zip.ResourceAlignmentExtraField",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"net.java.truevfs.comp.zip.WinZipAesExtraField",
+  "name":"org.apache.commons.compress.archivers.zip.UnicodeCommentExtraField",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.UnicodePathExtraField",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X000A_NTFS",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X0014_X509Certificates",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X0015_CertificateIdForFile",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X0016_CertificateIdForCentralDirectory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X0017_StrongEncryptionHeader",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X0019_EncryptionRecipientCertificateList",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X5455_ExtendedTimestamp",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.X7875_NewUnix",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.compress.archivers.zip.Zip64ExtendedInformationExtraField",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
@@ -561,6 +411,10 @@
 },
 {
   "name":"org.jgrapht.graph.DefaultWeightedEdge",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.MD5",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {

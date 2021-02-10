@@ -123,7 +123,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         List<Contingency> contingencies = createContingencies(network);
         List<SensitivityFactor> factors = createFactors(network);
         SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
-            n -> factors, n -> contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
+            n -> factors, contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
         SensitivityAnalysisResultContext resultContext = null;
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
