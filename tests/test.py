@@ -131,8 +131,8 @@ class GridPyTestCase(unittest.TestCase):
         df = r.get_post_contingency_reference_flows('L1-2-1')
         self.assertEqual((1, 2), df.shape)
         # FIXME values are pre contingency ones, it has to be fixed on OLF
-        self.assertEqual(72.24667948865367, df['L1-5-1']['reference_flows'])
-        self.assertEqual(69.83139138110104, df['L2-3-1']['reference_flows'])
+        self.assertEqual(225.69999999999996, df['L1-5-1']['reference_flows'])
+        self.assertEqual(43.92137999293259, df['L2-3-1']['reference_flows'])
 
         self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
 
