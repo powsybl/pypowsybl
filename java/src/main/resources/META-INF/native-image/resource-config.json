@@ -1,8 +1,8 @@
 {
   "resources":{
   "includes":[
+    {"pattern":"ConvergenceLibrary/.*"}, 
     {"pattern":"\\QCIM16.sparql\\E"}, 
-    {"pattern":"ConvergenceLibrary/.*"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.cgmes.conversion.CgmesImportPostProcessor\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.config.PlatformConfigProvider\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider\\E"}, 
@@ -24,15 +24,18 @@
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.LanguageHandler\\E"}, 
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.RDFParserFactory\\E"}, 
     {"pattern":"\\Qbase-voltages.yml\\E"}, 
+    {"pattern":"\\QbaseVoltageConstantColors.css\\E"}, 
+    {"pattern":"\\QhighlightLineStates.css\\E"}, 
     {"pattern":"\\Qieee14cdf.txt\\E"}, 
     {"pattern":"\\Qlogback.xml\\E"}, 
     {"pattern":"\\Qnatives/linux_64/libmath.so\\E"}, 
     {"pattern":"\\Qnatives/osx_64/libmath.dylib\\E"}, 
-    {"pattern":"\\Qnatives/windows_64/math.dll\\E"}, 
-    {"pattern":"\\Qorg/joda/time/tz/data/.*\\E"},
+    {"pattern":"\\Qnatives/windows_64/math.dll\\E"},
     {"pattern":"org/joda/time/tz/data/.*"},
     {"pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"},
-    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}
+    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}, 
+    {"pattern":"\\Qtautologies.css\\E"}, 
+    {"pattern":"\\QtopologicalBaseVoltages.css\\E"}
   ]},
   "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
 }
