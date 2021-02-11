@@ -82,6 +82,20 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         this.injectionsOrTransfosIds = Objects.requireNonNull(injectionsOrTransfosIds);
     }
 
+    private static Injection<?> getInjection(Network network, String injectionId) {
+        Injection<?> injection = network.getGenerator(injectionId);
+        if (injection == null) {
+            injection = network.getLoad(injectionId);
+        }
+        if (injection == null) {
+            injection = network.getLccConverterStation(injectionId);
+        }
+        if (injection == null) {
+            injection = network.getVscConverterStation(injectionId);
+        }
+        return injection;
+    }
+
     private List<SensitivityFactor> createFactors(Network network) {
         if (branchsIds == null) {
             return Collections.emptyList();
@@ -93,12 +107,12 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
             if (branch == null) {
                 throw new PowsyblException("Branch '" + branchId + "' not found");
             }
-            BranchFlow branchFlow = new BranchFlow(branchId, branch.getName(), branchId);
+            BranchFlow branchFlow = new BranchFlow(branchId, branch.getNameOrId(), branchId);
             for (int row = 0; row < injectionsOrTransfosIds.size(); row++) {
                 String injectionOrTransfoId = injectionsOrTransfosIds.get(row);
-                Generator generator = network.getGenerator(injectionOrTransfoId);
-                if (generator != null) {
-                    InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, generator.getName(), injectionOrTransfoId);
+                Injection<?> injection = getInjection(network, injectionOrTransfoId);
+                if (injection != null) {
+                    InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, injection.getNameOrId(), injectionOrTransfoId);
                     factors.add(new IndexedBranchFlowPerInjectionIncrease(branchFlow, injectionIncrease, row, column));
                 } else {
                     TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
@@ -106,7 +120,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                         if (twt.getPhaseTapChanger() == null) {
                             throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
                         }
-                        PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getName(), injectionOrTransfoId);
+                        PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getNameOrId(), injectionOrTransfoId);
                         factors.add(new IndexedBranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle, row, column));
                     } else {
                         throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
@@ -123,7 +137,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         List<Contingency> contingencies = createContingencies(network);
         List<SensitivityFactor> factors = createFactors(network);
         SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
-            n -> factors, n -> contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
+            n -> factors, contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
         SensitivityAnalysisResultContext resultContext = null;
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();

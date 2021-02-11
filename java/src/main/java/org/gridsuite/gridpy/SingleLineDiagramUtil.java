@@ -35,6 +35,7 @@ public final class SingleLineDiagramUtil {
             VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
             VoltageLevelDiagram voltageLevelDiagram = VoltageLevelDiagram.build(new NetworkGraphBuilder(network), containerId, voltageLevelLayoutFactory, false);
             LayoutParameters layoutParameters = new LayoutParameters()
+                    .setCssInternal(true)
                     .setAdaptCellHeightToContent(true);
             voltageLevelDiagram.writeSvg("",
                     new DefaultSVGWriter(componentLibrary, layoutParameters),

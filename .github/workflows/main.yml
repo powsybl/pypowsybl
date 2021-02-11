@@ -34,17 +34,17 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.0.0
+          graalvm-version: 20.3.0
           native-image: true
 
-      - name: Checkout olf sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: gridpy-v0.1.0
-
-      - name: Build and install olf artifact
-        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
+#      - name: Checkout olf sources
+#        uses: actions/checkout@v1
+#        with:
+#          repository: powsybl/powsybl-open-loadflow
+#          ref: master
+#
+#      - name: Build and install olf artifact
+#        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -102,17 +102,17 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.0.0
+          graalvm-version: 20.3.0
           native-image: true
 
-      - name: Checkout olf sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: gridpy-v0.1.0
-
-      - name: Build and install olf artifact
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
+#      - name: Checkout olf sources
+#        uses: actions/checkout@v1
+#        with:
+#          repository: powsybl/powsybl-open-loadflow
+#          ref: master
+#
+#      - name: Build and install olf artifact
+#        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
 
       - name: Checkout sources
         uses: actions/checkout@v1
