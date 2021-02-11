@@ -79,7 +79,7 @@ parameters = gp.loadflow.Parameters(distributed_slack=False)
 gp.loadflow.run_ac(n, parameters)
 ```
 
-We can now iterate over buses and print calculated voltage
+We can now iterate over buses and print calculated voltage:
 ```python
 for bus in n.buses:
     print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
@@ -99,6 +99,29 @@ Bus 'VL11_0': v_mag=1.0569062925416597, v_ang=-4.477688311883925
 Bus 'VL12_0': v_mag=1.0551885297773924, v_ang=-4.762642162506649
 Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
 Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
+```
+
+We can also get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
+```python
+df = n.create_buses_data_frame()
+print(df)
+```
+```bash
+        v_mag  v_angle
+VL1_0   1.060     0.00
+VL2_0   1.045    -4.98
+VL3_0   1.010   -12.72
+VL4_0   1.019   -10.33
+VL5_0   1.020    -8.78
+VL6_0   1.070   -14.22
+VL7_0   1.062   -13.37
+VL8_0   1.090   -13.36
+VL9_0   1.056   -14.94
+VL10_0  1.051   -15.10
+VL11_0  1.057   -14.79
+VL12_0  1.055   -15.07
+VL13_0  1.050   -15.16
+VL14_0  1.036   -16.04
 ```
 
 To disconnect or reconnect a line:
