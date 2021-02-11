@@ -34,7 +34,7 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.0.0
+          graalvm-version: 20.3.0
           native-image: true
 
       - name: Checkout olf sources
@@ -102,7 +102,7 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.0.0
+          graalvm-version: 20.3.0
           native-image: true
 
       - name: Checkout olf sources
