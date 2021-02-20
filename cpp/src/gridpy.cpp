@@ -200,12 +200,12 @@ bool updateConnectableStatus(void* network, const std::string& id, bool connecte
 }
 
 std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
-                                               const std::vector<std::string>& countries, bool mainCc) {
+                                               const std::vector<std::string>& countries, bool mainCc, bool notConnectedToSameBusAtBothSides) {
     GraalVmGuard guard;
     ToDoublePtr nominalVoltagePtr(nominalVoltages);
     ToCharPtrPtr countryPtr(countries);
     array* elementsIdsArrayPtr = getNetworkElementsIds(guard.thread(), network, elementType, nominalVoltagePtr.get(), nominalVoltages.size(),
-                                                       countryPtr.get(), countries.size(), mainCc);
+                                                       countryPtr.get(), countries.size(), mainCc, notConnectedToSameBusAtBothSides);
     std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
     freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
     checkException(guard.thread());

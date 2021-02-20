@@ -3,19 +3,25 @@
 [![Actions Status](https://github.com/gridsuite/gridpy/workflows/CI/badge.svg)](https://github.com/gridsuite/gridpy/actions)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 
-A PowSyBl Python binding POC, based on GraalVM.
+A PowSyBl Python binding, based on GraalVM.
 
 
-## Requirements
+## Installation
 
-To build this project, you need:
+GridPy is released on [PyPi](https://pypi.org/project/gridpy/), you can install it using pip:
+```bash
+$> pip3 install gridpy --user
+```
+
+## Build from sources
+
+Requirements:
+
 - Maven >= 3.1
 - Cmake >= 3.14
 - C++11 compiler 
 - Python >= 3.7
-- [GraalVM 21.0.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.0.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
-
-## Build from sources
+- [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 To build from sources and install GridPy package:
 ```bash
@@ -46,13 +52,13 @@ gp.print_version()
 This will produce the following output:
 ```bash
 Powsybl versions:
-+-----------------------------+-----------------------+----------------------+------------------------------------------+-------------------------------+
-| Repository name             | Maven project version | Git branch           | Git version                              | Build timestamp               |
-+-----------------------------+-----------------------+----------------------+------------------------------------------+-------------------------------+
-| powsybl-open-loadflow       | 0.8.0                 | release_local_branch | f9a97212f1dc8044ce594a955b99bd15d51166f0 | 2020-12-03T11:19:20.148+01:00 |
-| powsybl-single-line-diagram | 1.8.0                 | release-v1.8.0       | 5f2ae361960b103859a59a398cb64b3feea3e6d5 | 2020-12-02T16:45:54.389+01:00 |
-| powsybl-core                | 3.8.0                 | release-v3.8.0       | cc3a4fc671bc63d71af7d03b68f2e48b91fd2325 | 2020-12-02T10:34:03.925+01:00 |
-+-----------------------------+-----------------------+----------------------+------------------------------------------+-------------------------------+
++-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
+| Repository name             | Maven project version | Git branch | Git version                              | Build timestamp               |
++-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
+| powsybl-open-loadflow       | 0.9.0                 | UNKNOWN    | 64a3bb9fc98056cd41da353686a2e99354d1eb68 | 2021-02-11T22:18:43.949+01:00 |
+| powsybl-single-line-diagram | 2.0.0                 | UNKNOWN    | d82b7f6d4ecb6c770301f4c979718be463b35871 | 2021-02-09T10:11:12.679+01:00 |
+| powsybl-core                | 4.0.1                 | UNKNOWN    | dead7161f81dcbc441dd46d9b17a1ce0975158b2 | 2021-02-11T16:38:10.202+01:00 |
++-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
 ```
 
 We can create an IEEE 14 buses network and run a load flow computation:
@@ -79,7 +85,7 @@ parameters = gp.loadflow.Parameters(distributed_slack=False)
 gp.loadflow.run_ac(n, parameters)
 ```
 
-We can now iterate over buses and print calculated voltage
+We can now iterate over buses and print calculated voltage:
 ```python
 for bus in n.buses:
     print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
@@ -99,6 +105,29 @@ Bus 'VL11_0': v_mag=1.0569062925416597, v_ang=-4.477688311883925
 Bus 'VL12_0': v_mag=1.0551885297773924, v_ang=-4.762642162506649
 Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
 Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
+```
+
+We can also get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
+```python
+df = n.create_buses_data_frame()
+print(df)
+```
+```bash
+        v_mag  v_angle
+VL1_0   1.060     0.00
+VL2_0   1.045    -4.98
+VL3_0   1.010   -12.72
+VL4_0   1.019   -10.33
+VL5_0   1.020    -8.78
+VL6_0   1.070   -14.22
+VL7_0   1.062   -13.37
+VL8_0   1.090   -13.36
+VL9_0   1.056   -14.94
+VL10_0  1.051   -15.10
+VL11_0  1.057   -14.79
+VL12_0  1.055   -15.07
+VL13_0  1.050   -15.16
+VL14_0  1.036   -16.04
 ```
 
 To disconnect or reconnect a line:

@@ -76,9 +76,10 @@ class Network(ObjectHandle):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
     def get_elements_ids(self, element_type: _gridpy.ElementType, nominal_voltages: Set[float] = None, countries: Set[str] = None,
-                         main_connected_component: bool = True) -> List[str]:
+                         main_connected_component: bool = True, not_connected_to_same_bus_at_both_sides: bool = False) -> List[str]:
         return _gridpy.get_network_elements_ids(self.ptr, element_type, [] if nominal_voltages is None else list(nominal_voltages),
-                                                [] if countries is None else list(countries), main_connected_component)
+                                                [] if countries is None else list(countries), main_connected_component,
+                                                not_connected_to_same_bus_at_both_sides)
 
     def create_elements_data_frame(self, element_type: _gridpy.ElementType) -> pd.DataFrame:
         series_array = _gridpy.create_network_elements_series_array(self.ptr, element_type)

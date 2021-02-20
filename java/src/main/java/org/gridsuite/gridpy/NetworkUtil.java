@@ -72,7 +72,8 @@ public final class NetworkUtil {
         return bus != null && bus.getConnectedComponent().getNum() == ComponentConstants.MAIN_NUM;
     }
 
-    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc) {
+    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc,
+                                  boolean notConnectedToSameBusAtBothSides) {
         Terminal terminal1 = branch.getTerminal1();
         Terminal terminal2 = branch.getTerminal2();
         VoltageLevel voltageLevel1 = terminal1.getVoltageLevel();
@@ -89,6 +90,13 @@ public final class NetworkUtil {
         }
         if (mainCc && !(isInMainCc(terminal1) && isInMainCc(terminal2))) {
             return false;
+        }
+        if (notConnectedToSameBusAtBothSides) {
+            Bus bus1 = branch.getTerminal1().getBusView().getBus();
+            Bus bus2 = branch.getTerminal2().getBusView().getBus();
+            if (bus1 != null && bus2 != null && bus1.getId().equals(bus2.getId())) {
+                return false;
+            }
         }
         return true;
     }
@@ -111,19 +119,19 @@ public final class NetworkUtil {
     }
 
     static List<String> getElementsIds(Network network, ElementType elementType, Set<Double> nominalVoltages,
-                                       Set<String> countries, boolean mainCc) {
+                                       Set<String> countries, boolean mainCc, boolean notConnectedToSameBusAtBothSides) {
         List<String> elementsIds;
         switch (elementType) {
             case LINE:
                 elementsIds = network.getLineStream()
-                        .filter(l -> filter(l, nominalVoltages, countries, mainCc))
+                        .filter(l -> filter(l, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case TWO_WINDINGS_TRANSFORMER:
                 elementsIds = network.getTwoWindingsTransformerStream()
-                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc))
+                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;

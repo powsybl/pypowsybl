@@ -6,12 +6,16 @@
 {
   "name":"java.lang.ClassLoader",
   "methods":[
-    {"name":"getPlatformClassLoader","parameterTypes":[] },
+    {"name":"getPlatformClassLoader","parameterTypes":[] }, 
     {"name":"loadClass","parameterTypes":["java.lang.String"] }
   ]
 },
 {
   "name":"java.lang.ClassNotFoundException"
+},
+{
+  "name":"java.lang.InternalError",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
 },
 {
   "name":"java.lang.NoSuchMethodError"

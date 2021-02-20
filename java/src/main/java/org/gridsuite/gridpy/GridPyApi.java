@@ -33,7 +33,6 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -78,12 +77,12 @@ public final class GridPyApi {
 
     @CEntryPoint(name = "getVersionTable")
     public static CCharPointer getVersionTable(IsolateThread thread) {
-        return CTypeConversion.toCString(Version.getTableString()).get();
+        return CTypeUtil.toCharPtr(Version.getTableString());
     }
 
     @CEntryPoint(name = "createEmptyNetwork")
     public static ObjectHandle createEmptyNetwork(IsolateThread thread, CCharPointer id) {
-        String idStr = CTypeConversion.toJavaString(id);
+        String idStr = CTypeUtil.toString(id);
         Network network = Network.create(idStr, "");
         return ObjectHandles.getGlobal().create(network);
     }
@@ -102,7 +101,7 @@ public final class GridPyApi {
 
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file) {
-        String fileStr = CTypeConversion.toJavaString(file);
+        String fileStr = CTypeUtil.toString(file);
         Network network = Importers.loadNetwork(fileStr);
         return ObjectHandles.getGlobal().create(network);
     }
@@ -110,8 +109,8 @@ public final class GridPyApi {
     @CEntryPoint(name = "dumpNetwork")
     public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        String fileStr = CTypeConversion.toJavaString(file);
-        String formatStr = CTypeConversion.toJavaString(format);
+        String fileStr = CTypeUtil.toString(file);
+        String formatStr = CTypeUtil.toString(format);
         Exporters.export(formatStr, network, null, Paths.get(fileStr));
     }
 
@@ -136,7 +135,7 @@ public final class GridPyApi {
             ptr.setComponentNum(componentResult.getComponentNum());
             ptr.setStatus(componentResult.getStatus().ordinal());
             ptr.setIterationCount(componentResult.getIterationCount());
-            ptr.setSlackBusId(CTypeConversion.toCString(componentResult.getSlackBusId()).get());
+            ptr.setSlackBusId(CTypeUtil.toCharPtr(componentResult.getSlackBusId()));
             ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
         }
         return allocArrayPointer(componentResultPtr, componentResults.size());
@@ -172,7 +171,7 @@ public final class GridPyApi {
     }
 
     private static void fillBus(Bus bus, BusPointer busPtr) {
-        busPtr.setId(CTypeConversion.toCString(bus.getId()).get());
+        busPtr.setId(CTypeUtil.toCharPtr(bus.getId()));
         busPtr.setVoltageMagnitude(bus.getV());
         busPtr.setVoltageAngle(bus.getAngle());
         busPtr.setComponentNum(ConnectedComponents.getCcNum(bus));
@@ -205,13 +204,13 @@ public final class GridPyApi {
         for (int index = 0; index < generators.size(); index++) {
             Generator generator = generators.get(index);
             GeneratorPointer generatorPtrI = generatorPtr.addressOf(index);
-            generatorPtrI.setId(CTypeConversion.toCString(generator.getId()).get());
+            generatorPtrI.setId(CTypeUtil.toCharPtr(generator.getId()));
             generatorPtrI.setTargetP(generator.getTargetP());
             generatorPtrI.setMaxP(generator.getMaxP());
             generatorPtrI.setMinP(generator.getMinP());
             VoltageLevel vl = generator.getTerminal().getVoltageLevel();
             generatorPtrI.setNominalVoltage(vl.getNominalV());
-            generatorPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            generatorPtrI.setCountry(CTypeUtil.toCharPtr(vl.getSubstation().getCountry().map(Country::name).orElse(null)));
             Bus bus = generator.getTerminal().getBusView().getBus();
             if (bus != null) {
                 BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
@@ -242,11 +241,11 @@ public final class GridPyApi {
         for (int index = 0; index < loads.size(); index++) {
             Load load = loads.get(index);
             LoadPointer loadPtrI = loadPtr.addressOf(index);
-            loadPtrI.setId(CTypeConversion.toCString(load.getId()).get());
+            loadPtrI.setId(CTypeUtil.toCharPtr(load.getId()));
             loadPtrI.setP0(load.getP0());
             VoltageLevel vl = load.getTerminal().getVoltageLevel();
             loadPtrI.setNominalVoltage(vl.getNominalV());
-            loadPtrI.setCountry(CTypeConversion.toCString(vl.getSubstation().getCountry().map(Country::name).orElse(null)).get());
+            loadPtrI.setCountry(CTypeUtil.toCharPtr(vl.getSubstation().getCountry().map(Country::name).orElse(null)));
             Bus bus = load.getTerminal().getBusView().getBus();
             if (bus != null) {
                 BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
@@ -295,28 +294,29 @@ public final class GridPyApi {
     @CEntryPoint(name = "updateSwitchPosition")
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        String idStr = CTypeConversion.toJavaString(id);
+        String idStr = CTypeUtil.toString(id);
         return doCatch(thread.rawValue(), false, () -> NetworkUtil.updateSwitchPosition(network, idStr, open));
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        String idStr = CTypeConversion.toJavaString(id);
+        String idStr = CTypeUtil.toString(id);
         return doCatch(thread.rawValue(), false, () -> NetworkUtil.updateConnectableStatus(network, idStr, connected));
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
                                                                           CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
-                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc) {
+                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc,
+                                                                          boolean notConnectedToSameBusAtBothSides) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.createDoubleList(nominalVoltagePtr, nominalVoltageCount));
-        Set<String> countries = new HashSet<>(CTypeUtil.createStringList(countryPtr, countryCount));
-        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc);
+        Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
+        Set<String> countries = new HashSet<>(CTypeUtil.toStringList(countryPtr, countryCount));
+        List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides);
         CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < elementsIds.size(); i++) {
-            elementsIdsPtr.addressOf(i).write(CTypeConversion.toCString(elementsIds.get(i)).get());
+            elementsIdsPtr.addressOf(i).write(CTypeUtil.toCharPtr(elementsIds.get(i)));
         }
         return allocArrayPointer(elementsIdsPtr, elementsIds.size());
     }
@@ -330,8 +330,8 @@ public final class GridPyApi {
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                  CCharPointer svgFile) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        String containerIdStr = CTypeConversion.toJavaString(containerId);
-        String svgFileStr = CTypeConversion.toJavaString(svgFile);
+        String containerIdStr = CTypeUtil.toString(containerId);
+        String svgFileStr = CTypeUtil.toString(svgFile);
         SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr);
     }
 
@@ -344,8 +344,8 @@ public final class GridPyApi {
     public static void addContingency(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer contingencyIdPtr,
                                       CCharPointerPointer elementIdPtrPtr, int elementCount) {
         ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
-        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
-        List<String> elementIds = CTypeUtil.createStringList(elementIdPtrPtr, elementCount);
+        String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+        List<String> elementIds = CTypeUtil.toStringList(elementIdPtrPtr, elementCount);
         contingencyContainer.addContingency(contingencyId, elementIds);
     }
 
@@ -354,18 +354,18 @@ public final class GridPyApi {
     }
 
     private static void setSecurityAnalysisResultPointer(ContingencyResultPointer contingencyPtr, String contingencyId, LimitViolationsResult limitViolationsResult) {
-        contingencyPtr.setContingencyId(CTypeConversion.toCString(contingencyId).get());
+        contingencyPtr.setContingencyId(CTypeUtil.toCharPtr(contingencyId));
         contingencyPtr.setStatus(getStatus(limitViolationsResult).ordinal());
         List<LimitViolation> limitViolations = limitViolationsResult.getLimitViolations();
         LimitViolationPointer limitViolationPtr = UnmanagedMemory.calloc(limitViolations.size() * SizeOf.get(LimitViolationPointer.class));
         for (int i = 0; i < limitViolations.size(); i++) {
             LimitViolation limitViolation = limitViolations.get(i);
             LimitViolationPointer limitViolationPtrPlus = limitViolationPtr.addressOf(i);
-            limitViolationPtrPlus.setSubjectId(CTypeConversion.toCString(limitViolation.getSubjectId()).get());
-            limitViolationPtrPlus.setSubjectName(CTypeConversion.toCString(Objects.toString(limitViolation.getSubjectName(), "")).get());
+            limitViolationPtrPlus.setSubjectId(CTypeUtil.toCharPtr(limitViolation.getSubjectId()));
+            limitViolationPtrPlus.setSubjectName(CTypeUtil.toCharPtr(Objects.toString(limitViolation.getSubjectName(), "")));
             limitViolationPtrPlus.setLimitType(limitViolation.getLimitType().ordinal());
             limitViolationPtrPlus.setLimit(limitViolation.getLimit());
-            limitViolationPtrPlus.setLimitName(CTypeConversion.toCString(Objects.toString(limitViolation.getLimitName(), "")).get());
+            limitViolationPtrPlus.setLimitName(CTypeUtil.toCharPtr(Objects.toString(limitViolation.getLimitName(), "")));
             limitViolationPtrPlus.setAcceptableDuration(limitViolation.getAcceptableDuration());
             limitViolationPtrPlus.setLimitReduction(limitViolation.getLimitReduction());
             limitViolationPtrPlus.setValue(limitViolation.getValue());
@@ -419,8 +419,8 @@ public final class GridPyApi {
                                        CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                        CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount) {
         SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-        List<String> branchsIds = CTypeUtil.createStringList(branchIdPtrPtr, branchIdCount);
-        List<String> injectionsOrTransfosIds = CTypeUtil.createStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
+        List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
+        List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
         analysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
     }
 
@@ -438,7 +438,7 @@ public final class GridPyApi {
     public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                      CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        String contingencyId = CTypeUtil.toString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
         if (sensitivityValues != null) {
             CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
@@ -459,7 +459,7 @@ public final class GridPyApi {
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                   CCharPointer contingencyIdPtr) {
         SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-        String contingencyId = CTypeConversion.toJavaString(contingencyIdPtr);
+        String contingencyId = CTypeUtil.toString(contingencyIdPtr);
         Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
         if (sensitivityValues != null) {
             CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
