@@ -3,19 +3,25 @@
 [![Actions Status](https://github.com/gridsuite/gridpy/workflows/CI/badge.svg)](https://github.com/gridsuite/gridpy/actions)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 
-A PowSyBl Python binding POC, based on GraalVM.
+A PowSyBl Python binding, based on GraalVM.
 
 
-## Requirements
+## Installation
 
-To build this project, you need:
+GridPy is released on [PyPi](https://pypi.org/project/gridpy/), you can install it using pip:
+```bash
+$> pip3 install gridpy --user
+```
+
+## Build from sources
+
+Requirements:
+
 - Maven >= 3.1
 - Cmake >= 3.14
 - C++11 compiler 
 - Python >= 3.7
 - [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
-
-## Build from sources
 
 To build from sources and install GridPy package:
 ```bash
