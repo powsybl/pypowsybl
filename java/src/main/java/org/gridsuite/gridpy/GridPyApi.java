@@ -66,7 +66,7 @@ public final class GridPyApi {
         if (message != null) {
             EXCEPTION_MESSAGES.remove(thread.rawValue());
         }
-        return CTypeConversion.toCString(message).get();
+        return CTypeUtil.toCharPtr(message);
     }
 
     @CEntryPoint(name = "setDebugMode")
