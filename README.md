@@ -1,6 +1,7 @@
 # GridPy
 
 [![Actions Status](https://github.com/gridsuite/gridpy/workflows/CI/badge.svg)](https://github.com/gridsuite/gridpy/actions)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/gridpy.svg)](https://pypi.org/project/gridpy/)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 
 A PowSyBl Python binding, based on GraalVM.
@@ -10,7 +11,7 @@ A PowSyBl Python binding, based on GraalVM.
 
 GridPy is released on [PyPi](https://pypi.org/project/gridpy/), you can install it using pip:
 ```bash
-$> pip3 install gridpy --user
+pip3 install gridpy --user
 ```
 
 ## Build from sources
@@ -25,14 +26,14 @@ Requirements:
 
 To build from sources and install GridPy package:
 ```bash
-$> git clone --recursive https://github.com/gridsuite/gridpy.git
-$> export JAVA_HOME=<path to GraalVM>
-$> pip3 install . --user
+git clone --recursive https://github.com/gridsuite/gridpy.git
+export JAVA_HOME=<path to GraalVM>
+pip3 install . --user
 ```
 
 To run unit tests:
 ```bash
-$> python3 -m unittest tests/test.py
+python3 -m unittest tests/test.py
 ```
 
 ## Usage
@@ -49,7 +50,6 @@ Then we can display the version of the PowSyBl modules:
 gp.print_version()
 ```
 
-This will produce the following output:
 ```bash
 Powsybl versions:
 +-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
@@ -69,20 +69,19 @@ for result in results:
     print(result)
 ```
 
-This will produce the following output:
 ```bash
 LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
 ```
 
 We can re-run the load flow computation in DC mode:
 ```python
-gp.loadflow.run_dc(n)
+results = gp.loadflow.run_dc(n)
 ```
 
 Or with different parameters:
 ```python
 parameters = gp.loadflow.Parameters(distributed_slack=False)
-gp.loadflow.run_ac(n, parameters)
+results = gp.loadflow.run_ac(n, parameters)
 ```
 
 We can now iterate over buses and print calculated voltage:
@@ -90,6 +89,7 @@ We can now iterate over buses and print calculated voltage:
 for bus in n.buses:
     print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
 ```
+
 ```bash
 Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664
 Bus 'VL2_0': v_mag=1.045, v_ang=5.330504871947214
@@ -112,6 +112,7 @@ We can also get buses data (like any other network elements) as a [Pandas](https
 df = n.create_buses_data_frame()
 print(df)
 ```
+
 ```bash
         v_mag  v_angle
 VL1_0   1.060     0.00
@@ -154,29 +155,50 @@ n.dump('test.xiidm', 'XIIDM')
 
 We can generate a single line diagram for a voltage level in the SVG format:
 ```python
-n.write_single_line_diagram('VL1', '/tmp/VL1.svg')
+n.write_single_line_diagram_svg('VL1', '/tmp/VL1.svg')
 ```
 
 To run a security analysis and print results table:
 ```python
 import gridpy.security_analysis
+```
 
+```python
 sa = gp.security_analysis.create()
 sa.add_single_element_contingency('L1-2-1', 'c1')
-sa.add_single_element_contingency('L1-3-1', 'c2')
-sa.add_multiple_elements_contingency(['L1-2-1', 'L1-3-1'], 'c3')
+sa.add_single_element_contingency('L2-3-1', 'c2')
+sa.add_multiple_elements_contingency(['L1-2-1', 'L1-5-1'], 'c3')
 sa_result = sa.run_ac(n)
 print(sa_result.get_table())
+```
+
+```bash
++----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
+| Contingency ID |   Status  | Equipment ID | Equipment name | Limit type | Limit | Limit name | Acceptable duration | Limit reduction | Value | Side |
++----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
+|       c3       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
+|       c1       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
+|       c2       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
++----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
 ```
 
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
 ```python
 import gridpy.sensitivity_analysis
+```
 
+```python
 sa = gp.sensitivity_analysis.create()
 sa.add_single_element_contingency('L1-2-1')
 sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
 sa_result = sa.run_dc(n)
 df = sa_result.get_post_contingency_sensitivity_matrix('L1-2-1')
 print(df)
+```
+
+```bash
+      L1-5-1    L2-3-1
+B1-G     0.5 -0.084423
+B2-G    -0.5  0.084423
+B3-G    -0.5 -0.490385
 ```
