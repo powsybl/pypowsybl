@@ -39,8 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.gridpy.GridPyApiHeader.*;
@@ -51,22 +50,41 @@ import static org.gridsuite.gridpy.GridPyApiHeader.*;
 @CContext(Directives.class)
 public final class GridPyApi {
 
-    private static final Map<Long, String> EXCEPTION_MESSAGES = new ConcurrentHashMap<>();
-
     private GridPyApi() {
     }
 
-    private static void addExceptionMessage(long threadId, Throwable t) {
-        EXCEPTION_MESSAGES.put(threadId, t.getMessage());
+    private static void doCatch(ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+        }
     }
 
-    @CEntryPoint(name = "getExceptionMessage")
-    public static CCharPointer getExceptionMessage(IsolateThread thread) {
-        String message = EXCEPTION_MESSAGES.get(thread.rawValue());
-        if (message != null) {
-            EXCEPTION_MESSAGES.remove(thread.rawValue());
+    private static boolean doCatch(ExceptionHandlerPointer exceptionHandlerPtr, BooleanSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsBoolean();
+        } catch (Throwable t) {
+            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            return false;
         }
-        return CTypeUtil.toCharPtr(message);
+    }
+
+    interface PointerProvider<T extends PointerBase> {
+
+        T get();
+    }
+
+    private static <T extends PointerBase> T doCatch(ExceptionHandlerPointer exceptionHandlerPtr, PointerProvider<T> supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            return WordFactory.nullPointer();
+        }
     }
 
     @CEntryPoint(name = "setDebugMode")
@@ -268,41 +286,20 @@ public final class GridPyApi {
         freeArrayPointer(loadArrayPtr);
     }
 
-    private static <T> T doCatch(long threadId, T defaultValue, Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            addExceptionMessage(threadId, t);
-            return defaultValue;
-        }
-    }
-
-    interface PointerProvider<T extends PointerBase> {
-
-        T get();
-    }
-
-    private static <T extends PointerBase> T doCatch(long threadId, PointerProvider<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            addExceptionMessage(threadId, t);
-            return WordFactory.nullPointer();
-        }
-    }
-
     @CEntryPoint(name = "updateSwitchPosition")
-    public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open) {
+    public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeUtil.toString(id);
-        return doCatch(thread.rawValue(), false, () -> NetworkUtil.updateSwitchPosition(network, idStr, open));
+        return doCatch(exceptionHandlerPtr, () -> NetworkUtil.updateSwitchPosition(network, idStr, open));
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
-    public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected) {
+    public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected,
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         String idStr = CTypeUtil.toString(id);
-        return doCatch(thread.rawValue(), false, () -> NetworkUtil.updateConnectableStatus(network, idStr, connected));
+        return doCatch(exceptionHandlerPtr, () -> NetworkUtil.updateConnectableStatus(network, idStr, connected));
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
@@ -389,8 +386,9 @@ public final class GridPyApi {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr) {
-        return doCatch(thread.rawValue(), () -> {
+                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);

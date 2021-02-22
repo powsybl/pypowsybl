@@ -1,3 +1,7 @@
+typedef struct exception_handler_struct {
+    char* message;
+} exception_handler;
+
 typedef struct array_struct {
     void* ptr;
     int length;

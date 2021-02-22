@@ -23,6 +23,16 @@ import org.graalvm.word.PointerBase;
 @CContext(Directives.class)
 public class GridPyApiHeader {
 
+    @CStruct("exception_handler")
+    interface ExceptionHandlerPointer extends PointerBase {
+
+        @CField("message")
+        CCharPointer geMessage();
+
+        @CField("message")
+        void setMessage(CCharPointer message);
+    }
+
     @CStruct("array")
     interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
