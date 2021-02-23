@@ -143,18 +143,18 @@ void handleException(F f, ARGS... args) {
    exception_handler exc;
    f(args..., &exc);
    if (exc.message) {
-       throw std::runtime_error(exc.message);
+       throw GridPyException(exc.message);
    }
 }
 
 template<typename T, typename F, typename... ARGS>
 T handleException(F f, ARGS... args) {
-   exception_handler exc;\
-   auto r = f(args..., &exc);  \
-   if (exc.message) {\
-       throw std::runtime_error(exc.message);\
-   }\
-   return r;\
+   exception_handler exc;
+   auto r = f(args..., &exc);
+   if (exc.message) {
+       throw GridPyException(exc.message);
+   }
+   return r;
 }
 
 void setDebugMode(bool debug) {

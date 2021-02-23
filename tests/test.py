@@ -141,7 +141,7 @@ class GridPyTestCase(unittest.TestCase):
         try:
             n.open_switch("aa")
             self.fail()
-        except RuntimeError as e:
+        except gp.GridPyError as e:
             self.assertEqual("Switch 'aa' not found", str(e))
 
 
