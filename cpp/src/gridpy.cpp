@@ -138,22 +138,22 @@ std::vector<std::string> toVector(array* arrayPtr) {
     return strings;
 }
 
-#define VOID_HANDLE_EXCEPTION(F, ...) ({\
+#define VOID_HANDLE_EXCEPTION(F, ...) [=](){\
    exception_handler exc;\
    F(__VA_ARGS__, &exc);  \
    if (exc.message) {\
        throw std::runtime_error(exc.message);\
    }\
-})
+}()
 
-#define HANDLE_EXCEPTION(F, ...) ({\
+#define HANDLE_EXCEPTION(F, ...) [=](){\
    exception_handler exc;\
    auto r = F(__VA_ARGS__, &exc);  \
    if (exc.message) {\
        throw std::runtime_error(exc.message);\
    }\
-   r;\
-})
+   return r;\
+}()
 
 void setDebugMode(bool debug) {
     GraalVmGuard guard;
@@ -214,7 +214,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new LoadFlowComponentResultArray(HANDLE_EXCEPTION(runLoadFlow, guard.thread(), network, dc, &parameters));
+    return new LoadFlowComponentResultArray(HANDLE_EXCEPTION(runLoadFlow, guard.thread(), network, dc, (load_flow_parameters*) &parameters));
 }
 
 BusArray* getBusArray(void* network) {
@@ -250,7 +250,7 @@ void addContingency(void* analysisContext, const std::string& contingencyId, con
 
 ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new ContingencyResultArray(HANDLE_EXCEPTION(::runSecurityAnalysis, guard.thread(), securityAnalysisContext, network, &parameters));
+    return new ContingencyResultArray(HANDLE_EXCEPTION(::runSecurityAnalysis, guard.thread(), securityAnalysisContext, network, (load_flow_parameters*) &parameters));
 }
 
 void* createSensitivityAnalysis() {
@@ -268,7 +268,7 @@ void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::st
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return HANDLE_EXCEPTION(runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
+    return HANDLE_EXCEPTION(runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, (load_flow_parameters*) &parameters);
 }
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
