@@ -164,12 +164,12 @@ void setDebugMode(bool debug) {
 
 std::string getVersionTable() {
     GraalVmGuard guard;
-    return std::string(handleException<char *>(::getVersionTable, guard.thread()));
+    return std::string(handleException<char*>(::getVersionTable, guard.thread()));
 }
 
 void* createEmptyNetwork(const std::string& id) {
     GraalVmGuard guard;
-    return handleException<void *>(::createEmptyNetwork, guard.thread(), (char *) id.data());
+    return handleException<void*>(::createEmptyNetwork, guard.thread(), (char *) id.data());
 }
 
 void* createIeee14Network() {
