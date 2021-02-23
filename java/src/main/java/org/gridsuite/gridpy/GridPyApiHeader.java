@@ -6,6 +6,7 @@
  */
 package org.gridsuite.gridpy;
 
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
@@ -13,6 +14,7 @@ import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CFieldAddress;
 import org.graalvm.nativeimage.c.struct.CStruct;
+import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
@@ -21,7 +23,10 @@ import org.graalvm.word.PointerBase;
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
-public class GridPyApiHeader {
+public final class GridPyApiHeader {
+
+    private GridPyApiHeader() {
+    }
 
     @CStruct("exception_handler")
     interface ExceptionHandlerPointer extends PointerBase {
@@ -47,6 +52,18 @@ public class GridPyApiHeader {
 
         @CField("length")
         void setLength(int length);
+    }
+
+    static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
+        ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+        arrayPtr.setPtr(ptr);
+        arrayPtr.setLength(length);
+        return arrayPtr;
+    }
+
+    static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
+        UnmanagedMemory.free(arrayPointer.getPtr());
+        UnmanagedMemory.free(arrayPointer);
     }
 
     @CStruct("bus")
