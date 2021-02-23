@@ -187,6 +187,6 @@ class SeriesPointerArrayBuilder<T> {
             seriesPtrI.data().setPtr(dataPtr);
         }
 
-        return GridPyApi.allocArrayPointer(seriesPtr, seriesList.size());
+        return GridPyApiHeader.allocArrayPointer(seriesPtr, seriesList.size());
     }
 }

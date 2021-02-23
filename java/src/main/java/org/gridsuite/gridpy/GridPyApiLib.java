@@ -33,7 +33,6 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -49,9 +48,9 @@ import static org.gridsuite.gridpy.GridPyApiHeader.*;
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
-public final class GridPyApi {
+public final class GridPyApiLib {
 
-    private GridPyApi() {
+    private GridPyApiLib() {
     }
 
     private static void doCatch(ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
@@ -142,18 +141,6 @@ public final class GridPyApi {
             String formatStr = CTypeUtil.toString(format);
             Exporters.export(formatStr, network, null, Paths.get(fileStr));
         });
-    }
-
-    static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
-        ArrayPointer<T> arrayPtr = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
-        arrayPtr.setPtr(ptr);
-        arrayPtr.setLength(length);
-        return arrayPtr;
-    }
-
-    static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
-        UnmanagedMemory.free(arrayPointer.getPtr());
-        UnmanagedMemory.free(arrayPointer);
     }
 
     static ArrayPointer<LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
