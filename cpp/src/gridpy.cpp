@@ -143,7 +143,7 @@ void handleException(F f, ARGS... args) {
    exception_handler exc;
    f(args..., &exc);
    if (exc.message) {
-       throw GridPyException(exc.message);
+       throw GridPyError(exc.message);
    }
 }
 
@@ -152,7 +152,7 @@ T handleException(F f, ARGS... args) {
    exception_handler exc;
    auto r = f(args..., &exc);
    if (exc.message) {
-       throw GridPyException(exc.message);
+       throw GridPyError(exc.message);
    }
    return r;
 }

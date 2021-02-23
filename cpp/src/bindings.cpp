@@ -26,7 +26,7 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.doc() = "PowSyBl Python API";
 
-    py::register_exception<gridpy::GridPyException>(m, "GridPyError");
+    py::register_exception<gridpy::GridPyError>(m, "GridPyError");
 
     m.def("set_debug_mode", &gridpy::setDebugMode, "Set debug mode");
 

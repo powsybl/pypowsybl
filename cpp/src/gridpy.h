@@ -14,9 +14,9 @@
 
 namespace gridpy {
 
-class GridPyException : public std::runtime_error {
+class GridPyError : public std::runtime_error {
 public:
-    GridPyException(const char* msg)
+    GridPyError(const char* msg)
         : runtime_error(msg) {
     }
 };
