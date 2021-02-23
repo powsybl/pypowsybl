@@ -9,9 +9,17 @@
 
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "gridpy-api.h"
 
 namespace gridpy {
+
+class GridPyError : public std::runtime_error {
+public:
+    GridPyError(const char* msg)
+        : runtime_error(msg) {
+    }
+};
 
 template<typename T>
 class Array {

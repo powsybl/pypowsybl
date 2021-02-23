@@ -136,6 +136,14 @@ class GridPyTestCase(unittest.TestCase):
 
         self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
 
+    def test_exception(self):
+        n = gp.network.create_ieee14()
+        try:
+            n.open_switch("aa")
+            self.fail()
+        except gp.GridPyError as e:
+            self.assertEqual("Switch 'aa' not found", str(e))
+
 
 if __name__ == '__main__':
     unittest.main()

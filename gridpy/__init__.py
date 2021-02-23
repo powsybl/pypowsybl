@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _gridpy
+from _gridpy import GridPyError
 
 __version__ = '0.4.0'
 
