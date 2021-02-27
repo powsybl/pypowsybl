@@ -59,7 +59,8 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
-          py::arg("countries"), py::arg("main_connected_component"), py::arg("not_connected_to_same_bus_at_both_sides"));
+          py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
+          py::arg("not_connected_to_same_bus_at_both_sides"));
 
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 

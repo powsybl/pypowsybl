@@ -72,7 +72,12 @@ public final class NetworkUtil {
         return bus != null && bus.getConnectedComponent().getNum() == ComponentConstants.MAIN_NUM;
     }
 
-    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc,
+    private static boolean isInMainSc(Terminal t) {
+        Bus bus = t.getBusView().getBus();
+        return bus != null && bus.getSynchronousComponent().getNum() == ComponentConstants.MAIN_NUM;
+    }
+
+    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc,
                                   boolean notConnectedToSameBusAtBothSides) {
         Terminal terminal1 = branch.getTerminal1();
         Terminal terminal2 = branch.getTerminal2();
@@ -91,6 +96,9 @@ public final class NetworkUtil {
         if (mainCc && !(isInMainCc(terminal1) && isInMainCc(terminal2))) {
             return false;
         }
+        if (mainSc && !(isInMainSc(terminal1) && isInMainSc(terminal2))) {
+            return false;
+        }
         if (notConnectedToSameBusAtBothSides) {
             Bus bus1 = branch.getTerminal1().getBusView().getBus();
             Bus bus2 = branch.getTerminal2().getBusView().getBus();
@@ -101,7 +109,7 @@ public final class NetworkUtil {
         return true;
     }
 
-    private static boolean filter(Injection injection, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc) {
+    private static boolean filter(Injection injection, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc) {
         Terminal terminal = injection.getTerminal();
         VoltageLevel voltageLevel = terminal.getVoltageLevel();
         if (!(nominalVoltages.isEmpty()
@@ -115,37 +123,40 @@ public final class NetworkUtil {
         if (mainCc && !isInMainCc(terminal)) {
             return false;
         }
+        if (mainSc && !isInMainSc(terminal)) {
+            return false;
+        }
         return true;
     }
 
     static List<String> getElementsIds(Network network, ElementType elementType, Set<Double> nominalVoltages,
-                                       Set<String> countries, boolean mainCc, boolean notConnectedToSameBusAtBothSides) {
+                                       Set<String> countries, boolean mainCc, boolean mainSc, boolean notConnectedToSameBusAtBothSides) {
         List<String> elementsIds;
         switch (elementType) {
             case LINE:
                 elementsIds = network.getLineStream()
-                        .filter(l -> filter(l, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides))
+                        .filter(l -> filter(l, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case TWO_WINDINGS_TRANSFORMER:
                 elementsIds = network.getTwoWindingsTransformerStream()
-                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc, notConnectedToSameBusAtBothSides))
+                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case GENERATOR:
                 elementsIds = network.getGeneratorStream()
-                        .filter(g -> filter(g, nominalVoltages, countries, mainCc))
+                        .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
 
             case LOAD:
                 elementsIds = network.getLoadStream()
-                        .filter(g -> filter(g, nominalVoltages, countries, mainCc))
+                        .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
                         .map(Identifiable::getId)
                         .collect(Collectors.toList());
                 break;
