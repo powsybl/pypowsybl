@@ -58,6 +58,7 @@ public final class GridPyApiLib {
         try {
             runnable.run();
         } catch (Throwable t) {
+            LoggerFactory.getLogger(GridPyApiLib.class).debug(t.getMessage(), t);
             exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
         }
     }
@@ -67,6 +68,7 @@ public final class GridPyApiLib {
         try {
             return supplier.getAsBoolean();
         } catch (Throwable t) {
+            LoggerFactory.getLogger(GridPyApiLib.class).debug(t.getMessage(), t);
             exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
             return false;
         }
@@ -82,6 +84,7 @@ public final class GridPyApiLib {
         try {
             return supplier.get();
         } catch (Throwable t) {
+            LoggerFactory.getLogger(GridPyApiLib.class).debug(t.getMessage(), t);
             exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
             return WordFactory.zero();
         }
