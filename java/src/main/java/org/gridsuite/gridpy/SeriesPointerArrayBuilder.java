@@ -139,6 +139,10 @@ class SeriesPointerArrayBuilder<T> {
         this.elements = Objects.requireNonNull(elements);
     }
 
+    List<T> getElements() {
+        return elements;
+    }
+
     SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(stringGetter);
