@@ -26,11 +26,6 @@ import java.util.function.ToIntFunction;
  */
 class SeriesPointerArrayBuilder<T> {
 
-    private static final int STRING_SERIES_TYPE = 0;
-    private static final int DOUBLE_SERIES_TYPE = 1;
-    private static final int INT_SERIES_TYPE = 2;
-    private static final int BOOLEAN_SERIES_TYPE = 3;
-
     interface Series<T> {
 
         String getName();
@@ -65,7 +60,7 @@ class SeriesPointerArrayBuilder<T> {
 
         @Override
         public int getType() {
-            return DOUBLE_SERIES_TYPE;
+            return SeriesType.DOUBLE.ordinal();
         }
 
         public PointerBase createDataPtr(List<T> elements) {
@@ -89,7 +84,7 @@ class SeriesPointerArrayBuilder<T> {
 
         @Override
         public int getType() {
-            return STRING_SERIES_TYPE;
+            return SeriesType.STRING.ordinal();
         }
 
         @Override
@@ -117,7 +112,7 @@ class SeriesPointerArrayBuilder<T> {
 
         @Override
         public int getType() {
-            return bool ? BOOLEAN_SERIES_TYPE : INT_SERIES_TYPE;
+            return bool ? SeriesType.BOOLEAN.ordinal() : SeriesType.INT.ordinal();
         }
 
         @Override

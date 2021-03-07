@@ -135,6 +135,9 @@ class Network(ObjectHandle):
     def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.STATIC_VAR_COMPENSATOR)
 
+    def create_switches_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_gridpy.ElementType.SWITCH)
+
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_gridpy.create_empty_network(id))

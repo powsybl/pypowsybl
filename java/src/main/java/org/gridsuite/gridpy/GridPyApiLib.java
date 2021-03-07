@@ -33,6 +33,7 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -694,9 +695,81 @@ public final class GridPyApiLib {
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
+                case SWITCH:
+                    List<Switch> switches = network.getSwitchStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(switches)
+                            .addStringSeries("id", Switch::getId)
+                            .addEnumSeries("kind", Switch::getKind)
+                            .addBooleanSeries("open", Switch::isOpen))
+                            .build();
+
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }
+        });
+    }
+
+    private static Map<String, Object> readSeriesArrayPtr(ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
+        Map<String, Object> series = new HashMap<>();
+        for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
+            SeriesPointer seriesPtr = seriesPtrArrayPtr.getPtr().addressOf(i);
+            String name = CTypeUtil.toString(seriesPtr.getName());
+            SeriesType type = SeriesType.values()[seriesPtr.getType()];
+            switch (type) {
+                case STRING:
+                    ArrayPointer<CCharPointer> charPtrData = seriesPtr.data();
+                    String[] strings = new String[charPtrData.getLength()];
+                    for (int j = 0; j < charPtrData.getLength(); j++) {
+                        CCharPointer charPtr = charPtrData.getPtr().addressOf(j);
+                        strings[j] = CTypeUtil.toString(charPtr);
+                    }
+                    series.put(name, strings);
+                    break;
+
+                case DOUBLE:
+                    ArrayPointer<CDoublePointer> doubleData = seriesPtr.data();
+                    double[] doubles = new double[doubleData.getLength()];
+                    for (int j = 0; j < doubleData.getLength(); j++) {
+                        CDoublePointer doublePtr = doubleData.getPtr().addressOf(j);
+                        doubles[j] = doublePtr.read();
+                    }
+                    series.put(name, doubles);
+                    break;
+
+                case INT:
+                    ArrayPointer<CIntPointer> intData = seriesPtr.data();
+                    int[] ints = new int[intData.getLength()];
+                    for (int j = 0; j < intData.getLength(); j++) {
+                        CIntPointer intPointer = intData.getPtr().addressOf(j);
+                        ints[j] = intPointer.read();
+                    }
+                    series.put(name, ints);
+                    break;
+
+                case BOOLEAN:
+                    ArrayPointer<CIntPointer> booleanData = seriesPtr.data();
+                    boolean[] booleans = new boolean[booleanData.getLength()];
+                    for (int j = 0; j < booleanData.getLength(); j++) {
+                        CIntPointer intPointer = booleanData.getPtr().addressOf(j);
+                        booleans[j] = intPointer.read() != 0;
+                    }
+                    series.put(name, booleans);
+                    break;
+
+                default:
+                    throw new UnsupportedOperationException("Series type not supported: " + seriesPtr.getType());
+            }
+        }
+        return series;
+    }
+
+    @CEntryPoint(name = "updateNetworkElementsWithSeriesArray")
+    public static void updateNetworkElementsWithSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                            ElementType elementType, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
+                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Map<String, Object> series = readSeriesArrayPtr(seriesPtrArrayPtr);
         });
     }
 

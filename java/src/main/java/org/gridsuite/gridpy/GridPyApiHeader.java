@@ -373,7 +373,8 @@ public final class GridPyApiHeader {
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
-        STATIC_VAR_COMPENSATOR;
+        STATIC_VAR_COMPENSATOR,
+        SWITCH;
 
         @CEnumValue
         public native int getCValue();

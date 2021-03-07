@@ -83,6 +83,7 @@ typedef enum {
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
     STATIC_VAR_COMPENSATOR,
+    SWITCH,
 } element_type;
 
 typedef struct matrix_struct {
