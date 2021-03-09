@@ -35,7 +35,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <powysbl-core.version>4.0.1</powysbl-core.version>
         <powysbl-single-line-diagram.version>2.0.0</powysbl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.9.0</powsybl-open-load-flow.version>
+        <powsybl-open-load-flow.version>0.10.0-SNAPSHOT</powsybl-open-load-flow.version>
     </properties>
 
     <build>
