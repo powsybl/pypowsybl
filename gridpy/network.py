@@ -15,6 +15,7 @@ from typing import List
 from typing import Set
 import pandas as pd
 from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_numeric_dtype
 from pandas.api.types import is_bool_dtype
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -146,11 +147,17 @@ class Network(ObjectHandle):
             if is_integer_dtype(series) or is_bool_dtype(series):
                 _gridpy.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
                                                                 series.values, len(series))
+            elif is_numeric_dtype(series):
+                _gridpy.update_network_elements_with_double_series(self.ptr, element_type, seriesName, df.index.values,
+                                                                   series.values, len(series))
             else:
                 raise GridPyError(f'Unsupported series type ${series.dtype}')
 
     def update_switches_with_data_frame(self, df: pd.DataFrame):
         return self.update_elements_with_data_frame(_gridpy.ElementType.SWITCH, df)
+
+    def update_generators_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_gridpy.ElementType.GENERATOR, df)
 
 
 def create_empty(id: str = "Default") -> Network:

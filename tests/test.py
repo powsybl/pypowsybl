@@ -11,7 +11,7 @@ import gridpy.loadflow
 import gridpy.security_analysis
 import gridpy.sensitivity_analysis
 import gridpy as gp
-
+import pandas as pd
 
 class GridPyTestCase(unittest.TestCase):
     @staticmethod
@@ -97,6 +97,15 @@ class GridPyTestCase(unittest.TestCase):
         df = n.create_generators_data_frame()
         self.assertEqual('OTHER', df['energy_source']['GEN'])
         self.assertEqual(607, df['target_p']['GEN'])
+
+    def test_update_generators_data_frame(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_generators_data_frame()
+        self.assertEqual(607, df['target_p']['GEN'])
+        df2 = pd.DataFrame(data=[608.0], columns=['target_p'], index=['GEN'])
+        n.update_generators_with_data_frame(df2)
+        df3 = n.create_generators_data_frame()
+        self.assertEqual(608, df3['target_p']['GEN'])
 
     def test_sensitivity_analysis(self):
         n = gp.network.create_ieee14()
