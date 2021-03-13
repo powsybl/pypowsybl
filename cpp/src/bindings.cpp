@@ -363,5 +363,13 @@ PYBIND11_MODULE(_gridpy, m) {
 
     bindArray<gridpy::SeriesArray>(m, "SeriesArray");
 
+    m.def("update_network_elements_with_int_series", &gridpy::updateNetworkElementsWithIntSeries, "Update network elements for a given element type with an integer series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+
+    m.def("update_network_elements_with_double_series", &gridpy::updateNetworkElementsWithDoubleSeries, "Update network elements for a given element type with a double series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+
     m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

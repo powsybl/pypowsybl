@@ -8,6 +8,7 @@ package org.gridsuite.gridpy;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -709,70 +710,6 @@ public final class GridPyApiLib {
         });
     }
 
-    private static Map<String, Object> readSeriesArrayPtr(ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
-        Map<String, Object> series = new HashMap<>();
-        for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-            SeriesPointer seriesPtr = seriesPtrArrayPtr.getPtr().addressOf(i);
-            String name = CTypeUtil.toString(seriesPtr.getName());
-            SeriesType type = SeriesType.values()[seriesPtr.getType()];
-            switch (type) {
-                case STRING:
-                    ArrayPointer<CCharPointer> charPtrData = seriesPtr.data();
-                    String[] strings = new String[charPtrData.getLength()];
-                    for (int j = 0; j < charPtrData.getLength(); j++) {
-                        CCharPointer charPtr = charPtrData.getPtr().addressOf(j);
-                        strings[j] = CTypeUtil.toString(charPtr);
-                    }
-                    series.put(name, strings);
-                    break;
-
-                case DOUBLE:
-                    ArrayPointer<CDoublePointer> doubleData = seriesPtr.data();
-                    double[] doubles = new double[doubleData.getLength()];
-                    for (int j = 0; j < doubleData.getLength(); j++) {
-                        CDoublePointer doublePtr = doubleData.getPtr().addressOf(j);
-                        doubles[j] = doublePtr.read();
-                    }
-                    series.put(name, doubles);
-                    break;
-
-                case INT:
-                    ArrayPointer<CIntPointer> intData = seriesPtr.data();
-                    int[] ints = new int[intData.getLength()];
-                    for (int j = 0; j < intData.getLength(); j++) {
-                        CIntPointer intPointer = intData.getPtr().addressOf(j);
-                        ints[j] = intPointer.read();
-                    }
-                    series.put(name, ints);
-                    break;
-
-                case BOOLEAN:
-                    ArrayPointer<CIntPointer> booleanData = seriesPtr.data();
-                    boolean[] booleans = new boolean[booleanData.getLength()];
-                    for (int j = 0; j < booleanData.getLength(); j++) {
-                        CIntPointer intPointer = booleanData.getPtr().addressOf(j);
-                        booleans[j] = intPointer.read() != 0;
-                    }
-                    series.put(name, booleans);
-                    break;
-
-                default:
-                    throw new UnsupportedOperationException("Series type not supported: " + seriesPtr.getType());
-            }
-        }
-        return series;
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithSeriesArray")
-    public static void updateNetworkElementsWithSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                            ElementType elementType, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
-                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Map<String, Object> series = readSeriesArrayPtr(seriesPtrArrayPtr);
-        });
-    }
-
     @CEntryPoint(name = "freeNetworkElementsSeriesArray")
     public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
         // don't need to free char* from id field as it is done by python
@@ -781,6 +718,76 @@ public final class GridPyApiLib {
             UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
         }
         freeArrayPointer(seriesPtrArrayPtr);
+    }
+
+    @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
+    public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                          ElementType elementType, CCharPointer seriesNamePtr,
+                                                          CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr,
+                                                          int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            for (int i = 0; i < elementCount; i++) {
+                CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+                String id = CTypeUtil.toString(elementIdPtr);
+                int value = valuePtr.read(i);
+                switch (elementType) {
+                    case SWITCH:
+                        Switch sw = network.getSwitch(id);
+                        if (sw == null) {
+                            throw new PowsyblException("Switch '" + id + "' not found");
+                        }
+                        switch (seriesName) {
+                            case "open":
+                                sw.setOpen(value == 1);
+                                break;
+
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for switch elements: " + seriesName);
+                        }
+                        break;
+
+                    default:
+                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateNetworkElementsWithDoubleSeries")
+    public static void updateNetworkElementsWithDoubleSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                             ElementType elementType, CCharPointer seriesNamePtr,
+                                                             CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr,
+                                                             int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            for (int i = 0; i < elementCount; i++) {
+                CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+                String id = CTypeUtil.toString(elementIdPtr);
+                double value = valuePtr.read(i);
+                switch (elementType) {
+                    case GENERATOR:
+                        Generator g = network.getGenerator(id);
+                        if (g == null) {
+                            throw new PowsyblException("Generator '" + id + "' not found");
+                        }
+                        switch (seriesName) {
+                            case "target_p":
+                                g.setTargetP(value);
+                                break;
+
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for switch elements: " + seriesName);
+                        }
+                        break;
+
+                    default:
+                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                }
+            }
+        });
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

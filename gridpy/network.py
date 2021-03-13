@@ -8,12 +8,14 @@ import _gridpy
 from _gridpy import Bus
 from _gridpy import Generator
 from _gridpy import Load
+from _gridpy import GridPyError
 from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
 from typing import Set
 import pandas as pd
-
+from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_bool_dtype
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
                             f"id={self.id!r}"\
@@ -99,7 +101,7 @@ class Network(ObjectHandle):
             elif series.type == 3:  # boolean
                 series_dict[series.name] = series.boolean_data
             else:
-                raise RuntimeError(f'Unsupported series type ${series.type}')
+                raise GridPyError(f'Unsupported series type ${series.type}')
         return pd.DataFrame(series_dict, index = index)
 
     def create_buses_data_frame(self) -> pd.DataFrame:
@@ -137,6 +139,18 @@ class Network(ObjectHandle):
 
     def create_switches_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_gridpy.ElementType.SWITCH)
+
+    def update_elements_with_data_frame(self, element_type: _gridpy.ElementType, df: pd.DataFrame):
+        for seriesName in df.columns.values:
+            series = df[seriesName]
+            if is_integer_dtype(series) or is_bool_dtype(series):
+                _gridpy.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                                                                series.values, len(series))
+            else:
+                raise GridPyError(f'Unsupported series type ${series.dtype}')
+
+    def update_switches_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_gridpy.ElementType.SWITCH, df)
 
 
 def create_empty(id: str = "Default") -> Network:
