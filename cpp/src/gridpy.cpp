@@ -132,7 +132,8 @@ std::vector<std::string> toVector(array* arrayPtr) {
     std::vector<std::string> strings;
     strings.reserve(arrayPtr->length);
     for (int i = 0; i < arrayPtr->length; i++) {
-        std::string str = *((char**) arrayPtr->ptr + i);
+        char** ptr = (char**) arrayPtr->ptr + i;
+        std::string str = *ptr ? *ptr : "";
         strings.emplace_back(str);
     }
     return strings;
