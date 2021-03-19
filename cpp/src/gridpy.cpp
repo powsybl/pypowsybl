@@ -111,7 +111,7 @@ public:
             : ToPtr<char*>(strings.size())
     {
         for (int i = 0; i < strings.size(); i++) {
-            ptr_[i] = (char *) strings[i].data();
+            ptr_[i] = (char*) strings[i].data();
         }
     }
 };
@@ -140,7 +140,7 @@ std::vector<std::string> toVector(array* arrayPtr) {
 }
 
 template<typename F, typename... ARGS>
-void handleException(F f, ARGS... args) {
+void executeJava(F f, ARGS... args) {
    exception_handler exc;
    f(args..., &exc);
    if (exc.message) {
@@ -149,7 +149,7 @@ void handleException(F f, ARGS... args) {
 }
 
 template<typename T, typename F, typename... ARGS>
-T handleException(F f, ARGS... args) {
+T executeJava(F f, ARGS... args) {
    exception_handler exc;
    auto r = f(args..., &exc);
    if (exc.message) {
@@ -165,42 +165,42 @@ void setDebugMode(bool debug) {
 
 std::string getVersionTable() {
     GraalVmGuard guard;
-    return std::string(handleException<char*>(::getVersionTable, guard.thread()));
+    return std::string(executeJava<char*>(::getVersionTable, guard.thread()));
 }
 
 void* createEmptyNetwork(const std::string& id) {
     GraalVmGuard guard;
-    return handleException<void*>(::createEmptyNetwork, guard.thread(), (char *) id.data());
+    return executeJava<void*>(::createEmptyNetwork, guard.thread(), (char*) id.data());
 }
 
 void* createIeee14Network() {
     GraalVmGuard guard;
-    return handleException<void*>(::createIeee14Network, guard.thread());
+    return executeJava<void*>(::createIeee14Network, guard.thread());
 }
 
 void* createEurostagTutorialExample1Network() {
     GraalVmGuard guard;
-    return handleException<void*>(::createEurostagTutorialExample1Network, guard.thread());
+    return executeJava<void*>(::createEurostagTutorialExample1Network, guard.thread());
 }
 
 void* loadNetwork(const std::string& file) {
     GraalVmGuard guard;
-    return handleException<void*>(::loadNetwork, guard.thread(), (char *) file.data());
+    return executeJava<void*>(::loadNetwork, guard.thread(), (char*) file.data());
 }
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format) {
     GraalVmGuard guard;
-    handleException(::dumpNetwork, guard.thread(), network, (char *) file.data(), (char *) format.data());
+    executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data());
 }
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
     GraalVmGuard guard;
-    return handleException<bool>(::updateSwitchPosition, guard.thread(), network, (char *) id.data(), open);
+    return executeJava<bool>(::updateSwitchPosition, guard.thread(), network, (char*) id.data(), open);
 }
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected) {
     GraalVmGuard guard;
-    return handleException<bool>(::updateConnectableStatus, guard.thread(), network, (char *) id.data(), connected);
+    return executeJava<bool>(::updateConnectableStatus, guard.thread(), network, (char*) id.data(), connected);
 }
 
 std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
@@ -209,7 +209,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     GraalVmGuard guard;
     ToDoublePtr nominalVoltagePtr(nominalVoltages);
     ToCharPtrPtr countryPtr(countries);
-    auto elementsIdsArrayPtr = handleException<array*>(::getNetworkElementsIds, guard.thread(), network, elementType,
+    auto elementsIdsArrayPtr = executeJava<array*>(::getNetworkElementsIds, guard.thread(), network, elementType,
                                                        nominalVoltagePtr.get(), nominalVoltages.size(),
                                                        countryPtr.get(), countries.size(), mainCc, mainSc,
                                                        notConnectedToSameBusAtBothSides);
@@ -220,29 +220,28 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new LoadFlowComponentResultArray(
-            handleException<array*>(::runLoadFlow, guard.thread(), network, dc, &parameters));
+    return new LoadFlowComponentResultArray(executeJava<array*>(::runLoadFlow, guard.thread(), network, dc, &parameters));
 }
 
 BusArray* getBusArray(void* network) {
     GraalVmGuard guard;
-    return new BusArray(handleException<array*>(::getBusArray, guard.thread(), network));
+    return new BusArray(executeJava<array*>(::getBusArray, guard.thread(), network));
 }
 
 GeneratorArray* getGeneratorArray(void* network) {
     GraalVmGuard guard;
-    return new GeneratorArray(handleException<array*>(::getGeneratorArray, guard.thread(), network));
+    return new GeneratorArray(executeJava<array*>(::getGeneratorArray, guard.thread(), network));
 }
 
 LoadArray* getLoadArray(void* network) {
     GraalVmGuard guard;
-    return new LoadArray(handleException<array*>(::getLoadArray, guard.thread(), network));
+    return new LoadArray(executeJava<array*>(::getLoadArray, guard.thread(), network));
 }
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
     GraalVmGuard guard;
-    handleException(::writeSingleLineDiagramSvg, guard.thread(), network, (char *) containerId.data(),
-                    (char *) svgFile.data());
+    executeJava(::writeSingleLineDiagramSvg, guard.thread(), network, (char*) containerId.data(),
+                (char*) svgFile.data());
 }
 
 void* createSecurityAnalysis() {
@@ -253,14 +252,14 @@ void* createSecurityAnalysis() {
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     GraalVmGuard guard;
     ToCharPtrPtr elementIdPtr(elementsIds);
-    handleException(::addContingency, guard.thread(), analysisContext, (char *) contingencyId.data(), elementIdPtr.get(),
-                    elementsIds.size());
+    executeJava(::addContingency, guard.thread(), analysisContext, (char*) contingencyId.data(), elementIdPtr.get(),
+                elementsIds.size());
 }
 
 ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return new ContingencyResultArray(
-            handleException<array*>(::runSecurityAnalysis, guard.thread(), securityAnalysisContext, network, &parameters));
+    return new ContingencyResultArray(executeJava<array*>(::runSecurityAnalysis, guard.thread(), securityAnalysisContext,
+                                                          network, &parameters));
 }
 
 void* createSensitivityAnalysis() {
@@ -268,34 +267,35 @@ void* createSensitivityAnalysis() {
     return createSensitivityAnalysis(guard.thread());
 }
 
-void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds) {
+void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
+                     const std::vector<std::string>& injectionsOrTransfosIds) {
     GraalVmGuard guard;
     ToCharPtrPtr branchIdPtr(branchesIds);
     ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
-    handleException(::setFactorMatrix, guard.thread(), sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                    injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+    executeJava(::setFactorMatrix, guard.thread(), sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return handleException<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
+    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
 }
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
-    return handleException<matrix*>(::getSensitivityMatrix, guard.thread(), sensitivityAnalysisResultContext,
-                                    (char *) contingencyId.c_str());
+    return executeJava<matrix*>(::getSensitivityMatrix, guard.thread(), sensitivityAnalysisResultContext,
+                                (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
-    return handleException<matrix*>(::getReferenceFlows, guard.thread(), sensitivityAnalysisResultContext,
-                                    (char *) contingencyId.c_str());
+    return executeJava<matrix*>(::getReferenceFlows, guard.thread(), sensitivityAnalysisResultContext,
+                                (char*) contingencyId.c_str());
 }
 
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
     GraalVmGuard guard;
-    return new SeriesArray(handleException<array*>(::createNetworkElementsSeriesArray, guard.thread(), network, elementType));
+    return new SeriesArray(executeJava<array*>(::createNetworkElementsSeriesArray, guard.thread(), network, elementType));
 }
 
 void destroyObjectHandle(void* objectHandle) {
