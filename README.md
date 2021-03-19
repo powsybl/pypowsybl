@@ -9,7 +9,14 @@ A PowSyBl Python binding, based on GraalVM.
 
 ## Installation
 
-GridPy is released on [PyPi](https://pypi.org/project/gridpy/), you can install it using pip:
+GridPy is released on [PyPi](https://pypi.org/project/gridpy/).
+
+First, make sure you have an up-to-date version of pip and setuptools:
+```bash
+pip3 install --upgrade setuptools pip --user
+```
+
+Then you can install gridpy using pip:
 ```bash
 pip3 install gridpy --user
 ```
@@ -28,6 +35,7 @@ To build from sources and install GridPy package:
 ```bash
 git clone --recursive https://github.com/gridsuite/gridpy.git
 export JAVA_HOME=<path to GraalVM>
+pip3 install --upgrade setuptools pip --user
 pip3 install . --user
 ```
 
