@@ -182,7 +182,7 @@ PYBIND11_MODULE(_gridpy, m) {
             });
 
     m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("dc"), py::arg("parameters"));
+          py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<bus>(m, "Bus")
         .def_property_readonly("id", [](const bus& b) {
