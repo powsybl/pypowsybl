@@ -1,6 +1,7 @@
 import gridpy.network
 import gridpy.loadflow
 import gridpy as gp
+from _gridpy import LoadFlowParameters as Parameters
 
 # Print the version of PowSyBl modules
 gp.print_version()

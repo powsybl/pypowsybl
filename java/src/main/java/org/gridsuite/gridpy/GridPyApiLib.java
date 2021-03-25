@@ -215,11 +215,17 @@ public final class GridPyApiLib {
 
     @CEntryPoint(name = "runLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
-                                                                           LoadFlowParametersPointer loadFlowParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                           LoadFlowParametersPointer loadFlowParametersPtr,
+                                                                           CCharPointer provider,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
-            LoadFlowResult result = LoadFlow.run(network, parameters);
+            final String providerStr = CTypeUtil.toString(provider);
+            System.out.println("providerStr:" + providerStr);
+            final LoadFlow.Runner runner = LoadFlow.find(providerStr);
+            System.out.println("runner.getName:" + runner.getName());
+            LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }
