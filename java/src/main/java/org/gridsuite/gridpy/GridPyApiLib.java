@@ -21,7 +21,6 @@ import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
-import com.powsybl.sensitivity.SensitivityValue;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -38,7 +37,10 @@ import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
@@ -454,7 +456,7 @@ public final class GridPyApiLib {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters);
+            SensitivityAnalysisResultContext resultContext = analysisContext.runV2(network, loadFlowParameters);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }
@@ -465,20 +467,7 @@ public final class GridPyApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-            if (sensitivityValues != null) {
-                CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
-                for (SensitivityValue sensitivityValue : sensitivityValues) {
-                    IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                    valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
-                }
-                MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-                matrixPtr.setRowCount(resultContext.getRowCount());
-                matrixPtr.setColumnCount(resultContext.getColumnCount());
-                matrixPtr.setValues(valuePtr);
-                return matrixPtr;
-            }
-            return WordFactory.nullPointer();
+            return resultContext.createSensitivityMatrix(contingencyId);
         });
     }
 
@@ -488,20 +477,7 @@ public final class GridPyApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-            if (sensitivityValues != null) {
-                CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
-                for (SensitivityValue sensitivityValue : sensitivityValues) {
-                    IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                    valuePtr.addressOf(indexedFactor.getColumn()).write(sensitivityValue.getFunctionReference());
-                }
-                MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-                matrixPtr.setRowCount(1);
-                matrixPtr.setColumnCount(resultContext.getColumnCount());
-                matrixPtr.setValues(valuePtr);
-                return matrixPtr;
-            }
-            return WordFactory.nullPointer();
+            return resultContext.createReferenceFlows(contingencyId);
         });
     }
 
