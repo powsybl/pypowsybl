@@ -6,6 +6,7 @@
  */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <limits>
 #include "gridpy.h"
 
 namespace py = pybind11;
@@ -72,7 +73,7 @@ PYBIND11_MODULE(_gridpy, m) {
                p->min = min;
                p->max = max;
                return p;
-            }))
+            }), py::arg("min") = 0, py::arg("max") = std::numeric_limits<double>::max())
             .def_property_readonly("min", [](const nominal_voltage_predicate& p) {
                 return p.min;
             })
