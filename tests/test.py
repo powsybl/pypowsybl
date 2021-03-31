@@ -143,6 +143,13 @@ class GridPyTestCase(unittest.TestCase):
         except gp.GridPyError as e:
             self.assertEqual("Switch 'aa' not found", str(e))
 
+    def test_reduce(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        gp.loadflow.run_ac(n)
+        self.assertEqual(4, len(n.buses))
+        voltage_predicate = gp.network.NominalVoltagePredicate(240, 400)
+        n.reduce(voltage_predicate)
+        self.assertEqual(2, len(n.buses))
 
 if __name__ == '__main__':
     unittest.main()

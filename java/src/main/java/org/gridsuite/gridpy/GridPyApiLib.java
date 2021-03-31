@@ -14,6 +14,8 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
+import com.powsybl.iidm.reducer.NetworkReducer;
+import com.powsybl.iidm.reducer.NominalVoltageNetworkPredicate;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -143,6 +145,19 @@ public final class GridPyApiLib {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Exporters.export(formatStr, network, null, Paths.get(fileStr));
+        });
+    }
+
+    @CEntryPoint(name = "reduceNetwork")
+    public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
+                                     NominalVoltagePredicatePointer nominalVoltagePredicate,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            NetworkReducer reducer = NetworkReducer.builder()
+                    .withNetworkPredicate(new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax()))
+                    .build();
+            reducer.reduce(network);
         });
     }
 

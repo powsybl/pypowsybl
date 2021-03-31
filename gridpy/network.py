@@ -8,6 +8,7 @@ import _gridpy
 from _gridpy import Bus
 from _gridpy import Generator
 from _gridpy import Load
+from _gridpy import NominalVoltagePredicate
 from _gridpy import ElementType
 from gridpy.util import ObjectHandle
 from typing import List
@@ -71,6 +72,9 @@ class Network(ObjectHandle):
 
     def dump(self, file: str, format: str = 'XIIDM'):
         _gridpy.dump_network(self.ptr, file, format)
+
+    def reduce(self, voltage_predicate: NominalVoltagePredicate):
+        _gridpy.reduce_network(self.ptr, voltage_predicate)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)

@@ -118,6 +118,8 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
+void reduceNetwork(void* network, nominal_voltage_predicate& predicate);
+
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 
 BusArray* getBusArray(void* network);

@@ -193,6 +193,11 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
     handleException(::dumpNetwork, guard.thread(), network, (char *) file.data(), (char *) format.data());
 }
 
+void reduceNetwork(void* network, nominal_voltage_predicate& predicate) {
+    GraalVmGuard guard;
+    handleException(::reduceNetwork, guard.thread(), network, &predicate);
+}
+
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
     GraalVmGuard guard;
     return handleException<bool>(::updateSwitchPosition, guard.thread(), network, (char *) id.data(), open);

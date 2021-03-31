@@ -66,6 +66,22 @@ PYBIND11_MODULE(_gridpy, m) {
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
 
+    py::class_<nominal_voltage_predicate>(m, "NominalVoltagePredicate")
+            .def(py::init([](double min, double max) {
+               auto p = new nominal_voltage_predicate();
+               p->min = min;
+               p->max = max;
+               return p;
+            }))
+            .def_property_readonly("min", [](const nominal_voltage_predicate& p) {
+                return p.min;
+            })
+            .def_property_readonly("max", [](const nominal_voltage_predicate& p) {
+                return p.max;
+            });
+
+    m.def("reduce_network", &gridpy::reduceNetwork, "Reduce network", py::arg("network"), py::arg("nominal_voltage_predicate"));
+
     py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
             .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)
             .value("FAILED", gridpy::LoadFlowComponentStatus::FAILED)
