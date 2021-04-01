@@ -81,7 +81,7 @@ PYBIND11_MODULE(_gridpy, m) {
                 return p.max;
             });
 
-    m.def("reduce_network", &gridpy::reduceNetwork, "Reduce network", py::arg("network"), py::arg("nominal_voltage_predicate"));
+    m.def("reduce_network", &gridpy::reduceNetwork, "Reduce network", py::arg("network"), py::arg("nominal_voltage_predicate"), py::arg("ids"));
 
     py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
             .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)

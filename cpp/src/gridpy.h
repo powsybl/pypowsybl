@@ -118,7 +118,7 @@ void* loadNetwork(const std::string& file);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format);
 
-void reduceNetwork(void* network, nominal_voltage_predicate& predicate);
+void reduceNetwork(void* network, nominal_voltage_predicate& predicate, const std::vector<std::string>& ids);
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
 

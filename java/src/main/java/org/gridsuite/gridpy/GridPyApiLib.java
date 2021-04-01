@@ -14,6 +14,7 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
+import com.powsybl.iidm.reducer.IdentifierNetworkPredicate;
 import com.powsybl.iidm.reducer.NetworkReducer;
 import com.powsybl.iidm.reducer.NominalVoltageNetworkPredicate;
 import com.powsybl.loadflow.LoadFlow;
@@ -151,13 +152,24 @@ public final class GridPyApiLib {
     @CEntryPoint(name = "reduceNetwork")
     public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
                                      NominalVoltagePredicatePointer nominalVoltagePredicate,
+                                     CCharPointerPointer idsPtrPtr, int idsCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            NetworkReducer reducer = NetworkReducer.builder()
-                    .withNetworkPredicate(new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax()))
-                    .build();
-            reducer.reduce(network);
+            if (nominalVoltagePredicate.getMax() != Double.MAX_VALUE || nominalVoltagePredicate.getMin() != 0) {
+                final NominalVoltageNetworkPredicate nominalVoltageNetworkPredicate = new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax());
+                NetworkReducer reducer = NetworkReducer.builder()
+                        .withNetworkPredicate(nominalVoltageNetworkPredicate)
+                        .build();
+                reducer.reduce(network);
+            }
+            if (idsCount != 0) {
+                List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
+                NetworkReducer reducer = NetworkReducer.builder()
+                        .withNetworkPredicate(new IdentifierNetworkPredicate(ids))
+                        .build();
+                reducer.reduce(network);
+            }
         });
     }
 
