@@ -205,12 +205,12 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 }
 
 void reduceNetwork(void* network, nominal_voltage_predicate& predicate, const std::vector<std::string>& ids,
-                   const std::vector<std::string>& vls, const std::vector<int>& depths) {
+                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
     GraalVmGuard guard;
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    handleException(::reduceNetwork, guard.thread(), network, &predicate, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size());
+    handleException(::reduceNetwork, guard.thread(), network, &predicate, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
 }
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {

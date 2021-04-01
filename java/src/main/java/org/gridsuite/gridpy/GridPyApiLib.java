@@ -14,10 +14,7 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
-import com.powsybl.iidm.reducer.IdentifierNetworkPredicate;
-import com.powsybl.iidm.reducer.NetworkReducer;
-import com.powsybl.iidm.reducer.NominalVoltageNetworkPredicate;
-import com.powsybl.iidm.reducer.SubNetworkPredicate;
+import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -157,13 +154,17 @@ public final class GridPyApiLib {
                                      CCharPointerPointer idsPtrPtr, int idsCount,
                                      CCharPointerPointer vlsPtrPtr, int vlsCount,
                                      CIntPointer depthsPtr, int depthsCount,
+                                     boolean withDanglingLines,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReductionOptions options = new ReductionOptions();
+            options.withDanglingLlines(withDanglingLines);
             if (nominalVoltagePredicate.getMax() != Double.MAX_VALUE || nominalVoltagePredicate.getMin() != 0) {
                 final NominalVoltageNetworkPredicate nominalVoltageNetworkPredicate = new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax());
                 NetworkReducer reducer = NetworkReducer.builder()
                         .withNetworkPredicate(nominalVoltageNetworkPredicate)
+                        .withReductionOptions(options)
                         .build();
                 reducer.reduce(network);
             }
@@ -171,6 +172,7 @@ public final class GridPyApiLib {
                 List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
                 NetworkReducer reducer = NetworkReducer.builder()
                         .withNetworkPredicate(new IdentifierNetworkPredicate(ids))
+                        .withReductionOptions(options)
                         .build();
                 reducer.reduce(network);
             }
@@ -184,6 +186,7 @@ public final class GridPyApiLib {
                 for (SubNetworkPredicate predicate : subNetworkPredicates) {
                     NetworkReducer reducer = NetworkReducer.builder()
                             .withNetworkPredicate(predicate)
+                            .withReductionOptions(options)
                             .build();
                     reducer.reduce(network);
                 }
