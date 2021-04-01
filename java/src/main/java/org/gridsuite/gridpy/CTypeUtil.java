@@ -9,10 +9,7 @@ package org.gridsuite.gridpy;
 import com.oracle.svm.core.SubstrateUtil;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.WordFactory;
 
 import java.nio.charset.StandardCharsets;
@@ -63,5 +60,14 @@ final class CTypeUtil {
             doubleList.add(d);
         }
         return doubleList;
+    }
+
+    static List<Integer> toIntegerList(CIntPointer intPointer, int length) {
+        List<Integer> ints = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            int j = intPointer.read(i);
+            ints.add(j);
+        }
+        return ints;
     }
 }

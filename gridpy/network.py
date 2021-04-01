@@ -74,8 +74,10 @@ class Network(ObjectHandle):
     def dump(self, file: str, format: str = 'XIIDM'):
         _gridpy.dump_network(self.ptr, file, format)
 
-    def reduce(self, min: float = 0, max: float = sys.float_info.max, ids: List[str] = []):
-        _gridpy.reduce_network(self.ptr, NominalVoltagePredicate(min, max), ids)
+    def reduce(self, min: float = 0, max: float = sys.float_info.max, ids: List[str] = [], vls: List[str] = [], depths: List[int] = []):
+        if len(vls) != len(depths):
+            raise Exception("Not same length of vls and depths")
+        _gridpy.reduce_network(self.ptr, NominalVoltagePredicate(min, max), ids, vls, depths)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)

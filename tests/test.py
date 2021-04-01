@@ -157,5 +157,12 @@ class GridPyTestCase(unittest.TestCase):
         n.reduce(ids=['P2'])
         self.assertEqual(2, len(n.buses))
 
+    def test_reduce_by_subnetwork(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        gp.loadflow.run_ac(n)
+        self.assertEqual(4, len(n.buses))
+        n.reduce(vls=['VLGEN'], depths=[2])
+        self.assertEqual(3, len(n.buses))
+
 if __name__ == '__main__':
     unittest.main()
