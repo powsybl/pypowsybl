@@ -127,6 +127,17 @@ public:
     }
 };
 
+class ToIntPtr : public ToPtr<int> {
+public:
+    explicit ToIntPtr(const std::vector<int>& ints)
+            : ToPtr<int>(ints.size())
+    {
+        for (int i = 0; i < ints.size(); i++) {
+            ptr_[i] = ints[i];
+        }
+    }
+};
+
 template<>
 std::vector<std::string> toVector(array* arrayPtr) {
     std::vector<std::string> strings;
@@ -191,6 +202,15 @@ void* loadNetwork(const std::string& file) {
 void dumpNetwork(void* network, const std::string& file, const std::string& format) {
     GraalVmGuard guard;
     executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data());
+}
+
+void reduceNetwork(void* network, double v_min, double v_max, const std::vector<std::string>& ids,
+                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
+    GraalVmGuard guard;
+    ToCharPtrPtr elementIdPtr(ids);
+    ToCharPtrPtr vlsPtr(vls);
+    ToIntPtr depthsPtr(depths);
+    handleException(::reduceNetwork, guard.thread(), network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
 }
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
