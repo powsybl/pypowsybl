@@ -210,7 +210,7 @@ void reduceNetwork(void* network, double v_min, double v_max, const std::vector<
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    handleException(::reduceNetwork, guard.thread(), network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
+    executeJava(::reduceNetwork, guard.thread(), network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
 }
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
