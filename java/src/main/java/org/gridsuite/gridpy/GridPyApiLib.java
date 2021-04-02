@@ -160,37 +160,27 @@ public final class GridPyApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ReductionOptions options = new ReductionOptions();
             options.withDanglingLlines(withDanglingLines);
+            List<NetworkPredicate> predicates = new ArrayList<>();
             if (nominalVoltagePredicate.getMax() != Double.MAX_VALUE || nominalVoltagePredicate.getMin() != 0) {
-                final NominalVoltageNetworkPredicate nominalVoltageNetworkPredicate = new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax());
-                NetworkReducer reducer = NetworkReducer.builder()
-                        .withNetworkPredicate(nominalVoltageNetworkPredicate)
-                        .withReductionOptions(options)
-                        .build();
-                reducer.reduce(network);
+                predicates.add(new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax()));
             }
             if (idsCount != 0) {
                 List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
-                NetworkReducer reducer = NetworkReducer.builder()
-                        .withNetworkPredicate(new IdentifierNetworkPredicate(ids))
-                        .withReductionOptions(options)
-                        .build();
-                reducer.reduce(network);
+                predicates.add(new IdentifierNetworkPredicate(ids));
             }
             if (depthsCount != 0) {
                 final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
                 final List<String> voltageLeveles = CTypeUtil.toStringList(vlsPtrPtr, vlsCount);
-                List<SubNetworkPredicate> subNetworkPredicates = new ArrayList<>(depthsCount);
                 for (int i = 0; i < depths.size(); i++) {
-                    subNetworkPredicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
-                }
-                for (SubNetworkPredicate predicate : subNetworkPredicates) {
-                    NetworkReducer reducer = NetworkReducer.builder()
-                            .withNetworkPredicate(predicate)
-                            .withReductionOptions(options)
-                            .build();
-                    reducer.reduce(network);
+                    predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
                 }
             }
+            final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
+            NetworkReducer.builder()
+                    .withNetworkPredicate(orNetworkPredicate)
+                    .withReductionOptions(options)
+                    .build()
+                    .reduce(network);
         });
     }
 
