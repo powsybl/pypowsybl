@@ -425,13 +425,4 @@ public final class GridPyApiHeader {
         SeriesPointer addressOf(int index);
     }
 
-    @CStruct("nominal_voltage_predicate")
-    interface NominalVoltagePredicatePointer extends PointerBase {
-
-        @CField("min")
-        double getMin();
-
-        @CField("max")
-        double getMax();
-    }
 }

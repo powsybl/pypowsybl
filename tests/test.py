@@ -147,7 +147,7 @@ class GridPyTestCase(unittest.TestCase):
         n = gp.network.create_eurostag_tutorial_example1_network()
         gp.loadflow.run_ac(n)
         self.assertEqual(4, len(n.buses))
-        n.reduce(min=240, max=400)
+        n.reduce(v_min=240, v_max=400)
         self.assertEqual(2, len(n.buses))
 
     def test_reduce_by_ids(self):

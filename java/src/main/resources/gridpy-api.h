@@ -96,8 +96,3 @@ typedef struct series_struct {
     int type;
     array data;
 } series;
-
-typedef struct nominal_voltage_predicate_struct {
-    double min;
-    double max;
-} nominal_voltage_predicate;

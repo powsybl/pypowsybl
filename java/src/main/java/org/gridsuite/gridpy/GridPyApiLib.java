@@ -150,7 +150,7 @@ public final class GridPyApiLib {
 
     @CEntryPoint(name = "reduceNetwork")
     public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
-                                     NominalVoltagePredicatePointer nominalVoltagePredicate,
+                                     double vMin, double vMax,
                                      CCharPointerPointer idsPtrPtr, int idsCount,
                                      CCharPointerPointer vlsPtrPtr, int vlsCount,
                                      CIntPointer depthsPtr, int depthsCount,
@@ -161,8 +161,8 @@ public final class GridPyApiLib {
             ReductionOptions options = new ReductionOptions();
             options.withDanglingLlines(withDanglingLines);
             List<NetworkPredicate> predicates = new ArrayList<>();
-            if (nominalVoltagePredicate.getMax() != Double.MAX_VALUE || nominalVoltagePredicate.getMin() != 0) {
-                predicates.add(new NominalVoltageNetworkPredicate(nominalVoltagePredicate.getMin(), nominalVoltagePredicate.getMax()));
+            if (vMax != Double.MAX_VALUE || vMin != 0) {
+                predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
             }
             if (idsCount != 0) {
                 List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
