@@ -1,0 +1,7 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.query.algebra.evaluation.function.Function\\E"}
+  ]},
+  "bundles":[]
+}

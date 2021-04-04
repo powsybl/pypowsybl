@@ -1,7 +1,8 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"}
+    {"pattern":"\\Qlogback.xml\\E"},
+    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}
   ]},
   "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
 }
