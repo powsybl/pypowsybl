@@ -1,0 +1,68 @@
+[
+{
+  "name":"com.powsybl.ieeecdf.model.BranchSideConversion",
+  "allPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.powsybl.ieeecdf.model.BranchTypeConversion",
+  "allPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.powsybl.ieeecdf.model.BusTypeConversion",
+  "allPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfBranch",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfBus",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfInterchangeData",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfLossZone",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfTieLine",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.IeeeCdfTitle",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"com.powsybl.ieeecdf.model.LocalDateConversion",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.powsybl.ieeecdf.model.SeasonConversion",
+  "allPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]

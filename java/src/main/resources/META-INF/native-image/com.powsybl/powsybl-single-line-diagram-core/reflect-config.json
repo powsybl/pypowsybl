@@ -1,0 +1,133 @@
+[
+  {
+    "name":"com.powsybl.sld.layout.LayoutParameters",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.library.AdaptedAnchorPoint",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.AdaptedComponentMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.AdaptedComponentSize",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.AdaptedSubComponent",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.AnchorOrientation",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "fields":[
+      {"name":"HORIZONTAL"},
+      {"name":"NONE"},
+      {"name":"VERTICAL"}
+    ]
+  },
+  {
+    "name":"com.powsybl.sld.library.AnchorPoint",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.library.AnchorPointAdapter",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.AnchorPointProvider",
+    "allDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.sld.library.Component",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.ComponentMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.library.ComponentMetadataAdapter",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.ComponentSize",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.library.ComponentSizeAdapter",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.Components",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.library.SubComponentAdapter",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.model.BusCell$Direction",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.sld.styles.BaseVoltageConfig",
+    "allDeclaredFields":true,
+    "allPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.styles.BaseVoltagesConfig",
+    "allDeclaredFields":true,
+    "allPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$ArrowMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$NodeMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$WireMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  }
+]
