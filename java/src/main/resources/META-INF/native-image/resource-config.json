@@ -1,21 +1,15 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"ConvergenceLibrary/.*"}, 
-    {"pattern":"\\QCIM16.sparql\\E"}, 
+    {"pattern":"\\QCIM16.sparql\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.cgmes.conversion.CgmesImportPostProcessor\\E"},
-    {"pattern":"\\QMETA-INF/services/com.powsybl.commons.config.PlatformConfigProvider\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionXmlSerializer\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.export.Exporter\\E"}, 
+    {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.export.Exporter\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.import_.Importer\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.NetworkFactoryService\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowProvider\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.network.LfNetworkLoader\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.network.SlackBusSelectorParametersReader\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.sld.layout.VoltageLevelLayoutFactorySmartSelector\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.sld.postprocessor.GraphBuildPostProcessor\\E"}, 
-    {"pattern":"\\QMETA-INF/services/com.powsybl.tools.Tool\\E"}, 
+    {"pattern":"\\QMETA-INF/services/com.powsybl.tools.Tool\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.triplestore.api.TripleStoreFactoryService\\E"}, 
     {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"}, 
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.query.algebra.evaluation.function.Function\\E"}, 
@@ -23,19 +17,11 @@
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.DatatypeHandler\\E"}, 
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.LanguageHandler\\E"}, 
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.RDFParserFactory\\E"}, 
-    {"pattern":"\\Qbase-voltages.yml\\E"}, 
-    {"pattern":"\\QbaseVoltageConstantColors.css\\E"}, 
-    {"pattern":"\\QhighlightLineStates.css\\E"}, 
-    {"pattern":"\\Qieee14cdf.txt\\E"}, 
+    {"pattern":"\\Qieee14cdf.txt\\E"},
     {"pattern":"\\Qlogback.xml\\E"}, 
-    {"pattern":"\\Qnatives/linux_64/libmath.so\\E"}, 
-    {"pattern":"\\Qnatives/osx_64/libmath.dylib\\E"}, 
-    {"pattern":"\\Qnatives/windows_64/math.dll\\E"},
     {"pattern":"org/joda/time/tz/data/.*"},
     {"pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"},
-    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}, 
-    {"pattern":"\\Qtautologies.css\\E"}, 
-    {"pattern":"\\QtopologicalBaseVoltages.css\\E"}
+    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}
   ]},
   "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
 }
