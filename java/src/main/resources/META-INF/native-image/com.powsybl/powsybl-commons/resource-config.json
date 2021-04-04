@@ -4,6 +4,5 @@
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.config.PlatformConfigProvider\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionXmlSerializer\\E"}
-  ]},
-  "bundles":[]
+  ]}
 }

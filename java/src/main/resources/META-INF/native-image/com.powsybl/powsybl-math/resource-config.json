@@ -4,6 +4,5 @@
     {"pattern":"\\Qnatives/linux_64/libmath.so\\E"},
     {"pattern":"\\Qnatives/osx_64/libmath.dylib\\E"}, 
     {"pattern":"\\Qnatives/windows_64/math.dll\\E"}
-  ]},
-  "bundles":[]
+  ]}
 }

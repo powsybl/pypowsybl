@@ -3,6 +3,5 @@
   "includes":[
     {"pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.network.LfNetworkLoader\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.network.SlackBusSelectorParametersReader\\E"}
-  ]},
-  "bundles":[]
+  ]}
 }

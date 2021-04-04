@@ -4,6 +4,5 @@
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.DatatypeHandler\\E"},
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.LanguageHandler\\E"}, 
     {"pattern":"\\QMETA-INF/services/org.eclipse.rdf4j.rio.RDFParserFactory\\E"}
-  ]},
-  "bundles":[]
+  ]}
 }

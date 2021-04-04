@@ -3,6 +3,5 @@
   "includes":[
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.export.Exporter\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.import_.Importer\\E"}
-  ]},
-  "bundles":[]
+  ]}
 }
