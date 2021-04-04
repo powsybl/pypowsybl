@@ -3,6 +3,5 @@
   "includes":[
     {"pattern":"org/joda/time/tz/data/.*"},
     {"pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"}
-  ]},
-  "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
+  ]}
 }
