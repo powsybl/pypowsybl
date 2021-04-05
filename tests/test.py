@@ -143,6 +143,26 @@ class GridPyTestCase(unittest.TestCase):
         except gp.GridPyError as e:
             self.assertEqual("Switch 'aa' not found", str(e))
 
+    def test_reduce_by_voltage(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        gp.loadflow.run_ac(n)
+        self.assertEqual(4, len(n.buses))
+        n.reduce(v_min=240, v_max=400)
+        self.assertEqual(2, len(n.buses))
+
+    def test_reduce_by_ids(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        gp.loadflow.run_ac(n)
+        self.assertEqual(4, len(n.buses))
+        n.reduce(ids=['P2'])
+        self.assertEqual(2, len(n.buses))
+
+    def test_reduce_by_subnetwork(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        gp.loadflow.run_ac(n)
+        self.assertEqual(4, len(n.buses))
+        n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
+        self.assertEqual(4, len(n.buses))
 
 if __name__ == '__main__':
     unittest.main()

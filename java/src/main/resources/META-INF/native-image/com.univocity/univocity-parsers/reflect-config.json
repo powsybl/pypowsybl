@@ -1,0 +1,26 @@
+[
+  {
+    "name":"com.univocity.parsers.conversions.Conversions$1",
+    "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.DoubleConversion",
+    "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.EnumConversion",
+    "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.FloatConversion",
+    "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.IntegerConversion",
+    "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.ValidatedConversion",
+    "allPublicMethods":true
+  }
+]

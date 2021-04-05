@@ -6,6 +6,7 @@
  */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <limits>
 #include "gridpy.h"
 
 namespace py = pybind11;
@@ -65,6 +66,9 @@ PYBIND11_MODULE(_gridpy, m) {
     m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
 
     m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
+
+    m.def("reduce_network", &gridpy::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
+            py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
 
     py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
             .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)

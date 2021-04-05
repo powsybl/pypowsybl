@@ -14,6 +14,7 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
+import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -32,15 +33,13 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
@@ -145,6 +144,42 @@ public final class GridPyApiLib {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Exporters.export(formatStr, network, null, Paths.get(fileStr));
+        });
+    }
+
+    @CEntryPoint(name = "reduceNetwork")
+    public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
+                                     double vMin, double vMax,
+                                     CCharPointerPointer idsPtrPtr, int idsCount,
+                                     CCharPointerPointer vlsPtrPtr, int vlsCount,
+                                     CIntPointer depthsPtr, int depthsCount,
+                                     boolean withDanglingLines,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReductionOptions options = new ReductionOptions();
+            options.withDanglingLlines(withDanglingLines);
+            List<NetworkPredicate> predicates = new ArrayList<>();
+            if (vMax != Double.MAX_VALUE || vMin != 0) {
+                predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
+            }
+            if (idsCount != 0) {
+                List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
+                predicates.add(new IdentifierNetworkPredicate(ids));
+            }
+            if (depthsCount != 0) {
+                final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
+                final List<String> voltageLeveles = CTypeUtil.toStringList(vlsPtrPtr, vlsCount);
+                for (int i = 0; i < depths.size(); i++) {
+                    predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
+                }
+            }
+            final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
+            NetworkReducer.builder()
+                    .withNetworkPredicate(orNetworkPredicate)
+                    .withReductionOptions(options)
+                    .build()
+                    .reduce(network);
         });
     }
 
