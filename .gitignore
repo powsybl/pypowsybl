@@ -9,3 +9,6 @@ __pycache__/
 # Distribution
 /dist
 /gridpy.egg-info
+
+# Documentation
+/docs/_build

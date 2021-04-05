@@ -2,6 +2,7 @@
 
 [![Actions Status](https://github.com/gridsuite/gridpy/workflows/CI/badge.svg)](https://github.com/gridsuite/gridpy/actions)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/gridpy.svg)](https://pypi.org/project/gridpy/)
+[![Documentation Status](https://readthedocs.org/projects/gridpy/badge/?version=latest)](https://gridpy.readthedocs.io/en/latest/?badge=latest)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 
 A PowSyBl Python binding, based on GraalVM.
