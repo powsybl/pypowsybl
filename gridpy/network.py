@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import sys
 import _gridpy
 from _gridpy import Bus
 from _gridpy import Generator
@@ -74,6 +75,15 @@ class Network(ObjectHandle):
 
     def dump(self, file: str, format: str = 'XIIDM'):
         _gridpy.dump_network(self.ptr, file, format)
+
+    def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
+               vl_depths: tuple = (), with_dangling_lines: bool = False):
+        vls = []
+        depths = []
+        for v in vl_depths:
+            vls.append(v[0])
+            depths.append(v[1])
+        _gridpy.reduce_network(self.ptr, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _gridpy.write_single_line_diagram_svg(self.ptr, container_id, svg_file)

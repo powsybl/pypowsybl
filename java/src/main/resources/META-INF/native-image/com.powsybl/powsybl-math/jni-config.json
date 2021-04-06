@@ -1,0 +1,6 @@
+[
+{
+  "name":"com.powsybl.math.matrix.SparseMatrix",
+  "methods":[{"name":"<init>","parameterTypes":["int","int","int[]","int[]","double[]"] }]
+}
+]

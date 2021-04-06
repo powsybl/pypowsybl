@@ -6,42 +6,12 @@
  */
 package org.gridsuite.gridpy;
 
-import com.powsybl.sensitivity.SensitivityValue;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class SensitivityAnalysisResultContext {
+interface SensitivityAnalysisResultContext {
 
-    private final int rowCount;
+    GridPyApiHeader.MatrixPointer createSensitivityMatrix(String contingencyId);
 
-    private final int columnCount;
-
-    private final Collection<SensitivityValue> sensitivityValues;
-
-    private final Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId;
-
-    SensitivityAnalysisResultContext(int rowCount, int columnCount, Collection<SensitivityValue> sensitivityValues,
-                                     Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId) {
-        this.rowCount = rowCount;
-        this.columnCount = columnCount;
-        this.sensitivityValues = sensitivityValues;
-        this.sensitivityValuesByContingencyId = sensitivityValuesByContingencyId;
-    }
-
-    int getRowCount() {
-        return rowCount;
-    }
-
-    int getColumnCount() {
-        return columnCount;
-    }
-
-    Collection<SensitivityValue> getSensitivityValues(String contingencyId) {
-        return contingencyId.isEmpty() ? sensitivityValues : sensitivityValuesByContingencyId.get(contingencyId);
-    }
+    GridPyApiHeader.MatrixPointer createReferenceFlows(String contingencyId);
 }

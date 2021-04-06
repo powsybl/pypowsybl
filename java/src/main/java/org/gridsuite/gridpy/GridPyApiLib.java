@@ -15,6 +15,7 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
+import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -22,7 +23,6 @@ import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
-import com.powsybl.sensitivity.SensitivityValue;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -145,6 +145,42 @@ public final class GridPyApiLib {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Exporters.export(formatStr, network, null, Paths.get(fileStr));
+        });
+    }
+
+    @CEntryPoint(name = "reduceNetwork")
+    public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
+                                     double vMin, double vMax,
+                                     CCharPointerPointer idsPtrPtr, int idsCount,
+                                     CCharPointerPointer vlsPtrPtr, int vlsCount,
+                                     CIntPointer depthsPtr, int depthsCount,
+                                     boolean withDanglingLines,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReductionOptions options = new ReductionOptions();
+            options.withDanglingLlines(withDanglingLines);
+            List<NetworkPredicate> predicates = new ArrayList<>();
+            if (vMax != Double.MAX_VALUE || vMin != 0) {
+                predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
+            }
+            if (idsCount != 0) {
+                List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
+                predicates.add(new IdentifierNetworkPredicate(ids));
+            }
+            if (depthsCount != 0) {
+                final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
+                final List<String> voltageLeveles = CTypeUtil.toStringList(vlsPtrPtr, vlsCount);
+                for (int i = 0; i < depths.size(); i++) {
+                    predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
+                }
+            }
+            final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
+            NetworkReducer.builder()
+                    .withNetworkPredicate(orNetworkPredicate)
+                    .withReductionOptions(options)
+                    .build()
+                    .reduce(network);
         });
     }
 
@@ -456,7 +492,7 @@ public final class GridPyApiLib {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters);
+            SensitivityAnalysisResultContext resultContext = analysisContext.runV2(network, loadFlowParameters);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }
@@ -467,20 +503,7 @@ public final class GridPyApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-            if (sensitivityValues != null) {
-                CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getRowCount() * resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
-                for (SensitivityValue sensitivityValue : sensitivityValues) {
-                    IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                    valuePtr.addressOf(indexedFactor.getRow() * resultContext.getColumnCount() + indexedFactor.getColumn()).write(sensitivityValue.getValue());
-                }
-                MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-                matrixPtr.setRowCount(resultContext.getRowCount());
-                matrixPtr.setColumnCount(resultContext.getColumnCount());
-                matrixPtr.setValues(valuePtr);
-                return matrixPtr;
-            }
-            return WordFactory.nullPointer();
+            return resultContext.createSensitivityMatrix(contingencyId);
         });
     }
 
@@ -490,20 +513,7 @@ public final class GridPyApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            Collection<SensitivityValue> sensitivityValues = resultContext.getSensitivityValues(contingencyId);
-            if (sensitivityValues != null) {
-                CDoublePointer valuePtr = UnmanagedMemory.calloc(resultContext.getColumnCount() * SizeOf.get(CDoublePointer.class));
-                for (SensitivityValue sensitivityValue : sensitivityValues) {
-                    IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                    valuePtr.addressOf(indexedFactor.getColumn()).write(sensitivityValue.getFunctionReference());
-                }
-                MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(MatrixPointer.class));
-                matrixPtr.setRowCount(1);
-                matrixPtr.setColumnCount(resultContext.getColumnCount());
-                matrixPtr.setValues(valuePtr);
-                return matrixPtr;
-            }
-            return WordFactory.nullPointer();
+            return resultContext.createReferenceFlows(contingencyId);
         });
     }
 

@@ -1,0 +1,6 @@
+[
+  {
+    "name":"com.powsybl.computation.local.LocalComputationManagerFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  }
+]

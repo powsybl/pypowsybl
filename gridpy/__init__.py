@@ -7,7 +7,7 @@
 import _gridpy
 from _gridpy import GridPyError
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 
 def set_debug_mode(debug: bool = True):

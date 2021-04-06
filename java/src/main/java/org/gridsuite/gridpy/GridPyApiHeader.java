@@ -425,4 +425,5 @@ public final class GridPyApiHeader {
 
         SeriesPointer addressOf(int index);
     }
+
 }
