@@ -60,9 +60,6 @@
   "allDeclaredMethods":true
 },
 {
-  "name":"groovy.lang.Binding"
-},
-{
   "name":"java.beans.BeanInfo",
   "methods":[{"name":"getPropertyDescriptors","parameterTypes":[] }]
 },

@@ -191,6 +191,28 @@ print(sa_result.get_table())
 +----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
 ```
 
+#### To run with hades2
+Download [Hades2](https://rte-france.github.io/hades2/index.html)
+
+Create a `config.yml` under `$HOME/.itools/`
+```yaml
+load-flow:
+    default: Hades2
+hades2:
+    homeDir: <path-to-hades2>
+```
+
+Set `minP` and `maxP` of generator in Eurostag example.
+```shell script
+minP="-9999.99" maxP="9999.99"
+```
+
+Given the provider name
+```python
+gp.loadflow.run_ac(n, provider="Hades2")
+```
+
+
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
 ```python
 import gridpy.sensitivity_analysis

@@ -222,9 +222,7 @@ public final class GridPyApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             final String providerStr = CTypeUtil.toString(provider);
-            System.out.println("providerStr:" + providerStr);
             final LoadFlow.Runner runner = LoadFlow.find(providerStr);
-            System.out.println("runner.getName:" + runner.getName());
             LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
         });
