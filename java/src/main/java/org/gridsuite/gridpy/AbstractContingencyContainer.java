@@ -10,7 +10,9 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.BranchContingency;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyElement;
+import com.powsybl.contingency.HvdcLineContingency;
 import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 
@@ -39,6 +41,8 @@ abstract class AbstractContingencyContainer implements ContingencyContainer {
         }
         if (identifiable instanceof Branch) {
             return new BranchContingency(elementId);
+        } else if (identifiable instanceof HvdcLine) {
+            return new HvdcLineContingency(elementId);
         } else {
             throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
         }
