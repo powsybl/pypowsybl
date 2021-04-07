@@ -30,6 +30,7 @@ class SeriesPointerArrayBuilder<T> {
     private static final int DOUBLE_SERIES_TYPE = 1;
     private static final int INT_SERIES_TYPE = 2;
     private static final int BOOLEAN_SERIES_TYPE = 3;
+    private static final int INT_UNDEFINED_VALUE = -99999;
 
     interface Series<T> {
 
@@ -164,6 +165,19 @@ class SeriesPointerArrayBuilder<T> {
 
     SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter) {
         return addIntSeries(seriesName, false, intGetter);
+    }
+
+    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter) {
+        return addIntSeries(seriesName, objectGetter, intGetter, INT_UNDEFINED_VALUE);
+    }
+
+    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int defaultValue) {
+        Objects.requireNonNull(objectGetter);
+        Objects.requireNonNull(intGetter);
+        return addIntSeries(seriesName, false, value -> {
+            U object = objectGetter.apply(value);
+            return object != null ? intGetter.applyAsInt(object) : defaultValue;
+        });
     }
 
     private SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, boolean bool, ToIntFunction<T> intGetter) {
