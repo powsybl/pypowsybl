@@ -98,6 +98,12 @@ class GridPyTestCase(unittest.TestCase):
         self.assertEqual('OTHER', df['energy_source']['GEN'])
         self.assertEqual(607, df['target_p']['GEN'])
 
+    def test_create_2_windings_transformers_data_frame(self):
+        n = gp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_2_windings_transformers_data_frame()
+        self.assertEqual(1, df['ratio_tap_position']['NHV2_NLOAD'])
+        self.assertEqual(-99999, df['phase_tap_position']['NHV2_NLOAD'])
+
     def test_sensitivity_analysis(self):
         n = gp.network.create_ieee14()
         sa = gp.sensitivity_analysis.create()
