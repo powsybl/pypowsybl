@@ -171,12 +171,12 @@ class SeriesPointerArrayBuilder<T> {
         return addIntSeries(seriesName, objectGetter, intGetter, INT_UNDEFINED_VALUE);
     }
 
-    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int defaultValue) {
+    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
         Objects.requireNonNull(objectGetter);
         Objects.requireNonNull(intGetter);
         return addIntSeries(seriesName, false, value -> {
             U object = objectGetter.apply(value);
-            return object != null ? intGetter.applyAsInt(object) : defaultValue;
+            return object != null ? intGetter.applyAsInt(object) : undefinedValue;
         });
     }
 
