@@ -15,12 +15,12 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
-class GridPyExtension(Extension):
+class PyPowsyblExtension(Extension):
     def __init__(self):
-        Extension.__init__(self, '_gridpy', sources=['cpp/CMakeLists.txt',
+        Extension.__init__(self, '_pypowsybl', sources=['cpp/CMakeLists.txt',
                                                      'cpp/src/bindings.cpp',
-                                                     'cpp/src/gridpy.cpp',
-                                                     'cpp/src/gridpy.h',
+                                                     'cpp/src/pypowsybl.cpp',
+                                                     'cpp/src/pypowsybl.h',
                                                      'cpp/lib/pybind11/CMakeLists.txt',
                                                      'cpp/lib/pybind11/tools/FindCatch.cmake',
                                                      'cpp/lib/pybind11/tools/FindPythonLibsNew.cmake',
@@ -53,8 +53,8 @@ class GridPyExtension(Extension):
                                                      'cpp/lib/pybind11/include/pybind11/stl.h',
                                                      'cpp/lib/pybind11/include/pybind11/stl_bind.h',
                                                      'java/pom.xml',
-                                                     'java/src/main/java/org/gridsuite/gridpy/GridPyApi.java',
-                                                     'java/src/main/resources/gridpy-api.h',
+                                                     'java/src/main/java/com/powsybl/python/PyPowsyblApi.java',
+                                                     'java/src/main/resources/pypowsybl-api.h',
                                                      'java/src/main/resources/logback.xml',
                                                      'java/src/main/resources/META-INF/native-image/jni-config.json',
                                                      'java/src/main/resources/META-INF/native-image/proxy-config.json',
@@ -62,7 +62,7 @@ class GridPyExtension(Extension):
                                                      'java/src/main/resources/META-INF/native-image/resource-config.json'])
 
 
-class GridPyBuild(build_ext):
+class PyPowsyblBuild(build_ext):
     def run(self):
         try:
             out = subprocess.check_output(['cmake', '--version'])
@@ -110,16 +110,16 @@ class GridPyBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='gridpy',
+    name='pypowsybl',
     author='Geoffroy Jamgotchian',
     author_email="geoffroy.jamgotchian@gmail.com",
     description='A PowSyBl Python API',
     long_description='',
     long_description_content_type="text/markdown",
-    url="https://github.com/gridsuite",
+    url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
-    ext_modules=[GridPyExtension()],
-    cmdclass=dict(build_ext=GridPyBuild),
+    ext_modules=[PyPowsyblExtension()],
+    cmdclass=dict(build_ext=PyPowsyblBuild),
     zip_safe=False,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
