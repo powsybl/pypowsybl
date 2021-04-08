@@ -1,23 +1,24 @@
-# PyPowsybl
+# PyPowSyBl
 
 [![Actions Status](https://github.com/powsybl/pypowsybl/workflows/CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/pypowsybl.svg)](https://pypi.org/project/pypowsybl/)
 [![Documentation Status](https://readthedocs.org/projects/pypowsybl/badge/?version=latest)](https://pypowsybl.readthedocs.io/en/latest/?badge=latest)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
+[![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/powsybl)
 
-A PowSyBl Python binding, based on GraalVM.
-
+The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on 
+GraalVM to compile Java code to a native library.
 
 ## Installation
 
-PyPowsybl is released on [PyPi](https://pypi.org/project/pypowsybl/).
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/).
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
 pip3 install --upgrade setuptools pip --user
 ```
 
-Then you can install PyPowsybl using pip:
+Then you can install PyPowSyBl using pip:
 ```bash
 pip3 install pypowsybl --user
 ```
@@ -32,7 +33,7 @@ Requirements:
 - Python >= 3.7
 - [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
-To build from sources and install PyPowsybl package:
+To build from sources and install PyPowSyBl package:
 ```bash
 git clone --recursive https://github.com/powsybl/pypowsybl.git
 export JAVA_HOME=<path to GraalVM>
