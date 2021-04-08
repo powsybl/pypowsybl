@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'gridpy'
+project = 'pypowsybl'
 copyright = '2021, Geoffroy Jamgotchian'
 author = 'Geoffroy Jamgotchian'
 

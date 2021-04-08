@@ -19,8 +19,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>org.gridsuite</groupId>
-    <artifactId>gridpy</artifactId>
+    <artifactId>pypowsybl</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
@@ -62,7 +61,7 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <finalName>gridpy-java</finalName>
+                            <finalName>pypowsybl-java</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>standalone</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>

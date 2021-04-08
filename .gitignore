@@ -5,10 +5,12 @@
 # Byte-compiled / optimized
 __pycache__/
 *.py[cod]
+build/
+/venv
 
 # Distribution
 /dist
-/gridpy.egg-info
+/pypowsybl.egg-info
 
 # Documentation
 /docs/_build
