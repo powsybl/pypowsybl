@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: master
+          ref: v0.10.0-dev3
 
       - name: Build and install olf artifact
         run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
@@ -66,7 +66,7 @@ jobs:
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: gridpy-wheel-linux-${{ matrix.python.name }}
+          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
           path: wheelhouse/*.whl
 
   macos_windows_build:
@@ -109,7 +109,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: master
+          ref: v0.10.0-dev3
 
       - name: Build and install olf artifact
         run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
@@ -146,14 +146,14 @@ jobs:
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: gridpy-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
+          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
 
       - name: Upload source archive
         uses: actions/upload-artifact@v2
         if: matrix.config.name == 'darwin' && matrix.python.name == 'cp39'
         with:
-          name: gridpy-sources
+          name: pypowsybl-sources
           path: dist/*.tar.gz
 
   package:
@@ -170,7 +170,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
-          name: gridpy-wheels
+          name: pypowsybl-wheels
           path: |
             download/**/*.whl
             download/**/*.tar.gz

@@ -1,16 +1,15 @@
-import gridpy.network
-import gridpy.loadflow
-import gridpy as gp
-from _gridpy import LoadFlowParameters as Parameters
+import pypowsybl.network
+import pypowsybl.loadflow
+import pypowsybl as pp
 
 # Print the version of PowSyBl modules
-gp.print_version()
+pp.print_version()
 
 # Create the IEEE 14 buses network
-n = gp.network.create_ieee14()
+n = pp.network.create_ieee14()
 
 # Run a load flow computation and print the result
-results = gp.loadflow.run_ac(n)
+results = pp.loadflow.run_ac(n)
 for result in results:
     print(result)
 

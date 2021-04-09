@@ -7,7 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <limits>
-#include "gridpy.h"
+#include "pypowsybl.h"
 
 namespace py = pybind11;
 
@@ -22,27 +22,27 @@ void bindArray(py::module_& m, const std::string& className) {
             }, py::keep_alive<0, 1>());
 }
 
-PYBIND11_MODULE(_gridpy, m) {
-    gridpy::init();
+PYBIND11_MODULE(_pypowsybl, m) {
+    pypowsybl::init();
 
     m.doc() = "PowSyBl Python API";
 
-    py::register_exception<gridpy::GridPyError>(m, "GridPyError");
+    py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
-    m.def("set_debug_mode", &gridpy::setDebugMode, "Set debug mode");
+    m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
-    m.def("get_version_table", &gridpy::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
+    m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_empty_network", &gridpy::createEmptyNetwork, "Create an empty network",
+    m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
           py::arg("id"));
 
-    m.def("create_ieee14_network", &gridpy::createIeee14Network, "Create an IEEE 14 network");
+    m.def("create_ieee14_network", &pypowsybl::createIeee14Network, "Create an IEEE 14 network");
 
-    m.def("create_eurostag_tutorial_example1_network", &gridpy::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
+    m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
-    m.def("update_switch_position", &gridpy::updateSwitchPosition, "Update a switch position");
+    m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
-    m.def("update_connectable_status", &gridpy::updateConnectableStatus, "Update a connectable (branch or injection) status");
+    m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
@@ -58,23 +58,23 @@ PYBIND11_MODULE(_gridpy, m) {
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
             .export_values();
 
-    m.def("get_network_elements_ids", &gridpy::getNetworkElementsIds, "Get network elements ids for a given element type",
+    m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
           py::arg("not_connected_to_same_bus_at_both_sides"));
 
-    m.def("load_network", &gridpy::loadNetwork, "Load a network from a file");
+    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file");
 
-    m.def("dump_network", &gridpy::dumpNetwork, "Dump network to a file in a given format");
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format");
 
-    m.def("reduce_network", &gridpy::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
-            py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
+    m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
+          py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
 
-    py::enum_<gridpy::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
-            .value("CONVERGED", gridpy::LoadFlowComponentStatus::CONVERGED)
-            .value("FAILED", gridpy::LoadFlowComponentStatus::FAILED)
-            .value("MAX_ITERATION_REACHED", gridpy::LoadFlowComponentStatus::MAX_ITERATION_REACHED)
-            .value("SOLVER_FAILED", gridpy::LoadFlowComponentStatus::SOLVER_FAILED)
+    py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
+            .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED)
+            .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED)
+            .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED)
+            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED)
             .export_values();
 
     py::class_<load_flow_component_result>(m, "LoadFlowComponentResult")
@@ -82,7 +82,7 @@ PYBIND11_MODULE(_gridpy, m) {
                 return r.component_num;
             })
             .def_property_readonly("status", [](const load_flow_component_result& r) {
-                return static_cast<gridpy::LoadFlowComponentStatus>(r.status);
+                return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
             .def_property_readonly("iteration_count", [](const load_flow_component_result& r) {
                 return r.iteration_count;
@@ -94,25 +94,25 @@ PYBIND11_MODULE(_gridpy, m) {
                 return r.slack_bus_active_power_mismatch;
             });
 
-    bindArray<gridpy::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
+    bindArray<pypowsybl::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
-    py::enum_<gridpy::VoltageInitMode>(m, "VoltageInitMode")
-            .value("UNIFORM_VALUES", gridpy::VoltageInitMode::UNIFORM_VALUES)
-            .value("PREVIOUS_VALUES", gridpy::VoltageInitMode::PREVIOUS_VALUES)
-            .value("DC_VALUES", gridpy::VoltageInitMode::DC_VALUES)
+    py::enum_<pypowsybl::VoltageInitMode>(m, "VoltageInitMode")
+            .value("UNIFORM_VALUES", pypowsybl::VoltageInitMode::UNIFORM_VALUES)
+            .value("PREVIOUS_VALUES", pypowsybl::VoltageInitMode::PREVIOUS_VALUES)
+            .value("DC_VALUES", pypowsybl::VoltageInitMode::DC_VALUES)
             .export_values();
 
-    py::enum_<gridpy::BalanceType>(m, "BalanceType")
-            .value("PROPORTIONAL_TO_GENERATION_P", gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P)
-            .value("PROPORTIONAL_TO_GENERATION_P_MAX", gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
-            .value("PROPORTIONAL_TO_LOAD", gridpy::BalanceType::PROPORTIONAL_TO_LOAD)
-            .value("PROPORTIONAL_TO_CONFORM_LOAD", gridpy::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD)
+    py::enum_<pypowsybl::BalanceType>(m, "BalanceType")
+            .value("PROPORTIONAL_TO_GENERATION_P", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P)
+            .value("PROPORTIONAL_TO_GENERATION_P_MAX", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
+            .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD)
+            .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD)
             .export_values();
 
     py::class_<load_flow_parameters>(m, "LoadFlowParameters")
-            .def(py::init([](gridpy::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
-                    bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
-                    bool distributedSlack, gridpy::BalanceType balanceType) {
+            .def(py::init([](pypowsybl::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
+                             bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
+                             bool distributedSlack, pypowsybl::BalanceType balanceType) {
                 auto parameters = new load_flow_parameters();
                 parameters->voltage_init_mode = voltageInitMode;
                 parameters->transformer_voltage_control_on = transformerVoltageControlOn;
@@ -125,14 +125,14 @@ PYBIND11_MODULE(_gridpy, m) {
                 parameters->distributed_slack = distributedSlack;
                 parameters->balance_type = balanceType;
                 return parameters;
-            }), py::arg("voltage_init_mode") = gridpy::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
+            }), py::arg("voltage_init_mode") = pypowsybl::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
                  py::arg("no_generator_reactive_limits") = false, py::arg("phase_shifter_regulation_on") = false,
                  py::arg("twt_split_shunt_admittance") = false, py::arg("simul_shunt") = false,
                  py::arg("read_slack_bus") = false, py::arg("write_slack_bus") = false,
-                 py::arg("distributed_slack") = true, py::arg("balance_type") = gridpy::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
+                 py::arg("distributed_slack") = true, py::arg("balance_type") = pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
-                return static_cast<gridpy::VoltageInitMode>(p.voltage_init_mode);
-            }, [](load_flow_parameters& p, gridpy::VoltageInitMode voltageInitMode) {
+                return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
+            }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {
                 p.voltage_init_mode = voltageInitMode;
             })
             .def_property("transformer_voltage_control_on", [](const load_flow_parameters& p) {
@@ -176,12 +176,12 @@ PYBIND11_MODULE(_gridpy, m) {
                 p.distributed_slack = distributedSlack;
             })
             .def_property("balance_type", [](const load_flow_parameters& p) {
-                return static_cast<gridpy::BalanceType>(p.balance_type);
-            }, [](load_flow_parameters& p, gridpy::BalanceType balanceType) {
+                return static_cast<pypowsybl::BalanceType>(p.balance_type);
+            }, [](load_flow_parameters& p, pypowsybl::BalanceType balanceType) {
                 p.balance_type = balanceType;
             });
 
-    m.def("run_load_flow", &gridpy::runLoadFlow, "Run a load flow", py::arg("network"),
+    m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<bus>(m, "Bus")
@@ -198,9 +198,9 @@ PYBIND11_MODULE(_gridpy, m) {
             return b.component_num;
         });
 
-    bindArray<gridpy::BusArray>(m, "BusArray");
+    bindArray<pypowsybl::BusArray>(m, "BusArray");
 
-    m.def("get_buses", &gridpy::getBusArray, "Get network buses", py::arg("network"));
+    m.def("get_buses", &pypowsybl::getBusArray, "Get network buses", py::arg("network"));
 
     py::class_<generator>(m, "Generator")
             .def_property_readonly("id", [](const generator& g) {
@@ -225,9 +225,9 @@ PYBIND11_MODULE(_gridpy, m) {
                 return g.bus_;
             });
 
-    bindArray<gridpy::GeneratorArray>(m, "GeneratorArray");
+    bindArray<pypowsybl::GeneratorArray>(m, "GeneratorArray");
 
-    m.def("get_generators", &gridpy::getGeneratorArray, "Get network generators", py::arg("network"));
+    m.def("get_generators", &pypowsybl::getGeneratorArray, "Get network generators", py::arg("network"));
 
     py::class_<load>(m, "Load")
             .def_property_readonly("id", [](const load& l) {
@@ -246,28 +246,28 @@ PYBIND11_MODULE(_gridpy, m) {
                 return l.bus_;
             });
 
-    bindArray<gridpy::LoadArray>(m, "LoadArray");
+    bindArray<pypowsybl::LoadArray>(m, "LoadArray");
 
-    m.def("get_loads", &gridpy::getLoadArray, "Get network loads", py::arg("network"));
+    m.def("get_loads", &pypowsybl::getLoadArray, "Get network loads", py::arg("network"));
 
-    m.def("write_single_line_diagram_svg", &gridpy::writeSingleLineDiagramSvg, "Write single line diagram SVG",
+    m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
-    m.def("create_security_analysis", &gridpy::createSecurityAnalysis, "Create a security analysis");
+    m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
-    m.def("add_contingency", &gridpy::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
+    m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
-    py::enum_<gridpy::LimitType>(m, "LimitType")
-            .value("CURRENT", gridpy::LimitType::CURRENT)
-            .value("LOW_VOLTAGE", gridpy::LimitType::LOW_VOLTAGE)
-            .value("HIGH_VOLTAGE", gridpy::LimitType::HIGH_VOLTAGE)
+    py::enum_<pypowsybl::LimitType>(m, "LimitType")
+            .value("CURRENT", pypowsybl::LimitType::CURRENT)
+            .value("LOW_VOLTAGE", pypowsybl::LimitType::LOW_VOLTAGE)
+            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE)
             .export_values();
 
-    py::enum_<gridpy::Side>(m, "Side")
-            .value("NONE", gridpy::Side::NONE)
-            .value("ONE", gridpy::Side::ONE)
-            .value("TWO", gridpy::Side::TWO)
+    py::enum_<pypowsybl::Side>(m, "Side")
+            .value("NONE", pypowsybl::Side::NONE)
+            .value("ONE", pypowsybl::Side::ONE)
+            .value("TWO", pypowsybl::Side::TWO)
             .export_values();
 
     py::class_<limit_violation>(m, "LimitViolation")
@@ -278,7 +278,7 @@ PYBIND11_MODULE(_gridpy, m) {
                 return v.subject_name;
             })
             .def_property_readonly("limit_type", [](const limit_violation& v) {
-                return static_cast<gridpy::LimitType>(v.limit_type);
+                return static_cast<pypowsybl::LimitType>(v.limit_type);
             })
             .def_property_readonly("limit", [](const limit_violation& v) {
                 return v.limit;
@@ -296,33 +296,33 @@ PYBIND11_MODULE(_gridpy, m) {
                 return v.value;
             })
             .def_property_readonly("side", [](const limit_violation& v) {
-                return static_cast<gridpy::Side>(v.side);
+                return static_cast<pypowsybl::Side>(v.side);
             });
 
-    bindArray<gridpy::LimitViolationArray>(m, "LimitViolationArray");
+    bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");
 
     py::class_<contingency_result>(m, "ContingencyResult")
             .def_property_readonly("contingency_id", [](const contingency_result& r) {
                 return r.contingency_id;
             })
             .def_property_readonly("status", [](const contingency_result& r) {
-                return static_cast<gridpy::LoadFlowComponentStatus>(r.status);
+                return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
             .def_property_readonly("limit_violations", [](const contingency_result& r) {
-                return gridpy::LimitViolationArray((array*) &r.limit_violations);
+                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
             });
 
-    bindArray<gridpy::ContingencyResultArray>(m, "ContingencyResultArray");
+    bindArray<pypowsybl::ContingencyResultArray>(m, "ContingencyResultArray");
 
-    m.def("run_security_analysis", &gridpy::runSecurityAnalysis, "Run a security analysis",
+    m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis",
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"));
 
-    m.def("create_sensitivity_analysis", &gridpy::createSensitivityAnalysis, "Create a sensitivity analysis");
+    m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
 
-    m.def("set_factor_matrix", &gridpy::setFactorMatrix, "Set a factor matrix to a sensitivity analysis",
+    m.def("set_factor_matrix", &pypowsybl::setFactorMatrix, "Set a factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
 
-    m.def("run_sensitivity_analysis", &gridpy::runSensitivityAnalysis, "Run a sensitivity analysis",
+    m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
@@ -335,10 +335,10 @@ PYBIND11_MODULE(_gridpy, m) {
                                        { sizeof(double) * m.column_count, sizeof(double) });
             });
 
-    m.def("get_sensitivity_matrix", &gridpy::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+    m.def("get_sensitivity_matrix", &pypowsybl::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
-    m.def("get_reference_flows", &gridpy::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
+    m.def("get_reference_flows", &pypowsybl::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     py::class_<series>(m, "Series")
@@ -349,22 +349,22 @@ PYBIND11_MODULE(_gridpy, m) {
                 return s.type;
             })
             .def_property_readonly("str_data", [](const series& s) {
-                return gridpy::toVector<std::string>((array*) &s.data);
+                return pypowsybl::toVector<std::string>((array *) & s.data);
             })
             .def_property_readonly("double_data", [](const series& s) {
-                return gridpy::toVector<double>((array*) &s.data);
+                return pypowsybl::toVector<double>((array *) & s.data);
             })
             .def_property_readonly("int_data", [](const series& s) {
-                return gridpy::toVector<int>((array*) &s.data);
+                return pypowsybl::toVector<int>((array *) & s.data);
             })
             .def_property_readonly("boolean_data", [](const series& s) {
-                return gridpy::toVector<bool>((array*) &s.data);
+                return pypowsybl::toVector<bool>((array *) & s.data);
             });
 
-    m.def("create_network_elements_series_array", &gridpy::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
+    m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::arg("network"), py::arg("element_type"));
 
-    bindArray<gridpy::SeriesArray>(m, "SeriesArray");
+    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
-    m.def("destroy_object_handle", &gridpy::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
+    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }
