@@ -57,11 +57,14 @@ jobs:
           auditwheel repair dist/*.whl
 
       - name: Install wheel
-        shell: bash
         run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/pip3 install wheelhouse/*.whl --user
 
       - name: Run tests
         run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 -m unittest tests/test.py
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make doctest
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
@@ -142,6 +145,10 @@ jobs:
 
       - name: Run tests
         run: python -m unittest tests/test.py
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make doctest
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
