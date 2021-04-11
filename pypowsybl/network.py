@@ -47,7 +47,11 @@ class Network(ObjectHandle):
         ObjectHandle.__init__(self, ptr)
 
     @property
-    def buses(self):
+    def buses(self) -> List[Bus]:
+        """ Get buses from the bus/branch view of the network model.
+
+        :return:
+        """
         return _pypowsybl.get_buses(self.ptr)
 
     @property
