@@ -10,7 +10,8 @@ PyPowSyBl's user documentation
    :maxdepth: 2
    :caption: Contents:
 
-
+   network
+   load-flow
 
 Indices and tables
 ==================

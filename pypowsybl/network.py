@@ -151,6 +151,13 @@ class Network(ObjectHandle):
 
 
 def create_empty(id: str = "Default") -> Network:
+    """ Create an empty network.
+
+    :param id: id of the network, defaults to 'Default'
+    :type id: str, optional
+    :return: an empty network
+    :rtype: Network
+    """
     return Network(_pypowsybl.create_empty_network(id))
 
 
