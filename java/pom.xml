@@ -33,6 +33,7 @@
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
         <powysbl-core.version>4.1.0</powysbl-core.version>
+        <powsybl-rte-core.version>3.1.0</powsybl-rte-core.version>
         <powysbl-single-line-diagram.version>2.1.0</powysbl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.10.0</powsybl-open-load-flow.version>
     </properties>
@@ -208,6 +209,11 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
             <version>${powsybl-open-load-flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rte-france.powsybl</groupId>
+            <artifactId>powsybl-hades2-integration</artifactId>
+            <version>${powsybl-rte-core.version}</version>
         </dependency>
 
         <!-- test -->

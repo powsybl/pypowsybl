@@ -213,3 +213,18 @@ B1-G     0.5 -0.084423
 B2-G    -0.5  0.084423
 B3-G    -0.5 -0.490385
 ```
+
+To run a load flow with hades2 instead of OLF:
+
+Download [Hades2](https://rte-france.github.io/hades2/index.html)
+
+Create a `config.yml` under `$HOME/.itools/`
+```yaml
+hades2:
+    homeDir: <path-to-hades2>
+```
+
+Then specify Hades2 provider:
+```python
+pp.loadflow.run_ac(n, provider="Hades2")
+```

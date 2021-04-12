@@ -80,8 +80,8 @@ class SecurityAnalysis(ContingencyContainer):
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
 
-    def run_ac(self, network: Network, parameters: Parameters = Parameters()) -> SecurityAnalysisResult:
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self.ptr, network.ptr, parameters))
+    def run_ac(self, network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow') -> SecurityAnalysisResult:
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self.ptr, network.ptr, parameters, provider))
 
 
 def create() -> SecurityAnalysis:
