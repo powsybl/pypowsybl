@@ -143,8 +143,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
             Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            int columnCount = branchsIds.size();
-            int rowCount = injectionsOrTransfosIds.size();
+            int columnCount = branchsIds != null ? branchsIds.size() : 0;
+            int rowCount = injectionsOrTransfosIds != null ? injectionsOrTransfosIds.size() : 0;
             resultContext = new SensitivityAnalysisResultContextV1(rowCount, columnCount, sensitivityValues, sensitivityValuesByContingencyId);
         }
         return resultContext;
