@@ -221,8 +221,8 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
-            final String providerStr = CTypeUtil.toString(provider);
-            final LoadFlow.Runner runner = LoadFlow.find(providerStr);
+            String providerStr = CTypeUtil.toString(provider);
+            LoadFlow.Runner runner = LoadFlow.find(providerStr);
             LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
         });

@@ -2,7 +2,6 @@
   "resources":{
   "includes":[
     {"pattern":"org/joda/time/tz/data/.*"},
-    {"pattern":"\\Qorg/joda/time/tz/data/Europe/Paris\\E"},
     {"pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"}
   ]}
 }
