@@ -324,8 +324,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {

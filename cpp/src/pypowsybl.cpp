@@ -298,9 +298,9 @@ void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::st
                 injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
 }
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider) {
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
     GraalVmGuard guard;
-    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters, (char *) provider.data());
+    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
 }
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
