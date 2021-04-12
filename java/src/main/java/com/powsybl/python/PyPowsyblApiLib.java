@@ -216,8 +216,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                           CCharPointer provider,
-                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                           CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
@@ -449,12 +448,13 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                             CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
-            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters);
+            String providerStr = CTypeUtil.toString(provider);
+            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return createContingencyResultArrayPointer(result);
         });
     }
@@ -490,12 +490,15 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
-            SensitivityAnalysisResultContext resultContext = analysisContext.runV2(network, loadFlowParameters);
+            String providerStr = CTypeUtil.toString(provider);
+            SensitivityAnalysisResultContext resultContext = providerStr.equals("OpenLoadFlow")
+                    ? analysisContext.runV2(network, loadFlowParameters)
+                    : analysisContext.runV1(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }

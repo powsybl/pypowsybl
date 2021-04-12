@@ -134,13 +134,13 @@ void* createSecurityAnalysis();
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters);
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 void* createSensitivityAnalysis();
 
 void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
