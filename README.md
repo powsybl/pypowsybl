@@ -214,7 +214,7 @@ B2-G    -0.5  0.084423
 B3-G    -0.5 -0.490385
 ```
 
-To run with hades2:
+To run a load flow with hades2 instead of OLF:
 
 Download [Hades2](https://rte-france.github.io/hades2/index.html)
 
@@ -224,7 +224,7 @@ hades2:
     homeDir: <path-to-hades2>
 ```
 
-Given the provider name
+Then specify Hades2 provider:
 ```python
 pp.loadflow.run_ac(n, provider="Hades2")
 ```
