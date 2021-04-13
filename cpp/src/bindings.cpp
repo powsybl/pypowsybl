@@ -56,6 +56,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
+            .value("HVDC_LINE", element_type::HVDC_LINE)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
