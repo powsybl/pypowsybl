@@ -182,7 +182,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("dc"), py::arg("parameters"));
+          py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<bus>(m, "Bus")
         .def_property_readonly("id", [](const bus& b) {
@@ -315,7 +315,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::ContingencyResultArray>(m, "ContingencyResultArray");
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis",
-          py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"));
+          py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
+          py::arg("provider"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
 

@@ -132,19 +132,19 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         return factors;
     }
 
-    SensitivityAnalysisResultContextV1 runV1(Network network, LoadFlowParameters loadFlowParameters) {
+    SensitivityAnalysisResultContextV1 runV1(Network network, LoadFlowParameters loadFlowParameters, String provider) {
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
         List<SensitivityFactor> factors = createFactors(network);
-        SensitivityAnalysisResult result = SensitivityAnalysis.run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
+        SensitivityAnalysisResult result = SensitivityAnalysis.find(provider).run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
             n -> factors, contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
         SensitivityAnalysisResultContextV1 resultContext = null;
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
             Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            int columnCount = branchsIds.size();
-            int rowCount = injectionsOrTransfosIds.size();
+            int columnCount = branchsIds != null ? branchsIds.size() : 0;
+            int rowCount = injectionsOrTransfosIds != null ? injectionsOrTransfosIds.size() : 0;
             resultContext = new SensitivityAnalysisResultContextV1(rowCount, columnCount, sensitivityValues, sensitivityValuesByContingencyId);
         }
         return resultContext;

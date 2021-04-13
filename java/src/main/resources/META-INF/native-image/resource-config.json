@@ -1,7 +1,9 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"}
+    {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"},
+    {"pattern":"\\QMETA-INF/services/javax.xml.datatype.DatatypeFactory\\E"}, 
+    {"pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"}
   ]},
   "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
 }

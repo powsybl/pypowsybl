@@ -37,14 +37,14 @@ jobs:
           graalvm-version: 20.3.0
           native-image: true
 
-      - name: Checkout olf sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: v0.10.0-dev3
-
-      - name: Build and install olf artifact
-        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
+#      - name: Checkout olf sources
+#        uses: actions/checkout@v1
+#        with:
+#          repository: powsybl/powsybl-open-loadflow
+#          ref: master
+#
+#      - name: Build and install olf artifact
+#        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -114,14 +114,14 @@ jobs:
           graalvm-version: 20.3.0
           native-image: true
 
-      - name: Checkout olf sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: v0.10.0-dev3
-
-      - name: Build and install olf artifact
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
+#      - name: Checkout olf sources
+#        uses: actions/checkout@v1
+#        with:
+#          repository: powsybl/powsybl-open-loadflow
+#          ref: master
+#
+#      - name: Build and install olf artifact
+#        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
 
       - name: Checkout sources
         uses: actions/checkout@v1

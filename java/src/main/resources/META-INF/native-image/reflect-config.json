@@ -164,6 +164,10 @@
   "allDeclaredMethods":true
 },
 {
+  "name":"java.util.ArrayList",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"java.util.Collection",
   "allDeclaredMethods":true
 },
@@ -189,11 +193,47 @@
   "methods":[{"name":"type","parameterTypes":[] }]
 },
 {
+  "name":"javax.xml.bind.annotation.XmlElementDecl",
+  "methods":[{"name":"scope","parameterTypes":[] }]
+},
+{
+  "name":"javax.xml.bind.annotation.XmlElementRef",
+  "methods":[{"name":"type","parameterTypes":[] }]
+},
+{
+  "name":"javax.xml.bind.annotation.XmlElements"
+},
+{
+  "name":"javax.xml.bind.annotation.XmlEnum",
+  "methods":[{"name":"value","parameterTypes":[] }]
+},
+{
+  "name":"javax.xml.bind.annotation.XmlEnumValue"
+},
+{
+  "name":"javax.xml.bind.annotation.XmlType",
+  "methods":[{"name":"factoryClass","parameterTypes":[] }]
+},
+{
   "name":"javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
   "methods":[
     {"name":"type","parameterTypes":[] }, 
     {"name":"value","parameterTypes":[] }
   ]
+},
+{
+  "name":"org.apache.xerces.impl.dv.ObjectFactory"
+},
+{
+  "name":"org.apache.xerces.impl.dv.dtd.DTDDVFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.xerces.parsers.ObjectFactory"
+},
+{
+  "name":"org.apache.xerces.parsers.XIncludeAwareParserConfiguration",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"sun.security.provider.MD5",

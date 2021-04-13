@@ -238,9 +238,10 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     return elementsIds;
 }
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
     GraalVmGuard guard;
-    return new LoadFlowComponentResultArray(executeJava<array*>(::runLoadFlow, guard.thread(), network, dc, &parameters));
+    return new LoadFlowComponentResultArray(
+            executeJava<array*>(::runLoadFlow, guard.thread(), network, dc, &parameters, (char *) provider.data()));
 }
 
 BusArray* getBusArray(void* network) {
@@ -276,10 +277,11 @@ void addContingency(void* analysisContext, const std::string& contingencyId, con
                 elementsIds.size());
 }
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters) {
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters,
+                                            const std::string& provider) {
     GraalVmGuard guard;
     return new ContingencyResultArray(executeJava<array*>(::runSecurityAnalysis, guard.thread(), securityAnalysisContext,
-                                                          network, &parameters));
+                                                          network, &parameters, (char *) provider.data()));
 }
 
 void* createSensitivityAnalysis() {

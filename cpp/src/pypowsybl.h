@@ -120,7 +120,7 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters, const std::string& provider);
 
 BusArray* getBusArray(void* network);
 
@@ -134,7 +134,7 @@ void* createSecurityAnalysis();
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters);
+ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 void* createSensitivityAnalysis();
 
