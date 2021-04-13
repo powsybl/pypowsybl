@@ -19,22 +19,23 @@
         <relativePath/>
     </parent>
 
-    <groupId>org.gridsuite</groupId>
-    <artifactId>gridpy</artifactId>
+    <artifactId>pypowsybl</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>21.0.0</graalvm.version>
-        <gridsuite-dependencies.version>4</gridsuite-dependencies.version>
+        <graalvm.version>20.3.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <open-load-flow.version>0.9.0-SNAPSHOT</open-load-flow.version>
+        <powysbl-core.version>4.1.0</powysbl-core.version>
+        <powsybl-rte-core.version>3.1.0</powsybl-rte-core.version>
+        <powysbl-single-line-diagram.version>2.1.0</powysbl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.10.0</powsybl-open-load-flow.version>
     </properties>
 
     <build>
@@ -61,7 +62,7 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <finalName>gridpy-java</finalName>
+                            <finalName>pypowsybl-java</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>standalone</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -74,23 +75,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- overrides of imports -->
-
-            <!-- imports -->
-            <dependency>
-                <groupId>org.gridsuite</groupId>
-                <artifactId>gridsuite-dependencies</artifactId>
-                <version>${gridsuite-dependencies.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- project specific dependencies -->
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <!-- compile -->
@@ -139,55 +123,68 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-conversion</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-config-classic</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ieee-cdf-converter</artifactId>
+            <version>${powysbl-core.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-api</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-test</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-xml-converter</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-loadflow-api</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-matpower-converter</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-psse-converter</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
+            <version>${powysbl-single-line-diagram.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ucte-converter</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
 
         <!-- runtime -->
@@ -201,11 +198,22 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-impl</artifactId>
+            <version>${powysbl-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-reducer</artifactId>
+            <version>${powysbl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
-            <version>${open-load-flow.version}</version>
+            <version>${powsybl-open-load-flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rte-france.powsybl</groupId>
+            <artifactId>powsybl-hades2-integration</artifactId>
+            <version>${powsybl-rte-core.version}</version>
         </dependency>
 
         <!-- test -->
