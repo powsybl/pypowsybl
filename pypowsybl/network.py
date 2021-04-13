@@ -145,6 +145,9 @@ class Network(ObjectHandle):
     def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
+    def create_hvdc_lines_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.HVDC_LINE)
+
 
 def create_empty(id: str = "Default") -> Network:
     return Network(_pypowsybl.create_empty_network(id))

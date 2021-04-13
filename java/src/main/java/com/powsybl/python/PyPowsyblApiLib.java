@@ -717,6 +717,19 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
+                case HVDC_LINE:
+                    List<HvdcLine> hvdcLines = network.getHvdcLineStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(hvdcLines)
+                            .addStringSeries("id", HvdcLine::getId)
+                            .addEnumSeries("converters_mode", HvdcLine::getConvertersMode)
+                            .addDoubleSeries("active_power_setpoint", HvdcLine::getActivePowerSetpoint)
+                            .addDoubleSeries("max_p", HvdcLine::getMaxP)
+                            .addDoubleSeries("nominal_v", HvdcLine::getNominalV)
+                            .addDoubleSeries("r", HvdcLine::getR)
+                            .addStringSeries("converter_station1", l -> l.getConverterStation1().getId())
+                            .addStringSeries("converter_station2", l -> l.getConverterStation2().getId()))
+                            .build();
+
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }
