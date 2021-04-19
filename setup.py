@@ -109,12 +109,17 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
+
+# long description from the github readme
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
     name='pypowsybl',
     author='Geoffroy Jamgotchian',
     author_email="geoffroy.jamgotchian@gmail.com",
     description='A PowSyBl Python API',
-    long_description='',
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
