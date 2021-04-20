@@ -36,7 +36,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
           py::arg("id"));
 
-    m.def("create_ieee14_network", &pypowsybl::createIeee14Network, "Create an IEEE 14 network");
+    m.def("create_ieee_network", &pypowsybl::createIeeeNetwork, "Create an IEEE network", py::arg("bus_count"));
 
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 

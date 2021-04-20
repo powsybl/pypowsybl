@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -111,10 +112,32 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "createIeee14Network")
-    public static ObjectHandle createIeee14Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createIeeeNetwork")
+    public static ObjectHandle createIeeeNetwork(IsolateThread thread, int busCount, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = IeeeCdfNetworkFactory.create14();
+            Network network;
+            switch (busCount) {
+                case 9:
+                    network = IeeeCdfNetworkFactory.create9();
+                    break;
+                case 14:
+                    network = IeeeCdfNetworkFactory.create14();
+                    break;
+                case 30:
+                    network = IeeeCdfNetworkFactory.create30();
+                    break;
+                case 57:
+                    network = IeeeCdfNetworkFactory.create57();
+                    break;
+                case 118:
+                    network = IeeeCdfNetworkFactory.create118();
+                    break;
+                case 300:
+                    network = IeeeCdfNetworkFactory.create300();
+                    break;
+                default:
+                    throw new PowsyblException("IEEE " + busCount + " buses case not found");
+            }
             return ObjectHandles.getGlobal().create(network);
         });
     }
