@@ -194,14 +194,52 @@ void* createEurostagTutorialExample1Network() {
     return executeJava<void*>(::createEurostagTutorialExample1Network, guard.thread());
 }
 
-void* loadNetwork(const std::string& file) {
+std::vector<std::string> getNetworkImportFormats() {
     GraalVmGuard guard;
-    return executeJava<void*>(::loadNetwork, guard.thread(), (char*) file.data());
+    auto formatsArrayPtr = executeJava<array*>(::getNetworkImportFormats, guard.thread());
+    std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
+    freeNetworkFormats(guard.thread(), formatsArrayPtr);
+    return formats;
 }
 
-void dumpNetwork(void* network, const std::string& file, const std::string& format) {
+std::vector<std::string> getNetworkExportFormats() {
     GraalVmGuard guard;
-    executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data());
+    auto formatsArrayPtr = executeJava<array*>(::getNetworkExportFormats, guard.thread());
+    std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
+    freeNetworkFormats(guard.thread(), formatsArrayPtr);
+    return formats;
+}
+
+void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {
+    GraalVmGuard guard;
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    return executeJava<void*>(::loadNetwork, guard.thread(), (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
+                              parameterValuesPtr.get(), parameterValues.size());
+}
+
+void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters) {
+    GraalVmGuard guard;
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+                parameterValuesPtr.get(), parameterValues.size());
 }
 
 void reduceNetwork(void* network, double v_min, double v_max, const std::vector<std::string>& ids,

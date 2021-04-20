@@ -70,8 +70,8 @@ class Network(ObjectHandle):
     def disconnect(self, id: str):
         return _pypowsybl.update_connectable_status(self.ptr, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM'):
-        _pypowsybl.dump_network(self.ptr, file, format)
+    def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
+        _pypowsybl.dump_network(self.ptr, file, format, parameters)
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):
@@ -181,5 +181,13 @@ def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
 
 
-def load(file: str) -> Network:
-    return Network(_pypowsybl.load_network(file))
+def get_import_formats() -> List[str]:
+    return _pypowsybl.get_network_import_formats()
+
+
+def get_export_formats() -> List[str]:
+    return _pypowsybl.get_network_export_formats()
+
+
+def load(file: str, parameters: dict = {}) -> Network:
+    return Network(_pypowsybl.load_network(file, parameters))

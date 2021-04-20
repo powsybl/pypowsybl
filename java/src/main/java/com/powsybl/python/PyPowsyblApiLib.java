@@ -9,8 +9,10 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
+import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -150,23 +152,62 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
+        CCharPointerPointer stringListPtr = UnmanagedMemory.calloc(stringList.size() * SizeOf.get(CCharPointerPointer.class));
+        for (int i = 0; i < stringList.size(); i++) {
+            stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
+        }
+        return allocArrayPointer(stringListPtr, stringList.size());
+    }
+
+    @CEntryPoint(name = "getNetworkImportFormats")
+    public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Importers.getFormats())));
+    }
+
+    @CEntryPoint(name = "getNetworkExportFormats")
+    public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporters.getFormats())));
+    }
+
+    @CEntryPoint(name = "freeNetworkFormats")
+    public static void freeNetworkFormats(IsolateThread thread, ArrayPointer<CCharPointerPointer> formatsArrayPtr) {
+        freeArrayPointer(formatsArrayPtr);
+    }
+
+    private static Properties createParameters(CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                               CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount) {
+        List<String> parameterNames = CTypeUtil.toStringList(parameterNamesPtrPtr, parameterNamesCount);
+        List<String> parameterValues = CTypeUtil.toStringList(parameterValuesPtrPtr, parameterValuesCount);
+        Properties parameters = new Properties();
+        for (int i = 0; i < parameterNames.size(); i++) {
+            parameters.setProperty(parameterNames.get(i), parameterValues.get(i));
+        }
+        return parameters;
+    }
+
     @CEntryPoint(name = "loadNetwork")
-    public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
-            Network network = Importers.loadNetwork(fileStr);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            Network network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
             return ObjectHandles.getGlobal().create(network);
         });
     }
 
     @CEntryPoint(name = "dumpNetwork")
     public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
+                                   CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                   CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
-            Exporters.export(formatStr, network, null, Paths.get(fileStr));
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
         });
     }
 
@@ -390,11 +431,7 @@ public final class PyPowsyblApiLib {
             Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
             Set<String> countries = new HashSet<>(CTypeUtil.toStringList(countryPtr, countryCount));
             List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
-            CCharPointerPointer elementsIdsPtr = UnmanagedMemory.calloc(elementsIds.size() * SizeOf.get(CCharPointerPointer.class));
-            for (int i = 0; i < elementsIds.size(); i++) {
-                elementsIdsPtr.addressOf(i).write(CTypeUtil.toCharPtr(elementsIds.get(i)));
-            }
-            return allocArrayPointer(elementsIdsPtr, elementsIds.size());
+            return createCharPtrArray(elementsIds);
         });
     }
 
