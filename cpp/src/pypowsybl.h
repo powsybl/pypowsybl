@@ -138,13 +138,19 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 
 void* createSensitivityAnalysis();
 
-void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
+
+void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
 
-matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getSensitivityMatrixFlows(void *sensitivityAnalysisResultContext, const std::string &contingencyId);
+
+matrix* getSensitivityMatrixVoltages(void *sensitivityAnalysisResultContext, const std::string &contingencyId);
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 

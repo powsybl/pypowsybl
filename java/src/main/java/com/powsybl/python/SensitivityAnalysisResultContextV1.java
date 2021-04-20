@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import com.powsybl.sensitivity.SensitivityValue;
+import org.apache.commons.lang3.NotImplementedException;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -42,7 +43,7 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrix(String contingencyId) {
+    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixFlows(String contingencyId) {
         Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
         if (sensitivityValues != null) {
             CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * columnCount * SizeOf.get(CDoublePointer.class));
@@ -57,6 +58,11 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
             return matrixPtr;
         }
         return WordFactory.nullPointer();
+    }
+
+    @Override
+    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixVoltages(String contingencyId) {
+        throw new NotImplementedException("not implemented yet");
     }
 
     @Override
@@ -75,5 +81,10 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
             return matrixPtr;
         }
         return WordFactory.nullPointer();
+    }
+
+    @Override
+    public PyPowsyblApiHeader.MatrixPointer createReferenceVoltages(String contingencyId) {
+        throw new NotImplementedException("not implemented yet");
     }
 }

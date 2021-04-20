@@ -289,13 +289,22 @@ void* createSensitivityAnalysis() {
     return createSensitivityAnalysis(guard.thread());
 }
 
-void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
                      const std::vector<std::string>& injectionsOrTransfosIds) {
     GraalVmGuard guard;
     ToCharPtrPtr branchIdPtr(branchesIds);
     ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
-    executeJava(::setFactorMatrix, guard.thread(), sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+    executeJava(::setBranchFlowFactorMatrix, guard.thread(), sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
                 injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+}
+
+void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds,
+                               const std::vector<std::string>& targetVoltageIds) {
+    GraalVmGuard guard;
+    ToCharPtrPtr busVoltageIdPtr(busIds);
+    ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
+    executeJava(::setBusVoltageFactorMatrix, guard.thread(), sensitivityAnalysisContext, busVoltageIdPtr.get(), busIds.size(),
+                targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
@@ -303,15 +312,27 @@ void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, lo
     return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
 }
 
-matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+matrix* getSensitivityMatrixFlows(void *sensitivityAnalysisResultContext, const std::string &contingencyId) {
     GraalVmGuard guard;
-    return executeJava<matrix*>(::getSensitivityMatrix, guard.thread(), sensitivityAnalysisResultContext,
+    return executeJava<matrix*>(::getSensitivityMatrixFlows, guard.thread(), sensitivityAnalysisResultContext,
+                                (char*) contingencyId.c_str());
+}
+
+matrix* getSensitivityMatrixVoltages(void *sensitivityAnalysisResultContext, const std::string &contingencyId) {
+    GraalVmGuard guard;
+    return executeJava<matrix*>(::getSensitivityMatrixVoltages, guard.thread(), sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
     GraalVmGuard guard;
     return executeJava<matrix*>(::getReferenceFlows, guard.thread(), sensitivityAnalysisResultContext,
+                                (char*) contingencyId.c_str());
+}
+
+matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
+    GraalVmGuard guard;
+    return executeJava<matrix*>(::getReferenceVoltages, guard.thread(), sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 

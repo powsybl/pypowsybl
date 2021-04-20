@@ -201,9 +201,9 @@ import pypowsybl.sensitivity_analysis
 ```python
 sa = pp.sensitivity_analysis.create()
 sa.add_single_element_contingency('L1-2-1')
-sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
 sa_result = sa.run_dc(n)
-df = sa_result.get_post_contingency_sensitivity_matrix('L1-2-1')
+df = sa_result.get_post_contingency_sensitivity_matrix_flows('L1-2-1')
 print(df)
 ```
 

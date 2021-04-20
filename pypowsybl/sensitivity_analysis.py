@@ -16,25 +16,42 @@ import pandas as pd
 
 
 class SensitivityAnalysisResult(ObjectHandle):
-    def __init__(self, result_context_ptr, branches_ids: List[str], injections_or_transformers_ids: List[str]):
+    def __init__(self, result_context_ptr, branches_ids: List[str], injections_or_transformers_ids: List[str],
+                                            bus_ids: List[str], target_voltage_ids: List[str]):
         ObjectHandle.__init__(self, result_context_ptr)
         self.result_context_ptr = result_context_ptr
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
+        self.bus_ids = bus_ids
+        self.target_voltage_ids = target_voltage_ids
 
-    def get_sensitivity_matrix(self):
-        return self.get_post_contingency_sensitivity_matrix('')
+    def get_sensitivity_matrix_flows(self):
+        return self.get_post_contingency_sensitivity_matrix_flows('')
 
-    def get_post_contingency_sensitivity_matrix(self, contingency_id: str):
-        m = _pypowsybl.get_sensitivity_matrix(self.result_context_ptr, contingency_id)
+    def get_sensitivity_matrix_voltages(self):
+        return self.get_post_contingency_sensitivity_matrix_voltages('')
+
+    def get_post_contingency_sensitivity_matrix_flows(self, contingency_id: str):
+        m = _pypowsybl.get_sensitivity_matrix_flows(self.result_context_ptr, contingency_id)
         if m is None:
             return None
         else:
             data = np.array(m, copy=False)
             return pd.DataFrame(data=data, columns=self.branches_ids, index=self.injections_or_transformers_ids)
 
+    def get_post_contingency_sensitivity_matrix_voltages(self, contingency_id: str):
+        m = _pypowsybl.get_sensitivity_matrix_voltages(self.result_context_ptr, contingency_id)
+        if m is None:
+            return None
+        else:
+            data = np.array(m, copy=False)
+            return pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
+
     def get_reference_flows(self):
         return self.get_post_contingency_reference_flows('')
+
+    def get_reference_voltages(self):
+        return self.get_post_contingency_reference_voltages('')
 
     def get_post_contingency_reference_flows(self, contingency_id: str):
         m = _pypowsybl.get_reference_flows(self.result_context_ptr, contingency_id)
@@ -44,21 +61,37 @@ class SensitivityAnalysisResult(ObjectHandle):
             data = np.array(m, copy=False)
             return pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
+    def get_post_contingency_reference_voltages(self, contingency_id: str):
+        m = _pypowsybl.get_reference_voltages(self.result_context_ptr, contingency_id)
+        if m is None:
+            return None
+        else:
+            data = np.array(m, copy=False)
+            return pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
+
 
 class SensitivityAnalysis(ContingencyContainer):
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
         self.injections_or_transformers_ids = None
+        self.bus_voltage_ids = None
+        self.target_voltage_ids = None
 
-    def set_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
-        _pypowsybl.set_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
+    def set_branch_flow_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
+        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
 
+    def set_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str]):
+        _pypowsybl.set_bus_voltage_factor_matrix(self.ptr, bus_ids, target_voltage_ids)
+        self.bus_voltage_ids = bus_ids
+        self.target_voltage_ids = target_voltage_ids
+
     def run_dc(self, network: Network, parameters: Parameters = Parameters()) -> SensitivityAnalysisResult:
         return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, parameters),
-                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids)
+                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
+                                         bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
 
 def create() -> SensitivityAnalysis:

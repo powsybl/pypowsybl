@@ -12,74 +12,92 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.WordFactory;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public class SensitivityAnalysisResultContextV2 implements SensitivityAnalysisResultContext {
 
-    private final int rowCount;
+    private final int flowRowCount;
 
-    private final int columnCount;
+    private final int flowColCount;
+
+    private final int voltageRowCount;
+
+    private final int voltageColCount;
 
     private final double[] baseCaseValues;
 
     private final Map<String, double[]> valuesByContingencyId;
 
-    private final double[] baseCaseReferenceFlows;
+    private final double[] baseCaseReferences;
 
-    private final Map<String, double[]> referenceFlowsByContingencyId;
+    private final Map<String, double[]> referencesByContingencyId;
 
-    public SensitivityAnalysisResultContextV2(int rowCount, int columnCount, double[] baseCaseValues, Map<String, double[]> valuesByContingencyId,
-                                              double[] baseCaseReferenceFlows, Map<String, double[]> referenceFlowsByContingencyId) {
-        this.rowCount = rowCount;
-        this.columnCount = columnCount;
+    public SensitivityAnalysisResultContextV2(int flowRowCount, int flowColCount, int voltageRowCount, int voltageColCount,
+                                              double[] baseCaseValues, Map<String, double[]> valuesByContingencyId,
+                                              double[] baseCaseReferences, Map<String, double[]> referencesByContingencyId) {
+        this.flowRowCount = flowRowCount;
+        this.flowColCount = flowColCount;
+        this.voltageRowCount = voltageRowCount;
+        this.voltageColCount = voltageColCount;
         this.baseCaseValues = baseCaseValues;
         this.valuesByContingencyId = valuesByContingencyId;
-        this.baseCaseReferenceFlows = baseCaseReferenceFlows;
-        this.referenceFlowsByContingencyId = referenceFlowsByContingencyId;
+        this.baseCaseReferences = baseCaseReferences;
+        this.referencesByContingencyId = referencesByContingencyId;
     }
 
     private double[] getValues(String contingencyId) {
         return contingencyId.isEmpty() ? baseCaseValues : valuesByContingencyId.get(contingencyId);
     }
 
-    private double[] getReferenceFlows(String contingencyId) {
-        return contingencyId.isEmpty() ? baseCaseReferenceFlows : referenceFlowsByContingencyId.get(contingencyId);
+    private double[] getReferences(String contingencyId) {
+        return contingencyId.isEmpty() ? baseCaseReferences : referencesByContingencyId.get(contingencyId);
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrix(String contingencyId) {
-        double[] values = getValues(contingencyId);
-        if (values != null) {
-            CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * columnCount * SizeOf.get(CDoublePointer.class));
-            for (int i = 0; i < values.length; i++) {
-                valuePtr.addressOf(i).write(values[i]);
-            }
-            PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-            matrixPtr.setRowCount(rowCount);
-            matrixPtr.setColumnCount(columnCount);
-            matrixPtr.setValues(valuePtr);
-            return matrixPtr;
-        }
-        return WordFactory.nullPointer();
+    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixFlows(String contingencyId) {
+        return createDoubleMatrix(() -> getValues(contingencyId), 0, flowRowCount, flowColCount);
+    }
 
+    @Override
+    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixVoltages(String contingencyId) {
+        return createDoubleMatrix(() -> getValues(contingencyId), flowRowCount * flowColCount, voltageRowCount, voltageColCount);
     }
 
     @Override
     public PyPowsyblApiHeader.MatrixPointer createReferenceFlows(String contingencyId) {
-        double[] referenceFlows = getReferenceFlows(contingencyId);
-        if (referenceFlows != null) {
-            CDoublePointer valuePtr = UnmanagedMemory.calloc(columnCount * SizeOf.get(CDoublePointer.class));
-            for (int i = 0; i < referenceFlows.length; i++) {
-                valuePtr.addressOf(i).write(referenceFlows[i]);
-            }
-            PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-            matrixPtr.setRowCount(1);
-            matrixPtr.setColumnCount(columnCount);
-            matrixPtr.setValues(valuePtr);
-            return matrixPtr;
+        return createDoubleMatrix(() -> getReferences(contingencyId), 0, 1, flowColCount);
+    }
+
+    @Override
+    public PyPowsyblApiHeader.MatrixPointer createReferenceVoltages(String contingencyId) {
+        return createDoubleMatrix(() -> getReferences(contingencyId), flowColCount, voltageRowCount, voltageColCount);
+    }
+
+    private static PyPowsyblApiHeader.MatrixPointer createDoubleMatrix(Supplier<double[]> srcSupplier, int srcPos, int matRow, int matCol) {
+        final double[] sources = srcSupplier.get();
+        if (sources == null) {
+            return WordFactory.nullPointer();
         }
-        return WordFactory.nullPointer();
+        double[] values = new double[matRow * matCol];
+        System.arraycopy(sources, srcPos, values, 0, values.length);
+        return doubleArrToMatrix(values, matRow, matCol);
+    }
+
+    private static PyPowsyblApiHeader.MatrixPointer doubleArrToMatrix(double[] values, int rowCount, int colCount) {
+        if (values.length != rowCount * colCount) {
+            throw new IllegalArgumentException("Matrix(" + rowCount + "*" + colCount + ") is not suitable for arrays size:" + values.length);
+        }
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * colCount * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < colCount * rowCount; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(rowCount);
+        matrixPtr.setColumnCount(colCount);
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 }
