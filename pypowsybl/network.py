@@ -11,6 +11,7 @@ from _pypowsybl import Generator
 from _pypowsybl import Load
 from _pypowsybl import ElementType
 from pypowsybl.util import ObjectHandle
+from pypowsybl.util import create_data_frame_from_series_array
 from typing import List
 from typing import Set
 import pandas as pd
@@ -94,23 +95,7 @@ class Network(ObjectHandle):
 
     def create_elements_data_frame(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
         series_array = _pypowsybl.create_network_elements_series_array(self.ptr, element_type)
-        series_dict = {}
-        index = None
-        for series in series_array:
-            if series.type == 0: # string
-                if series.name == 'id':
-                    index = series.str_data
-                else:
-                    series_dict[series.name] = series.str_data
-            elif series.type == 1: # double
-                series_dict[series.name] = series.double_data
-            elif series.type == 2:  # int
-                series_dict[series.name] = series.int_data
-            elif series.type == 3:  # boolean
-                series_dict[series.name] = series.boolean_data
-            else:
-                raise RuntimeError(f'Unsupported series type ${series.type}')
-        return pd.DataFrame(series_dict, index = index)
+        return create_data_frame_from_series_array(series_array, 'id')
 
     def create_buses_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.BUS)
@@ -187,6 +172,11 @@ def get_import_formats() -> List[str]:
 
 def get_export_formats() -> List[str]:
     return _pypowsybl.get_network_export_formats()
+
+
+def get_import_parameters(format: str) -> pd.DataFrame:
+    series_array = _pypowsybl.create_importer_parameters_series_array(format)
+    return create_data_frame_from_series_array(series_array, 'name')
 
 
 def load(file: str, parameters: dict = {}) -> Network:

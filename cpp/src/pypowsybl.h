@@ -119,6 +119,8 @@ std::vector<std::string> getNetworkImportFormats();
 
 std::vector<std::string> getNetworkExportFormats();
 
+SeriesArray* createImporterParametersSeriesArray(const std::string& format);
+
 void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);

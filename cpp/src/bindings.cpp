@@ -67,6 +67,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
     m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
 
+    m.def("create_importer_parameters_series_array", &pypowsybl::createImporterParametersSeriesArray, "Create a parameters series array for a given import format",
+          py::arg("format"));
+
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
           py::arg("parameters"));
 

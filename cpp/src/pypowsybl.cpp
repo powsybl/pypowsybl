@@ -83,7 +83,7 @@ Array<limit_violation>::~Array() {
 template<>
 Array<series>::~Array() {
     GraalVmGuard guard;
-    freeNetworkElementsSeriesArray(guard.thread(), delegate_);
+    freeSeriesArray(guard.thread(), delegate_);
 }
 
 template<typename T>
@@ -208,6 +208,11 @@ std::vector<std::string> getNetworkExportFormats() {
     std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
     freeNetworkFormats(guard.thread(), formatsArrayPtr);
     return formats;
+}
+
+SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
+    GraalVmGuard guard;
+    return new SeriesArray(executeJava<array*>(::createImporterParametersSeriesArray, guard.thread(), (char*) format.data()));
 }
 
 void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {

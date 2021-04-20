@@ -31,6 +31,14 @@ class PyPowsyblTestCase(unittest.TestCase):
         results = pp.loadflow.run_dc(n, parameters)
         self.assertEqual(1, len(results))
 
+    def test_get_import_format(self):
+        formats = pp.network.get_import_formats()
+        self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
+
+    def test_get_export_format(self):
+        formats = pp.network.get_export_formats()
+        self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)
+
     def test_load_network(self):
         dir = os.path.dirname(os.path.realpath(__file__))
         n = pp.network.load(dir + "/empty-network.xml")

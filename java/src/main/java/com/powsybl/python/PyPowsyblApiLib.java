@@ -13,10 +13,12 @@ import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
+import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
+import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -173,6 +175,25 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "freeNetworkFormats")
     public static void freeNetworkFormats(IsolateThread thread, ArrayPointer<CCharPointerPointer> formatsArrayPtr) {
         freeArrayPointer(formatsArrayPtr);
+    }
+
+    @CEntryPoint(name = "createImporterParametersSeriesArray")
+    static ArrayPointer<SeriesPointer> createImporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String format = CTypeUtil.toString(formatPtr);
+            Importer importer = Importers.getImporter(format);
+            if (importer == null) {
+                throw new PowsyblException("Format '" + format + "' not supported");
+            }
+            List<Parameter> parameters = importer.getParameters();
+            return new SeriesPointerArrayBuilder<>(parameters)
+                    .addStringSeries("name", Parameter::getName)
+                    .addStringSeries("description", Parameter::getDescription)
+                    .addEnumSeries("type", Parameter::getType)
+                    .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
+                    .build();
+        });
     }
 
     private static Properties createParameters(CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
@@ -796,8 +817,8 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "freeNetworkElementsSeriesArray")
-    public static void freeNetworkElementsSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
+    @CEntryPoint(name = "freeSeriesArray")
+    public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
         // don't need to free char* from id field as it is done by python
         for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
             SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);

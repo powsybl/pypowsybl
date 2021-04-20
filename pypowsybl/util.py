@@ -7,6 +7,7 @@
 import _pypowsybl
 from typing import List
 from typing import Callable
+import pandas as pd
 
 
 class ObjectHandle:
@@ -31,3 +32,23 @@ class ContingencyContainer(ObjectHandle):
         for element_id in elements_ids:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
             _pypowsybl.add_contingency(self.ptr, contingency_id, [element_id])
+
+
+def create_data_frame_from_series_array(series_array, index_column_name: str):
+    series_dict = {}
+    index = None
+    for series in series_array:
+        if series.type == 0:  # string
+            if series.name == index_column_name:
+                index = series.str_data
+            else:
+                series_dict[series.name] = series.str_data
+        elif series.type == 1:  # double
+            series_dict[series.name] = series.double_data
+        elif series.type == 2:  # int
+            series_dict[series.name] = series.int_data
+        elif series.type == 3:  # boolean
+            series_dict[series.name] = series.boolean_data
+        else:
+            raise RuntimeError(f'Unsupported series type ${series.type}')
+    return pd.DataFrame(series_dict, index=index)
