@@ -141,6 +141,15 @@ class PyPowsyblTestCase(unittest.TestCase):
 
         self.assertIsNone(r.get_post_contingency_sensitivity_matrix_flows('aaa'))
 
+    def test_voltage_sa(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.sensitivity_analysis.create()
+        sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+        r = sa.run_ac(n)
+        df = r.get_sensitivity_matrix_voltages()
+        self.assertEqual((1, 1), df.shape)
+        self.assertAlmostEqual(1.0, df['VLGEN_0']['GEN'], places=6)
+
     def test_exception(self):
         n = pp.network.create_ieee14()
         try:
