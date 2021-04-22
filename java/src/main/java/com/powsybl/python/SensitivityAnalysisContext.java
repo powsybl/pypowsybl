@@ -114,7 +114,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                 Injection<?> injection = getInjection(network, injectionOrTransfoId);
                 if (injection != null) {
                     InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, injection.getNameOrId(), injectionOrTransfoId);
-                    factors.add(new IndexedBranchFlowPerInjectionIncrease(branchFlow, injectionIncrease, row, column));
+                    factors.add(new BranchFlowPerInjectionIncrease(branchFlow, injectionIncrease));
                 } else {
                     TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
                     if (twt != null) {
@@ -122,7 +122,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                             throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
                         }
                         PhaseTapChangerAngle phaseTapChangerAngle = new PhaseTapChangerAngle(injectionOrTransfoId, twt.getNameOrId(), injectionOrTransfoId);
-                        factors.add(new IndexedBranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle, row, column));
+                        factors.add(new BranchFlowPerPSTAngle(branchFlow, phaseTapChangerAngle));
                     } else {
                         throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
                     }
@@ -132,7 +132,15 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         return factors;
     }
 
-    SensitivityAnalysisResultContextV1 runV1(Network network, LoadFlowParameters loadFlowParameters, String provider) {
+    SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
+        if ("OpenLoadFlow".equals(provider)) {
+            return runV2(network, loadFlowParameters);
+        } else {
+            return runV1(network, loadFlowParameters, provider);
+        }
+    }
+
+    private SensitivityAnalysisResultContextV1 runV1(Network network, LoadFlowParameters loadFlowParameters, String provider) {
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
@@ -150,7 +158,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         return resultContext;
     }
 
-    SensitivityAnalysisResultContext runV2(Network network, LoadFlowParameters loadFlowParameters) {
+    private SensitivityAnalysisResultContext runV2(Network network, LoadFlowParameters loadFlowParameters) {
         SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
