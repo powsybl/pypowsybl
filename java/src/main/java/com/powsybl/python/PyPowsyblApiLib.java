@@ -740,6 +740,39 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
+                case VOLTAGE_LEVEL:
+                    List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(voltageLevels)
+                            .addStringSeries("id", VoltageLevel::getId)
+                            .addDoubleSeries("nominal_v", VoltageLevel::getNominalV)
+                            .addDoubleSeries("high_voltage_limit", VoltageLevel::getHighVoltageLimit)
+                            .addDoubleSeries("low_voltage_limit", VoltageLevel::getLowVoltageLimit))
+                            .build();
+
+                case SUBSTATION:
+                    List<Substation> substations = network.getSubstationStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(substations))
+                            .addStringSeries("id", Identifiable::getId)
+                            .addStringSeries("tos", Substation::getTso)
+                            .addStringSeries("geo_tags", substation -> String.join(",", substation.getGeographicalTags()))
+                            .addStringSeries("country", substation -> {
+                                final Optional<Country> optCountry = substation.getCountry();
+                                if (optCountry.isPresent()) {
+                                    return optCountry.get().toString();
+                                } else {
+                                    return "null";
+                                }
+                            })
+                            .build();
+
+                case BUSBAR_SECTION:
+                    List<BusbarSection> busbarSections = network.getBusbarSectionStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(busbarSections))
+                            .addStringSeries("id", BusbarSection::getId)
+                            .addDoubleSeries("v", BusbarSection::getV)
+                            .addDoubleSeries("angle", BusbarSection::getAngle)
+                            .build();
+
                 case HVDC_LINE:
                     List<HvdcLine> hvdcLines = network.getHvdcLineStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(hvdcLines)
@@ -752,7 +785,6 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("converter_station1", l -> l.getConverterStation1().getId())
                             .addStringSeries("converter_station2", l -> l.getConverterStation2().getId()))
                             .build();
-
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }

@@ -145,6 +145,15 @@ class Network(ObjectHandle):
     def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
+    def create_voltage_levels_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.VOLTAGE_LEVEL)
+
+    def create_busbar_sections_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.BUSBAR_SECTION)
+
+    def create_substations_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.SUBSTATION)
+
     def create_hvdc_lines_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.HVDC_LINE)
 
