@@ -744,6 +744,7 @@ public final class PyPowsyblApiLib {
                     List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(voltageLevels)
                             .addStringSeries("id", VoltageLevel::getId)
+                            .addStringSeries("substation_id", vl -> vl.getSubstation().getId())
                             .addDoubleSeries("nominal_v", VoltageLevel::getNominalV)
                             .addDoubleSeries("high_voltage_limit", VoltageLevel::getHighVoltageLimit)
                             .addDoubleSeries("low_voltage_limit", VoltageLevel::getLowVoltageLimit))
@@ -753,16 +754,9 @@ public final class PyPowsyblApiLib {
                     List<Substation> substations = network.getSubstationStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(substations))
                             .addStringSeries("id", Identifiable::getId)
-                            .addStringSeries("tos", Substation::getTso)
+                            .addStringSeries("TSO", Substation::getTso)
                             .addStringSeries("geo_tags", substation -> String.join(",", substation.getGeographicalTags()))
-                            .addStringSeries("country", substation -> {
-                                final Optional<Country> optCountry = substation.getCountry();
-                                if (optCountry.isPresent()) {
-                                    return optCountry.get().toString();
-                                } else {
-                                    return "null";
-                                }
-                            })
+                            .addStringSeries("country", substation -> substation.getCountry().map(Country::toString).orElse(""))
                             .build();
 
                 case BUSBAR_SECTION:

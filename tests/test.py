@@ -112,7 +112,7 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_substations_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_substations_data_frame()
-        self.assertEqual('RTE', df['tos']['P1'])
+        self.assertEqual('RTE', df['TSO']['P1'])
         self.assertEqual('FR', df['country']['P1'])
 
     def test_sensitivity_analysis(self):
