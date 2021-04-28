@@ -1,25 +1,26 @@
-# GridPy
+# PyPowSyBl
 
-[![Actions Status](https://github.com/gridsuite/gridpy/workflows/CI/badge.svg)](https://github.com/gridsuite/gridpy/actions)
-[![PyPI Latest Release](https://img.shields.io/pypi/v/gridpy.svg)](https://pypi.org/project/gridpy/)
-[![Documentation Status](https://readthedocs.org/projects/gridpy/badge/?version=latest)](https://gridpy.readthedocs.io/en/latest/?badge=latest)
+[![Actions Status](https://github.com/powsybl/pypowsybl/workflows/CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/pypowsybl.svg)](https://pypi.org/project/pypowsybl/)
+[![Documentation Status](https://readthedocs.org/projects/pypowsybl/badge/?version=latest)](https://pypowsybl.readthedocs.io/en/latest/?badge=latest)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
+[![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/powsybl)
 
-A PowSyBl Python binding, based on GraalVM.
-
+The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on 
+GraalVM to compile Java code to a native library.
 
 ## Installation
 
-GridPy is released on [PyPi](https://pypi.org/project/gridpy/).
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/).
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
 pip3 install --upgrade setuptools pip --user
 ```
 
-Then you can install gridpy using pip:
+Then you can install PyPowSyBl using pip:
 ```bash
-pip3 install gridpy --user
+pip3 install pypowsybl --user
 ```
 
 ## Build from sources
@@ -32,9 +33,9 @@ Requirements:
 - Python >= 3.7
 - [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
-To build from sources and install GridPy package:
+To build from sources and install PyPowSyBl package:
 ```bash
-git clone --recursive https://github.com/gridsuite/gridpy.git
+git clone --recursive https://github.com/powsybl/pypowsybl.git
 export JAVA_HOME=<path to GraalVM>
 pip3 install --upgrade setuptools pip --user
 pip3 install . --user
@@ -49,14 +50,14 @@ python3 -m unittest tests/test.py
 
 First, we have to import the network and load flow modules:
 ```python
-import gridpy.network
-import gridpy.loadflow
-import gridpy as gp
+import pypowsybl.network
+import pypowsybl.loadflow
+import pypowsybl as pp
 ```
 
 Then we can display the version of the PowSyBl modules:
 ```python
-gp.print_version()
+pp.print_version()
 ```
 
 ```bash
@@ -72,8 +73,8 @@ Powsybl versions:
 
 We can create an IEEE 14 buses network and run a load flow computation:
 ```python
-n = gp.network.create_ieee14()
-results = gp.loadflow.run_ac(n)
+n = pp.network.create_ieee14()
+results = pp.loadflow.run_ac(n)
 for result in results:
     print(result)
 ```
@@ -84,13 +85,13 @@ LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, sl
 
 We can re-run the load flow computation in DC mode:
 ```python
-results = gp.loadflow.run_dc(n)
+results = pp.loadflow.run_dc(n)
 ```
 
 Or with different parameters:
 ```python
-parameters = gp.loadflow.Parameters(distributed_slack=False)
-results = gp.loadflow.run_ac(n, parameters)
+parameters = pp.loadflow.Parameters(distributed_slack=False)
+results = pp.loadflow.run_ac(n, parameters)
 ```
 
 We can now iterate over buses and print calculated voltage:
@@ -154,7 +155,7 @@ n.close_switch('a_switch')
 
 To go further, you can also load a case file instead of creating the IEEE 14 buses network:
 ```python
-n = gp.network.load('test.uct')
+n = pp.network.load('test.uct')
 ```
 
 And dump the network to another format:
@@ -169,11 +170,11 @@ n.write_single_line_diagram_svg('VL1', '/tmp/VL1.svg')
 
 To run a security analysis and print results table:
 ```python
-import gridpy.security_analysis
+import pypowsybl.security_analysis
 ```
 
 ```python
-sa = gp.security_analysis.create()
+sa = pp.security_analysis.create()
 sa.add_single_element_contingency('L1-2-1', 'c1')
 sa.add_single_element_contingency('L2-3-1', 'c2')
 sa.add_multiple_elements_contingency(['L1-2-1', 'L1-5-1'], 'c3')
@@ -192,12 +193,13 @@ print(sa_result.get_table())
 ```
 
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
+
 ```python
-import gridpy.sensitivity_analysis
+import pypowsybl.sensitivity_analysis
 ```
 
 ```python
-sa = gp.sensitivity_analysis.create()
+sa = pp.sensitivity_analysis.create()
 sa.add_single_element_contingency('L1-2-1')
 sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
 sa_result = sa.run_dc(n)
@@ -210,4 +212,19 @@ print(df)
 B1-G     0.5 -0.084423
 B2-G    -0.5  0.084423
 B3-G    -0.5 -0.490385
+```
+
+To run a load flow with hades2 instead of OLF:
+
+Download [Hades2](https://rte-france.github.io/hades2/index.html)
+
+Create a `config.yml` under `$HOME/.itools/`
+```yaml
+hades2:
+    homeDir: <path-to-hades2>
+```
+
+Then specify Hades2 provider:
+```python
+pp.loadflow.run_ac(n, provider="Hades2")
 ```
