@@ -4,11 +4,6 @@ Network
 Create an empty network
 ***********************
 
-.. testsetup::
-   :skipif: pp is None
-
-   import pypowsybl.network
-
 .. autofunction:: pypowsybl.network.create_empty
    :noindex:
 
