@@ -47,7 +47,11 @@ class Network(ObjectHandle):
         ObjectHandle.__init__(self, ptr)
 
     @property
-    def buses(self):
+    def buses(self) -> List[Bus]:
+        """ Get buses from the bus/branch view of the network model.
+
+        :return:
+        """
         return _pypowsybl.get_buses(self.ptr)
 
     @property
@@ -159,6 +163,13 @@ class Network(ObjectHandle):
 
 
 def create_empty(id: str = "Default") -> Network:
+    """ Create an empty network.
+
+    :param id: id of the network, defaults to 'Default'
+    :type id: str, optional
+    :return: an empty network
+    :rtype: Network
+    """
     return Network(_pypowsybl.create_empty_network(id))
 
 
