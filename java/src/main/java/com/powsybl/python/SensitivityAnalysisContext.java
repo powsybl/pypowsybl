@@ -133,7 +133,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     }
 
     SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
-        if ("OpenLoadFlow".equals(provider)) {
+        if ("OpenSensitivityAnalysis".equals(provider)) {
             return runV2(network, loadFlowParameters);
         } else {
             return runV1(network, loadFlowParameters, provider);
