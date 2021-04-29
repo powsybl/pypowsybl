@@ -184,9 +184,9 @@ void* createEmptyNetwork(const std::string& id) {
     return executeJava<void*>(::createEmptyNetwork, guard.thread(), (char*) id.data());
 }
 
-void* createIeee14Network() {
+void* createIeeeNetwork(int busCount) {
     GraalVmGuard guard;
-    return executeJava<void*>(::createIeee14Network, guard.thread());
+    return executeJava<void*>(::createIeeeNetwork, guard.thread(), busCount);
 }
 
 void* createEurostagTutorialExample1Network() {

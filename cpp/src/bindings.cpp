@@ -36,7 +36,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
           py::arg("id"));
 
-    m.def("create_ieee14_network", &pypowsybl::createIeee14Network, "Create an IEEE 14 network");
+    m.def("create_ieee_network", &pypowsybl::createIeeeNetwork, "Create an IEEE network", py::arg("bus_count"));
 
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
@@ -56,6 +56,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
+            .value("VOLTAGE_LEVEL", element_type::VOLTAGE_LEVEL)
+            .value("SUBSTATION", element_type::SUBSTATION)
+            .value("BUSBAR_SECTION", element_type::BUSBAR_SECTION)
             .value("HVDC_LINE", element_type::HVDC_LINE)
             .export_values();
 

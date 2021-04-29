@@ -145,6 +145,15 @@ class Network(ObjectHandle):
     def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
+    def create_voltage_levels_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.VOLTAGE_LEVEL)
+
+    def create_busbar_sections_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.BUSBAR_SECTION)
+
+    def create_substations_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.SUBSTATION)
+
     def create_hvdc_lines_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.HVDC_LINE)
 
@@ -153,8 +162,28 @@ def create_empty(id: str = "Default") -> Network:
     return Network(_pypowsybl.create_empty_network(id))
 
 
+def create_ieee9() -> Network:
+    return Network(_pypowsybl.create_ieee_network(9))
+
+
 def create_ieee14() -> Network:
-    return Network(_pypowsybl.create_ieee14_network())
+    return Network(_pypowsybl.create_ieee_network(14))
+
+
+def create_ieee30() -> Network:
+    return Network(_pypowsybl.create_ieee_network(30))
+
+
+def create_ieee57() -> Network:
+    return Network(_pypowsybl.create_ieee_network(57))
+
+
+def create_ieee118() -> Network:
+    return Network(_pypowsybl.create_ieee_network(118))
+
+
+def create_ieee300() -> Network:
+    return Network(_pypowsybl.create_ieee_network(300))
 
 
 def create_eurostag_tutorial_example1_network() -> Network:
