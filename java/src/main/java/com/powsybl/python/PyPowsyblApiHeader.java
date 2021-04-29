@@ -373,7 +373,11 @@ public final class PyPowsyblApiHeader {
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
-        STATIC_VAR_COMPENSATOR;
+        STATIC_VAR_COMPENSATOR,
+        VOLTAGE_LEVEL,
+        SUBSTATION,
+        BUSBAR_SECTION,
+        HVDC_LINE;
 
         @CEnumValue
         public native int getCValue();

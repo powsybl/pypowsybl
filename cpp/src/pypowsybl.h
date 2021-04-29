@@ -102,7 +102,7 @@ std::string getVersionTable();
 
 void* createEmptyNetwork(const std::string& id);
 
-void* createIeee14Network();
+void* createIeeeNetwork(int busCount);
 
 void* createEurostagTutorialExample1Network();
 

@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importers;
@@ -111,10 +112,32 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "createIeee14Network")
-    public static ObjectHandle createIeee14Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createIeeeNetwork")
+    public static ObjectHandle createIeeeNetwork(IsolateThread thread, int busCount, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = IeeeCdfNetworkFactory.create14();
+            Network network;
+            switch (busCount) {
+                case 9:
+                    network = IeeeCdfNetworkFactory.create9();
+                    break;
+                case 14:
+                    network = IeeeCdfNetworkFactory.create14();
+                    break;
+                case 30:
+                    network = IeeeCdfNetworkFactory.create30();
+                    break;
+                case 57:
+                    network = IeeeCdfNetworkFactory.create57();
+                    break;
+                case 118:
+                    network = IeeeCdfNetworkFactory.create118();
+                    break;
+                case 300:
+                    network = IeeeCdfNetworkFactory.create300();
+                    break;
+                default:
+                    throw new PowsyblException("IEEE " + busCount + " buses case not found");
+            }
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -717,6 +740,45 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
+                case VOLTAGE_LEVEL:
+                    List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(voltageLevels)
+                            .addStringSeries("id", VoltageLevel::getId)
+                            .addStringSeries("substation_id", vl -> vl.getSubstation().getId())
+                            .addDoubleSeries("nominal_v", VoltageLevel::getNominalV)
+                            .addDoubleSeries("high_voltage_limit", VoltageLevel::getHighVoltageLimit)
+                            .addDoubleSeries("low_voltage_limit", VoltageLevel::getLowVoltageLimit))
+                            .build();
+
+                case SUBSTATION:
+                    List<Substation> substations = network.getSubstationStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(substations))
+                            .addStringSeries("id", Identifiable::getId)
+                            .addStringSeries("TSO", Substation::getTso)
+                            .addStringSeries("geo_tags", substation -> String.join(",", substation.getGeographicalTags()))
+                            .addStringSeries("country", substation -> substation.getCountry().map(Country::toString).orElse(""))
+                            .build();
+
+                case BUSBAR_SECTION:
+                    List<BusbarSection> busbarSections = network.getBusbarSectionStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(busbarSections))
+                            .addStringSeries("id", BusbarSection::getId)
+                            .addDoubleSeries("v", BusbarSection::getV)
+                            .addDoubleSeries("angle", BusbarSection::getAngle)
+                            .build();
+
+                case HVDC_LINE:
+                    List<HvdcLine> hvdcLines = network.getHvdcLineStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(hvdcLines)
+                            .addStringSeries("id", HvdcLine::getId)
+                            .addEnumSeries("converters_mode", HvdcLine::getConvertersMode)
+                            .addDoubleSeries("active_power_setpoint", HvdcLine::getActivePowerSetpoint)
+                            .addDoubleSeries("max_p", HvdcLine::getMaxP)
+                            .addDoubleSeries("nominal_v", HvdcLine::getNominalV)
+                            .addDoubleSeries("r", HvdcLine::getR)
+                            .addStringSeries("converter_station1", l -> l.getConverterStation1().getId())
+                            .addStringSeries("converter_station2", l -> l.getConverterStation2().getId()))
+                            .build();
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }
