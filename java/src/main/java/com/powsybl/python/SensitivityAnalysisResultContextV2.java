@@ -57,12 +57,12 @@ public class SensitivityAnalysisResultContextV2 implements SensitivityAnalysisRe
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixFlows(String contingencyId) {
+    public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId) {
         return createDoubleMatrix(() -> getValues(contingencyId), 0, flowRowCount, flowColCount);
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixVoltages(String contingencyId) {
+    public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
         return createDoubleMatrix(() -> getValues(contingencyId), flowRowCount * flowColCount, voltageRowCount, voltageColCount);
     }
 

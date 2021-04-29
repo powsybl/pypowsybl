@@ -11,9 +11,9 @@ package com.powsybl.python;
  */
 interface SensitivityAnalysisResultContext {
 
-    PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixFlows(String contingencyId);
+    PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId);
 
-    PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixVoltages(String contingencyId);
+    PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId);
 
     PyPowsyblApiHeader.MatrixPointer createReferenceFlows(String contingencyId);
 

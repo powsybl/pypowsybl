@@ -43,7 +43,7 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixFlows(String contingencyId) {
+    public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId) {
         Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
         if (sensitivityValues != null) {
             CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * columnCount * SizeOf.get(CDoublePointer.class));
@@ -61,7 +61,7 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     }
 
     @Override
-    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrixVoltages(String contingencyId) {
+    public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
         throw new NotImplementedException("not implemented yet");
     }
 
