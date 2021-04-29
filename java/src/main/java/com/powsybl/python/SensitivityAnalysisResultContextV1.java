@@ -63,7 +63,8 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
 
     private double[] reorder(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
         buildIdxMaps();
-        double[] values = new double[sensitivityValues.size()];
+        double[] values = new double[variables.size() * functions.size()];
+        Arrays.fill(values, Double.NaN);
         for (SensitivityValue value : sensitivityValues) {
             int idxRow = idxByVariable.get(value.getFactor().getVariable().getId());
             int idxCol = idxByFunction.get(value.getFactor().getFunction().getId());
