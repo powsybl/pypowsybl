@@ -56,3 +56,6 @@ try:
 except ImportError:
     pp = None
 '''
+
+# to avoid an error if pypowsybl has not been installed
+autodoc_mock_imports = ["_pypowsybl"]
