@@ -746,6 +746,7 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("id", Switch::getId)
                             .addEnumSeries("kind", Switch::getKind)
                             .addBooleanSeries("open", Switch::isOpen))
+                            .addBooleanSeries("retained", Switch::isRetained)
                             .build();
 
                 case HVDC_LINE:
@@ -791,20 +792,28 @@ public final class PyPowsyblApiLib {
                 int value = valuePtr.read(i);
                 switch (elementType) {
                     case SWITCH:
-                        Switch sw = network.getSwitch(id);
-                        if (sw == null) {
-                            throw new PowsyblException("Switch '" + id + "' not found");
-                        }
+                        Switch sw = getSwitchOrThrowsException(id, network);
                         switch (seriesName) {
                             case "open":
                                 sw.setOpen(value == 1);
                                 break;
-
+                            case "retained":
+                                sw.setRetained(value == 1);
+                                break;
                             default:
                                 throw new UnsupportedOperationException("Series name not supported for switch elements: " + seriesName);
                         }
                         break;
-
+                    case GENERATOR:
+                        Generator g = getGeneratorOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "voltage_regulator_on":
+                                g.setVoltageRegulatorOn(value == 1);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                        }
+                        break;
                     default:
                         throw new UnsupportedOperationException("Element type not supported: " + elementType);
                 }
@@ -826,17 +835,19 @@ public final class PyPowsyblApiLib {
                 double value = valuePtr.read(i);
                 switch (elementType) {
                     case GENERATOR:
-                        Generator g = network.getGenerator(id);
-                        if (g == null) {
-                            throw new PowsyblException("Generator '" + id + "' not found");
-                        }
+                        Generator g = getGeneratorOrThrowsException(id, network);
                         switch (seriesName) {
                             case "target_p":
                                 g.setTargetP(value);
                                 break;
-
+                            case "target_q":
+                                g.setTargetQ(value);
+                                break;
+                            case "target_v":
+                                g.setTargetV(value);
+                                break;
                             default:
-                                throw new UnsupportedOperationException("Series name not supported for switch elements: " + seriesName);
+                                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
                         }
                         break;
 
@@ -850,5 +861,21 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle) {
         ObjectHandles.getGlobal().destroy(objectHandle);
+    }
+
+    private static Generator getGeneratorOrThrowsException(String id, Network network) {
+        Generator g = network.getGenerator(id);
+        if (g == null) {
+            throw new PowsyblException("Generator '" + id + "' not found");
+        }
+        return g;
+    }
+
+    private static Switch getSwitchOrThrowsException(String id, Network network) {
+        Switch sw = network.getSwitch(id);
+        if (sw == null) {
+            throw new PowsyblException("Switch '" + id + "' not found");
+        }
+        return sw;
     }
 }

@@ -102,10 +102,14 @@ class PyPowsyblTestCase(unittest.TestCase):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_generators_data_frame()
         self.assertEqual(607, df['target_p']['GEN'])
-        df2 = pd.DataFrame(data=[608.0], columns=['target_p'], index=['GEN'])
+        self.assertTrue(df['voltage_regulator_on']['GEN'])
+        df2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]], columns=['target_p','target_q','target_v','voltage_regulator_on'], index=['GEN'])
         n.update_generators_with_data_frame(df2)
         df3 = n.create_generators_data_frame()
         self.assertEqual(608, df3['target_p']['GEN'])
+        self.assertEqual(302.0, df3['target_q']['GEN'])
+        self.assertEqual(25.0, df3['target_v']['GEN'])
+        self.assertFalse(df3['voltage_regulator_on']['GEN'])
 
     def test_create_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
