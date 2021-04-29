@@ -76,6 +76,15 @@ class Network(ObjectHandle):
         return _pypowsybl.update_connectable_status(self.ptr, id, False)
 
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
+        """Save a network to a file using a specified format.
+
+        :param file: a file
+        :type file: str
+        :param format: format to save the network
+        :type format: str, defaults to 'XIIDM'
+        :param parameters: a map of parameters
+        :type parameters: dict
+        """
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
@@ -187,17 +196,41 @@ def create_eurostag_tutorial_example1_network() -> Network:
 
 
 def get_import_formats() -> List[str]:
+    """ Get list of supported import formats
+
+    :return: the list of supported import formats
+    :rtype: List[str]
+    """
     return _pypowsybl.get_network_import_formats()
 
 
 def get_export_formats() -> List[str]:
+    """ Get list of supported export formats
+
+    :return: the list of supported export formats
+    :rtype: List[str]
+    """
     return _pypowsybl.get_network_export_formats()
 
 
 def get_import_parameters(format: str) -> pd.DataFrame:
+    """ Get supported parameters infos for a given format
+
+    :param format: the format
+    :return: parameters infos
+    :rtype: pd.DataFrame
+    """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
     return create_data_frame_from_series_array(series_array, 'name')
 
 
 def load(file: str, parameters: dict = {}) -> Network:
+    """ Load a network from a file. File should be in a supported format.
+
+    :param file: a file
+    :type file: str
+    :param parameters: a map of parameters
+    :type parameters: dict, optional
+    :return: a network
+    """
     return Network(_pypowsybl.load_network(file, parameters))
