@@ -117,6 +117,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(1, df['ratio_tap_position']['NHV2_NLOAD'])
         self.assertEqual(-99999, df['phase_tap_position']['NHV2_NLOAD'])
 
+    def test_voltage_levels_data_frame(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_voltage_levels_data_frame()
+        self.assertEqual(24.0, df['nominal_v']['VLGEN'])
+
+    def test_substations_data_frame(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_substations_data_frame()
+        self.assertEqual('RTE', df['TSO']['P1'])
+        self.assertEqual('FR', df['country']['P1'])
+
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
         sa = pp.sensitivity_analysis.create()
