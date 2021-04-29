@@ -56,6 +56,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
+            .value("VOLTAGE_LEVEL", element_type::VOLTAGE_LEVEL)
+            .value("SUBSTATION", element_type::SUBSTATION)
+            .value("BUSBAR_SECTION", element_type::BUSBAR_SECTION)
             .value("HVDC_LINE", element_type::HVDC_LINE)
             .export_values();
 
