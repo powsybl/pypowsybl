@@ -107,6 +107,8 @@ void* createIeeeNetwork(int busCount);
 
 void* createEurostagTutorialExample1Network();
 
+void* createFourSubstationsNodeBreakerNetwork();
+
 bool updateSwitchPosition(void* network, const std::string& id, bool open);
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected);

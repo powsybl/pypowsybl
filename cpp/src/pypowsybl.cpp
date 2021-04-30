@@ -194,6 +194,11 @@ void* createEurostagTutorialExample1Network() {
     return executeJava<void*>(::createEurostagTutorialExample1Network, guard.thread());
 }
 
+void* createFourSubstationsNodeBreakerNetwork() {
+    GraalVmGuard guard;
+    return executeJava<void*>(::createFourSubstationsNodeBreakerNetwork, guard.thread());
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     GraalVmGuard guard;
     auto formatsArrayPtr = executeJava<array*>(::getNetworkImportFormats, guard.thread());

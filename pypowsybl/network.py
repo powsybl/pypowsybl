@@ -164,6 +164,11 @@ class Network(ObjectHandle):
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         for seriesName in df.columns.values:
             series = df[seriesName]
+            if seriesName.endswith('p0') or seriesName.endswith('q0') or seriesName.endswith('setpoint'):
+                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName,
+                                                                      df.index.values,
+                                                                      series.values, len(series))
+                continue
             if is_integer_dtype(series) or is_bool_dtype(series):
                 _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
                                                                 series.values, len(series))
@@ -179,6 +184,20 @@ class Network(ObjectHandle):
     def update_generators_with_data_frame(self, df: pd.DataFrame):
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.GENERATOR, df)
 
+    def update_loads_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.LOAD, df)
+
+    def update_dangling_lines_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.DANGLING_LINE, df)
+
+    def update_vsc_converter_stations_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
+
+    def update_static_var_compensators_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
+
+    def update_hvdc_lines_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.HVDC_LINE, df)
 
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.
@@ -217,6 +236,10 @@ def create_ieee300() -> Network:
 
 def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
+
+
+def create_four_substations_node_breaker_network() -> Network:
+    return Network(_pypowsybl.create_four_substations_node_breaker_network())
 
 
 def get_import_formats() -> List[str]:

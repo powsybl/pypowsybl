@@ -17,6 +17,7 @@ import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
 import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.reducer.*;
@@ -205,6 +206,14 @@ public final class PyPowsyblApiLib {
             parameters.setProperty(parameterNames.get(i), parameterValues.get(i));
         }
         return parameters;
+    }
+
+    @CEntryPoint(name = "createFourSubstationsNodeBreakerNetwork")
+    public static ObjectHandle createFourSubstationsNodeBreakerNetwork(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = FourSubstationsNodeBreakerFactory.create();
+            return ObjectHandles.getGlobal().create(network);
+        });
     }
 
     @CEntryPoint(name = "loadNetwork")
@@ -893,6 +902,16 @@ public final class PyPowsyblApiLib {
                                 throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
                         }
                         break;
+                    case VSC_CONVERTER_STATION:
+                        VscConverterStation vsc = getVscOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "voltage_regulator_on":
+                                vsc.setVoltageRegulatorOn(value == 1);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for vsc elements: " + seriesName);
+                        }
+                        break;
                     default:
                         throw new UnsupportedOperationException("Element type not supported: " + elementType);
                 }
@@ -929,7 +948,68 @@ public final class PyPowsyblApiLib {
                                 throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
                         }
                         break;
-
+                    case LOAD:
+                        Load l = getLoadOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "p0":
+                                l.setP0(value);
+                                break;
+                            case "q0":
+                                l.setQ0(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for load elements: " + seriesName);
+                        }
+                        break;
+                    case DANGLING_LINE:
+                        DanglingLine dll = getDanglingLineOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "p0":
+                                dll.setP0(value);
+                                break;
+                            case "q0":
+                                dll.setQ0(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for dangling line elements: " + seriesName);
+                        }
+                        break;
+                    case VSC_CONVERTER_STATION:
+                        VscConverterStation vsc = getVscOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "voltage_setpoint":
+                                vsc.setVoltageSetpoint(value);
+                                break;
+                            case "reactive_power_setpoint":
+                                vsc.setReactivePowerSetpoint(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for vsc elements: " + seriesName);
+                        }
+                        break;
+                    case STATIC_VAR_COMPENSATOR:
+                        StaticVarCompensator svc = getSvcOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "voltage_setpoint":
+                                svc.setVoltageSetpoint(value);
+                                break;
+                            case "reactive_power_setpoint":
+                                svc.setReactivePowerSetpoint(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for svc elements: " + seriesName);
+                        }
+                        break;
+                    case HVDC_LINE:
+                        HvdcLine hvdc = getHvdcOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "active_power_setpoint":
+                                hvdc.setActivePowerSetpoint(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for hvdc line elements: " + seriesName);
+                        }
+                        break;
                     default:
                         throw new UnsupportedOperationException("Element type not supported: " + elementType);
                 }
@@ -956,5 +1036,45 @@ public final class PyPowsyblApiLib {
             throw new PowsyblException("Switch '" + id + "' not found");
         }
         return sw;
+    }
+
+    private static Load getLoadOrThrowsException(String id, Network network) {
+        Load load = network.getLoad(id);
+        if (load == null) {
+            throw new PowsyblException("Load '" + id + "' not found");
+        }
+        return load;
+    }
+
+    private static DanglingLine getDanglingLineOrThrowsException(String id, Network network) {
+        DanglingLine l = network.getDanglingLine(id);
+        if (l == null) {
+            throw new PowsyblException("DanglingLine '" + id + "' not found");
+        }
+        return l;
+    }
+
+    private static VscConverterStation getVscOrThrowsException(String id, Network network) {
+        VscConverterStation vsc = network.getVscConverterStation(id);
+        if (vsc == null) {
+            throw new PowsyblException("VscConverterStation '" + id + "' not found");
+        }
+        return vsc;
+    }
+
+    private static StaticVarCompensator getSvcOrThrowsException(String id, Network network) {
+        StaticVarCompensator svc = network.getStaticVarCompensator(id);
+        if (svc == null) {
+            throw new PowsyblException("StaticVarCompensator '" + id + "' not found");
+        }
+        return svc;
+    }
+
+    private static HvdcLine getHvdcOrThrowsException(String id, Network network) {
+        HvdcLine hvdc = network.getHvdcLine(id);
+        if (hvdc == null) {
+            throw new PowsyblException("HvdcLine '" + id + "' not found");
+        }
+        return hvdc;
     }
 }
