@@ -27,9 +27,14 @@ __all__ = [
 ]
 
 
-def set_debug_mode(debug: bool = True):
+def set_debug_mode(debug: bool = True) -> None:
+    """Set or unset debug mode
+
+    :param debug: `True` to activate debug mode, `False` otherwise
+    :type debug: bool
+    """
     _pypowsybl.set_debug_mode(debug)
 
 
-def print_version():
+def print_version() -> None:
     print(_pypowsybl.get_version_table())
