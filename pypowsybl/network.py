@@ -169,6 +169,11 @@ class Network(ObjectHandle):
                                                                       df.index.values,
                                                                       series.values, len(series))
                 continue
+            if seriesName == 'regulation_mode':
+                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, seriesName,
+                                                                      df.index.values,
+                                                                      series.values, len(series))
+                continue
             if is_integer_dtype(series) or is_bool_dtype(series):
                 _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
                                                                 series.values, len(series))

@@ -163,6 +163,9 @@ void updateNetworkElementsWithIntSeries(void* network, element_type elementType,
 void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<double>& values, int elementCount);
 
+void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                           const std::vector<std::string>& values, int elementCount);
+
 void destroyObjectHandle(void* objectHandle);
 
 }

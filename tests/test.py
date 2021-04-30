@@ -147,13 +147,13 @@ class PyPowsyblTestCase(unittest.TestCase):
         df = n.create_static_var_compensators_data_frame()
         self.assertEqual(400.0, df['voltage_setpoint']['SVC'])
         self.assertEqual('VOLTAGE', df['regulation_mode']['SVC'])
-        # self.assertEqual(500.0, df['reactive_power_setpoint']['SVC'])
-        df2 = pd.DataFrame(data=[[300.0, 400.0]],
-                           columns=['voltage_setpoint', 'reactive_power_setpoint'], index=['SVC'])
+        df2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
+                           columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
         n.update_static_var_compensators_with_data_frame(df2)
         df3 = n.create_static_var_compensators_data_frame()
         self.assertEqual(300.0, df3['voltage_setpoint']['SVC'])
-        # self.assertEqual(400.0, df3['reactive_power_setpoint']['SVC'])
+        self.assertEqual(400.0, df3['reactive_power_setpoint']['SVC'])
+        self.assertEqual('OFF', df3['regulation_mode']['SVC'])
 
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()

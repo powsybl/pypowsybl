@@ -386,6 +386,15 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
                     idPtr.get(), valuePtr.get(), elementCount);
 }
 
+void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                           const std::vector<std::string>& values, int elementCount) {
+    GraalVmGuard guard;
+    ToCharPtrPtr idPtr(ids);
+    ToCharPtrPtr valuePtr(values);
+    executeJava(::updateNetworkElementsWithStringSeries, guard.thread(), network, elementType, (char *) seriesName.c_str(),
+                idPtr.get(), valuePtr.get(), elementCount);
+}
+
 void destroyObjectHandle(void* objectHandle) {
     GraalVmGuard guard;
     destroyObjectHandle(guard.thread(), objectHandle);

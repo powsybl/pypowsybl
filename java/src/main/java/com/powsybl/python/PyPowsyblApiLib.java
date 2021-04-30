@@ -913,7 +913,7 @@ public final class PyPowsyblApiLib {
                         }
                         break;
                     default:
-                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                        throw new UnsupportedOperationException("Updating int(boolean) series: type '" + elementType + "' field '" + seriesName + "' not supported");
                 }
             }
         });
@@ -1011,7 +1011,37 @@ public final class PyPowsyblApiLib {
                         }
                         break;
                     default:
-                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                        throw new UnsupportedOperationException("Updating double series: type '" + elementType + "' field '" + seriesName + "' not supported");
+                }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateNetworkElementsWithStringSeries")
+    public static void updateNetworkElementsWithStringSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                             ElementType elementType, CCharPointer seriesNamePtr,
+                                                             CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr,
+                                                             int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            for (int i = 0; i < elementCount; i++) {
+                CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+                String id = CTypeUtil.toString(elementIdPtr);
+                String value = CTypeUtil.toString(valuePtr.read(i));
+                switch (elementType) {
+                    case STATIC_VAR_COMPENSATOR:
+                        StaticVarCompensator svc = getSvcOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "regulation_mode":
+                                svc.setRegulationMode(StaticVarCompensator.RegulationMode.valueOf(value.toUpperCase()));
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for svc elements: " + seriesName);
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Updating string series: type '" + elementType + "' field '" + seriesName + "' not supported");
                 }
             }
         });
