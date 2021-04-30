@@ -88,13 +88,13 @@ class SensitivityAnalysis(ContingencyContainer):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run_dc(self, network: Network, parameters: Parameters = Parameters()) -> SensitivityAnalysisResult:
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters),
+    def run_dc(self, network: Network, parameters: Parameters = Parameters(), provider = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
                                          branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
                                          bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
-    def run_ac(self, network: Network, parameters: Parameters = Parameters()) -> SensitivityAnalysisResult:
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters),
+    def run_ac(self, network: Network, parameters: Parameters = Parameters(), provider = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters, provider),
                                          branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
                                          bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 

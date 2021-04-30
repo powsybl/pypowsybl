@@ -142,7 +142,7 @@ void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vect
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters);
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider);
 
 matrix* getBranchFlowsSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string &contingencyId);
 

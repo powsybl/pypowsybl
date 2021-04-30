@@ -13,28 +13,30 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.WordFactory;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultContext {
 
-    private final int rowCount;
+    private final List<String> functions;
 
-    private final int columnCount;
+    private final List<String> variables;
 
     private final Collection<SensitivityValue> sensitivityValues;
 
     private final Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId;
 
-    SensitivityAnalysisResultContextV1(int rowCount, int columnCount, Collection<SensitivityValue> sensitivityValues,
+    private Map<String, Integer> idxByFunction;
+    private Map<String, Integer> idxByVariable;
+
+    SensitivityAnalysisResultContextV1(List<String> functions, List<String> variables, Collection<SensitivityValue> sensitivityValues,
                                        Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId) {
-        this.rowCount = rowCount;
-        this.columnCount = columnCount;
-        this.sensitivityValues = sensitivityValues;
+        this.functions = Objects.requireNonNull(functions);
+        this.variables = Objects.requireNonNull(variables);
+        this.sensitivityValues = Collections.unmodifiableCollection(sensitivityValues);
         this.sensitivityValuesByContingencyId = sensitivityValuesByContingencyId;
     }
 
@@ -45,19 +47,33 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     @Override
     public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId) {
         Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
-        if (sensitivityValues != null) {
-            CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * columnCount * SizeOf.get(CDoublePointer.class));
-            for (SensitivityValue sensitivityValue : sensitivityValues) {
-                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                valuePtr.addressOf(indexedFactor.getRow() * columnCount + indexedFactor.getColumn()).write(sensitivityValue.getValue());
-            }
-            PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-            matrixPtr.setRowCount(rowCount);
-            matrixPtr.setColumnCount(columnCount);
-            matrixPtr.setValues(valuePtr);
-            return matrixPtr;
+        throw new NotImplementedException("not implemented yet");
+    }
+
+    private double[] reorder(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
+        buildIdxMaps();
+        double[] values = new double[variables.size() * functions.size()];
+        Arrays.fill(values, Double.NaN);
+        for (SensitivityValue value : sensitivityValues) {
+            int idxRow = idxByVariable.get(value.getFactor().getVariable().getId());
+            int idxCol = idxByFunction.get(value.getFactor().getFunction().getId());
+            int arrIdx = idxRow * idxByFunction.size() + idxCol;
+            values[arrIdx] = converter.apply(value);
         }
-        return WordFactory.nullPointer();
+        return values;
+    }
+
+    private void buildIdxMaps() {
+        if (idxByFunction == null) {
+            idxByFunction = new HashMap<>();
+            idxByVariable = new HashMap<>();
+            for (int i = 0; i < functions.size(); i++) {
+                idxByFunction.put(functions.get(i), i);
+            }
+            for (int i = 0; i < variables.size(); i++) {
+                idxByVariable.put(variables.get(i), i);
+            }
+        }
     }
 
     @Override
@@ -68,19 +84,19 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     @Override
     public PyPowsyblApiHeader.MatrixPointer createReferenceFlows(String contingencyId) {
         Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
-        if (sensitivityValues != null) {
-            CDoublePointer valuePtr = UnmanagedMemory.calloc(columnCount * SizeOf.get(CDoublePointer.class));
-            for (SensitivityValue sensitivityValue : sensitivityValues) {
-                IndexedSensitivityFactor indexedFactor = (IndexedSensitivityFactor) sensitivityValue.getFactor();
-                valuePtr.addressOf(indexedFactor.getColumn()).write(sensitivityValue.getFunctionReference());
-            }
-            PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-            matrixPtr.setRowCount(1);
-            matrixPtr.setColumnCount(columnCount);
-            matrixPtr.setValues(valuePtr);
-            return matrixPtr;
+        if (sensitivityValues == null || sensitivityValues.isEmpty()) {
+            return WordFactory.nullPointer();
         }
-        return WordFactory.nullPointer();
+        final double[] values = reorder(sensitivityValues, SensitivityValue::getFunctionReference);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(functions.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < values.length; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(1);
+        matrixPtr.setColumnCount(functions.size());
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 
     @Override

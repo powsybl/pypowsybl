@@ -526,12 +526,14 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                      CCharPointer provider,
                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
-            SensitivityAnalysisResultContext resultContext = analysisContext.runV2(network, loadFlowParameters);
+            String providerStr = CTypeUtil.toString(provider);
+            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }
