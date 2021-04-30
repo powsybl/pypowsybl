@@ -56,17 +56,26 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup path
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: pip3 install sphinx
+
       - name: Build wheel
         run: |
-          scl enable rh-maven33 '/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 setup.py bdist_wheel'
+          scl enable rh-maven33 'python3 setup.py bdist_wheel'
           auditwheel repair dist/*.whl
 
       - name: Install wheel
-        shell: bash
-        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/pip3 install wheelhouse/*.whl --user
+        run: pip3 install wheelhouse/*.whl --user
 
       - name: Run tests
-        run: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python3 -m unittest tests/test.py
+        run: python3 -m unittest tests/test.py
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make doctest
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
@@ -132,7 +141,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel
+          python -m pip install wheel sphinx
 
       - name: Build wheel
         run: python setup.py bdist_wheel
@@ -147,6 +156,10 @@ jobs:
 
       - name: Run tests
         run: python -m unittest tests/test.py
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make doctest
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2

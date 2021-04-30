@@ -48,10 +48,8 @@ python3 -m unittest tests/test.py
 
 ## Usage
 
-First, we have to import the network and load flow modules:
+First, we have to import pypowsybl:
 ```python
-import pypowsybl.network
-import pypowsybl.loadflow
 import pypowsybl as pp
 ```
 
@@ -169,9 +167,6 @@ n.write_single_line_diagram_svg('VL1', '/tmp/VL1.svg')
 ```
 
 To run a security analysis and print results table:
-```python
-import pypowsybl.security_analysis
-```
 
 ```python
 sa = pp.security_analysis.create()
@@ -193,10 +188,6 @@ print(sa_result.get_table())
 ```
 
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
-
-```python
-import pypowsybl.sensitivity_analysis
-```
 
 ```python
 sa = pp.sensitivity_analysis.create()
