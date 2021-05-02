@@ -77,4 +77,4 @@ Example:
 .. code-block:: python
 
    >>> n = pp.network.create_ieee14()
-   >>> n.dump('/tmp/ieee14.xiidm')
+   >>> n.dump('ieee14.xiidm')
