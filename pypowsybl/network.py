@@ -16,7 +16,6 @@ from typing import List
 from typing import Set
 import pandas as pd
 
-
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
                             f"id={self.id!r}"\
                             f", v_magnitude={self.v_magnitude!r}"\
