@@ -38,9 +38,10 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_get_import_parameters(self):
         parameters = pp.network.get_import_parameters('PSS/E')
         self.assertEqual(1, len(parameters))
-        self.assertEqual('Ignore base voltage specified in the file', parameters['description'][0])
-        self.assertEqual('BOOLEAN', parameters['type'][0])
-        self.assertEqual('false', parameters['default'][0])
+        self.assertEqual(['psse.import.ignore-base-voltage'], parameters.index.tolist())
+        self.assertEqual('Ignore base voltage specified in the file', parameters['description']['psse.import.ignore-base-voltage'])
+        self.assertEqual('BOOLEAN', parameters['type']['psse.import.ignore-base-voltage'])
+        self.assertEqual('false', parameters['default']['psse.import.ignore-base-voltage'])
 
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
