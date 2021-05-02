@@ -173,8 +173,8 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeStringArray")
-    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> formatsArrayPtr) {
-        freeArrayPointer(formatsArrayPtr);
+    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr) {
+        freeArrayPointer(arrayPtr);
     }
 
     @CEntryPoint(name = "createImporterParametersSeriesArray")
