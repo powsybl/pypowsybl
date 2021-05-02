@@ -35,6 +35,13 @@ class PyPowsyblTestCase(unittest.TestCase):
         formats = pp.network.get_import_formats()
         self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
 
+    def test_get_import_parameters(self):
+        parameters = pp.network.get_import_parameters('PSS/E')
+        self.assertEqual(1, len(parameters))
+        self.assertEqual('Ignore base voltage specified in the file', parameters['description'][0])
+        self.assertEqual('BOOLEAN', parameters['type'][0])
+        self.assertEqual('false', parameters['default'][0])
+
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
         self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)

@@ -198,7 +198,7 @@ std::vector<std::string> getNetworkImportFormats() {
     GraalVmGuard guard;
     auto formatsArrayPtr = executeJava<array*>(::getNetworkImportFormats, guard.thread());
     std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
-    freeNetworkFormats(guard.thread(), formatsArrayPtr);
+    freeStringArray(guard.thread(), formatsArrayPtr);
     return formats;
 }
 
@@ -206,7 +206,7 @@ std::vector<std::string> getNetworkExportFormats() {
     GraalVmGuard guard;
     auto formatsArrayPtr = executeJava<array*>(::getNetworkExportFormats, guard.thread());
     std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
-    freeNetworkFormats(guard.thread(), formatsArrayPtr);
+    freeStringArray(guard.thread(), formatsArrayPtr);
     return formats;
 }
 
@@ -277,7 +277,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
                                                        countryPtr.get(), countries.size(), mainCc, mainSc,
                                                        notConnectedToSameBusAtBothSides);
     std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
-    freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
+    freeStringArray(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
 

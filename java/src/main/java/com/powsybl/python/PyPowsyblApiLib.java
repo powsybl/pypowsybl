@@ -172,8 +172,8 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporters.getFormats())));
     }
 
-    @CEntryPoint(name = "freeNetworkFormats")
-    public static void freeNetworkFormats(IsolateThread thread, ArrayPointer<CCharPointerPointer> formatsArrayPtr) {
+    @CEntryPoint(name = "freeStringArray")
+    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> formatsArrayPtr) {
         freeArrayPointer(formatsArrayPtr);
     }
 
@@ -454,11 +454,6 @@ public final class PyPowsyblApiLib {
             List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
             return createCharPtrArray(elementsIds);
         });
-    }
-
-    @CEntryPoint(name = "freeNetworkElementsIds")
-    public static void freeNetworkElementsIds(IsolateThread thread, ArrayPointer<CCharPointerPointer> elementsIdsArrayPtr) {
-        freeArrayPointer(elementsIdsArrayPtr);
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")

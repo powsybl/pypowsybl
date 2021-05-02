@@ -36,9 +36,15 @@ Example:
 .. doctest::
    :skipif: pp is None
 
-   >>> pp.network.get_import_parameters('PSS/E')
-                                                                  description     type default
-   psse.import.ignore-base-voltage  Ignore base voltage specified in the file  BOOLEAN   false
+   >>> parameters = pp.network.get_import_parameters('PSS/E')
+   >>> parameters.index.tolist()
+   ['psse.import.ignore-base-voltage']
+   >>> parameters['description']['psse.import.ignore-base-voltage']
+   'Ignore base voltage specified in the file'
+   >>> parameters['type']['psse.import.ignore-base-voltage']
+   'BOOLEAN'
+   >>> parameters['default']['psse.import.ignore-base-voltage']
+   'false'
 
 .. autofunction:: pypowsybl.network.load
    :noindex:
