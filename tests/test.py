@@ -111,6 +111,18 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(25.0, df3['target_v']['GEN'])
         self.assertFalse(df3['voltage_regulator_on']['GEN'])
 
+    def test_update_switches_data_frame(self):
+        n = pp.network.load('node-breaker.xiidm')
+        df = n.create_switches_data_frame()
+        # no open switch
+        open_switches = df[df['open']].index.tolist()
+        self.assertEqual(0, len(open_switches))
+        # open 1 breaker
+        n.update_switches_with_data_frame(pd.DataFrame(index=['BREAKER-BB2-VL1_VL2_1'], data={'open': [True]}))
+        df = n.create_switches_data_frame()
+        open_switches = df[df['open']].index.tolist()
+        self.assertEqual(['BREAKER-BB2-VL1_VL2_1'], open_switches)
+
     def test_create_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_2_windings_transformers_data_frame()
