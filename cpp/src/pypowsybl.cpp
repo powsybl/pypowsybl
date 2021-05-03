@@ -83,7 +83,7 @@ Array<limit_violation>::~Array() {
 template<>
 Array<series>::~Array() {
     GraalVmGuard guard;
-    freeNetworkElementsSeriesArray(guard.thread(), delegate_);
+    freeSeriesArray(guard.thread(), delegate_);
 }
 
 template<typename T>
@@ -194,14 +194,57 @@ void* createEurostagTutorialExample1Network() {
     return executeJava<void*>(::createEurostagTutorialExample1Network, guard.thread());
 }
 
-void* loadNetwork(const std::string& file) {
+std::vector<std::string> getNetworkImportFormats() {
     GraalVmGuard guard;
-    return executeJava<void*>(::loadNetwork, guard.thread(), (char*) file.data());
+    auto formatsArrayPtr = executeJava<array*>(::getNetworkImportFormats, guard.thread());
+    std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
+    freeStringArray(guard.thread(), formatsArrayPtr);
+    return formats;
 }
 
-void dumpNetwork(void* network, const std::string& file, const std::string& format) {
+std::vector<std::string> getNetworkExportFormats() {
     GraalVmGuard guard;
-    executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data());
+    auto formatsArrayPtr = executeJava<array*>(::getNetworkExportFormats, guard.thread());
+    std::vector<std::string> formats = toVector<std::string>(formatsArrayPtr);
+    freeStringArray(guard.thread(), formatsArrayPtr);
+    return formats;
+}
+
+SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
+    GraalVmGuard guard;
+    return new SeriesArray(executeJava<array*>(::createImporterParametersSeriesArray, guard.thread(), (char*) format.data()));
+}
+
+void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {
+    GraalVmGuard guard;
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    return executeJava<void*>(::loadNetwork, guard.thread(), (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
+                              parameterValuesPtr.get(), parameterValues.size());
+}
+
+void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters) {
+    GraalVmGuard guard;
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    executeJava(::dumpNetwork, guard.thread(), network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+                parameterValuesPtr.get(), parameterValues.size());
 }
 
 void reduceNetwork(void* network, double v_min, double v_max, const std::vector<std::string>& ids,
@@ -234,7 +277,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
                                                        countryPtr.get(), countries.size(), mainCc, mainSc,
                                                        notConnectedToSameBusAtBothSides);
     std::vector<std::string> elementsIds = toVector<std::string>(elementsIdsArrayPtr);
-    freeNetworkElementsIds(guard.thread(), elementsIdsArrayPtr);
+    freeStringArray(guard.thread(), elementsIdsArrayPtr);
     return elementsIds;
 }
 
@@ -298,9 +341,9 @@ void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::st
                 injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
 }
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters) {
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider) {
     GraalVmGuard guard;
-    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters);
+    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, &parameters, (char *) provider.data());
 }
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {

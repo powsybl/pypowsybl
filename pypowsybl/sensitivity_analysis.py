@@ -56,8 +56,8 @@ class SensitivityAnalysis(ContingencyContainer):
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
 
-    def run_dc(self, network: Network, parameters: Parameters = Parameters()) -> SensitivityAnalysisResult:
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, parameters),
+    def run_dc(self, network: Network, parameters: Parameters = Parameters(), provider = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, parameters, provider),
                                          branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids)
 
 

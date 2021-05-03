@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include "pypowsybl-api.h"
 
@@ -114,9 +115,15 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
                                                const std::vector<std::string>& countries, bool mainCc, bool mainSc,
                                                bool notConnectedToSameBusAtBothSides);
 
-void* loadNetwork(const std::string& file);
+std::vector<std::string> getNetworkImportFormats();
 
-void dumpNetwork(void* network, const std::string& file, const std::string& format);
+std::vector<std::string> getNetworkExportFormats();
+
+SeriesArray* createImporterParametersSeriesArray(const std::string& format);
+
+void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
+
+void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
@@ -140,7 +147,7 @@ void* createSensitivityAnalysis();
 
 void setFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters);
+void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 matrix* getSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 

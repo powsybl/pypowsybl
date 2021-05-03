@@ -68,9 +68,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
           py::arg("not_connected_to_same_bus_at_both_sides"));
 
-    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file");
+    m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
+    m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
 
-    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format");
+    m.def("create_importer_parameters_series_array", &pypowsybl::createImporterParametersSeriesArray, "Create a parameters series array for a given import format",
+          py::arg("format"));
+
+    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
+          py::arg("parameters"));
+
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
+          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
@@ -329,7 +337,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
