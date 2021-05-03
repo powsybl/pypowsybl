@@ -116,17 +116,6 @@ public:
     }
 };
 
-class ToDoublePtr : public ToPtr<double> {
-public:
-    explicit ToDoublePtr(const std::vector<double>& doubles)
-            : ToPtr<double>(doubles.size())
-    {
-        for (int i = 0; i < doubles.size(); i++) {
-            ptr_[i] = doubles[i];
-        }
-    }
-};
-
 class ToIntPtr : public ToPtr<int> {
 public:
     explicit ToIntPtr(const std::vector<int>& ints)
@@ -134,6 +123,17 @@ public:
     {
         for (int i = 0; i < ints.size(); i++) {
             ptr_[i] = ints[i];
+        }
+    }
+};
+
+class ToDoublePtr : public ToPtr<double> {
+public:
+    explicit ToDoublePtr(const std::vector<double>& doubles)
+            : ToPtr<double>(doubles.size())
+    {
+        for (int i = 0; i < doubles.size(); i++) {
+            ptr_[i] = doubles[i];
         }
     }
 };
@@ -361,6 +361,24 @@ matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::str
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
     GraalVmGuard guard;
     return new SeriesArray(executeJava<array*>(::createNetworkElementsSeriesArray, guard.thread(), network, elementType));
+}
+
+void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                        const std::vector<int>& values, int elementCount) {
+    GraalVmGuard guard;
+    ToCharPtrPtr idPtr(ids);
+    ToIntPtr valuePtr(values);
+    executeJava(::updateNetworkElementsWithIntSeries, guard.thread(), network, elementType, (char *) seriesName.c_str(),
+                    idPtr.get(), valuePtr.get(), elementCount);
+}
+
+void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                           const std::vector<double>& values, int elementCount) {
+    GraalVmGuard guard;
+    ToCharPtrPtr idPtr(ids);
+    ToDoublePtr valuePtr(values);
+    executeJava(::updateNetworkElementsWithDoubleSeries, guard.thread(), network, elementType, (char *) seriesName.c_str(),
+                    idPtr.get(), valuePtr.get(), elementCount);
 }
 
 void destroyObjectHandle(void* objectHandle) {

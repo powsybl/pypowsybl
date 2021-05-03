@@ -374,6 +374,7 @@ public final class PyPowsyblApiHeader {
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
         STATIC_VAR_COMPENSATOR,
+        SWITCH,
         VOLTAGE_LEVEL,
         SUBSTATION,
         BUSBAR_SECTION,

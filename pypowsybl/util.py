@@ -8,6 +8,7 @@ import _pypowsybl
 from typing import List
 from typing import Callable
 import pandas as pd
+from _pypowsybl import PyPowsyblError
 
 
 class ObjectHandle:
@@ -42,5 +43,4 @@ def create_data_frame_from_series_array(series_array, index_column_name: str):
             index = series.data
         else:
             series_dict[series.name] = series.data
-
     return pd.DataFrame(series_dict, index=index)
