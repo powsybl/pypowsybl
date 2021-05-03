@@ -382,6 +382,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
+    m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
+            py::arg("element_type"), py::arg("series_name"));
+
     m.def("update_network_elements_with_int_series", &pypowsybl::updateNetworkElementsWithIntSeries, "Update network elements for a given element type with an integer series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));

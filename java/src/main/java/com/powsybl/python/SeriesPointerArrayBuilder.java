@@ -27,11 +27,11 @@ import java.util.function.ToIntFunction;
  */
 class SeriesPointerArrayBuilder<T> {
 
-    private static final int STRING_SERIES_TYPE = 0;
-    private static final int DOUBLE_SERIES_TYPE = 1;
-    private static final int INT_SERIES_TYPE = 2;
-    private static final int BOOLEAN_SERIES_TYPE = 3;
-    private static final int INT_UNDEFINED_VALUE = -99999;
+    static final int STRING_SERIES_TYPE = 0;
+    static final int DOUBLE_SERIES_TYPE = 1;
+    static final int INT_SERIES_TYPE = 2;
+    static final int BOOLEAN_SERIES_TYPE = 3;
+    static final int INT_UNDEFINED_VALUE = -99999;
 
     interface Series<T> {
 

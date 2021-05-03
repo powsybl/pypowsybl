@@ -157,6 +157,8 @@ matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::str
 
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 
+int getSeriesType(element_type elementType, const std::string& seriesName);
+
 void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount);
 

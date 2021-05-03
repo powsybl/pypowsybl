@@ -164,24 +164,20 @@ class Network(ObjectHandle):
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         for seriesName in df.columns.values:
             series = df[seriesName]
-            if seriesName.endswith('p0') or seriesName.endswith('q0') or seriesName.endswith('setpoint'):
+            series_type = _pypowsybl.get_series_type(element_type, seriesName)
+            if series_type == 2 or series_type == 3:
+                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                                                                   series.values, len(series))
+            elif series_type == 1:
                 _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName,
                                                                       df.index.values,
                                                                       series.values, len(series))
-                continue
-            if seriesName == 'regulation_mode':
+            elif series_type == 0:
                 _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, seriesName,
                                                                       df.index.values,
                                                                       series.values, len(series))
-                continue
-            if is_integer_dtype(series) or is_bool_dtype(series):
-                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
-                                                                series.values, len(series))
-            elif is_numeric_dtype(series):
-                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName, df.index.values,
-                                                                   series.values, len(series))
             else:
-                raise PyPowsyblError(f'Unsupported series type ${series.dtype}')
+                raise PyPowsyblError(f'Unsupported series type ${series_type}, element: ${element_type}, series_name: ${seriesName}')
 
     def update_switches_with_data_frame(self, df: pd.DataFrame):
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.SWITCH, df)

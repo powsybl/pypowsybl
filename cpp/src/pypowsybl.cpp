@@ -368,6 +368,11 @@ SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elemen
     return new SeriesArray(executeJava<array*>(::createNetworkElementsSeriesArray, guard.thread(), network, elementType));
 }
 
+int getSeriesType(element_type elementType, const std::string& seriesName) {
+    GraalVmGuard guard;
+    return executeJava<int>(::getSeriesType, guard.thread(), elementType, (char *) seriesName.c_str());
+}
+
 void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount) {
     GraalVmGuard guard;

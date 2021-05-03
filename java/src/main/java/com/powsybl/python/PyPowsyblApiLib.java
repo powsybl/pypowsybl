@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.PyPowsyblApiHeader.*;
@@ -78,6 +79,17 @@ public final class PyPowsyblApiLib {
             LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
             exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
             return false;
+        }
+    }
+
+    private static int doCatch(ExceptionHandlerPointer exceptionHandlerPtr, IntSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsInt();
+        } catch (Throwable t) {
+            LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
+            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            return -1;
         }
     }
 
@@ -866,6 +878,31 @@ public final class PyPowsyblApiLib {
         freeArrayPointer(seriesPtrArrayPtr);
     }
 
+    @CEntryPoint(name = "getSeriesType")
+    public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            switch (elementType) {
+                case SWITCH:
+                    return SeriesDataTypeConstants.SWITCH_MAP.get(seriesName);
+                case GENERATOR:
+                    return SeriesDataTypeConstants.GENERATOR_MAP.get(seriesName);
+                case HVDC_LINE:
+                    return SeriesDataTypeConstants.HVDC_LINE_MAP.get(seriesName);
+                case LOAD:
+                    return SeriesDataTypeConstants.LOAD_MAP.get(seriesName);
+                case DANGLING_LINE:
+                    return SeriesDataTypeConstants.DANGLING_LINE_MAP.get(seriesName);
+                case VSC_CONVERTER_STATION:
+                    return SeriesDataTypeConstants.VSC_CONVERTER_STATION_MAP.get(seriesName);
+                case STATIC_VAR_COMPENSATOR:
+                    return SeriesDataTypeConstants.STATIC_VAR_COMPENSATOR_MAP.get(seriesName);
+                default:
+                    throw new UnsupportedOperationException("Element type not supported: " + elementType);
+            }
+        });
+    }
+
     @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
     public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
                                                           ElementType elementType, CCharPointer seriesNamePtr,
@@ -1038,6 +1075,16 @@ public final class PyPowsyblApiLib {
                                 break;
                             default:
                                 throw new UnsupportedOperationException("Series name not supported for svc elements: " + seriesName);
+                        }
+                        break;
+                    case HVDC_LINE:
+                        HvdcLine hvdc = getHvdcOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "converters_mode":
+                                hvdc.setConvertersMode(HvdcLine.ConvertersMode.valueOf(value.toUpperCase()));
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for hvdc elements: " + seriesName);
                         }
                         break;
                     default:
