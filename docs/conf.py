@@ -57,5 +57,7 @@ except ImportError:
     pp = None
 '''
 
-# to avoid an error if pypowsybl has not been installed
-autodoc_mock_imports = ["_pypowsybl"]
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if on_rtd:
+    # to avoid an error if pypowsybl has not been installed
+    autodoc_mock_imports = ["_pypowsybl"]
