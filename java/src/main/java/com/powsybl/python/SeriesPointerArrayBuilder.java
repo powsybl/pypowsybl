@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
@@ -106,19 +107,16 @@ class SeriesPointerArrayBuilder<T> {
 
     class IntSeries extends AbstractSeries<T> {
 
-        private final boolean bool;
-
         private final ToIntFunction<T> intGetter;
 
-        IntSeries(String name, boolean bool, ToIntFunction<T> intGetter) {
+        IntSeries(String name, ToIntFunction<T> intGetter) {
             super(name);
-            this.bool = bool;
             this.intGetter = intGetter;
         }
 
         @Override
         public int getType() {
-            return bool ? BOOLEAN_SERIES_TYPE : INT_SERIES_TYPE;
+            return INT_SERIES_TYPE;
         }
 
         @Override
@@ -127,6 +125,31 @@ class SeriesPointerArrayBuilder<T> {
             for (int i = 0; i < elements.size(); i++) {
                 T element = elements.get(i);
                 dataPtr.addressOf(i).write(intGetter.applyAsInt(element));
+            }
+            return dataPtr;
+        }
+    }
+
+    class BooleanSeries extends AbstractSeries<T> {
+
+        private final Predicate<T> boolGetter;
+
+        BooleanSeries(String name, Predicate<T> boolGetter) {
+            super(name);
+            this.boolGetter = boolGetter;
+        }
+
+        @Override
+        public int getType() {
+            return BOOLEAN_SERIES_TYPE;
+        }
+
+        @Override
+        public PointerBase createDataPtr(List<T> elements) {
+            CCharPointer dataPtr = UnmanagedMemory.calloc(elements.size() * SizeOf.get(CCharPointer.class));
+            for (int i = 0; i < elements.size(); i++) {
+                T element = elements.get(i);
+                dataPtr.addressOf(i).write(boolGetter.test(element) ? (byte) 1 : 0);
             }
             return dataPtr;
         }
@@ -163,10 +186,6 @@ class SeriesPointerArrayBuilder<T> {
         return this;
     }
 
-    SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter) {
-        return addIntSeries(seriesName, false, intGetter);
-    }
-
     <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter) {
         return addIntSeries(seriesName, objectGetter, intGetter, INT_UNDEFINED_VALUE);
     }
@@ -174,22 +193,23 @@ class SeriesPointerArrayBuilder<T> {
     <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
         Objects.requireNonNull(objectGetter);
         Objects.requireNonNull(intGetter);
-        return addIntSeries(seriesName, false, value -> {
+        return addIntSeries(seriesName, value -> {
             U object = objectGetter.apply(value);
             return object != null ? intGetter.applyAsInt(object) : undefinedValue;
         });
     }
 
-    private SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, boolean bool, ToIntFunction<T> intGetter) {
+    private SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(intGetter);
-        seriesList.add(new IntSeries(seriesName, bool, intGetter));
+        seriesList.add(new IntSeries(seriesName, intGetter));
         return this;
     }
 
     SeriesPointerArrayBuilder<T> addBooleanSeries(String seriesName, Predicate<T> booleanGetter) {
         Objects.requireNonNull(booleanGetter);
-        return addIntSeries(seriesName, true, element -> booleanGetter.test(element) ? 1 : 0);
+        seriesList.add(new BooleanSeries(seriesName, booleanGetter));
+        return this;
     }
 
     PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> build() {

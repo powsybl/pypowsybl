@@ -9,13 +9,16 @@ import _pypowsybl
 from _pypowsybl import Bus
 from _pypowsybl import Generator
 from _pypowsybl import Load
+from _pypowsybl import PyPowsyblError
 from _pypowsybl import ElementType
 from pypowsybl.util import ObjectHandle
 from pypowsybl.util import create_data_frame_from_series_array
 from typing import List
 from typing import Set
 import pandas as pd
-
+from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_bool_dtype
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
                             f"id={self.id!r}"\
@@ -154,6 +157,27 @@ class Network(ObjectHandle):
 
     def create_hvdc_lines_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.HVDC_LINE)
+
+    def create_switches_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.SWITCH)
+
+    def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
+        for seriesName in df.columns.values:
+            series = df[seriesName]
+            if is_integer_dtype(series) or is_bool_dtype(series):
+                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                                                                series.values, len(series))
+            elif is_numeric_dtype(series):
+                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName, df.index.values,
+                                                                   series.values, len(series))
+            else:
+                raise PyPowsyblError(f'Unsupported series type ${series.dtype}')
+
+    def update_switches_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.SWITCH, df)
+
+    def update_generators_with_data_frame(self, df: pd.DataFrame):
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.GENERATOR, df)
 
 
 def create_empty(id: str = "Default") -> Network:

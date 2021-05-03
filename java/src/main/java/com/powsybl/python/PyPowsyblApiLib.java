@@ -794,6 +794,14 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
+                case SWITCH:
+                    List<Switch> switches = network.getSwitchStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(switches)
+                            .addStringSeries("id", Switch::getId)
+                            .addEnumSeries("kind", Switch::getKind)
+                            .addBooleanSeries("open", Switch::isOpen)
+                            .addBooleanSeries("retained", Switch::isRetained)).build();
+
                 case VOLTAGE_LEVEL:
                     List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(voltageLevels)
@@ -849,8 +857,104 @@ public final class PyPowsyblApiLib {
         freeArrayPointer(seriesPtrArrayPtr);
     }
 
+    @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
+    public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                          ElementType elementType, CCharPointer seriesNamePtr,
+                                                          CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr,
+                                                          int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            for (int i = 0; i < elementCount; i++) {
+                CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+                String id = CTypeUtil.toString(elementIdPtr);
+                int value = valuePtr.read(i);
+                switch (elementType) {
+                    case SWITCH:
+                        Switch sw = getSwitchOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "open":
+                                sw.setOpen(value == 1);
+                                break;
+                            case "retained":
+                                sw.setRetained(value == 1);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for switch elements: " + seriesName);
+                        }
+                        break;
+                    case GENERATOR:
+                        Generator g = getGeneratorOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "voltage_regulator_on":
+                                g.setVoltageRegulatorOn(value == 1);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateNetworkElementsWithDoubleSeries")
+    public static void updateNetworkElementsWithDoubleSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                             ElementType elementType, CCharPointer seriesNamePtr,
+                                                             CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr,
+                                                             int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            for (int i = 0; i < elementCount; i++) {
+                CCharPointer elementIdPtr = elementIdPtrPtr.read(i);
+                String id = CTypeUtil.toString(elementIdPtr);
+                double value = valuePtr.read(i);
+                switch (elementType) {
+                    case GENERATOR:
+                        Generator g = getGeneratorOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "target_p":
+                                g.setTargetP(value);
+                                break;
+                            case "target_q":
+                                g.setTargetQ(value);
+                                break;
+                            case "target_v":
+                                g.setTargetV(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                        }
+                        break;
+
+                    default:
+                        throw new UnsupportedOperationException("Element type not supported: " + elementType);
+                }
+            }
+        });
+    }
+
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle) {
         ObjectHandles.getGlobal().destroy(objectHandle);
+    }
+
+    private static Generator getGeneratorOrThrowsException(String id, Network network) {
+        Generator g = network.getGenerator(id);
+        if (g == null) {
+            throw new PowsyblException("Generator '" + id + "' not found");
+        }
+        return g;
+    }
+
+    private static Switch getSwitchOrThrowsException(String id, Network network) {
+        Switch sw = network.getSwitch(id);
+        if (sw == null) {
+            throw new PowsyblException("Switch '" + id + "' not found");
+        }
+        return sw;
     }
 }

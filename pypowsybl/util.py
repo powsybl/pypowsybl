@@ -8,6 +8,7 @@ import _pypowsybl
 from typing import List
 from typing import Callable
 import pandas as pd
+from _pypowsybl import PyPowsyblError
 
 
 class ObjectHandle:
@@ -50,5 +51,5 @@ def create_data_frame_from_series_array(series_array, index_column_name: str):
         elif series.type == 3:  # boolean
             series_dict[series.name] = series.boolean_data
         else:
-            raise RuntimeError(f'Unsupported series type ${series.type}')
+            raise PyPowsyblError(f'Unsupported series type ${series.type}')
     return pd.DataFrame(series_dict, index=index)
