@@ -128,7 +128,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertFalse(df3['voltage_regulator_on']['GEN'])
 
     def test_update_switches_data_frame(self):
-        n = pp.network.load('node-breaker.xiidm')
+        file_path = os.path.dirname(os.path.realpath(__file__)) + '/node-breaker.xiidm'
+        n = pp.network.load(file=file_path)
         df = n.create_switches_data_frame()
         # no open switch
         open_switches = df[df['open']].index.tolist()
