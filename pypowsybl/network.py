@@ -16,9 +16,6 @@ from pypowsybl.util import create_data_frame_from_series_array
 from typing import List
 from typing import Set
 import pandas as pd
-from pandas.api.types import is_integer_dtype
-from pandas.api.types import is_numeric_dtype
-from pandas.api.types import is_bool_dtype
 
 Bus.__repr__ = lambda self: f"{self.__class__.__name__}("\
                             f"id={self.id!r}"\

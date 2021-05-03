@@ -6,6 +6,8 @@
  */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+
 #include <limits>
 #include "pypowsybl.h"
 
@@ -20,6 +22,12 @@ void bindArray(py::module_& m, const std::string& className) {
             .def("__iter__", [](T& a) {
                 return py::make_iterator(a.begin(), a.end());
             }, py::keep_alive<0, 1>());
+}
+
+template<typename T>
+py::array seriesAsNumpyArray(const series& series) {
+	//Last argument is to bind lifetime of series to the returned array
+    return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
@@ -361,20 +369,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("name", [](const series& s) {
                 return s.name;
             })
-            .def_property_readonly("type", [](const series& s) {
-                return s.type;
-            })
-            .def_property_readonly("str_data", [](const series& s) {
-                return pypowsybl::toVector<std::string>((array *) & s.data);
-            })
-            .def_property_readonly("double_data", [](const series& s) {
-                return pypowsybl::toVector<double>((array *) & s.data);
-            })
-            .def_property_readonly("int_data", [](const series& s) {
-                return pypowsybl::toVector<int>((array *) & s.data);
-            })
-            .def_property_readonly("boolean_data", [](const series& s) {
-                return pypowsybl::toVector<bool>((array *) & s.data);
+            .def_property_readonly("data", [](const series& s) -> py::object {
+                switch(s.type) {
+                case 0:
+                	return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                case 1:
+            		return seriesAsNumpyArray<double>(s);
+                case 2:
+            		return seriesAsNumpyArray<int>(s);
+                case 3:
+            		return seriesAsNumpyArray<bool>(s);
+                }
             });
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
