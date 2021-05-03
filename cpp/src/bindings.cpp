@@ -6,6 +6,8 @@
  */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+
 #include <limits>
 #include "pypowsybl.h"
 
@@ -20,6 +22,12 @@ void bindArray(py::module_& m, const std::string& className) {
             .def("__iter__", [](T& a) {
                 return py::make_iterator(a.begin(), a.end());
             }, py::keep_alive<0, 1>());
+}
+
+template<typename T>
+py::array seriesAsNumpyArray(const series& series) {
+	//Last argument is to bind lifetime of series to the returned array
+    return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
@@ -56,6 +64,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)
+            .value("SWITCH", element_type::SWITCH)
             .value("VOLTAGE_LEVEL", element_type::VOLTAGE_LEVEL)
             .value("SUBSTATION", element_type::SUBSTATION)
             .value("BUSBAR_SECTION", element_type::BUSBAR_SECTION)
@@ -367,26 +376,31 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("name", [](const series& s) {
                 return s.name;
             })
-            .def_property_readonly("type", [](const series& s) {
-                return s.type;
-            })
-            .def_property_readonly("str_data", [](const series& s) {
-                return pypowsybl::toVector<std::string>((array *) & s.data);
-            })
-            .def_property_readonly("double_data", [](const series& s) {
-                return pypowsybl::toVector<double>((array *) & s.data);
-            })
-            .def_property_readonly("int_data", [](const series& s) {
-                return pypowsybl::toVector<int>((array *) & s.data);
-            })
-            .def_property_readonly("boolean_data", [](const series& s) {
-                return pypowsybl::toVector<bool>((array *) & s.data);
+            .def_property_readonly("data", [](const series& s) -> py::object {
+                switch(s.type) {
+                case 0:
+                	return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                case 1:
+            		return seriesAsNumpyArray<double>(s);
+                case 2:
+            		return seriesAsNumpyArray<int>(s);
+                case 3:
+            		return seriesAsNumpyArray<bool>(s);
+                }
             });
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::arg("network"), py::arg("element_type"));
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
+
+    m.def("update_network_elements_with_int_series", &pypowsybl::updateNetworkElementsWithIntSeries, "Update network elements for a given element type with an integer series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+
+    m.def("update_network_elements_with_double_series", &pypowsybl::updateNetworkElementsWithDoubleSeries, "Update network elements for a given element type with a double series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
 
     m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 }

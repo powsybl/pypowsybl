@@ -161,6 +161,12 @@ matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::
 
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
 
+void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                        const std::vector<int>& values, int elementCount);
+
+void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                           const std::vector<double>& values, int elementCount);
+
 void destroyObjectHandle(void* objectHandle);
 
 }
