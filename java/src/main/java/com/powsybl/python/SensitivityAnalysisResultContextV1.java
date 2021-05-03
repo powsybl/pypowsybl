@@ -7,7 +7,6 @@
 package com.powsybl.python;
 
 import com.powsybl.sensitivity.SensitivityValue;
-import org.apache.commons.lang3.NotImplementedException;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -21,21 +20,29 @@ import java.util.function.Function;
  */
 class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultContext {
 
-    private final List<String> functions;
+    private final List<String> flowFunctions;
+    private final List<String> flowVariables;
 
-    private final List<String> variables;
+    private final List<String> voltageFunctions;
+    private final List<String> voltageVariables;
 
     private final Collection<SensitivityValue> sensitivityValues;
 
     private final Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId;
 
-    private Map<String, Integer> idxByFunction;
-    private Map<String, Integer> idxByVariable;
+    private Map<String, Integer> idxByFlowFunction;
+    private Map<String, Integer> idxByFlowVariable;
+    private Map<String, Integer> idxByVoltageFunction;
+    private Map<String, Integer> idxByVoltageVariable;
 
-    SensitivityAnalysisResultContextV1(List<String> functions, List<String> variables, Collection<SensitivityValue> sensitivityValues,
+    SensitivityAnalysisResultContextV1(List<String> flowFunctions, List<String> flowVariables,
+                                       List<String> voltageFunctions, List<String> voltageVariables,
+                                       Collection<SensitivityValue> sensitivityValues,
                                        Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId) {
-        this.functions = Objects.requireNonNull(functions);
-        this.variables = Objects.requireNonNull(variables);
+        this.flowFunctions = Objects.requireNonNull(flowFunctions);
+        this.flowVariables = Objects.requireNonNull(flowVariables);
+        this.voltageFunctions = Objects.requireNonNull(voltageFunctions);
+        this.voltageVariables = Objects.requireNonNull(voltageVariables);
         this.sensitivityValues = Collections.unmodifiableCollection(sensitivityValues);
         this.sensitivityValuesByContingencyId = sensitivityValuesByContingencyId;
     }
@@ -47,38 +54,90 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
     @Override
     public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId) {
         Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
-        throw new NotImplementedException("not implemented yet");
+        if (sensitivityValues == null || sensitivityValues.isEmpty()) {
+            return WordFactory.nullPointer();
+        }
+        final double[] values = reorderFlows(sensitivityValues, SensitivityValue::getValue);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(flowVariables.size() * flowFunctions.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < values.length; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(flowVariables.size());
+        matrixPtr.setColumnCount(flowFunctions.size());
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 
-    private double[] reorder(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
-        buildIdxMaps();
-        double[] values = new double[variables.size() * functions.size()];
+    private double[] reorderFlows(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
+        buildFlowsIdxMaps();
+        double[] values = new double[flowVariables.size() * flowFunctions.size()];
         Arrays.fill(values, Double.NaN);
         for (SensitivityValue value : sensitivityValues) {
-            int idxRow = idxByVariable.get(value.getFactor().getVariable().getId());
-            int idxCol = idxByFunction.get(value.getFactor().getFunction().getId());
-            int arrIdx = idxRow * idxByFunction.size() + idxCol;
+            int idxRow = idxByFlowVariable.get(value.getFactor().getVariable().getId());
+            int idxCol = idxByFlowFunction.get(value.getFactor().getFunction().getId());
+            int arrIdx = idxRow * idxByFlowFunction.size() + idxCol;
             values[arrIdx] = converter.apply(value);
         }
         return values;
     }
 
-    private void buildIdxMaps() {
-        if (idxByFunction == null) {
-            idxByFunction = new HashMap<>();
-            idxByVariable = new HashMap<>();
-            for (int i = 0; i < functions.size(); i++) {
-                idxByFunction.put(functions.get(i), i);
+    private double[] reoderVoltages(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
+        buildVoltagesIdxMaps();
+        double[] values = new double[voltageVariables.size() * voltageFunctions.size()];
+        Arrays.fill(values, Double.NaN);
+        for (SensitivityValue value : sensitivityValues) {
+            int idxRow = idxByVoltageVariable.get(value.getFactor().getVariable().getId());
+            int idxCol = idxByVoltageFunction.get(value.getFactor().getFunction().getId());
+            int arrIdx = idxRow * idxByVoltageFunction.size() + idxCol;
+            values[arrIdx] = converter.apply(value);
+        }
+        return values;
+    }
+
+    private void buildFlowsIdxMaps() {
+        if (idxByFlowFunction == null) {
+            idxByFlowFunction = new HashMap<>();
+            idxByFlowVariable = new HashMap<>();
+            for (int i = 0; i < flowFunctions.size(); i++) {
+                idxByFlowFunction.put(flowFunctions.get(i), i);
             }
-            for (int i = 0; i < variables.size(); i++) {
-                idxByVariable.put(variables.get(i), i);
+            for (int i = 0; i < flowVariables.size(); i++) {
+                idxByFlowVariable.put(flowVariables.get(i), i);
             }
+        }
+    }
+
+    private void buildVoltagesIdxMaps() {
+        if (idxByVoltageFunction == null) {
+            idxByVoltageFunction = new HashMap<>();
+            idxByVoltageVariable = new HashMap<>();
+        }
+        for (int i = 0; i < voltageFunctions.size(); i++) {
+            idxByVoltageFunction.put(voltageFunctions.get(i), i);
+        }
+        for (int i = 0; i < voltageVariables.size(); i++) {
+            idxByVoltageVariable.put(voltageVariables.get(i), i);
         }
     }
 
     @Override
     public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
-        throw new NotImplementedException("not implemented yet");
+        // TODO currently this part is not tested yet by sensi2
+        Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
+        if (sensitivityValues == null || sensitivityValues.isEmpty()) {
+            return WordFactory.nullPointer();
+        }
+        final double[] values = reoderVoltages(sensitivityValues, SensitivityValue::getValue);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(voltageVariables.size() * voltageFunctions.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < values.length; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(voltageVariables.size());
+        matrixPtr.setColumnCount(voltageFunctions.size());
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 
     @Override
@@ -87,20 +146,33 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
         if (sensitivityValues == null || sensitivityValues.isEmpty()) {
             return WordFactory.nullPointer();
         }
-        final double[] values = reorder(sensitivityValues, SensitivityValue::getFunctionReference);
-        CDoublePointer valuePtr = UnmanagedMemory.calloc(functions.size() * SizeOf.get(CDoublePointer.class));
+        final double[] values = reorderFlows(sensitivityValues, SensitivityValue::getFunctionReference);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(flowFunctions.size() * SizeOf.get(CDoublePointer.class));
         for (int i = 0; i < values.length; i++) {
             valuePtr.addressOf(i).write(values[i]);
         }
         PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
         matrixPtr.setRowCount(1);
-        matrixPtr.setColumnCount(functions.size());
+        matrixPtr.setColumnCount(flowFunctions.size());
         matrixPtr.setValues(valuePtr);
         return matrixPtr;
     }
 
     @Override
     public PyPowsyblApiHeader.MatrixPointer createReferenceVoltages(String contingencyId) {
-        throw new NotImplementedException("not implemented yet");
+        Collection<SensitivityValue> sensitivityValues = getSensitivityValues(contingencyId);
+        if (sensitivityValues == null || sensitivityValues.isEmpty()) {
+            return WordFactory.nullPointer();
+        }
+        final double[] values = reoderVoltages(sensitivityValues, SensitivityValue::getFunctionReference);
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(voltageFunctions.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < values.length; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(1);
+        matrixPtr.setColumnCount(voltageFunctions.size());
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
     }
 }

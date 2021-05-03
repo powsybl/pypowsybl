@@ -310,7 +310,7 @@ void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vect
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
     GraalVmGuard guard;
-    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, dc, network, &parameters, (char *) provider.data());
+    return executeJava<void*>(::runSensitivityAnalysis, guard.thread(), sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
 }
 
 matrix* getBranchFlowsSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {

@@ -15,9 +15,12 @@ import com.powsybl.openloadflow.sensi.*;
 import com.powsybl.sensitivity.*;
 import com.powsybl.sensitivity.factors.BranchFlowPerInjectionIncrease;
 import com.powsybl.sensitivity.factors.BranchFlowPerPSTAngle;
+import com.powsybl.sensitivity.factors.BusVoltagePerTargetV;
 import com.powsybl.sensitivity.factors.functions.BranchFlow;
+import com.powsybl.sensitivity.factors.functions.BusVoltage;
 import com.powsybl.sensitivity.factors.variables.InjectionIncrease;
 import com.powsybl.sensitivity.factors.variables.PhaseTapChangerAngle;
+import com.powsybl.sensitivity.factors.variables.TargetVoltage;
 
 import java.util.*;
 
@@ -109,6 +112,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     private List<SensitivityFactor> createFactors(Network network) {
         List<SensitivityFactor> factors = new ArrayList<>();
         createBranchFlowFactors(network, factors);
+        createBusVoltageFactorMatrix(network, factors);
         return factors;
     }
 
@@ -149,7 +153,19 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         if (targetVoltageEquipmentsIds == null) {
             return;
         }
-
+        for (int column = 0; column < busVoltageEquipmentsIds.size(); column++) {
+            String busId = busVoltageEquipmentsIds.get(column);
+            Bus bus = network.getBusView().getBus(busId);
+            if (bus == null) {
+                throw new PowsyblException("Bus '" + busId + "' not found");
+            }
+            BusVoltage busVoltage = new BusVoltage(busId, busId, new IdBasedBusRef(busId));
+            for (int row = 0; row < targetVoltageEquipmentsIds.size(); row++) {
+                String targetVoltageId = targetVoltageEquipmentsIds.get(row);
+                TargetVoltage targetVoltage = new TargetVoltage(targetVoltageId, targetVoltageId, targetVoltageId);
+                factors.add(new BusVoltagePerTargetV(busVoltage, targetVoltage));
+            }
+        }
     }
 
     SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
@@ -171,7 +187,9 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
             Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchsIds, branchFlowInjectionsOrTransfosIds, sensitivityValues, sensitivityValuesByContingencyId);
+            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchsIds, branchFlowInjectionsOrTransfosIds,
+                                                                busVoltageEquipmentsIds, targetVoltageEquipmentsIds,
+                                                                sensitivityValues, sensitivityValuesByContingencyId);
         }
         return resultContext;
     }
