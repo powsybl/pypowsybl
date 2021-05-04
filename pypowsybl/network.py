@@ -117,6 +117,10 @@ class Network(ObjectHandle):
         return self.create_elements_data_frame(_pypowsybl.ElementType.GENERATOR)
 
     def create_loads_data_frame(self) -> pd.DataFrame:
+        """Create loads data
+
+        :return: a dataframe that loads as row and attributes as column
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.LOAD)
 
     def create_lines_data_frame(self) -> pd.DataFrame:
@@ -183,6 +187,12 @@ class Network(ObjectHandle):
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.GENERATOR, df)
 
     def update_loads_with_data_frame(self, df: pd.DataFrame):
+        """
+        Modify loads variable via dataframe
+
+        :param df: contains values to modify on specific loads
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.LOAD, df)
 
     def update_dangling_lines_with_data_frame(self, df: pd.DataFrame):
