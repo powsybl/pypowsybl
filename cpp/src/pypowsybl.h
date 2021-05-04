@@ -20,6 +20,10 @@ public:
     PyPowsyblError(const char* msg)
         : runtime_error(msg) {
     }
+
+    PyPowsyblError(const std::string&  msg)
+        : runtime_error(msg) {
+    }
 };
 
 template<typename T>
