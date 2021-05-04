@@ -4,7 +4,7 @@ Sensitivity analysis
 You can use the module ``pypowsybl.sensitivity_analysis`` in order to perform sensitivity analysis on a network.
 
 DC sensitivity analysis
-***********************
+-----------------------
 
 To perform a sensitivity analysis, you first need to define "factors" you want to compute.
 What we call a factor is the dependency of a function, typically the active power flow on a branch, to
@@ -32,7 +32,7 @@ as a result:
 
 
 AC sensitivity analysis
-***********************
+-----------------------
 
 It's possible to perform an AC sensitivity analysis almost in the same way, just call ``run_ac`` instead:
 
@@ -54,7 +54,7 @@ the list of buses for which you want to compute the sensitivity, and a list of r
     GEN  17.629602   7.89637
 
 Post-contingency analysis
-*************************
+-------------------------
 
 In previous paragraphs, sensitivities were only computed on N situation.
 Additionally, you can compute sensitivities on post-contingency situations, by adding
