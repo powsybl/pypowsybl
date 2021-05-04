@@ -46,7 +46,7 @@ private:
 };
 
 template<typename F, typename... ARGS>
-void executeJava(F f, ARGS... args) {
+void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
     f(guard.thread(), args..., &exc);
@@ -56,7 +56,7 @@ void executeJava(F f, ARGS... args) {
 }
 
 template<typename T, typename F, typename... ARGS>
-T executeJava(F f, ARGS... args) {
+T callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
     auto r = f(guard.thread(), args..., &exc);
@@ -68,27 +68,27 @@ T executeJava(F f, ARGS... args) {
 
 template<>
 Array<load_flow_component_result>::~Array() {
-    executeJava<>(::freeLoadFlowComponentResultPointer, delegate_);
+    callJava<>(::freeLoadFlowComponentResultPointer, delegate_);
 }
 
 template<>
 Array<bus>::~Array() {
-    executeJava<>(::freeBusArray, delegate_);
+    callJava<>(::freeBusArray, delegate_);
 }
 
 template<>
 Array<generator>::~Array() {
-    executeJava<>(::freeGeneratorArray, delegate_);
+    callJava<>(::freeGeneratorArray, delegate_);
 }
 
 template<>
 Array<load>::~Array() {
-    executeJava<>(::freeLoadArray, delegate_);
+    callJava<>(::freeLoadArray, delegate_);
 }
 
 template<>
 Array<contingency_result>::~Array() {
-    executeJava<>(::freeContingencyResultArrayPointer, delegate_);
+    callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
 
 template<>
@@ -98,7 +98,7 @@ Array<limit_violation>::~Array() {
 
 template<>
 Array<series>::~Array() {
-    executeJava<>(::freeSeriesArray, delegate_);
+    callJava<>(::freeSeriesArray, delegate_);
 }
 
 template<typename T>
@@ -172,7 +172,7 @@ public:
     }
 
     ~ToStringVector() {
-        executeJava<>(::freeStringArray, arrayPtr_);
+        callJava<>(::freeStringArray, arrayPtr_);
     }
 
     std::vector<std::string> get() {
@@ -184,39 +184,39 @@ private:
 };
 
 void setDebugMode(bool debug) {
-    executeJava<>(::setDebugMode, debug);
+    callJava<>(::setDebugMode, debug);
 }
 
 std::string getVersionTable() {
-    return std::string(executeJava<char*>(::getVersionTable));
+    return std::string(callJava<char*>(::getVersionTable));
 }
 
 void* createEmptyNetwork(const std::string& id) {
-    return executeJava<void*>(::createEmptyNetwork, (char*) id.data());
+    return callJava<void*>(::createEmptyNetwork, (char*) id.data());
 }
 
 void* createIeeeNetwork(int busCount) {
-    return executeJava<void*>(::createIeeeNetwork, busCount);
+    return callJava<void*>(::createIeeeNetwork, busCount);
 }
 
 void* createEurostagTutorialExample1Network() {
-    return executeJava<void*>(::createEurostagTutorialExample1Network);
+    return callJava<void*>(::createEurostagTutorialExample1Network);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
-    auto formatsArrayPtr = executeJava<array*>(::getNetworkImportFormats);
+    auto formatsArrayPtr = callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
 
 std::vector<std::string> getNetworkExportFormats() {
-    auto formatsArrayPtr = executeJava<array*>(::getNetworkExportFormats);
+    auto formatsArrayPtr = callJava<array*>(::getNetworkExportFormats);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
-    return new SeriesArray(executeJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
+    return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
 }
 
 void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {
@@ -230,7 +230,7 @@ void* loadNetwork(const std::string& file, const std::map<std::string, std::stri
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return executeJava<void*>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
+    return callJava<void*>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
                               parameterValuesPtr.get(), parameterValues.size());
 }
 
@@ -245,7 +245,7 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    executeJava(::dumpNetwork, network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    callJava(::dumpNetwork, network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
                 parameterValuesPtr.get(), parameterValues.size());
 }
 
@@ -254,15 +254,15 @@ void reduceNetwork(void* network, double v_min, double v_max, const std::vector<
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    executeJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
+    callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
 }
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open) {
-    return executeJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
+    return callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
 }
 
 bool updateConnectableStatus(void* network, const std::string& id, bool connected) {
-    return executeJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected);
+    return callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected);
 }
 
 std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
@@ -270,7 +270,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
                                                bool notConnectedToSameBusAtBothSides) {
     ToDoublePtr nominalVoltagePtr(nominalVoltages);
     ToCharPtrPtr countryPtr(countries);
-    auto elementsIdsArrayPtr = executeJava<array*>(::getNetworkElementsIds, network, elementType,
+    auto elementsIdsArrayPtr = callJava<array*>(::getNetworkElementsIds, network, elementType,
                                                        nominalVoltagePtr.get(), nominalVoltages.size(),
                                                        countryPtr.get(), countries.size(), mainCc, mainSc,
                                                        notConnectedToSameBusAtBothSides);
@@ -280,49 +280,49 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
     return new LoadFlowComponentResultArray(
-            executeJava<array*>(::runLoadFlow, network, dc, &parameters, (char *) provider.data()));
+            callJava<array*>(::runLoadFlow, network, dc, &parameters, (char *) provider.data()));
 }
 
 BusArray* getBusArray(void* network) {
-    return new BusArray(executeJava<array*>(::getBusArray, network));
+    return new BusArray(callJava<array*>(::getBusArray, network));
 }
 
 GeneratorArray* getGeneratorArray(void* network) {
-    return new GeneratorArray(executeJava<array*>(::getGeneratorArray, network));
+    return new GeneratorArray(callJava<array*>(::getGeneratorArray, network));
 }
 
 LoadArray* getLoadArray(void* network) {
-    return new LoadArray(executeJava<array*>(::getLoadArray, network));
+    return new LoadArray(callJava<array*>(::getLoadArray, network));
 }
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
-    executeJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
+    callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
 void* createSecurityAnalysis() {
-    return executeJava<void*>(::createSecurityAnalysis);
+    return callJava<void*>(::createSecurityAnalysis);
 }
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     ToCharPtrPtr elementIdPtr(elementsIds);
-    executeJava(::addContingency, analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
+    callJava(::addContingency, analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
 }
 
 ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters,
                                             const std::string& provider) {
-    return new ContingencyResultArray(executeJava<array*>(::runSecurityAnalysis, securityAnalysisContext, network,
+    return new ContingencyResultArray(callJava<array*>(::runSecurityAnalysis, securityAnalysisContext, network,
                                                           &parameters, (char *) provider.data()));
 }
 
 void* createSensitivityAnalysis() {
-    return executeJava<void*>(::createSensitivityAnalysis);
+    return callJava<void*>(::createSensitivityAnalysis);
 }
 
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
                      const std::vector<std::string>& injectionsOrTransfosIds) {
     ToCharPtrPtr branchIdPtr(branchesIds);
     ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
-    executeJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+    callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
                 injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
 }
 
@@ -330,44 +330,44 @@ void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vect
                                const std::vector<std::string>& targetVoltageIds) {
     ToCharPtrPtr busVoltageIdPtr(busIds);
     ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
-    executeJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
+    callJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
                 busIds.size(),
                 targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
-    return executeJava<void*>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
+    return callJava<void*>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
 }
 
 matrix* getBranchFlowsSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return executeJava<matrix*>(::getBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
+    return callJava<matrix*>(::getBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
 matrix* getBusVoltagesSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return executeJava<matrix*>(::getBusVoltagesSensitivityMatrix, sensitivityAnalysisResultContext,
+    return callJava<matrix*>(::getBusVoltagesSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return executeJava<matrix*>(::getReferenceFlows, sensitivityAnalysisResultContext,
+    return callJava<matrix*>(::getReferenceFlows, sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return executeJava<matrix*>(::getReferenceVoltages, sensitivityAnalysisResultContext,
+    return callJava<matrix*>(::getReferenceVoltages, sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
 SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
-    return new SeriesArray(executeJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
 }
 
 void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
     ToIntPtr valuePtr(values);
-    executeJava(::updateNetworkElementsWithIntSeries, network, elementType, (char *) seriesName.c_str(),
+    callJava(::updateNetworkElementsWithIntSeries, network, elementType, (char *) seriesName.c_str(),
                     idPtr.get(), valuePtr.get(), elementCount);
 }
 
@@ -375,12 +375,12 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
                                            const std::vector<double>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
     ToDoublePtr valuePtr(values);
-    executeJava(::updateNetworkElementsWithDoubleSeries, network, elementType, (char *) seriesName.c_str(),
+    callJava(::updateNetworkElementsWithDoubleSeries, network, elementType, (char *) seriesName.c_str(),
                     idPtr.get(), valuePtr.get(), elementCount);
 }
 
 void destroyObjectHandle(void* objectHandle) {
-    executeJava<>(::destroyObjectHandle, objectHandle);
+    callJava<>(::destroyObjectHandle, objectHandle);
 }
 
 }
