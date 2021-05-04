@@ -343,11 +343,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
 
-    m.def("set_factor_matrix", &pypowsybl::setFactorMatrix, "Set a factor matrix to a sensitivity analysis",
+    m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
 
+    m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
+
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
@@ -359,10 +362,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
                                        { sizeof(double) * m.column_count, sizeof(double) });
             });
 
-    m.def("get_sensitivity_matrix", &pypowsybl::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+    m.def("get_branch_flows_sensitivity_matrix", &pypowsybl::getBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+
+    m.def("get_bus_voltages_sensitivity_matrix", &pypowsybl::getBusVoltagesSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     m.def("get_reference_flows", &pypowsybl::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
+          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+
+    m.def("get_reference_voltages", &pypowsybl::getReferenceVoltages, "Get sensitivity analysis result reference voltages for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     py::class_<series>(m, "Series")

@@ -571,8 +571,8 @@ public final class PyPowsyblApiLib {
         return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
     }
 
-    @CEntryPoint(name = "setFactorMatrix")
-    public static void setFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+    @CEntryPoint(name = "setBranchFlowFactorMatrix")
+    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                        CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                        CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -580,31 +580,55 @@ public final class PyPowsyblApiLib {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
             List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
-            analysisContext.setFactorMatrix(branchsIds, injectionsOrTransfosIds);
+            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds);
+        });
+    }
+
+    @CEntryPoint(name = "setBusVoltageFactorMatrix")
+    public static void setBusVoltageFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                 CCharPointerPointer busVoltageIdPtrPtr, int branchIdCount,
+                                                 CCharPointerPointer targetVoltageIdPtrPtr, int injectionOrTransfoIdCount,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> busVoltageIds = CTypeUtil.toStringList(busVoltageIdPtrPtr, branchIdCount);
+            List<String> targetVoltageIds = CTypeUtil.toStringList(targetVoltageIdPtrPtr, injectionOrTransfoIdCount);
+            analysisContext.setBusVoltageFactorMatrix(busVoltageIds, targetVoltageIds);
         });
     }
 
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                      ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                      ObjectHandle networkHandle, boolean dc, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                      CCharPointer provider,
+                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(true, loadFlowParametersPtr);
+            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }
 
-    @CEntryPoint(name = "getSensitivityMatrix")
-    public static MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+    @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
+    public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                      CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createSensitivityMatrix(contingencyId);
+            return resultContext.createBranchFlowsSensitivityMatrix(contingencyId);
+        });
+    }
+
+    @CEntryPoint(name = "getBusVoltagesSensitivityMatrix")
+    public static MatrixPointer getBusVoltagesSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                     CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+            return resultContext.createBusVoltagesSensitivityMatrix(contingencyId);
         });
     }
 
@@ -615,6 +639,16 @@ public final class PyPowsyblApiLib {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             return resultContext.createReferenceFlows(contingencyId);
+        });
+    }
+
+    @CEntryPoint(name = "getReferenceVoltages")
+    public static MatrixPointer getReferenceVoltages(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+            return resultContext.createReferenceVoltages(contingencyId);
         });
     }
 
