@@ -161,10 +161,10 @@ class PyPowsyblTestCase(unittest.TestCase):
         n = pp.network.create_ieee14()
         sa = pp.sensitivity_analysis.create()
         sa.add_single_element_contingency('L1-2-1')
-        sa.set_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+        sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
         r = sa.run_dc(n)
 
-        df = r.get_sensitivity_matrix()
+        df = r.get_branch_flows_sensitivity_matrix()
         self.assertEqual((3, 2), df.shape)
         self.assertEqual(0.08099067519128486, df['L1-5-1']['B1-G'])
         self.assertEqual(-0.08099067519128486, df['L1-5-1']['B2-G'])
@@ -178,7 +178,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertAlmostEqual(72.24667948865367, df['L1-5-1']['reference_flows'], places=6)
         self.assertAlmostEqual(69.83139138110104, df['L2-3-1']['reference_flows'], places=6)
 
-        df = r.get_post_contingency_sensitivity_matrix('L1-2-1')
+        df = r.get_post_contingency_branch_flows_sensitivity_matrix('L1-2-1')
         self.assertEqual((3, 2), df.shape)
         self.assertEqual(0.49999999999999994, df['L1-5-1']['B1-G'])
         self.assertEqual(-0.49999999999999994, df['L1-5-1']['B2-G'])
@@ -192,7 +192,16 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertAlmostEqual(225.69999999999996, df['L1-5-1']['reference_flows'], places=6)
         self.assertAlmostEqual(43.92137999293259, df['L2-3-1']['reference_flows'], places=6)
 
-        self.assertIsNone(r.get_post_contingency_sensitivity_matrix('aaa'))
+        self.assertIsNone(r.get_post_contingency_branch_flows_sensitivity_matrix('aaa'))
+
+    def test_voltage_sa(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.sensitivity_analysis.create()
+        sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+        r = sa.run_ac(n)
+        df = r.get_bus_voltages_sensitivity_matrix()
+        self.assertEqual((1, 1), df.shape)
+        self.assertAlmostEqual(1.0, df['VLGEN_0']['GEN'], places=6)
 
     def test_exception(self):
         n = pp.network.create_ieee14()
