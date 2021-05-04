@@ -44,7 +44,7 @@ class SeriesPointerArrayBuilder<T> {
 
     abstract static class AbstractSeries<T> implements Series<T> {
 
-        private final String name;
+        protected final String name;
 
         AbstractSeries(String name) {
             this.name = name;
@@ -82,7 +82,7 @@ class SeriesPointerArrayBuilder<T> {
 
     class StringSeries extends AbstractSeries<T> {
 
-        private final Function<T, String> stringGetter;
+        protected final Function<T, String> stringGetter;
 
         StringSeries(String name, Function<T, String> stringGetter) {
             super(name);
@@ -157,7 +157,7 @@ class SeriesPointerArrayBuilder<T> {
 
     private final List<T> elements;
 
-    private final List<Series<T>> seriesList = new ArrayList<>();
+    protected final List<Series<T>> seriesList = new ArrayList<>();
 
     SeriesPointerArrayBuilder(List<T> elements) {
         this.elements = Objects.requireNonNull(elements);

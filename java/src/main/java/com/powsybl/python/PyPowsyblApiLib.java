@@ -642,10 +642,8 @@ public final class PyPowsyblApiLib {
             switch (elementType) {
                 case BUS:
                     List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
-                    return addProperties(new SeriesPointerArrayBuilder<>(buses)
-                            .addStringSeries("id", Bus::getId)
-                            .addDoubleSeries("v_mag", Bus::getV)
-                            .addDoubleSeries("v_angle", Bus::getAngle))
+                    return addProperties(new BusSeriesPointerArrayBuilder(buses)
+                            .convert())
                             .build();
 
                 case LINE:
