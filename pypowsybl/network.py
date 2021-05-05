@@ -110,6 +110,13 @@ class Network(ObjectHandle):
                                                 not_connected_to_same_bus_at_both_sides)
 
     def create_elements_data_frame(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
+        """ Create a network element ``Pandas`` data frame for a specified element type
+
+        Args:
+            element_type (ElementType): the element type
+        Returns:
+            the network element data frame for the specified element type
+        """
         series_array = _pypowsybl.create_network_elements_series_array(self.ptr, element_type)
         return create_data_frame_from_series_array(series_array)
 
@@ -117,6 +124,11 @@ class Network(ObjectHandle):
         return self.create_elements_data_frame(_pypowsybl.ElementType.BUS)
 
     def create_generators_data_frame(self) -> pd.DataFrame:
+        """ Create a generator ``Pandas`` data frame
+
+        Returns:
+            the generator data frame
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.GENERATOR)
 
     def create_loads_data_frame(self) -> pd.DataFrame:
