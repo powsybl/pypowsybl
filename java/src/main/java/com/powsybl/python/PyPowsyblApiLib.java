@@ -97,9 +97,11 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "setDebugMode")
-    public static void setDebugMode(IsolateThread thread, boolean debug) {
-        Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-        rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
+    public static void setDebugMode(IsolateThread thread, boolean debug, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
+        });
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -173,8 +175,9 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeStringArray")
-    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr) {
-        freeArrayPointer(arrayPtr);
+    public static void freeStringArray(IsolateThread thread, ArrayPointer<?> arrayPtr,
+                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(arrayPtr));
     }
 
     @CEntryPoint(name = "createImporterParametersSeriesArray")
@@ -313,9 +316,12 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
-    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr) {
-        // don't need to free char* from id field as it is done by python
-        freeArrayPointer(componentResultArrayPtr);
+    public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr,
+                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            // don't need to free char* from id field as it is done by python
+            freeArrayPointer(componentResultArrayPtr);
+        });
     }
 
     private static void fillBus(Bus bus, BusPointer busPtr) {
@@ -341,9 +347,11 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeBusArray")
-    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer) {
-        // don't need to free char* from id field as it is done by python
-        freeArrayPointer(busArrayPointer);
+    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            // don't need to free char* from id field as it is done by python
+            freeArrayPointer(busArrayPointer);
+        });
     }
 
     @CEntryPoint(name = "getGeneratorArray")
@@ -374,15 +382,18 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeGeneratorArray")
-    public static void freeGeneratorArray(IsolateThread thread, ArrayPointer<GeneratorPointer> generatorArrayPtr) {
-        for (int index = 0; index < generatorArrayPtr.getLength(); index++) {
-            GeneratorPointer generatorPtrI = generatorArrayPtr.getPtr().addressOf(index);
-            // don't need to free char* from id field as it is done by python
-            if (generatorPtrI.getBus().isNonNull()) {
-                UnmanagedMemory.free(generatorPtrI.getBus());
+    public static void freeGeneratorArray(IsolateThread thread, ArrayPointer<GeneratorPointer> generatorArrayPtr,
+                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int index = 0; index < generatorArrayPtr.getLength(); index++) {
+                GeneratorPointer generatorPtrI = generatorArrayPtr.getPtr().addressOf(index);
+                // don't need to free char* from id field as it is done by python
+                if (generatorPtrI.getBus().isNonNull()) {
+                    UnmanagedMemory.free(generatorPtrI.getBus());
+                }
             }
-        }
-        freeArrayPointer(generatorArrayPtr);
+            freeArrayPointer(generatorArrayPtr);
+        });
     }
 
     @CEntryPoint(name = "getLoadArray")
@@ -411,15 +422,18 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeLoadArray")
-    public static void freeLoadArray(IsolateThread thread, ArrayPointer<LoadPointer> loadArrayPtr) {
-        for (int index = 0; index < loadArrayPtr.getLength(); index++) {
-            LoadPointer loadPtrI = loadArrayPtr.getPtr().addressOf(index);
-            // don't need to free char* from id field as it is done by python
-            if (loadPtrI.getBus().isNonNull()) {
-                UnmanagedMemory.free(loadPtrI.getBus());
+    public static void freeLoadArray(IsolateThread thread, ArrayPointer<LoadPointer> loadArrayPtr,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int index = 0; index < loadArrayPtr.getLength(); index++) {
+                LoadPointer loadPtrI = loadArrayPtr.getPtr().addressOf(index);
+                // don't need to free char* from id field as it is done by python
+                if (loadPtrI.getBus().isNonNull()) {
+                    UnmanagedMemory.free(loadPtrI.getBus());
+                }
             }
-        }
-        freeArrayPointer(loadArrayPtr);
+            freeArrayPointer(loadArrayPtr);
+        });
     }
 
     @CEntryPoint(name = "updateSwitchPosition")
@@ -468,8 +482,8 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "createSecurityAnalysis")
-    public static ObjectHandle createSecurityAnalysis(IsolateThread thread) {
-        return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
+    public static ObjectHandle createSecurityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SecurityAnalysisContext()));
     }
 
     @CEntryPoint(name = "addContingency")
@@ -536,25 +550,28 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeContingencyResultArrayPointer")
-    public static void freeContingencyResultArrayPointer(IsolateThread thread, ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr) {
-        // don't need to free char* from id field as it is done by python
-        for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
-            ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
-            UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
-        }
-        freeArrayPointer(contingencyResultArrayPtr);
+    public static void freeContingencyResultArrayPointer(IsolateThread thread, ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr,
+                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            // don't need to free char* from id field as it is done by python
+            for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
+                ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
+            }
+            freeArrayPointer(contingencyResultArrayPtr);
+        });
     }
 
     @CEntryPoint(name = "createSensitivityAnalysis")
-    public static ObjectHandle createSensitivityAnalysis(IsolateThread thread) {
-        return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
+    public static ObjectHandle createSensitivityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));
     }
 
     @CEntryPoint(name = "setBranchFlowFactorMatrix")
     public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                       CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                       CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
-                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                 CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
@@ -593,7 +610,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
     public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                     CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -603,7 +620,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBusVoltagesSensitivityMatrix")
     public static MatrixPointer getBusVoltagesSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                     CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -882,13 +899,16 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeSeriesArray")
-    public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr) {
-        // don't need to free char* from id field as it is done by python
-        for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-            SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
-            UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
-        }
-        freeArrayPointer(seriesPtrArrayPtr);
+    public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
+                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            // don't need to free char* from id field as it is done by python
+            for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
+                SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+            }
+            freeArrayPointer(seriesPtrArrayPtr);
+        });
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
@@ -972,8 +992,8 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
-    public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle) {
-        ObjectHandles.getGlobal().destroy(objectHandle);
+    public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
     }
 
     private static Generator getGeneratorOrThrowsException(String id, Network network) {

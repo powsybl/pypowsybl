@@ -378,14 +378,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             })
             .def_property_readonly("data", [](const series& s) -> py::object {
                 switch(s.type) {
-                case 0:
-                	return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
-                case 1:
-            		return seriesAsNumpyArray<double>(s);
-                case 2:
-            		return seriesAsNumpyArray<int>(s);
-                case 3:
-            		return seriesAsNumpyArray<bool>(s);
+                    case 0:
+                        return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                    case 1:
+                        return seriesAsNumpyArray<double>(s);
+                    case 2:
+                        return seriesAsNumpyArray<int>(s);
+                    case 3:
+                        return seriesAsNumpyArray<bool>(s);
+                    default:
+                        throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
             });
 
