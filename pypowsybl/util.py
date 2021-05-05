@@ -35,12 +35,19 @@ class ContingencyContainer(ObjectHandle):
             _pypowsybl.add_contingency(self.ptr, contingency_id, [element_id])
 
 
-def create_data_frame_from_series_array(series_array, index_column_name: str):
+def create_data_frame_from_series_array(series_array):
     series_dict = {}
-    index = None
+    index_data = []
+    index_names = []
     for series in series_array:
-        if series.name == index_column_name:
-            index = series.data
+        if series.index:
+            index_data.append(series.data)
+            index_names.append(series.name)
         else:
             series_dict[series.name] = series.data
+    index = None
+    if len(index_names) == 1:
+        index = pd.Index(index_data[0], name=index_names[0])
+    else:
+        index = pd.MultiIndex.from_arrays(index_data, names=index_names)
     return pd.DataFrame(series_dict, index=index)

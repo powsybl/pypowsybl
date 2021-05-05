@@ -37,6 +37,8 @@ class SeriesPointerArrayBuilder<T> {
 
         String getName();
 
+        boolean isIndex();
+
         int getType();
 
         PointerBase createDataPtr(List<T> elements);
@@ -46,8 +48,20 @@ class SeriesPointerArrayBuilder<T> {
 
         private final String name;
 
+        private final boolean index;
+
         AbstractSeries(String name) {
+            this(name, false);
+        }
+
+        AbstractSeries(String name, boolean index) {
             this.name = name;
+            this.index = index;
+        }
+
+        @Override
+        public boolean isIndex() {
+            return index;
         }
 
         @Override
@@ -84,8 +98,8 @@ class SeriesPointerArrayBuilder<T> {
 
         private final Function<T, String> stringGetter;
 
-        StringSeries(String name, Function<T, String> stringGetter) {
-            super(name);
+        StringSeries(String name, boolean index, Function<T, String> stringGetter) {
+            super(name, index);
             this.stringGetter = stringGetter;
         }
 
@@ -109,8 +123,8 @@ class SeriesPointerArrayBuilder<T> {
 
         private final ToIntFunction<T> intGetter;
 
-        IntSeries(String name, ToIntFunction<T> intGetter) {
-            super(name);
+        IntSeries(String name, boolean index, ToIntFunction<T> intGetter) {
+            super(name, index);
             this.intGetter = intGetter;
         }
 
@@ -168,15 +182,19 @@ class SeriesPointerArrayBuilder<T> {
     }
 
     SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
+        return addStringSeries(seriesName, false, stringGetter);
+    }
+
+    SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, boolean index, Function<T, String> stringGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(stringGetter);
-        seriesList.add(new StringSeries(seriesName, stringGetter));
+        seriesList.add(new StringSeries(seriesName, index, stringGetter));
         return this;
     }
 
     SeriesPointerArrayBuilder<T> addEnumSeries(String seriesName, Function<T, Enum<?>> enumGetter) {
         Objects.requireNonNull(enumGetter);
-        return addStringSeries(seriesName, element -> enumGetter.apply(element).name());
+        return addStringSeries(seriesName, false, element -> enumGetter.apply(element).name());
     }
 
     SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
@@ -199,10 +217,14 @@ class SeriesPointerArrayBuilder<T> {
         });
     }
 
-    private SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter) {
+    public SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, ToIntFunction<T> intGetter) {
+        return addIntSeries(seriesName, false, intGetter);
+    }
+
+    public SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, boolean index, ToIntFunction<T> intGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(intGetter);
-        seriesList.add(new IntSeries(seriesName, intGetter));
+        seriesList.add(new IntSeries(seriesName, index, intGetter));
         return this;
     }
 
@@ -219,6 +241,7 @@ class SeriesPointerArrayBuilder<T> {
             Series<T> series = seriesList.get(seriesIndex);
             PyPowsyblApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
             seriesPtrI.setName(CTypeUtil.toCharPtr(series.getName()));
+            seriesPtrI.setIndex(series.isIndex());
             seriesPtrI.setType(series.getType());
             seriesPtrI.data().setLength(elements.size());
             PointerBase dataPtr = series.createDataPtr(elements);

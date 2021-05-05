@@ -69,6 +69,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SUBSTATION", element_type::SUBSTATION)
             .value("BUSBAR_SECTION", element_type::BUSBAR_SECTION)
             .value("HVDC_LINE", element_type::HVDC_LINE)
+            .value("RATIO_TAP_CHANGER_STEP", element_type::RATIO_TAP_CHANGER_STEP)
+            .value("PHASE_TAP_CHANGER_STEP", element_type::PHASE_TAP_CHANGER_STEP)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
@@ -375,6 +377,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<series>(m, "Series")
             .def_property_readonly("name", [](const series& s) {
                 return s.name;
+            })
+            .def_property_readonly("index", [](const series& s) {
+                return (bool) s.index;
             })
             .def_property_readonly("data", [](const series& s) -> py::object {
                 switch(s.type) {

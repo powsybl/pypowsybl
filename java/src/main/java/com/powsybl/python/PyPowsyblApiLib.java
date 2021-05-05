@@ -28,6 +28,7 @@ import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.tools.Version;
+import org.apache.commons.lang3.tuple.Triple;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -191,7 +192,7 @@ public final class PyPowsyblApiLib {
             }
             List<Parameter> parameters = importer.getParameters();
             return new SeriesPointerArrayBuilder<>(parameters)
-                    .addStringSeries("name", Parameter::getName)
+                    .addStringSeries("name", true, Parameter::getName)
                     .addStringSeries("description", Parameter::getDescription)
                     .addEnumSeries("type", Parameter::getType)
                     .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
@@ -673,7 +674,7 @@ public final class PyPowsyblApiLib {
                 case BUS:
                     List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(buses)
-                            .addStringSeries("id", Bus::getId)
+                            .addStringSeries("id", true, Bus::getId)
                             .addDoubleSeries("v_mag", Bus::getV)
                             .addDoubleSeries("v_angle", Bus::getAngle))
                             .build();
@@ -681,7 +682,7 @@ public final class PyPowsyblApiLib {
                 case LINE:
                     List<Line> lines = network.getLineStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(lines)
-                            .addStringSeries("id", Line::getId)
+                            .addStringSeries("id", true, Line::getId)
                             .addDoubleSeries("r", Line::getR)
                             .addDoubleSeries("x", Line::getX)
                             .addDoubleSeries("g1", Line::getG1)
@@ -699,7 +700,7 @@ public final class PyPowsyblApiLib {
                 case TWO_WINDINGS_TRANSFORMER:
                     List<TwoWindingsTransformer> transformers2 = network.getTwoWindingsTransformerStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(transformers2)
-                            .addStringSeries("id", TwoWindingsTransformer::getId)
+                            .addStringSeries("id", true, TwoWindingsTransformer::getId)
                             .addDoubleSeries("r", TwoWindingsTransformer::getR)
                             .addDoubleSeries("x", TwoWindingsTransformer::getX)
                             .addDoubleSeries("g", TwoWindingsTransformer::getG)
@@ -720,7 +721,7 @@ public final class PyPowsyblApiLib {
                 case THREE_WINDINGS_TRANSFORMER:
                     List<ThreeWindingsTransformer> transformers3 = network.getThreeWindingsTransformerStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(transformers3)
-                            .addStringSeries("id", ThreeWindingsTransformer::getId)
+                            .addStringSeries("id", true, ThreeWindingsTransformer::getId)
                             .addDoubleSeries("rated_u0", ThreeWindingsTransformer::getRatedU0)
                             .addDoubleSeries("r1", twt -> twt.getLeg1().getR())
                             .addDoubleSeries("x1", twt -> twt.getLeg1().getR())
@@ -760,7 +761,7 @@ public final class PyPowsyblApiLib {
                 case GENERATOR:
                     List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(generators)
-                            .addStringSeries("id", Generator::getId)
+                            .addStringSeries("id", true, Generator::getId)
                             .addEnumSeries("energy_source", Generator::getEnergySource)
                             .addDoubleSeries("target_p", Generator::getTargetP)
                             .addDoubleSeries("max_p", Generator::getMaxP)
@@ -776,7 +777,7 @@ public final class PyPowsyblApiLib {
                 case LOAD:
                     List<Load> loads = network.getLoadStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(loads)
-                            .addStringSeries("id", Load::getId)
+                            .addStringSeries("id", true, Load::getId)
                             .addEnumSeries("type", Load::getLoadType)
                             .addDoubleSeries("p0", Load::getP0)
                             .addDoubleSeries("q0", Load::getQ0)
@@ -788,7 +789,7 @@ public final class PyPowsyblApiLib {
                 case SHUNT_COMPENSATOR:
                     List<ShuntCompensator> shunts = network.getShuntCompensatorStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(shunts)
-                            .addStringSeries("id", ShuntCompensator::getId)
+                            .addStringSeries("id", true, ShuntCompensator::getId)
                             .addEnumSeries("model_type", ShuntCompensator::getModelType)
                             .addDoubleSeries("p", g -> g.getTerminal().getP())
                             .addDoubleSeries("q", g -> g.getTerminal().getQ())
@@ -798,7 +799,7 @@ public final class PyPowsyblApiLib {
                 case DANGLING_LINE:
                     List<DanglingLine> danglingLines = network.getDanglingLineStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(danglingLines)
-                            .addStringSeries("id", DanglingLine::getId)
+                            .addStringSeries("id", true, DanglingLine::getId)
                             .addDoubleSeries("r", DanglingLine::getR)
                             .addDoubleSeries("x", DanglingLine::getX)
                             .addDoubleSeries("g", DanglingLine::getG)
@@ -813,7 +814,7 @@ public final class PyPowsyblApiLib {
                 case LCC_CONVERTER_STATION:
                     List<LccConverterStation> lccStations = network.getLccConverterStationStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(lccStations)
-                            .addStringSeries("id", LccConverterStation::getId)
+                            .addStringSeries("id", true, LccConverterStation::getId)
                             .addDoubleSeries("power_factor", LccConverterStation::getPowerFactor)
                             .addDoubleSeries("loss_factor", LccConverterStation::getLossFactor)
                             .addDoubleSeries("p", st -> st.getTerminal().getP())
@@ -824,7 +825,7 @@ public final class PyPowsyblApiLib {
                 case VSC_CONVERTER_STATION:
                     List<VscConverterStation> vscStations = network.getVscConverterStationStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(vscStations)
-                            .addStringSeries("id", VscConverterStation::getId)
+                            .addStringSeries("id", true, VscConverterStation::getId)
                             .addDoubleSeries("voltage_setpoint", VscConverterStation::getVoltageSetpoint)
                             .addDoubleSeries("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint)
                             .addBooleanSeries("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn)
@@ -836,7 +837,7 @@ public final class PyPowsyblApiLib {
                 case STATIC_VAR_COMPENSATOR:
                     List<StaticVarCompensator> svcs = network.getStaticVarCompensatorStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(svcs)
-                            .addStringSeries("id", StaticVarCompensator::getId)
+                            .addStringSeries("id", true, StaticVarCompensator::getId)
                             .addDoubleSeries("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint)
                             .addDoubleSeries("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint)
                             .addEnumSeries("regulation_mode", StaticVarCompensator::getRegulationMode)
@@ -848,7 +849,7 @@ public final class PyPowsyblApiLib {
                 case SWITCH:
                     List<Switch> switches = network.getSwitchStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(switches)
-                            .addStringSeries("id", Switch::getId)
+                            .addStringSeries("id", true, Switch::getId)
                             .addEnumSeries("kind", Switch::getKind)
                             .addBooleanSeries("open", Switch::isOpen)
                             .addBooleanSeries("retained", Switch::isRetained)).build();
@@ -856,7 +857,7 @@ public final class PyPowsyblApiLib {
                 case VOLTAGE_LEVEL:
                     List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(voltageLevels)
-                            .addStringSeries("id", VoltageLevel::getId)
+                            .addStringSeries("id", true, VoltageLevel::getId)
                             .addStringSeries("substation_id", vl -> vl.getSubstation().getId())
                             .addDoubleSeries("nominal_v", VoltageLevel::getNominalV)
                             .addDoubleSeries("high_voltage_limit", VoltageLevel::getHighVoltageLimit)
@@ -866,7 +867,7 @@ public final class PyPowsyblApiLib {
                 case SUBSTATION:
                     List<Substation> substations = network.getSubstationStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(substations))
-                            .addStringSeries("id", Identifiable::getId)
+                            .addStringSeries("id", true, Identifiable::getId)
                             .addStringSeries("TSO", Substation::getTso)
                             .addStringSeries("geo_tags", substation -> String.join(",", substation.getGeographicalTags()))
                             .addStringSeries("country", substation -> substation.getCountry().map(Country::toString).orElse(""))
@@ -875,7 +876,7 @@ public final class PyPowsyblApiLib {
                 case BUSBAR_SECTION:
                     List<BusbarSection> busbarSections = network.getBusbarSectionStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(busbarSections))
-                            .addStringSeries("id", BusbarSection::getId)
+                            .addStringSeries("id", true, BusbarSection::getId)
                             .addDoubleSeries("v", BusbarSection::getV)
                             .addDoubleSeries("angle", BusbarSection::getAngle)
                             .build();
@@ -883,7 +884,7 @@ public final class PyPowsyblApiLib {
                 case HVDC_LINE:
                     List<HvdcLine> hvdcLines = network.getHvdcLineStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(hvdcLines)
-                            .addStringSeries("id", HvdcLine::getId)
+                            .addStringSeries("id", true, HvdcLine::getId)
                             .addEnumSeries("converters_mode", HvdcLine::getConvertersMode)
                             .addDoubleSeries("active_power_setpoint", HvdcLine::getActivePowerSetpoint)
                             .addDoubleSeries("max_p", HvdcLine::getMaxP)
@@ -892,6 +893,38 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("converter_station1", l -> l.getConverterStation1().getId())
                             .addStringSeries("converter_station2", l -> l.getConverterStation2().getId()))
                             .build();
+
+                case RATIO_TAP_CHANGER_STEP:
+                    List<Triple<String, RatioTapChanger, Integer>> ratioTapChangerSteps = network.getTwoWindingsTransformerStream()
+                            .filter(twt -> twt.getRatioTapChanger() != null)
+                            .flatMap(twt -> twt.getRatioTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getRatioTapChanger(), position)))
+                            .collect(Collectors.toList());
+                    return new SeriesPointerArrayBuilder<>(ratioTapChangerSteps)
+                            .addStringSeries("id", true, Triple::getLeft)
+                            .addIntSeries("position", true, Triple::getRight)
+                            .addDoubleSeries("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
+                            .addDoubleSeries("r", p -> p.getMiddle().getStep(p.getRight()).getR())
+                            .addDoubleSeries("x", p -> p.getMiddle().getStep(p.getRight()).getX())
+                            .addDoubleSeries("g", p -> p.getMiddle().getStep(p.getRight()).getG())
+                            .addDoubleSeries("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                            .build();
+
+                case PHASE_TAP_CHANGER_STEP:
+                    List<Triple<String, PhaseTapChanger, Integer>> phaseTapChangerSteps = network.getTwoWindingsTransformerStream()
+                            .filter(twt -> twt.getPhaseTapChanger() != null)
+                            .flatMap(twt -> twt.getPhaseTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getPhaseTapChanger(), position)))
+                            .collect(Collectors.toList());
+                    return new SeriesPointerArrayBuilder<>(phaseTapChangerSteps)
+                            .addStringSeries("id", true, Triple::getLeft)
+                            .addIntSeries("position", true, Triple::getRight)
+                            .addDoubleSeries("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
+                            .addDoubleSeries("alpha", p -> p.getMiddle().getStep(p.getRight()).getAlpha())
+                            .addDoubleSeries("r", p -> p.getMiddle().getStep(p.getRight()).getR())
+                            .addDoubleSeries("x", p -> p.getMiddle().getStep(p.getRight()).getX())
+                            .addDoubleSeries("g", p -> p.getMiddle().getStep(p.getRight()).getG())
+                            .addDoubleSeries("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                            .build();
+
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }

@@ -95,6 +95,8 @@ typedef enum {
     SUBSTATION,
     BUSBAR_SECTION,
     HVDC_LINE,
+    RATIO_TAP_CHANGER_STEP,
+    PHASE_TAP_CHANGER_STEP,
 } element_type;
 
 typedef struct matrix_struct {
@@ -105,6 +107,7 @@ typedef struct matrix_struct {
 
 typedef struct series_struct {
     char* name;
+    unsigned char index;
     int type;
     array data;
 } series;

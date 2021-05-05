@@ -378,7 +378,9 @@ public final class PyPowsyblApiHeader {
         VOLTAGE_LEVEL,
         SUBSTATION,
         BUSBAR_SECTION,
-        HVDC_LINE;
+        HVDC_LINE,
+        RATIO_TAP_CHANGER_STEP,
+        PHASE_TAP_CHANGER_STEP;
 
         @CEnumValue
         public native int getCValue();
@@ -417,6 +419,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("name")
         void setName(CCharPointer name);
+
+        @CField("index")
+        boolean isIndex();
+
+        @CField("index")
+        void setIndex(boolean index);
 
         @CField("type")
         int getType();

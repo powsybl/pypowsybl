@@ -111,7 +111,7 @@ class Network(ObjectHandle):
 
     def create_elements_data_frame(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
         series_array = _pypowsybl.create_network_elements_series_array(self.ptr, element_type)
-        return create_data_frame_from_series_array(series_array, 'id')
+        return create_data_frame_from_series_array(series_array)
 
     def create_buses_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.BUS)
@@ -160,6 +160,12 @@ class Network(ObjectHandle):
 
     def create_switches_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.SWITCH)
+
+    def create_ratio_tap_changer_steps_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
+
+    def create_phase_tap_changer_steps_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         for seriesName in df.columns.values:
@@ -245,7 +251,7 @@ def get_import_parameters(format: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
-    return create_data_frame_from_series_array(series_array, 'name')
+    return create_data_frame_from_series_array(series_array)
 
 
 def load(file: str, parameters: dict = {}) -> Network:
