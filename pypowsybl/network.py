@@ -117,49 +117,101 @@ class Network(ObjectHandle):
         return self.create_elements_data_frame(_pypowsybl.ElementType.GENERATOR)
 
     def create_loads_data_frame(self) -> pd.DataFrame:
-        """Create loads data
+        """ Get loads dataframe
 
-        :return: a dataframe that loads as row and attributes as column
+        :return: loads dataframe
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.LOAD)
 
     def create_lines_data_frame(self) -> pd.DataFrame:
+        """ Get lines dataframe
+
+        :return: lines dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.LINE)
 
     def create_2_windings_transformers_data_frame(self) -> pd.DataFrame:
+        """ Get two windings transformers dataframe
+
+        :return: two windings transformers dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
 
     def create_3_windings_transformers_data_frame(self) -> pd.DataFrame:
+        """ Get three windings transformers dataframe
+
+        :return: three windings transformers dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
 
     def create_shunt_compensators_data_frame(self) -> pd.DataFrame:
+        """ Get shunts dataframe
+
+        :return: shunts dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
 
     def create_dangling_lines_data_frame(self) -> pd.DataFrame:
+        """ Get dangling lines dataframe
+
+        :return: dangling lines dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.DANGLING_LINE)
 
     def create_lcc_converter_stations_data_frame(self) -> pd.DataFrame:
+        """ Get lcc converter stations dataframe
+
+        :return: lcc converter stations dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
 
     def create_vsc_converter_stations_data_frame(self) -> pd.DataFrame:
+        """ Get vsc converter stations dataframe
+
+        :return: vsc converter stations dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
     def create_static_var_compensators_data_frame(self) -> pd.DataFrame:
+        """ Get static var compensators dataframe
+
+        :return: static var compensators dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
     def create_voltage_levels_data_frame(self) -> pd.DataFrame:
+        """ Get voltage levels dataframe
+
+        :return: voltage levels dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.VOLTAGE_LEVEL)
 
     def create_busbar_sections_data_frame(self) -> pd.DataFrame:
+        """ Get busbar sections dataframe
+
+        :return: busbar sections dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.BUSBAR_SECTION)
 
     def create_substations_data_frame(self) -> pd.DataFrame:
+        """ Get substations dataframe
+
+        :return: substations dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.SUBSTATION)
 
     def create_hvdc_lines_data_frame(self) -> pd.DataFrame:
+        """ Get hvdc lines dataframe
+
+        :return: hvdc lines dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.HVDC_LINE)
 
     def create_switches_data_frame(self) -> pd.DataFrame:
+        """ Get switches dataframe
+
+        :return: switches dataframe
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.SWITCH)
 
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
@@ -181,30 +233,66 @@ class Network(ObjectHandle):
                 raise PyPowsyblError(f'Unsupported series type ${series_type}, element: ${element_type}, series_name: ${seriesName}')
 
     def update_switches_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set switches varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific switch id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.SWITCH, df)
 
     def update_generators_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set generators varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific generato id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.GENERATOR, df)
 
     def update_loads_with_data_frame(self, df: pd.DataFrame):
         """
-        Modify loads variable via dataframe
+        Set loads varriant variables via dataframe
 
-        :param df: contains values to modify on specific loads
+        :param df: Dataframe contains values to update the network with specific load id as row
         :return:
         """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.LOAD, df)
 
     def update_dangling_lines_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set dangling lines varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific dangling line id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.DANGLING_LINE, df)
 
     def update_vsc_converter_stations_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set vsc converter stations varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific vsc converter stations id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
 
     def update_static_var_compensators_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set static var compensators varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific static var compensator id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
 
     def update_hvdc_lines_with_data_frame(self, df: pd.DataFrame):
+        """
+        Set hvdc lines stations varriant variables via dataframe
+
+        :param df: Dataframe contains values to update the network with specific hvdc lines id as row
+        :return:
+        """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.HVDC_LINE, df)
 
 def create_empty(id: str = "Default") -> Network:
