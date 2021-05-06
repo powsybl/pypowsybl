@@ -82,11 +82,8 @@ Example:
 Retrieve and modify network via dataframe
 ****************************************************
 
-Loads
----------------
+You could get all the same type equipements varrant variables in a `DataFrame` by calling n.create_`TYPE`s_data_frame().
 
-.. autofunction:: pypowsybl.network.Network.create_loads_data_frame
-   :noindex:
 
 Example:
 
@@ -99,12 +96,37 @@ Example:
    LOAD  UNDEFINED  600.0  200.0 NaN NaN  VLLOAD_0
 
 
-.. autofunction:: pypowsybl.network.Network.update_loads_with_data_frame
-  :noindex:
+Measwhile, you could update the network with a `DataFrame`.
 
+Update one value for one equipement
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example:
+
+.. code-block:: python
+
+   >>> df = pd.DataFrame(data=[500], columns=['p0'], index=['LOAD']
+   >>> n.update_loads_with_data_frame(df)
+
+
+Update multi values for one equipement
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Example:
 
 .. code-block:: python
 
    >>> df = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD']
    >>> n.update_loads_with_data_frame(df)
+
+.. list-table:: Available equipement types and attributes
+  :widths: 25 25 50
+  :header-rows: 1
+
+  * - equipement type
+    - attribute(column)
+    - value type
+  * - Load
+    - p0, q0
+    - double
+  * - Generator
+    - target_p, target_q, target_v
+    - double
