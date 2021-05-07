@@ -108,6 +108,53 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'BE'}))
 
+    def test_loads_data_frame(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_loads_data_frame()
+        self.assertEqual(600, df['p0']['LOAD'])
+        self.assertEqual(200, df['q0']['LOAD'])
+        self.assertEqual('UNDEFINED', df['type']['LOAD'])
+        df2 = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD'])
+        n.update_loads_with_data_frame(df2)
+        df3 = n.create_loads_data_frame()
+        self.assertEqual(300, df3['q0']['LOAD'])
+        self.assertEqual(500, df3['p0']['LOAD'])
+
+    def test_vsc_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        df = n.create_vsc_converter_stations_data_frame()
+        self.assertEqual(400.0, df['voltage_setpoint']['VSC1'])
+        self.assertEqual(500.0, df['reactive_power_setpoint']['VSC1'])
+        df2 = pd.DataFrame(data=[[300.0, 400.0],[1.0, 2.0]], columns=['voltage_setpoint','reactive_power_setpoint'], index=['VSC1', 'VSC2'])
+        n.update_vsc_converter_stations_with_data_frame(df2)
+        df3 = n.create_vsc_converter_stations_data_frame()
+        self.assertEqual(300.0, df3['voltage_setpoint']['VSC1'])
+        self.assertEqual(400.0, df3['reactive_power_setpoint']['VSC1'])
+        self.assertEqual(1.0, df3['voltage_setpoint']['VSC2'])
+        self.assertEqual(2.0, df3['reactive_power_setpoint']['VSC2'])
+
+    def test_hvdc_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        df = n.create_hvdc_lines_data_frame()
+        self.assertEqual(10, df['active_power_setpoint']['HVDC1'])
+        df2 = pd.DataFrame(data=[11], columns=['active_power_setpoint'], index=['HVDC1'])
+        n.update_hvdc_lines_with_data_frame(df2)
+        df3 = n.create_hvdc_lines_data_frame()
+        self.assertEqual(11, df3['active_power_setpoint']['HVDC1'])
+
+    def test_svc_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        df = n.create_static_var_compensators_data_frame()
+        self.assertEqual(400.0, df['voltage_setpoint']['SVC'])
+        self.assertEqual('VOLTAGE', df['regulation_mode']['SVC'])
+        df2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
+                           columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
+        n.update_static_var_compensators_with_data_frame(df2)
+        df3 = n.create_static_var_compensators_data_frame()
+        self.assertEqual(300.0, df3['voltage_setpoint']['SVC'])
+        self.assertEqual(400.0, df3['reactive_power_setpoint']['SVC'])
+        self.assertEqual('OFF', df3['regulation_mode']['SVC'])
+
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_generators_data_frame()

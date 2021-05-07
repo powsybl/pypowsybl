@@ -203,6 +203,10 @@ void* createEurostagTutorialExample1Network() {
     return callJava<void*>(::createEurostagTutorialExample1Network);
 }
 
+void* createFourSubstationsNodeBreakerNetwork() {
+    return callJava<void*>(::createFourSubstationsNodeBreakerNetwork);
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);
@@ -363,6 +367,10 @@ SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elemen
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
 }
 
+int getSeriesType(element_type elementType, const std::string& seriesName) {
+    return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
+}
+
 void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
@@ -377,6 +385,14 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
     ToDoublePtr valuePtr(values);
     callJava(::updateNetworkElementsWithDoubleSeries, network, elementType, (char *) seriesName.c_str(),
                     idPtr.get(), valuePtr.get(), elementCount);
+}
+
+void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+                                           const std::vector<std::string>& values, int elementCount) {
+    ToCharPtrPtr idPtr(ids);
+    ToCharPtrPtr valuePtr(values);
+    callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
+                idPtr.get(), valuePtr.get(), elementCount);
 }
 
 void destroyObjectHandle(void* objectHandle) {

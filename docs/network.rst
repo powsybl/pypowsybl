@@ -88,8 +88,8 @@ Example:
    >>> n.dump('ieee14.xiidm')
 
 
-Create a network elements data frame
-------------------------------------
+Create and update network elements with a ``Pandas`` data frame
+---------------------------------------------------------------
 
 To get network elements data, we can create a ``Pandas`` data frame for a given type of element. Supported elements are
 buses, lines, 2 windings transformers, 3 windings transformers, generators, loads, shunt compensators, dangling lines,
@@ -141,3 +141,46 @@ be able to easily get steps related to just one transformer:
    0         0.850567  0.0  0.0  0.0  0.0
    1         1.000667  0.0  0.0  0.0  0.0
    2         1.150767  0.0  0.0  0.0  0.0
+
+
+We can also update network elements with a data frame:
+
+.. code-block:: python
+
+   >>> df = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD']
+   >>> n.update_loads_with_data_frame(df)
+
+.. list-table:: Available equipment types and attributes
+  :widths: 25 25 50
+  :header-rows: 1
+
+  * - Equipment type
+    - Attributes (columns)
+    - Value type
+  * - Load, Dangling lines
+    - p0, q0
+    - double
+  * - Generator
+    - voltage_regulator_on
+    - bool
+  * - Generator
+    - target_p, target_q, target_v
+    - double
+  * - Switch
+    - open, retained
+    - bool
+  * - VSC converter station
+    - voltage_regulator_on
+    - bool
+  * - VSC converter station, Static var compensator
+    - voltage_setpoint, reactive_power_setpoint
+    - double
+  * - Static var compensator
+    - regulation_mode
+    - str
+  * - HVDC line
+    - converters_mode
+    - str
+  * - HVDC line
+    - active_power_setpoint
+    - double

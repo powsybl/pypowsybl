@@ -48,6 +48,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
+    m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
+
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
@@ -401,11 +403,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
+    m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
+            py::arg("element_type"), py::arg("series_name"));
+
     m.def("update_network_elements_with_int_series", &pypowsybl::updateNetworkElementsWithIntSeries, "Update network elements for a given element type with an integer series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
 
     m.def("update_network_elements_with_double_series", &pypowsybl::updateNetworkElementsWithDoubleSeries, "Update network elements for a given element type with a double series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+
+    m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
 
