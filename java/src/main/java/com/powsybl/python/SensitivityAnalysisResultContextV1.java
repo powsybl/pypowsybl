@@ -13,7 +13,7 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.WordFactory;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -69,7 +69,7 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
         return matrixPtr;
     }
 
-    private double[] reorderFlows(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
+    private double[] reorderFlows(Collection<SensitivityValue> sensitivityValues, ToDoubleFunction<SensitivityValue> converter) {
         buildFlowsIdxMaps();
         double[] values = new double[flowVariables.size() * flowFunctions.size()];
         Arrays.fill(values, Double.NaN);
@@ -77,12 +77,12 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
             int idxRow = idxByFlowVariable.get(value.getFactor().getVariable().getId());
             int idxCol = idxByFlowFunction.get(value.getFactor().getFunction().getId());
             int arrIdx = idxRow * idxByFlowFunction.size() + idxCol;
-            values[arrIdx] = converter.apply(value);
+            values[arrIdx] = converter.applyAsDouble(value);
         }
         return values;
     }
 
-    private double[] reoderVoltages(Collection<SensitivityValue> sensitivityValues, Function<SensitivityValue, Double> converter) {
+    private double[] reoderVoltages(Collection<SensitivityValue> sensitivityValues, ToDoubleFunction<SensitivityValue> converter) {
         buildVoltagesIdxMaps();
         double[] values = new double[voltageVariables.size() * voltageFunctions.size()];
         Arrays.fill(values, Double.NaN);
@@ -90,7 +90,7 @@ class SensitivityAnalysisResultContextV1 implements SensitivityAnalysisResultCon
             int idxRow = idxByVoltageVariable.get(value.getFactor().getVariable().getId());
             int idxCol = idxByVoltageFunction.get(value.getFactor().getFunction().getId());
             int arrIdx = idxRow * idxByVoltageFunction.size() + idxCol;
-            values[arrIdx] = converter.apply(value);
+            values[arrIdx] = converter.applyAsDouble(value);
         }
         return values;
     }
