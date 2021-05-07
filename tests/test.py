@@ -161,6 +161,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual('OTHER', df['energy_source']['GEN'])
         self.assertEqual(607, df['target_p']['GEN'])
 
+    def test_ratio_tap_changer_steps_data_frame(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_ratio_tap_changer_steps_data_frame()
+        self.assertEqual(0.8505666905244191, df.loc['NHV2_NLOAD']['rho'][0])
+        self.assertEqual(0.8505666905244191, df.loc[('NHV2_NLOAD', 0), 'rho'])
+
+    def test_phase_tap_changer_steps_data_frame(self):
+        n = pp.network.create_ieee300()
+        df = n.create_phase_tap_changer_steps_data_frame()
+        self.assertEqual(11.4, df.loc[('T196-2040-1', 0), 'alpha'])
+
     def test_update_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_generators_data_frame()

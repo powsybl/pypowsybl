@@ -29,54 +29,6 @@ import java.util.*;
  */
 class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
-    static class IndexedBranchFlowPerInjectionIncrease extends BranchFlowPerInjectionIncrease implements IndexedSensitivityFactor {
-
-        private final int row;
-
-        private final int column;
-
-        IndexedBranchFlowPerInjectionIncrease(BranchFlow sensitivityFunction, InjectionIncrease sensitivityVariable,
-                                              int row, int column) {
-            super(sensitivityFunction, sensitivityVariable);
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public int getRow() {
-            return row;
-        }
-
-        @Override
-        public int getColumn() {
-            return column;
-        }
-    }
-
-    static class IndexedBranchFlowPerPSTAngle extends BranchFlowPerPSTAngle implements IndexedSensitivityFactor {
-
-        private final int row;
-
-        private final int column;
-
-        IndexedBranchFlowPerPSTAngle(BranchFlow sensitivityFunction, PhaseTapChangerAngle sensitivityVariable,
-                                     int row, int column) {
-            super(sensitivityFunction, sensitivityVariable);
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public int getRow() {
-            return row;
-        }
-
-        @Override
-        public int getColumn() {
-            return column;
-        }
-    }
-
     private List<String> branchFlowBranchsIds;
 
     private List<String> branchFlowInjectionsOrTransfosIds;

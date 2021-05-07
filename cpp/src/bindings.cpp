@@ -71,6 +71,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SUBSTATION", element_type::SUBSTATION)
             .value("BUSBAR_SECTION", element_type::BUSBAR_SECTION)
             .value("HVDC_LINE", element_type::HVDC_LINE)
+            .value("RATIO_TAP_CHANGER_STEP", element_type::RATIO_TAP_CHANGER_STEP)
+            .value("PHASE_TAP_CHANGER_STEP", element_type::PHASE_TAP_CHANGER_STEP)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
@@ -378,16 +380,21 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("name", [](const series& s) {
                 return s.name;
             })
+            .def_property_readonly("index", [](const series& s) {
+                return (bool) s.index;
+            })
             .def_property_readonly("data", [](const series& s) -> py::object {
                 switch(s.type) {
-                case 0:
-                	return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
-                case 1:
-            		return seriesAsNumpyArray<double>(s);
-                case 2:
-            		return seriesAsNumpyArray<int>(s);
-                case 3:
-            		return seriesAsNumpyArray<bool>(s);
+                    case 0:
+                        return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                    case 1:
+                        return seriesAsNumpyArray<double>(s);
+                    case 2:
+                        return seriesAsNumpyArray<int>(s);
+                    case 3:
+                        return seriesAsNumpyArray<bool>(s);
+                    default:
+                        throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
             });
 

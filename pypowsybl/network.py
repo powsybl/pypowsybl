@@ -107,13 +107,25 @@ class Network(ObjectHandle):
                                                 not_connected_to_same_bus_at_both_sides)
 
     def create_elements_data_frame(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
+        """ Create a network element ``Pandas`` data frame for a specified element type
+
+        Args:
+            element_type (ElementType): the element type
+        Returns:
+            the network element data frame for the specified element type
+        """
         series_array = _pypowsybl.create_network_elements_series_array(self.ptr, element_type)
-        return create_data_frame_from_series_array(series_array, 'id')
+        return create_data_frame_from_series_array(series_array)
 
     def create_buses_data_frame(self) -> pd.DataFrame:
         return self.create_elements_data_frame(_pypowsybl.ElementType.BUS)
 
     def create_generators_data_frame(self) -> pd.DataFrame:
+        """ Create a generator ``Pandas`` data frame
+
+        Returns:
+            the generator data frame
+        """
         return self.create_elements_data_frame(_pypowsybl.ElementType.GENERATOR)
 
     def create_loads_data_frame(self) -> pd.DataFrame:
@@ -213,6 +225,12 @@ class Network(ObjectHandle):
         :return: switches dataframe
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.SWITCH)
+
+    def create_ratio_tap_changer_steps_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
+
+    def create_phase_tap_changer_steps_data_frame(self) -> pd.DataFrame:
+        return self.create_elements_data_frame(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         for seriesName in df.columns.values:
@@ -364,7 +382,7 @@ def get_import_parameters(format: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
-    return create_data_frame_from_series_array(series_array, 'name')
+    return create_data_frame_from_series_array(series_array)
 
 
 def load(file: str, parameters: dict = {}) -> Network:
