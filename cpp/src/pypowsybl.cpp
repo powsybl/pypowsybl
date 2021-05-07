@@ -368,7 +368,6 @@ SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elemen
 }
 
 int getSeriesType(element_type elementType, const std::string& seriesName) {
-    GraalVmGuard guard;
     return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
 }
 
@@ -390,7 +389,6 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
 
 void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount) {
-    GraalVmGuard guard;
     ToCharPtrPtr idPtr(ids);
     ToCharPtrPtr valuePtr(values);
     callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
