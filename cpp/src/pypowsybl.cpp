@@ -204,8 +204,7 @@ void* createEurostagTutorialExample1Network() {
 }
 
 void* createFourSubstationsNodeBreakerNetwork() {
-    GraalVmGuard guard;
-    return executeJava<void*>(::createFourSubstationsNodeBreakerNetwork, guard.thread());
+    return callJava<void*>(::createFourSubstationsNodeBreakerNetwork);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -370,7 +369,7 @@ SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elemen
 
 int getSeriesType(element_type elementType, const std::string& seriesName) {
     GraalVmGuard guard;
-    return executeJava<int>(::getSeriesType, guard.thread(), elementType, (char *) seriesName.c_str());
+    return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
 }
 
 void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
@@ -394,7 +393,7 @@ void updateNetworkElementsWithStringSeries(void* network, element_type elementTy
     GraalVmGuard guard;
     ToCharPtrPtr idPtr(ids);
     ToCharPtrPtr valuePtr(values);
-    executeJava(::updateNetworkElementsWithStringSeries, guard.thread(), network, elementType, (char *) seriesName.c_str(),
+    callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
                 idPtr.get(), valuePtr.get(), elementCount);
 }
 
