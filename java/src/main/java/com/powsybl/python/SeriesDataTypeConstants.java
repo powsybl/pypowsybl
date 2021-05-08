@@ -54,6 +54,11 @@ final class SeriesDataTypeConstants {
             .put("active_power_setpoint", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
             .build();
 
+    static final Map<String, Integer> TWO_WINDINGS_TRANSFORMER_MAP = ImmutableMap.<String, Integer>builder()
+            .put("ratio_tap_position", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
+            .put("phase_tap_position", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
+            .build();
+
     private SeriesDataTypeConstants() {
     }
 }
