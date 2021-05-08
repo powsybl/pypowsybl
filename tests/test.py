@@ -198,11 +198,22 @@ class PyPowsyblTestCase(unittest.TestCase):
         open_switches = df[df['open']].index.tolist()
         self.assertEqual(['BREAKER-BB2-VL1_VL2_1'], open_switches)
 
-    def test_create_2_windings_transformers_data_frame(self):
+    def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_2_windings_transformers_data_frame()
         self.assertEqual(1, df['ratio_tap_position']['NHV2_NLOAD'])
         self.assertEqual(-99999, df['phase_tap_position']['NHV2_NLOAD'])
+        n.update_2_windings_transformer_with_data_frame(pd.DataFrame(index=['NHV2_NLOAD'], data={'ratio_tap_position': [0]}))
+        df = n.create_2_windings_transformers_data_frame()
+        self.assertEqual(0, df['ratio_tap_position']['NHV2_NLOAD'])
+
+        # also test phase shifter
+        n = pp.network.create_four_substations_node_breaker_network();
+        df = n.create_2_windings_transformers_data_frame()
+        self.assertEqual(15, df['phase_tap_position']['TWT'])
+        n.update_2_windings_transformer_with_data_frame(pd.DataFrame(index=['TWT'], data={'phase_tap_position': [16]}))
+        df = n.create_2_windings_transformers_data_frame()
+        self.assertEqual(16, df['phase_tap_position']['TWT'])
 
     def test_voltage_levels_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()

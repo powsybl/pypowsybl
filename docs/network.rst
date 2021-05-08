@@ -151,36 +151,22 @@ We can also update network elements with a data frame:
    >>> n.update_loads_with_data_frame(df)
 
 .. list-table:: Available equipment types and attributes
-  :widths: 25 25 50
+  :widths: auto
   :header-rows: 1
 
   * - Equipment type
     - Attributes (columns)
-    - Value type
-  * - Load, Dangling lines
-    - p0, q0
-    - double
+  * - Load, Dangling line
+    - p0 (double), q0 (double)
   * - Generator
-    - voltage_regulator_on
-    - bool
-  * - Generator
-    - target_p, target_q, target_v
-    - double
+    - voltage_regulator_on (bool), target_p (double), target_q (double), target_v (double)
   * - Switch
-    - open, retained
-    - bool
+    - open (bool), retained (bool)
   * - VSC converter station
-    - voltage_regulator_on
-    - bool
-  * - VSC converter station, Static var compensator
-    - voltage_setpoint, reactive_power_setpoint
-    - double
+    - voltage_setpoint (double), reactive_power_setpoint (double),  voltage_regulator_on (bool)
   * - Static var compensator
-    - regulation_mode
-    - str
+    - voltage_setpoint (double), reactive_power_setpoint (double), regulation_mode (str)
   * - HVDC line
-    - converters_mode
-    - str
-  * - HVDC line
-    - active_power_setpoint
-    - double
+    - converters_mode (str), active_power_setpoint (double)
+  * - Two windings transformer
+    - ratio_tap_position (int), phase_tap_position (int)
