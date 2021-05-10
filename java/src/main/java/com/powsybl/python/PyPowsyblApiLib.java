@@ -969,24 +969,40 @@ public final class PyPowsyblApiLib {
     public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
+            Map<String, Integer> seriesTypes;
             switch (elementType) {
                 case SWITCH:
-                    return SeriesDataTypeConstants.SWITCH_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.SWITCH_MAP;
+                    break;
                 case GENERATOR:
-                    return SeriesDataTypeConstants.GENERATOR_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.GENERATOR_MAP;
+                    break;
                 case HVDC_LINE:
-                    return SeriesDataTypeConstants.HVDC_LINE_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.HVDC_LINE_MAP;
+                    break;
                 case LOAD:
-                    return SeriesDataTypeConstants.LOAD_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.LOAD_MAP;
+                    break;
                 case DANGLING_LINE:
-                    return SeriesDataTypeConstants.DANGLING_LINE_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.DANGLING_LINE_MAP;
+                    break;
                 case VSC_CONVERTER_STATION:
-                    return SeriesDataTypeConstants.VSC_CONVERTER_STATION_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.VSC_CONVERTER_STATION_MAP;
+                    break;
                 case STATIC_VAR_COMPENSATOR:
-                    return SeriesDataTypeConstants.STATIC_VAR_COMPENSATOR_MAP.get(seriesName);
+                    seriesTypes = SeriesDataTypeConstants.STATIC_VAR_COMPENSATOR_MAP;
+                    break;
+                case TWO_WINDINGS_TRANSFORMER:
+                    seriesTypes = SeriesDataTypeConstants.TWO_WINDINGS_TRANSFORMER_MAP;
+                    break;
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }
+            Integer type = seriesTypes.get(seriesName);
+            if (type == null) {
+                throw new PowsyblException("Series '" + seriesName + "' not found for element type " + elementType);
+            }
+            return type;
         });
     }
 
@@ -1036,8 +1052,21 @@ public final class PyPowsyblApiLib {
                                 throw new UnsupportedOperationException("Series name not supported for vsc elements: " + seriesName);
                         }
                         break;
+                    case TWO_WINDINGS_TRANSFORMER:
+                        TwoWindingsTransformer twt = getTransformerOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "ratio_tap_position":
+                                getRatioTapChanger(twt).setTapPosition(value);
+                                break;
+                            case "phase_tap_position":
+                                getPhaseTapChanger(twt).setTapPosition(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for 2 windings transformer elements: " + seriesName);
+                        }
+                        break;
                     default:
-                        throw new UnsupportedOperationException("Updating int(boolean) series: type '" + elementType + "' field '" + seriesName + "' not supported");
+                        throw new UnsupportedOperationException("Updating int or boolean series: type '" + elementType + "' field '" + seriesName + "' not supported");
                 }
             }
         });
@@ -1184,6 +1213,30 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
+    }
+
+    private static TwoWindingsTransformer getTransformerOrThrowsException(String id, Network network) {
+        TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
+        if (twt == null) {
+            throw new PowsyblException("Two windings transformer '" + id + "' not found");
+        }
+        return twt;
+    }
+
+    private static RatioTapChanger getRatioTapChanger(TwoWindingsTransformer twt) {
+        RatioTapChanger rtc = twt.getRatioTapChanger();
+        if (rtc == null) {
+            throw new PowsyblException("Two windings transformer '" + twt.getId() + "' does not have a ratio tap changer");
+        }
+        return rtc;
+    }
+
+    private static PhaseTapChanger getPhaseTapChanger(TwoWindingsTransformer twt) {
+        PhaseTapChanger ptc = twt.getPhaseTapChanger();
+        if (ptc == null) {
+            throw new PowsyblException("Two windings transformer '" + twt.getId() + "' does not have a phase tap changer");
+        }
+        return ptc;
     }
 
     private static Generator getGeneratorOrThrowsException(String id, Network network) {
