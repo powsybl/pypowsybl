@@ -190,10 +190,10 @@ print(sa_result.get_table())
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
 
 ```python
-sa = pp.sensitivity.create_analysis()
+sa = pp.sensitivity.create_dc_analysis()
 sa.add_single_element_contingency('L1-2-1')
 sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
-sa_result = sa.run_dc(n)
+sa_result = sa.run(n)
 df = sa_result.get_post_contingency_sensitivity_matrix_flows('L1-2-1')
 print(df)
 ```

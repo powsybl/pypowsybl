@@ -217,10 +217,10 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
-        sa = pp.sensitivity.create_analysis()
+        sa = pp.sensitivity.create_dc_analysis()
         sa.add_single_element_contingency('L1-2-1')
         sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
-        r = sa.run_dc(n)
+        r = sa.run(n)
 
         df = r.get_branch_flows_sensitivity_matrix()
         self.assertEqual((3, 2), df.shape)
@@ -254,9 +254,9 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_voltage_sa(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        sa = pp.sensitivity.create_analysis()
+        sa = pp.sensitivity.create_ac_analysis()
         sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
-        r = sa.run_ac(n)
+        r = sa.run(n)
         df = r.get_bus_voltages_sensitivity_matrix()
         self.assertEqual((1, 1), df.shape)
         self.assertAlmostEqual(1.0, df['VLGEN_0']['GEN'], places=6)

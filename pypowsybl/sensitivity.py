@@ -123,7 +123,43 @@ class SensitivityAnalysisResult(ObjectHandle):
             return pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
 
 
-class SensitivityAnalysis(ContingencyContainer):
+class DcSensitivityAnalysis(ContingencyContainer):
+    def __init__(self, ptr):
+        ContingencyContainer.__init__(self, ptr)
+        self.branches_ids = None
+        self.injections_or_transformers_ids = None
+
+    def set_branch_flow_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
+        """ Defines branches for which active power flow sensitivities should be computed,
+        and to which injections or PST.
+
+        Args:
+            branches_ids: IDs of branches for which active power flow sensitivities should be computed
+            injections_or_transformers_ids: IDs of injections or PSTs which may impact branch flows,
+                                            to which we should compute sensitivities
+        """
+
+        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
+        self.branches_ids = branches_ids
+        self.injections_or_transformers_ids = injections_or_transformers_ids
+
+    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+        """ Runs the sensitivity analysis
+
+        Args:
+            network (Network): The network
+            parameters (Parameters, optional): The load flow parameters
+            provider (str, optional): Name of the sensitivity analysis provider
+
+        Returns:
+            a sensitivity analysis result
+        """
+        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
+                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
+                                         bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
+
+
+class AcSensitivityAnalysis(ContingencyContainer):
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
@@ -157,23 +193,8 @@ class SensitivityAnalysis(ContingencyContainer):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run_dc(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
-        """ Runs a DC sensitivity analysis
-
-        Args:
-            network (Network): The network
-            parameters (Parameters, optional): The load flow parameters
-            provider (str, optional): Name of the sensitivity analysis provider
-
-        Returns:
-            a sensitivity analysis result
-        """
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
-                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
-                                         bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
-
-    def run_ac(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
-        """ Runs an AC sensitivity analysis
+    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+        """ Runs the sensitivity analysis
 
         Args:
             network (Network): The network
@@ -188,10 +209,19 @@ class SensitivityAnalysis(ContingencyContainer):
                                          bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
 
-def create_analysis() -> SensitivityAnalysis:
-    """ Creates a new sensitivity analysis.
+def create_dc_analysis() -> DcSensitivityAnalysis:
+    """ Creates a new DC sensitivity analysis.
 
     Returns:
-        a new sensitivity analysis
+        a new DC sensitivity analysis
     """
-    return SensitivityAnalysis(_pypowsybl.create_sensitivity_analysis())
+    return DcSensitivityAnalysis(_pypowsybl.create_sensitivity_analysis())
+
+
+def create_ac_analysis() -> AcSensitivityAnalysis:
+    """ Creates a new AC sensitivity analysis.
+
+    Returns:
+        a new AC sensitivity analysis
+    """
+    return AcSensitivityAnalysis(_pypowsybl.create_sensitivity_analysis())
