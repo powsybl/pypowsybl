@@ -8,8 +8,8 @@ import os
 import unittest
 import pypowsybl.network
 import pypowsybl.loadflow
-import pypowsybl.security_analysis
-import pypowsybl.sensitivity_analysis
+import pypowsybl.security
+import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
 
@@ -92,7 +92,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_security_analysis(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        sa = pp.security_analysis.create()
+        sa = pp.security.create_analysis()
         sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
         sa_result = sa.run_ac(n)
         self.assertEqual(1, len(sa_result._post_contingency_results))
@@ -217,7 +217,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
-        sa = pp.sensitivity_analysis.create()
+        sa = pp.sensitivity.create_analysis()
         sa.add_single_element_contingency('L1-2-1')
         sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
         r = sa.run_dc(n)
@@ -254,7 +254,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_voltage_sa(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        sa = pp.sensitivity_analysis.create()
+        sa = pp.sensitivity.create_analysis()
         sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
         r = sa.run_ac(n)
         df = r.get_bus_voltages_sensitivity_matrix()

@@ -84,5 +84,5 @@ class SecurityAnalysis(ContingencyContainer):
         return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self.ptr, network.ptr, parameters, provider))
 
 
-def create() -> SecurityAnalysis:
+def create_analysis() -> SecurityAnalysis:
     return SecurityAnalysis(_pypowsybl.create_security_analysis())

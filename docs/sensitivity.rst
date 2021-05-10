@@ -18,9 +18,9 @@ as a result:
 
     >>> import pypowsybl as pp
     >>> import pypowsybl.network as pn
-    >>> import pypowsybl.sensitivity_analysis as sa
+    >>> import pypowsybl.sensitivity as ps
     >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> analysis = sa.create()
+    >>> analysis = ps.create()
     >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> result = analysis.run_dc(network)
     >>> result.get_reference_flows()
@@ -46,7 +46,12 @@ the list of buses for which you want to compute the sensitivity, and a list of r
 
 .. doctest::
 
-    >>> analysis = sa.create()
+    >>> analysis = ps.create_analysis()
+        >>> analysis.set_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
+        >>> result = analysis.run_ac(network)
+        >>> result.get_bus_voltages_sensitivity_matrix()
+               VLHV1_0  VLLOAD_0
+        GEN  17.629602   7.89637
     >>> analysis.set_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
     >>> result = analysis.run_ac(network)
     >>> result.get_bus_voltages_sensitivity_matrix()
@@ -62,7 +67,16 @@ contingency definitions to your analysis:
 
 .. doctest::
 
-    >>> analysis = sa.create()
+    >>> analysis = ps.create_analysis()
+        >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
+        >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
+        >>> result = analysis.run_dc(network)
+        >>> result.get_post_contingency_reference_flows('NHV1_NHV2_1')
+                         NHV1_NHV2_1  NHV1_NHV2_2
+        reference_flows          0.0        600.0
+        >>> result.get_post_contingency_branch_flows_sensitivity_matrix('NHV1_NHV2_1')
+              NHV1_NHV2_1  NHV1_NHV2_2
+        LOAD          0.0         -1.0
     >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run_dc(network)

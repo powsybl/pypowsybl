@@ -188,7 +188,7 @@ class SensitivityAnalysis(ContingencyContainer):
                                          bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
 
-def create() -> SensitivityAnalysis:
+def create_analysis() -> SensitivityAnalysis:
     """ Creates a new sensitivity analysis.
 
     Returns:
