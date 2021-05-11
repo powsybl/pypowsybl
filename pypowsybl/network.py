@@ -280,7 +280,7 @@ class Network(ObjectHandle):
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
-                raise PyPowsyblError(f'Unsupported series type ${series_type}, element: ${element_type}, series_name: ${seriesName}')
+                raise PyPowsyblError(f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
 
     def update_switches_with_data_frame(self, df: pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
@@ -337,6 +337,14 @@ class Network(ObjectHandle):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.HVDC_LINE, df)
+
+    def update_2_windings_transformer_with_data_frame(self, df: pd.DataFrame):
+        """ Update 2 windings transformer with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
 
 def create_empty(id: str = "Default") -> Network:

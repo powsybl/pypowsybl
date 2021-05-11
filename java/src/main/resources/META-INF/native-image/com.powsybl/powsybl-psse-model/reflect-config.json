@@ -111,6 +111,13 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.psse.model.pf.PsseTransformer$TransformerImpedances",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.psse.model.pf.PsseTransformerWinding",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
@@ -119,6 +126,13 @@
   },
   {
     "name":"com.powsybl.psse.model.pf.PsseZone",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.io.TransformerData$TransformerWindingRecord",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allPublicMethods":true,
