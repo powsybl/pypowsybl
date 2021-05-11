@@ -15,107 +15,89 @@ import numpy as np
 import pandas as pd
 
 
-class SensitivityAnalysisResult(ObjectHandle):
-    """ Represents the result of a sensitivity analysis.
+class DcSensitivityAnalysisResult(ObjectHandle):
+    """ Represents the result of a DC sensitivity analysis.
     The result contains computed values (so called "reference" values) and sensitivity values
-    of requested factors, on N situation and after contingencies.
+    of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self, result_context_ptr, branches_ids: List[str], injections_or_transformers_ids: List[str],
-                                            bus_ids: List[str], target_voltage_ids: List[str]):
+    def __init__(self, result_context_ptr, branches_ids: List[str], injections_or_transformers_ids: List[str]):
         ObjectHandle.__init__(self, result_context_ptr)
         self.result_context_ptr = result_context_ptr
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
-        self.bus_ids = bus_ids
-        self.target_voltage_ids = target_voltage_ids
 
-    def get_branch_flows_sensitivity_matrix(self) -> Optional[pd.DataFrame]:
-        """ Get the matrix of branch flows sensitivities on N situation
-
-        Returns:
-            The matrix of sensitivities on N situation
-        """
-        return self.get_post_contingency_branch_flows_sensitivity_matrix('')
-
-    def get_bus_voltages_sensitivity_matrix(self) -> Optional[pd.DataFrame]:
-        """ Get the matrix of bus voltages sensitivities on N situation
-
-        Returns:
-            The matrix of bus voltages sensitivities on N situation
-        """
-        return self.get_post_contingency_bus_voltages_sensitivity_matrix('')
-
-    def get_post_contingency_branch_flows_sensitivity_matrix(self, contingency_id: str) -> Optional[pd.DataFrame]:
-        """ Get the matrix of branch flows sensitivities after the specified contingency
+    def get_branch_flows_sensitivity_matrix(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+        """ Get the matrix of branch flows sensitivities on the base case or on the post contingency state depending if
+        a contingency ID has been provided.
 
         Args:
-            contingency_id (str): ID of the contingency
+            contingency_id (str, optional): ID of the contingency
         Returns:
-            the matrix of branch flows sensitivities for the specified contingency
+            the matrix of branch flows sensitivities
         """
-        m = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr, contingency_id)
+        m = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr, '' if contingency_id is None else contingency_id)
         if m is None:
             return None
         else:
             data = np.array(m, copy=False)
             return pd.DataFrame(data=data, columns=self.branches_ids, index=self.injections_or_transformers_ids)
 
-    def get_post_contingency_bus_voltages_sensitivity_matrix(self, contingency_id: str) -> Optional[pd.DataFrame]:
-        """ Get the matrix of bus voltages sensitivities after the specified contingency
+    def get_reference_flows(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+        """ The values of branch flows on the base case or on the post contingency state depending if
+        a contingency ID has been provided.
 
         Args:
-            contingency_id (str): ID of the contingency
+            contingency_id (str, optional): ID of the contingency
         Returns:
-            the matrix of sensitivities for the specified contingency
+            the values of branch flows
         """
-        m = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr, contingency_id)
-        if m is None:
-            return None
-        else:
-            data = np.array(m, copy=False)
-            return pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
-
-    def get_reference_flows(self) -> Optional[pd.DataFrame]:
-        """ The values of branch flows on N situation
-
-        Returns:
-            the values of branch flow on N situation
-        """
-        return self.get_post_contingency_reference_flows('')
-
-    def get_reference_voltages(self) -> Optional[pd.DataFrame]:
-        """ The values of bus voltages on N situation
-
-        Returns:
-            The values of bus voltages on N situation
-        """
-        return self.get_post_contingency_reference_voltages('')
-
-    def get_post_contingency_reference_flows(self, contingency_id: str) -> Optional[pd.DataFrame]:
-        """ The values of branch flows after the specified contingency
-
-        Args:
-            contingency_id (str): ID of the contingency
-        Returns:
-            the values of branch flows after the specified contingency
-        """
-        m = _pypowsybl.get_reference_flows(self.result_context_ptr, contingency_id)
+        m = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
         if m is None:
             return None
         else:
             data = np.array(m, copy=False)
             return pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
-    def get_post_contingency_reference_voltages(self, contingency_id: str) -> Optional[pd.DataFrame]:
-        """ The values of bus voltages after the specified contingency
+
+class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
+    """ Represents the result of a AC sensitivity analysis.
+    The result contains computed values (so called "reference" values) and sensitivity values
+    of requested factors, on the base case and on post contingency states.
+    """
+
+    def __init__(self, result_context_ptr, branches_ids: List[str], injections_or_transformers_ids: List[str],
+                 bus_ids: List[str], target_voltage_ids: List[str]):
+        DcSensitivityAnalysisResult.__init__(self, result_context_ptr, branches_ids, injections_or_transformers_ids)
+        self.bus_ids = bus_ids
+        self.target_voltage_ids = target_voltage_ids
+
+    def get_bus_voltages_sensitivity_matrix(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+        """ Get the matrix of bus voltages sensitivities on the base case or on the post contingency state depending if
+        a contingency ID has been provided.
 
         Args:
-            contingency_id (str): ID of the contingency
+            contingency_id (str, optional): ID of the contingency
         Returns:
-            the values of bus voltages after the specified contingency
+            the matrix of sensitivities
         """
-        m = _pypowsybl.get_reference_voltages(self.result_context_ptr, contingency_id)
+        m = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        if m is None:
+            return None
+        else:
+            data = np.array(m, copy=False)
+            return pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
+
+    def get_reference_voltages(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+        """ The values of bus voltages on the base case or on the post contingency state depending if
+        a contingency ID has been provided.
+
+        Args:
+            contingency_id (str, optional): ID of the contingency
+        Returns:
+            the values of bus voltages
+        """
+        m = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
         if m is None:
             return None
         else:
@@ -124,6 +106,7 @@ class SensitivityAnalysisResult(ObjectHandle):
 
 
 class DcSensitivityAnalysis(ContingencyContainer):
+    """ Represents a DC sensitivity analysis."""
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
@@ -143,7 +126,7 @@ class DcSensitivityAnalysis(ContingencyContainer):
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
 
-    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -154,12 +137,12 @@ class DcSensitivityAnalysis(ContingencyContainer):
         Returns:
             a sensitivity analysis result
         """
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
-                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
-                                         bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
+        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
+                                           branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids)
 
 
 class AcSensitivityAnalysis(ContingencyContainer):
+    """ Represents an AC sensitivity analysis."""
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
@@ -193,7 +176,7 @@ class AcSensitivityAnalysis(ContingencyContainer):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> SensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> AcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -204,9 +187,9 @@ class AcSensitivityAnalysis(ContingencyContainer):
         Returns:
             a sensitivity analysis result
         """
-        return SensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters, provider),
-                                         branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
-                                         bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
+        return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters, provider),
+                                           branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids,
+                                           bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
 
 def create_dc_analysis() -> DcSensitivityAnalysis:

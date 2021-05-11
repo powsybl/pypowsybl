@@ -13,6 +13,7 @@ import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
 
+
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
     def test_print_version():
@@ -247,7 +248,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertAlmostEqual(72.24667948865367, df['L1-5-1']['reference_flows'], places=6)
         self.assertAlmostEqual(69.83139138110104, df['L2-3-1']['reference_flows'], places=6)
 
-        df = r.get_post_contingency_branch_flows_sensitivity_matrix('L1-2-1')
+        df = r.get_branch_flows_sensitivity_matrix('L1-2-1')
         self.assertEqual((3, 2), df.shape)
         self.assertEqual(0.49999999999999994, df['L1-5-1']['B1-G'])
         self.assertEqual(-0.49999999999999994, df['L1-5-1']['B2-G'])
@@ -256,12 +257,12 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(0.08442310437411704, df['L2-3-1']['B2-G'])
         self.assertEqual(-0.49038517950037847, df['L2-3-1']['B3-G'])
 
-        df = r.get_post_contingency_reference_flows('L1-2-1')
+        df = r.get_reference_flows('L1-2-1')
         self.assertEqual((1, 2), df.shape)
         self.assertAlmostEqual(225.69999999999996, df['L1-5-1']['reference_flows'], places=6)
         self.assertAlmostEqual(43.92137999293259, df['L2-3-1']['reference_flows'], places=6)
 
-        self.assertIsNone(r.get_post_contingency_branch_flows_sensitivity_matrix('aaa'))
+        self.assertIsNone(r.get_branch_flows_sensitivity_matrix('aaa'))
 
     def test_voltage_sa(self):
         n = pp.network.create_eurostag_tutorial_example1_network()

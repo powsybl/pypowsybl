@@ -23,7 +23,7 @@ pypowsybl.network module
 pypowsybl.security\_analysis module
 -----------------------------------
 
-.. automodule:: pypowsybl.security_analysis
+.. automodule:: pypowsybl.security
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ pypowsybl.security\_analysis module
 pypowsybl.sensitivity\_analysis module
 --------------------------------------
 
-.. automodule:: pypowsybl.sensitivity_analysis
+.. automodule:: pypowsybl.sensitivity
    :members:
    :undoc-members:
    :show-inheritance:

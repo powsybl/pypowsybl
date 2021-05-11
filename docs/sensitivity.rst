@@ -1,7 +1,7 @@
 Sensitivity analysis
 ====================
 
-You can use the module ``pypowsybl.sensitivity_analysis`` in order to perform sensitivity analysis on a network.
+You can use the module ``pypowsybl.sensitivity`` in order to perform sensitivity analysis on a network.
 
 DC sensitivity analysis
 -----------------------
@@ -67,9 +67,9 @@ contingency definitions to your analysis:
     >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
-    >>> result.get_post_contingency_reference_flows('NHV1_NHV2_1')
+    >>> result.get_reference_flows('NHV1_NHV2_1')
                      NHV1_NHV2_1  NHV1_NHV2_2
     reference_flows          0.0        600.0
-    >>> result.get_post_contingency_branch_flows_sensitivity_matrix('NHV1_NHV2_1')
+    >>> result.get_branch_flows_sensitivity_matrix('NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
