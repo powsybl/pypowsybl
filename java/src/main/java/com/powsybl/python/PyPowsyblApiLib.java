@@ -62,13 +62,21 @@ public final class PyPowsyblApiLib {
     private PyPowsyblApiLib() {
     }
 
+    private static void setException(ExceptionHandlerPointer exceptionHandlerPtr, Throwable t) {
+        LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
+        // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
+        // typically a NullPointerException has a null message and an empty string message need to be set in order to
+        // correctly handle the exception on C++ side
+        String nonNullMessage = Objects.requireNonNull(t.getMessage(), "");
+        exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
+    }
+
     private static void doCatch(ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             runnable.run();
         } catch (Throwable t) {
-            LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
-            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            setException(exceptionHandlerPtr, t);
         }
     }
 
@@ -77,8 +85,7 @@ public final class PyPowsyblApiLib {
         try {
             return supplier.getAsBoolean();
         } catch (Throwable t) {
-            LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
-            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            setException(exceptionHandlerPtr, t);
             return false;
         }
     }
@@ -88,8 +95,7 @@ public final class PyPowsyblApiLib {
         try {
             return supplier.getAsInt();
         } catch (Throwable t) {
-            LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
-            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            setException(exceptionHandlerPtr, t);
             return -1;
         }
     }
@@ -104,8 +110,7 @@ public final class PyPowsyblApiLib {
         try {
             return supplier.get();
         } catch (Throwable t) {
-            LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
-            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(t.getMessage()));
+            setException(exceptionHandlerPtr, t);
             return WordFactory.zero();
         }
     }
