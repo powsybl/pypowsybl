@@ -302,6 +302,10 @@ class PyPowsyblTestCase(unittest.TestCase):
         n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
         self.assertEqual(4, len(n.buses))
 
+    def test_create_zone(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        zone = pp.sensitivity.create_country_zone(n, 'FR')
+
 
 if __name__ == '__main__':
     unittest.main()
