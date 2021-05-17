@@ -11,9 +11,12 @@ import platform
 import subprocess
 
 from setuptools import setup, find_packages, Extension
+from setuptools.command.install import install
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+
+extra_jar = ''
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -83,9 +86,10 @@ class PyPowsyblBuild(build_ext):
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
-
+        global extra_jar
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable,
+                      '-DEXTRA_JAR=' + extra_jar]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -114,6 +118,25 @@ class PyPowsyblBuild(build_ext):
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+
+class InstallCommand(install):
+    user_options = install.user_options + [
+        ('jar=', None, 'absolute path to jar would be included, separated by colon.'),
+    ]
+
+    def initialize_options(self):
+        install.initialize_options(self)
+        self.jar = ''
+
+    def finalize_options(self):
+        install.finalize_options(self)
+
+    def run(self):
+        global extra_jar
+        extra_jar = self.jar
+        install.run(self)
+
+
 setup(
     name='pypowsybl',
     author='Geoffroy Jamgotchian',
@@ -124,7 +147,7 @@ setup(
     url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
     ext_modules=[PyPowsyblExtension()],
-    cmdclass=dict(build_ext=PyPowsyblBuild),
+    cmdclass=dict(install=InstallCommand, build_ext=PyPowsyblBuild),
     zip_safe=False,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
