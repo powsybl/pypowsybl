@@ -70,7 +70,7 @@ public final class PyPowsyblApiHeader {
     interface BusPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);
@@ -100,7 +100,7 @@ public final class PyPowsyblApiHeader {
     interface GeneratorPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);
@@ -148,7 +148,7 @@ public final class PyPowsyblApiHeader {
     interface LoadPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);

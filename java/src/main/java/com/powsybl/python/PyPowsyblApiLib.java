@@ -719,6 +719,8 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("q1", l -> l.getTerminal1().getQ())
                             .addDoubleSeries("p2", l -> l.getTerminal2().getP())
                             .addDoubleSeries("q2", l -> l.getTerminal2().getQ())
+                            .addStringSeries("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
+                            .addStringSeries("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                             .addStringSeries("bus1_id", l -> getBusId(l.getTerminal1()))
                             .addStringSeries("bus2_id", l -> getBusId(l.getTerminal2())))
                             .build();
@@ -740,6 +742,8 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("q1", twt -> twt.getTerminal1().getQ())
                             .addDoubleSeries("p2", twt -> twt.getTerminal2().getP())
                             .addDoubleSeries("q2", twt -> twt.getTerminal2().getQ())
+                            .addStringSeries("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
+                            .addStringSeries("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
                             .addStringSeries("bus1_id", twt -> getBusId(twt.getTerminal1()))
                             .addStringSeries("bus2_id", twt -> getBusId(twt.getTerminal2())))
                             .build();
@@ -759,6 +763,7 @@ public final class PyPowsyblApiLib {
                             .addIntSeries("phase_tap_position1", twt -> twt.getLeg1().getPhaseTapChanger(), TapChanger::getTapPosition)
                             .addDoubleSeries("p1", twt -> twt.getLeg1().getTerminal().getP())
                             .addDoubleSeries("q1", twt -> twt.getLeg1().getTerminal().getP())
+                            .addStringSeries("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
                             .addDoubleSeries("r2", twt -> twt.getLeg2().getR())
                             .addDoubleSeries("x2", twt -> twt.getLeg2().getR())
@@ -770,6 +775,7 @@ public final class PyPowsyblApiLib {
                             .addIntSeries("phase_tap_position2", twt -> twt.getLeg2().getPhaseTapChanger(), TapChanger::getTapPosition)
                             .addDoubleSeries("p2", twt -> twt.getLeg2().getTerminal().getP())
                             .addDoubleSeries("q2", twt -> twt.getLeg2().getTerminal().getP())
+                            .addStringSeries("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
                             .addDoubleSeries("r3", twt -> twt.getLeg3().getR())
                             .addDoubleSeries("x3", twt -> twt.getLeg3().getR())
@@ -781,6 +787,7 @@ public final class PyPowsyblApiLib {
                             .addIntSeries("phase_tap_position3", twt -> twt.getLeg3().getPhaseTapChanger(), TapChanger::getTapPosition)
                             .addDoubleSeries("p3", twt -> twt.getLeg3().getTerminal().getP())
                             .addDoubleSeries("q3", twt -> twt.getLeg3().getTerminal().getP())
+                            .addStringSeries("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal())))
                             .build();
 
@@ -797,6 +804,7 @@ public final class PyPowsyblApiLib {
                             .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
                             .addDoubleSeries("p", g -> g.getTerminal().getP())
                             .addDoubleSeries("q", g -> g.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", g -> g.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", g -> getBusId(g.getTerminal())))
                             .build();
 
@@ -809,6 +817,7 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("q0", Load::getQ0)
                             .addDoubleSeries("p", l -> l.getTerminal().getP())
                             .addDoubleSeries("q", l -> l.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", l -> l.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", l -> getBusId(l.getTerminal())))
                             .build();
 
@@ -817,9 +826,10 @@ public final class PyPowsyblApiLib {
                     return addProperties(new SeriesPointerArrayBuilder<>(shunts)
                             .addStringSeries("id", true, ShuntCompensator::getId)
                             .addEnumSeries("model_type", ShuntCompensator::getModelType)
-                            .addDoubleSeries("p", g -> g.getTerminal().getP())
-                            .addDoubleSeries("q", g -> g.getTerminal().getQ())
-                            .addStringSeries("bus_id", g -> getBusId(g.getTerminal())))
+                            .addDoubleSeries("p", sc -> sc.getTerminal().getP())
+                            .addDoubleSeries("q", sc -> sc.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", sc -> sc.getTerminal().getVoltageLevel().getId())
+                            .addStringSeries("bus_id", sc -> getBusId(sc.getTerminal())))
                             .build();
 
                 case DANGLING_LINE:
@@ -834,6 +844,7 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("q0", DanglingLine::getQ0)
                             .addDoubleSeries("p", dl -> dl.getTerminal().getP())
                             .addDoubleSeries("q", dl -> dl.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", dl -> dl.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", dl -> getBusId(dl.getTerminal())))
                             .build();
 
@@ -845,6 +856,7 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("loss_factor", LccConverterStation::getLossFactor)
                             .addDoubleSeries("p", st -> st.getTerminal().getP())
                             .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", st -> st.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", st -> getBusId(st.getTerminal())))
                             .build();
 
@@ -857,6 +869,7 @@ public final class PyPowsyblApiLib {
                             .addBooleanSeries("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn)
                             .addDoubleSeries("p", st -> st.getTerminal().getP())
                             .addDoubleSeries("q", st -> st.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", st -> st.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", st -> getBusId(st.getTerminal())))
                             .build();
 
@@ -869,6 +882,7 @@ public final class PyPowsyblApiLib {
                             .addEnumSeries("regulation_mode", StaticVarCompensator::getRegulationMode)
                             .addDoubleSeries("p", svc -> svc.getTerminal().getP())
                             .addDoubleSeries("q", svc -> svc.getTerminal().getQ())
+                            .addStringSeries("voltage_level_id", svc -> svc.getTerminal().getVoltageLevel().getId())
                             .addStringSeries("bus_id", svc -> getBusId(svc.getTerminal())))
                             .build();
 
@@ -878,7 +892,9 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("id", true, Switch::getId)
                             .addEnumSeries("kind", Switch::getKind)
                             .addBooleanSeries("open", Switch::isOpen)
-                            .addBooleanSeries("retained", Switch::isRetained)).build();
+                            .addBooleanSeries("retained", Switch::isRetained)
+                            .addStringSeries("voltage_level_id", sw -> sw.getVoltageLevel().getId()))
+                            .build();
 
                 case VOLTAGE_LEVEL:
                     List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().collect(Collectors.toList());
@@ -905,6 +921,7 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("id", true, BusbarSection::getId)
                             .addDoubleSeries("v", BusbarSection::getV)
                             .addDoubleSeries("angle", BusbarSection::getAngle)
+                            .addStringSeries("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
                             .build();
 
                 case HVDC_LINE:
@@ -916,8 +933,8 @@ public final class PyPowsyblApiLib {
                             .addDoubleSeries("max_p", HvdcLine::getMaxP)
                             .addDoubleSeries("nominal_v", HvdcLine::getNominalV)
                             .addDoubleSeries("r", HvdcLine::getR)
-                            .addStringSeries("converter_station1", l -> l.getConverterStation1().getId())
-                            .addStringSeries("converter_station2", l -> l.getConverterStation2().getId()))
+                            .addStringSeries("converter_station1_id", l -> l.getConverterStation1().getId())
+                            .addStringSeries("converter_station2_id", l -> l.getConverterStation2().getId()))
                             .build();
 
                 case RATIO_TAP_CHANGER_STEP:
