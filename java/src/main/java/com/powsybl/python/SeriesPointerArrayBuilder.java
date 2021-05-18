@@ -96,7 +96,7 @@ class SeriesPointerArrayBuilder<T> {
 
     class StringSeries extends AbstractSeries<T> {
 
-        private final Function<T, String> stringGetter;
+        final Function<T, String> stringGetter;
 
         StringSeries(String name, boolean index, Function<T, String> stringGetter) {
             super(name, index);
@@ -171,7 +171,7 @@ class SeriesPointerArrayBuilder<T> {
 
     private final List<T> elements;
 
-    private final List<Series<T>> seriesList = new ArrayList<>();
+    final List<Series<T>> seriesList = new ArrayList<>();
 
     SeriesPointerArrayBuilder(List<T> elements) {
         this.elements = Objects.requireNonNull(elements);
