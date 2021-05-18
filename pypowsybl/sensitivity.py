@@ -24,7 +24,7 @@ def create_country_zone(network: Network, country: str) -> Zone:
     voltage_levels = network.create_voltage_levels_data_frame()
     generators = network.create_generators_data_frame()
     # join generators, voltage levels and substations
-    generators_with_country = generators.join(voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']), on=['voltage_level']);
+    generators_with_country = generators.join(voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']), on=['voltage_level_id']);
     a = generators_with_country[generators_with_country['country'] == country]
     print(a)
     return Zone()
