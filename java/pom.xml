@@ -32,9 +32,9 @@
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <powysbl-core.version>4.1.0</powysbl-core.version>
+        <powsybl-core.version>4.1.0</powsybl-core.version>
         <powsybl-rte-core.version>3.1.0</powsybl-rte-core.version>
-        <powysbl-single-line-diagram.version>2.1.0</powysbl-single-line-diagram.version>
+        <powsybl-single-line-diagram.version>2.1.0</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.10.1</powsybl-open-load-flow.version>
     </properties>
 
@@ -123,68 +123,68 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-conversion</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-config-classic</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ieee-cdf-converter</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-api</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-test</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-xml-converter</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-loadflow-api</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-matpower-converter</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-psse-converter</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
-            <version>${powysbl-single-line-diagram.version}</version>
+            <version>${powsybl-single-line-diagram.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ucte-converter</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
 
         <!-- runtime -->
@@ -198,12 +198,12 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-impl</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-reducer</artifactId>
-            <version>${powysbl-core.version}</version>
+            <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
