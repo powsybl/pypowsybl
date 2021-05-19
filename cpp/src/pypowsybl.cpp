@@ -82,6 +82,10 @@ Array<generator>::~Array() {
 }
 
 template<>
+Array<battery>::~Array() {
+}
+
+template<>
 Array<load>::~Array() {
     callJava<>(::freeLoadArray, delegate_);
 }
@@ -203,6 +207,10 @@ void* createEurostagTutorialExample1Network() {
     return callJava<void*>(::createEurostagTutorialExample1Network);
 }
 
+void* createBatteryNetwork() {
+    return callJava<void*>(::createBatteryNetwork);
+}
+
 void* createFourSubstationsNodeBreakerNetwork() {
     return callJava<void*>(::createFourSubstationsNodeBreakerNetwork);
 }
@@ -293,6 +301,10 @@ BusArray* getBusArray(void* network) {
 
 GeneratorArray* getGeneratorArray(void* network) {
     return new GeneratorArray(callJava<array*>(::getGeneratorArray, network));
+}
+
+BatteryArray* getBatteryArray(void* network) {
+    return new BatteryArray(callJava<array*>(::getBatteryArray, network));
 }
 
 LoadArray* getLoadArray(void* network) {

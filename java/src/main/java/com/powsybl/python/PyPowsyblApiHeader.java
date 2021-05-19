@@ -144,6 +144,42 @@ public final class PyPowsyblApiHeader {
         GeneratorPointer addressOf(int index);
     }
 
+    @CStruct("battery")
+    interface BatteryPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("p0")
+        double getP0();
+
+        @CField("p0")
+        void setP0(double q0);
+
+        @CField("q0")
+        double getQ0();
+
+        @CField("q0")
+        void setQ0(double q0);
+
+        @CField("min_p")
+        double getMinP();
+
+        @CField("min_p")
+        void setMinP(double minP);
+
+        @CField("max_p")
+        double getMaxP();
+
+        @CField("max_p")
+        void setMaxP(double maxP);
+
+        BatteryPointer addressOf(int index);
+    }
+
     @CStruct("load")
     interface LoadPointer extends PointerBase {
 
@@ -368,6 +404,7 @@ public final class PyPowsyblApiHeader {
         TWO_WINDINGS_TRANSFORMER,
         THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
+        BATTERY,
         LOAD,
         SHUNT_COMPENSATOR,
         DANGLING_LINE,

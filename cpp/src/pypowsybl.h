@@ -48,6 +48,7 @@ private:
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<bus> BusArray;
 typedef Array<generator> GeneratorArray;
+typedef Array<battery> BatteryArray;
 typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
@@ -111,6 +112,8 @@ void* createIeeeNetwork(int busCount);
 
 void* createEurostagTutorialExample1Network();
 
+void* createBatteryNetwork();
+
 void* createFourSubstationsNodeBreakerNetwork();
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open);
@@ -138,6 +141,8 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_para
 BusArray* getBusArray(void* network);
 
 GeneratorArray* getGeneratorArray(void* network);
+
+BatteryArray* getBatteryArray(void* network);
 
 LoadArray* getLoadArray(void* network);
 

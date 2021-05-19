@@ -153,6 +153,13 @@ public final class NetworkUtil {
                         .collect(Collectors.toList());
                 break;
 
+            case BATTERY:
+                elementsIds = network.getBatteryStream()
+                        .filter(b -> filter(b, nominalVoltages, countries, mainCc, mainSc))
+                        .map(Identifiable::getId)
+                        .collect(Collectors.toList());
+                break;
+
             case LOAD:
                 elementsIds = network.getLoadStream()
                         .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))

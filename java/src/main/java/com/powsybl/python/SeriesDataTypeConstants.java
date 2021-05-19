@@ -27,6 +27,11 @@ final class SeriesDataTypeConstants {
             .put("target_v", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
             .build();
 
+    static final Map<String, Integer> BATTERY_MAP = ImmutableMap.<String, Integer>builder()
+            .put("p0", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+            .put("q0", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+            .build();
+
     static final Map<String, Integer> LOAD_MAP = ImmutableMap.<String, Integer>builder()
             .put("p0", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
             .put("q0", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)

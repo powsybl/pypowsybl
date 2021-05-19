@@ -108,6 +108,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'BE'}))
 
+    def test_batteries_data_frame(self):
+        n = pp.network.create_battery_network()
+        n.get_elements_ids(pp.network.ElementType.BATTERY)
+        df = n.create_batteries_data_frame()
+        self.assertEqual(200.0, df['max_p']['BAT2'])
+        df2 = pd.DataFrame(data=[[101, 201]], columns=['p0', 'q0'], index=['BAT2'])
+        n.update_batteries_with_data_frame(df2)
+        df3 = n.create_batteries_data_frame()
+        self.assertEqual(101, df3['p0']['BAT2'])
+        self.assertEqual(201, df3['q0']['BAT2'])
+
     def test_loads_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_loads_data_frame()

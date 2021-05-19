@@ -31,6 +31,14 @@ typedef struct generator_struct {
     bus* bus_;
 } generator;
 
+typedef struct battery_struct {
+    char* id;
+    double min_p;
+    double max_p;
+    double p0;
+    double q0;
+} battery;
+
 typedef struct load_struct {
     char* id;
     double p0;
@@ -84,6 +92,7 @@ typedef enum {
     TWO_WINDINGS_TRANSFORMER,
     THREE_WINDINGS_TRANSFORMER,
     GENERATOR,
+    BATTERY,
     LOAD,
     SHUNT_COMPENSATOR,
     DANGLING_LINE,

@@ -16,6 +16,7 @@ import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
@@ -173,6 +174,14 @@ public final class PyPowsyblApiLib {
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = EurostagTutorialExample1Factory.create();
+            return ObjectHandles.getGlobal().create(network);
+        });
+    }
+
+    @CEntryPoint(name = "createBatteryNetwork")
+    public static ObjectHandle createBatteryNetwork(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = BatteryNetworkFactory.create();
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -422,6 +431,25 @@ public final class PyPowsyblApiLib {
                 }
             }
             freeArrayPointer(generatorArrayPtr);
+        });
+    }
+
+    @CEntryPoint(name = "getBatteryArray")
+    public static ArrayPointer<BatteryPointer> getBatteryArray(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            final List<Battery> batteries = network.getBatteryStream().collect(Collectors.toList());
+            BatteryPointer batteryPtr = UnmanagedMemory.calloc(batteries.size() * SizeOf.get(BatteryPointer.class));
+            for (int index = 0; index < batteries.size(); index++) {
+                Battery bat = batteries.get(index);
+                BatteryPointer batPtrI = batteryPtr.addressOf(index);
+                batPtrI.setId(CTypeUtil.toCharPtr(bat.getId()));
+                batPtrI.setMaxP(bat.getMaxP());
+                batPtrI.setMinP(bat.getMinP());
+                batPtrI.setP0(bat.getP0());
+                batPtrI.setQ0(bat.getQ0());
+            }
+            return allocArrayPointer(batteryPtr, batteries.size());
         });
     }
 
@@ -711,6 +739,9 @@ public final class PyPowsyblApiLib {
                     break;
                 case GENERATOR:
                     seriesTypes = SeriesDataTypeConstants.GENERATOR_MAP;
+                    break;
+                case BATTERY:
+                    seriesTypes = SeriesDataTypeConstants.BATTERY_MAP;
                     break;
                 case HVDC_LINE:
                     seriesTypes = SeriesDataTypeConstants.HVDC_LINE_MAP;

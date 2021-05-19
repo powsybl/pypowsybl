@@ -48,6 +48,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
+    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an network with two batteries");
+
     m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
@@ -60,6 +62,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)
             .value("GENERATOR", element_type::GENERATOR)
+            .value("BATTERY", element_type::BATTERY)
             .value("LOAD", element_type::LOAD)
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
@@ -253,6 +256,28 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::GeneratorArray>(m, "GeneratorArray");
 
     m.def("get_generators", &pypowsybl::getGeneratorArray, "Get network generators", py::arg("network"));
+
+    py::class_<battery>(m, "Battery")
+            .def_property_readonly("id", [](const battery& b) {
+                return b.id;
+            })
+            .def_property_readonly("min_p", [](const battery& b) {
+                return b.min_p;
+            })
+            .def_property_readonly("max_p", [](const battery& b) {
+                return b.max_p;
+            })
+            .def_property_readonly("p0", [](const battery& b) {
+                return b.p0;
+            })
+            .def_property_readonly("q0", [](const battery& b) {
+                return b.q0;
+            });
+
+
+    bindArray<pypowsybl::BatteryArray>(m, "BatteryArray");
+
+    m.def("get_batteries", &pypowsybl::getBatteryArray, "Get network batteries", py::arg("network"));
 
     py::class_<load>(m, "Load")
             .def_property_readonly("id", [](const load& l) {

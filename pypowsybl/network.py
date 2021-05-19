@@ -128,6 +128,14 @@ class Network(ObjectHandle):
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.GENERATOR)
 
+    def create_batteries_data_frame(self) -> pd.DataFrame:
+        """ Create a battery ``Pandas`` data frame.
+
+        Returns:
+            the battery data frame
+        """
+        return self.create_elements_data_frame(_pypowsybl.ElementType.BATTERY)
+
     def create_loads_data_frame(self) -> pd.DataFrame:
         """ Create a generator ``Pandas`` data frame.
 
@@ -298,6 +306,17 @@ class Network(ObjectHandle):
         """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.GENERATOR, df)
 
+    def update_batteries_with_data_frame(self, df: pd.DataFrame):
+        """ Update generators with a ``Pandas`` data frame.
+        Available columns names:
+        - p0
+        - q0
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.BATTERY, df)
+
     def update_loads_with_data_frame(self, df: pd.DataFrame):
         """ Update loads with a ``Pandas`` data frame.
 
@@ -384,6 +403,10 @@ def create_ieee300() -> Network:
 
 def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
+
+
+def create_battery_network() -> Network:
+    return Network(_pypowsybl.create_battery_network())
 
 
 def create_four_substations_node_breaker_network() -> Network:

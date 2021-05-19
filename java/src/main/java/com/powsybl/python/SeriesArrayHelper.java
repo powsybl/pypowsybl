@@ -130,6 +130,15 @@ final class SeriesArrayHelper {
                         .addStringSeries("voltage_level_id", g -> g.getTerminal().getVoltageLevel().getId())
                         .addStringSeries("bus_id", g -> getBusId(g.getTerminal())));
 
+            case BATTERY:
+                List<Battery> batteries = network.getBatteryStream().collect(Collectors.toList());
+                return addProperties(new SeriesPointerArrayBuilder<>(batteries)
+                        .addStringSeries("id", true, Battery::getId)
+                        .addDoubleSeries("max_p", Battery::getMaxP)
+                        .addDoubleSeries("min_p", Battery::getMinP)
+                        .addDoubleSeries("p0", Battery::getP0)
+                        .addDoubleSeries("q0", Battery::getQ0));
+
             case LOAD:
                 List<Load> loads = network.getLoadStream().collect(Collectors.toList());
                 return addProperties(new SeriesPointerArrayBuilder<>(loads)
@@ -302,6 +311,19 @@ final class SeriesArrayHelper {
                             break;
                         default:
                             throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                    }
+                    break;
+                case BATTERY:
+                    Battery b = getBatteryOrThrowsException(id, network);
+                    switch (seriesName) {
+                        case "p0":
+                            b.setP0(value);
+                            break;
+                        case "q0":
+                            b.setQ0(value);
+                            break;
+                        default:
+                            throw new UnsupportedOperationException("Series name not supported for load elements: " + seriesName);
                     }
                     break;
                 case LOAD:
@@ -513,6 +535,14 @@ final class SeriesArrayHelper {
             throw new PowsyblException("Generator '" + id + "' not found");
         }
         return g;
+    }
+
+    private static Battery getBatteryOrThrowsException(String id, Network network) {
+        Battery b = network.getBattery(id);
+        if (b == null) {
+            throw new PowsyblException("Battery '" + id + "' not found");
+        }
+        return b;
     }
 
     private static Switch getSwitchOrThrowsException(String id, Network network) {
