@@ -17,10 +17,8 @@ as a result:
 .. doctest::
 
     >>> import pypowsybl as pp
-    >>> import pypowsybl.network as pn
-    >>> import pypowsybl.sensitivity as ps
-    >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> analysis = ps.create_dc_analysis()
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> analysis = pp.sensitivity.create_dc_analysis()
     >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> result = analysis.run(network)
     >>> result.get_reference_flows()
@@ -39,7 +37,7 @@ It's possible to perform an AC sensitivity analysis almost in the same way, just
 
 .. doctest::
 
-    >>> analysis = ps.create_ac_analysis()
+    >>> analysis = pp.sensitivity.create_ac_analysis()
 
 Additionally, AC sensitivity analysis allows to compute voltage sensitivities. You just need to define
 the list of buses for which you want to compute the sensitivity, and a list of regulating equipments
@@ -47,7 +45,7 @@ the list of buses for which you want to compute the sensitivity, and a list of r
 
 .. doctest::
 
-    >>> analysis = ps.create_ac_analysis()
+    >>> analysis = pp.sensitivity.create_ac_analysis()
     >>> analysis.set_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
     >>> result = analysis.run(network)
     >>> result.get_bus_voltages_sensitivity_matrix()
@@ -63,7 +61,7 @@ contingency definitions to your analysis:
 
 .. doctest::
 
-    >>> analysis = ps.create_dc_analysis()
+    >>> analysis = pp.sensitivity.create_dc_analysis()
     >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
