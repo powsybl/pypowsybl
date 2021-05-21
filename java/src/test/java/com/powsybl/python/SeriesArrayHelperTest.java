@@ -10,6 +10,9 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -18,12 +21,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SeriesArrayHelperTest {
 
     @Test
-    void testGetter() {
+    void test() {
         Network network = EurostagTutorialExample1Factory.create();
 
-        final SeriesPointerArrayBuilder builder = SeriesArrayHelper.prepareData(network, PyPowsyblApiHeader.ElementType.BUS);
+        SeriesPointerArrayBuilder builder = SeriesArrayHelper.prepareData(network, PyPowsyblApiHeader.ElementType.BUS);
 
-        assertEquals("VLGEN_0", ((SeriesPointerArrayBuilder.StringSeries) builder.seriesList.get(0)).stringGetter.apply(builder.getElements().get(0)));
+        List list = builder.buildJavaSeries();
+        List ids = (List) list.get(0);
+        List<String> expectedIds = Arrays.asList("VLGEN_0", "VLHV1_0", "VLHV2_0", "VLLOAD_0");
+        assertEquals(expectedIds, ids);
     }
 
     @Test

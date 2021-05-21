@@ -33,7 +33,7 @@ class SeriesPointerArrayBuilder<T> {
     static final int BOOLEAN_SERIES_TYPE = 3;
     static final int INT_UNDEFINED_VALUE = -99999;
 
-    interface Series<T> {
+    interface Series<T, E> {
 
         String getName();
 
@@ -42,9 +42,12 @@ class SeriesPointerArrayBuilder<T> {
         int getType();
 
         PointerBase createDataPtr(List<T> elements);
+
+        // used for unittest
+        List<E> toJavaList(List<T> elements);
     }
 
-    abstract static class AbstractSeries<T> implements Series<T> {
+    abstract static class AbstractSeries<T, E> implements Series<T, E> {
 
         private final String name;
 
@@ -70,7 +73,7 @@ class SeriesPointerArrayBuilder<T> {
         }
     }
 
-    class DoubleSeries extends AbstractSeries<T> {
+    class DoubleSeries extends AbstractSeries<T, Double> {
 
         private final ToDoubleFunction<T> doubleGetter;
 
@@ -92,9 +95,18 @@ class SeriesPointerArrayBuilder<T> {
             }
             return dataPtr;
         }
+
+        @Override
+        public List<Double> toJavaList(List<T> elements) {
+            List<Double> list = new ArrayList<>();
+            for (int i = 0; i < elements.size(); i++) {
+                list.add(doubleGetter.applyAsDouble(elements.get(i)));
+            }
+            return list;
+        }
     }
 
-    class StringSeries extends AbstractSeries<T> {
+    class StringSeries extends AbstractSeries<T, String> {
 
         final Function<T, String> stringGetter;
 
@@ -117,9 +129,18 @@ class SeriesPointerArrayBuilder<T> {
             }
             return dataPtr;
         }
+
+        @Override
+        public List<String> toJavaList(List<T> elements) {
+            List<String> list = new ArrayList<>();
+            for (int i = 0; i < elements.size(); i++) {
+                list.add(stringGetter.apply(elements.get(i)));
+            }
+            return list;
+        }
     }
 
-    class IntSeries extends AbstractSeries<T> {
+    class IntSeries extends AbstractSeries<T, Integer> {
 
         private final ToIntFunction<T> intGetter;
 
@@ -142,9 +163,18 @@ class SeriesPointerArrayBuilder<T> {
             }
             return dataPtr;
         }
+
+        @Override
+        public List<Integer> toJavaList(List<T> elements) {
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < elements.size(); i++) {
+                list.add(intGetter.applyAsInt(elements.get(i)));
+            }
+            return list;
+        }
     }
 
-    class BooleanSeries extends AbstractSeries<T> {
+    class BooleanSeries extends AbstractSeries<T, Boolean> {
 
         private final Predicate<T> boolGetter;
 
@@ -167,11 +197,20 @@ class SeriesPointerArrayBuilder<T> {
             }
             return dataPtr;
         }
+
+        @Override
+        public List<Boolean> toJavaList(List<T> elements) {
+            List<Boolean> list = new ArrayList<>();
+            for (int i = 0; i < elements.size(); i++) {
+                list.add(boolGetter.test(elements.get(i)));
+            }
+            return list;
+        }
     }
 
     private final List<T> elements;
 
-    final List<Series<T>> seriesList = new ArrayList<>();
+    final List<Series<T, ?>> seriesList = new ArrayList<>();
 
     SeriesPointerArrayBuilder(List<T> elements) {
         this.elements = Objects.requireNonNull(elements);
@@ -238,7 +277,7 @@ class SeriesPointerArrayBuilder<T> {
         PyPowsyblApiHeader.SeriesPointer seriesPtr = UnmanagedMemory.calloc(seriesList.size() * SizeOf.get(PyPowsyblApiHeader.SeriesPointer.class));
 
         for (int seriesIndex = 0; seriesIndex < seriesList.size(); seriesIndex++) {
-            Series<T> series = seriesList.get(seriesIndex);
+            Series<T, ?> series = seriesList.get(seriesIndex);
             PyPowsyblApiHeader.SeriesPointer seriesPtrI = seriesPtr.addressOf(seriesIndex);
             seriesPtrI.setName(CTypeUtil.toCharPtr(series.getName()));
             seriesPtrI.setIndex(series.isIndex());
@@ -249,5 +288,16 @@ class SeriesPointerArrayBuilder<T> {
         }
 
         return PyPowsyblApiHeader.allocArrayPointer(seriesPtr, seriesList.size());
+    }
+
+    // used for unittest
+    List<List> buildJavaSeries() {
+        List<List> list = new ArrayList<>();
+        for (int seriesIndex = 0; seriesIndex < seriesList.size(); seriesIndex++) {
+            Series<T, ?> series = seriesList.get(seriesIndex);
+            List<?> objects = series.toJavaList(elements);
+            list.add(objects);
+        }
+        return list;
     }
 }
