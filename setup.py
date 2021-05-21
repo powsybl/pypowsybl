@@ -16,7 +16,7 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
-extra_jar = ''
+extra_jars = ''
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -86,10 +86,12 @@ class PyPowsyblBuild(build_ext):
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
-        global extra_jar
+        global extra_jars
+        if extra_jars:
+            extra_jars = ':' + extra_jars
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DEXTRA_JAR=' + extra_jar]
+                      '-DEXTRA_JARS=' + extra_jars]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -121,19 +123,19 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 class InstallCommand(install):
     user_options = install.user_options + [
-        ('jar=', None, 'absolute path to jar would be included, separated by colon.'),
+        ('jars=', None, 'absolute path to jar would be included, separated by colon.'),
     ]
 
     def initialize_options(self):
         install.initialize_options(self)
-        self.jar = ''
+        self.jars = ''
 
     def finalize_options(self):
         install.finalize_options(self)
 
     def run(self):
-        global extra_jar
-        extra_jar = self.jar
+        global extra_jars
+        extra_jars = self.jars
         install.run(self)
 
 
