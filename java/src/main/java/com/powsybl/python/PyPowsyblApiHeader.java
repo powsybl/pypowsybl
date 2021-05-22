@@ -11,11 +11,9 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
-import org.graalvm.nativeimage.c.struct.CField;
-import org.graalvm.nativeimage.c.struct.CFieldAddress;
-import org.graalvm.nativeimage.c.struct.CStruct;
-import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.struct.*;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
 
@@ -438,4 +436,39 @@ public final class PyPowsyblApiHeader {
         SeriesPointer addressOf(int index);
     }
 
+    @CStruct("zone")
+    interface ZonePointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("injections_ids")
+        CCharPointerPointer getInjectionsIds();
+
+        @CField("injections_ids")
+        void setInjectionIds(CCharPointerPointer injectionsIds);
+
+        @CField("injections_weights")
+        CDoublePointer getInjectionsWeights();
+
+        @CField("injections_weights")
+        void setInjectionsWeights(CDoublePointer injectionsWeights);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        ZonePointer addressOf(int index);
+    }
+
+    @CPointerTo(ZonePointer.class)
+    interface ZonePointerPointer extends PointerBase {
+
+        void write(ZonePointer value);
+    }
 }

@@ -54,6 +54,66 @@ typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
 template<typename T>
+class ToPtr {
+public:
+    ~ToPtr() {
+        if (ptr_) {
+            delete[] ptr_;
+        }
+    }
+
+    T* get() const {
+        return ptr_;
+    }
+
+    T* release() {
+        T* ptr = ptr_;
+        ptr_ = nullptr;
+        return ptr;
+    }
+
+protected:
+    explicit ToPtr(size_t size)
+            : ptr_(new T[size])
+    {}
+
+    T* ptr_;
+};
+
+class ToCharPtrPtr : public ToPtr<char*> {
+public:
+    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
+            : ToPtr<char*>(strings.size())
+    {
+        for (int i = 0; i < strings.size(); i++) {
+            ptr_[i] = (char*) strings[i].data();
+        }
+    }
+};
+
+class ToIntPtr : public ToPtr<int> {
+public:
+    explicit ToIntPtr(const std::vector<int>& ints)
+            : ToPtr<int>(ints.size())
+    {
+        for (int i = 0; i < ints.size(); i++) {
+            ptr_[i] = ints[i];
+        }
+    }
+};
+
+class ToDoublePtr : public ToPtr<double> {
+public:
+    explicit ToDoublePtr(const std::vector<double>& doubles)
+            : ToPtr<double>(doubles.size())
+    {
+        for (int i = 0; i < doubles.size(); i++) {
+            ptr_[i] = doubles[i];
+        }
+    }
+};
+
+template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
     std::vector<T> values;
     values.reserve(arrayPtr->length);
@@ -151,7 +211,8 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 
 void* createSensitivityAnalysis();
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds,
+                               const std::vector<zone*>& zones);
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

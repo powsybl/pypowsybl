@@ -303,8 +303,13 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(4, len(n.buses))
 
     def test_create_zone(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        zone = pp.sensitivity.create_country_zone(n, 'FR')
+        n = pp.network.load('../data/simple-eu.xiidm')
+        zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
+        self.assertEqual(3, len(zoneFr.get_injections_ids()))
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], [zoneFr])
+        r = sa.run(n)
+        print(r.get_branch_flows_sensitivity_matrix())
 
 
 if __name__ == '__main__':

@@ -598,6 +598,7 @@ public final class PyPowsyblApiLib {
     public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                                  CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
+                                                 ZonePointerPointer zonePtrPtr, int zoneCount,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);

@@ -10,24 +10,32 @@ from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network
 from pypowsybl.util import ContingencyContainer
 from pypowsybl.util import ObjectHandle
-from typing import List, Optional
+from _pypowsybl import PyPowsyblError
+from typing import List, Optional, Dict
 import numpy as np
 import pandas as pd
 
 
-class Zone:
-    pass
+class Zone(_pypowsybl.Zone):
+    def __init__(self, id: str, injections_ids: List[str], injections_weights: List[float]):
+        _pypowsybl.Zone.__init__(self, id, injections_ids, injections_weights)
+        self.injections_ids = injections_ids
+        self.injections_weights = injections_weights
+
+    def get_injections_ids(self):
+        return list(self.injections_ids)
 
 
 def create_country_zone(network: Network, country: str) -> Zone:
+    # join generators, voltage levels and substations to get generators with countries
     substations = network.create_substations_data_frame()
     voltage_levels = network.create_voltage_levels_data_frame()
     generators = network.create_generators_data_frame()
-    # join generators, voltage levels and substations
-    generators_with_country = generators.join(voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']), on=['voltage_level_id']);
-    a = generators_with_country[generators_with_country['country'] == country]
-    print(a)
-    return Zone()
+    generators_with_countries = generators.join(voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']), on=['voltage_level_id']);
+
+    # filter generator for specified country
+    filtered_generators = generators_with_countries[generators_with_countries['country'] == country]
+    return Zone(country, list(filtered_generators.index), list(filtered_generators.target_p))
 
 
 class DcSensitivityAnalysisResult(ObjectHandle):
@@ -120,26 +128,43 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
             return pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
 
 
-class DcSensitivityAnalysis(ContingencyContainer):
-    """ Represents a DC sensitivity analysis."""
+class SensitivityAnalysis(ContingencyContainer):
+    """ Base class for sensitivity analysis. Do not instantiate it directly!"""
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
         self.injections_or_transformers_ids = None
+        self.zones = None
 
-    def set_branch_flow_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
+    def set_branch_flow_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids_or_zones: List):
         """ Defines branches for which active power flow sensitivities should be computed,
         and to which injections or PST.
 
         Args:
             branches_ids: IDs of branches for which active power flow sensitivities should be computed
-            injections_or_transformers_ids: IDs of injections or PSTs which may impact branch flows,
-                                            to which we should compute sensitivities
+            injections_or_transformers_ids_or_zones: IDs of injections or PSTs or zones which may impact branch flows,
+                                                     to which we should compute sensitivities
         """
+        injections_or_transformers_ids = []
+        zones = []
+        for var in injections_or_transformers_ids_or_zones:
+            if isinstance(var, str):
+                injections_or_transformers_ids.append(var)
+            elif isinstance(var, Zone):
+                zones.append(var)
+            else:
+                raise PyPowsyblError(f'Unsupported factor variable type {type(var)}')
 
-        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
+        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids, zones)
         self.branches_ids = branches_ids
         self.injections_or_transformers_ids = injections_or_transformers_ids
+        self.zones = zones
+
+
+class DcSensitivityAnalysis(SensitivityAnalysis):
+    """ Represents a DC sensitivity analysis."""
+    def __init__(self, ptr):
+        SensitivityAnalysis.__init__(self, ptr)
 
     def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
@@ -156,28 +181,12 @@ class DcSensitivityAnalysis(ContingencyContainer):
                                            branches_ids=self.branches_ids, injections_or_transformers_ids=self.injections_or_transformers_ids)
 
 
-class AcSensitivityAnalysis(ContingencyContainer):
+class AcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents an AC sensitivity analysis."""
     def __init__(self, ptr):
-        ContingencyContainer.__init__(self, ptr)
-        self.branches_ids = None
-        self.injections_or_transformers_ids = None
+        SensitivityAnalysis.__init__(self, ptr)
         self.bus_voltage_ids = None
         self.target_voltage_ids = None
-
-    def set_branch_flow_factor_matrix(self, branches_ids: List[str], injections_or_transformers_ids: List[str]):
-        """ Defines branches for which active power flow sensitivities should be computed,
-        and to which injections or PST.
-
-        Args:
-            branches_ids: IDs of branches for which active power flow sensitivities should be computed
-            injections_or_transformers_ids: IDs of injections or PSTs which may impact branch flows,
-                                            to which we should compute sensitivities
-        """
-
-        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, injections_or_transformers_ids)
-        self.branches_ids = branches_ids
-        self.injections_or_transformers_ids = injections_or_transformers_ids
 
     def set_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str]):
         """ Defines buses for which voltage sensitivities should be computed,

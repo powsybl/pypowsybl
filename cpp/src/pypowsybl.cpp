@@ -101,58 +101,6 @@ Array<series>::~Array() {
     callJava<>(::freeSeriesArray, delegate_);
 }
 
-template<typename T>
-class ToPtr {
-public:
-    ~ToPtr() {
-        delete[] ptr_;
-    }
-
-    T* get() const {
-        return ptr_;
-    }
-
-protected:
-    explicit ToPtr(size_t size)
-            : ptr_(new T[size])
-    {}
-
-    T* ptr_;
-};
-
-class ToCharPtrPtr : public ToPtr<char*> {
-public:
-    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
-            : ToPtr<char*>(strings.size())
-    {
-        for (int i = 0; i < strings.size(); i++) {
-            ptr_[i] = (char*) strings[i].data();
-        }
-    }
-};
-
-class ToIntPtr : public ToPtr<int> {
-public:
-    explicit ToIntPtr(const std::vector<int>& ints)
-            : ToPtr<int>(ints.size())
-    {
-        for (int i = 0; i < ints.size(); i++) {
-            ptr_[i] = ints[i];
-        }
-    }
-};
-
-class ToDoublePtr : public ToPtr<double> {
-public:
-    explicit ToDoublePtr(const std::vector<double>& doubles)
-            : ToPtr<double>(doubles.size())
-    {
-        for (int i = 0; i < doubles.size(); i++) {
-            ptr_[i] = doubles[i];
-        }
-    }
-};
-
 template<>
 std::vector<std::string> toVector(array* arrayPtr) {
     std::vector<std::string> strings;
@@ -322,12 +270,34 @@ void* createSensitivityAnalysis() {
     return callJava<void*>(::createSensitivityAnalysis);
 }
 
+class ZonesPtr {
+public:
+    ZonesPtr(const std::vector<zone*>& vector)
+        : vector_(vector) {
+    }
+
+    ~ZonesPtr() {
+        for (auto z : vector_) {
+            delete[] z->injections_ids;
+            delete[] z->injections_weights;
+        }
+    }
+
+    ::zone** get() const {
+        return (::zone**) &vector_[0];
+    }
+
+private:
+    const std::vector<::zone*>& vector_;
+};
+
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                     const std::vector<std::string>& injectionsOrTransfosIds) {
+                               const std::vector<std::string>& injectionsOrTransfosIds, const std::vector<zone*>& zones) {
     ToCharPtrPtr branchIdPtr(branchesIds);
     ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
+    ZonesPtr zonesPtr(zones);
     callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size(), zonesPtr.get(), zones.size());
 }
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds,
@@ -335,8 +305,7 @@ void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vect
     ToCharPtrPtr busVoltageIdPtr(busIds);
     ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
     callJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
-                busIds.size(),
-                targetVoltageIdPtr.get(), targetVoltageIds.size());
+                busIds.size(), targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
