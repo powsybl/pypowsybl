@@ -16,14 +16,27 @@ import numpy as np
 import pandas as pd
 
 
-class Zone(_pypowsybl.Zone):
+class Zone:
     def __init__(self, id: str, injections_ids: List[str], injections_weights: List[float]):
-        _pypowsybl.Zone.__init__(self, id, injections_ids, injections_weights)
-        self.injections_ids = injections_ids
-        self.injections_weights = injections_weights
+        self.id = id
+        self._injections_ids = injections_ids
+        self._injections_weights = injections_weights
 
-    def get_injections_ids(self):
-        return list(self.injections_ids)
+    @property
+    def injections_ids(self):
+        return self._injections_ids
+
+    @injections_ids.setter
+    def injections_ids(self, injections_ids):
+        self._injections_ids = injections_ids
+
+    @property
+    def injections_weights(self):
+        return self._injections_weights
+
+    @injections_weights.setter
+    def injections_weights(self, injections_weights):
+        self._injections_weights = injections_weights
 
 
 def create_country_zone(network: Network, country: str) -> Zone:
@@ -151,7 +164,7 @@ class SensitivityAnalysis(ContingencyContainer):
             if isinstance(var, str):
                 injections_or_transformers_ids.append(var)
             elif isinstance(var, Zone):
-                zones.append(var)
+                zones.append(_pypowsybl.Zone(var.id, var.injections_ids, var.injections_weights))
             else:
                 raise PyPowsyblError(f'Unsupported factor variable type {type(var)}')
 

@@ -305,7 +305,7 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_create_zone(self):
         n = pp.network.load('../data/simple-eu.xiidm')
         zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
-        self.assertEqual(3, len(zoneFr.get_injections_ids()))
+        self.assertEqual(3, len(zoneFr.injections_ids))
         sa = pp.sensitivity.create_dc_analysis()
         sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], [zoneFr])
         r = sa.run(n)
