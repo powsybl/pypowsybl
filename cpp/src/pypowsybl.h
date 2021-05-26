@@ -99,7 +99,7 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
-::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsWeights);
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
 void init();
 

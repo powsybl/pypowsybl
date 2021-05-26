@@ -329,7 +329,7 @@ char* copyStringToCharPtr(const std::string& str) {
     return c;
 }
 
-::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsWeights) {
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
     z->id = copyStringToCharPtr(id);
     z->length = injectionsIds.size();
@@ -337,9 +337,9 @@ char* copyStringToCharPtr(const std::string& str) {
     for (int i = 0; i < injectionsIds.size(); i++) {
         z->injections_ids[i] = copyStringToCharPtr(injectionsIds[i]);
     }
-    z->injections_weights = new double[injectionsWeights.size()];
+    z->injections_shift_keys = new double[injectionsShiftKeys.size()];
     for (int i = 0; i < injectionsIds.size(); i++) {
-        z->injections_weights[i] = injectionsWeights[i];
+        z->injections_shift_keys[i] = injectionsShiftKeys[i];
     }
     return z;
 }
@@ -350,7 +350,7 @@ void deleteZone(::zone* z) {
         delete[] z->injections_ids[i];
     }
     delete[] z->injections_ids;
-    delete[] z->injections_weights;
+    delete[] z->injections_shift_keys;
 }
 
 class ZonesPtr {

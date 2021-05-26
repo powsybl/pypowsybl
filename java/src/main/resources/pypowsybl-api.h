@@ -115,6 +115,6 @@ typedef struct series_struct {
 typedef struct zone_struct {
     char* id;
     char** injections_ids;
-    double* injections_weights;
+    double* injections_shift_keys;
     int length;
 } zone;

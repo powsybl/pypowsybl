@@ -69,7 +69,7 @@ public final class PyPowsyblApiLib {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.requireNonNull(t.getMessage(), "");
+        String nonNullMessage = Objects.toString(t.getMessage(), "");
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
@@ -611,10 +611,10 @@ public final class PyPowsyblApiLib {
                 PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
                 String zoneId = CTypeUtil.toString(zonePtrI.getId());
                 List<String> injectionsIds = CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
-                List<Double> injectionsWeights = CTypeUtil.toDoubleList(zonePtrI.getInjectionsWeights(), zonePtrI.getLength());
+                List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
                 List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
                 for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
-                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsWeights.get(injectionIndex)));
+                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsShiftKeys.get(injectionIndex)));
                 }
                 variableSets.add(new SensitivityVariableSet(zoneId, variables));
             }

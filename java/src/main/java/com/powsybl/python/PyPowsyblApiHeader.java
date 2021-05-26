@@ -451,11 +451,11 @@ public final class PyPowsyblApiHeader {
         @CField("injections_ids")
         void setInjectionsIds(CCharPointerPointer injectionsIds);
 
-        @CField("injections_weights")
-        CDoublePointer getInjectionsWeights();
+        @CField("injections_shift_keys")
+        CDoublePointer getinjectionsShiftKeys();
 
-        @CField("injections_weights")
-        void setInjectionsWeights(CDoublePointer injectionsWeights);
+        @CField("injections_shift_keys")
+        void setinjectionsShiftKeys(CDoublePointer injectionsShiftKeys);
 
         @CField("length")
         int getLength();

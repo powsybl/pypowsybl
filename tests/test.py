@@ -312,6 +312,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], [zoneFr, zoneBe])
         r = sa.run(n)
         print(r.get_branch_flows_sensitivity_matrix())
+        print(r.get_reference_flows())
 
 
 if __name__ == '__main__':
