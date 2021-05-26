@@ -24,6 +24,8 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
+import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
@@ -604,14 +606,19 @@ public final class PyPowsyblApiLib {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
             List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
-            System.out.println("PROUT " + zoneCount);
-            for (int i = 0; i < zoneCount; i++) {
-                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(i);
-                System.out.println(CTypeUtil.toString(zonePtrI.getId()));
-                System.out.println(CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength()));
-                System.out.println(CTypeUtil.toDoubleList(zonePtrI.getInjectionsWeights(), zonePtrI.getLength()));
+            List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
+            for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
+                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
+                String zoneId = CTypeUtil.toString(zonePtrI.getId());
+                List<String> injectionsIds = CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
+                List<Double> injectionsWeights = CTypeUtil.toDoubleList(zonePtrI.getInjectionsWeights(), zonePtrI.getLength());
+                List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
+                for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
+                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsWeights.get(injectionIndex)));
+                }
+                variableSets.add(new SensitivityVariableSet(zoneId, variables));
             }
-            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds);
+            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds, variableSets);
         });
     }
 

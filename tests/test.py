@@ -306,10 +306,12 @@ class PyPowsyblTestCase(unittest.TestCase):
         n = pp.network.load('../data/simple-eu.xiidm')
         zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
         self.assertEqual(3, len(zoneFr.injections_ids))
+        zoneBe = pp.sensitivity.create_country_zone(n, 'BE')
+        self.assertEqual(3, len(zoneBe.injections_ids))
         sa = pp.sensitivity.create_dc_analysis()
-        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], [zoneFr])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], [zoneFr, zoneBe])
         r = sa.run(n)
-    #    print(r.get_branch_flows_sensitivity_matrix())
+        print(r.get_branch_flows_sensitivity_matrix())
 
 
 if __name__ == '__main__':
