@@ -309,7 +309,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         sa = pp.sensitivity.create_dc_analysis()
         sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], [zoneFr])
         r = sa.run(n)
-        print(r.get_branch_flows_sensitivity_matrix())
+    #    print(r.get_branch_flows_sensitivity_matrix())
 
 
 if __name__ == '__main__':

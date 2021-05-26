@@ -41,7 +41,7 @@ ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime --shared -H:Name=pypowsybl-java -H:CLibraryPath=${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime --shared -H:Name=pypowsybl-java -H:CLibraryPath=${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${INSTALL_EXTRA_COMMAND}

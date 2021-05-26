@@ -604,6 +604,13 @@ public final class PyPowsyblApiLib {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
             List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
+            System.out.println("PROUT " + zoneCount);
+            for (int i = 0; i < zoneCount; i++) {
+                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(i);
+                System.out.println(CTypeUtil.toString(zonePtrI.getId()));
+                System.out.println(CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength()));
+                System.out.println(CTypeUtil.toDoubleList(zonePtrI.getInjectionsWeights(), zonePtrI.getLength()));
+            }
             analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds);
         });
     }

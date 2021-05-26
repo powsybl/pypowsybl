@@ -159,6 +159,8 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsWeights);
+
 void init();
 
 void setDebugMode(bool debug);
@@ -212,7 +214,7 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 void* createSensitivityAnalysis();
 
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds,
-                               const std::vector<zone*>& zones);
+                               const std::vector<::zone*>& zones);
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

@@ -270,6 +270,37 @@ void* createSensitivityAnalysis() {
     return callJava<void*>(::createSensitivityAnalysis);
 }
 
+char* copyStringToCharPtr(const std::string& str) {
+    char* c = new char[str.size() + 1];
+    str.copy(c, str.size());
+    c[str.size()] = '\0';
+    return c;
+}
+
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsWeights) {
+    auto z = new ::zone;
+    z->id = copyStringToCharPtr(id);
+    z->length = injectionsIds.size();
+    z->injections_ids = new char*[injectionsIds.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_ids[i] = copyStringToCharPtr(injectionsIds[i]);
+    }
+    z->injections_weights = new double[injectionsWeights.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_weights[i] = injectionsWeights[i];
+    }
+    return z;
+}
+
+void deleteZone(::zone* z) {
+    delete[] z->id;
+    for (int i = 0; i < z->length; i++) {
+        delete[] z->injections_ids[i];
+    }
+    delete[] z->injections_ids;
+    delete[] z->injections_weights;
+}
+
 class ZonesPtr {
 public:
     ZonesPtr(const std::vector<zone*>& vector)
@@ -278,8 +309,7 @@ public:
 
     ~ZonesPtr() {
         for (auto z : vector_) {
-            delete[] z->injections_ids;
-            delete[] z->injections_weights;
+            deleteZone(z);
         }
     }
 
@@ -292,7 +322,7 @@ private:
 };
 
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& injectionsOrTransfosIds, const std::vector<zone*>& zones) {
+                               const std::vector<std::string>& injectionsOrTransfosIds, const std::vector<::zone*>& zones) {
     ToCharPtrPtr branchIdPtr(branchesIds);
     ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
     ZonesPtr zonesPtr(zones);

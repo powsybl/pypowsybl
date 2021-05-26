@@ -449,7 +449,7 @@ public final class PyPowsyblApiHeader {
         CCharPointerPointer getInjectionsIds();
 
         @CField("injections_ids")
-        void setInjectionIds(CCharPointerPointer injectionsIds);
+        void setInjectionsIds(CCharPointerPointer injectionsIds);
 
         @CField("injections_weights")
         CDoublePointer getInjectionsWeights();
@@ -469,6 +469,6 @@ public final class PyPowsyblApiHeader {
     @CPointerTo(ZonePointer.class)
     interface ZonePointerPointer extends PointerBase {
 
-        void write(ZonePointer value);
+        ZonePointer read(int index);
     }
 }

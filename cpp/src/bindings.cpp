@@ -347,11 +347,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<::zone>(m, "Zone")
             .def(py::init([](const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsWeights) {
-                auto z = new ::zone;
-                z->id = (char*) id.data();
-                z->injections_ids = pypowsybl::ToCharPtrPtr(injectionsIds).release();
-                z->injections_weights = pypowsybl::ToDoublePtr(injectionsWeights).release();
-                return z;
+                return pypowsybl::createZone(id, injectionsIds, injectionsWeights);
             }), py::arg("id"), py::arg("injections_ids"), py::arg("injections_weights"));
 
     m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
