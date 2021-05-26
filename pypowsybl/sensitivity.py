@@ -11,7 +11,7 @@ from pypowsybl.network import Network
 from pypowsybl.util import ContingencyContainer
 from pypowsybl.util import ObjectHandle
 from _pypowsybl import PyPowsyblError
-from typing import List, Optional, Dict
+from typing import List, Optional
 import numpy as np
 import pandas as pd
 
