@@ -11,28 +11,37 @@ from pypowsybl.network import Network
 from pypowsybl.util import ContingencyContainer
 from pypowsybl.util import ObjectHandle
 from _pypowsybl import PyPowsyblError
-from typing import List, Optional
+from typing import List, Optional, Dict
 import numpy as np
 import pandas as pd
 
 
 class Zone:
-    def __init__(self, id: str, injections_ids: List[str], injections_shift_keys: List[float]):
+    def __init__(self, id: str, shift_keys_by_injections_id: Dict[str, float] = {}):
         self._id = id
-        self._injections_ids = injections_ids
-        self._injections_shift_keys = injections_shift_keys
+        self._shift_keys_by_injections_id = shift_keys_by_injections_id
 
     @property
     def id(self):
         return self._id
 
     @property
-    def injections_ids(self):
-        return self._injections_ids
+    def shift_keys_by_injections_id(self):
+        return self._shift_keys_by_injections_id
 
     @property
-    def injections_shift_keys(self):
-        return self._injections_shift_keys
+    def injections_ids(self):
+        return list(self._shift_keys_by_injections_id.keys())
+
+    def get_shift_key(self, injection_id: str):
+        shift_key = self._shift_keys_by_injections_id.get(injection_id)
+        if shift_key is None:
+            raise PyPowsyblError(f'Injection {injection_id} not found')
+        return shift_key
+
+
+def create_empty_zone(id: str) -> Zone:
+    return Zone(id)
 
 
 def create_country_zone(network: Network, country: str) -> Zone:
@@ -44,7 +53,8 @@ def create_country_zone(network: Network, country: str) -> Zone:
 
     # filter generator for specified country
     filtered_generators = generators_with_countries[generators_with_countries['country'] == country]
-    return Zone(country, list(filtered_generators.index), list(filtered_generators.target_p))
+    shift_keys_by_id = dict(zip(filtered_generators.index, filtered_generators.target_p))
+    return Zone(country, shift_keys_by_id)
 
 
 class DcSensitivityAnalysisResult(ObjectHandle):
@@ -162,7 +172,7 @@ class SensitivityAnalysis(ContingencyContainer):
             if isinstance(var, str):
                 injections_or_transformers_ids.append(var)
             elif isinstance(var, Zone):
-                zones.append(_pypowsybl.Zone(var.id, var.injections_ids, var.injections_shift_keys))
+                zones.append(_pypowsybl.Zone(var.id, list(var.shift_keys_by_injections_id.keys()), list(var.shift_keys_by_injections_id.values())))
                 zones_ids.append(var.id)
             else:
                 raise PyPowsyblError(f'Unsupported factor variable type {type(var)}')

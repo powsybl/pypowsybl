@@ -6,6 +6,7 @@
 #
 import os
 import unittest
+from _pypowsybl import PyPowsyblError
 import pypowsybl.network
 import pypowsybl.loadflow
 import pypowsybl.security
@@ -306,6 +307,9 @@ class PyPowsyblTestCase(unittest.TestCase):
         n = pp.network.load('../data/simple-eu.xiidm')
         zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
         self.assertEqual(3, len(zoneFr.injections_ids))
+        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zoneFr.injections_ids)
+        self.assertRaises(PyPowsyblError, zoneFr.get_shift_key, 'AA')
+        self.assertEqual(2000, zoneFr.get_shift_key('FFR2AA1 _generator'))
         zoneBe = pp.sensitivity.create_country_zone(n, 'BE')
         self.assertEqual(3, len(zoneBe.injections_ids))
         sa = pp.sensitivity.create_dc_analysis()
