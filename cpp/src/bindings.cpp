@@ -142,7 +142,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN)
             .export_values();
 
-    py::class_<load_flow_parameters>(m, "LoadFlowParameters")
+    py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init([](pypowsybl::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
                              bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
                              bool distributedSlack, pypowsybl::BalanceType balanceType, bool dcUseTransformerRatio, const std::vector<std::string>& countriesToBalance,
@@ -159,12 +159,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 parameters->distributed_slack = distributedSlack;
                 parameters->balance_type = balanceType;
                 parameters->dc_use_transformer_ratio = dcUseTransformerRatio;
-                parameters->countries_to_balance = new char*[countriesToBalance.size()];
-                for (int i = 0; i < countriesToBalance.size(); i++) {
-                    parameters->countries_to_balance[i] = pypowsybl::copyStringToCharPtr((char*) countriesToBalance[i].c_str());
-                }
+                parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
                 parameters->countries_to_balance_count = countriesToBalance.size();
-                return parameters;
+                parameters->connected_component_mode = connectedComponentMode;
+                return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+                    pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
+                    delete ptr;
+                });
             }), py::arg("voltage_init_mode") = pypowsybl::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
                  py::arg("no_generator_reactive_limits") = false, py::arg("phase_shifter_regulation_on") = false,
                  py::arg("twt_split_shunt_admittance") = false, py::arg("simul_shunt") = false,
@@ -226,6 +227,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return (bool) p.dc_use_transformer_ratio;
             }, [](load_flow_parameters& p, bool dcUseTransformerRatio) {
                 p.dc_use_transformer_ratio = dcUseTransformerRatio;
+            })
+            .def_property("countries_to_balance", [](const load_flow_parameters& p) {
+                return std::vector<std::string>(p.countries_to_balance, p.countries_to_balance + p.countries_to_balance_count);
+            }, [](load_flow_parameters& p, const std::vector<std::string>& countriesToBalance) {
+                pypowsybl::deleteCharPtrPtr(p.countries_to_balance, p.countries_to_balance_count);
+                p.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
+                p.countries_to_balance_count = countriesToBalance.size();
+            })
+            .def_property("connected_component_mode", [](const load_flow_parameters& p) {
+                return static_cast<pypowsybl::ConnectedComponentMode>(p.connected_component_mode);
+            }, [](load_flow_parameters& p, pypowsybl::ConnectedComponentMode connectedComponentMode) {
+                p.connected_component_mode = connectedComponentMode;
             });
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),

@@ -10,6 +10,7 @@ from _pypowsybl import LoadFlowComponentStatus as ComponentStatus
 from _pypowsybl import LoadFlowComponentResult as ComponentResult
 from _pypowsybl import VoltageInitMode
 from _pypowsybl import BalanceType
+from _pypowsybl import ConnectedComponentMode
 from pypowsybl.network import Network
 
 

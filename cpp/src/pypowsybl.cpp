@@ -190,7 +190,22 @@ char* copyStringToCharPtr(const std::string& str) {
     return c;
 }
 
-    void setDebugMode(bool debug) {
+char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
+    char** charPtrPtr = new char*[strings.size()];
+    for (int i = 0; i < strings.size(); i++) {
+        charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
+    }
+    return charPtrPtr;
+}
+
+void deleteCharPtrPtr(char** charPtrPtr, int length) {
+    for (int i = 0; i < length; i++) {
+        delete charPtrPtr[i];
+    }
+    delete charPtrPtr;
+}
+
+void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
@@ -289,9 +304,10 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     return elementsIds.get();
 }
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
+                                          const std::string& provider) {
     return new LoadFlowComponentResultArray(
-            callJava<array*>(::runLoadFlow, network, dc, &parameters, (char *) provider.data()));
+            callJava<array*>(::runLoadFlow, network, dc, (load_flow_parameters*) parameters.get(), (char *) provider.data()));
 }
 
 BusArray* getBusArray(void* network) {
