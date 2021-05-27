@@ -307,7 +307,7 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
                                           const std::string& provider) {
     return new LoadFlowComponentResultArray(
-            callJava<array*>(::runLoadFlow, network, dc, (load_flow_parameters*) parameters.get(), (char *) provider.data()));
+            callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
 BusArray* getBusArray(void* network) {
