@@ -183,7 +183,14 @@ private:
     array* arrayPtr_;
 };
 
-void setDebugMode(bool debug) {
+char* copyStringToCharPtr(const std::string& str) {
+    char* c = new char[str.size() + 1];
+    str.copy(c, str.size());
+    c[str.size()] = '\0';
+    return c;
+}
+
+    void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 

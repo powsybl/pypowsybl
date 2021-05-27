@@ -99,6 +99,13 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ConnectedComponentMode {
+    MAIN = 0,
+    ALL,
+};
+
+char* copyStringToCharPtr(const std::string& str);
+
 void init();
 
 void setDebugMode(bool debug);
