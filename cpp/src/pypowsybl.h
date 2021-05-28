@@ -121,6 +121,8 @@ void* createIeeeNetwork(int busCount);
 
 void* createEurostagTutorialExample1Network();
 
+void* createBatteryNetwork();
+
 void* createFourSubstationsNodeBreakerNetwork();
 
 bool updateSwitchPosition(void* network, const std::string& id, bool open);

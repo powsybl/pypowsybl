@@ -16,6 +16,7 @@ import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
@@ -171,6 +172,14 @@ public final class PyPowsyblApiLib {
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = EurostagTutorialExample1Factory.create();
+            return ObjectHandles.getGlobal().create(network);
+        });
+    }
+
+    @CEntryPoint(name = "createBatteryNetwork")
+    public static ObjectHandle createBatteryNetwork(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = BatteryNetworkFactory.create();
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -826,6 +835,16 @@ public final class PyPowsyblApiLib {
                             .addStringSeries("bus_id", l -> getBusId(l.getTerminal())))
                             .build();
 
+                case BATTERY:
+                    List<Battery> batteries = network.getBatteryStream().collect(Collectors.toList());
+                    return addProperties(new SeriesPointerArrayBuilder<>(batteries)
+                            .addStringSeries("id", true, Battery::getId)
+                            .addDoubleSeries("max_p", Battery::getMaxP)
+                            .addDoubleSeries("min_p", Battery::getMinP)
+                            .addDoubleSeries("p0", Battery::getP0)
+                            .addDoubleSeries("q0", Battery::getQ0))
+                            .build();
+
                 case SHUNT_COMPENSATOR:
                     List<ShuntCompensator> shunts = network.getShuntCompensatorStream().collect(Collectors.toList());
                     return addProperties(new SeriesPointerArrayBuilder<>(shunts)
@@ -1010,6 +1029,9 @@ public final class PyPowsyblApiLib {
                 case LOAD:
                     seriesTypes = SeriesDataTypeConstants.LOAD_MAP;
                     break;
+                case BATTERY:
+                    seriesTypes = SeriesDataTypeConstants.BATTERY_MAP;
+                    break;
                 case DANGLING_LINE:
                     seriesTypes = SeriesDataTypeConstants.DANGLING_LINE_MAP;
                     break;
@@ -1139,6 +1161,19 @@ public final class PyPowsyblApiLib {
                                 break;
                             default:
                                 throw new UnsupportedOperationException("Series name not supported for load elements: " + seriesName);
+                        }
+                        break;
+                    case BATTERY:
+                        Battery b = getBatteryOrThrowsException(id, network);
+                        switch (seriesName) {
+                            case "p0":
+                                b.setP0(value);
+                                break;
+                            case "q0":
+                                b.setQ0(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Series name not supported for battery elements: " + seriesName);
                         }
                         break;
                     case DANGLING_LINE:
@@ -1288,6 +1323,14 @@ public final class PyPowsyblApiLib {
             throw new PowsyblException("Load '" + id + "' not found");
         }
         return load;
+    }
+
+    private static Battery getBatteryOrThrowsException(String id, Network network) {
+        Battery b = network.getBattery(id);
+        if (b == null) {
+            throw new PowsyblException("Battery '" + id + "' not found");
+        }
+        return b;
     }
 
     private static DanglingLine getDanglingLineOrThrowsException(String id, Network network) {

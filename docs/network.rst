@@ -156,7 +156,7 @@ We can also update network elements with a data frame:
 
   * - Equipment type
     - Attributes (columns)
-  * - Load, Dangling line
+  * - Load, Dangling line, Battery
     - p0 (double), q0 (double)
   * - Generator
     - voltage_regulator_on (bool), target_p (double), target_q (double), target_v (double)
