@@ -32,7 +32,7 @@ Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
 
 ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                         f"connected_component_num={self.connected_component_num!r}"\
-                                        f"synchronous_component_num={self.synchronous_component_num!r}"\
+                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
                                         f", status={self.status.name}"\
                                         f", iteration_count={self.iteration_count!r}"\
                                         f", slack_bus_id={self.slack_bus_id!r}"\
