@@ -32,10 +32,10 @@
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <powsybl-core.version>4.1.0</powsybl-core.version>
-        <powsybl-rte-core.version>3.1.0</powsybl-rte-core.version>
-        <powsybl-single-line-diagram.version>2.1.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.10.1</powsybl-open-load-flow.version>
+        <powsybl-core.version>4.2.0</powsybl-core.version>
+        <powsybl-rte-core.version>3.2.0</powsybl-rte-core.version>
+        <powsybl-single-line-diagram.version>2.2.0</powsybl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.11.0</powsybl-open-load-flow.version>
     </properties>
 
     <build>

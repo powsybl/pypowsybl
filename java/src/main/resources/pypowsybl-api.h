@@ -40,7 +40,8 @@ typedef struct load_struct {
 } load;
 
 typedef struct load_flow_component_result_struct {
-    int component_num;
+    int connected_component_num;
+    int synchronous_component_num;
     int status;
     int iteration_count;
     char* slack_bus_id;
@@ -58,6 +59,10 @@ typedef struct load_flow_parameters_struct {
     unsigned char write_slack_bus;
     unsigned char distributed_slack;
     int balance_type;
+    unsigned char dc_use_transformer_ratio;
+    char** countries_to_balance;
+    int countries_to_balance_count;
+    int connected_component_mode;
 } load_flow_parameters;
 
 typedef struct limit_violation_struct {

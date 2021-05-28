@@ -67,7 +67,7 @@ public final class PyPowsyblApiLib {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.requireNonNull(t.getMessage(), "");
+        String nonNullMessage = Objects.toString(t.getMessage(), "");
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
@@ -304,7 +304,8 @@ public final class PyPowsyblApiLib {
         for (int index = 0; index < componentResults.size(); index++) {
             LoadFlowResult.ComponentResult componentResult = componentResults.get(index);
             LoadFlowComponentResultPointer ptr = componentResultPtr.addressOf(index);
-            ptr.setComponentNum(componentResult.getComponentNum());
+            ptr.setConnectedComponentNum(componentResult.getConnectedComponentNum());
+            ptr.setSynchronousComponentNum(componentResult.getSynchronousComponentNum());
             ptr.setStatus(componentResult.getStatus().ordinal());
             ptr.setIterationCount(componentResult.getIterationCount());
             ptr.setSlackBusId(CTypeUtil.toCharPtr(componentResult.getSlackBusId()));
@@ -325,7 +326,11 @@ public final class PyPowsyblApiLib {
                 .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
                 .setDc(dc)
-                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()]);
+                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
+                .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
+                .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
+                        .stream().map(Country::valueOf).collect(Collectors.toSet()))
+                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
     }
 
     @CEntryPoint(name = "runLoadFlow")
