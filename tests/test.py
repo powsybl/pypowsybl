@@ -13,7 +13,10 @@ import pypowsybl.security
 import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
+import pathlib
 
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
@@ -50,8 +53,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)
 
     def test_load_network(self):
-        dir = os.path.dirname(os.path.realpath(__file__))
-        n = pp.network.load(dir + "/empty-network.xml")
+        n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
         self.assertIsNotNone(n)
 
     def test_buses(self):
@@ -188,8 +190,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertFalse(df3['voltage_regulator_on']['GEN'])
 
     def test_update_switches_data_frame(self):
-        file_path = os.path.dirname(os.path.realpath(__file__)) + '/node-breaker.xiidm'
-        n = pp.network.load(file=file_path)
+        n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
         df = n.create_switches_data_frame()
         # no open switch
         open_switches = df[df['open']].index.tolist()
@@ -326,7 +327,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
     def test_create_zone(self):
-        n = pp.network.load('../data/simple-eu.xiidm')
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
         zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
         self.assertEqual(3, len(zoneFr.injections_ids))
         self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zoneFr.injections_ids)
