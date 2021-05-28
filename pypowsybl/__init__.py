@@ -22,8 +22,8 @@ import pypowsybl.sensitivity
 __all__ = [
     "network",
     "loadflow",
-    "security.py",
-    "sensitivity.py"
+    "security",
+    "sensitivity"
 ]
 
 

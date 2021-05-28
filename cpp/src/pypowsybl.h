@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include "pypowsybl-api.h"
 
@@ -99,6 +100,15 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ConnectedComponentMode {
+    MAIN = 0,
+    ALL,
+};
+
+char* copyStringToCharPtr(const std::string& str);
+char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+void deleteCharPtrPtr(char** charPtrPtr, int length);
+
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
 void init();
@@ -135,7 +145,7 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, load_flow_parameters& parameters, const std::string& provider);
+LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
 BusArray* getBusArray(void* network);
 

@@ -303,6 +303,27 @@ class PyPowsyblTestCase(unittest.TestCase):
         n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
         self.assertEqual(4, len(n.buses))
 
+    def test_lf_parameters(self):
+        parameters = pp.loadflow.Parameters()
+        self.assertTrue(parameters.dc_use_transformer_ratio)
+        self.assertEqual(0, len(parameters.countries_to_balance))
+        self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+
+        parameters = pp.loadflow.Parameters(dc_use_transformer_ratio = False)
+        self.assertFalse(parameters.dc_use_transformer_ratio)
+        parameters.dc_use_transformer_ratio = True
+        self.assertTrue(parameters.dc_use_transformer_ratio)
+
+        parameters = pp.loadflow.Parameters(countries_to_balance = ['FR'])
+        self.assertEqual(['FR'], parameters.countries_to_balance)
+        parameters.countries_to_balance = ['BE']
+        self.assertEqual(['BE'], parameters.countries_to_balance)
+
+        parameters = pp.loadflow.Parameters(connected_component_mode = pp.loadflow.ConnectedComponentMode.ALL)
+        self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
+        parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
+        self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+
     def test_create_zone(self):
         n = pp.network.load('../data/simple-eu.xiidm')
         zoneFr = pp.sensitivity.create_country_zone(n, 'FR')

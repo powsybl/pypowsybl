@@ -163,8 +163,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         int busVoltageMatrixColCount = busVoltageEquipmentsIds != null ? busVoltageEquipmentsIds.size() : 0;
         int busVoltageMatrixRowCount = targetVoltageEquipmentsIds != null ? targetVoltageEquipmentsIds.size() : 0;
 
+        ContingencyContext allContingencyContext = ContingencyContext.createAllContingencyContext();
         SensitivityFactorReader factorReader = handler -> {
-            ContingencyContext allContingencyContext = ContingencyContext.createAllContingencyContext();
             for (int column = 0; column < branchFlowMatrixColumnCount; column++) {
                 String branchId = branchFlowBranchsIds.get(column);
                 Branch branch = network.getBranch(branchId);
