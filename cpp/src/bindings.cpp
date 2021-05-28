@@ -48,8 +48,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
-    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an network with two batteries");
-
     m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");

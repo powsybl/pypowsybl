@@ -225,10 +225,6 @@ void* createEurostagTutorialExample1Network() {
     return callJava<void*>(::createEurostagTutorialExample1Network);
 }
 
-void* createBatteryNetwork() {
-    return callJava<void*>(::createBatteryNetwork);
-}
-
 void* createFourSubstationsNodeBreakerNetwork() {
     return callJava<void*>(::createFourSubstationsNodeBreakerNetwork);
 }

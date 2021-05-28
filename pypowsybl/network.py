@@ -404,8 +404,6 @@ def create_ieee300() -> Network:
 def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
 
-def create_battery_network() -> Network:
-    return Network(_pypowsybl.create_battery_network())
 
 def create_four_substations_node_breaker_network() -> Network:
     return Network(_pypowsybl.create_four_substations_node_breaker_network())

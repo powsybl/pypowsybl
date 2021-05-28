@@ -16,7 +16,6 @@ import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.network.util.ConnectedComponents;
@@ -172,14 +171,6 @@ public final class PyPowsyblApiLib {
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = EurostagTutorialExample1Factory.create();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createBatteryNetwork")
-    public static ObjectHandle createBatteryNetwork(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = BatteryNetworkFactory.create();
             return ObjectHandles.getGlobal().create(network);
         });
     }
