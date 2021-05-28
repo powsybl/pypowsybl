@@ -266,6 +266,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertIsNone(r.get_branch_flows_sensitivity_matrix('aaa'))
 
     def test_voltage_sa(self):
+        pp.set_debug_mode(True)
         n = pp.network.create_eurostag_tutorial_example1_network()
         sa = pp.sensitivity.create_ac_analysis()
         sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])

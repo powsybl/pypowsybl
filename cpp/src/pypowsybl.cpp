@@ -345,13 +345,6 @@ void* createSensitivityAnalysis() {
     return callJava<void*>(::createSensitivityAnalysis);
 }
 
-char* copyStringToCharPtr(const std::string& str) {
-    char* c = new char[str.size() + 1];
-    str.copy(c, str.size());
-    c[str.size()] = '\0';
-    return c;
-}
-
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
     z->id = copyStringToCharPtr(id);
