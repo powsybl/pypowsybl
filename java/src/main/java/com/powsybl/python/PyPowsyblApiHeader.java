@@ -400,6 +400,7 @@ public final class PyPowsyblApiHeader {
         THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
         LOAD,
+        BATTERY,
         SHUNT_COMPENSATOR,
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
