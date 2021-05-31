@@ -7,11 +7,13 @@
 package com.powsybl.python;
 
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.PhaseShifterTestCaseFactory;
 import com.powsybl.iidm.network.test.ThreeWindingsTransformerNetworkFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -86,6 +88,19 @@ class SeriesArrayHelperTest {
 
         List list = builder.buildJavaSeries();
         assertArraysEquals(network.getGeneratorStream(), Generator::getId, (List) list.get(0));
+        // add extension
+        Generator gen = network.getGenerator("GEN");
+        ActivePowerControlImpl foo = new ActivePowerControlImpl(gen, true, 1.1f);
+        gen.addExtension(ActivePowerControlImpl.class, foo);
+        SeriesPointerArrayBuilder builder2 = SeriesArrayHelper.prepareData(network, PyPowsyblApiHeader.ElementType.GENERATOR);
+
+        List withExtList = builder2.buildJavaSeries();
+        assertEquals(Arrays.asList(true), withExtList.get(12));
+        assertEquals(Arrays.asList((double) 1.1f), withExtList.get(13));
+
+        SeriesArrayHelper.updateNetworkElementsWithDoubleSeries(network, PyPowsyblApiHeader.ElementType.GENERATOR, 1, "apc_droop", i -> "GEN", i -> 1.2d);
+        ActivePowerControlImpl gen1 = network.getGenerator("GEN").getExtension(ActivePowerControlImpl.class);
+        assertEquals((float) 1.2d, gen1.getDroop());
     }
 
     @Test

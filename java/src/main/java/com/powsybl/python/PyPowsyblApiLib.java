@@ -9,6 +9,7 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.extensions.ExtensionSeriesSerializer;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
@@ -742,10 +743,17 @@ public final class PyPowsyblApiLib {
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }
             Integer type = seriesTypes.get(seriesName);
-            if (type == null) {
-                throw new PowsyblException("Series '" + seriesName + "' not found for element type " + elementType);
+            if (type != null) {
+                return type;
             }
-            return type;
+            List<ExtensionSeriesSerializer> dfSerializers = SeriesArrayHelper.SERIALIZERS.get();
+            for (ExtensionSeriesSerializer serializer : dfSerializers) {
+                if (serializer.getTypeMap().containsKey(seriesName)) {
+                    Map<String, Integer> typeMap = serializer.getTypeMap();
+                    return typeMap.get(seriesName);
+                }
+            }
+            throw new PowsyblException("Series '" + seriesName + "' not found for element type " + elementType);
         });
     }
 

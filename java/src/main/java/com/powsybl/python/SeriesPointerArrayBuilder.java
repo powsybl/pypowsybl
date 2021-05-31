@@ -6,6 +6,7 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.commons.extensions.ExtensionSeriesBuilder;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -17,15 +18,12 @@ import org.graalvm.word.PointerBase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class SeriesPointerArrayBuilder<T> {
+class SeriesPointerArrayBuilder<T> implements ExtensionSeriesBuilder<SeriesPointerArrayBuilder<T>, T> {
 
     static final int STRING_SERIES_TYPE = 0;
     static final int DOUBLE_SERIES_TYPE = 1;
@@ -220,7 +218,8 @@ class SeriesPointerArrayBuilder<T> {
         return elements;
     }
 
-    SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
+    @Override
+    public SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
         return addStringSeries(seriesName, false, stringGetter);
     }
 
@@ -236,7 +235,8 @@ class SeriesPointerArrayBuilder<T> {
         return addStringSeries(seriesName, false, element -> enumGetter.apply(element).name());
     }
 
-    SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
+    @Override
+    public SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(doubleGetter);
         seriesList.add(new DoubleSeries(seriesName, doubleGetter));
@@ -247,7 +247,8 @@ class SeriesPointerArrayBuilder<T> {
         return addIntSeries(seriesName, objectGetter, intGetter, INT_UNDEFINED_VALUE);
     }
 
-    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
+    @Override
+    public <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
         Objects.requireNonNull(objectGetter);
         Objects.requireNonNull(intGetter);
         return addIntSeries(seriesName, value -> {
@@ -267,7 +268,8 @@ class SeriesPointerArrayBuilder<T> {
         return this;
     }
 
-    SeriesPointerArrayBuilder<T> addBooleanSeries(String seriesName, Predicate<T> booleanGetter) {
+    @Override
+    public SeriesPointerArrayBuilder<T> addBooleanSeries(String seriesName, Predicate<T> booleanGetter) {
         Objects.requireNonNull(booleanGetter);
         seriesList.add(new BooleanSeries(seriesName, booleanGetter));
         return this;

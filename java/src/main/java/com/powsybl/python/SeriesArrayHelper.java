@@ -6,12 +6,16 @@
  */
 package com.powsybl.python;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.extensions.ExtensionSeriesSerializer;
 import com.powsybl.iidm.network.*;
 import org.apache.commons.lang3.tuple.Triple;
 import org.eclipse.collections.api.block.function.primitive.IntToIntFunction;
 
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
@@ -21,6 +25,8 @@ import java.util.stream.Collectors;
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 final class SeriesArrayHelper {
+
+    static final Supplier<List<ExtensionSeriesSerializer>> SERIALIZERS = Suppliers.memoize(() -> ServiceLoader.load(ExtensionSeriesSerializer.class).stream().map(ServiceLoader.Provider::get).collect(Collectors.toList()));
 
     static SeriesPointerArrayBuilder prepareData(Network network, PyPowsyblApiHeader.ElementType elementType) {
         switch (elementType) {
@@ -206,7 +212,7 @@ final class SeriesArrayHelper {
 
     private static SeriesPointerArrayBuilder prepareGenerator(Network network) {
         List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
-        return addProperties(new SeriesPointerArrayBuilder<>(generators)
+        return addGeneratorExtensions(addProperties(new SeriesPointerArrayBuilder<>(generators)
                 .addStringSeries("id", true, Generator::getId)
                 .addEnumSeries("energy_source", Generator::getEnergySource)
                 .addDoubleSeries("target_p", Generator::getTargetP)
@@ -218,7 +224,7 @@ final class SeriesArrayHelper {
                 .addDoubleSeries("p", g -> g.getTerminal().getP())
                 .addDoubleSeries("q", g -> g.getTerminal().getQ())
                 .addStringSeries("voltage_level_id", g -> g.getTerminal().getVoltageLevel().getId())
-                .addStringSeries("bus_id", g -> getBusId(g.getTerminal())));
+                .addStringSeries("bus_id", g -> getBusId(g.getTerminal()))), generators);
     }
 
     private static SeriesPointerArrayBuilder prepareLoad(Network network) {
@@ -456,7 +462,10 @@ final class SeriesArrayHelper {
                 g.setTargetV(value);
                 break;
             default:
-                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                ExtensionSeriesSerializer serializer = SERIALIZERS.get()
+                        .stream().filter(dfSerializer -> dfSerializer.getTypeMap().containsKey(seriesName))
+                        .findFirst().orElseThrow(() -> new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName));
+                serializer.deserialize(g, seriesName, value);
         }
     }
 
@@ -562,7 +571,10 @@ final class SeriesArrayHelper {
                 g.setVoltageRegulatorOn(value == 1);
                 break;
             default:
-                throw new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName);
+                ExtensionSeriesSerializer serializer = SERIALIZERS.get()
+                        .stream().filter(dfSerializer -> dfSerializer.getTypeMap().containsKey(seriesName))
+                        .findFirst().orElseThrow(() -> new UnsupportedOperationException("Series name not supported for generate elements: " + seriesName));
+                serializer.deserialize(g, seriesName, value);
         }
     }
 
@@ -630,6 +642,17 @@ final class SeriesArrayHelper {
         for (String propertyName : propertyNames) {
             builder.addStringSeries(propertyName, t -> t.getProperty(propertyName));
         }
+        return builder;
+    }
+
+    private static SeriesPointerArrayBuilder<Generator> addGeneratorExtensions(SeriesPointerArrayBuilder<Generator> builder, List<Generator> generators) {
+        SERIALIZERS.get().forEach(dfSerializer -> {
+            Class extensionClass = dfSerializer.getExtensionClass();
+            if (generators.stream().anyMatch(g -> g.getExtension(extensionClass) != null)) {
+                dfSerializer.serialize(builder);
+            }
+        });
+
         return builder;
     }
 

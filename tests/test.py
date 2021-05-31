@@ -12,6 +12,7 @@ import pypowsybl.security
 import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
+import math
 
 
 class PyPowsyblTestCase(unittest.TestCase):
@@ -108,6 +109,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries={'BE'}))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'BE'}))
+
+    def test_generators_data_frame(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = n.create_generators_data_frame()
+        self.assertEqual(607.0, df['target_p']['GEN'])
+        self.assertRaises(KeyError, lambda: df['apc_droop']['GEN'])
+        df2 = pd.DataFrame(data=[True], columns=['apc_participate'], index=['GEN'])
+        n.update_generators_with_data_frame(df2)
+        df3 = n.create_generators_data_frame()
+        # self.assertEqual(1.0, df3['apc_droop']['GEN'])
+        self.assertTrue(df3['apc_participate']['GEN'])
 
     def test_loads_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
