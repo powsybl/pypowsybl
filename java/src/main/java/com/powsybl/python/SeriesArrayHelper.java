@@ -43,13 +43,7 @@ final class SeriesArrayHelper {
                 return prepareLoad(network);
 
             case BATTERY:
-                List<Battery> batteries = network.getBatteryStream().collect(Collectors.toList());
-                return addProperties(new SeriesPointerArrayBuilder<>(batteries)
-                        .addStringSeries("id", true, Battery::getId)
-                        .addDoubleSeries("max_p", Battery::getMaxP)
-                        .addDoubleSeries("min_p", Battery::getMinP)
-                        .addDoubleSeries("p0", Battery::getP0)
-                        .addDoubleSeries("q0", Battery::getQ0));
+                return prepareBattery(network);
 
             case SHUNT_COMPENSATOR:
                 return prepareShunt(network);
@@ -105,17 +99,7 @@ final class SeriesArrayHelper {
                     updateLoadDouble(id, network, seriesName, value);
                     break;
                 case BATTERY:
-                    Battery b = getBatteryOrThrowsException(id, network);
-                    switch (seriesName) {
-                        case "p0":
-                            b.setP0(value);
-                            break;
-                        case "q0":
-                            b.setQ0(value);
-                            break;
-                        default:
-                            throw new UnsupportedOperationException("Series name not supported for battery elements: " + seriesName);
-                    }
+                    updateBatteryDouble(id, network, seriesName, value);
                     break;
                 case DANGLING_LINE:
                     updateDllDouble(id, network, seriesName, value);
@@ -248,6 +232,16 @@ final class SeriesArrayHelper {
                 .addDoubleSeries("q", l -> l.getTerminal().getQ())
                 .addStringSeries("voltage_level_id", l -> l.getTerminal().getVoltageLevel().getId())
                 .addStringSeries("bus_id", l -> getBusId(l.getTerminal())));
+    }
+
+    private static SeriesPointerArrayBuilder prepareBattery(Network network) {
+        List<Battery> batteries = network.getBatteryStream().collect(Collectors.toList());
+        return addProperties(new SeriesPointerArrayBuilder<>(batteries)
+                .addStringSeries("id", true, Battery::getId)
+                .addDoubleSeries("max_p", Battery::getMaxP)
+                .addDoubleSeries("min_p", Battery::getMinP)
+                .addDoubleSeries("p0", Battery::getP0)
+                .addDoubleSeries("q0", Battery::getQ0));
     }
 
     private static SeriesPointerArrayBuilder prepareShunt(Network network) {
@@ -477,6 +471,20 @@ final class SeriesArrayHelper {
                 break;
             default:
                 throw new UnsupportedOperationException("Series name not supported for load elements: " + seriesName);
+        }
+    }
+
+    private static void updateBatteryDouble(String id, Network network, String seriesName, double value) {
+        Battery b = getBatteryOrThrowsException(id, network);
+        switch (seriesName) {
+            case "p0":
+                b.setP0(value);
+                break;
+            case "q0":
+                b.setQ0(value);
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for battery elements: " + seriesName);
         }
     }
 
