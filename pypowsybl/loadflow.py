@@ -10,6 +10,7 @@ from _pypowsybl import LoadFlowComponentStatus as ComponentStatus
 from _pypowsybl import LoadFlowComponentResult as ComponentResult
 from _pypowsybl import VoltageInitMode
 from _pypowsybl import BalanceType
+from _pypowsybl import ConnectedComponentMode
 from pypowsybl.network import Network
 
 
@@ -24,10 +25,14 @@ Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                    f", write_slack_bus={self.write_slack_bus!r}"\
                                    f", distributed_slack={self.distributed_slack!r}"\
                                    f", balance_type={self.balance_type.name}"\
+                                   f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}"\
+                                   f", countries_to_balance={self.countries_to_balance}"\
+                                   f", connected_component_mode={self.connected_component_mode!r}"\
                                    f")"
 
 ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
-                                        f"component_num={self.component_num!r}"\
+                                        f"connected_component_num={self.connected_component_num!r}"\
+                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
                                         f", status={self.status.name}"\
                                         f", iteration_count={self.iteration_count!r}"\
                                         f", slack_bus_id={self.slack_bus_id!r}"\

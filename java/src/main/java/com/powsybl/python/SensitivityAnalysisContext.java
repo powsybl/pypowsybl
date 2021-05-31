@@ -159,6 +159,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         int busVoltageMatrixColCount = busVoltageEquipmentsIds != null ? busVoltageEquipmentsIds.size() : 0;
         int busVoltageMatrixRowCount = targetVoltageEquipmentsIds != null ? targetVoltageEquipmentsIds.size() : 0;
 
+        ContingencyContext contingencyContext = ContingencyContext.createAllContingencyContext();
         SensitivityFactorReader factorReader = handler -> {
             for (int column = 0; column < branchFlowMatrixColumnCount; column++) {
                 String branchId = branchFlowBranchsIds.get(column);
@@ -171,16 +172,18 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                     String injectionOrTransfoId = branchFlowInjectionsOrTransfosIds.get(row);
                     Injection<?> injection = getInjection(network, injectionOrTransfoId);
                     if (injection != null) {
-                        handler.onSimpleFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                SensitivityVariableType.INJECTION_ACTIVE_POWER, injectionOrTransfoId);
+                        handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                SensitivityVariableType.INJECTION_ACTIVE_POWER, injectionOrTransfoId,
+                                false, contingencyContext);
                     } else {
                         TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
                         if (twt != null) {
                             if (twt.getPhaseTapChanger() == null) {
                                 throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
                             }
-                            handler.onSimpleFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                    SensitivityVariableType.TRANSFORMER_PHASE, injectionOrTransfoId);
+                            handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                    SensitivityVariableType.TRANSFORMER_PHASE, injectionOrTransfoId,
+                                    false, contingencyContext);
                         } else {
                             throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
                         }
@@ -192,8 +195,9 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                 for (int row = 0; row < busVoltageMatrixRowCount; row++) {
                     int index = busVoltageMatrixSerializedOffset + column + busVoltageMatrixColCount * row;
                     final String targetVoltageId = targetVoltageEquipmentsIds.get(row);
-                    handler.onSimpleFactor(index, SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
-                            SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId);
+                    handler.onFactor(index, SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
+                            SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId,
+                            false, contingencyContext);
                 }
             }
         };
@@ -215,8 +219,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
             }
         };
 
-        new OpenSensitivityAnalysisProvider().run(network, VariantManagerConstants.INITIAL_VARIANT_ID, contingencies,
-                sensitivityAnalysisParameters, factorReader, valueWriter);
+        new OpenSensitivityAnalysisProvider().run(network, contingencies, Collections.emptyList(), sensitivityAnalysisParameters,
+                                                  factorReader, valueWriter);
 
         Map<String, double[]> valuesByContingencyId = new HashMap<>(contingencies.size());
         Map<String, double[]> referencesByContingencyId = new HashMap<>(contingencies.size());

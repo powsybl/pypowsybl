@@ -169,7 +169,7 @@ n.write_single_line_diagram_svg('VL1', '/tmp/VL1.svg')
 To run a security analysis and print results table:
 
 ```python
-sa = pp.security_analysis.create()
+sa = pp.security.create_analysis()
 sa.add_single_element_contingency('L1-2-1', 'c1')
 sa.add_single_element_contingency('L2-3-1', 'c2')
 sa.add_multiple_elements_contingency(['L1-2-1', 'L1-5-1'], 'c3')
@@ -190,10 +190,10 @@ print(sa_result.get_table())
 To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
 
 ```python
-sa = pp.sensitivity_analysis.create()
+sa = pp.sensitivity.create_dc_analysis()
 sa.add_single_element_contingency('L1-2-1')
 sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
-sa_result = sa.run_dc(n)
+sa_result = sa.run(n)
 df = sa_result.get_post_contingency_sensitivity_matrix_flows('L1-2-1')
 print(df)
 ```

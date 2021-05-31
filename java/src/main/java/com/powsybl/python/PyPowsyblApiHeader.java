@@ -16,6 +16,7 @@ import org.graalvm.nativeimage.c.struct.CFieldAddress;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
 
@@ -70,7 +71,7 @@ public final class PyPowsyblApiHeader {
     interface BusPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);
@@ -100,7 +101,7 @@ public final class PyPowsyblApiHeader {
     interface GeneratorPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);
@@ -148,7 +149,7 @@ public final class PyPowsyblApiHeader {
     interface LoadPointer extends PointerBase {
 
         @CField("id")
-        CCharPointer geId();
+        CCharPointer getId();
 
         @CField("id")
         void setId(CCharPointer id);
@@ -183,11 +184,17 @@ public final class PyPowsyblApiHeader {
     @CStruct("load_flow_component_result")
     interface LoadFlowComponentResultPointer extends PointerBase {
 
-        @CField("component_num")
-        int geComponentNum();
+        @CField("connected_component_num")
+        int getConnectedComponentNum();
 
-        @CField("component_num")
-        void setComponentNum(int componentNum);
+        @CField("connected_component_num")
+        void setConnectedComponentNum(int connectedComponentNum);
+
+        @CField("synchronous_component_num")
+        int getSynchronousComponentNum();
+
+        @CField("synchronous_component_num")
+        void setSynchronousComponentNum(int synchronousComponentNum);
 
         @CField("status")
         int getStatus();
@@ -278,6 +285,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("balance_type")
         void setBalanceType(int balanceType);
+
+        @CField("dc_use_transformer_ratio")
+        boolean isDcUseTransformerRatio();
+
+        @CField("dc_use_transformer_ratio")
+        void setDcUseTransformerRatio(boolean dcUseTransformerRatio);
+
+        @CField("countries_to_balance")
+        CCharPointerPointer getCountriesToBalance();
+
+        @CField("countries_to_balance")
+        void setCountriesToBalance(CCharPointerPointer countriesToBalance);
+
+        @CField("countries_to_balance_count")
+        int getCountriesToBalanceCount();
+
+        @CField("countries_to_balance_count")
+        void setCountriesToBalanceCount(int countriesToBalanceCount);
+
+        @CField("connected_component_mode")
+        int getConnectedComponentMode();
+
+        @CField("connected_component_mode")
+        void setConnectedComponentMode(int connectedComponentMode);
     }
 
     @CStruct("limit_violation")
@@ -369,6 +400,7 @@ public final class PyPowsyblApiHeader {
         THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
         LOAD,
+        BATTERY,
         SHUNT_COMPENSATOR,
         DANGLING_LINE,
         LCC_CONVERTER_STATION,

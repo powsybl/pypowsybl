@@ -11,8 +11,8 @@ __version__ = '0.8.0'
 
 import pypowsybl.network
 import pypowsybl.loadflow
-import pypowsybl.security_analysis
-import pypowsybl.sensitivity_analysis
+import pypowsybl.security
+import pypowsybl.sensitivity
 
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
@@ -22,8 +22,8 @@ import pypowsybl.sensitivity_analysis
 __all__ = [
     "network",
     "loadflow",
-    "security_analysis",
-    "sensitivity_analysis"
+    "security",
+    "sensitivity"
 ]
 
 
