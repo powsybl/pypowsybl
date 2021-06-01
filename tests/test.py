@@ -124,6 +124,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(300, df3['q0']['LOAD'])
         self.assertEqual(500, df3['p0']['LOAD'])
 
+    def test_batteries_data_frame(self):
+        file_path = os.path.dirname(os.path.realpath(__file__)) + '/battery.xiidm'
+        n = pp.network.load(file=file_path)
+        df = n.create_batteries_data_frame()
+        self.assertEqual(200.0, df['max_p']['BAT2'])
+        df2 = pd.DataFrame(data=[[101, 201]], columns=['p0', 'q0'], index=['BAT2'])
+        n.update_batteries_with_data_frame(df2)
+        df3 = n.create_batteries_data_frame()
+        self.assertEqual(101, df3['p0']['BAT2'])
+        self.assertEqual(201, df3['q0']['BAT2'])
+
     def test_vsc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         df = n.create_vsc_converter_stations_data_frame()

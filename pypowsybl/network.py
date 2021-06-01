@@ -136,6 +136,14 @@ class Network(ObjectHandle):
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.LOAD)
 
+    def create_batteries_data_frame(self) -> pd.DataFrame:
+        """ Create a battery ``Pandas`` data frame.
+
+        Returns:
+            the battery data frame
+        """
+        return self.create_elements_data_frame(_pypowsybl.ElementType.BATTERY)
+
     def create_lines_data_frame(self) -> pd.DataFrame:
         """ Create a line ``Pandas`` data frame.
 
@@ -305,6 +313,17 @@ class Network(ObjectHandle):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.LOAD, df)
+
+    def update_batteries_with_data_frame(self, df: pd.DataFrame):
+        """ Update batteries with a ``Pandas`` data frame.
+
+        Available columns names:
+        - p0
+        - q0
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.BATTERY, df)
 
     def update_dangling_lines_with_data_frame(self, df: pd.DataFrame):
         """ Update dangling lines with a ``Pandas`` data frame.
