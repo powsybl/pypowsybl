@@ -1,3 +1,5 @@
+.. currentmodule:: pypowsybl.network
+
 Network
 =======
 
@@ -172,7 +174,6 @@ We can also update network elements with a data frame:
     - ratio_tap_position (int), phase_tap_position (int)
 
 
-
 Working with multiple variants of a network
 -------------------------------------------
 
@@ -197,3 +198,11 @@ In order to achieve that, you can use variants management:
    607.0
    >>> network.remove_variant('Variant')
 
+Detailed Documentation by class
+-------------------------------
+
+.. automodule:: pypowsybl.network
+    :members:
+    :private-members:
+    :special-members:
+    :autosummary:
