@@ -339,18 +339,38 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_create_zone(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
-        zoneFr = pp.sensitivity.create_country_zone(n, 'FR')
-        self.assertEqual(3, len(zoneFr.injections_ids))
-        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zoneFr.injections_ids)
-        self.assertRaises(PyPowsyblError, zoneFr.get_shift_key, 'AA')
-        self.assertEqual(2000, zoneFr.get_shift_key('FFR2AA1 _generator'))
-        zoneBe = pp.sensitivity.create_country_zone(n, 'BE')
-        self.assertEqual(3, len(zoneBe.injections_ids))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zone_fr.injections_ids)
+        self.assertRaises(PyPowsyblError, zone_fr.get_shift_key, 'AA')
+        self.assertEqual(2000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.GENERATOR_MAX_P)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(9000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.LOAD_P0)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _load', 'FFR2AA1 _load', 'FFR3AA1 _load'], zone_fr.injections_ids)
+        self.assertEqual(1000, zone_fr.get_shift_key('FFR1AA1 _load'))
+
+    def test_sensi_zone(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
         sa = pp.sensitivity.create_dc_analysis()
-        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], [zoneFr, zoneBe])
-        r = sa.run(n)
-        print(r.get_branch_flows_sensitivity_matrix())
-        print(r.get_reference_flows())
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], [zone_fr, zone_be])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((2, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(0.3701714440115307, s['FFR2AA1  DDE3AA1  1']['FR'])
+        self.assertEqual(0.37842261758908524, s['BBE2AA1  FFR3AA1  1']['BE'])
+        self.assertEqual(0.12842261758908563, s['FFR2AA1  DDE3AA1  1']['BE'])
+        r = result.get_reference_flows()
+        self.assertEqual((1, 2), r.shape)
+        self.assertEqual(324.66561396238836, r['BBE2AA1  FFR3AA1  1']['reference_flows'])
+        self.assertEqual(1324.6656139623885, r['FFR2AA1  DDE3AA1  1']['reference_flows'])
 
 
 if __name__ == '__main__':

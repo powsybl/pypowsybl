@@ -12,6 +12,7 @@ from pypowsybl.util import ContingencyContainer
 from pypowsybl.util import ObjectHandle
 from _pypowsybl import PyPowsyblError
 from typing import List, Optional, Dict
+from enum import Enum
 import numpy as np
 import pandas as pd
 
@@ -44,16 +45,39 @@ def create_empty_zone(id: str) -> Zone:
     return Zone(id)
 
 
-def create_country_zone(network: Network, country: str) -> Zone:
-    # join generators, voltage levels and substations to get generators with countries
+class ZoneKeyType(Enum):
+    GENERATOR_TARGET_P = 0
+    GENERATOR_MAX_P = 1
+    LOAD_P0 = 2
+
+
+def create_country_zone(network: Network, country: str, key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
     substations = network.create_substations_data_frame()
     voltage_levels = network.create_voltage_levels_data_frame()
-    generators = network.create_generators_data_frame()
-    generators_with_countries = generators.join(voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']), on=['voltage_level_id']);
+    if key_type == ZoneKeyType.GENERATOR_MAX_P or key_type == ZoneKeyType.GENERATOR_TARGET_P:
+        # join generators, voltage levels and substations to get generators with countries
+        generators = network.create_generators_data_frame()
+        generators_with_countries = generators.join(
+            voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
+            on=['voltage_level_id'])
 
-    # filter generator for specified country
-    filtered_generators = generators_with_countries[generators_with_countries['country'] == country]
-    shift_keys_by_id = dict(zip(filtered_generators.index, filtered_generators.target_p))
+        # filter generators for specified country
+        filtered_generators = generators_with_countries[generators_with_countries['country'] == country]
+        shift_keys = filtered_generators.target_p if key_type == ZoneKeyType.GENERATOR_TARGET_P else filtered_generators.max_p
+        shift_keys_by_id = dict(zip(filtered_generators.index, shift_keys))
+    elif key_type == ZoneKeyType.LOAD_P0:
+        # join loads, voltage levels and substations to get generators with countries
+        loads = network.create_loads_data_frame()
+        loads_with_countries = loads.join(
+            voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
+            on=['voltage_level_id'])
+
+        # filter loads for specified country
+        filtered_loads = loads_with_countries[loads_with_countries['country'] == country]
+        shift_keys_by_id = dict(zip(filtered_loads.index, filtered_loads.p0))
+    else:
+        raise PyPowsyblError(f'Unknown key type {key_type}')
+
     return Zone(country, shift_keys_by_id)
 
 
