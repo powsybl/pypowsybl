@@ -339,6 +339,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_create_zone(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
+
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
         self.assertEqual(3, len(zone_fr.injections_ids))
         self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zone_fr.injections_ids)
@@ -353,6 +354,25 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(3, len(zone_fr.injections_ids))
         self.assertEqual(['FFR1AA1 _load', 'FFR2AA1 _load', 'FFR3AA1 _load'], zone_fr.injections_ids)
         self.assertEqual(1000, zone_fr.get_shift_key('FFR1AA1 _load'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+
+        # remove test
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        zone_fr.remove_injection('FFR1AA1 _generator')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+
+        # add test
+        zone_fr.add_injection('gen', 333)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(333, zone_fr.get_shift_key('gen'))
+
+        # move test
+        zone_fr.move_injection_to(zone_be, 'gen')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+        self.assertEqual(4, len(zone_be.injections_ids))
+        self.assertEqual(333, zone_be.get_shift_key('gen'))
 
     def test_sensi_zone(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))

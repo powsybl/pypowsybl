@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+from __future__ import annotations
+
 import _pypowsybl
 
 from pypowsybl.loadflow import Parameters
@@ -39,6 +41,17 @@ class Zone:
         if shift_key is None:
             raise PyPowsyblError(f'Injection {injection_id} not found')
         return shift_key
+
+    def add_injection(self, id: str, key: float = 1):
+        self._shift_keys_by_injections_id[id] = key
+
+    def remove_injection(self, id: str):
+        del self._shift_keys_by_injections_id[id]
+
+    def move_injection_to(self, other_zone: Zone, id: str):
+        shift_key = self.get_shift_key(id)
+        other_zone.add_injection(id, shift_key)
+        self.remove_injection(id)
 
 
 def create_empty_zone(id: str) -> Zone:
