@@ -338,7 +338,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
     def test_create_zone(self):
-        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
 
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
         self.assertEqual(3, len(zone_fr.injections_ids))
@@ -375,7 +375,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(333, zone_be.get_shift_key('gen'))
 
     def test_sensi_zone(self):
-        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.xiidm')))
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
         zone_be = pp.sensitivity.create_country_zone(n, 'BE')
         sa = pp.sensitivity.create_dc_analysis()
