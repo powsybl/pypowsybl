@@ -20,33 +20,37 @@ import pandas as pd
 
 
 class Zone:
-    def __init__(self, id: str, shift_keys_by_injections_id: Dict[str, float] = {}):
+    def __init__(self, id: str, shift_keys_by_injections_ids: Dict[str, float] = {}):
         self._id = id
-        self._shift_keys_by_injections_id = shift_keys_by_injections_id
+        self._shift_keys_by_injections_ids = shift_keys_by_injections_ids
 
     @property
     def id(self):
         return self._id
 
     @property
-    def shift_keys_by_injections_id(self):
-        return self._shift_keys_by_injections_id
+    def shift_keys_by_injections_ids(self):
+        return self._shift_keys_by_injections_ids
 
     @property
     def injections_ids(self):
-        return list(self._shift_keys_by_injections_id.keys())
+        return list(self._shift_keys_by_injections_ids.keys())
+
+    @property
+    def shift_keys_by_injections_ids(self):
+        return self._shift_keys_by_injections_ids
 
     def get_shift_key(self, injection_id: str):
-        shift_key = self._shift_keys_by_injections_id.get(injection_id)
+        shift_key = self._shift_keys_by_injections_ids.get(injection_id)
         if shift_key is None:
             raise PyPowsyblError(f'Injection {injection_id} not found')
         return shift_key
 
     def add_injection(self, id: str, key: float = 1):
-        self._shift_keys_by_injections_id[id] = key
+        self._shift_keys_by_injections_ids[id] = key
 
     def remove_injection(self, id: str):
-        del self._shift_keys_by_injections_id[id]
+        del self._shift_keys_by_injections_ids[id]
 
     def move_injection_to(self, other_zone: Zone, id: str):
         shift_key = self.get_shift_key(id)
@@ -210,7 +214,7 @@ class SensitivityAnalysis(ContingencyContainer):
             if isinstance(variable, str): # this is an element ID
                 elements_ids.append(variable)
             elif isinstance(variable, Zone): # this is a zone
-                zones.append(_pypowsybl.Zone(variable.id, list(variable.shift_keys_by_injections_id.keys()), list(variable.shift_keys_by_injections_id.values())))
+                zones.append(_pypowsybl.Zone(variable.id, list(variable.shift_keys_by_injections_ids.keys()), list(variable.shift_keys_by_injections_ids.values())))
                 zones_ids.append(variable.id)
             else:
                 raise PyPowsyblError(f'Unsupported factor variable type {type(variable)}')
