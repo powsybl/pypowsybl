@@ -7,6 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#include <iostream>
 
 #include <limits>
 #include "pypowsybl.h"
@@ -148,6 +149,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def(py::init([](pypowsybl::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
                              bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
                              bool distributedSlack, pypowsybl::BalanceType balanceType, bool dcUseTransformerRatio, const std::vector<std::string>& countriesToBalance,
+                             const std::map<std::string, std::map<std::string, std::string>>& others,
                              pypowsybl::ConnectedComponentMode connectedComponentMode) {
                 auto parameters = new load_flow_parameters();
                 parameters->voltage_init_mode = voltageInitMode;
@@ -163,9 +165,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 parameters->dc_use_transformer_ratio = dcUseTransformerRatio;
                 parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
                 parameters->countries_to_balance_count = countriesToBalance.size();
+                parameters->other_keys = pypowsybl::copyMapStringKeyToCharPtrPtr(others);
+                parameters->other_values = pypowsybl::copyMapStringValToCharPtrPtr(others);
+                parameters->other_keys_count = pypowsybl::countMapMapSize(others);
+                parameters->other_values_count = parameters->other_keys_count;
                 parameters->connected_component_mode = connectedComponentMode;
                 return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
                     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
+                    pypowsybl::deleteCharPtrPtr(ptr->other_keys, ptr->other_keys_count);
+                    pypowsybl::deleteCharPtrPtr(ptr->other_values, ptr->other_values_count);
                     delete ptr;
                 });
             }), py::arg("voltage_init_mode") = pypowsybl::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
@@ -174,6 +182,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                  py::arg("read_slack_bus") = false, py::arg("write_slack_bus") = false,
                  py::arg("distributed_slack") = true, py::arg("balance_type") = pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
                  py::arg("dc_use_transformer_ratio") = true, py::arg("countries_to_balance") = std::vector<std::string>(),
+                 py::arg("others") = std::map<std::string, std::string>(),
                  py::arg("connected_component_mode") = pypowsybl::ConnectedComponentMode::MAIN)
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
@@ -236,6 +245,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 pypowsybl::deleteCharPtrPtr(p.countries_to_balance, p.countries_to_balance_count);
                 p.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
                 p.countries_to_balance_count = countriesToBalance.size();
+            })
+            .def_property("others", [](const load_flow_parameters& p) {
+                std::map<std::string, std::string> params_map;
+                for(int i = 0; i < p.other_keys_count; i ++) {
+                std::string k(p.other_keys[i]);
+                std::string v(p.other_values[i]);
+                    params_map[k] = v;
+                }
+                return params_map;
+            }, [](load_flow_parameters& p, const std::map<std::string, std::map<std::string, std::string>>& others) {
+                p.other_keys = pypowsybl::copyMapStringKeyToCharPtrPtr(others);
+                p.other_values = pypowsybl::copyMapStringValToCharPtrPtr(others);
+                p.other_keys_count = pypowsybl::countMapMapSize(others);
+                p.other_values_count = p.other_keys_count;
             })
             .def_property("connected_component_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::ConnectedComponentMode>(p.connected_component_mode);

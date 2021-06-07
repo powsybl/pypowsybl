@@ -6,7 +6,6 @@
  */
 #include "pypowsybl.h"
 #include "pypowsybl-java.h"
-#include <iostream>
 
 namespace pypowsybl {
 
@@ -181,6 +180,40 @@ char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
         charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
     }
     return charPtrPtr;
+}
+
+long countMapMapSize(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    long i = 0;
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            i ++;
+        }
+    }
+    return i;
+}
+
+char** copyMapStringKeyToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    std::vector<std::string> parameterNames;
+    parameterNames.reserve(countMapMapSize(map));
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            std::string key = p.first + "__" + v.first;
+            parameterNames.push_back(key);
+        }
+    }
+    return copyVectorStringToCharPtrPtr(parameterNames);
+}
+
+char** copyMapStringValToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    std::vector<std::string> parameterNames;
+    parameterNames.reserve(countMapMapSize(map));
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            std::string value = v.second;
+            parameterNames.push_back(value);
+        }
+    }
+    return copyVectorStringToCharPtrPtr(parameterNames);
 }
 
 void deleteCharPtrPtr(char** charPtrPtr, int length) {

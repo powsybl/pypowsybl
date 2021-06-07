@@ -37,6 +37,10 @@ typedef struct load_flow_parameters_struct {
     unsigned char dc_use_transformer_ratio;
     char** countries_to_balance;
     int countries_to_balance_count;
+    char** other_keys;
+    int other_keys_count;
+    char** other_values;
+    int other_values_count;
     int connected_component_mode;
 } load_flow_parameters;
 

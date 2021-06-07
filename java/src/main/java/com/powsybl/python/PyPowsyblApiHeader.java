@@ -187,6 +187,30 @@ public final class PyPowsyblApiHeader {
         @CField("countries_to_balance_count")
         void setCountriesToBalanceCount(int countriesToBalanceCount);
 
+        @CField("other_keys")
+        void setOtherKeys(CCharPointerPointer otherKeys);
+
+        @CField("other_keys")
+        CCharPointerPointer getOtherKeys();
+
+        @CField("other_keys_count")
+        int getOtherKeysCount();
+
+        @CField("other_keys_count")
+        void setOtherKeysCount(int otherKeysCount);
+
+        @CField("other_values")
+        void setOtherValues(CCharPointerPointer otherValues);
+
+        @CField("other_values")
+        CCharPointerPointer getOtherValues();
+
+        @CField("other_values_count")
+        int getOtherValuesCount();
+
+        @CField("other_values_count")
+        void setOtherValuesCount(int otherValuesCount);
+
         @CField("connected_component_mode")
         int getConnectedComponentMode();
 
