@@ -290,6 +290,8 @@ class SeriesPointerArrayBuilder<T> {
         return PyPowsyblApiHeader.allocArrayPointer(seriesPtr, seriesList.size());
     }
 
+
+
     // used for unittest
     List<List> buildJavaSeries() {
         List<List> list = new ArrayList<>();

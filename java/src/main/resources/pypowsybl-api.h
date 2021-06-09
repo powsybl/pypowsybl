@@ -103,6 +103,8 @@ typedef enum {
     HVDC_LINE,
     RATIO_TAP_CHANGER_STEP,
     PHASE_TAP_CHANGER_STEP,
+    RATIO_TAP_CHANGER,
+    PHASE_TAP_CHANGER,
 } element_type;
 
 typedef struct matrix_struct {

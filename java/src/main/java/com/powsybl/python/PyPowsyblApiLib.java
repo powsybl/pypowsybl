@@ -738,6 +738,12 @@ public final class PyPowsyblApiLib {
                 case TWO_WINDINGS_TRANSFORMER:
                     seriesTypes = SeriesDataTypeConstants.TWO_WINDINGS_TRANSFORMER_MAP;
                     break;
+                case RATIO_TAP_CHANGER:
+                    seriesTypes = SeriesDataTypeConstants.RATIO_TAP_CHANGER_MAP;
+                    break;
+                case PHASE_TAP_CHANGER:
+                    seriesTypes = SeriesDataTypeConstants.PHASE_TAP_CHANGER_MAP;
+                    break;
                 default:
                     throw new UnsupportedOperationException("Element type not supported: " + elementType);
             }

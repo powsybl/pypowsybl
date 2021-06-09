@@ -74,6 +74,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("HVDC_LINE", element_type::HVDC_LINE)
             .value("RATIO_TAP_CHANGER_STEP", element_type::RATIO_TAP_CHANGER_STEP)
             .value("PHASE_TAP_CHANGER_STEP", element_type::PHASE_TAP_CHANGER_STEP)
+            .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
+            .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",

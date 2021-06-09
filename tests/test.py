@@ -334,6 +334,54 @@ class PyPowsyblTestCase(unittest.TestCase):
         parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
+    def test_ratio_tap_changers(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        tap_changers = n.create_ratio_tap_changers_data_frame()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                          'target_v', 'target_deadband'], tap_changers.columns.tolist())
+        self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0], tap_changers.loc['NHV2_NLOAD'].tolist())
+
+        update = pd.DataFrame(index=['NHV2_NLOAD'],
+                              columns=['tap', 'regulating', 'target_v'],
+                              data=[[0, False, 180]])
+        n.update_ratio_tap_changers_with_data_frame(update)
+
+        tap_changers = n.create_ratio_tap_changers_data_frame()
+        values = tap_changers.loc['NHV2_NLOAD']
+        self.assertFalse(values.regulating)
+        self.assertEqual(0, values.tap)
+        self.assertAlmostEqual(180, values.target_v, 1)
+
+    def test_phase_tap_changers(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        tap_changers = n.create_phase_tap_changers_data_frame()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+        twt_values = tap_changers.loc['TWT']
+        self.assertEqual(15, twt_values.tap)
+        self.assertEqual(0, twt_values.low_tap)
+        self.assertEqual(32, twt_values.high_tap)
+        self.assertEqual(33, twt_values.step_count)
+        self.assertEqual(False, twt_values.regulating)
+        self.assertEqual('FIXED_TAP', twt_values.regulation_mode)
+        self.assertTrue(pd.isna(twt_values.regulation_value))
+        self.assertTrue(pd.isna(twt_values.target_deadband))
+
+        update = pd.DataFrame(index=['TWT'],
+                              columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
+                              data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
+        n.update_phase_tap_changers_with_data_frame(update)
+
+        tap_changers = n.create_phase_tap_changers_data_frame()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+        twt_values = tap_changers.loc['TWT']
+        self.assertEqual(10, twt_values.tap)
+        self.assertEqual(True, twt_values.regulating)
+        self.assertEqual('CURRENT_LIMITER', twt_values.regulation_mode)
+        self.assertAlmostEqual(1000, twt_values.regulation_value, 1)
+        self.assertAlmostEqual(100, twt_values.target_deadband, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

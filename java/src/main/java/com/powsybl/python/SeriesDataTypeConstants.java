@@ -64,6 +64,21 @@ final class SeriesDataTypeConstants {
             .put("phase_tap_position", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
             .build();
 
+    static final Map<String, Integer> RATIO_TAP_CHANGER_MAP = ImmutableMap.<String, Integer>builder()
+        .put("tap", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
+        .put("regulating", SeriesPointerArrayBuilder.BOOLEAN_SERIES_TYPE)
+        .put("target_v", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+        .put("target_deadband", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+        .build();
+
+    static final Map<String, Integer> PHASE_TAP_CHANGER_MAP = ImmutableMap.<String, Integer>builder()
+        .put("tap", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
+        .put("regulating", SeriesPointerArrayBuilder.BOOLEAN_SERIES_TYPE)
+        .put("regulation_mode", SeriesPointerArrayBuilder.STRING_SERIES_TYPE)
+        .put("regulation_value", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+        .put("target_deadband", SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE)
+        .build();
+
     private SeriesDataTypeConstants() {
     }
 }

@@ -256,13 +256,29 @@ class Network(ObjectHandle):
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
 
-    def create_phase_tap_changer_steps_data_frame(self) -> pd.DataFrame:
-        """ Create a phase tap changer step ``Pandas`` data frame.
+    def create_ratio_tap_changers_data_frame(self) -> pd.DataFrame:
+        """ Create a ratio tap changers``Pandas`` data frame.
 
         Returns:
-            the phase tap changer step data frame
+            the ratio tap changers data frame
+        """
+        return self.create_elements_data_frame(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
+
+    def create_phase_tap_changer_steps_data_frame(self) -> pd.DataFrame:
+        """ Create a phase tap changers``Pandas`` data frame.
+
+        Returns:
+            the phase tap changers data frame
         """
         return self.create_elements_data_frame(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
+
+    def create_phase_tap_changers_data_frame(self) -> pd.DataFrame:
+        """ Create a ratio tap changers``Pandas`` data frame.
+
+        Returns:
+            the ratio tap changers data frame
+        """
+        return self.create_elements_data_frame(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
 
     def update_elements_with_data_frame(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         """ Update network elements with a ``Pandas`` data frame for a specified element type.
@@ -364,6 +380,22 @@ class Network(ObjectHandle):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements_with_data_frame(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
+
+    def update_ratio_tap_changers_with_data_frame(self, df: pd.DataFrame):
+        """ Update ratio tap changers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
+
+    def update_phase_tap_changers_with_data_frame(self, df: pd.DataFrame):
+        """ Update phase tap changers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements_with_data_frame(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
 
 def create_empty(id: str = "Default") -> Network:

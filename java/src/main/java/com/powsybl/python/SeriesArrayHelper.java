@@ -81,6 +81,12 @@ final class SeriesArrayHelper {
             case PHASE_TAP_CHANGER_STEP:
                 return preparePtcStepsData(network);
 
+            case RATIO_TAP_CHANGER:
+                return prepareRatioTapChangerData(network);
+
+            case PHASE_TAP_CHANGER:
+                return preparePhaseTapChangerData(network);
+
             default:
                 throw new UnsupportedOperationException("Element type not supported: " + elementType);
         }
@@ -113,6 +119,12 @@ final class SeriesArrayHelper {
                 case HVDC_LINE:
                     updateHvdcDouble(id, network, seriesName, value);
                     break;
+                case RATIO_TAP_CHANGER:
+                    updateRatioTapChangerDouble(id, network, seriesName, value);
+                    break;
+                case PHASE_TAP_CHANGER:
+                    updatePhaseTapChangerDouble(id, network, seriesName, value);
+                    break;
                 default:
                     throw new UnsupportedOperationException("Updating double series: type '" + elementType + "' field '" + seriesName + "' not supported");
             }
@@ -137,6 +149,12 @@ final class SeriesArrayHelper {
                 case TWO_WINDINGS_TRANSFORMER:
                     updateTransfo2Int(id, network, seriesName, value);
                     break;
+                case RATIO_TAP_CHANGER:
+                    updateRatioTapChangerInt(id, network, seriesName, value);
+                    break;
+                case PHASE_TAP_CHANGER:
+                    updatePhaseTapChangerInt(id, network, seriesName, value);
+                    break;
                 default:
                     throw new UnsupportedOperationException("Updating int or boolean series: type '" + elementType + "' field '" + seriesName + "' not supported");
             }
@@ -154,6 +172,8 @@ final class SeriesArrayHelper {
                     break;
                 case HVDC_LINE:
                     updateHvdcString(id, network, seriesName, value);
+                case PHASE_TAP_CHANGER:
+                    updatePhaseTapChangerString(id, network, seriesName, value);
                     break;
                 default:
                     throw new UnsupportedOperationException("Updating string series: type '" + elementType + "' field '" + seriesName + "' not supported");
@@ -443,6 +463,38 @@ final class SeriesArrayHelper {
                 .addStringSeries("bus2_id", l -> getBusId(l.getTerminal2())));
     }
 
+    private static SeriesPointerArrayBuilder prepareRatioTapChangerData(Network network) {
+        List<TwoWindingsTransformer> ratioTapChangers = network.getTwoWindingsTransformerStream()
+            .filter(t -> t.getRatioTapChanger() != null)
+            .collect(Collectors.toList());
+        return new SeriesPointerArrayBuilder<>(ratioTapChangers)
+            .addStringSeries("id", true, TwoWindingsTransformer::getId)
+            .addIntSeries("tap", t -> t.getRatioTapChanger().getTapPosition())
+            .addIntSeries("low_tap", t -> t.getRatioTapChanger().getLowTapPosition())
+            .addIntSeries("high_tap", t -> t.getRatioTapChanger().getHighTapPosition())
+            .addIntSeries("step_count", t -> t.getRatioTapChanger().getStepCount())
+            .addBooleanSeries("on_load", t -> t.getRatioTapChanger().hasLoadTapChangingCapabilities())
+            .addBooleanSeries("regulating", t -> t.getRatioTapChanger().isRegulating())
+            .addDoubleSeries("target_v", t -> t.getRatioTapChanger().getTargetV())
+            .addDoubleSeries("target_deadband", t -> t.getRatioTapChanger().getTargetDeadband());
+    }
+
+    private static SeriesPointerArrayBuilder preparePhaseTapChangerData(Network network) {
+        List<TwoWindingsTransformer> phaseTapChangers = network.getTwoWindingsTransformerStream()
+            .filter(t -> t.getPhaseTapChanger() != null)
+            .collect(Collectors.toList());
+        return new SeriesPointerArrayBuilder<>(phaseTapChangers)
+            .addStringSeries("id", true, TwoWindingsTransformer::getId)
+            .addIntSeries("tap", t -> t.getPhaseTapChanger().getTapPosition())
+            .addIntSeries("low_tap", t -> t.getPhaseTapChanger().getLowTapPosition())
+            .addIntSeries("high_tap", t -> t.getPhaseTapChanger().getHighTapPosition())
+            .addIntSeries("step_count", t -> t.getPhaseTapChanger().getStepCount())
+            .addBooleanSeries("regulating", t -> t.getPhaseTapChanger().isRegulating())
+            .addEnumSeries("regulation_mode", t -> t.getPhaseTapChanger().getRegulationMode())
+            .addDoubleSeries("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue())
+            .addDoubleSeries("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband());
+    }
+
     private static void updateGeneratorDouble(String id, Network network, String seriesName, double value) {
         Generator g = getGeneratorOrThrowsException(id, network);
         switch (seriesName) {
@@ -610,6 +662,78 @@ final class SeriesArrayHelper {
                 break;
             default:
                 throw new UnsupportedOperationException("Series name not supported for svc elements: " + seriesName);
+        }
+    }
+
+    private static void updateRatioTapChangerInt(String id, Network network, String seriesName, int value) {
+        TwoWindingsTransformer transformer = getTransformerOrThrowsException(id, network);
+        RatioTapChanger ratioTapChanger = getRatioTapChanger(transformer);
+        switch (seriesName) {
+            case "tap":
+                ratioTapChanger.setTapPosition(value);
+                break;
+            case "regulating":
+                ratioTapChanger.setRegulating(value == 1);
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for ratio tap changer: " + seriesName);
+        }
+    }
+
+    private static void updateRatioTapChangerDouble(String id, Network network, String seriesName, double value) {
+        TwoWindingsTransformer transformer = getTransformerOrThrowsException(id, network);
+        RatioTapChanger ratioTapChanger = getRatioTapChanger(transformer);
+        switch (seriesName) {
+            case "target_v":
+                ratioTapChanger.setTargetV(value);
+                break;
+            case "target_deadband":
+                ratioTapChanger.setTargetDeadband(value);
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for ratio tap changer: " + seriesName);
+        }
+    }
+
+    private static void updatePhaseTapChangerInt(String id, Network network, String seriesName, int value) {
+        TwoWindingsTransformer transformer = getTransformerOrThrowsException(id, network);
+        PhaseTapChanger phaseTapChanger = getPhaseTapChanger(transformer);
+        switch (seriesName) {
+            case "tap":
+                phaseTapChanger.setTapPosition(value);
+                break;
+            case "regulating":
+                phaseTapChanger.setRegulating(value == 1);
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for phase tap changer: " + seriesName);
+        }
+    }
+
+    private static void updatePhaseTapChangerDouble(String id, Network network, String seriesName, double value) {
+        TwoWindingsTransformer transformer = getTransformerOrThrowsException(id, network);
+        PhaseTapChanger phaseTapChanger = getPhaseTapChanger(transformer);
+        switch (seriesName) {
+            case "regulation_value":
+                phaseTapChanger.setRegulationValue(value);
+                break;
+            case "target_deadband":
+                phaseTapChanger.setTargetDeadband(value);
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for phase tap changer: " + seriesName);
+        }
+    }
+
+    private static void updatePhaseTapChangerString(String id, Network network, String seriesName, String value) {
+        TwoWindingsTransformer transformer = getTransformerOrThrowsException(id, network);
+        PhaseTapChanger phaseTapChanger = getPhaseTapChanger(transformer);
+        switch (seriesName) {
+            case "regulation_mode":
+                phaseTapChanger.setRegulationMode(PhaseTapChanger.RegulationMode.valueOf(value.toUpperCase()));
+                break;
+            default:
+                throw new UnsupportedOperationException("Series name not supported for phase tap changer: " + seriesName);
         }
     }
 
