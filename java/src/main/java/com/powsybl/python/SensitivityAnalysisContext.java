@@ -23,25 +23,29 @@ import com.powsybl.sensitivity.factors.variables.PhaseTapChangerAngle;
 import com.powsybl.sensitivity.factors.variables.TargetVoltage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
+    private List<SensitivityVariableSet> variableSets = Collections.emptyList();
+
     private List<String> branchFlowBranchsIds;
 
-    private List<String> branchFlowInjectionsOrTransfosIds;
-
-    private List<SensitivityVariableSet> variableSets = Collections.emptyList();
+    private List<String> branchFlowVariablesIds;
 
     private List<String> busVoltageEquipmentsIds;
 
     private List<String> targetVoltageEquipmentsIds;
 
-    void setBranchFlowFactorMatrix(List<String> branchsIds, List<String> injectionsOrTransfosIds, List<SensitivityVariableSet> variableSets) {
+    void setBranchFlowFactorMatrix(List<String> branchsIds, List<String> variablesIds) {
         this.branchFlowBranchsIds = Objects.requireNonNull(branchsIds);
-        this.branchFlowInjectionsOrTransfosIds = Objects.requireNonNull(injectionsOrTransfosIds);
+        this.branchFlowVariablesIds = Objects.requireNonNull(variablesIds);
+    }
+
+    public void setVariableSets(List<SensitivityVariableSet> variableSets) {
         this.variableSets = Objects.requireNonNull(variableSets);
     }
 
@@ -82,8 +86,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                 throw new PowsyblException("Branch '" + branchId + "' not found");
             }
             BranchFlow branchFlow = new BranchFlow(branchId, branch.getNameOrId(), branchId);
-            for (int row = 0; row < branchFlowInjectionsOrTransfosIds.size(); row++) {
-                String injectionOrTransfoId = branchFlowInjectionsOrTransfosIds.get(row);
+            for (int row = 0; row < branchFlowVariablesIds.size(); row++) {
+                String injectionOrTransfoId = branchFlowVariablesIds.get(row);
                 Injection<?> injection = getInjection(network, injectionOrTransfoId);
                 if (injection != null) {
                     InjectionIncrease injectionIncrease = new InjectionIncrease(injectionOrTransfoId, injection.getNameOrId(), injectionOrTransfoId);
@@ -142,7 +146,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
             Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchsIds, branchFlowInjectionsOrTransfosIds,
+            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchsIds, branchFlowVariablesIds,
                                                                 busVoltageEquipmentsIds, targetVoltageEquipmentsIds,
                                                                 sensitivityValues, sensitivityValuesByContingencyId);
         }
@@ -155,13 +159,14 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         List<Contingency> contingencies = createContingencies(network);
 
         int branchFlowMatrixColumnCount = branchFlowBranchsIds != null ? branchFlowBranchsIds.size() : 0;
-        int branchFlowMatrixRowCount = (branchFlowInjectionsOrTransfosIds != null ? branchFlowInjectionsOrTransfosIds.size() : 0)
-                + (variableSets != null ? variableSets.size() : 0);
+        int branchFlowMatrixRowCount = branchFlowVariablesIds != null ? branchFlowVariablesIds.size() : 0;
 
         // second matrix offset
         int busVoltageMatrixSerializedOffset = branchFlowMatrixColumnCount * branchFlowMatrixRowCount;
         int busVoltageMatrixColCount = busVoltageEquipmentsIds != null ? busVoltageEquipmentsIds.size() : 0;
         int busVoltageMatrixRowCount = targetVoltageEquipmentsIds != null ? targetVoltageEquipmentsIds.size() : 0;
+
+        Map<String, SensitivityVariableSet> variableSetsById = variableSets.stream().collect(Collectors.toMap(SensitivityVariableSet::getId, e -> e));
 
         ContingencyContext contingencyContext = ContingencyContext.createAllContingencyContext();
         SensitivityFactorReader factorReader = handler -> {
@@ -173,31 +178,30 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                 }
                 for (int row = 0; row < branchFlowMatrixRowCount; row++) {
                     int index = column + branchFlowMatrixColumnCount * row;
-                    if (row < branchFlowInjectionsOrTransfosIds.size()) {
-                        String injectionOrTransfoId = branchFlowInjectionsOrTransfosIds.get(row);
-                        Injection<?> injection = getInjection(network, injectionOrTransfoId);
-                        if (injection != null) {
+                    String variableId = branchFlowVariablesIds.get(row);
+                    Injection<?> injection = getInjection(network, variableId);
+                    if (injection != null) {
+                        handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
+                                false, contingencyContext);
+                    } else {
+                        TwoWindingsTransformer twt = network.getTwoWindingsTransformer(variableId);
+                        if (twt != null) {
+                            if (twt.getPhaseTapChanger() == null) {
+                                throw new PowsyblException("Transformer '" + variableId + "' is not a phase shifter");
+                            }
                             handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                    SensitivityVariableType.INJECTION_ACTIVE_POWER, injectionOrTransfoId,
+                                    SensitivityVariableType.TRANSFORMER_PHASE, variableId,
                                     false, contingencyContext);
                         } else {
-                            TwoWindingsTransformer twt = network.getTwoWindingsTransformer(injectionOrTransfoId);
-                            if (twt != null) {
-                                if (twt.getPhaseTapChanger() == null) {
-                                    throw new PowsyblException("Transformer '" + injectionOrTransfoId + "' is not a phase shifter");
-                                }
+                            if (variableSetsById.containsKey(variableId)) {
                                 handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                        SensitivityVariableType.TRANSFORMER_PHASE, injectionOrTransfoId,
-                                        false, contingencyContext);
+                                        SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
+                                        true, contingencyContext);
                             } else {
-                                throw new PowsyblException("Injection or transformer '" + injectionOrTransfoId + "' not found");
+                                throw new PowsyblException("Variable '" + variableId + "' not found");
                             }
                         }
-                    } else {
-                        SensitivityVariableSet variableSet = variableSets.get(row - branchFlowInjectionsOrTransfosIds.size());
-                        handler.onFactor(index, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                SensitivityVariableType.INJECTION_ACTIVE_POWER, variableSet.getId(),
-                                true, contingencyContext);
                     }
                 }
             }

@@ -379,7 +379,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
         zone_be = pp.sensitivity.create_country_zone(n, 'BE')
         sa = pp.sensitivity.create_dc_analysis()
-        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], [zone_fr, zone_be])
+        sa.set_zones([zone_fr, zone_be])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
         result = sa.run(n)
         s = result.get_branch_flows_sensitivity_matrix()
         self.assertEqual((2, 2), s.shape)
@@ -391,6 +392,23 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual((1, 2), r.shape)
         self.assertEqual(324.66561396238836, r['BBE2AA1  FFR3AA1  1']['reference_flows'])
         self.assertEqual(1324.6656139623885, r['FFR2AA1  DDE3AA1  1']['reference_flows'])
+
+    def test_sensi_power_transfer(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_de = pp.sensitivity.create_country_zone(n, 'DE')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+        zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((4, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(-0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['FR -> DE'])
+        self.assertEqual(0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['DE -> FR'])
+        self.assertEqual(0.10342626899874961, s['BBE2AA1  FFR3AA1  1']['NL'])
 
 
 if __name__ == '__main__':

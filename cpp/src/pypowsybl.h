@@ -163,8 +163,9 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 
 void* createSensitivityAnalysis();
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds,
-                               const std::vector<::zone*>& zones);
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones);
+
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

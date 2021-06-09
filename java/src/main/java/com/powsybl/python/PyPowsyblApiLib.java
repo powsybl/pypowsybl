@@ -601,16 +601,12 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));
     }
 
-    @CEntryPoint(name = "setBranchFlowFactorMatrix")
-    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
-                                                 ZonePointerPointer zonePtrPtr, int zoneCount,
-                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "setZones")
+    public static void setZones(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                ZonePointerPointer zonePtrPtr, int zoneCount,
+                                ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
             List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
             for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
                 PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
@@ -623,7 +619,20 @@ public final class PyPowsyblApiLib {
                 }
                 variableSets.add(new SensitivityVariableSet(zoneId, variables));
             }
-            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds, variableSets);
+            analysisContext.setVariableSets(variableSets);
+        });
+    }
+
+    @CEntryPoint(name = "setBranchFlowFactorMatrix")
+    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = CTypeUtil.toStringList(variableIdPtrPtr, variableIdCount);
+            analysisContext.setBranchFlowFactorMatrix(branchsIds, variablesIds);
         });
     }
 

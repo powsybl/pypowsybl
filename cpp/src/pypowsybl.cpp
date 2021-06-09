@@ -389,13 +389,17 @@ private:
     const std::vector<::zone*>& vector_;
 };
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& injectionsOrTransfosIds, const std::vector<::zone*>& zones) {
-    ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones) {
     ZonesPtr zonesPtr(zones);
+    callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
+}
+
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds) {
+    ToCharPtrPtr branchIdPtr(branchesIds);
+    ToCharPtrPtr variableIdPtr(variablesIds);
     callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size(), zonesPtr.get(), zones.size());
+                variableIdPtr.get(), variablesIds.size());
 }
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds,
