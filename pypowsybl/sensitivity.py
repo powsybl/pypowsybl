@@ -213,9 +213,9 @@ class SensitivityAnalysis(ContingencyContainer):
                                list(zone.shift_keys_by_injections_ids.values()))
 
     def set_zones(self, zones: List[Zone]):
-        """ Define zones
+        """ Define zones that will be used in branch flow factor matrix.
         Args:
-            zones: a list of zone definition
+            zones: a list of zones
         """
         _zones = []
         for zone in zones:
@@ -224,7 +224,7 @@ class SensitivityAnalysis(ContingencyContainer):
         _pypowsybl.set_zones(self.ptr, _zones)
 
     def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List):
-        """ Defines branch active power flow factor matrix, with a list of monitored branches IDs and a list of variables.
+        """ Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
         A variable could be:
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
          - a zone ID
@@ -237,7 +237,7 @@ class SensitivityAnalysis(ContingencyContainer):
         flatten_variables_ids = []
         branch_data_frame_index = []
         for variable_id in variables_ids:
-            if isinstance(variable_id, str): # this is an element ID
+            if isinstance(variable_id, str): # this is an ID
                 flatten_variables_ids.append(variable_id)
                 branch_data_frame_index.append(variable_id)
             elif isinstance(variable_id, Tuple): # this is a power transfer
