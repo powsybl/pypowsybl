@@ -19,7 +19,7 @@ as a result:
     >>> import pypowsybl as pp
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> analysis = pp.sensitivity.create_dc_analysis()
-    >>> analysis.set_branch_flow_factor_matrix(monitored_branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables=['LOAD'])
+    >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> result = analysis.run(network)
     >>> result.get_reference_flows()
                      NHV1_NHV2_1  NHV1_NHV2_2
@@ -62,7 +62,7 @@ contingency definitions to your analysis:
 .. doctest::
 
     >>> analysis = pp.sensitivity.create_dc_analysis()
-    >>> analysis.set_branch_flow_factor_matrix(monitored_branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables=['LOAD'])
+    >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], injections_or_transformers_ids=['LOAD'])
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
     >>> result.get_reference_flows('NHV1_NHV2_1')

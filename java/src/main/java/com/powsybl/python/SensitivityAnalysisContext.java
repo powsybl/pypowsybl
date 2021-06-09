@@ -32,7 +32,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private List<SensitivityVariableSet> variableSets = Collections.emptyList();
 
-    private List<String> branchFlowBranchsIds;
+    private List<String> branchFlowBranchesIds;
 
     private List<String> branchFlowVariablesIds;
 
@@ -40,8 +40,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private List<String> targetVoltageEquipmentsIds;
 
-    void setBranchFlowFactorMatrix(List<String> branchsIds, List<String> variablesIds) {
-        this.branchFlowBranchsIds = Objects.requireNonNull(branchsIds);
+    void setBranchFlowFactorMatrix(List<String> branchesIds, List<String> variablesIds) {
+        this.branchFlowBranchesIds = Objects.requireNonNull(branchesIds);
         this.branchFlowVariablesIds = Objects.requireNonNull(variablesIds);
     }
 
@@ -76,11 +76,11 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     }
 
     private void createBranchFlowFactors(Network network, List<SensitivityFactor> factors) {
-        if (branchFlowBranchsIds == null) {
+        if (branchFlowBranchesIds == null) {
             return;
         }
-        for (int column = 0; column < branchFlowBranchsIds.size(); column++) {
-            String branchId = branchFlowBranchsIds.get(column);
+        for (int column = 0; column < branchFlowBranchesIds.size(); column++) {
+            String branchId = branchFlowBranchesIds.get(column);
             Branch branch = network.getBranch(branchId);
             if (branch == null) {
                 throw new PowsyblException("Branch '" + branchId + "' not found");
@@ -146,7 +146,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
             Map<String, List<SensitivityValue>> sensitivityValuesByContingencyId = result.getSensitivityValuesContingencies();
-            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchsIds, branchFlowVariablesIds,
+            resultContext = new SensitivityAnalysisResultContextV1(branchFlowBranchesIds, branchFlowVariablesIds,
                                                                 busVoltageEquipmentsIds, targetVoltageEquipmentsIds,
                                                                 sensitivityValues, sensitivityValuesByContingencyId);
         }
@@ -158,7 +158,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
 
-        int branchFlowMatrixColumnCount = branchFlowBranchsIds != null ? branchFlowBranchsIds.size() : 0;
+        int branchFlowMatrixColumnCount = branchFlowBranchesIds != null ? branchFlowBranchesIds.size() : 0;
         int branchFlowMatrixRowCount = branchFlowVariablesIds != null ? branchFlowVariablesIds.size() : 0;
 
         // second matrix offset
@@ -171,7 +171,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         ContingencyContext contingencyContext = ContingencyContext.createAllContingencyContext();
         SensitivityFactorReader factorReader = handler -> {
             for (int column = 0; column < branchFlowMatrixColumnCount; column++) {
-                String branchId = branchFlowBranchsIds.get(column);
+                String branchId = branchFlowBranchesIds.get(column);
                 Branch branch = network.getBranch(branchId);
                 if (branch == null) {
                     throw new PowsyblException("Branch '" + branchId + "' not found");

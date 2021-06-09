@@ -630,9 +630,9 @@ public final class PyPowsyblApiLib {
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> branchesIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
             List<String> variablesIds = CTypeUtil.toStringList(variableIdPtrPtr, variableIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchsIds, variablesIds);
+            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
         });
     }
 

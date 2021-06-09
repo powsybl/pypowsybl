@@ -105,11 +105,11 @@ class DcSensitivityAnalysisResult(ObjectHandle):
     of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self, result_context_ptr, monitored_branches_ids: List[str], data_frame_index: List[str]):
+    def __init__(self, result_context_ptr, branches_ids: List[str], branch_data_frame_index: List[str]):
         ObjectHandle.__init__(self, result_context_ptr)
         self.result_context_ptr = result_context_ptr
-        self.monitored_branches_ids = monitored_branches_ids
-        self.data_frame_index = data_frame_index
+        self.branches_ids = branches_ids
+        self.branch_data_frame_index = branch_data_frame_index
 
     def get_branch_flows_sensitivity_matrix(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the base case or on the post contingency state depending if
@@ -126,12 +126,12 @@ class DcSensitivityAnalysisResult(ObjectHandle):
         else:
             data = np.array(m, copy=False)
 
-            df = pd.DataFrame(data=data, columns=self.monitored_branches_ids, index=self.data_frame_index)
+            df = pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
 
             # substract second power transfer zone to first one
             i = 0
-            while i < len(self.data_frame_index):
-                if self.data_frame_index[i] == TO_REMOVE:
+            while i < len(self.branch_data_frame_index):
+                if self.branch_data_frame_index[i] == TO_REMOVE:
                     df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
                 i += 1
 
@@ -152,7 +152,7 @@ class DcSensitivityAnalysisResult(ObjectHandle):
             return None
         else:
             data = np.array(m, copy=False)
-            return pd.DataFrame(data=data, columns=self.monitored_branches_ids, index=['reference_flows'])
+            return pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
@@ -161,9 +161,9 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self, result_context_ptr, monitored_branches_ids: List[str], data_frame_index: List[str],
+    def __init__(self, result_context_ptr, branches_ids: List[str], branch_data_frame_index: List[str],
                  bus_ids: List[str], target_voltage_ids: List[str]):
-        DcSensitivityAnalysisResult.__init__(self, result_context_ptr, monitored_branches_ids, data_frame_index)
+        DcSensitivityAnalysisResult.__init__(self, result_context_ptr, branches_ids, branch_data_frame_index)
         self.bus_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
@@ -204,8 +204,8 @@ class SensitivityAnalysis(ContingencyContainer):
     """ Base class for sensitivity analysis. Do not instantiate it directly!"""
     def __init__(self, ptr):
         ContingencyContainer.__init__(self, ptr)
-        self.monitored_branches_ids = None
-        self.data_frame_index = None
+        self.branches_ids = None
+        self.branch_data_frame_index = None
 
     @staticmethod
     def __create_cpp_zone(zone: Zone) -> _pypowsybl.Zone:
@@ -223,7 +223,7 @@ class SensitivityAnalysis(ContingencyContainer):
                                           list(zone.shift_keys_by_injections_ids.values())))
         _pypowsybl.set_zones(self.ptr, _zones)
 
-    def set_branch_flow_factor_matrix(self, monitored_branches_ids: List[str], variables_ids: List):
+    def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List):
         """ Defines branch active power flow factor matrix, with a list of monitored branches IDs and a list of variables.
         A variable could be:
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
@@ -231,28 +231,28 @@ class SensitivityAnalysis(ContingencyContainer):
          - a couple of zone ID to define a transfer between 2 zones
 
         Args:
-            monitored_branches_ids: IDs of branches for which active power flow sensitivities should be computed
+            branches_ids: IDs of branches for which active power flow sensitivities should be computed
             variables: variables which may impact branch flows,to which we should compute sensitivities
         """
         flatten_variables_ids = []
-        data_frame_index = []
+        branch_data_frame_index = []
         for variable_id in variables_ids:
             if isinstance(variable_id, str): # this is an element ID
                 flatten_variables_ids.append(variable_id)
-                data_frame_index.append(variable_id)
+                branch_data_frame_index.append(variable_id)
             elif isinstance(variable_id, Tuple): # this is a power transfer
                 if len(variable_id) != 2:
                     raise PyPowsyblError('Power transfer factor should be describe with a tuple 2')
                 flatten_variables_ids.append(variable_id[0])
                 flatten_variables_ids.append(variable_id[1])
-                data_frame_index.append(variable_id[0] + ' -> ' + variable_id[1])
-                data_frame_index.append(TO_REMOVE)
+                branch_data_frame_index.append(variable_id[0] + ' -> ' + variable_id[1])
+                branch_data_frame_index.append(TO_REMOVE)
             else:
                 raise PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
 
-        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, monitored_branches_ids, flatten_variables_ids)
-        self.monitored_branches_ids = monitored_branches_ids
-        self.data_frame_index = data_frame_index
+        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, flatten_variables_ids)
+        self.branches_ids = branches_ids
+        self.branch_data_frame_index = branch_data_frame_index
 
 
 class DcSensitivityAnalysis(SensitivityAnalysis):
@@ -272,7 +272,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
             a sensitivity analysis result
         """
         return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
-                                           monitored_branches_ids=self.monitored_branches_ids, data_frame_index=self.data_frame_index)
+                                           branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
 class AcSensitivityAnalysis(SensitivityAnalysis):
@@ -306,7 +306,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
             a sensitivity analysis result
         """
         return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters, provider),
-                                           monitored_branches_ids=self.monitored_branches_ids, data_frame_index=self.data_frame_index,
+                                           branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
                                            bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
 
