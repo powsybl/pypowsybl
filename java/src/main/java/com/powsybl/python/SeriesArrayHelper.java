@@ -146,9 +146,6 @@ final class SeriesArrayHelper {
                 case VSC_CONVERTER_STATION:
                     updateVscInt(id, network, seriesName, value);
                     break;
-                case TWO_WINDINGS_TRANSFORMER:
-                    updateTransfo2Int(id, network, seriesName, value);
-                    break;
                 case RATIO_TAP_CHANGER:
                     updateRatioTapChangerInt(id, network, seriesName, value);
                     break;
@@ -423,8 +420,6 @@ final class SeriesArrayHelper {
                 .addDoubleSeries("rated_u1", TwoWindingsTransformer::getRatedU1)
                 .addDoubleSeries("rated_u2", TwoWindingsTransformer::getRatedU2)
                 .addDoubleSeries("rated_s", TwoWindingsTransformer::getRatedS)
-                .addIntSeries("ratio_tap_position", TwoWindingsTransformer::getRatioTapChanger, TapChanger::getTapPosition)
-                .addIntSeries("phase_tap_position", TwoWindingsTransformer::getPhaseTapChanger, TapChanger::getTapPosition)
                 .addDoubleSeries("p1", twt -> twt.getTerminal1().getP())
                 .addDoubleSeries("q1", twt -> twt.getTerminal1().getQ())
                 .addDoubleSeries("p2", twt -> twt.getTerminal2().getP())
@@ -626,20 +621,6 @@ final class SeriesArrayHelper {
                 break;
             default:
                 throw new UnsupportedOperationException("Series name not supported for vsc elements: " + seriesName);
-        }
-    }
-
-    private static void updateTransfo2Int(String id, Network network, String seriesName, int value) {
-        TwoWindingsTransformer twt = getTransformerOrThrowsException(id, network);
-        switch (seriesName) {
-            case "ratio_tap_position":
-                getRatioTapChanger(twt).setTapPosition(value);
-                break;
-            case "phase_tap_position":
-                getPhaseTapChanger(twt).setTapPosition(value);
-                break;
-            default:
-                throw new UnsupportedOperationException("Series name not supported for 2 windings transformer elements: " + seriesName);
         }
     }
 

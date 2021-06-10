@@ -60,8 +60,6 @@ final class SeriesDataTypeConstants {
             .build();
 
     static final Map<String, Integer> TWO_WINDINGS_TRANSFORMER_MAP = ImmutableMap.<String, Integer>builder()
-            .put("ratio_tap_position", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
-            .put("phase_tap_position", SeriesPointerArrayBuilder.INT_SERIES_TYPE)
             .build();
 
     static final Map<String, Integer> RATIO_TAP_CHANGER_MAP = ImmutableMap.<String, Integer>builder()

@@ -213,19 +213,20 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.create_2_windings_transformers_data_frame()
-        self.assertEqual(1, df['ratio_tap_position']['NHV2_NLOAD'])
-        self.assertEqual(-99999, df['phase_tap_position']['NHV2_NLOAD'])
-        n.update_2_windings_transformer_with_data_frame(pd.DataFrame(index=['NHV2_NLOAD'], data={'ratio_tap_position': [0]}))
-        df = n.create_2_windings_transformers_data_frame()
-        self.assertEqual(0, df['ratio_tap_position']['NHV2_NLOAD'])
-
-        # also test phase shifter
-        n = pp.network.create_four_substations_node_breaker_network();
-        df = n.create_2_windings_transformers_data_frame()
-        self.assertEqual(15, df['phase_tap_position']['TWT'])
-        n.update_2_windings_transformer_with_data_frame(pd.DataFrame(index=['TWT'], data={'phase_tap_position': [16]}))
-        df = n.create_2_windings_transformers_data_frame()
-        self.assertEqual(16, df['phase_tap_position']['TWT'])
+        self.assertEqual(['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'p2', 'q2',
+                          'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id'],
+                         df.columns.tolist())
+        load_tfo = df.loc['NHV2_NLOAD']
+        self.assertAlmostEqual(0.042, load_tfo.r, places=1)
+        self.assertAlmostEqual(04.05, load_tfo.x, places=1)
+        self.assertEqual(0, load_tfo.g)
+        self.assertEqual(0, load_tfo.b)
+        self.assertEqual(400, load_tfo.rated_u1)
+        self.assertEqual(158, load_tfo.rated_u2)
+        self.assertEqual('VLHV2', load_tfo.voltage_level1_id)
+        self.assertEqual('VLLOAD', load_tfo.voltage_level2_id)
+        self.assertEqual('VLHV2_0', load_tfo.bus1_id)
+        self.assertEqual('VLLOAD_0', load_tfo.bus2_id)
 
     def test_voltage_levels_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
