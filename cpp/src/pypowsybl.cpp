@@ -438,6 +438,19 @@ void updateNetworkElementsWithStringSeries(void* network, element_type elementTy
                 idPtr.get(), valuePtr.get(), elementCount);
 }
 
+void newElement(void* network, const std::string& id, element_type elementType,
+             const std::vector<std::string>& doubleKeys, const std::vector<double>& doubleVals,
+             const std::vector<std::string>& strKeys, const std::vector<std::string>& strVals) {
+    ToCharPtrPtr doubleKeysPtr(doubleKeys);
+    ToDoublePtr doubleValsPtr(doubleVals);
+    ToCharPtrPtr strKeysPtr(strKeys);
+    ToCharPtrPtr strValsPtr(strVals);
+
+    callJava<>(::newElement, network, (char *) id.c_str(), elementType,
+            doubleKeysPtr.get(), doubleValsPtr.get(), doubleVals.size(),
+            strKeysPtr.get(), strValsPtr.get(), strKeys.size());
+}
+
 void destroyObjectHandle(void* objectHandle) {
     callJava<>(::destroyObjectHandle, objectHandle);
 }

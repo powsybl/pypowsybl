@@ -411,6 +411,30 @@ class Network(ObjectHandle):
         """
         return _pypowsybl.get_variant_ids(self.ptr)
 
+    def new_load(self, df: pd.DataFrame):
+        self.new_element(_pypowsybl.ElementType.LOAD, df)
+
+    def new_element(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
+        types_map = {}
+        for col in df.columns.values:
+            types_map.update({col : _pypowsybl.get_series_type(element_type, col)})
+
+        for index, row in df.iterrows():
+            double_keys = []
+            double_vals = []
+            str_keys = []
+            str_vals = []
+            for col in df.columns:
+                series_type = types_map.get(col)
+                if series_type == 2 or series_type == 3:
+                    pass
+                elif series_type == 1:
+                    double_keys.append(col)
+                    double_vals.append(row[col])
+                elif series_type == 0:
+                    str_keys.append(col)
+                    str_vals.append(row[col])
+            _pypowsybl.new_element(self.ptr, index, element_type, double_keys, double_vals, str_keys, str_vals)
 
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.
