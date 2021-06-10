@@ -30,6 +30,8 @@ public interface DataframeMapper {
 
     SeriesMetadata getSeriesMetadata(String seriesName);
 
+    boolean isSeriesMetaDataExists(String seriesName);
+
     /**
      * Updates network data with the provided series.
      */

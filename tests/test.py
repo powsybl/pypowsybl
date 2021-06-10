@@ -36,6 +36,14 @@ class PyPowsyblTestCase(unittest.TestCase):
         results = pp.loadflow.run_dc(n, parameters)
         self.assertEqual(1, len(results))
 
+    def test_new_load(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        df = pd.DataFrame(data=[['VLLOAD', 1.1, 2.1, 'NLOAD', 'NLOAD']], columns=['voltage_level_id', 'p0', 'q0', 'connectable_bus_id', 'bus_id'], index=['LOAD2'])
+        n.new_load(df)
+        df2 = n.get_loads()
+        self.assertEqual(1.1, df2['p0']['LOAD2'])
+        self.assertEqual(2.1, df2['q0']['LOAD2'])
+
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
         self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)

@@ -13,10 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
@@ -70,6 +67,10 @@ public final class NetworkDataframes {
 
     static <U extends Injection<U>> ToDoubleFunction<U> getP() {
         return inj -> inj.getTerminal().getP();
+    }
+
+    static <U extends InjectionAdder<U>> BiConsumer<U, String> setConnectableBus() {
+        return InjectionAdder::setConnectableBus;
     }
 
     static <U extends Injection<U>> ToDoubleFunction<U> getQ() {
@@ -162,8 +163,8 @@ public final class NetworkDataframes {
             .doubles("q0", Load::getQ0, Load::setQ0)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }

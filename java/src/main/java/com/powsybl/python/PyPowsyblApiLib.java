@@ -10,6 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.dataframe.*;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -17,6 +18,7 @@ import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.parameters.Parameter;
@@ -24,7 +26,6 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.dataframe.*;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
@@ -584,7 +585,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getReferenceVoltages")
     public static MatrixPointer getReferenceVoltages(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                     CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -621,10 +622,16 @@ public final class PyPowsyblApiLib {
     public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                .getSeriesMetadata(seriesName)
-                .getType();
-            return convert(type);
+            DataframeMapper dataframeMapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            if (dataframeMapper.isSeriesMetaDataExists(seriesName)) {
+                return convert(dataframeMapper
+                        .getSeriesMetadata(seriesName)
+                        .getType());
+            } else {
+                // adder
+                Map<String, SeriesDataType> map = new HashMap<>();
+                return convert(SeriesDataType.STRING);
+            }
         });
     }
 
@@ -652,7 +659,7 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 
@@ -684,7 +691,7 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 
@@ -716,7 +723,7 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 
@@ -737,6 +744,50 @@ public final class PyPowsyblApiLib {
                 return CTypeUtil.toString(valuePtr.read(index));
             }
         };
+    }
+
+    @CEntryPoint(name = "newElement")
+    public static void newElement(IsolateThread thread, ObjectHandle networkHandle,
+                                  CCharPointer idPtr, ElementType elementType,
+                                  CCharPointerPointer doubleKeysPtr, CDoublePointer doubleValsPtr, int doubleMapCount,
+                                  CCharPointerPointer stringKeysPtr, CCharPointerPointer stringValsPtr, int stringMapCount,
+                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String id = CTypeUtil.toString(idPtr);
+            List<String> doubleKeys = CTypeUtil.toStringList(doubleKeysPtr, doubleMapCount);
+            List<Double> doubleVals = CTypeUtil.toDoubleList(doubleValsPtr, doubleMapCount);
+            Map<String, Double> doubleMap = mergeIntoMap(doubleKeys, doubleVals);
+            Map<String, String> strMap = mergeIntoMap(CTypeUtil.toStringList(stringKeysPtr, stringMapCount),
+                    CTypeUtil.toStringList(stringValsPtr, stringMapCount));
+            switch (elementType) {
+                case LOAD:
+                    newLoad(network, id, doubleMap, strMap);
+                    break;
+                default:
+                    throw new PowsyblException();
+            }
+        });
+    }
+
+    private static void newLoad(Network network, String id, Map<String, Double> doubleMap, Map<String, String> strMap) {
+        String vlId = strMap.get("voltage_level_id");
+        VoltageLevel voltageLevel = network.getVoltageLevel(vlId);
+        voltageLevel.newLoad()
+                .setId(id)
+                .setP0(doubleMap.get("p0"))
+                .setQ0(doubleMap.get("q0"))
+                .setConnectableBus(strMap.get("connectable_bus_id"))
+                .setBus(strMap.get("bus_id"))
+                .add();
+    }
+
+    private static <T> Map<String, T> mergeIntoMap(List<String> keys, List<T> vals) {
+        Map<String, T> map = new HashMap<>();
+        for (int i = 0; i < keys.size(); i++) {
+            map.put(keys.get(i), vals.get(i));
+        }
+        return map;
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

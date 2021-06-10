@@ -46,6 +46,11 @@ public abstract class AbstractDataframeMapper<T> implements DataframeMapper {
         return mapper.getMetadata();
     }
 
+    @Override
+    public boolean isSeriesMetaDataExists(String seriesName) {
+        return seriesMappers.get(seriesName) != null;
+    }
+
     public void createDataframe(Network network, DataframeHandler dataframeHandler) {
         dataframeHandler.allocate(seriesMappers.size());
         List<T> items = getItems(network);
