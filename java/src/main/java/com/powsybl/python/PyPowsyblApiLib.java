@@ -24,12 +24,12 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.dataframe.*;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.tools.Version;
-import org.eclipse.collections.api.block.function.primitive.IntToIntFunction;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -48,9 +48,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BooleanSupplier;
-import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
-import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.PyPowsyblApiHeader.*;
@@ -686,9 +684,11 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
+            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(elementType);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SeriesPointerArrayBuilder builder = SeriesArrayHelper.prepareData(network, elementType);
-            return SeriesArrayHelper.writeToCStruct(builder);
+            CDataframeHandler handler = new CDataframeHandler();
+            mapper.createDataframe(network, handler);
+            return handler.getDataframePtr();
         });
     }
 
@@ -763,11 +763,28 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            IntFunction<String> idGetter = i -> CTypeUtil.toString(elementIdPtrPtr.read(i));
-            IntToIntFunction valueGetter = i -> valuePtr.read(i);
-            SeriesArrayHelper.updateNetworkElementsWithIntSeries(network, elementType, elementCount, seriesName,
-                    idGetter, valueGetter);
+            NetworkDataframes.getDataframeMapper(elementType)
+                .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
+    }
+
+    private static IntIndexedSeries createIntSeries(CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr, int elementCount) {
+        return new IntIndexedSeries() {
+            @Override
+            public int getSize() {
+                return elementCount;
+            }
+
+            @Override
+            public String getId(int index) {
+                return CTypeUtil.toString(elementIdPtrPtr.read(index));
+            }
+
+            @Override
+            public int getValue(int index) {
+                return valuePtr.read(index);
+            }
+        };
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithDoubleSeries")
@@ -778,11 +795,28 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            IntFunction<String> idGetter = i -> CTypeUtil.toString(elementIdPtrPtr.read(i));
-            IntToDoubleFunction valueGetter = i -> valuePtr.read(i);
-            SeriesArrayHelper.updateNetworkElementsWithDoubleSeries(network, elementType, elementCount, seriesName,
-                    idGetter, valueGetter);
+            NetworkDataframes.getDataframeMapper(elementType)
+                .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
+    }
+
+    private static DoubleIndexedSeries createDoubleSeries(CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr, int elementCount) {
+        return new DoubleIndexedSeries() {
+            @Override
+            public int getSize() {
+                return elementCount;
+            }
+
+            @Override
+            public String getId(int index) {
+                return CTypeUtil.toString(elementIdPtrPtr.read(index));
+            }
+
+            @Override
+            public double getValue(int index) {
+                return valuePtr.read(index);
+            }
+        };
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithStringSeries")
@@ -793,11 +827,28 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            IntFunction<String> idGetter = i -> CTypeUtil.toString(elementIdPtrPtr.read(i));
-            IntFunction<String> valueGetter = i -> CTypeUtil.toString(valuePtr.read(i));
-            SeriesArrayHelper.updateNetworkElementsWithStringSeries(network, elementType, elementCount, seriesName,
-                    idGetter, valueGetter);
+            NetworkDataframes.getDataframeMapper(elementType)
+                .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
+    }
+
+    private static IndexedSeries<String> createStringSeries(CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr, int elementCount) {
+        return new IndexedSeries<>() {
+            @Override
+            public int getSize() {
+                return elementCount;
+            }
+
+            @Override
+            public String getId(int index) {
+                return CTypeUtil.toString(elementIdPtrPtr.read(index));
+            }
+
+            @Override
+            public String getValue(int index) {
+                return CTypeUtil.toString(valuePtr.read(index));
+            }
+        };
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
