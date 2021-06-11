@@ -719,13 +719,13 @@ public final class PyPowsyblApiLib {
     private static int convert(SeriesDataType type) {
         switch (type) {
             case STRING:
-                return 0;
+                return CDataframeHandler.STRING_SERIES_TYPE;
             case DOUBLE:
-                return 1;
+                return CDataframeHandler.DOUBLE_SERIES_TYPE;
             case INT:
-                return 2;
+                return CDataframeHandler.INT_SERIES_TYPE;
             case BOOLEAN:
-                return 3;
+                return CDataframeHandler.BOOLEAN_SERIES_TYPE;
             default:
                 throw new IllegalStateException("Unexpected series type: " + type);
         }

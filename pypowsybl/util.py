@@ -46,6 +46,8 @@ def create_data_frame_from_series_array(series_array):
         else:
             series_dict[series.name] = series.data
     index = None
+    if not index_names:
+        raise ValueError('No index in returned dataframe')
     if len(index_names) == 1:
         index = pd.Index(index_data[0], name=index_names[0])
     else:

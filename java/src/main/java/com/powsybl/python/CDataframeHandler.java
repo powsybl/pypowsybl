@@ -19,6 +19,11 @@ import org.graalvm.word.WordFactory;
  */
 public class CDataframeHandler implements DataframeHandler {
 
+    public static final int STRING_SERIES_TYPE = 0;
+    public static final int DOUBLE_SERIES_TYPE = 1;
+    public static final int INT_SERIES_TYPE = 2;
+    public static final int BOOLEAN_SERIES_TYPE = 3;
+
     private ArrayPointer<SeriesPointer> dataframePtr;
     private int currentIndex;
 
@@ -40,42 +45,42 @@ public class CDataframeHandler implements DataframeHandler {
     @Override
     public StringSeriesWriter newStringIndex(String name, int size) {
         CCharPointerPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointerPointer.class));
-        addIndex(name, size, dataPtr, SeriesPointerArrayBuilder.STRING_SERIES_TYPE);
+        addIndex(name, size, dataPtr, STRING_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
     }
 
     @Override
     public IntSeriesWriter newIntIndex(String name, int size) {
         CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
-        addIndex(name, size, dataPtr, SeriesPointerArrayBuilder.INT_SERIES_TYPE);
+        addIndex(name, size, dataPtr, INT_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(v);
     }
 
     @Override
     public StringSeriesWriter newStringSeries(String name, int size) {
         CCharPointerPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointerPointer.class));
-        addSeries(name, size, dataPtr, SeriesPointerArrayBuilder.STRING_SERIES_TYPE);
+        addSeries(name, size, dataPtr, STRING_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
     }
 
     @Override
     public IntSeriesWriter newIntSeries(String name, int size) {
         CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
-        addSeries(name, size, dataPtr, SeriesPointerArrayBuilder.INT_SERIES_TYPE);
+        addSeries(name, size, dataPtr, INT_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(v);
     }
 
     @Override
     public BooleanSeriesWriter newBooleanSeries(String name, int size) {
         CCharPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointer.class));
-        addSeries(name, size, dataPtr, SeriesPointerArrayBuilder.BOOLEAN_SERIES_TYPE);
+        addSeries(name, size, dataPtr, BOOLEAN_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(v ? (byte) 1 : 0);
     }
 
     @Override
     public DoubleSeriesWriter newDoubleSeries(String name, int size) {
         CDoublePointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CDoublePointer.class));
-        addSeries(name, size, dataPtr, SeriesPointerArrayBuilder.DOUBLE_SERIES_TYPE);
+        addSeries(name, size, dataPtr, DOUBLE_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(v);
     }
 

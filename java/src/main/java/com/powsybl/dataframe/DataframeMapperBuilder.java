@@ -1,6 +1,5 @@
 package com.powsybl.dataframe;
 
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 
 import java.util.ArrayList;
@@ -13,24 +12,26 @@ import java.util.stream.Stream;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class DataframeMapperBuilder<T extends Identifiable<T>> {
+public class DataframeMapperBuilder<T> {
 
     private final Function<Network, List<T>> listProvider;
     private final BiFunction<Network, String, T> itemProvider;
 
     private final List<SeriesMapper<T>> series;
+    private boolean addProperties;
 
     public DataframeMapperBuilder(Function<Network, List<T>> listProvider, BiFunction<Network, String, T> itemProvider) {
         this.listProvider = Objects.requireNonNull(listProvider);
         this.itemProvider = Objects.requireNonNull(itemProvider);
         this.series = new ArrayList<>();
+        this.addProperties = false;
     }
 
-    public static <U extends Identifiable<U>> DataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider, BiFunction<Network, String, U> itemProvider) {
+    public static <U> DataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider, BiFunction<Network, String, U> itemProvider) {
         return new DataframeMapperBuilder<>(n -> streamProvider.apply(n).collect(Collectors.toList()), itemProvider);
     }
 
-    public static <U extends Identifiable<U>> DataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider) {
+    public static <U> DataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider) {
         BiFunction<Network, String, U> noUpdate = (n, s) -> {
             throw new UnsupportedOperationException("Update is not supported");
         };
@@ -92,8 +93,13 @@ public class DataframeMapperBuilder<T extends Identifiable<T>> {
         return enums(name, enumClass, value, null);
     }
 
+    public DataframeMapperBuilder<T> addProperties() {
+        addProperties = true;
+        return this;
+    }
+
     DataframeMapper build() {
-        return new AbstractDataframeMapper<>(series) {
+        return new AbstractDataframeMapper<>(series, addProperties) {
             @Override
             protected List<T> getItems(Network network) {
                 return listProvider.apply(network);

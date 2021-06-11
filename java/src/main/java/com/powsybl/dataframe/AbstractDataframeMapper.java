@@ -6,22 +6,24 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public abstract class AbstractDataframeMapper<T extends Identifiable<T>> implements DataframeMapper {
+public abstract class AbstractDataframeMapper<T> implements DataframeMapper {
 
     protected final Map<String, SeriesMapper<T>> seriesMappers;
+    private final boolean addProperties;
 
-    public AbstractDataframeMapper(List<SeriesMapper<T>> seriesMappers) {
+    public AbstractDataframeMapper(List<SeriesMapper<T>> seriesMappers, boolean addProperties) {
         this.seriesMappers = seriesMappers.stream()
             .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
+        this.addProperties = addProperties;
     }
 
     @Override
@@ -42,17 +44,20 @@ public abstract class AbstractDataframeMapper<T extends Identifiable<T>> impleme
         dataframeHandler.allocate(seriesMappers.size());
         List<T> items = getItems(network);
         seriesMappers.values().stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
-        addPropertiesSeries(items);
+        if (addProperties) {
+            addPropertiesSeries(items);
+        }
     }
 
     private void addPropertiesSeries(List<T> items) {
-        Set<String> propertyNames = items.stream()
+        Stream<String> propertyNames = items.stream()
+            .map(Identifiable.class::cast)
             .filter(Identifiable::hasProperty)
             .flatMap(e -> e.getPropertyNames().stream())
-            .collect(Collectors.toSet());
-        for (String propertyName : propertyNames) {
-            new StringSeriesMapper<T>(propertyName, t -> t.getProperty(propertyName));
-        }
+            .distinct();
+        propertyNames.forEach(property -> {
+            new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property));
+        });
     }
 
     @Override

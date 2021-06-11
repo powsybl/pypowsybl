@@ -1,7 +1,5 @@
 package com.powsybl.dataframe;
 
-import com.powsybl.python.SeriesPointerArrayBuilder;
-
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -42,7 +40,7 @@ public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
 
     @Override
     public void updateString(T object, String stringValue) {
-        E enumValue = Enum.valueOf(enumClass, stringValue);
+        E enumValue = Enum.valueOf(enumClass, stringValue.toUpperCase());
         updater.accept(object, enumValue);
     }
 }

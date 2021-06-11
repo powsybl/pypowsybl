@@ -1,7 +1,5 @@
 package com.powsybl.dataframe;
 
-import com.powsybl.python.SeriesPointerArrayBuilder;
-
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
