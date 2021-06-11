@@ -1,13 +1,16 @@
 package com.powsybl.dataframe;
 
+import com.powsybl.python.SeriesPointerArrayBuilder;
+
 import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class BooleanSeriesMapper<T> extends SeriesMapper<T> {
+public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
 
+    private final SeriesMetadata metadata;
     private final BooleanUpdater<T> updater;
     private final Predicate<T> value;
 
@@ -21,14 +24,19 @@ public class BooleanSeriesMapper<T> extends SeriesMapper<T> {
     }
 
     public BooleanSeriesMapper(String name, Predicate<T> value, BooleanUpdater<T> updater) {
-        super(name, false);
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.BOOLEAN);
         this.updater = updater;
         this.value = value;
     }
 
     @Override
+    public SeriesMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public void createSeries(List<T> items, DataframeHandler handler) {
-        DataframeHandler.BooleanSeriesWriter writer = handler.newBooleanSeries(name, items.size());
+        DataframeHandler.BooleanSeriesWriter writer = handler.newBooleanSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.test(items.get(i)));
         }

@@ -1,5 +1,7 @@
 package com.powsybl.dataframe;
 
+import com.powsybl.python.SeriesPointerArrayBuilder;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -7,8 +9,9 @@ import java.util.function.Function;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class EnumSeriesMapper<T, E extends Enum<E>> extends SeriesMapper<T> {
+public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
 
+    private final SeriesMetadata metadata;
     private final Class<E> enumClass;
     private final BiConsumer<T, E> updater;
     private final Function<T, E> value;
@@ -18,15 +21,20 @@ public class EnumSeriesMapper<T, E extends Enum<E>> extends SeriesMapper<T> {
     }
 
     public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value, BiConsumer<T, E> updater) {
-        super(name, false);
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.STRING);
         this.enumClass = enumClass;
         this.updater = updater;
         this.value = value;
     }
 
     @Override
+    public SeriesMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public void createSeries(List<T> items, DataframeHandler factory) {
-        DataframeHandler.StringSeriesWriter writer = factory.newStringSeries(name, items.size());
+        DataframeHandler.StringSeriesWriter writer = factory.newStringSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.apply(items.get(i)).toString());
         }

@@ -2,6 +2,8 @@ package com.powsybl.dataframe;
 
 import com.powsybl.iidm.network.Network;
 
+import java.util.List;
+
 /**
  * Provides methods to map an object's data to/from dataframes.
  *
@@ -17,6 +19,10 @@ public interface DataframeMapper {
      * format it as needed.
      */
     void createDataframe(Network network, DataframeHandler dataframeHandler);
+
+    List<SeriesMetadata> getSeriesMetadata();
+
+    SeriesMetadata getSeriesMetadata(String seriesName);
 
     /**
      * Updates network data with the provided series.

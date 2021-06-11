@@ -1,0 +1,35 @@
+package com.powsybl.dataframe;
+
+/**
+ * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ */
+public class SeriesMetadata {
+
+    private final boolean index;
+    private final String name;
+    private final boolean modifiable;
+    private final SeriesDataType type;
+
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type) {
+        this.index = index;
+        this.name = name;
+        this.modifiable = modifiable;
+        this.type = type;
+    }
+
+    public boolean isIndex() {
+        return index;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isModifiable() {
+        return modifiable;
+    }
+
+    public SeriesDataType getType() {
+        return type;
+    }
+}

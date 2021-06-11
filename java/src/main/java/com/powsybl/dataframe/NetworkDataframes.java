@@ -14,17 +14,19 @@ import java.util.Map;
  */
 public final class NetworkDataframes {
 
-    private static final Map<PyPowsyblApiHeader.ElementType, DataframeMapper> ARRAY_PROVIDERS =
+    private static final Map<DataframeElementType, DataframeMapper> MAPPERS =
         Map.of(
-            PyPowsyblApiHeader.ElementType.BUS, buses(),
-            PyPowsyblApiHeader.ElementType.GENERATOR, generators(),
-            PyPowsyblApiHeader.ElementType.LOAD, loads()
+            DataframeElementType.BUS, buses(),
+            DataframeElementType.GENERATOR, generators(),
+            DataframeElementType.LOAD, loads(),
+            DataframeElementType.BATTERY, batteries(),
+            DataframeElementType.SHUNT_COMPENSATOR, shunts()
         );
 
     private NetworkDataframes() {
     }
 
-    public static DataframeMapper generators() {
+    static DataframeMapper generators() {
         return DataframeMapperBuilder.ofStream(Network::getGeneratorStream, NetworkDataframes::getGeneratorOrThrowsException)
             .strings("id", Generator::getId)
             .enums("energy_source", EnergySource.class, Generator::getEnergySource)
@@ -41,7 +43,7 @@ public final class NetworkDataframes {
             .build();
     }
 
-    public static DataframeMapper buses() {
+    static DataframeMapper buses() {
         return DataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream())
             .strings("id", Bus::getId)
             .doubles("v_mag", Bus::getV)
@@ -49,7 +51,7 @@ public final class NetworkDataframes {
             .build();
     }
 
-    public static DataframeMapper loads() {
+    static DataframeMapper loads() {
         return DataframeMapperBuilder.ofStream(Network::getLoadStream, NetworkDataframes::getLoadOrThrowsException)
             .stringsIndex("id", Load::getId)
             .enums("type", LoadType.class, Load::getLoadType)
@@ -62,13 +64,46 @@ public final class NetworkDataframes {
             .build();
     }
 
-    public static DataframeMapper getDataframeMapper(PyPowsyblApiHeader.ElementType type) {
-        return ARRAY_PROVIDERS.get(type);
+    static DataframeMapper batteries() {
+        return DataframeMapperBuilder.ofStream(Network::getBatteryStream, NetworkDataframes::getBatteryOrThrowsException)
+            .stringsIndex("id", Battery::getId)
+            .doubles("max_p", Battery::getMaxP, Battery::setMaxP)
+            .doubles("min_p", Battery::getMinP, Battery::setMinP)
+            .doubles("p0", Battery::getP0, Battery::setP0)
+            .doubles("q0", Battery::getP0, Battery::setQ0)
+            .doubles("p", l -> l.getTerminal().getP(), (l, p) -> l.getTerminal().setP(p))
+            .doubles("q",  l -> l.getTerminal().getQ(), (l, q) -> l.getTerminal().setQ(q))
+            .strings("voltage_level_id",  g -> g.getTerminal().getVoltageLevel().getId())
+            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .build();
+    }
+
+    static DataframeMapper shunts() {
+        return DataframeMapperBuilder.ofStream(Network::getShuntCompensatorStream, NetworkDataframes::getShuntOrThrow)
+            .stringsIndex("id", ShuntCompensator::getId)
+            .enums("model_type", ShuntCompensatorModelType.class, ShuntCompensator::getModelType)
+            .doubles("p", l -> l.getTerminal().getP(), (l, p) -> l.getTerminal().setP(p))
+            .doubles("q",  l -> l.getTerminal().getQ(), (l, q) -> l.getTerminal().setQ(q))
+            .strings("voltage_level_id",  g -> g.getTerminal().getVoltageLevel().getId())
+            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .build();
+    }
+
+    public static DataframeMapper getDataframeMapper(DataframeElementType type) {
+        return MAPPERS.get(type);
     }
 
     private static String getBusId(Terminal t) {
         Bus bus = t.getBusView().getBus();
         return bus != null ? bus.getId() : "";
+    }
+
+    private static ShuntCompensator getShuntOrThrow(Network network, String id) {
+        ShuntCompensator shunt = network.getShuntCompensator(id);
+        if (shunt == null) {
+            throw new PowsyblException("Shunt compensator '" + id + "' not found");
+        }
+        return shunt;
     }
 
     private static TwoWindingsTransformer getTransformerOrThrowsException(String id, Network network) {
@@ -119,7 +154,7 @@ public final class NetworkDataframes {
         return load;
     }
 
-    private static Battery getBatteryOrThrowsException(String id, Network network) {
+    private static Battery getBatteryOrThrowsException(Network network, String id) {
         Battery b = network.getBattery(id);
         if (b == null) {
             throw new PowsyblException("Battery '" + id + "' not found");

@@ -1,13 +1,16 @@
 package com.powsybl.dataframe;
 
+import com.powsybl.python.SeriesPointerArrayBuilder;
+
 import java.util.List;
 import java.util.function.ToDoubleFunction;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class DoubleSeriesMapper<T> extends SeriesMapper<T> {
+public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
 
+    private final SeriesMetadata metadata;
     private final DoubleUpdater<T> updater;
     private final ToDoubleFunction<T> value;
 
@@ -21,14 +24,20 @@ public class DoubleSeriesMapper<T> extends SeriesMapper<T> {
     }
 
     public DoubleSeriesMapper(String name, ToDoubleFunction<T> value, DoubleUpdater<T> updater) {
-        super(name, false);
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE);
         this.updater = updater;
         this.value = value;
     }
 
     @Override
+    public SeriesMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public void createSeries(List<T> items, DataframeHandler factory) {
-        DataframeHandler.DoubleSeriesWriter writer = factory.newDoubleSeries(name, items.size());
+
+        DataframeHandler.DoubleSeriesWriter writer = factory.newDoubleSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.applyAsDouble(items.get(i)));
         }

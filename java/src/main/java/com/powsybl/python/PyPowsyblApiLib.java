@@ -684,7 +684,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(elementType);
+            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             CDataframeHandler handler = new CDataframeHandler();
             mapper.createDataframe(network, handler);
@@ -709,50 +709,26 @@ public final class PyPowsyblApiLib {
     public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            Map<String, Integer> seriesTypes;
-            switch (elementType) {
-                case SWITCH:
-                    seriesTypes = SeriesDataTypeConstants.SWITCH_MAP;
-                    break;
-                case GENERATOR:
-                    seriesTypes = SeriesDataTypeConstants.GENERATOR_MAP;
-                    break;
-                case HVDC_LINE:
-                    seriesTypes = SeriesDataTypeConstants.HVDC_LINE_MAP;
-                    break;
-                case LOAD:
-                    seriesTypes = SeriesDataTypeConstants.LOAD_MAP;
-                    break;
-                case BATTERY:
-                    seriesTypes = SeriesDataTypeConstants.BATTERY_MAP;
-                    break;
-                case DANGLING_LINE:
-                    seriesTypes = SeriesDataTypeConstants.DANGLING_LINE_MAP;
-                    break;
-                case VSC_CONVERTER_STATION:
-                    seriesTypes = SeriesDataTypeConstants.VSC_CONVERTER_STATION_MAP;
-                    break;
-                case STATIC_VAR_COMPENSATOR:
-                    seriesTypes = SeriesDataTypeConstants.STATIC_VAR_COMPENSATOR_MAP;
-                    break;
-                case TWO_WINDINGS_TRANSFORMER:
-                    seriesTypes = SeriesDataTypeConstants.TWO_WINDINGS_TRANSFORMER_MAP;
-                    break;
-                case RATIO_TAP_CHANGER:
-                    seriesTypes = SeriesDataTypeConstants.RATIO_TAP_CHANGER_MAP;
-                    break;
-                case PHASE_TAP_CHANGER:
-                    seriesTypes = SeriesDataTypeConstants.PHASE_TAP_CHANGER_MAP;
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Element type not supported: " + elementType);
-            }
-            Integer type = seriesTypes.get(seriesName);
-            if (type == null) {
-                throw new PowsyblException("Series '" + seriesName + "' not found for element type " + elementType);
-            }
-            return type;
+            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
+                .getSeriesMetadata(seriesName)
+                .getType();
+            return convert(type);
         });
+    }
+
+    private static int convert(SeriesDataType type) {
+        switch (type) {
+            case STRING:
+                return 0;
+            case DOUBLE:
+                return 1;
+            case INT:
+                return 2;
+            case BOOLEAN:
+                return 3;
+            default:
+                throw new IllegalStateException("Unexpected series type: " + type);
+        }
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
@@ -763,7 +739,7 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(elementType)
+            NetworkDataframes.getDataframeMapper(convert(elementType))
                 .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
@@ -795,7 +771,7 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(elementType)
+            NetworkDataframes.getDataframeMapper(convert(elementType))
                 .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
@@ -827,7 +803,7 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(elementType)
+            NetworkDataframes.getDataframeMapper(convert(elementType))
                 .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
@@ -854,6 +830,104 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
+    }
+
+    private static ElementType convert(DataframeElementType type) {
+        switch (type) {
+            case BUS:
+                return ElementType.BUS;
+            case LINE:
+                return ElementType.LINE;
+            case TWO_WINDINGS_TRANSFORMER:
+                return ElementType.TWO_WINDINGS_TRANSFORMER;
+            case THREE_WINDINGS_TRANSFORMER:
+                return ElementType.THREE_WINDINGS_TRANSFORMER;
+            case GENERATOR:
+                return ElementType.GENERATOR;
+            case LOAD:
+                return ElementType.LOAD;
+            case BATTERY:
+                return ElementType.BATTERY;
+            case SHUNT_COMPENSATOR:
+                return ElementType.SHUNT_COMPENSATOR;
+            case DANGLING_LINE:
+                return ElementType.DANGLING_LINE;
+            case LCC_CONVERTER_STATION:
+                return ElementType.LCC_CONVERTER_STATION;
+            case VSC_CONVERTER_STATION:
+                return ElementType.VSC_CONVERTER_STATION;
+            case STATIC_VAR_COMPENSATOR:
+                return ElementType.STATIC_VAR_COMPENSATOR;
+            case SWITCH:
+                return ElementType.SWITCH;
+            case VOLTAGE_LEVEL:
+                return ElementType.VOLTAGE_LEVEL;
+            case SUBSTATION:
+                return ElementType.SUBSTATION;
+            case BUSBAR_SECTION:
+                return ElementType.BUSBAR_SECTION;
+            case HVDC_LINE:
+                return ElementType.HVDC_LINE;
+            case RATIO_TAP_CHANGER_STEP:
+                return ElementType.RATIO_TAP_CHANGER_STEP;
+            case PHASE_TAP_CHANGER_STEP:
+                return ElementType.PHASE_TAP_CHANGER_STEP;
+            case RATIO_TAP_CHANGER:
+                return ElementType.RATIO_TAP_CHANGER;
+            case PHASE_TAP_CHANGER:
+                return ElementType.PHASE_TAP_CHANGER;
+            default:
+                throw new PowsyblException("Unknown element type : " + type);
+        }
+    }
+
+    private static DataframeElementType convert(ElementType type) {
+        switch (type) {
+            case BUS:
+                return DataframeElementType.BUS;
+            case LINE:
+                return DataframeElementType.LINE;
+            case TWO_WINDINGS_TRANSFORMER:
+                return DataframeElementType.TWO_WINDINGS_TRANSFORMER;
+            case THREE_WINDINGS_TRANSFORMER:
+                return DataframeElementType.THREE_WINDINGS_TRANSFORMER;
+            case GENERATOR:
+                return DataframeElementType.GENERATOR;
+            case LOAD:
+                return DataframeElementType.LOAD;
+            case BATTERY:
+                return DataframeElementType.BATTERY;
+            case SHUNT_COMPENSATOR:
+                return DataframeElementType.SHUNT_COMPENSATOR;
+            case DANGLING_LINE:
+                return DataframeElementType.DANGLING_LINE;
+            case LCC_CONVERTER_STATION:
+                return DataframeElementType.LCC_CONVERTER_STATION;
+            case VSC_CONVERTER_STATION:
+                return DataframeElementType.VSC_CONVERTER_STATION;
+            case STATIC_VAR_COMPENSATOR:
+                return DataframeElementType.STATIC_VAR_COMPENSATOR;
+            case SWITCH:
+                return DataframeElementType.SWITCH;
+            case VOLTAGE_LEVEL:
+                return DataframeElementType.VOLTAGE_LEVEL;
+            case SUBSTATION:
+                return DataframeElementType.SUBSTATION;
+            case BUSBAR_SECTION:
+                return DataframeElementType.BUSBAR_SECTION;
+            case HVDC_LINE:
+                return DataframeElementType.HVDC_LINE;
+            case RATIO_TAP_CHANGER_STEP:
+                return DataframeElementType.RATIO_TAP_CHANGER_STEP;
+            case PHASE_TAP_CHANGER_STEP:
+                return DataframeElementType.PHASE_TAP_CHANGER_STEP;
+            case RATIO_TAP_CHANGER:
+                return DataframeElementType.RATIO_TAP_CHANGER;
+            case PHASE_TAP_CHANGER:
+                return DataframeElementType.PHASE_TAP_CHANGER;
+            default:
+                throw new PowsyblException("Unknown element type : " + type);
+        }
     }
 
 }

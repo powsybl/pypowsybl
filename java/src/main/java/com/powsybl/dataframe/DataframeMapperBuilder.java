@@ -95,12 +95,12 @@ public class DataframeMapperBuilder<T extends Identifiable<T>> {
     DataframeMapper build() {
         return new AbstractDataframeMapper<>(series) {
             @Override
-            protected List<T> getObjects(Network network) {
+            protected List<T> getItems(Network network) {
                 return listProvider.apply(network);
             }
 
             @Override
-            protected T getObject(Network network, String id) {
+            protected T getItem(Network network, String id) {
                 return itemProvider.apply(network, id);
             }
         };

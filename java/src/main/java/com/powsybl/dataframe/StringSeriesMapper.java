@@ -1,5 +1,7 @@
 package com.powsybl.dataframe;
 
+import com.powsybl.python.SeriesPointerArrayBuilder;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -7,8 +9,9 @@ import java.util.function.Function;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class StringSeriesMapper<T> extends SeriesMapper<T> {
+public class StringSeriesMapper<T> implements SeriesMapper<T> {
 
+    private final SeriesMetadata metadata;
     private final BiConsumer<T, String> updater;
     private final Function<T, String> value;
 
@@ -25,13 +28,20 @@ public class StringSeriesMapper<T> extends SeriesMapper<T> {
     }
 
     public StringSeriesMapper(String name, boolean index, Function<T, String> value, BiConsumer<T, String> updater) {
-        super(name, index);
+        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING);
         this.updater = updater;
         this.value = value;
     }
 
     @Override
+    public SeriesMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public void createSeries(List<T> items, DataframeHandler handler) {
+        boolean index = getMetadata().isIndex();
+        String name = getMetadata().getName();
         DataframeHandler.StringSeriesWriter writer = index ? handler.newStringIndex(name, items.size()) : handler.newStringSeries(name, items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.apply(items.get(i)));
