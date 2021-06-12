@@ -114,7 +114,7 @@ Example:
    :skipif: pp is None
 
    >>> n = pp.network.create_eurostag_tutorial_example1_network()
-   >>> generators = n.create_generators_data_frame()
+   >>> generators = n.get_generators()
    >>> print(generators) # doctest: +NORMALIZE_WHITESPACE
        energy_source  target_p    max_p    min_p  target_v  target_q  voltage_regulator_on   p   q voltage_level_id   bus_id
    id
@@ -127,7 +127,7 @@ be able to easily get steps related to just one transformer:
    :skipif: pp is None
 
    >>> n = pp.network.create_eurostag_tutorial_example1_network()
-   >>> steps = n.create_ratio_tap_changer_steps_data_frame()
+   >>> steps = n.get_ratio_tap_changer_steps()
    >>> print(steps) # doctest: +NORMALIZE_WHITESPACE
                              rho    r    x    g    b
    id         position
@@ -148,7 +148,7 @@ We can also update network elements with a data frame:
 .. code-block:: python
 
    >>> df = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD']
-   >>> n.update_loads_with_data_frame(df)
+   >>> n.update_loads(df)
 
 .. list-table:: Available equipment types and attributes
   :widths: auto
