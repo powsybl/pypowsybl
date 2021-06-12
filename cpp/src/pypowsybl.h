@@ -47,9 +47,6 @@ private:
 };
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
-typedef Array<bus> BusArray;
-typedef Array<generator> GeneratorArray;
-typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
@@ -146,12 +143,6 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
-
-BusArray* getBusArray(void* network);
-
-GeneratorArray* getGeneratorArray(void* network);
-
-LoadArray* getLoadArray(void* network);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 

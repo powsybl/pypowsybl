@@ -70,11 +70,11 @@ class ZoneKeyType(Enum):
 
 
 def create_country_zone(network: Network, country: str, key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
-    substations = network.create_substations_data_frame()
-    voltage_levels = network.create_voltage_levels_data_frame()
+    substations = network.get_substations()
+    voltage_levels = network.get_voltage_levels()
     if key_type == ZoneKeyType.GENERATOR_MAX_P or key_type == ZoneKeyType.GENERATOR_TARGET_P:
         # join generators, voltage levels and substations to get generators with countries
-        generators = network.create_generators_data_frame()
+        generators = network.get_generators()
         generators_with_countries = generators.join(
             voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
             on=['voltage_level_id'])
@@ -85,7 +85,7 @@ def create_country_zone(network: Network, country: str, key_type: ZoneKeyType = 
         shift_keys_by_id = dict(zip(filtered_generators.index, shift_keys))
     elif key_type == ZoneKeyType.LOAD_P0:
         # join loads, voltage levels and substations to get generators with countries
-        loads = network.create_loads_data_frame()
+        loads = network.get_loads()
         loads_with_countries = loads.join(
             voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
             on=['voltage_level_id'])

@@ -72,21 +72,6 @@ Array<load_flow_component_result>::~Array() {
 }
 
 template<>
-Array<bus>::~Array() {
-    callJava<>(::freeBusArray, delegate_);
-}
-
-template<>
-Array<generator>::~Array() {
-    callJava<>(::freeGeneratorArray, delegate_);
-}
-
-template<>
-Array<load>::~Array() {
-    callJava<>(::freeLoadArray, delegate_);
-}
-
-template<>
 Array<contingency_result>::~Array() {
     callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
@@ -308,18 +293,6 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::sha
                                           const std::string& provider) {
     return new LoadFlowComponentResultArray(
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
-}
-
-BusArray* getBusArray(void* network) {
-    return new BusArray(callJava<array*>(::getBusArray, network));
-}
-
-GeneratorArray* getGeneratorArray(void* network) {
-    return new GeneratorArray(callJava<array*>(::getGeneratorArray, network));
-}
-
-LoadArray* getLoadArray(void* network) {
-    return new LoadArray(callJava<array*>(::getLoadArray, network));
 }
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
