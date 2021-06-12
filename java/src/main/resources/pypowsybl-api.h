@@ -117,3 +117,10 @@ typedef struct series_struct {
     int type;
     array data;
 } series;
+
+typedef struct zone_struct {
+    char* id;
+    char** injections_ids;
+    double* injections_shift_keys;
+    int length;
+} zone;

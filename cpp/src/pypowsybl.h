@@ -109,6 +109,8 @@ char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
+
 void init();
 
 void setDebugMode(bool debug);
@@ -161,7 +163,9 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 
 void* createSensitivityAnalysis();
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones);
+
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

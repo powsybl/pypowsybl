@@ -381,8 +381,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
 
+    py::class_<::zone>(m, "Zone")
+            .def(py::init([](const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
+                return pypowsybl::createZone(id, injectionsIds, injectionsShiftKeys);
+            }), py::arg("id"), py::arg("injections_ids"), py::arg("injections_shift_keys"));
+
+    m.def("set_zones", &pypowsybl::setZones, "Add zones to sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("zones"));
+
     m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
+          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("variables_ids"));
 
     m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));

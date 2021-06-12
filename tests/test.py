@@ -6,13 +6,17 @@
 #
 import os
 import unittest
+from _pypowsybl import PyPowsyblError
 import pypowsybl.network
 import pypowsybl.loadflow
 import pypowsybl.security
 import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
+import pathlib
 
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
@@ -49,8 +53,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)
 
     def test_load_network(self):
-        dir = os.path.dirname(os.path.realpath(__file__))
-        n = pp.network.load(dir + "/empty-network.xml")
+        n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
         self.assertIsNotNone(n)
 
     def test_buses(self):
@@ -198,8 +201,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertFalse(df3['voltage_regulator_on']['GEN'])
 
     def test_update_switches_data_frame(self):
-        file_path = os.path.dirname(os.path.realpath(__file__)) + '/node-breaker.xiidm'
-        n = pp.network.load(file=file_path)
+        n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
         df = n.create_switches_data_frame()
         # no open switch
         open_switches = df[df['open']].index.tolist()
@@ -333,6 +335,79 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
         parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+
+    def test_create_zone(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zone_fr.injections_ids)
+        self.assertRaises(PyPowsyblError, zone_fr.get_shift_key, 'AA')
+        self.assertEqual(2000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.GENERATOR_MAX_P)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(9000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.LOAD_P0)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _load', 'FFR2AA1 _load', 'FFR3AA1 _load'], zone_fr.injections_ids)
+        self.assertEqual(1000, zone_fr.get_shift_key('FFR1AA1 _load'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+
+        # remove test
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        zone_fr.remove_injection('FFR1AA1 _generator')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+
+        # add test
+        zone_fr.add_injection('gen', 333)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(333, zone_fr.get_shift_key('gen'))
+
+        # move test
+        zone_fr.move_injection_to(zone_be, 'gen')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+        self.assertEqual(4, len(zone_be.injections_ids))
+        self.assertEqual(333, zone_be.get_shift_key('gen'))
+
+    def test_sensi_zone(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_fr, zone_be])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((2, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(0.3701714440115307, s['FFR2AA1  DDE3AA1  1']['FR'])
+        self.assertEqual(0.37842261758908524, s['BBE2AA1  FFR3AA1  1']['BE'])
+        self.assertEqual(0.12842261758908563, s['FFR2AA1  DDE3AA1  1']['BE'])
+        r = result.get_reference_flows()
+        self.assertEqual((1, 2), r.shape)
+        self.assertEqual(324.66561396238836, r['BBE2AA1  FFR3AA1  1']['reference_flows'])
+        self.assertEqual(1324.6656139623885, r['FFR2AA1  DDE3AA1  1']['reference_flows'])
+
+    def test_sensi_power_transfer(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_de = pp.sensitivity.create_country_zone(n, 'DE')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+        zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((4, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(-0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['FR -> DE'])
+        self.assertEqual(0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['DE -> FR'])
+        self.assertEqual(0.10342626899874961, s['BBE2AA1  FFR3AA1  1']['NL'])
 
 
 if __name__ == '__main__':

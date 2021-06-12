@@ -24,6 +24,8 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
+import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
@@ -601,16 +603,38 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));
     }
 
+    @CEntryPoint(name = "setZones")
+    public static void setZones(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                ZonePointerPointer zonePtrPtr, int zoneCount,
+                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
+            for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
+                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
+                String zoneId = CTypeUtil.toString(zonePtrI.getId());
+                List<String> injectionsIds = CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
+                List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
+                List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
+                for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
+                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsShiftKeys.get(injectionIndex)));
+                }
+                variableSets.add(new SensitivityVariableSet(zoneId, variables));
+            }
+            analysisContext.setVariableSets(variableSets);
+        });
+    }
+
     @CEntryPoint(name = "setBranchFlowFactorMatrix")
     public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
+                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds);
+            List<String> branchesIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = CTypeUtil.toStringList(variableIdPtrPtr, variableIdCount);
+            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
         });
     }
 

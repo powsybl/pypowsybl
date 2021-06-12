@@ -345,12 +345,61 @@ void* createSensitivityAnalysis() {
     return callJava<void*>(::createSensitivityAnalysis);
 }
 
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
+    auto z = new ::zone;
+    z->id = copyStringToCharPtr(id);
+    z->length = injectionsIds.size();
+    z->injections_ids = new char*[injectionsIds.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_ids[i] = copyStringToCharPtr(injectionsIds[i]);
+    }
+    z->injections_shift_keys = new double[injectionsShiftKeys.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_shift_keys[i] = injectionsShiftKeys[i];
+    }
+    return z;
+}
+
+void deleteZone(::zone* z) {
+    delete[] z->id;
+    for (int i = 0; i < z->length; i++) {
+        delete[] z->injections_ids[i];
+    }
+    delete[] z->injections_ids;
+    delete[] z->injections_shift_keys;
+}
+
+class ZonesPtr {
+public:
+    ZonesPtr(const std::vector<zone*>& vector)
+        : vector_(vector) {
+    }
+
+    ~ZonesPtr() {
+        for (auto z : vector_) {
+            deleteZone(z);
+        }
+    }
+
+    ::zone** get() const {
+        return (::zone**) &vector_[0];
+    }
+
+private:
+    const std::vector<::zone*>& vector_;
+};
+
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones) {
+    ZonesPtr zonesPtr(zones);
+    callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
+}
+
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                     const std::vector<std::string>& injectionsOrTransfosIds) {
+                               const std::vector<std::string>& variablesIds) {
     ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
+    ToCharPtrPtr variableIdPtr(variablesIds);
     callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+                variableIdPtr.get(), variablesIds.size());
 }
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds,
@@ -358,8 +407,7 @@ void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vect
     ToCharPtrPtr busVoltageIdPtr(busIds);
     ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
     callJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
-                busIds.size(),
-                targetVoltageIdPtr.get(), targetVoltageIds.size());
+                busIds.size(), targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
