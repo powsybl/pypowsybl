@@ -206,6 +206,16 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual('RTE', substations['TSO']['P1'])
         self.assertEqual('FR', substations['country']['P1'])
 
+    def test_reactive_capability_curve_points_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        points = n.get_reactive_capability_curve_points()
+        self.assertAlmostEqual(0, points.loc['GH1']['p'][0])
+        self.assertAlmostEqual(100, points.loc['GH1']['p'][1])
+        self.assertAlmostEqual(-769.3, points.loc['GH1']['min_p'][0])
+        self.assertAlmostEqual(-864.55, points.loc['GH1']['min_p'][1])
+        self.assertAlmostEqual(860, points.loc['GH1']['max_p'][0])
+        self.assertAlmostEqual(946.25, points.loc['GH1']['max_p'][1])
+
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
         sa = pp.sensitivity.create_dc_analysis()
