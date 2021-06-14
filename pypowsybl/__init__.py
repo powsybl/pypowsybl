@@ -7,7 +7,7 @@
 import _pypowsybl
 from _pypowsybl import PyPowsyblError
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 
 import pypowsybl.network
 import pypowsybl.loadflow
