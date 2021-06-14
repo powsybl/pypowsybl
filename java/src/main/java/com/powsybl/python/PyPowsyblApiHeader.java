@@ -295,7 +295,8 @@ public final class PyPowsyblApiHeader {
         BUSBAR_SECTION,
         HVDC_LINE,
         RATIO_TAP_CHANGER_STEP,
-        PHASE_TAP_CHANGER_STEP;
+        PHASE_TAP_CHANGER_STEP,
+        REACTIVE_CAPABILITY_CURVE_POINT;
 
         @CEnumValue
         public native int getCValue();

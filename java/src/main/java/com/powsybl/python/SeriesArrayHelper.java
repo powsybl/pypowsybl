@@ -11,6 +11,7 @@ import com.powsybl.iidm.network.*;
 import org.apache.commons.lang3.tuple.Triple;
 import org.eclipse.collections.api.block.function.primitive.IntToIntFunction;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
@@ -80,6 +81,9 @@ final class SeriesArrayHelper {
 
             case PHASE_TAP_CHANGER_STEP:
                 return preparePtcStepsData(network);
+
+            case REACTIVE_CAPABILITY_CURVE_POINT:
+                return prepareReactiveCapabilityCurvePoint(network);
 
             default:
                 throw new UnsupportedOperationException("Element type not supported: " + elementType);
@@ -204,14 +208,21 @@ final class SeriesArrayHelper {
                 .addStringSeries("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal())));
     }
 
+    private static MinMaxReactiveLimits getMinMaxReactiveLimits(ReactiveLimitsHolder holder) {
+        ReactiveLimits reactiveLimits = holder.getReactiveLimits();
+        return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
+    }
+
     private static SeriesPointerArrayBuilder prepareGenerator(Network network) {
         List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
         return addProperties(new SeriesPointerArrayBuilder<>(generators)
                 .addStringSeries("id", true, Generator::getId)
                 .addEnumSeries("energy_source", Generator::getEnergySource)
                 .addDoubleSeries("target_p", Generator::getTargetP)
-                .addDoubleSeries("max_p", Generator::getMaxP)
                 .addDoubleSeries("min_p", Generator::getMinP)
+                .addDoubleSeries("max_p", Generator::getMaxP)
+                .addDoubleSeries("min_q", SeriesArrayHelper::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ)
+                .addDoubleSeries("max_q", SeriesArrayHelper::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ)
                 .addDoubleSeries("target_v", Generator::getTargetV)
                 .addDoubleSeries("target_q", Generator::getTargetQ)
                 .addBooleanSeries("voltage_regulator_on", Generator::isVoltageRegulatorOn)
@@ -219,6 +230,34 @@ final class SeriesArrayHelper {
                 .addDoubleSeries("q", g -> g.getTerminal().getQ())
                 .addStringSeries("voltage_level_id", g -> g.getTerminal().getVoltageLevel().getId())
                 .addStringSeries("bus_id", g -> getBusId(g.getTerminal())));
+    }
+
+    private static List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> indexPoints(String id, ReactiveLimitsHolder holder) {
+        ReactiveCapabilityCurve curve = (ReactiveCapabilityCurve) holder.getReactiveLimits();
+        List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> values = new ArrayList<>(curve.getPointCount());
+        int num = 0;
+        for (ReactiveCapabilityCurve.Point point : curve.getPoints()) {
+            values.add(Triple.of(id, num, point));
+            num++;
+        }
+        return values;
+    }
+
+    private static SeriesPointerArrayBuilder prepareReactiveCapabilityCurvePoint(Network network) {
+        List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> indexedPoints = network.getGeneratorStream()
+                .filter(g -> g.getReactiveLimits() instanceof ReactiveCapabilityCurve)
+                .flatMap(g -> indexPoints(g.getId(), g).stream())
+                .collect(Collectors.toList());
+        indexedPoints.addAll(network.getVscConverterStationStream()
+                .filter(g -> g.getReactiveLimits() instanceof ReactiveCapabilityCurve)
+                .flatMap(g -> indexPoints(g.getId(), g).stream())
+                .collect(Collectors.toList()));
+        return new SeriesPointerArrayBuilder<>(indexedPoints)
+                .addStringSeries("id", true, Triple::getLeft)
+                .addIntSeries("num", true, Triple::getMiddle)
+                .addDoubleSeries("p", t -> t.getRight().getP())
+                .addDoubleSeries("min_p", t -> t.getRight().getMinQ())
+                .addDoubleSeries("max_p", t -> t.getRight().getMaxQ());
     }
 
     private static SeriesPointerArrayBuilder prepareLoad(Network network) {
@@ -289,6 +328,8 @@ final class SeriesArrayHelper {
                 .addStringSeries("id", true, VscConverterStation::getId)
                 .addDoubleSeries("voltage_setpoint", VscConverterStation::getVoltageSetpoint)
                 .addDoubleSeries("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint)
+                .addDoubleSeries("min_q", SeriesArrayHelper::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ)
+                .addDoubleSeries("max_q", SeriesArrayHelper::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ)
                 .addBooleanSeries("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn)
                 .addDoubleSeries("p", st -> st.getTerminal().getP())
                 .addDoubleSeries("q", st -> st.getTerminal().getQ())

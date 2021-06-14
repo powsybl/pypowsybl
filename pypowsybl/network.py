@@ -220,6 +220,14 @@ class Network(ObjectHandle):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
+    def get_reactive_capability_curve_points(self) -> pd.DataFrame:
+        """ Get reactive capability curve points as a ``Pandas`` data frame.
+
+        Returns:
+            a reactive capability curve points data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
+
     def update_elements(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         """ Update network elements with a ``Pandas`` data frame for a specified element type.
         The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
