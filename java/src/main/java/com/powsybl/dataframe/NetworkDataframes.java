@@ -9,11 +9,10 @@ package com.powsybl.dataframe;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.iidm.network.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -61,6 +60,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER_STEP, ptcSteps());
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
+        mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -453,6 +453,38 @@ public final class NetworkDataframes {
             .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPhaseTapChanger().getRegulationMode(), (t, v) -> t.getPhaseTapChanger().setRegulationMode(v))
             .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
             .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
+            .build();
+    }
+
+    private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
+        return Stream.concat(network.getGeneratorStream().map(g -> Pair.of(g.getId(), g)),
+                             network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
+    }
+
+    private static Stream<Triple<String, Integer, ReactiveCapabilityCurve.Point>> streamPoints(Network network) {
+        return streamReactiveLimitsHolder(network)
+            .filter(p -> p.getRight().getReactiveLimits() instanceof ReactiveCapabilityCurve)
+            .flatMap(p -> indexPoints(p.getLeft(), p.getRight()).stream());
+    }
+
+    private static List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> indexPoints(String id, ReactiveLimitsHolder holder) {
+        ReactiveCapabilityCurve curve = (ReactiveCapabilityCurve) holder.getReactiveLimits();
+        List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> values = new ArrayList<>(curve.getPointCount());
+        int num = 0;
+        for (ReactiveCapabilityCurve.Point point : curve.getPoints()) {
+            values.add(Triple.of(id, num, point));
+            num++;
+        }
+        return values;
+    }
+
+    private static DataframeMapper reactiveCapabilityCurves() {
+        return DataframeMapperBuilder.ofStream(NetworkDataframes::streamPoints)
+            .stringsIndex("id", Triple::getLeft)
+            .intsIndex("num", Triple::getMiddle)
+            .doubles("p", t -> t.getRight().getP())
+            .doubles("min_p", t -> t.getRight().getMinQ())
+            .doubles("max_p", t -> t.getRight().getMaxQ())
             .build();
     }
 

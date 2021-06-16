@@ -6,13 +6,17 @@
 #
 import os
 import unittest
+from _pypowsybl import PyPowsyblError
 import pypowsybl.network
 import pypowsybl.loadflow
 import pypowsybl.security
 import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
+import pathlib
 
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
@@ -49,42 +53,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)
 
     def test_load_network(self):
-        dir = os.path.dirname(os.path.realpath(__file__))
-        n = pp.network.load(dir + "/empty-network.xml")
+        n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
         self.assertIsNotNone(n)
-
-    def test_buses(self):
-        n = pp.network.create_ieee14()
-        self.assertEqual(14, len(n.buses))
-        b = list(n.buses)[0]
-        self.assertEqual('VL1_0', b.id)
-        self.assertEqual(1.06, b.v_magnitude)
-        self.assertEqual(0.0, b.v_angle)
-        self.assertEqual(0, b.component_num)
-
-    def test_generators(self):
-        n = pp.network.create_ieee14()
-        self.assertEqual(5, len(n.generators))
-        g = list(n.generators)[0]
-        self.assertEqual('B1-G', g.id)
-        self.assertEqual(232.4, g.target_p)
-        self.assertEqual(-9999.0, g.min_p)
-        self.assertEqual(9999.0, g.max_p)
-        self.assertEqual(1.0, g.nominal_voltage)
-        self.assertIsNone(g.country)
-        self.assertIsNotNone(g.bus)
-        self.assertEqual('VL1_0', g.bus.id)
-
-    def test_loads(self):
-        n = pp.network.create_ieee14()
-        self.assertEqual(11, len(n.loads))
-        l = list(n.loads)[0]
-        self.assertEqual('B2-L', l.id)
-        self.assertEqual(21.7, l.p0)
-        self.assertEqual(1.0, l.nominal_voltage)
-        self.assertIsNone(l.country)
-        self.assertIsNotNone(l.bus)
-        self.assertEqual('VL2_0', l.bus.id)
 
     def test_connect_disconnect(self):
         n = pp.network.create_ieee14()
@@ -111,108 +81,106 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_loads_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_loads_data_frame()
-        self.assertEqual(600, df['p0']['LOAD'])
-        self.assertEqual(200, df['q0']['LOAD'])
-        self.assertEqual('UNDEFINED', df['type']['LOAD'])
+        loads = n.get_loads()
+        self.assertEqual(600, loads['p0']['LOAD'])
+        self.assertEqual(200, loads['q0']['LOAD'])
+        self.assertEqual('UNDEFINED', loads['type']['LOAD'])
         df2 = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD'])
-        n.update_loads_with_data_frame(df2)
-        df3 = n.create_loads_data_frame()
+        n.update_loads(df2)
+        df3 = n.get_loads()
         self.assertEqual(300, df3['q0']['LOAD'])
         self.assertEqual(500, df3['p0']['LOAD'])
 
     def test_batteries_data_frame(self):
-        file_path = os.path.dirname(os.path.realpath(__file__)) + '/battery.xiidm'
-        n = pp.network.load(file=file_path)
-        df = n.create_batteries_data_frame()
-        self.assertEqual(200.0, df['max_p']['BAT2'])
+        n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
+        batteries = n.get_batteries()
+        self.assertEqual(200.0, batteries['max_p']['BAT2'])
         df2 = pd.DataFrame(data=[[101, 201]], columns=['p0', 'q0'], index=['BAT2'])
-        n.update_batteries_with_data_frame(df2)
-        df3 = n.create_batteries_data_frame()
+        n.update_batteries(df2)
+        df3 = n.get_batteries()
         self.assertEqual(101, df3['p0']['BAT2'])
         self.assertEqual(201, df3['q0']['BAT2'])
 
     def test_vsc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        df = n.create_vsc_converter_stations_data_frame()
-        self.assertEqual(400.0, df['voltage_setpoint']['VSC1'])
-        self.assertEqual(500.0, df['reactive_power_setpoint']['VSC1'])
-        df2 = pd.DataFrame(data=[[300.0, 400.0],[1.0, 2.0]], columns=['voltage_setpoint','reactive_power_setpoint'], index=['VSC1', 'VSC2'])
-        n.update_vsc_converter_stations_with_data_frame(df2)
-        df3 = n.create_vsc_converter_stations_data_frame()
-        self.assertEqual(300.0, df3['voltage_setpoint']['VSC1'])
-        self.assertEqual(400.0, df3['reactive_power_setpoint']['VSC1'])
-        self.assertEqual(1.0, df3['voltage_setpoint']['VSC2'])
-        self.assertEqual(2.0, df3['reactive_power_setpoint']['VSC2'])
+        stations = n.get_vsc_converter_stations()
+        self.assertEqual(400.0, stations['voltage_setpoint']['VSC1'])
+        self.assertEqual(500.0, stations['reactive_power_setpoint']['VSC1'])
+        stations2 = pd.DataFrame(data=[[300.0, 400.0],[1.0, 2.0]], columns=['voltage_setpoint','reactive_power_setpoint'], index=['VSC1', 'VSC2'])
+        n.update_vsc_converter_stations(stations2)
+        stations = n.get_vsc_converter_stations()
+        self.assertEqual(300.0, stations['voltage_setpoint']['VSC1'])
+        self.assertEqual(400.0, stations['reactive_power_setpoint']['VSC1'])
+        self.assertEqual(1.0, stations['voltage_setpoint']['VSC2'])
+        self.assertEqual(2.0, stations['reactive_power_setpoint']['VSC2'])
 
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        df = n.create_hvdc_lines_data_frame()
-        self.assertEqual(10, df['active_power_setpoint']['HVDC1'])
-        df2 = pd.DataFrame(data=[11], columns=['active_power_setpoint'], index=['HVDC1'])
-        n.update_hvdc_lines_with_data_frame(df2)
-        df3 = n.create_hvdc_lines_data_frame()
-        self.assertEqual(11, df3['active_power_setpoint']['HVDC1'])
+        lines = n.get_hvdc_lines()
+        self.assertEqual(10, lines['active_power_setpoint']['HVDC1'])
+        lines2 = pd.DataFrame(data=[11], columns=['active_power_setpoint'], index=['HVDC1'])
+        n.update_hvdc_lines(lines2)
+        lines = n.get_hvdc_lines()
+        self.assertEqual(11, lines['active_power_setpoint']['HVDC1'])
 
     def test_svc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        df = n.create_static_var_compensators_data_frame()
-        self.assertEqual(400.0, df['voltage_setpoint']['SVC'])
-        self.assertEqual('VOLTAGE', df['regulation_mode']['SVC'])
-        df2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
+        svcs = n.get_static_var_compensators()
+        self.assertEqual(400.0, svcs['voltage_setpoint']['SVC'])
+        self.assertEqual('VOLTAGE', svcs['regulation_mode']['SVC'])
+        svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
                            columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
-        n.update_static_var_compensators_with_data_frame(df2)
-        df3 = n.create_static_var_compensators_data_frame()
-        self.assertEqual(300.0, df3['voltage_setpoint']['SVC'])
-        self.assertEqual(400.0, df3['reactive_power_setpoint']['SVC'])
-        self.assertEqual('OFF', df3['regulation_mode']['SVC'])
+        n.update_static_var_compensators(svcs2)
+        svcs = n.get_static_var_compensators()
+        self.assertEqual(300.0, svcs['voltage_setpoint']['SVC'])
+        self.assertEqual(400.0, svcs['reactive_power_setpoint']['SVC'])
+        self.assertEqual('OFF', svcs['regulation_mode']['SVC'])
 
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_generators_data_frame()
-        self.assertEqual('OTHER', df['energy_source']['GEN'])
-        self.assertEqual(607, df['target_p']['GEN'])
+        generators = n.get_generators()
+        self.assertEqual('OTHER', generators['energy_source']['GEN'])
+        self.assertEqual(607, generators['target_p']['GEN'])
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_ratio_tap_changer_steps_data_frame()
-        self.assertEqual(0.8505666905244191, df.loc['NHV2_NLOAD']['rho'][0])
-        self.assertEqual(0.8505666905244191, df.loc[('NHV2_NLOAD', 0), 'rho'])
+        steps = n.get_ratio_tap_changer_steps()
+        self.assertEqual(0.8505666905244191, steps.loc['NHV2_NLOAD']['rho'][0])
+        self.assertEqual(0.8505666905244191, steps.loc[('NHV2_NLOAD', 0), 'rho'])
 
     def test_phase_tap_changer_steps_data_frame(self):
         n = pp.network.create_ieee300()
-        df = n.create_phase_tap_changer_steps_data_frame()
-        self.assertEqual(11.4, df.loc[('T196-2040-1', 0), 'alpha'])
+        steps = n.get_phase_tap_changer_steps()
+        self.assertEqual(11.4, steps.loc[('T196-2040-1', 0), 'alpha'])
 
     def test_update_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_generators_data_frame()
-        self.assertEqual(607, df['target_p']['GEN'])
-        self.assertTrue(df['voltage_regulator_on']['GEN'])
-        df2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]], columns=['target_p','target_q','target_v','voltage_regulator_on'], index=['GEN'])
-        n.update_generators_with_data_frame(df2)
-        df3 = n.create_generators_data_frame()
-        self.assertEqual(608, df3['target_p']['GEN'])
-        self.assertEqual(302.0, df3['target_q']['GEN'])
-        self.assertEqual(25.0, df3['target_v']['GEN'])
-        self.assertFalse(df3['voltage_regulator_on']['GEN'])
+        generators = n.get_generators()
+        self.assertEqual(607, generators['target_p']['GEN'])
+        self.assertTrue(generators['voltage_regulator_on']['GEN'])
+        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]], columns=['target_p','target_q','target_v','voltage_regulator_on'], index=['GEN'])
+        n.update_generators(generators2)
+        generators = n.get_generators()
+        self.assertEqual(608, generators['target_p']['GEN'])
+        self.assertEqual(302.0, generators['target_q']['GEN'])
+        self.assertEqual(25.0, generators['target_v']['GEN'])
+        self.assertFalse(generators['voltage_regulator_on']['GEN'])
 
     def test_update_switches_data_frame(self):
-        file_path = os.path.dirname(os.path.realpath(__file__)) + '/node-breaker.xiidm'
-        n = pp.network.load(file=file_path)
-        df = n.create_switches_data_frame()
+        n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
+        switches = n.get_switches()
         # no open switch
-        open_switches = df[df['open']].index.tolist()
+        open_switches = switches[switches['open']].index.tolist()
         self.assertEqual(0, len(open_switches))
         # open 1 breaker
-        n.update_switches_with_data_frame(pd.DataFrame(index=['BREAKER-BB2-VL1_VL2_1'], data={'open': [True]}))
-        df = n.create_switches_data_frame()
-        open_switches = df[df['open']].index.tolist()
+        n.update_switches(pd.DataFrame(index=['BREAKER-BB2-VL1_VL2_1'], data={'open': [True]}))
+        switches = n.get_switches()
+        open_switches = switches[switches['open']].index.tolist()
         self.assertEqual(['BREAKER-BB2-VL1_VL2_1'], open_switches)
 
     def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_2_windings_transformers_data_frame()
+        df = n.get_2_windings_transformers()
         self.assertEqual(['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'p2', 'q2',
                           'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id'],
                          df.columns.tolist())
@@ -230,14 +198,24 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_voltage_levels_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_voltage_levels_data_frame()
-        self.assertEqual(24.0, df['nominal_v']['VLGEN'])
+        voltage_levels = n.get_voltage_levels()
+        self.assertEqual(24.0, voltage_levels['nominal_v']['VLGEN'])
 
     def test_substations_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        df = n.create_substations_data_frame()
-        self.assertEqual('RTE', df['TSO']['P1'])
-        self.assertEqual('FR', df['country']['P1'])
+        substations = n.get_substations()
+        self.assertEqual('RTE', substations['TSO']['P1'])
+        self.assertEqual('FR', substations['country']['P1'])
+
+    def test_reactive_capability_curve_points_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        points = n.get_reactive_capability_curve_points()
+        self.assertAlmostEqual(0, points.loc['GH1']['p'][0])
+        self.assertAlmostEqual(100, points.loc['GH1']['p'][1])
+        self.assertAlmostEqual(-769.3, points.loc['GH1']['min_p'][0])
+        self.assertAlmostEqual(-864.55, points.loc['GH1']['min_p'][1])
+        self.assertAlmostEqual(860, points.loc['GH1']['max_p'][0])
+        self.assertAlmostEqual(946.25, points.loc['GH1']['max_p'][1])
 
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
@@ -296,23 +274,23 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_reduce_by_voltage(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.buses))
+        self.assertEqual(4, len(n.get_buses()))
         n.reduce(v_min=240, v_max=400)
-        self.assertEqual(2, len(n.buses))
+        self.assertEqual(2, len(n.get_buses()))
 
     def test_reduce_by_ids(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.buses))
+        self.assertEqual(4, len(n.get_buses()))
         n.reduce(ids=['P2'])
-        self.assertEqual(2, len(n.buses))
+        self.assertEqual(2, len(n.get_buses()))
 
     def test_reduce_by_subnetwork(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.buses))
+        self.assertEqual(4, len(n.get_buses()))
         n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
-        self.assertEqual(4, len(n.buses))
+        self.assertEqual(4, len(n.get_buses()))
 
     def test_lf_parameters(self):
         parameters = pp.loadflow.Parameters()
@@ -337,7 +315,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_ratio_tap_changers(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        tap_changers = n.create_ratio_tap_changers_data_frame()
+        tap_changers = n.get_ratio_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                           'target_v', 'target_deadband'], tap_changers.columns.tolist())
         self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0], tap_changers.loc['NHV2_NLOAD'].tolist())
@@ -345,9 +323,9 @@ class PyPowsyblTestCase(unittest.TestCase):
         update = pd.DataFrame(index=['NHV2_NLOAD'],
                               columns=['tap', 'regulating', 'target_v'],
                               data=[[0, False, 180]])
-        n.update_ratio_tap_changers_with_data_frame(update)
+        n.update_ratio_tap_changers(update)
 
-        tap_changers = n.create_ratio_tap_changers_data_frame()
+        tap_changers = n.get_ratio_tap_changers()
         values = tap_changers.loc['NHV2_NLOAD']
         self.assertFalse(values.regulating)
         self.assertEqual(0, values.tap)
@@ -355,7 +333,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_phase_tap_changers(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        tap_changers = n.create_phase_tap_changers_data_frame()
+        tap_changers = n.get_phase_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
                           'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
         twt_values = tap_changers.loc['TWT']
@@ -371,9 +349,9 @@ class PyPowsyblTestCase(unittest.TestCase):
         update = pd.DataFrame(index=['TWT'],
                               columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
                               data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
-        n.update_phase_tap_changers_with_data_frame(update)
+        n.update_phase_tap_changers(update)
 
-        tap_changers = n.create_phase_tap_changers_data_frame()
+        tap_changers = n.get_phase_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
                           'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
         twt_values = tap_changers.loc['TWT']
@@ -382,6 +360,79 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual('CURRENT_LIMITER', twt_values.regulation_mode)
         self.assertAlmostEqual(1000, twt_values.regulation_value, 1)
         self.assertAlmostEqual(100, twt_values.target_deadband, 1)
+
+    def test_create_zone(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], zone_fr.injections_ids)
+        self.assertRaises(PyPowsyblError, zone_fr.get_shift_key, 'AA')
+        self.assertEqual(2000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.GENERATOR_MAX_P)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(9000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.LOAD_P0)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(['FFR1AA1 _load', 'FFR2AA1 _load', 'FFR3AA1 _load'], zone_fr.injections_ids)
+        self.assertEqual(1000, zone_fr.get_shift_key('FFR1AA1 _load'))
+
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+
+        # remove test
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        zone_fr.remove_injection('FFR1AA1 _generator')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+
+        # add test
+        zone_fr.add_injection('gen', 333)
+        self.assertEqual(3, len(zone_fr.injections_ids))
+        self.assertEqual(333, zone_fr.get_shift_key('gen'))
+
+        # move test
+        zone_fr.move_injection_to(zone_be, 'gen')
+        self.assertEqual(2, len(zone_fr.injections_ids))
+        self.assertEqual(4, len(zone_be.injections_ids))
+        self.assertEqual(333, zone_be.get_shift_key('gen'))
+
+    def test_sensi_zone(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_fr, zone_be])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((2, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(0.3701714440115307, s['FFR2AA1  DDE3AA1  1']['FR'])
+        self.assertEqual(0.37842261758908524, s['BBE2AA1  FFR3AA1  1']['BE'])
+        self.assertEqual(0.12842261758908563, s['FFR2AA1  DDE3AA1  1']['BE'])
+        r = result.get_reference_flows()
+        self.assertEqual((1, 2), r.shape)
+        self.assertEqual(324.66561396238836, r['BBE2AA1  FFR3AA1  1']['reference_flows'])
+        self.assertEqual(1324.6656139623885, r['FFR2AA1  DDE3AA1  1']['reference_flows'])
+
+    def test_sensi_power_transfer(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+        zone_de = pp.sensitivity.create_country_zone(n, 'DE')
+        zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+        zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((4, 2), s.shape)
+        self.assertEqual(-0.3798285559884689, s['BBE2AA1  FFR3AA1  1']['FR'])
+        self.assertEqual(-0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['FR -> DE'])
+        self.assertEqual(0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['DE -> FR'])
+        self.assertEqual(0.10342626899874961, s['BBE2AA1  FFR3AA1  1']['NL'])
 
 
 if __name__ == '__main__':

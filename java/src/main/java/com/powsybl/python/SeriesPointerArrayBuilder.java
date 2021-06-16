@@ -236,7 +236,18 @@ public class SeriesPointerArrayBuilder<T> {
         return addStringSeries(seriesName, false, element -> enumGetter.apply(element).name());
     }
 
-    public SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
+    <U> SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, Function<T, U> objectGetter, ToDoubleFunction<U> doubleGetter) {
+        return addDoubleSeries(seriesName, objectGetter, doubleGetter, Double.NaN);
+    }
+
+    <U> SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, Function<T, U> objectGetter, ToDoubleFunction<U> doubleGetter, double undefinedValue) {
+        return addDoubleSeries(seriesName, value -> {
+            U object = objectGetter.apply(value);
+            return object != null ? doubleGetter.applyAsDouble(object) : undefinedValue;
+        });
+    }
+
+    SeriesPointerArrayBuilder<T> addDoubleSeries(String seriesName, ToDoubleFunction<T> doubleGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(doubleGetter);
         seriesList.add(new DoubleSeries(seriesName, doubleGetter));

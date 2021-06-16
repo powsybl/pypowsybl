@@ -47,9 +47,6 @@ private:
 };
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
-typedef Array<bus> BusArray;
-typedef Array<generator> GeneratorArray;
-typedef Array<load> LoadArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
@@ -109,6 +106,8 @@ char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
+
 void init();
 
 void setDebugMode(bool debug);
@@ -145,12 +144,6 @@ void reduceNetwork(void* network, const double v_min, const double v_max, const 
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
-BusArray* getBusArray(void* network);
-
-GeneratorArray* getGeneratorArray(void* network);
-
-LoadArray* getLoadArray(void* network);
-
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
 void* createSecurityAnalysis();
@@ -161,7 +154,9 @@ ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void*
 
 void* createSensitivityAnalysis();
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& injectionsOrTransfosIds);
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones);
+
+void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

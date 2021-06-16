@@ -72,21 +72,6 @@ Array<load_flow_component_result>::~Array() {
 }
 
 template<>
-Array<bus>::~Array() {
-    callJava<>(::freeBusArray, delegate_);
-}
-
-template<>
-Array<generator>::~Array() {
-    callJava<>(::freeGeneratorArray, delegate_);
-}
-
-template<>
-Array<load>::~Array() {
-    callJava<>(::freeLoadArray, delegate_);
-}
-
-template<>
 Array<contingency_result>::~Array() {
     callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
@@ -310,18 +295,6 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::sha
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
-BusArray* getBusArray(void* network) {
-    return new BusArray(callJava<array*>(::getBusArray, network));
-}
-
-GeneratorArray* getGeneratorArray(void* network) {
-    return new GeneratorArray(callJava<array*>(::getGeneratorArray, network));
-}
-
-LoadArray* getLoadArray(void* network) {
-    return new LoadArray(callJava<array*>(::getLoadArray, network));
-}
-
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
@@ -345,12 +318,61 @@ void* createSensitivityAnalysis() {
     return callJava<void*>(::createSensitivityAnalysis);
 }
 
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
+    auto z = new ::zone;
+    z->id = copyStringToCharPtr(id);
+    z->length = injectionsIds.size();
+    z->injections_ids = new char*[injectionsIds.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_ids[i] = copyStringToCharPtr(injectionsIds[i]);
+    }
+    z->injections_shift_keys = new double[injectionsShiftKeys.size()];
+    for (int i = 0; i < injectionsIds.size(); i++) {
+        z->injections_shift_keys[i] = injectionsShiftKeys[i];
+    }
+    return z;
+}
+
+void deleteZone(::zone* z) {
+    delete[] z->id;
+    for (int i = 0; i < z->length; i++) {
+        delete[] z->injections_ids[i];
+    }
+    delete[] z->injections_ids;
+    delete[] z->injections_shift_keys;
+}
+
+class ZonesPtr {
+public:
+    ZonesPtr(const std::vector<zone*>& vector)
+        : vector_(vector) {
+    }
+
+    ~ZonesPtr() {
+        for (auto z : vector_) {
+            deleteZone(z);
+        }
+    }
+
+    ::zone** get() const {
+        return (::zone**) &vector_[0];
+    }
+
+private:
+    const std::vector<::zone*>& vector_;
+};
+
+void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones) {
+    ZonesPtr zonesPtr(zones);
+    callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
+}
+
 void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                     const std::vector<std::string>& injectionsOrTransfosIds) {
+                               const std::vector<std::string>& variablesIds) {
     ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr injectionOrTransfoIdPtr(injectionsOrTransfosIds);
+    ToCharPtrPtr variableIdPtr(variablesIds);
     callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                injectionOrTransfoIdPtr.get(), injectionsOrTransfosIds.size());
+                variableIdPtr.get(), variablesIds.size());
 }
 
 void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds,
@@ -358,8 +380,7 @@ void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vect
     ToCharPtrPtr busVoltageIdPtr(busIds);
     ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
     callJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
-                busIds.size(),
-                targetVoltageIdPtr.get(), targetVoltageIds.size());
+                busIds.size(), targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
 void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider) {

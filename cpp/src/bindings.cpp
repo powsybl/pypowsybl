@@ -76,6 +76,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PHASE_TAP_CHANGER_STEP", element_type::PHASE_TAP_CHANGER_STEP)
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
+            .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
@@ -247,72 +248,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
-    py::class_<bus>(m, "Bus")
-        .def_property_readonly("id", [](const bus& b) {
-            return b.id;
-        })
-        .def_property_readonly("v_magnitude", [](const bus& b) {
-            return b.v_magnitude;
-        })
-        .def_property_readonly("v_angle", [](const bus& b) {
-            return b.v_angle;
-        })
-        .def_property_readonly("component_num", [](const bus& b) {
-            return b.component_num;
-        });
-
-    bindArray<pypowsybl::BusArray>(m, "BusArray");
-
-    m.def("get_buses", &pypowsybl::getBusArray, "Get network buses", py::arg("network"));
-
-    py::class_<generator>(m, "Generator")
-            .def_property_readonly("id", [](const generator& g) {
-                return g.id;
-            })
-            .def_property_readonly("target_p", [](const generator& g) {
-                return g.target_p;
-            })
-            .def_property_readonly("min_p", [](const generator& g) {
-                return g.min_p;
-            })
-            .def_property_readonly("max_p", [](const generator& g) {
-                return g.max_p;
-            })
-            .def_property_readonly("nominal_voltage", [](const generator& g) {
-                return g.nominal_voltage;
-            })
-            .def_property_readonly("country", [](const generator& g) {
-                return g.country;
-            })
-            .def_property_readonly("bus", [](const generator& g) {
-                return g.bus_;
-            });
-
-    bindArray<pypowsybl::GeneratorArray>(m, "GeneratorArray");
-
-    m.def("get_generators", &pypowsybl::getGeneratorArray, "Get network generators", py::arg("network"));
-
-    py::class_<load>(m, "Load")
-            .def_property_readonly("id", [](const load& l) {
-                return l.id;
-            })
-            .def_property_readonly("p0", [](const load& l) {
-                return l.p0;
-            })
-            .def_property_readonly("nominal_voltage", [](const load& l) {
-                return l.nominal_voltage;
-            })
-            .def_property_readonly("country", [](const load& l) {
-                return l.country;
-            })
-            .def_property_readonly("bus", [](const load& l) {
-                return l.bus_;
-            });
-
-    bindArray<pypowsybl::LoadArray>(m, "LoadArray");
-
-    m.def("get_loads", &pypowsybl::getLoadArray, "Get network loads", py::arg("network"));
-
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
@@ -383,8 +318,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
 
+    py::class_<::zone>(m, "Zone")
+            .def(py::init([](const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
+                return pypowsybl::createZone(id, injectionsIds, injectionsShiftKeys);
+            }), py::arg("id"), py::arg("injections_ids"), py::arg("injections_shift_keys"));
+
+    m.def("set_zones", &pypowsybl::setZones, "Add zones to sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("zones"));
+
     m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("injections_or_transfos_ids"));
+          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("variables_ids"));
 
     m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));

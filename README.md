@@ -92,33 +92,10 @@ parameters = pp.loadflow.Parameters(distributed_slack=False)
 results = pp.loadflow.run_ac(n, parameters)
 ```
 
-We can now iterate over buses and print calculated voltage:
+We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
 ```python
-for bus in n.buses:
-    print(f"Bus {bus.id!r}: v_mag={bus.v_magnitude}, v_ang={bus.v_angle}")
-```
-
-```bash
-Bus 'VL1_0': v_mag=1.06, v_ang=10.313243381060664
-Bus 'VL2_0': v_mag=1.045, v_ang=5.330504871947214
-Bus 'VL3_0': v_mag=1.01, v_ang=-2.4121176767072106
-Bus 'VL4_0': v_mag=1.0176698517255092, v_ang=0.0
-Bus 'VL5_0': v_mag=1.019513126069881, v_ang=1.5391224927328597
-Bus 'VL6_0': v_mag=1.07, v_ang=-3.908001888907669
-Bus 'VL7_0': v_mag=1.0615190502807328, v_ang=-3.0467156954546497
-Bus 'VL8_0': v_mag=1.09, v_ang=-3.0467156954546497
-Bus 'VL9_0': v_mag=1.0559312123363436, v_ang=-4.625603385486276
-Bus 'VL10_0': v_mag=1.0509841969760743, v_ang=-4.784365794405052
-Bus 'VL11_0': v_mag=1.0569062925416597, v_ang=-4.477688311883925
-Bus 'VL12_0': v_mag=1.0551885297773924, v_ang=-4.762642162506649
-Bus 'VL13_0': v_mag=1.0503816324228432, v_ang=-4.843335457191098
-Bus 'VL14_0': v_mag=1.0355296164107972, v_ang=-5.720717197261967
-```
-
-We can also get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
-```python
-df = n.create_buses_data_frame()
-print(df)
+buses = n.get_buses()
+print(buses)
 ```
 
 ```bash
@@ -194,7 +171,7 @@ sa = pp.sensitivity.create_dc_analysis()
 sa.add_single_element_contingency('L1-2-1')
 sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
 sa_result = sa.run(n)
-df = sa_result.get_post_contingency_sensitivity_matrix_flows('L1-2-1')
+df = sa_result.get_branch_flows_sensitivity_matrix('L1-2-1')
 print(df)
 ```
 

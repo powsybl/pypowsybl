@@ -15,16 +15,18 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Country;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
-import com.powsybl.iidm.network.util.ConnectedComponents;
 import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.dataframe.*;
+import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
+import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.PostContingencyResult;
@@ -356,118 +358,6 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    private static void fillBus(Bus bus, BusPointer busPtr) {
-        busPtr.setId(CTypeUtil.toCharPtr(bus.getId()));
-        busPtr.setVoltageMagnitude(bus.getV());
-        busPtr.setVoltageAngle(bus.getAngle());
-        busPtr.setComponentNum(ConnectedComponents.getCcNum(bus));
-    }
-
-    @CEntryPoint(name = "getBusArray")
-    public static ArrayPointer<BusPointer> getBusArray(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<Bus> buses = network.getBusView().getBusStream().collect(Collectors.toList());
-            BusPointer busesPtr = UnmanagedMemory.calloc(buses.size() * SizeOf.get(BusPointer.class));
-            for (int index = 0; index < buses.size(); index++) {
-                Bus bus = buses.get(index);
-                BusPointer busPtr = busesPtr.addressOf(index);
-                fillBus(bus, busPtr);
-            }
-            return allocArrayPointer(busesPtr, buses.size());
-        });
-    }
-
-    @CEntryPoint(name = "freeBusArray")
-    public static void freeBusArray(IsolateThread thread, ArrayPointer<BusPointer> busArrayPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
-            freeArrayPointer(busArrayPointer);
-        });
-    }
-
-    @CEntryPoint(name = "getGeneratorArray")
-    public static ArrayPointer<GeneratorPointer> getGeneratorArray(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<Generator> generators = network.getGeneratorStream().collect(Collectors.toList());
-            GeneratorPointer generatorPtr = UnmanagedMemory.calloc(generators.size() * SizeOf.get(GeneratorPointer.class));
-            for (int index = 0; index < generators.size(); index++) {
-                Generator generator = generators.get(index);
-                GeneratorPointer generatorPtrI = generatorPtr.addressOf(index);
-                generatorPtrI.setId(CTypeUtil.toCharPtr(generator.getId()));
-                generatorPtrI.setTargetP(generator.getTargetP());
-                generatorPtrI.setMaxP(generator.getMaxP());
-                generatorPtrI.setMinP(generator.getMinP());
-                VoltageLevel vl = generator.getTerminal().getVoltageLevel();
-                generatorPtrI.setNominalVoltage(vl.getNominalV());
-                generatorPtrI.setCountry(CTypeUtil.toCharPtr(vl.getSubstation().getCountry().map(Country::name).orElse(null)));
-                Bus bus = generator.getTerminal().getBusView().getBus();
-                if (bus != null) {
-                    BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
-                    fillBus(bus, busPtr);
-                    generatorPtrI.setBus(busPtr);
-                }
-            }
-            return allocArrayPointer(generatorPtr, generators.size());
-        });
-    }
-
-    @CEntryPoint(name = "freeGeneratorArray")
-    public static void freeGeneratorArray(IsolateThread thread, ArrayPointer<GeneratorPointer> generatorArrayPtr,
-                                          ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int index = 0; index < generatorArrayPtr.getLength(); index++) {
-                GeneratorPointer generatorPtrI = generatorArrayPtr.getPtr().addressOf(index);
-                // don't need to free char* from id field as it is done by python
-                if (generatorPtrI.getBus().isNonNull()) {
-                    UnmanagedMemory.free(generatorPtrI.getBus());
-                }
-            }
-            freeArrayPointer(generatorArrayPtr);
-        });
-    }
-
-    @CEntryPoint(name = "getLoadArray")
-    public static ArrayPointer<LoadPointer> getLoadArray(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<Load> loads = network.getLoadStream().collect(Collectors.toList());
-            LoadPointer loadPtr = UnmanagedMemory.calloc(loads.size() * SizeOf.get(LoadPointer.class));
-            for (int index = 0; index < loads.size(); index++) {
-                Load load = loads.get(index);
-                LoadPointer loadPtrI = loadPtr.addressOf(index);
-                loadPtrI.setId(CTypeUtil.toCharPtr(load.getId()));
-                loadPtrI.setP0(load.getP0());
-                VoltageLevel vl = load.getTerminal().getVoltageLevel();
-                loadPtrI.setNominalVoltage(vl.getNominalV());
-                loadPtrI.setCountry(CTypeUtil.toCharPtr(vl.getSubstation().getCountry().map(Country::name).orElse(null)));
-                Bus bus = load.getTerminal().getBusView().getBus();
-                if (bus != null) {
-                    BusPointer busPtr = UnmanagedMemory.calloc(SizeOf.get(BusPointer.class));
-                    fillBus(bus, busPtr);
-                    loadPtrI.setBus(busPtr);
-                }
-            }
-            return allocArrayPointer(loadPtr, loads.size());
-        });
-    }
-
-    @CEntryPoint(name = "freeLoadArray")
-    public static void freeLoadArray(IsolateThread thread, ArrayPointer<LoadPointer> loadArrayPtr,
-                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int index = 0; index < loadArrayPtr.getLength(); index++) {
-                LoadPointer loadPtrI = loadArrayPtr.getPtr().addressOf(index);
-                // don't need to free char* from id field as it is done by python
-                if (loadPtrI.getBus().isNonNull()) {
-                    UnmanagedMemory.free(loadPtrI.getBus());
-                }
-            }
-            freeArrayPointer(loadArrayPtr);
-        });
-    }
-
     @CEntryPoint(name = "updateSwitchPosition")
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
                                                ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -599,16 +489,38 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));
     }
 
+    @CEntryPoint(name = "setZones")
+    public static void setZones(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                ZonePointerPointer zonePtrPtr, int zoneCount,
+                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
+            for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
+                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
+                String zoneId = CTypeUtil.toString(zonePtrI.getId());
+                List<String> injectionsIds = CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
+                List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
+                List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
+                for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
+                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsShiftKeys.get(injectionIndex)));
+                }
+                variableSets.add(new SensitivityVariableSet(zoneId, variables));
+            }
+            analysisContext.setVariableSets(variableSets);
+        });
+    }
+
     @CEntryPoint(name = "setBranchFlowFactorMatrix")
     public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer injectionOrTransfoIdPtrPtr, int injectionOrTransfoIdCount,
+                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchsIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> injectionsOrTransfosIds = CTypeUtil.toStringList(injectionOrTransfoIdPtrPtr, injectionOrTransfoIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchsIds, injectionsOrTransfosIds);
+            List<String> branchesIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = CTypeUtil.toStringList(variableIdPtrPtr, variableIdCount);
+            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
         });
     }
 
@@ -876,6 +788,8 @@ public final class PyPowsyblApiLib {
                 return ElementType.RATIO_TAP_CHANGER;
             case PHASE_TAP_CHANGER:
                 return ElementType.PHASE_TAP_CHANGER;
+            case REACTIVE_CAPABILITY_CURVE_POINT:
+                return ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -925,6 +839,8 @@ public final class PyPowsyblApiLib {
                 return DataframeElementType.RATIO_TAP_CHANGER;
             case PHASE_TAP_CHANGER:
                 return DataframeElementType.PHASE_TAP_CHANGER;
+            case REACTIVE_CAPABILITY_CURVE_POINT:
+                return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }

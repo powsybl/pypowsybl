@@ -11,10 +11,7 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
-import org.graalvm.nativeimage.c.struct.CField;
-import org.graalvm.nativeimage.c.struct.CFieldAddress;
-import org.graalvm.nativeimage.c.struct.CStruct;
-import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.struct.*;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -65,120 +62,6 @@ public final class PyPowsyblApiHeader {
     static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
-    }
-
-    @CStruct("bus")
-    interface BusPointer extends PointerBase {
-
-        @CField("id")
-        CCharPointer getId();
-
-        @CField("id")
-        void setId(CCharPointer id);
-
-        @CField("v_magnitude")
-        double getVoltageMagnitude();
-
-        @CField("v_magnitude")
-        void setVoltageMagnitude(double voltageMagnitude);
-
-        @CField("v_angle")
-        double getVoltageAngle();
-
-        @CField("v_angle")
-        void setVoltageAngle(double voltageAngle);
-
-        @CField("component_num")
-        int geComponentNum();
-
-        @CField("component_num")
-        void setComponentNum(int componentNum);
-
-        BusPointer addressOf(int index);
-    }
-
-    @CStruct("generator")
-    interface GeneratorPointer extends PointerBase {
-
-        @CField("id")
-        CCharPointer getId();
-
-        @CField("id")
-        void setId(CCharPointer id);
-
-        @CField("target_p")
-        double getTargetP();
-
-        @CField("target_p")
-        void setTargetP(double targetP);
-
-        @CField("min_p")
-        double getMinP();
-
-        @CField("min_p")
-        void setMinP(double minP);
-
-        @CField("max_p")
-        double getMaxP();
-
-        @CField("max_p")
-        void setMaxP(double maxP);
-
-        @CField("nominal_voltage")
-        double getNominalVoltage();
-
-        @CField("nominal_voltage")
-        void setNominalVoltage(double nominalVoltage);
-
-        @CField("country")
-        CCharPointer getCountry();
-
-        @CField("country")
-        void setCountry(CCharPointer country);
-
-        @CField("bus_")
-        BusPointer getBus();
-
-        @CField("bus_")
-        void setBus(BusPointer bus);
-
-        GeneratorPointer addressOf(int index);
-    }
-
-    @CStruct("load")
-    interface LoadPointer extends PointerBase {
-
-        @CField("id")
-        CCharPointer getId();
-
-        @CField("id")
-        void setId(CCharPointer id);
-
-        @CField("p0")
-        double getP0();
-
-        @CField("p0")
-        void setP0(double p0);
-
-        @CField("nominal_voltage")
-        double getNominalVoltage();
-
-        @CField("nominal_voltage")
-        void setNominalVoltage(double nominalVoltage);
-
-        @CField("country")
-        CCharPointer getCountry();
-
-        @CField("country")
-        void setCountry(CCharPointer country);
-
-        @CField("bus_")
-        BusPointer getBus();
-
-        @CField("bus_")
-        void setBus(BusPointer bus);
-
-        LoadPointer addressOf(int index);
     }
 
     @CStruct("load_flow_component_result")
@@ -414,7 +297,8 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER_STEP,
         PHASE_TAP_CHANGER_STEP,
         RATIO_TAP_CHANGER,
-        PHASE_TAP_CHANGER;
+        PHASE_TAP_CHANGER,
+        REACTIVE_CAPABILITY_CURVE_POINT;
 
         @CEnumValue
         public native int getCValue();
@@ -472,4 +356,39 @@ public final class PyPowsyblApiHeader {
         SeriesPointer addressOf(int index);
     }
 
+    @CStruct("zone")
+    interface ZonePointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("injections_ids")
+        CCharPointerPointer getInjectionsIds();
+
+        @CField("injections_ids")
+        void setInjectionsIds(CCharPointerPointer injectionsIds);
+
+        @CField("injections_shift_keys")
+        CDoublePointer getinjectionsShiftKeys();
+
+        @CField("injections_shift_keys")
+        void setinjectionsShiftKeys(CDoublePointer injectionsShiftKeys);
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        ZonePointer addressOf(int index);
+    }
+
+    @CPointerTo(ZonePointer.class)
+    interface ZonePointerPointer extends PointerBase {
+
+        ZonePointer read(int index);
+    }
 }
