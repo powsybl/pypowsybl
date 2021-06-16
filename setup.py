@@ -14,9 +14,8 @@ from setuptools import setup, find_packages, Extension
 from setuptools.command.install import install
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+from wheel.bdist_wheel import bdist_wheel
 
-
-extra_jars = ''
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -86,12 +85,12 @@ class PyPowsyblBuild(build_ext):
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
+        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
+                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+
         global extra_jars
         if extra_jars:
-            extra_jars = ':' + extra_jars
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DEXTRA_JARS=' + extra_jars]
+            cmake_args.append('-DEXTRA_JARS=:' + extra_jars)
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -116,28 +115,40 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
+# Handling additional arguments to setup.py commands (install and bdist_wheel)
+extra_jars = None
+
+additional_user_options = [
+    ('jars=', None, 'absolute path to jar would be included, separated by colon.'),
+    ('version=', None, 'if defined, overrides the library version.'),
+]
+
+
+def add_options(command_class):
+    """
+    Creates a command class with additional jars and version options compared to original command
+    """
+    class WrappedCommand(command_class):
+        user_options = bdist_wheel.user_options + additional_user_options
+
+        def initialize_options(self):
+            super().initialize_options()
+            self.jars = None
+            self.version = None
+
+        def run(self):
+            global extra_jars
+            extra_jars = self.jars
+            if self.version:
+                self.distribution.metadata.version = self.version
+            super().run()
+
+    return WrappedCommand
+
+
 # long description from the github readme
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
-
-
-class InstallCommand(install):
-    user_options = install.user_options + [
-        ('jars=', None, 'absolute path to jar would be included, separated by colon.'),
-    ]
-
-    def initialize_options(self):
-        install.initialize_options(self)
-        self.jars = ''
-
-    def finalize_options(self):
-        install.finalize_options(self)
-
-    def run(self):
-        global extra_jars
-        extra_jars = self.jars
-        install.run(self)
-
 
 setup(
     name='pypowsybl',
@@ -149,7 +160,7 @@ setup(
     url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
     ext_modules=[PyPowsyblExtension()],
-    cmdclass=dict(install=InstallCommand, build_ext=PyPowsyblBuild),
+    cmdclass=dict(install=add_options(install), build_ext=PyPowsyblBuild, bdist_wheel=add_options(bdist_wheel)),
     zip_safe=False,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -168,5 +179,5 @@ setup(
     install_requires=[
         'prettytable',
         'pandas'
-    ],
+    ]
 )
