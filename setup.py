@@ -136,8 +136,6 @@ def read_command_options(cmd):
     version_override = cmd.version
     if version_override:
         cmd.distribution.metadata.version = version_override
-    print('Install command is : {}'.format(cmd))
-    print('Version is : {}'.format(version_override))
 
 
 class InstallCommand(install):
