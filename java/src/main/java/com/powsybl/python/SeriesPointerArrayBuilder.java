@@ -25,13 +25,13 @@ import java.util.function.ToIntFunction;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class SeriesPointerArrayBuilder<T> {
+public class SeriesPointerArrayBuilder<T> {
 
-    static final int STRING_SERIES_TYPE = 0;
-    static final int DOUBLE_SERIES_TYPE = 1;
-    static final int INT_SERIES_TYPE = 2;
-    static final int BOOLEAN_SERIES_TYPE = 3;
-    static final int INT_UNDEFINED_VALUE = -99999;
+    public static final int STRING_SERIES_TYPE = 0;
+    public static final int DOUBLE_SERIES_TYPE = 1;
+    public static final int INT_SERIES_TYPE = 2;
+    public static final int BOOLEAN_SERIES_TYPE = 3;
+    public static final int INT_UNDEFINED_VALUE = -99999;
 
     interface Series<T, E> {
 
@@ -212,7 +212,7 @@ class SeriesPointerArrayBuilder<T> {
 
     final List<Series<T, ?>> seriesList = new ArrayList<>();
 
-    SeriesPointerArrayBuilder(List<T> elements) {
+    public SeriesPointerArrayBuilder(List<T> elements) {
         this.elements = Objects.requireNonNull(elements);
     }
 
@@ -220,18 +220,18 @@ class SeriesPointerArrayBuilder<T> {
         return elements;
     }
 
-    SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
+    public SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, Function<T, String> stringGetter) {
         return addStringSeries(seriesName, false, stringGetter);
     }
 
-    SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, boolean index, Function<T, String> stringGetter) {
+    public SeriesPointerArrayBuilder<T> addStringSeries(String seriesName, boolean index, Function<T, String> stringGetter) {
         Objects.requireNonNull(seriesName);
         Objects.requireNonNull(stringGetter);
         seriesList.add(new StringSeries(seriesName, index, stringGetter));
         return this;
     }
 
-    SeriesPointerArrayBuilder<T> addEnumSeries(String seriesName, Function<T, Enum<?>> enumGetter) {
+    public SeriesPointerArrayBuilder<T> addEnumSeries(String seriesName, Function<T, Enum<?>> enumGetter) {
         Objects.requireNonNull(enumGetter);
         return addStringSeries(seriesName, false, element -> enumGetter.apply(element).name());
     }
@@ -254,11 +254,11 @@ class SeriesPointerArrayBuilder<T> {
         return this;
     }
 
-    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter) {
+    public <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter) {
         return addIntSeries(seriesName, objectGetter, intGetter, INT_UNDEFINED_VALUE);
     }
 
-    <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
+    public <U> SeriesPointerArrayBuilder<T> addIntSeries(String seriesName, Function<T, U> objectGetter, ToIntFunction<U> intGetter, int undefinedValue) {
         Objects.requireNonNull(objectGetter);
         Objects.requireNonNull(intGetter);
         return addIntSeries(seriesName, value -> {
@@ -278,7 +278,7 @@ class SeriesPointerArrayBuilder<T> {
         return this;
     }
 
-    SeriesPointerArrayBuilder<T> addBooleanSeries(String seriesName, Predicate<T> booleanGetter) {
+    public SeriesPointerArrayBuilder<T> addBooleanSeries(String seriesName, Predicate<T> booleanGetter) {
         Objects.requireNonNull(booleanGetter);
         seriesList.add(new BooleanSeries(seriesName, booleanGetter));
         return this;
@@ -300,6 +300,8 @@ class SeriesPointerArrayBuilder<T> {
 
         return PyPowsyblApiHeader.allocArrayPointer(seriesPtr, seriesList.size());
     }
+
+
 
     // used for unittest
     List<List> buildJavaSeries() {

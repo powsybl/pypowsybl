@@ -220,6 +220,22 @@ class Network(ObjectHandle):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
+    def get_ratio_tap_changers(self) -> pd.DataFrame:
+        """ Create a ratio tap changers``Pandas`` data frame.
+
+        Returns:
+            the ratio tap changers data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
+
+    def get_phase_tap_changers(self) -> pd.DataFrame:
+        """ Create a phase tap changers``Pandas`` data frame.
+
+        Returns:
+            the phase tap changers data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
+
     def get_reactive_capability_curve_points(self) -> pd.DataFrame:
         """ Get reactive capability curve points as a ``Pandas`` data frame.
 
@@ -328,6 +344,22 @@ class Network(ObjectHandle):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
+
+    def update_ratio_tap_changers(self, df: pd.DataFrame):
+        """ Update ratio tap changers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
+
+    def update_phase_tap_changers(self, df: pd.DataFrame):
+        """ Update phase tap changers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
 
 def create_empty(id: str = "Default") -> Network:

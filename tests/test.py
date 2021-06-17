@@ -180,20 +180,21 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        transfos = n.get_2_windings_transformers()
-        self.assertEqual(1, transfos['ratio_tap_position']['NHV2_NLOAD'])
-        self.assertEqual(-99999, transfos['phase_tap_position']['NHV2_NLOAD'])
-        n.update_2_windings_transformers(pd.DataFrame(index=['NHV2_NLOAD'], data={'ratio_tap_position': [0]}))
-        transfos = n.get_2_windings_transformers()
-        self.assertEqual(0, transfos['ratio_tap_position']['NHV2_NLOAD'])
-
-        # also test phase shifter
-        n = pp.network.create_four_substations_node_breaker_network();
-        transfos = n.get_2_windings_transformers()
-        self.assertEqual(15, transfos['phase_tap_position']['TWT'])
-        n.update_2_windings_transformers(pd.DataFrame(index=['TWT'], data={'phase_tap_position': [16]}))
-        transfos = n.get_2_windings_transformers()
-        self.assertEqual(16, transfos['phase_tap_position']['TWT'])
+        df = n.get_2_windings_transformers()
+        self.assertEqual(['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'p2', 'q2',
+                          'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id'],
+                         df.columns.tolist())
+        load_tfo = df.loc['NHV2_NLOAD']
+        self.assertAlmostEqual(0.042, load_tfo.r, places=1)
+        self.assertAlmostEqual(04.05, load_tfo.x, places=1)
+        self.assertEqual(0, load_tfo.g)
+        self.assertEqual(0, load_tfo.b)
+        self.assertEqual(400, load_tfo.rated_u1)
+        self.assertEqual(158, load_tfo.rated_u2)
+        self.assertEqual('VLHV2', load_tfo.voltage_level1_id)
+        self.assertEqual('VLLOAD', load_tfo.voltage_level2_id)
+        self.assertEqual('VLHV2_0', load_tfo.bus1_id)
+        self.assertEqual('VLLOAD_0', load_tfo.bus2_id)
 
     def test_voltage_levels_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -211,10 +212,10 @@ class PyPowsyblTestCase(unittest.TestCase):
         points = n.get_reactive_capability_curve_points()
         self.assertAlmostEqual(0, points.loc['GH1']['p'][0])
         self.assertAlmostEqual(100, points.loc['GH1']['p'][1])
-        self.assertAlmostEqual(-769.3, points.loc['GH1']['min_p'][0])
-        self.assertAlmostEqual(-864.55, points.loc['GH1']['min_p'][1])
-        self.assertAlmostEqual(860, points.loc['GH1']['max_p'][0])
-        self.assertAlmostEqual(946.25, points.loc['GH1']['max_p'][1])
+        self.assertAlmostEqual(-769.3, points.loc['GH1']['min_q'][0])
+        self.assertAlmostEqual(-864.55, points.loc['GH1']['min_q'][1])
+        self.assertAlmostEqual(860, points.loc['GH1']['max_q'][0])
+        self.assertAlmostEqual(946.25, points.loc['GH1']['max_q'][1])
 
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
@@ -311,6 +312,54 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
         parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+
+    def test_ratio_tap_changers(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        tap_changers = n.get_ratio_tap_changers()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                          'target_v', 'target_deadband'], tap_changers.columns.tolist())
+        self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0], tap_changers.loc['NHV2_NLOAD'].tolist())
+
+        update = pd.DataFrame(index=['NHV2_NLOAD'],
+                              columns=['tap', 'regulating', 'target_v'],
+                              data=[[0, False, 180]])
+        n.update_ratio_tap_changers(update)
+
+        tap_changers = n.get_ratio_tap_changers()
+        values = tap_changers.loc['NHV2_NLOAD']
+        self.assertFalse(values.regulating)
+        self.assertEqual(0, values.tap)
+        self.assertAlmostEqual(180, values.target_v, 1)
+
+    def test_phase_tap_changers(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        tap_changers = n.get_phase_tap_changers()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+        twt_values = tap_changers.loc['TWT']
+        self.assertEqual(15, twt_values.tap)
+        self.assertEqual(0, twt_values.low_tap)
+        self.assertEqual(32, twt_values.high_tap)
+        self.assertEqual(33, twt_values.step_count)
+        self.assertEqual(False, twt_values.regulating)
+        self.assertEqual('FIXED_TAP', twt_values.regulation_mode)
+        self.assertTrue(pd.isna(twt_values.regulation_value))
+        self.assertTrue(pd.isna(twt_values.target_deadband))
+
+        update = pd.DataFrame(index=['TWT'],
+                              columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
+                              data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
+        n.update_phase_tap_changers(update)
+
+        tap_changers = n.get_phase_tap_changers()
+        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+        twt_values = tap_changers.loc['TWT']
+        self.assertEqual(10, twt_values.tap)
+        self.assertEqual(True, twt_values.regulating)
+        self.assertEqual('CURRENT_LIMITER', twt_values.regulation_mode)
+        self.assertAlmostEqual(1000, twt_values.regulation_value, 1)
+        self.assertAlmostEqual(100, twt_values.target_deadband, 1)
 
     def test_create_zone(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
