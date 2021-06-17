@@ -16,17 +16,21 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
+
+import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
+import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
 
 /**
  * Main user entry point of the package :
  * defines the mappings for all elements of the network.
  *
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
+ * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
 public final class NetworkDataframes {
-
-    public static final int INT_UNDEFINED_VALUE = -99999;
 
     private static final Map<DataframeElementType, DataframeMapper> MAPPERS = createMappers();
 
@@ -116,13 +120,20 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getVoltageLevel().getId();
     }
 
+    private static MinMaxReactiveLimits getMinMaxReactiveLimits(ReactiveLimitsHolder holder) {
+        ReactiveLimits reactiveLimits = holder.getReactiveLimits();
+        return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
+    }
+
     static DataframeMapper generators() {
         return DataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
             .stringsIndex("id", Generator::getId)
             .enums("energy_source", EnergySource.class, Generator::getEnergySource)
             .doubles("target_p", Generator::getTargetP, Generator::setTargetP)
-            .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
             .doubles("min_p", Generator::getMinP, Generator::setMinP)
+            .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
+            .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ))
+            .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ))
             .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
             .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
             .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
@@ -237,8 +248,8 @@ public final class NetworkDataframes {
             .doubles("b1", twt -> twt.getLeg1().getB(), (twt, v) -> twt.getLeg1().setB(v))
             .doubles("rated_u1", twt -> twt.getLeg1().getRatedU(), (twt, v) -> twt.getLeg1().setRatedU(v))
             .doubles("rated_s1", twt -> twt.getLeg1().getRatedS(), (twt, v) -> twt.getLeg1().setRatedS(v))
-            .ints("ratio_tap_position1", t -> getTapPosition(t.getLeg1().getRatioTapChanger()), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
-            .ints("phase_tap_position1", t -> getTapPosition(t.getLeg1().getPhaseTapChanger()), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
+            .ints("ratio_tap_position1", getRatioTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
+            .ints("phase_tap_position1", getPhaseTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
             .doubles("p1", twt -> twt.getLeg1().getTerminal().getP(), (twt, v) -> twt.getLeg1().getTerminal().setP(v))
             .doubles("q1", twt -> twt.getLeg1().getTerminal().getP(), (twt, v) -> twt.getLeg1().getTerminal().setQ(v))
             .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
@@ -249,8 +260,8 @@ public final class NetworkDataframes {
             .doubles("b2", twt -> twt.getLeg2().getB(), (twt, v) -> twt.getLeg2().setB(v))
             .doubles("rated_u2", twt -> twt.getLeg2().getRatedU(), (twt, v) -> twt.getLeg2().setRatedU(v))
             .doubles("rated_s2", twt -> twt.getLeg2().getRatedS(), (twt, v) -> twt.getLeg2().setRatedS(v))
-            .ints("ratio_tap_position2", t -> getTapPosition(t.getLeg2().getRatioTapChanger()), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
-            .ints("phase_tap_position2", t -> getTapPosition(t.getLeg2().getPhaseTapChanger()), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
+            .ints("ratio_tap_position2", getRatioTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
+            .ints("phase_tap_position2", getPhaseTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
             .doubles("p2", twt -> twt.getLeg2().getTerminal().getP(), (twt, v) -> twt.getLeg2().getTerminal().setP(v))
             .doubles("q2", twt -> twt.getLeg2().getTerminal().getP(), (twt, v) -> twt.getLeg2().getTerminal().setQ(v))
             .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
@@ -261,8 +272,8 @@ public final class NetworkDataframes {
             .doubles("b3", twt -> twt.getLeg3().getB(), (twt, v) -> twt.getLeg3().setB(v))
             .doubles("rated_u3", twt -> twt.getLeg3().getRatedU(), (twt, v) -> twt.getLeg3().setRatedU(v))
             .doubles("rated_s3", twt -> twt.getLeg3().getRatedS(), (twt, v) -> twt.getLeg3().setRatedS(v))
-            .ints("ratio_tap_position3", t -> getTapPosition(t.getLeg3().getRatioTapChanger()), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
-            .ints("phase_tap_position3", t -> getTapPosition(t.getLeg3().getPhaseTapChanger()), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
+            .ints("ratio_tap_position3", getRatioTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
+            .ints("phase_tap_position3", getPhaseTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
             .doubles("p3", twt -> twt.getLeg3().getTerminal().getP(), (twt, v) -> twt.getLeg3().getTerminal().setP(v))
             .doubles("q3", twt -> twt.getLeg3().getTerminal().getP(), (twt, v) -> twt.getLeg3().getTerminal().setQ(v))
             .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
@@ -488,8 +499,12 @@ public final class NetworkDataframes {
             .build();
     }
 
-    private static int getTapPosition(TapChanger<?, ?> tapChanger) {
-        return tapChanger != null ? tapChanger.getTapPosition() : INT_UNDEFINED_VALUE;
+    private static <T> ToIntFunction<T> getRatioTapPosition(Function<T, RatioTapChangerHolder> getter) {
+        return ifExistsInt(t -> getter.apply(t).getRatioTapChanger(), RatioTapChanger::getTapPosition);
+    }
+
+    private static <T> ToIntFunction<T> getPhaseTapPosition(Function<T, PhaseTapChangerHolder> getter) {
+        return ifExistsInt(t -> getter.apply(t).getPhaseTapChanger(), PhaseTapChanger::getTapPosition);
     }
 
     private static void setTapPosition(TapChanger<?, ?> tapChanger, int position) {
