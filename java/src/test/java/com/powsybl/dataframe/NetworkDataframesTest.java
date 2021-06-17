@@ -265,6 +265,6 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "num", "p", "min_p", "max_p");
+            .containsExactly("id", "num", "p", "min_q", "max_q");
     }
 }

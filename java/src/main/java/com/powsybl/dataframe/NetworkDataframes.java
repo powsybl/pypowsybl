@@ -494,8 +494,8 @@ public final class NetworkDataframes {
             .stringsIndex("id", Triple::getLeft)
             .intsIndex("num", Triple::getMiddle)
             .doubles("p", t -> t.getRight().getP())
-            .doubles("min_p", t -> t.getRight().getMinQ())
-            .doubles("max_p", t -> t.getRight().getMaxQ())
+            .doubles("min_q", t -> t.getRight().getMinQ())
+            .doubles("max_q", t -> t.getRight().getMaxQ())
             .build();
     }
 
