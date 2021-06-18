@@ -45,6 +45,7 @@ class SecurityAnalysisResult(_ObjectHandle):
     def __init__(self, result):
         self.ptr = result
         results = _pypowsybl.get_security_analysis_result(self.ptr)
+        results = _pypowsybl.get_security_analysis_result(result)
         self._post_contingency_results = {}
         for result in results:
             if result.contingency_id:
@@ -55,7 +56,7 @@ class SecurityAnalysisResult(_ObjectHandle):
 
     @property
     def pre_contingency_result(self):
-        return self._pre_contingency_result
+        return self.results.query('contingency_id == \'\'')
 
     @property
     def post_contingency_results(self):
