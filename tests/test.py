@@ -434,6 +434,23 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(0.25664095577626006, s['BBE2AA1  FFR3AA1  1']['DE -> FR'])
         self.assertEqual(0.10342626899874961, s['BBE2AA1  FFR3AA1  1']['NL'])
 
+    def test_variant(self):
+        n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
+        self.assertEqual('InitialState', n.get_working_variant_id())
+        n.clone_variant('InitialState', 'WorkingState')
+        n.update_switches(pd.DataFrame(index=['BREAKER-BB2-VL1_VL2_1'], data={'open': [True]}))
+        n.set_working_variant('WorkingState')
+        self.assertEqual('WorkingState', n.get_working_variant_id())
+        self.assertEqual(['InitialState', 'WorkingState'], n.get_variant_ids())
+        self.assertEqual(0, len(n.get_switches()[n.get_switches()['open']].index.tolist()))
+        n.set_working_variant('InitialState')
+        n.remove_variant('WorkingState')
+        self.assertEqual(['BREAKER-BB2-VL1_VL2_1'], n.get_switches()[n.get_switches()['open']].index.tolist())
+        self.assertEqual('InitialState', n.get_working_variant_id())
+        self.assertEqual(1, len(n.get_variant_ids()))
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
