@@ -212,11 +212,11 @@ public final class PyPowsyblApiLib {
             }
             List<Parameter> parameters = importer.getParameters();
             return new SeriesPointerArrayBuilder<>(parameters)
-                    .addStringSeries("name", true, Parameter::getName)
-                    .addStringSeries("description", Parameter::getDescription)
-                    .addEnumSeries("type", Parameter::getType)
-                    .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
-                    .build();
+                .addStringSeries("name", true, Parameter::getName)
+                .addStringSeries("description", Parameter::getDescription)
+                .addEnumSeries("type", Parameter::getType)
+                .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
+                .build();
         });
     }
 
@@ -293,10 +293,10 @@ public final class PyPowsyblApiLib {
             }
             final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
             NetworkReducer.builder()
-                    .withNetworkPredicate(orNetworkPredicate)
-                    .withReductionOptions(options)
-                    .build()
-                    .reduce(network);
+                .withNetworkPredicate(orNetworkPredicate)
+                .withReductionOptions(options)
+                .build()
+                .reduce(network);
         });
     }
 
@@ -318,21 +318,21 @@ public final class PyPowsyblApiLib {
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
         return LoadFlowParameters.load()
-                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
-                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
-                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
-                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
-                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
-                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
-                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
-                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
-                .setDc(dc)
-                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
-                .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
-                .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
-                        .stream().map(Country::valueOf).collect(Collectors.toSet()))
-                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
+            .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
+            .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
+            .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+            .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
+            .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
+            .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+            .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
+            .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
+            .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
+            .setDc(dc)
+            .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
+            .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
+            .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
+                .stream().map(Country::valueOf).collect(Collectors.toSet()))
+            .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
     }
 
     @CEntryPoint(name = "runLoadFlow")
@@ -584,7 +584,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getReferenceVoltages")
     public static MatrixPointer getReferenceVoltages(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                     CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -846,4 +846,44 @@ public final class PyPowsyblApiLib {
         }
     }
 
+    @CEntryPoint(name = "getWorkingVariantId")
+    public static CCharPointer getWorkingVariantId(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return CTypeUtil.toCharPtr(network.getVariantManager().getWorkingVariantId());
+        });
+
+    }
+
+    @CEntryPoint(name = "cloneVariant")
+    public static void cloneVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer src, CCharPointer variant, boolean mayOverwrite, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.getVariantManager().cloneVariant(CTypeUtil.toString(src), CTypeUtil.toString(variant), mayOverwrite);
+        });
+    }
+
+    @CEntryPoint(name = "setWorkingVariant")
+    public static void setWorkingVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.getVariantManager().setWorkingVariant(CTypeUtil.toString(variant));
+        });
+    }
+
+    @CEntryPoint(name = "removeVariant")
+    public static void removeVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
+        });
+    }
+
+    @CEntryPoint(name = "getVariantsIds")
+    public static ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
+        });
+    }
 }
