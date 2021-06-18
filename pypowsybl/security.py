@@ -7,6 +7,8 @@
 import _pypowsybl
 from _pypowsybl import ContingencyResult
 from _pypowsybl import LimitViolation
+from _pypowsybl import LimitType
+from _pypowsybl import Side
 from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
 from pypowsybl.util import ContingencyContainer
