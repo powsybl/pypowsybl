@@ -118,8 +118,8 @@ Example:
    >>> print(generators) # doctest: +NORMALIZE_WHITESPACE
        energy_source  target_p    min_p    max_p    min_q    max_q  target_v  target_q  voltage_regulator_on   p   q voltage_level_id   bus_id
    id
-   GEN         OTHER     607.0 -9999.99  9999.99 -9999.99  9999.99      24.5     301.0                  True NaN NaN            VLGEN  VLGEN_0
-
+   GEN          OTHER     607.0 -9999.99  9999.99  -9.999990e+03   9.999990e+03      24.5     301.0                  True NaN NaN            VLGEN  VLGEN_0
+   GEN2         OTHER     607.0 -9999.99  9999.99 -1.797693e+308  1.797693e+308      24.5     301.0                  True NaN NaN            VLGEN  VLGEN_0
 Ratio and phase tap changer steps data frames have a multi-index based on the transformer ID and the step position to
 be able to easily get steps related to just one transformer:
 
