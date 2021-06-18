@@ -500,6 +500,10 @@ ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult) 
     return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
 }
 
+SeriesArray* getLimitViolations(void* securityAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getLimitViolations, securityAnalysisResult));
+}
+
 SeriesArray* getBranchResults(void* securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getBranchResults, securityAnalysisResult));
 }
