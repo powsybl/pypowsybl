@@ -181,7 +181,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createEurostagTutorialExample1Network")
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = EurostagTutorialExample1Factory.create();
+            Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -528,8 +528,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                             CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -545,6 +545,32 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
             return createContingencyResultArrayPointer(result);
+        });
+    }
+
+    @CEntryPoint(name = "getLimitViolations")
+    public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            List<LimitViolationContext> limitViolations = result.getPreContingencyResult().getLimitViolationsResult().getLimitViolations()
+                .stream().map(limitViolation -> new LimitViolationContext("", limitViolation)).collect(Collectors.toList());
+            result.getPostContingencyResults()
+                .forEach(postContingencyResult -> limitViolations.addAll(postContingencyResult.getLimitViolationsResult()
+                    .getLimitViolations().stream()
+                    .map(limitViolation -> new LimitViolationContext(postContingencyResult.getContingency().getId(), limitViolation))
+                    .collect(Collectors.toList())));
+            return new SeriesPointerArrayBuilder<>(limitViolations)
+                    .addStringSeries("contingency_id", true, LimitViolationContext::getContingencyId)
+                    .addStringSeries("violation_id", true, LimitViolation::getSubjectId)
+                    .addStringSeries("violation_name", p -> Objects.toString(p.getSubjectName(), ""))
+                    .addEnumSeries("limit_type", LimitViolation::getLimitType)
+                    .addStringSeries("limit_name", p -> Objects.toString(p.getLimitName(), ""))
+                    .addDoubleSeries("limit", LimitViolation::getLimit)
+                    .addIntSeries("acceptable_duration", LimitViolation::getAcceptableDuration)
+                    .addDoubleSeries("limit_reduction", LimitViolation::getLimitReduction)
+                    .addDoubleSeries("value", LimitViolation::getValue)
+                    .addStringSeries("side", p -> Objects.toString(p.getSide(), ""))
+                    .build();
         });
     }
 
@@ -979,11 +1005,11 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "addMonitoredElements")
     public static void addMonitoredElements(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, RawContingencyContextType contingencyContextType,
-                                        CCharPointerPointer branchIds, int branchIdsCount,
-                                        CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
-                                        CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
-                                        CCharPointerPointer contingencyIds, int contingencyIdsCount,
-                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+                                            CCharPointerPointer branchIds, int branchIdsCount,
+                                            CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
+                                            CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
+                                            CCharPointerPointer contingencyIds, int contingencyIdsCount,
+                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
@@ -1003,9 +1029,9 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
             List<BranchResultContext> branchResults = result.getPreContingencyResult()
-                    .getPreContingencyBranchResults().stream()
-                    .map(branchResult -> new BranchResultContext(branchResult, null))
-                    .collect(Collectors.toList());
+                .getPreContingencyBranchResults().stream()
+                .map(branchResult -> new BranchResultContext(branchResult, null))
+                .collect(Collectors.toList());
             result.getPostContingencyResults().forEach(postContingencyResult -> {
                 postContingencyResult.getBranchResults()
                     .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));

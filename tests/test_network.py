@@ -78,9 +78,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                             nominal_voltages={24, 150}))
         self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}))
         self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
-                                                      countries={'FR'}))
+                                                      countries={'BE'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
-                                                countries={'BE'}))
+                                                countries={'FR'}))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
                                                            nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
@@ -92,8 +92,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
                                 data=[[NaN, NaN, 0, 0, 'VLGEN'],
-                                      [NaN, NaN, 0, 0, 'VLHV1'],
-                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [380, NaN, 0, 0, 'VLHV1'],
+                                      [380, NaN, 0, 0, 'VLHV2'],
                                       [NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
@@ -102,8 +102,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
                                 data=[[400, 0, 0, 0, 'VLGEN'],
-                                      [NaN, NaN, 0, 0, 'VLHV1'],
-                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [380, NaN, 0, 0, 'VLHV1'],
+                                      [380, NaN, 0, 0, 'VLHV2'],
                                       [NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 

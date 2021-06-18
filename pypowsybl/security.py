@@ -7,11 +7,11 @@
 from typing import List, Union
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
+from typing import List
+
 import _pypowsybl
 from _pypowsybl import ContingencyResult
 from _pypowsybl import LimitViolation
-from _pypowsybl import LimitType
-from _pypowsybl import Side
 from _pypowsybl import ContingencyContextType
 from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
@@ -43,14 +43,16 @@ class SecurityAnalysisResult(_ObjectHandle):
     """
 
     def __init__(self, result):
-        super().__init__(result)
-        results = _pypowsybl.get_security_analysis_result(result)
+        self.ptr = result
+        results = _pypowsybl.get_security_analysis_result(self.ptr)
         self._post_contingency_results = {}
         for result in results:
+            print(result)
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
             else:
                 self._pre_contingency_result = result
+        self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self.ptr))
 
     @property
     def pre_contingency_result(self):
@@ -58,7 +60,7 @@ class SecurityAnalysisResult(_ObjectHandle):
 
     @property
     def post_contingency_results(self):
-        return self._post_contingency_results.values()
+        return self._post_contingency_results
 
     def find_post_contingency_result(self, contingency_id: str):
         result = self._post_contingency_results[contingency_id]
@@ -86,13 +88,20 @@ class SecurityAnalysisResult(_ObjectHandle):
                                limit_violation.side.name])
         return table
 
-    def get_branch_results(self):
+    @property
+    def limit_violations(self):
+        return self._limit_violations
+
+    @property
+    def branch_results(self):
         return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self.ptr))
 
-    def get_bus_results(self):
+    @property
+    def bus_results(self):
         return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self.ptr))
 
-    def get_three_windings_transformer_results(self):
+    @property
+    def three_windings_transformer_results(self):
         return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self.ptr))
 
 

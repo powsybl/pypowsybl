@@ -205,6 +205,8 @@ void addMonitoredElements(void* securityAnalysisContext, contingency_context_typ
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds);
 
+SeriesArray* getLimitViolations(void* securityAnalysisResult);
+
 ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult);
 
 SeriesArray* getBranchResults(void* securityAnalysisResult);
