@@ -366,53 +366,48 @@ class Network(ObjectHandle):
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
     def get_working_variant_id(self):
-        """
+        """ The current working variant ID
 
-        Returns: the id of the currently selected variant
+        Returns:
+            the id of the currently selected variant
 
         """
         return _pypowsybl.get_working_variant_id(self.ptr)
 
     def clone_variant(self, src: str, target: str, may_overwrite=True):
-        """
-        create a copy of the src variant
+        """ Creates a copy of the source variant
+
         Args:
             src: variant to copy
             target: id of the new variant that will be a copy of src
             may_overwrite: indicates if the target can be overwritten when it already exists
-
-        Returns:
-
         """
         _pypowsybl.clone_variant(self.ptr, src, target, may_overwrite)
 
     def set_working_variant(self, variant: str):
-        """
+        """ Changes the working variant. The provided variant ID must correspond
+        to an existing variant, for example created by a call to `clone_variant`.
 
         Args:
             variant: id of the variant selected (it must exist)
-
-        Returns:
-
         """
         _pypowsybl.set_working_variant(self.ptr, variant)
 
     def remove_variant(self, variant: str):
         """
+        Removes a variant from the network.
 
         Args:
             variant: id of the variant to be deleted
-
-        Returns:
-
         """
         _pypowsybl.remove_variant(self.ptr, variant)
 
     def get_variant_ids(self):
         """
+        Get the list of existing variant IDs.
 
-        Returns: all the ids of the existing variants
-
+        Returns:
+            all the ids of the existing variants
         """
         return _pypowsybl.get_variant_ids(self.ptr)
 
