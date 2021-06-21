@@ -636,30 +636,14 @@ public final class PyPowsyblApiLib {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             DataframeMapper dataframeMapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             if (dataframeMapper.isSeriesMetaDataExists(seriesName)) {
-                return convert(dataframeMapper
+                return CDataframeHandler.convert(dataframeMapper
                         .getSeriesMetadata(seriesName)
                         .getType());
             } else {
                 // adder
-                Map<String, SeriesDataType> map = new HashMap<>();
-                return convert(SeriesDataType.STRING);
+                return EquipmentAdderFieldsHelper.getAdderSeriesType(elementType, seriesName);
             }
         });
-    }
-
-    private static int convert(SeriesDataType type) {
-        switch (type) {
-            case STRING:
-                return CDataframeHandler.STRING_SERIES_TYPE;
-            case DOUBLE:
-                return CDataframeHandler.DOUBLE_SERIES_TYPE;
-            case INT:
-                return CDataframeHandler.INT_SERIES_TYPE;
-            case BOOLEAN:
-                return CDataframeHandler.BOOLEAN_SERIES_TYPE;
-            default:
-                throw new IllegalStateException("Unexpected series type: " + type);
-        }
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithIntSeries")

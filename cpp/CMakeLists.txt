@@ -29,7 +29,7 @@ endif()
 
 ExternalProject_Add(mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_SRC_DIR}
-    PATCH_COMMAND mvn --batch-mode package
+    PATCH_COMMAND mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
