@@ -55,12 +55,15 @@ class Network(ObjectHandle):
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
-    def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None, countries: Set[str] = None,
+    def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
+                         countries: Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
                          not_connected_to_same_bus_at_both_sides: bool = False) -> List[str]:
-        return _pypowsybl.get_network_elements_ids(self.ptr, element_type, [] if nominal_voltages is None else list(nominal_voltages),
-                                                [] if countries is None else list(countries), main_connected_component, main_synchronous_component,
-                                                not_connected_to_same_bus_at_both_sides)
+        return _pypowsybl.get_network_elements_ids(self.ptr, element_type,
+                                                   [] if nominal_voltages is None else list(nominal_voltages),
+                                                   [] if countries is None else list(countries),
+                                                   main_connected_component, main_synchronous_component,
+                                                   not_connected_to_same_bus_at_both_sides)
 
     def get_elements(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
         """ Get network elements as a ``Pandas`` data frame for a specified element type.
@@ -268,7 +271,8 @@ class Network(ObjectHandle):
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
-                raise PyPowsyblError(f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
+                raise PyPowsyblError(
+                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
 
     def update_switches(self, df: pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
@@ -360,6 +364,52 @@ class Network(ObjectHandle):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
+
+    def get_working_variant_id(self):
+        """ The current working variant ID
+
+        Returns:
+            the id of the currently selected variant
+
+        """
+        return _pypowsybl.get_working_variant_id(self.ptr)
+
+    def clone_variant(self, src: str, target: str, may_overwrite=True):
+        """ Creates a copy of the source variant
+
+        Args:
+            src: variant to copy
+            target: id of the new variant that will be a copy of src
+            may_overwrite: indicates if the target can be overwritten when it already exists
+        """
+        _pypowsybl.clone_variant(self.ptr, src, target, may_overwrite)
+
+    def set_working_variant(self, variant: str):
+        """ Changes the working variant. The provided variant ID must correspond
+        to an existing variant, for example created by a call to `clone_variant`.
+
+        Args:
+            variant: id of the variant selected (it must exist)
+        """
+        _pypowsybl.set_working_variant(self.ptr, variant)
+
+    def remove_variant(self, variant: str):
+        """
+        Removes a variant from the network.
+
+        Args:
+            variant: id of the variant to be deleted
+        """
+        _pypowsybl.remove_variant(self.ptr, variant)
+
+    def get_variant_ids(self):
+        """
+        Get the list of existing variant IDs.
+
+        Returns:
+            all the ids of the existing variants
+        """
+        return _pypowsybl.get_variant_ids(self.ptr)
 
 
 def create_empty(id: str = "Default") -> Network:

@@ -443,4 +443,27 @@ void destroyObjectHandle(void* objectHandle) {
     callJava<>(::destroyObjectHandle, objectHandle);
 }
 
+std::string getWorkingVariantId(void* network) {
+    return std::string(callJava<char*>(::getWorkingVariantId, network));
+}
+
+void setWorkingVariant(void* network, std::string& variant) {
+    callJava<>(::setWorkingVariant, network, (char*) variant.c_str());
+}
+
+void removeVariant(void* network, std::string& variant) {
+    callJava<>(::removeVariant, network, (char*) variant.c_str());
+}
+
+void cloneVariant(void* network, std::string& src, std::string& variant, bool mayOverwrite) {
+    callJava<>(::cloneVariant, network, (char*) src.c_str(), (char*) variant.c_str(), mayOverwrite);
+}
+
+std::vector<std::string> getVariantsIds(void* network) {
+    auto formatsArrayPtr = callJava<array*>(::getVariantsIds, network);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+
 }
