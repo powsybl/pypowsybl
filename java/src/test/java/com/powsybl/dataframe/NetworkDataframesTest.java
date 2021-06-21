@@ -71,7 +71,7 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
-                             "target_q", "voltage_regulator_on", "p", "q", "voltage_level_id", "bus_id");
+                             "target_q", "rated_s", "voltage_regulator_on", "p", "q", "voltage_level_id", "bus_id");
 
         assertThat(series.get(2).getDoubles())
             .containsExactly(607);

@@ -430,6 +430,14 @@ class Network(ObjectHandle):
         """
         self.create_element(_pypowsybl.ElementType.GENERATOR, df)
 
+    def create_batteries(self, df: pd.DataFrame):
+        """ Create create_batteries a ``Pandas`` data frame.
+
+        :param df:
+        :return:
+        """
+        self.create_element(_pypowsybl.ElementType.BATTERY, df)
+
     def create_element(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         types_map = {}
         for col in df.columns.values:

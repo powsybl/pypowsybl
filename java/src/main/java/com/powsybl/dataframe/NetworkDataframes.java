@@ -137,11 +137,12 @@ public final class NetworkDataframes {
             .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ))
             .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
             .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
+            .doubles("rated_s", Generator::getRatedS, Generator::setRatedS)
             .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }

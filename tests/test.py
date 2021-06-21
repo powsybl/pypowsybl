@@ -37,14 +37,6 @@ class PyPowsyblTestCase(unittest.TestCase):
         results = pp.loadflow.run_dc(n, parameters)
         self.assertEqual(1, len(results))
 
-    def test_new_load(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        df = pd.DataFrame(data=[['VLLOAD', 1.1, 2.1, 'NLOAD', 'NLOAD']], columns=['voltage_level_id', 'p0', 'q0', 'connectable_bus_id', 'bus_id'], index=['LOAD2'])
-        n.create_loads(df)
-        df2 = n.get_loads()
-        self.assertEqual(1.1, df2['p0']['LOAD2'])
-        self.assertEqual(2.1, df2['q0']['LOAD2'])
-
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
         self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
@@ -108,6 +100,12 @@ class PyPowsyblTestCase(unittest.TestCase):
         df3 = n.get_loads()
         self.assertEqual(300, df3['q0']['LOAD'])
         self.assertEqual(500, df3['p0']['LOAD'])
+        create_df = pd.DataFrame(data=[['VLLOAD', 1.1, 2.1, 'NLOAD', 'NLOAD']], columns=['voltage_level_id', 'p0', 'q0', 'connectable_bus_id', 'bus_id'], index=['LOAD2'])
+        n.create_loads(create_df)
+        df2 = n.get_loads()
+        self.assertEqual(len(loads) + 1, len(df2))
+        self.assertEqual(1.1, df2['p0']['LOAD2'])
+        self.assertEqual(2.1, df2['q0']['LOAD2'])
 
     def test_batteries_data_frame(self):
         n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -118,6 +116,9 @@ class PyPowsyblTestCase(unittest.TestCase):
         df3 = n.get_batteries()
         self.assertEqual(101, df3['p0']['BAT2'])
         self.assertEqual(201, df3['q0']['BAT2'])
+        create_df = pd.DataFrame(data=[['VLBAT', 100.0, 300.0, 101, 201, 'NBAT', 'NBAT']], columns=['voltage_level_id', 'min_p', 'max_p', 'p0', 'q0', 'connectable_bus_id', 'bus_id'], index=['NEW_BAT2'])
+        n.create_batteries(create_df)
+        self.assertEqual(len(batteries) + 1, len(n.get_batteries()))
 
     def test_vsc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -155,11 +156,18 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(400.0, svcs['reactive_power_setpoint']['SVC'])
         self.assertEqual('OFF', svcs['regulation_mode']['SVC'])
 
-    def test_create_generators_data_frame(self):
+    def test_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         generators = n.get_generators()
         self.assertEqual('OTHER', generators['energy_source']['GEN'])
         self.assertEqual(607, generators['target_p']['GEN'])
+        create_df = pd.DataFrame(data=[['VLGEN', 1.0, 2.0, 1.1, 2.1, 3.1, 4.1, 0, 'NGEN', 'NGEN']],
+                                 columns=['voltage_level_id', 'min_p', 'max_p', 'target_p', 'target_q', 'target_v', 'rated_s', 'voltage_regulator_on', 'connectable_bus_id', 'bus_id'], index=['GEN2'])
+        n.create_generators(create_df)
+        df2 = n.get_generators()
+        self.assertEqual(len(generators) + 1, len(df2))
+        self.assertEqual(1.0, df2['min_p']['GEN2'])
+        self.assertEqual(2.0, df2['max_p']['GEN2'])
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()

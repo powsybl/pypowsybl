@@ -73,7 +73,7 @@ public final class PyPowsyblApiLib {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
+        String nonNullMessage = Objects.toString(t.getMessage(), t.getClass().toString());
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 

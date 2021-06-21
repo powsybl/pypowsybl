@@ -8,10 +8,7 @@ package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.iidm.network.EnergySource;
-import com.powsybl.iidm.network.GeneratorAdder;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +18,15 @@ import java.util.Optional;
  */
 final class CreateEquipmentHelper {
 
-    private static final Map<String, SeriesDataType> LOAD_MAPS = Map.of(
-                "connectable_bus_id", SeriesDataType.STRING,
-                "voltage_level_id", SeriesDataType.STRING
-            );
+    private static final String CONNECTABLE_BUS_ID = "connectable_bus_id";
+    private static final String VOLTAGE_LEVEL_ID = "voltage_level_id";
+
+    private static final Map<String, SeriesDataType> INJECTION_MAPS = Map.of(
+            CONNECTABLE_BUS_ID, SeriesDataType.STRING
+    );
+    private static final Map<String, SeriesDataType> LOAD_MAPS = INJECTION_MAPS;
+    private static final Map<String, SeriesDataType> GEN_MAPS = INJECTION_MAPS;
+    private static final Map<String, SeriesDataType> BAT_MAPS = INJECTION_MAPS;
 
     static void createElement(PyPowsyblApiHeader.ElementType elementType, Network network, String id,
                               Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
@@ -35,40 +37,55 @@ final class CreateEquipmentHelper {
             case GENERATOR:
                 createGenerator(network, id, doubleMap, strMap, intMap);
                 break;
+            case BATTERY:
+                createBat(network, id, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
     }
 
     private static void createLoad(Network network, String id, Map<String, Double> doubleMap, Map<String, String> strMap) {
-        String vlId = strMap.get("voltage_level_id");
-        VoltageLevel voltageLevel = network.getVoltageLevel(vlId);
-        voltageLevel.newLoad()
-                .setId(id)
-                .setP0(orElseNan(doubleMap, "p0"))
+        LoadAdder loadAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newLoad()
+                .setId(id);
+        createInjection(loadAdder, strMap);
+        loadAdder.setP0(orElseNan(doubleMap, "p0"))
                 .setQ0(orElseNan(doubleMap, "q0"))
-                .setConnectableBus(strMap.get("connectable_bus_id"))
-                .setBus(strMap.get("bus_id"))
                 .add();
     }
 
     private static void createGenerator(Network network, String id, Map<String, Double> doubleMap,
                                         Map<String, String> strMap, Map<String, Integer> intMap) {
-        String vlId = strMap.get("voltage_level_id");
-        VoltageLevel voltageLevel = network.getVoltageLevel(vlId);
-        GeneratorAdder generatorAdder = voltageLevel.newGenerator()
-                .setId(id)
-                .setMaxP(orElseNan(doubleMap, "max_p"))
+        GeneratorAdder generatorAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newGenerator()
+                .setId(id);
+        createInjection(generatorAdder, strMap);
+        generatorAdder.setMaxP(orElseNan(doubleMap, "max_p"))
                 .setMinP(orElseNan(doubleMap, "min_p"))
                 .setTargetP(orElseNan(doubleMap, "target_p"))
                 .setTargetQ(orElseNan(doubleMap, "target_q"))
                 .setTargetV(orElseNan(doubleMap, "target_v"))
                 .setRatedS(orElseNan(doubleMap, "rated_s"))
-                .setConnectableBus(strMap.get("connectable_bus_id"))
-                .setVoltageRegulatorOn(intMap.get("voltage_regulator_on") == 1)
-                .setBus(strMap.get("bus_id"));
+                .setVoltageRegulatorOn(intMap.get("voltage_regulator_on") == 1);
         Optional.ofNullable(strMap.get("energy_source")).ifPresentOrElse(v -> generatorAdder.setEnergySource(EnergySource.valueOf(v)), () -> { });
         generatorAdder.add();
+    }
+
+    private static void createBat(Network network, String id, Map<String, Double> doubleMap,
+                                  Map<String, String> strMap, Map<String, Integer> intMap) {
+        BatteryAdder batteryAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
+                .newBattery()
+                .setId(id);
+        createInjection(batteryAdder, strMap);
+        batteryAdder.setMaxP(orElseNan(doubleMap, "max_p"))
+                .setMinP(orElseNan(doubleMap, "min_p"))
+                .setP0(orElseNan(doubleMap, "p0"))
+                .setQ0(orElseNan(doubleMap, "q0"))
+                .add();
+    }
+
+    private static void createInjection(InjectionAdder adder, Map<String, String> strMap) {
+        adder.setConnectableBus(strMap.get(CONNECTABLE_BUS_ID))
+                .setBus(strMap.get("bus_id"));
     }
 
     private static double orElseNan(Map<String, Double> doubleMap, String field) {
@@ -80,6 +97,12 @@ final class CreateEquipmentHelper {
         switch (type) {
             case LOAD:
                 seriesDataType = LOAD_MAPS.get(fieldName);
+                break;
+            case GENERATOR:
+                seriesDataType = GEN_MAPS.get(fieldName);
+                break;
+            case BATTERY:
+                seriesDataType = BAT_MAPS.get(fieldName);
                 break;
             default:
                 throw new RuntimeException("Unexpected " + type + " adder.");
