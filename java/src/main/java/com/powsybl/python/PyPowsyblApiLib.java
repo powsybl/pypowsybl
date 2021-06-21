@@ -20,7 +20,6 @@ import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.parameters.Parameter;
@@ -641,7 +640,7 @@ public final class PyPowsyblApiLib {
                         .getType());
             } else {
                 // adder
-                return EquipmentAdderFieldsHelper.getAdderSeriesType(elementType, seriesName);
+                return CreateEquipmentHelper.getAdderSeriesType(elementType, seriesName);
             }
         });
     }
@@ -742,12 +741,13 @@ public final class PyPowsyblApiLib {
         };
     }
 
-    @CEntryPoint(name = "newElement")
-    public static void newElement(IsolateThread thread, ObjectHandle networkHandle,
-                                  CCharPointer idPtr, ElementType elementType,
-                                  CCharPointerPointer doubleKeysPtr, CDoublePointer doubleValsPtr, int doubleMapCount,
-                                  CCharPointerPointer stringKeysPtr, CCharPointerPointer stringValsPtr, int stringMapCount,
-                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createElement")
+    public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
+                                     CCharPointer idPtr, ElementType elementType,
+                                     CCharPointerPointer doubleKeysPtr, CDoublePointer doubleValsPtr, int doubleMapCount,
+                                     CCharPointerPointer stringKeysPtr, CCharPointerPointer stringValsPtr, int stringMapCount,
+                                     CCharPointerPointer intKeysPtr, CIntPointer intValsPtr, int intMapCount,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String id = CTypeUtil.toString(idPtr);
@@ -756,26 +756,9 @@ public final class PyPowsyblApiLib {
             Map<String, Double> doubleMap = mergeIntoMap(doubleKeys, doubleVals);
             Map<String, String> strMap = mergeIntoMap(CTypeUtil.toStringList(stringKeysPtr, stringMapCount),
                     CTypeUtil.toStringList(stringValsPtr, stringMapCount));
-            switch (elementType) {
-                case LOAD:
-                    newLoad(network, id, doubleMap, strMap);
-                    break;
-                default:
-                    throw new PowsyblException();
-            }
+            Map<String, Integer> intMaps = mergeIntoMap(CTypeUtil.toStringList(intKeysPtr, intMapCount), CTypeUtil.toIntegerList(intValsPtr, intMapCount));
+            CreateEquipmentHelper.createElement(elementType, network, id, doubleMap, strMap, intMaps);
         });
-    }
-
-    private static void newLoad(Network network, String id, Map<String, Double> doubleMap, Map<String, String> strMap) {
-        String vlId = strMap.get("voltage_level_id");
-        VoltageLevel voltageLevel = network.getVoltageLevel(vlId);
-        voltageLevel.newLoad()
-                .setId(id)
-                .setP0(doubleMap.get("p0"))
-                .setQ0(doubleMap.get("q0"))
-                .setConnectableBus(strMap.get("connectable_bus_id"))
-                .setBus(strMap.get("bus_id"))
-                .add();
     }
 
     private static <T> Map<String, T> mergeIntoMap(List<String> keys, List<T> vals) {

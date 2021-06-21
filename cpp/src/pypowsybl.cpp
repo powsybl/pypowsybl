@@ -438,17 +438,21 @@ void updateNetworkElementsWithStringSeries(void* network, element_type elementTy
                 idPtr.get(), valuePtr.get(), elementCount);
 }
 
-void newElement(void* network, const std::string& id, element_type elementType,
-             const std::vector<std::string>& doubleKeys, const std::vector<double>& doubleVals,
-             const std::vector<std::string>& strKeys, const std::vector<std::string>& strVals) {
+void createElement(void *network, const std::string &id, element_type elementType,
+                   const std::vector<std::string> &doubleKeys, const std::vector<double> &doubleVals,
+                   const std::vector<std::string> &strKeys, const std::vector<std::string> &strVals,
+                   const std::vector<std::string> &intKeys, const std::vector<int> &intVals) {
     ToCharPtrPtr doubleKeysPtr(doubleKeys);
     ToDoublePtr doubleValsPtr(doubleVals);
     ToCharPtrPtr strKeysPtr(strKeys);
     ToCharPtrPtr strValsPtr(strVals);
+    ToCharPtrPtr intKeysPtr(intKeys);
+    ToIntPtr intValsPtr(intVals);
 
-    callJava<>(::newElement, network, (char *) id.c_str(), elementType,
+    callJava<>(::createElement, network, (char *) id.c_str(), elementType,
             doubleKeysPtr.get(), doubleValsPtr.get(), doubleVals.size(),
-            strKeysPtr.get(), strValsPtr.get(), strKeys.size());
+            strKeysPtr.get(), strValsPtr.get(), strKeys.size(),
+            intKeysPtr.get(), intValsPtr.get(), intKeys.size());
 }
 
 void destroyObjectHandle(void* objectHandle) {

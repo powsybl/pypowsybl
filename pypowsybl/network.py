@@ -414,7 +414,23 @@ class Network(ObjectHandle):
     def new_load(self, df: pd.DataFrame):
         self.new_element(_pypowsybl.ElementType.LOAD, df)
 
-    def new_element(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
+    def create_loads(self, df: pd.DataFrame):
+        """ Create loads with a ``Pandas`` data frame.
+
+        :param df:
+        :return:
+        """
+        self.create_element(_pypowsybl.ElementType.LOAD, df)
+
+    def create_generators(self, df: pd.DataFrame):
+        """ Create generators a ``Pandas`` data frame.
+
+        :param df:
+        :return:
+        """
+        self.create_element(_pypowsybl.ElementType.GENERATOR, df)
+
+    def create_element(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         types_map = {}
         for col in df.columns.values:
             types_map.update({col : _pypowsybl.get_series_type(element_type, col)})
@@ -424,17 +440,20 @@ class Network(ObjectHandle):
             double_vals = []
             str_keys = []
             str_vals = []
+            int_keys = []
+            int_vals = []
             for col in df.columns:
                 series_type = types_map.get(col)
                 if series_type == 2 or series_type == 3:
-                    pass
+                    int_keys.append(col)
+                    int_vals.append(row[col])
                 elif series_type == 1:
                     double_keys.append(col)
                     double_vals.append(row[col])
                 elif series_type == 0:
                     str_keys.append(col)
                     str_vals.append(row[col])
-            _pypowsybl.new_element(self.ptr, index, element_type, double_keys, double_vals, str_keys, str_vals)
+            _pypowsybl.create_element(self.ptr, index, element_type, double_keys, double_vals, str_keys, str_vals, int_keys, int_vals)
 
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.

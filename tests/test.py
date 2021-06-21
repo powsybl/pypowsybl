@@ -40,7 +40,7 @@ class PyPowsyblTestCase(unittest.TestCase):
     def test_new_load(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = pd.DataFrame(data=[['VLLOAD', 1.1, 2.1, 'NLOAD', 'NLOAD']], columns=['voltage_level_id', 'p0', 'q0', 'connectable_bus_id', 'bus_id'], index=['LOAD2'])
-        n.new_load(df)
+        n.create_loads(df)
         df2 = n.get_loads()
         self.assertEqual(1.1, df2['p0']['LOAD2'])
         self.assertEqual(2.1, df2['q0']['LOAD2'])
