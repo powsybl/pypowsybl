@@ -36,6 +36,7 @@
         <powsybl-rte-core.version>3.2.0</powsybl-rte-core.version>
         <powsybl-single-line-diagram.version>2.2.0</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.11.0</powsybl-open-load-flow.version>
+        <assertj.version>3.11.0</assertj.version>
     </properties>
 
     <build>
@@ -221,6 +222,12 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

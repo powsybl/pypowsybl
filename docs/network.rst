@@ -100,12 +100,12 @@ in the network.
 
 This generic method can be called with the element type to get a data frame:
 
-.. autofunction:: pypowsybl.network.Network.create_elements_data_frame
+.. autofunction:: pypowsybl.network.Network.get_elements
    :noindex:
 
 Or for each element type, there is also a dedicated method, like for generators:
 
-.. autofunction:: pypowsybl.network.Network.create_generators_data_frame
+.. autofunction:: pypowsybl.network.Network.get_generators
    :noindex:
 
 Example:
@@ -170,3 +170,30 @@ We can also update network elements with a data frame:
     - converters_mode (str), active_power_setpoint (double)
   * - Two windings transformer
     - ratio_tap_position (int), phase_tap_position (int)
+
+
+
+Working with multiple variants of a network
+-------------------------------------------
+
+You may want to change the state of the network while keeping in memory its initial state.
+In order to achieve that, you can use variants management:
+
+.. doctest::
+   :skipif: pp is None
+
+   >>> network = pp.network.create_eurostag_tutorial_example1_network()
+   >>> network.get_variant_ids()  # all networks initially have only one variant
+   ['InitialState']
+   >>> network.clone_variant('InitialState', 'Variant')  # creates a variant by cloning the initial one
+   >>> network.get_variant_ids()  # all networks initially have only one variant
+   ['InitialState', 'Variant']
+   >>> network.set_working_variant('Variant')  # set our new variant as the working variant
+   >>> network.update_generators(pd.DataFrame(index=['GEN'], columns=['target_p'], data=[[700]]))
+   >>> network.get_generators()['target_p']['GEN']  # Our generator now produces 700 MW on this variant
+   700.0
+   >>> network.set_working_variant('InitialState')  # let's go back to our initial variant
+   >>> network.get_generators()['target_p']['GEN']  # We still have our initial value, 600 MW
+   607.0
+   >>> network.remove_variant('Variant')
+

@@ -185,6 +185,16 @@ void updateNetworkElementsWithStringSeries(void* network, element_type elementTy
 
 void destroyObjectHandle(void* objectHandle);
 
+std::string getWorkingVariantId(void* network);
+
+void setWorkingVariant(void* network, std::string& variant);
+
+void removeVariant(void* network, std::string& variant);
+
+void cloneVariant(void* network, std::string& src, std::string& variant, bool mayOverwrite);
+
+std::vector<std::string> getVariantsIds(void* network);
+
 }
 
 #endif //PYPOWSYBL_H
