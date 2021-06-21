@@ -29,8 +29,8 @@ import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
-import com.powsybl.security.PostContingencyResult;
 import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -448,7 +448,7 @@ public final class PyPowsyblApiLib {
     private static ArrayPointer<ContingencyResultPointer> createContingencyResultArrayPointer(SecurityAnalysisResult result) {
         int resultCount = result.getPostContingencyResults().size() + 1; // + 1 for pre-contingency result
         ContingencyResultPointer contingencyPtr = UnmanagedMemory.calloc(resultCount * SizeOf.get(ContingencyResultPointer.class));
-        setSecurityAnalysisResultPointer(contingencyPtr, "", result.getPreContingencyResult());
+        setSecurityAnalysisResultPointer(contingencyPtr, "", result.getPreContingencyResult().getLimitViolationsResult());
         for (int i = 0; i < result.getPostContingencyResults().size(); i++) {
             PostContingencyResult postContingencyResult = result.getPostContingencyResults().get(i);
             ContingencyResultPointer contingencyPtrPlus = contingencyPtr.addressOf(i + 1);
