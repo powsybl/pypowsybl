@@ -138,7 +138,11 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
 void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
+void* loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
+
 void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
+
+std::string exportNetworkToDot(void* network);
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 

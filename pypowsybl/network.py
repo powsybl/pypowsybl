@@ -55,6 +55,9 @@ class Network(ObjectHandle):
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
+    def export_to_dot(self):
+        return _pypowsybl.export_network_to_dot(self.ptr)
+
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
@@ -487,10 +490,25 @@ def get_import_parameters(format: str) -> pd.DataFrame:
 def load(file: str, parameters: dict = {}) -> Network:
     """ Load a network from a file. File should be in a supported format.
 
-    :param file: a file
-    :type file: str
-    :param parameters: a map of parameters
-    :type parameters: dict, optional
-    :return: a network
+    Args:
+       file (str): a file
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
     """
     return Network(_pypowsybl.load_network(file, parameters))
+
+
+def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+    """ Load a network from a string. File content should be in a supported format.
+
+    Args:
+       file_name (str): file name
+       file_content (str): file content
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
+    """
+    return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))

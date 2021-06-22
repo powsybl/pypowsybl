@@ -18,6 +18,7 @@ import pathlib
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
 
+
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
     def test_print_version():
@@ -25,6 +26,16 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_create_empty_network(self):
         n = pp.network.create_empty("test")
+        self.assertIsNotNone(n)
+
+    def test_load_network_from_string(self):
+        file_content = """
+##C 2007.05.01
+##N
+##ZBE
+BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
+        """
+        n = pp.network.load_from_string('simple-eu.uct', file_content)
         self.assertIsNotNone(n)
 
     def test_run_lf(self):
@@ -449,7 +460,10 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual('InitialState', n.get_working_variant_id())
         self.assertEqual(1, len(n.get_variant_ids()))
 
-
+    def test_dot_export(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        dot = n.export_to_dot()
+        self.assertIsNotNone(dot)
 
 
 if __name__ == '__main__':
