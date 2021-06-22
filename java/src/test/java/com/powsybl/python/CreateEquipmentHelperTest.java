@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CreateEquipmentHelperTest {
 
     @Test
-    void testCreate() {
+    void generator() {
         var network = EurostagTutorialExample1Factory.create();
         Map<String, Double> doubleMap = Map.ofEntries(
                 entry("max_p", 3.0d),
@@ -36,5 +37,26 @@ class CreateEquipmentHelperTest {
         Map<String, Integer> intMap = Map.of("voltage_regulator_on", 1);
         CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.GENERATOR, network, "test", doubleMap, strMap, intMap);
         assertEquals(2, network.getGeneratorCount());
+    }
+
+    @Test
+    void shunt() {
+        var network = ShuntTestCaseFactory.create();
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("b", 1.0),
+                entry("g", 2.0),
+                entry("target_v", 30.0),
+                entry("target_deadband", 4.0)
+        );
+        Map<String, Integer> ints = Map.ofEntries(
+                entry("section_count", 4)
+        );
+        Map<String, String> strMap = Map.ofEntries(
+                entry("voltage_level_id", "VL1"),
+                entry("connectable_bus_id", "B1"),
+                entry("bus_id", "B1"));
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR,
+                network, "SHUNT2", doubleMap, strMap, ints);
+        assertEquals(2, network.getShuntCompensatorCount());
     }
 }

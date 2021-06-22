@@ -40,6 +40,9 @@ final class CreateEquipmentHelper {
             case BATTERY:
                 createBat(network, id, doubleMap, strMap, intMap);
                 break;
+            case SHUNT_COMPENSATOR:
+                createShunt(network, id, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
@@ -81,6 +84,18 @@ final class CreateEquipmentHelper {
                 .setP0(orElseNan(doubleMap, "p0"))
                 .setQ0(orElseNan(doubleMap, "q0"))
                 .add();
+    }
+
+    private static void createShunt(Network network, String id, Map<String, Double> doubleMap,
+                                    Map<String, String> strMap, Map<String, Integer> intMap) {
+        ShuntCompensatorAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
+                .newShuntCompensator()
+                .setId(id);
+        createInjection(adder, strMap);
+        adder.setSectionCount(intMap.get("section_count"))
+                .setTargetDeadband(orElseNan(doubleMap, "target_deadband"))
+                .setTargetV(orElseNan(doubleMap, "target_v"));
+        adder.add();
     }
 
     private static void createInjection(InjectionAdder adder, Map<String, String> strMap) {
