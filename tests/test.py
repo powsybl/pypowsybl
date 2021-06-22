@@ -32,7 +32,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         results = pp.loadflow.run_ac(n)
         self.assertEqual(1, len(results))
         self.assertEqual(pp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
-        parameters = pp.loadflow.Parameters(distributed_slack=False)
+        parameters = pp.loadflow.Parameters()
+        parameters.distributed_slack = False
         results = pp.loadflow.run_dc(n, parameters)
         self.assertEqual(1, len(results))
 
@@ -298,17 +299,20 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(0, len(parameters.countries_to_balance))
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
-        parameters = pp.loadflow.Parameters(dc_use_transformer_ratio = False)
+        parameters = pp.loadflow.Parameters()
+        parameters.dc_use_transformer_ratio = False
         self.assertFalse(parameters.dc_use_transformer_ratio)
         parameters.dc_use_transformer_ratio = True
         self.assertTrue(parameters.dc_use_transformer_ratio)
 
-        parameters = pp.loadflow.Parameters(countries_to_balance = ['FR'])
+        parameters = pp.loadflow.Parameters()
+        parameters.countries_to_balance = ['FR']
         self.assertEqual(['FR'], parameters.countries_to_balance)
         parameters.countries_to_balance = ['BE']
         self.assertEqual(['BE'], parameters.countries_to_balance)
 
-        parameters = pp.loadflow.Parameters(connected_component_mode = pp.loadflow.ConnectedComponentMode.ALL)
+        parameters = pp.loadflow.Parameters()
+        parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.ALL
         self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
         parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)

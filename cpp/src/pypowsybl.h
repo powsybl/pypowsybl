@@ -142,6 +142,8 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
+load_flow_parameters* readParameters();
+
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);

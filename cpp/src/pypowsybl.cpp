@@ -289,6 +289,10 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     return elementsIds.get();
 }
 
+load_flow_parameters* readParameters() {
+    return callJava<load_flow_parameters*>(::readParameters);
+}
+
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
                                           const std::string& provider) {
     return new LoadFlowComponentResultArray(

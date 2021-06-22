@@ -10,6 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.dataframe.*;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -24,7 +25,6 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.dataframe.*;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
@@ -317,22 +317,52 @@ public final class PyPowsyblApiLib {
     }
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        return LoadFlowParameters.load()
-            .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
-            .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
-            .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
-            .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
-            .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-            .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
-            .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
-            .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
-            .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
-            .setDc(dc)
-            .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
-            .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
-            .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
-                .stream().map(Country::valueOf).collect(Collectors.toSet()))
-            .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
+        return new LoadFlowParameters()
+                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
+                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
+                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
+                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
+                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
+                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
+                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
+                .setDc(dc)
+                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
+                .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
+                .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
+                        .stream().map(Country::valueOf).collect(Collectors.toSet()))
+                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
+    }
+
+    @CEntryPoint(name = "readParameters")
+    public static LoadFlowParametersPointer readParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            LoadFlowParameters parameters = LoadFlowParameters.load();
+            LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
+            paramsPtr.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
+            paramsPtr.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
+            paramsPtr.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
+            paramsPtr.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
+            paramsPtr.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
+            paramsPtr.setSimulShunt(parameters.isSimulShunt());
+            paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
+            paramsPtr.setWriteSlackBus(parameters.isWriteSlackBus());
+            paramsPtr.setDistributedSlack(parameters.isDistributedSlack());
+            paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
+            paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
+            paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
+            paramsPtr.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
+            CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
+            ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
+            for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {
+                calloc.write(i, CTypeUtil.toCharPtr(countries.get(i).toString()));
+            }
+            paramsPtr.setCountriesToBalance(calloc);
+            paramsPtr.setCountriesToBalanceCount(countries.size());
+            paramsPtr.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+            return paramsPtr;
+        });
     }
 
     @CEntryPoint(name = "runLoadFlow")

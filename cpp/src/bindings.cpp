@@ -8,7 +8,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 
-#include <limits>
 #include "pypowsybl.h"
 
 namespace py = pybind11;
@@ -147,36 +146,28 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .export_values();
 
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
-            .def(py::init([](pypowsybl::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
-                             bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
-                             bool distributedSlack, pypowsybl::BalanceType balanceType, bool dcUseTransformerRatio, const std::vector<std::string>& countriesToBalance,
-                             pypowsybl::ConnectedComponentMode connectedComponentMode) {
-                auto parameters = new load_flow_parameters();
-                parameters->voltage_init_mode = voltageInitMode;
-                parameters->transformer_voltage_control_on = transformerVoltageControlOn;
-                parameters->no_generator_reactive_limits = noGeneratorReactiveLimits;
-                parameters->phase_shifter_regulation_on = phaseShifterRegulationOn;
-                parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance;
-                parameters->simul_shunt = simulShunt;
-                parameters->read_slack_bus = readSlackBus;
-                parameters->write_slack_bus = writeSlackBus;
-                parameters->distributed_slack = distributedSlack;
-                parameters->balance_type = balanceType;
-                parameters->dc_use_transformer_ratio = dcUseTransformerRatio;
-                parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
-                parameters->countries_to_balance_count = countriesToBalance.size();
-                parameters->connected_component_mode = connectedComponentMode;
+            .def(py::init([]() {
+                 auto parameters = new load_flow_parameters();
+                 load_flow_parameters* config_params = pypowsybl::readParameters();
+                 parameters->voltage_init_mode = config_params->voltage_init_mode;
+                 parameters->transformer_voltage_control_on = config_params->transformer_voltage_control_on;
+                 parameters->no_generator_reactive_limits = config_params->no_generator_reactive_limits;
+                 parameters->phase_shifter_regulation_on = config_params->phase_shifter_regulation_on;
+                 parameters->twt_split_shunt_admittance = config_params->twt_split_shunt_admittance;
+                 parameters->simul_shunt = config_params->simul_shunt;
+                 parameters->read_slack_bus = config_params->read_slack_bus;
+                 parameters->write_slack_bus = config_params->write_slack_bus;
+                 parameters->distributed_slack = config_params->distributed_slack;
+                 parameters->balance_type = config_params->balance_type;
+                 parameters->dc_use_transformer_ratio = config_params->dc_use_transformer_ratio;
+                 parameters->countries_to_balance = config_params->countries_to_balance;
+                 parameters->countries_to_balance_count = config_params->countries_to_balance_count;
+                 parameters->connected_component_mode = config_params->connected_component_mode;
                 return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
                     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
                     delete ptr;
                 });
-            }), py::arg("voltage_init_mode") = pypowsybl::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
-                 py::arg("no_generator_reactive_limits") = false, py::arg("phase_shifter_regulation_on") = false,
-                 py::arg("twt_split_shunt_admittance") = false, py::arg("simul_shunt") = false,
-                 py::arg("read_slack_bus") = false, py::arg("write_slack_bus") = false,
-                 py::arg("distributed_slack") = true, py::arg("balance_type") = pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
-                 py::arg("dc_use_transformer_ratio") = true, py::arg("countries_to_balance") = std::vector<std::string>(),
-                 py::arg("connected_component_mode") = pypowsybl::ConnectedComponentMode::MAIN)
+            }))
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
             }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {
