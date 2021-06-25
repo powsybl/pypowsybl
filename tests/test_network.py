@@ -5,13 +5,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import copy
-import pathlib
 import unittest
 import datetime
 import pandas as pd
+from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 
 import pypowsybl as pp
+import pathlib
+import matplotlib.pyplot as plt
+import networkx as nx
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -379,7 +382,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_lines(lines_update)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
                                 columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
-                                         'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'],
+                                         'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1',
+                                         'connected2'],
                                 data=[[1, 2, 3, 4, 5, 6, 7, 8, 15.011282, 9, 10, 19.418634,
                                        'S2VL1', 'S3VL1', 'S2VL1_0', 'S3VL1_0', True, True],
                                       [0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415, 346.429584,
@@ -390,7 +394,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_dangling_lines(self):
         n = pp.network._create_dangling_lines_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                         'connected'],
                                 data=[[10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True]])
         dangling_lines = n.get_dangling_lines()
         pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False)
@@ -398,7 +403,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_batteries(self):
         n = pp.network._create_battery_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                         'connected'],
                                 data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True],
                                       [200, -200, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
@@ -417,6 +423,32 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'voltage_level_id', 'bus_id', 'connected'],
                                 data=[['LINEAR', 1, 0, NaN, 1900, NaN, 'S1VL2', '', False]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
+
+    def test_node_breaker_view(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_topology('S4VL1')
+        self.assertEqual(6, len(network_topology.get_switchs()))
+        self.assertEqual('DISCONNECTOR', network_topology.get_switchs().loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['kind'])
+        self.assertEqual(False, network_topology.get_switchs().loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['open'])
+        self.assertEqual(0, network_topology.get_switchs().loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node_1'])
+        self.assertEqual(5, network_topology.get_switchs().loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node_2'])
+        self.assertEqual(7, len(network_topology.get_nodes()))
+        self.assertEqual(True, network_topology.get_internal_connections().empty)
+
+    def test_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_topology('S4VL1')
+        graph = network_topology.create_graph()
+        self.assertEqual(7, len(graph.nodes))
+        self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
+
+    @unittest.skip("plot graph skipping")
+    def test_node_breaker_view_draw_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_topology('S4VL1')
+        graph = network_topology.create_graph()
+        nx.draw_shell(graph, with_labels=True)
+        plt.show()
 
 
 if __name__ == '__main__':
