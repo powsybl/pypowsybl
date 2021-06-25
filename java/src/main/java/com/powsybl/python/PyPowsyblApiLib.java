@@ -10,6 +10,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -30,6 +32,7 @@ import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
@@ -53,6 +56,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
+import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.*;
 
 /**
@@ -222,8 +226,8 @@ public final class PyPowsyblApiLib {
 
     private static Properties createParameters(CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount) {
-        List<String> parameterNames = CTypeUtil.toStringList(parameterNamesPtrPtr, parameterNamesCount);
-        List<String> parameterValues = CTypeUtil.toStringList(parameterValuesPtrPtr, parameterValuesCount);
+        List<String> parameterNames = toStringList(parameterNamesPtrPtr, parameterNamesCount);
+        List<String> parameterValues = toStringList(parameterValuesPtrPtr, parameterValuesCount);
         Properties parameters = new Properties();
         for (int i = 0; i < parameterNames.size(); i++) {
             parameters.setProperty(parameterNames.get(i), parameterValues.get(i));
@@ -281,12 +285,12 @@ public final class PyPowsyblApiLib {
                 predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
             }
             if (idsCount != 0) {
-                List<String> ids = CTypeUtil.toStringList(idsPtrPtr, idsCount);
+                List<String> ids = toStringList(idsPtrPtr, idsCount);
                 predicates.add(new IdentifierNetworkPredicate(ids));
             }
             if (depthsCount != 0) {
                 final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
-                final List<String> voltageLeveles = CTypeUtil.toStringList(vlsPtrPtr, vlsCount);
+                final List<String> voltageLeveles = toStringList(vlsPtrPtr, vlsCount);
                 for (int i = 0; i < depths.size(); i++) {
                     predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
                 }
@@ -386,7 +390,7 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
-            Set<String> countries = new HashSet<>(CTypeUtil.toStringList(countryPtr, countryCount));
+            Set<String> countries = new HashSet<>(toStringList(countryPtr, countryCount));
             List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
             return createCharPtrArray(elementsIds);
         });
@@ -414,7 +418,7 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            List<String> elementIds = CTypeUtil.toStringList(elementIdPtrPtr, elementCount);
+            List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
             contingencyContainer.addContingency(contingencyId, elementIds);
         });
     }
@@ -458,7 +462,7 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "runSecurityAnalysis")
-    public static ArrayPointer<ContingencyResultPointer> runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+    public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                                              ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
                                                                              CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -467,6 +471,14 @@ public final class PyPowsyblApiLib {
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
+            return ObjectHandles.getGlobal().create(result);
+        });
+    }
+
+    @CEntryPoint(name = "getSecurityAnalysisResult")
+    public static ArrayPointer<ContingencyResultPointer> getSecurityAnalysisResult(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
             return createContingencyResultArrayPointer(result);
         });
     }
@@ -499,7 +511,7 @@ public final class PyPowsyblApiLib {
             for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
                 PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
                 String zoneId = CTypeUtil.toString(zonePtrI.getId());
-                List<String> injectionsIds = CTypeUtil.toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
+                List<String> injectionsIds = toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
                 List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
                 List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
                 for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
@@ -518,8 +530,8 @@ public final class PyPowsyblApiLib {
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = CTypeUtil.toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = CTypeUtil.toStringList(variableIdPtrPtr, variableIdCount);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
             analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
         });
     }
@@ -531,8 +543,8 @@ public final class PyPowsyblApiLib {
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> busVoltageIds = CTypeUtil.toStringList(busVoltageIdPtrPtr, branchIdCount);
-            List<String> targetVoltageIds = CTypeUtil.toStringList(targetVoltageIdPtrPtr, injectionOrTransfoIdCount);
+            List<String> busVoltageIds = toStringList(busVoltageIdPtrPtr, branchIdCount);
+            List<String> targetVoltageIds = toStringList(targetVoltageIdPtrPtr, injectionOrTransfoIdCount);
             analysisContext.setBusVoltageFactorMatrix(busVoltageIds, targetVoltageIds);
         });
     }
@@ -884,6 +896,117 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
+        });
+    }
+
+    private static ContingencyContextType convert(RawContingencyContextType type) {
+        switch (type) {
+            case ALL:
+                return ContingencyContextType.ALL;
+            case NONE:
+                return ContingencyContextType.NONE;
+            case SPECIFIC:
+                return ContingencyContextType.SPECIFIC;
+            default:
+                throw new PowsyblException("Unknown contingency context type : " + type);
+        }
+    }
+
+    @CEntryPoint(name = "addMonitoredElements")
+    public static void addMonitoredElements(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, RawContingencyContextType contingencyContextType,
+                                        CCharPointerPointer branchIds, int branchIdsCount,
+                                        CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
+                                        CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
+                                        CCharPointerPointer contingencyIds, int contingencyIdsCount,
+                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
+            contingencies.forEach(contingency -> {
+                if (contingency.equals("")) {
+                    contingency = null;
+                }
+                analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency, convert(contingencyContextType)),
+                    Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
+                    Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
+            });
+        });
+    }
+
+    @CEntryPoint(name = "getBranchResults")
+    public static ArrayPointer<SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+            List<BranchResultContext> branchResults = result.getPreContingencyResult()
+                    .getPreContingencyBranchResults().stream()
+                    .map(branchResult -> new BranchResultContext(branchResult, null))
+                    .collect(Collectors.toList());
+            result.getPostContingencyResults().forEach(postContingencyResult -> {
+                postContingencyResult.getBranchResults()
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
+            });
+            return new SeriesPointerArrayBuilder<>(branchResults)
+                .addStringSeries("contingency_id", true, BranchResultContext::getContingencyId)
+                .addStringSeries("branch_id", true, BranchResultContext::getBranchId)
+                .addDoubleSeries("p1", BranchResultContext::getP1)
+                .addDoubleSeries("q1", BranchResultContext::getQ1)
+                .addDoubleSeries("i1", BranchResultContext::getI1)
+                .addDoubleSeries("p2", BranchResultContext::getP2)
+                .addDoubleSeries("q2", BranchResultContext::getQ2)
+                .addDoubleSeries("i2", BranchResultContext::getI2)
+                .build();
+        });
+    }
+
+    @CEntryPoint(name = "getBusResults")
+    public static ArrayPointer<SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+            List<BusResultContext> busResults = result.getPreContingencyResult()
+                .getPreContingencyBusResults().stream()
+                .map(busResult -> new BusResultContext(busResult, null))
+                .collect(Collectors.toList());
+            result.getPostContingencyResults().forEach(postContingencyResult -> {
+                postContingencyResult.getBusResults()
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
+            });
+            return new SeriesPointerArrayBuilder<>(busResults)
+                .addStringSeries("contingency_id", true, BusResultContext::getContingencyId)
+                .addStringSeries("voltage_level_id", true, BusResultContext::getVoltageLevelId)
+                .addStringSeries("bus_id", true, BusResultContext::getBusId)
+                .addDoubleSeries("v_mag", BusResultContext::getV)
+                .addDoubleSeries("v_angle", BusResultContext::getAngle)
+                .build();
+        });
+    }
+
+    @CEntryPoint(name = "getThreeWindingsTransformerResults")
+    public static ArrayPointer<SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+            List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
+                .getPreContingencyThreeWindingsTransformerResults().stream()
+                .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
+                .collect(Collectors.toList());
+            result.getPostContingencyResults().forEach(postContingencyResult -> {
+                postContingencyResult.getThreeWindingsTransformerResult()
+                    .forEach(threeWindingsTransformerResult ->
+                        threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
+                            postContingencyResult.getContingency().getId())));
+            });
+            return new SeriesPointerArrayBuilder<>(threeWindingsTransformerResults)
+                .addStringSeries("contingency_id", true, ThreeWindingsTransformerResultContext::getContingencyId)
+                .addStringSeries("transformer_id", true, ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
+                .addDoubleSeries("p1", ThreeWindingsTransformerResultContext::getP1)
+                .addDoubleSeries("q1", ThreeWindingsTransformerResultContext::getQ1)
+                .addDoubleSeries("i1", ThreeWindingsTransformerResultContext::getI1)
+                .addDoubleSeries("p2", ThreeWindingsTransformerResultContext::getP2)
+                .addDoubleSeries("q2", ThreeWindingsTransformerResultContext::getQ2)
+                .addDoubleSeries("i2", ThreeWindingsTransformerResultContext::getI2)
+                .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
+                .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
+                .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
+                .build();
         });
     }
 }

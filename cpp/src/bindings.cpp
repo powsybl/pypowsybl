@@ -407,6 +407,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
     m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
 
+    m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
+          py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
+          py::arg("contingency_ids"));
 
+    py::enum_<contingency_context_type>(m, "ContingencyContextType")
+            .value("ALL", contingency_context_type::ALL)
+            .value("NONE", contingency_context_type::NONE)
+            .value("SPECIFIC", contingency_context_type::SPECIFIC)
+            .export_values();
 
+    m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+
+    m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
+          py::arg("result"));
+    m.def("get_bus_results", &pypowsybl::getBusResults, "create a table with all bus results computed after security analysis",
+          py::arg("result"));
+    m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
+          "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
 }

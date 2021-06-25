@@ -83,6 +83,12 @@ typedef enum {
     REACTIVE_CAPABILITY_CURVE_POINT,
 } element_type;
 
+typedef enum {
+    ALL = 0,
+    NONE,
+    SPECIFIC,
+} contingency_context_type;
+
 typedef struct matrix_struct {
     int row_count;
     int column_count;
