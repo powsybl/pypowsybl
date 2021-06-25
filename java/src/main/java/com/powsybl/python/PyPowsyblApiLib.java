@@ -525,6 +525,14 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "freeLoadflowParamterPointer")
+    public static void freeContingencyResultArrayPointer(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UnmanagedMemory.free(loadFlowParametersPtr);
+        });
+    }
+
     @CEntryPoint(name = "createSensitivityAnalysis")
     public static ObjectHandle createSensitivityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));

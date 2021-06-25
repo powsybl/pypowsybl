@@ -473,5 +473,8 @@ std::vector<std::string> getVariantsIds(void* network) {
     return formats.get();
 }
 
+void freeLoadflowParamterPointer(load_flow_parameters& parameters) {
+    callJava<>(::freeLoadflowParamterPointer, &parameters);
+}
 
 }
