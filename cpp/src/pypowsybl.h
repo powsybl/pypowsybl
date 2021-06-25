@@ -103,7 +103,10 @@ enum ConnectedComponentMode {
 };
 
 char* copyStringToCharPtr(const std::string& str);
+long countMapMapSize(const std::map<std::string, std::map<std::string, std::string>>& map);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+char** copyMapStringKeyToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map);
+char** copyMapStringValToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map);
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);

@@ -192,6 +192,36 @@ public final class PyPowsyblApiHeader {
 
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
+
+        @CField("read_config")
+        void setReadConfig(boolean readFromConfig);
+
+        @CField("read_config")
+        boolean isReadConfig();
+
+        @CField("other_keys")
+        void setOtherKeys(CCharPointerPointer otherKeys);
+
+        @CField("other_keys")
+        CCharPointerPointer getOtherKeys();
+
+        @CField("other_keys_count")
+        int getOtherKeysCount();
+
+        @CField("other_keys_count")
+        void setOtherKeysCount(int otherKeysCount);
+
+        @CField("other_values")
+        void setOtherValues(CCharPointerPointer otherValues);
+
+        @CField("other_values")
+        CCharPointerPointer getOtherValues();
+
+        @CField("other_values_count")
+        int getOtherValuesCount();
+
+        @CField("other_values_count")
+        void setOtherValuesCount(int otherValuesCount);
     }
 
     @CStruct("limit_violation")

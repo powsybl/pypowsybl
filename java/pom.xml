@@ -27,10 +27,12 @@
 
         <graalvm.version>20.3.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
+        <jimfs.version>1.1</jimfs.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+        <mockito.version>3.3.3</mockito.version>
         <slf4j.version>1.7.30</slf4j.version>
         <powsybl-core.version>4.3.0-alpha-1</powsybl-core.version>
         <powsybl-rte-core.version>3.3.0-alpha-1</powsybl-rte-core.version>
@@ -219,6 +221,12 @@
 
         <!-- test -->
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
@@ -228,6 +236,18 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.jimfs</groupId>
+            <artifactId>jimfs</artifactId>
+            <version>${jimfs.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

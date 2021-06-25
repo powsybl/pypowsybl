@@ -38,6 +38,11 @@ typedef struct load_flow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    unsigned char read_config;
+    char** other_keys;
+    int other_keys_count;
+    char** other_values;
+    int other_values_count;
 } load_flow_parameters;
 
 typedef struct limit_violation_struct {

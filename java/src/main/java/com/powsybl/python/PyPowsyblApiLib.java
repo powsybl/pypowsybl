@@ -9,6 +9,7 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.config.PlatformConfig;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dataframe.*;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
@@ -51,7 +52,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
-import java.util.stream.Collectors;
 
 import static com.powsybl.python.PyPowsyblApiHeader.*;
 
@@ -317,22 +317,7 @@ public final class PyPowsyblApiLib {
     }
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        return new LoadFlowParameters()
-                .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
-                .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
-                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
-                .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
-                .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
-                .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
-                .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
-                .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
-                .setDc(dc)
-                .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
-                .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
-                .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
-                        .stream().map(Country::valueOf).collect(Collectors.toSet()))
-                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
+        return LoadFlowParametersHelper.createLoadFlowParameters(dc, loadFlowParametersPtr, PlatformConfig.defaultConfig());
     }
 
     @CEntryPoint(name = "defaultParameters")

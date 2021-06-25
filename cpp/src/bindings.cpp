@@ -148,6 +148,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init([](bool readFromConfig) {
                  auto parameters = new load_flow_parameters();
+                 parameters->read_config = readFromConfig;
                  load_flow_parameters* config_params = readFromConfig ? pypowsybl::readParameters() : pypowsybl::defaultParameters();
                  parameters->voltage_init_mode = config_params->voltage_init_mode;
                  parameters->transformer_voltage_control_on = config_params->transformer_voltage_control_on;
@@ -234,6 +235,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return static_cast<pypowsybl::ConnectedComponentMode>(p.connected_component_mode);
             }, [](load_flow_parameters& p, pypowsybl::ConnectedComponentMode connectedComponentMode) {
                 p.connected_component_mode = connectedComponentMode;
+            })
+            .def_property("others", [](const load_flow_parameters& p) {
+                std::map<std::string, std::string> params_map;
+                for(int i = 0; i < p.other_keys_count; i ++) {
+                    std::string k(p.other_keys[i]);
+                    std::string v(p.other_values[i]);
+                    params_map[k] = v;
+                }
+                return params_map;
+            }, [](load_flow_parameters& p, const std::map<std::string, std::map<std::string, std::string>>& others) {
+                p.other_keys = pypowsybl::copyMapStringKeyToCharPtrPtr(others);
+                p.other_values = pypowsybl::copyMapStringValToCharPtrPtr(others);
+                p.other_keys_count = pypowsybl::countMapMapSize(others);
+                p.other_values_count = p.other_keys_count;
             });
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),

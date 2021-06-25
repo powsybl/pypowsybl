@@ -175,12 +175,46 @@ char* copyStringToCharPtr(const std::string& str) {
     return c;
 }
 
+long countMapMapSize(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    long i = 0;
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            i ++;
+        }
+    }
+    return i;
+}
+
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
     char** charPtrPtr = new char*[strings.size()];
     for (int i = 0; i < strings.size(); i++) {
         charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
     }
     return charPtrPtr;
+}
+
+char** copyMapStringKeyToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    std::vector<std::string> parameterNames;
+    parameterNames.reserve(countMapMapSize(map));
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            std::string key = p.first + "__" + v.first;
+            parameterNames.push_back(key);
+        }
+    }
+    return copyVectorStringToCharPtrPtr(parameterNames);
+}
+
+char** copyMapStringValToCharPtrPtr(const std::map<std::string, std::map<std::string, std::string>>& map) {
+    std::vector<std::string> parameterNames;
+    parameterNames.reserve(countMapMapSize(map));
+    for (std::pair<std::string, std::map<std::string, std::string>> p : map) {
+        for (std::pair<std::string, std::string> v : p.second) {
+            std::string value = v.second;
+            parameterNames.push_back(value);
+        }
+    }
+    return copyVectorStringToCharPtrPtr(parameterNames);
 }
 
 void deleteCharPtrPtr(char** charPtrPtr, int length) {

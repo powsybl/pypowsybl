@@ -96,6 +96,9 @@ Or with different parameters:
 # default parameters
 parameters = pp.loadflow.Parameters()
 parameters.read_slack_bus = True
+# add extensions
+others = {'hades2-default-parameters' : {'dcCosphi': "0.5"}}
+parameters.others = others
 results = pp.loadflow.run_ac(n, parameters)
 ```
 
