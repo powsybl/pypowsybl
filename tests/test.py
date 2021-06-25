@@ -480,19 +480,19 @@ class PyPowsyblTestCase(unittest.TestCase):
                                                                 tuples=[('', 'VLHV2', 'NHV2'),
                                                                         ('NGEN_NHV1', 'VLHV2', 'NHV2'),
                                                                         ('NHV1_NHV2_1', 'VLHV2', 'NHV2')]),
-                                columns=['V', 'angle'],
+                                columns=['v_mag', 'v_angle'],
                                 data=[[389.952654, -3.506358],
                                       [569.038987, -1.709471],
                                       [366.584814, -7.499211]])
         pd.testing.assert_frame_equal(expected, bus_results)
 
         self.assertEqual(['contingency_id', 'branch_id'], branch_results.index.to_frame().columns.tolist())
-        self.assertEqual(['P1', 'Q1', 'I1', 'P2', 'Q2', 'I2'], branch_results.columns.tolist())
+        self.assertEqual(['p1', 'q1', 'i1', 'p2', 'q2', 'i2'], branch_results.columns.tolist())
         self.assertEqual(4, len(branch_results))
-        self.assertAlmostEqual(302.44, branch_results.loc['', 'NHV1_NHV2_2']['P1'], places=2)
-        self.assertAlmostEqual(610.56, branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['P1'], places=2)
-        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['P1'], places=2)
-        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['P1'], places=2)
+        self.assertAlmostEqual(302.44, branch_results.loc['', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(610.56, branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'], places=2)
 
 
 if __name__ == '__main__':

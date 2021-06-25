@@ -948,12 +948,12 @@ public final class PyPowsyblApiLib {
             return new SeriesPointerArrayBuilder<>(branchResults)
                 .addStringSeries("contingency_id", true, BranchResultContext::getContingencyId)
                 .addStringSeries("branch_id", true, BranchResultContext::getBranchId)
-                .addDoubleSeries("P1", BranchResultContext::getP1)
-                .addDoubleSeries("Q1", BranchResultContext::getQ1)
-                .addDoubleSeries("I1", BranchResultContext::getI1)
-                .addDoubleSeries("P2", BranchResultContext::getP2)
-                .addDoubleSeries("Q2", BranchResultContext::getQ2)
-                .addDoubleSeries("I2", BranchResultContext::getI2)
+                .addDoubleSeries("p1", BranchResultContext::getP1)
+                .addDoubleSeries("q1", BranchResultContext::getQ1)
+                .addDoubleSeries("i1", BranchResultContext::getI1)
+                .addDoubleSeries("p2", BranchResultContext::getP2)
+                .addDoubleSeries("q2", BranchResultContext::getQ2)
+                .addDoubleSeries("i2", BranchResultContext::getI2)
                 .build();
         });
     }
@@ -974,8 +974,8 @@ public final class PyPowsyblApiLib {
                 .addStringSeries("contingency_id", true, BusResultContext::getContingencyId)
                 .addStringSeries("voltage_level_id", true, BusResultContext::getVoltageLevelId)
                 .addStringSeries("bus_id", true, BusResultContext::getBusId)
-                .addDoubleSeries("V", BusResultContext::getV)
-                .addDoubleSeries("angle", BusResultContext::getAngle)
+                .addDoubleSeries("v_mag", BusResultContext::getV)
+                .addDoubleSeries("v_angle", BusResultContext::getAngle)
                 .build();
         });
     }
@@ -997,15 +997,15 @@ public final class PyPowsyblApiLib {
             return new SeriesPointerArrayBuilder<>(threeWindingsTransformerResults)
                 .addStringSeries("contingency_id", true, ThreeWindingsTransformerResultContext::getContingencyId)
                 .addStringSeries("transformer_id", true, ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
-                .addDoubleSeries("P1", ThreeWindingsTransformerResultContext::getP1)
-                .addDoubleSeries("Q1", ThreeWindingsTransformerResultContext::getQ1)
-                .addDoubleSeries("I1", ThreeWindingsTransformerResultContext::getI1)
-                .addDoubleSeries("P2", ThreeWindingsTransformerResultContext::getP2)
-                .addDoubleSeries("Q2", ThreeWindingsTransformerResultContext::getQ2)
-                .addDoubleSeries("I2", ThreeWindingsTransformerResultContext::getI2)
-                .addDoubleSeries("P2", ThreeWindingsTransformerResultContext::getP3)
-                .addDoubleSeries("Q2", ThreeWindingsTransformerResultContext::getQ3)
-                .addDoubleSeries("I2", ThreeWindingsTransformerResultContext::getI3)
+                .addDoubleSeries("p1", ThreeWindingsTransformerResultContext::getP1)
+                .addDoubleSeries("q1", ThreeWindingsTransformerResultContext::getQ1)
+                .addDoubleSeries("i1", ThreeWindingsTransformerResultContext::getI1)
+                .addDoubleSeries("p2", ThreeWindingsTransformerResultContext::getP2)
+                .addDoubleSeries("q2", ThreeWindingsTransformerResultContext::getQ2)
+                .addDoubleSeries("i2", ThreeWindingsTransformerResultContext::getI2)
+                .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
+                .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
+                .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
                 .build();
         });
     }
