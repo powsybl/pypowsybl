@@ -187,9 +187,11 @@ def create_analysis() -> SecurityAnalysis:
     """ Creates a security analysis objet, which can be used to run a security analysis on a network
 
     Examples:
-        >>> analysis = pypowsybl.security.create_analysis()
-        >>> analysis.add_single_element_contingencies(['line 1', 'line 2'])
-        >>> res = analysis.run_ac(network)
+        .. code-block::
+
+            >>> analysis = pypowsybl.security.create_analysis()
+            >>> analysis.add_single_element_contingencies(['line 1', 'line 2'])
+            >>> res = analysis.run_ac(network)
 
     Returns:
         A security analysis object, which allows to run a security analysis on a network.
