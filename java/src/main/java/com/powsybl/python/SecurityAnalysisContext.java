@@ -16,7 +16,9 @@ import com.powsybl.security.SecurityAnalysis;
 import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
+import com.powsybl.security.monitor.StateMonitor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,6 +27,8 @@ import java.util.List;
  */
 class SecurityAnalysisContext extends AbstractContingencyContainer {
 
+    private final List<StateMonitor> monitors = new ArrayList<>();
+
     SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
         SecurityAnalysis.Runner runner = SecurityAnalysis.find(provider);
         SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
@@ -32,7 +36,15 @@ class SecurityAnalysisContext extends AbstractContingencyContainer {
         List<Contingency> contingencies = createContingencies(network);
         return runner
             .run(network, VariantManagerConstants.INITIAL_VARIANT_ID, new DefaultLimitViolationDetector(), new LimitViolationFilter(),
-                LocalComputationManager.getDefault(), securityAnalysisParameters, n -> contingencies, Collections.emptyList())
+                LocalComputationManager.getDefault(), securityAnalysisParameters, n -> contingencies, Collections.emptyList(), monitors)
             .getResult();
+    }
+
+    void addMonitor(StateMonitor monitor) {
+        monitors.add(monitor);
+    }
+
+    public List<StateMonitor> getMonitors() {
+        return monitors;
     }
 }

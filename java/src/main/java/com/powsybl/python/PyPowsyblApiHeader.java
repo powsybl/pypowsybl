@@ -391,4 +391,18 @@ public final class PyPowsyblApiHeader {
 
         ZonePointer read(int index);
     }
+
+    @CEnum("contingency_context_type")
+    public enum RawContingencyContextType {
+
+        ALL,
+        NONE,
+        SPECIFIC;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RawContingencyContextType fromCValue(int value);
+    }
 }

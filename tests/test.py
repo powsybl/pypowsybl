@@ -18,6 +18,7 @@ import pathlib
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
 
+
 class PyPowsyblTestCase(unittest.TestCase):
     @staticmethod
     def test_print_version():
@@ -44,7 +45,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         parameters = pp.network.get_import_parameters('PSS/E')
         self.assertEqual(1, len(parameters))
         self.assertEqual(['psse.import.ignore-base-voltage'], parameters.index.tolist())
-        self.assertEqual('Ignore base voltage specified in the file', parameters['description']['psse.import.ignore-base-voltage'])
+        self.assertEqual('Ignore base voltage specified in the file',
+                         parameters['description']['psse.import.ignore-base-voltage'])
         self.assertEqual('BOOLEAN', parameters['type']['psse.import.ignore-base-voltage'])
         self.assertEqual('false', parameters['default']['psse.import.ignore-base-voltage'])
 
@@ -70,14 +72,22 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_get_network_element_ids(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
-        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}))
-        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24, 150}))
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
+                         n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
+        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+                                                           nominal_voltages={24}))
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
+                         n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+                                            nominal_voltages={24, 150}))
         self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}))
-        self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries={'FR'}))
-        self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries={'BE'}))
-        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'FR'}))
-        self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24}, countries={'BE'}))
+        self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
+                                                      countries={'FR'}))
+        self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
+                                                countries={'BE'}))
+        self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+                                                           nominal_voltages={24}, countries={'FR'}))
+        self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+                                                nominal_voltages={24}, countries={'BE'}))
 
     def test_loads_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -85,7 +95,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(600, loads['p0']['LOAD'])
         self.assertEqual(200, loads['q0']['LOAD'])
         self.assertEqual('UNDEFINED', loads['type']['LOAD'])
-        df2 = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD'])
+        df2 = pd.DataFrame(data=[[500, 300]], columns=['p0', 'q0'], index=['LOAD'])
         n.update_loads(df2)
         df3 = n.get_loads()
         self.assertEqual(300, df3['q0']['LOAD'])
@@ -106,7 +116,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         stations = n.get_vsc_converter_stations()
         self.assertEqual(400.0, stations['voltage_setpoint']['VSC1'])
         self.assertEqual(500.0, stations['reactive_power_setpoint']['VSC1'])
-        stations2 = pd.DataFrame(data=[[300.0, 400.0],[1.0, 2.0]], columns=['voltage_setpoint','reactive_power_setpoint'], index=['VSC1', 'VSC2'])
+        stations2 = pd.DataFrame(data=[[300.0, 400.0], [1.0, 2.0]],
+                                 columns=['voltage_setpoint', 'reactive_power_setpoint'], index=['VSC1', 'VSC2'])
         n.update_vsc_converter_stations(stations2)
         stations = n.get_vsc_converter_stations()
         self.assertEqual(300.0, stations['voltage_setpoint']['VSC1'])
@@ -129,7 +140,7 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(400.0, svcs['voltage_setpoint']['SVC'])
         self.assertEqual('VOLTAGE', svcs['regulation_mode']['SVC'])
         svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
-                           columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
+                             columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
         n.update_static_var_compensators(svcs2)
         svcs = n.get_static_var_compensators()
         self.assertEqual(300.0, svcs['voltage_setpoint']['SVC'])
@@ -158,7 +169,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         generators = n.get_generators()
         self.assertEqual(607, generators['target_p']['GEN'])
         self.assertTrue(generators['voltage_regulator_on']['GEN'])
-        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]], columns=['target_p','target_q','target_v','voltage_regulator_on'], index=['GEN'])
+        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
+                                   columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
         n.update_generators(generators2)
         generators = n.get_generators()
         self.assertEqual(608, generators['target_p']['GEN'])
@@ -298,17 +310,17 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual(0, len(parameters.countries_to_balance))
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
-        parameters = pp.loadflow.Parameters(dc_use_transformer_ratio = False)
+        parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False)
         self.assertFalse(parameters.dc_use_transformer_ratio)
         parameters.dc_use_transformer_ratio = True
         self.assertTrue(parameters.dc_use_transformer_ratio)
 
-        parameters = pp.loadflow.Parameters(countries_to_balance = ['FR'])
+        parameters = pp.loadflow.Parameters(countries_to_balance=['FR'])
         self.assertEqual(['FR'], parameters.countries_to_balance)
         parameters.countries_to_balance = ['BE']
         self.assertEqual(['BE'], parameters.countries_to_balance)
 
-        parameters = pp.loadflow.Parameters(connected_component_mode = pp.loadflow.ConnectedComponentMode.ALL)
+        parameters = pp.loadflow.Parameters(connected_component_mode=pp.loadflow.ConnectedComponentMode.ALL)
         self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
         parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
         self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
@@ -425,7 +437,8 @@ class PyPowsyblTestCase(unittest.TestCase):
         zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
         sa = pp.sensitivity.create_dc_analysis()
         sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
-        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
+                                         ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
         result = sa.run(n)
         s = result.get_branch_flows_sensitivity_matrix()
         self.assertEqual((4, 2), s.shape)
@@ -449,7 +462,37 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertEqual('InitialState', n.get_working_variant_id())
         self.assertEqual(1, len(n.get_variant_ids()))
 
+    def test_monitor_state(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.security.create_analysis()
+        sa.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
+        sa.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
+        sa.add_monitored_elements(voltage_level_ids=['VLHV2'])
+        sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
+        sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
+        sa.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
 
+        sa_result = sa.run_ac(n)
+        bus_results = sa_result.get_bus_results()
+        branch_results = sa_result.get_branch_results()
+
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'voltage_level_id', 'bus_id'],
+                                                                tuples=[('', 'VLHV2', 'NHV2'),
+                                                                        ('NGEN_NHV1', 'VLHV2', 'NHV2'),
+                                                                        ('NHV1_NHV2_1', 'VLHV2', 'NHV2')]),
+                                columns=['v_mag', 'v_angle'],
+                                data=[[389.952654, -3.506358],
+                                      [569.038987, -1.709471],
+                                      [366.584814, -7.499211]])
+        pd.testing.assert_frame_equal(expected, bus_results)
+
+        self.assertEqual(['contingency_id', 'branch_id'], branch_results.index.to_frame().columns.tolist())
+        self.assertEqual(['p1', 'q1', 'i1', 'p2', 'q2', 'i2'], branch_results.columns.tolist())
+        self.assertEqual(4, len(branch_results))
+        self.assertAlmostEqual(302.44, branch_results.loc['', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(610.56, branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'], places=2)
+        self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'], places=2)
 
 
 if __name__ == '__main__':
