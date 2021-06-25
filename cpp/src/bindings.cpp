@@ -146,9 +146,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .export_values();
 
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
-            .def(py::init([]() {
+            .def(py::init([](bool readFromConfig) {
                  auto parameters = new load_flow_parameters();
-                 load_flow_parameters* config_params = pypowsybl::readParameters();
+                 load_flow_parameters* config_params = readFromConfig ? pypowsybl::readParameters() : pypowsybl::defaultParameters();
                  parameters->voltage_init_mode = config_params->voltage_init_mode;
                  parameters->transformer_voltage_control_on = config_params->transformer_voltage_control_on;
                  parameters->no_generator_reactive_limits = config_params->no_generator_reactive_limits;
@@ -167,7 +167,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
                     delete ptr;
                 });
-            }))
+            }), py::arg("read_from_config") = false)
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
             }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {

@@ -289,6 +289,10 @@ std::vector<std::string> getNetworkElementsIds(void* network, element_type eleme
     return elementsIds.get();
 }
 
+load_flow_parameters* defaultParameters() {
+    return callJava<load_flow_parameters*>(::defaultParameters);
+}
+
 load_flow_parameters* readParameters() {
     return callJava<load_flow_parameters*>(::readParameters);
 }

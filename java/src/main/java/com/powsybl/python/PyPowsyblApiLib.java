@@ -335,34 +335,45 @@ public final class PyPowsyblApiLib {
                 .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
     }
 
+    @CEntryPoint(name = "defaultParameters")
+    public static LoadFlowParametersPointer defaultParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            return convertToLoadFlowParametersPointer(new LoadFlowParameters());
+        });
+    }
+
     @CEntryPoint(name = "readParameters")
     public static LoadFlowParametersPointer readParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             LoadFlowParameters parameters = LoadFlowParameters.load();
-            LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
-            paramsPtr.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
-            paramsPtr.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
-            paramsPtr.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
-            paramsPtr.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
-            paramsPtr.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
-            paramsPtr.setSimulShunt(parameters.isSimulShunt());
-            paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
-            paramsPtr.setWriteSlackBus(parameters.isWriteSlackBus());
-            paramsPtr.setDistributedSlack(parameters.isDistributedSlack());
-            paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
-            paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
-            paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
-            paramsPtr.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
-            CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
-            ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
-            for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {
-                calloc.write(i, CTypeUtil.toCharPtr(countries.get(i).toString()));
-            }
-            paramsPtr.setCountriesToBalance(calloc);
-            paramsPtr.setCountriesToBalanceCount(countries.size());
-            paramsPtr.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
-            return paramsPtr;
+            return convertToLoadFlowParametersPointer(parameters);
         });
+    }
+
+    private static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
+        LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
+        paramsPtr.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
+        paramsPtr.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
+        paramsPtr.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
+        paramsPtr.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
+        paramsPtr.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
+        paramsPtr.setSimulShunt(parameters.isSimulShunt());
+        paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
+        paramsPtr.setWriteSlackBus(parameters.isWriteSlackBus());
+        paramsPtr.setDistributedSlack(parameters.isDistributedSlack());
+        paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
+        paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
+        paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
+        paramsPtr.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
+        CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
+        ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
+        for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {
+            calloc.write(i, CTypeUtil.toCharPtr(countries.get(i).toString()));
+        }
+        paramsPtr.setCountriesToBalance(calloc);
+        paramsPtr.setCountriesToBalanceCount(countries.size());
+        paramsPtr.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+        return paramsPtr;
     }
 
     @CEntryPoint(name = "runLoadFlow")
