@@ -37,7 +37,7 @@ class PyPowsyblTestCase(unittest.TestCase):
 BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
         """
         n = pp.network.load_from_string('simple-eu.uct', file_content)
-        self.assertIsNotNone(n)
+        self.assertEqual(1, len(n.get_substations()))
 
     def test_run_lf(self):
         n = pp.network.create_ieee14()
