@@ -14,6 +14,7 @@ import pypowsybl.sensitivity
 import pypowsybl as pp
 import pandas as pd
 import pathlib
+from numpy import NaN
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -88,6 +89,27 @@ class PyPowsyblTestCase(unittest.TestCase):
                                                            nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
                                                 nominal_voltages={24}, countries={'BE'}))
+
+    def test_buses(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        buses = n.get_buses()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                data=[[NaN, NaN, 0, 0, 'VLGEN'],
+                                      [NaN, NaN, 0, 0, 'VLHV1'],
+                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [NaN, NaN, 0, 0, 'VLLOAD']])
+        pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
+
+        n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[400, 0]]))
+        buses = n.get_buses()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                data=[[400, 0, 0, 0, 'VLGEN'],
+                                      [NaN, NaN, 0, 0, 'VLHV1'],
+                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [NaN, NaN, 0, 0, 'VLLOAD']])
+        pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
     def test_loads_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
