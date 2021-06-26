@@ -277,6 +277,14 @@ class Network(ObjectHandle):
                 raise PyPowsyblError(
                     f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
 
+    def update_buses(self, df: pd.DataFrame):
+        """ Update buses with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.BUS, df)
+
     def update_switches(self, df: pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
 

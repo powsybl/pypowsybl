@@ -154,7 +154,7 @@ void* createSecurityAnalysis();
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
+void* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 void* createSensitivityAnalysis();
 
@@ -198,6 +198,18 @@ void removeVariant(void* network, std::string& variant);
 void cloneVariant(void* network, std::string& src, std::string& variant, bool mayOverwrite);
 
 std::vector<std::string> getVariantsIds(void* network);
+
+void addMonitoredElements(void* securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
+                      const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
+                      const std::vector<std::string>& contingencyIds);
+
+ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult);
+
+SeriesArray* getBranchResults(void* securityAnalysisResult);
+
+SeriesArray* getBusResults(void* securityAnalysisResult);
+
+SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult);
 
 }
 

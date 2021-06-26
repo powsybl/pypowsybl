@@ -328,10 +328,9 @@ void addContingency(void* analysisContext, const std::string& contingencyId, con
     callJava(::addContingency, analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
 }
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters,
+void* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters,
                                             const std::string& provider) {
-    return new ContingencyResultArray(callJava<array*>(::runSecurityAnalysis, securityAnalysisContext, network,
-                                                          &parameters, (char *) provider.data()));
+    return callJava<void*>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data());
 }
 
 void* createSensitivityAnalysis() {
@@ -485,5 +484,31 @@ std::vector<std::string> getVariantsIds(void* network) {
     return formats.get();
 }
 
+void addMonitoredElements(void* securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
+                      const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
+                      const std::vector<std::string>& contingencyIds) {
+    ToCharPtrPtr branchIdsPtr(branchIds);
+    ToCharPtrPtr voltageLevelIdsPtr(voltageLevelIds);
+    ToCharPtrPtr threeWindingsTransformerIdsPtr(threeWindingsTransformerIds);
+    ToCharPtrPtr contingencyIdsPtr(contingencyIds);
+    callJava<>(::addMonitoredElements, securityAnalysisContext, contingencyContextType, branchIdsPtr.get(), branchIds.size(),
+    voltageLevelIdsPtr.get(), voltageLevelIds.size(), threeWindingsTransformerIdsPtr.get(),
+    threeWindingsTransformerIds.size(), contingencyIdsPtr.get(), contingencyIds.size());
+}
 
+ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult) {
+    return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
+}
+
+SeriesArray* getBranchResults(void* securityAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getBranchResults, securityAnalysisResult));
+}
+
+SeriesArray* getBusResults(void* securityAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getBusResults, securityAnalysisResult));
+}
+
+SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
+}
 }
