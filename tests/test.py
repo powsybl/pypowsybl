@@ -516,6 +516,11 @@ class PyPowsyblTestCase(unittest.TestCase):
         self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'], places=2)
         self.assertAlmostEqual(301.06, branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'], places=2)
 
+    def test_sld_svg(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        svg = n.get_single_line_diagram_svg('S1VL1')
+        self.assertRegex(str(svg), '.*<svg.*')
+
 
 if __name__ == '__main__':
     unittest.main()

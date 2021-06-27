@@ -407,6 +407,17 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "getSingleLineDiagramSvg")
+    public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
+                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String containerIdStr = CTypeUtil.toString(containerId);
+            String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
     @CEntryPoint(name = "createSecurityAnalysis")
     public static ObjectHandle createSecurityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SecurityAnalysisContext()));

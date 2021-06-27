@@ -146,6 +146,8 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::sha
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
+std::string getSingleLineDiagramSvg(void* network, const std::string& containerId);
+
 void* createSecurityAnalysis();
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);

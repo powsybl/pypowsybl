@@ -53,3 +53,5 @@ build/*
 
 *.orig
 
+# notebooks
+notebooks/.ipynb_checkpoints

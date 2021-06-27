@@ -15,6 +15,17 @@ from typing import Set
 import pandas as pd
 
 
+class SingleLineDiagramSvg:
+    def __init__(self, svg: str):
+        self.svg = svg
+
+    def __str__(self):
+        return self.svg
+
+    def _repr_svg_(self):
+        return self.svg
+
+
 class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
@@ -54,6 +65,9 @@ class Network(ObjectHandle):
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+
+    def get_single_line_diagram_svg(self, container_id: str):
+        return SingleLineDiagramSvg(_pypowsybl.get_single_line_diagram_svg(self.ptr, container_id))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,

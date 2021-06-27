@@ -299,6 +299,10 @@ void writeSingleLineDiagramSvg(void* network, const std::string& containerId, co
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
+std::string getSingleLineDiagramSvg(void* network, const std::string& containerId) {
+    return std::string(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
 void* createSecurityAnalysis() {
     return callJava<void*>(::createSecurityAnalysis);
 }
