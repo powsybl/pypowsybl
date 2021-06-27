@@ -495,10 +495,25 @@ def get_import_parameters(format: str) -> pd.DataFrame:
 def load(file: str, parameters: dict = {}) -> Network:
     """ Load a network from a file. File should be in a supported format.
 
-    :param file: a file
-    :type file: str
-    :param parameters: a map of parameters
-    :type parameters: dict, optional
-    :return: a network
+    Args:
+       file (str): a file
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
     """
     return Network(_pypowsybl.load_network(file, parameters))
+
+
+def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+    """ Load a network from a string. File content should be in a supported format.
+
+    Args:
+       file_name (str): file name
+       file_content (str): file content
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
+    """
+    return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))

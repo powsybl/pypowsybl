@@ -254,6 +254,24 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "loadNetworkFromString")
+    public static ObjectHandle loadNetworkFromString(IsolateThread thread, CCharPointer fileName, CCharPointer fileContent,
+                                                     CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                     CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String fileNameStr = CTypeUtil.toString(fileName);
+            String fileContentStr = CTypeUtil.toString(fileContent);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
+                Network network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+                return ObjectHandles.getGlobal().create(network);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     @CEntryPoint(name = "dumpNetwork")
     public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
