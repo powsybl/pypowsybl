@@ -15,15 +15,20 @@ from typing import Set
 import pandas as pd
 
 
-class SingleLineDiagramSvg:
+class SingleLineDiagram:
+    """ This class represents a single line diagram."""
     def __init__(self, svg: str):
-        self.svg = svg
+        self._svg = svg
+
+    @property
+    def svg(self):
+        return self._svg
 
     def __str__(self):
-        return self.svg
+        return self._svg
 
     def _repr_svg_(self):
-        return self.svg
+        return self._svg
 
 
 class Network(ObjectHandle):
@@ -64,10 +69,24 @@ class Network(ObjectHandle):
         _pypowsybl.reduce_network(self.ptr, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
+        """ Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
+
+        Args:
+            container_id: a voltage level id or a substation id
+            svg_file: a svg file path
+        """
         _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
 
-    def get_single_line_diagram_svg(self, container_id: str):
-        return SingleLineDiagramSvg(_pypowsybl.get_single_line_diagram_svg(self.ptr, container_id))
+    def get_single_line_diagram(self, container_id: str):
+        """ Create a single line diagram from a voltage level or a substation.
+
+        Args:
+            container_id: a voltage level id or a substation id
+
+        Returns:
+            the single line diagram
+        """
+        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self.ptr, container_id))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,

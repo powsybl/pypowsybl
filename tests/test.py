@@ -518,8 +518,8 @@ class PyPowsyblTestCase(unittest.TestCase):
 
     def test_sld_svg(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        svg = n.get_single_line_diagram_svg('S1VL1')
-        self.assertRegex(str(svg), '.*<svg.*')
+        sld = n.get_single_line_diagram('S1VL1')
+        self.assertRegex(sld.svg, '.*<svg.*')
 
 
 if __name__ == '__main__':
