@@ -29,6 +29,16 @@ class PyPowsyblTestCase(unittest.TestCase):
         n = pp.network.create_empty("test")
         self.assertIsNotNone(n)
 
+    def test_load_network_from_string(self):
+        file_content = """
+##C 2007.05.01
+##N
+##ZBE
+BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
+        """
+        n = pp.network.load_from_string('simple-eu.uct', file_content)
+        self.assertEqual(1, len(n.get_substations()))
+
     def test_run_lf(self):
         n = pp.network.create_ieee14()
         results = pp.loadflow.run_ac(n)
