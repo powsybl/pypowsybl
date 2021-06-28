@@ -6,12 +6,15 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.StaticVarCompensator;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
 import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -21,6 +24,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 class CreateEquipmentHelperTest {
+
+    @Test
+    void load() {
+        var network = EurostagTutorialExample1Factory.create();
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("p0", 3.0d),
+                entry("q0", 1.0d),
+                entry("target_p", 4.0d),
+                entry("target_v", 6.0d),
+                entry("target_q", 7.0d),
+                entry("rated_s", 5.0d));
+        Map<String, String> strMap = Map.ofEntries(
+                entry("voltage_level_id", "VLLOAD"),
+                entry("connectable_bus_id", "NLOAD"),
+                entry("bus_id", "NLOAD"));
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.LOAD, network, "LOAD2", doubleMap, strMap, Collections.emptyMap());
+        assertEquals(2, network.getLoadCount());
+        assertEquals(LoadType.UNDEFINED, network.getLoad("LOAD2").getLoadType());
+
+        Map<String, String> map = new HashMap<>(strMap);
+        map.put("type", LoadType.AUXILIARY.name());
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.LOAD, network, "LOAD3", doubleMap, map, Collections.emptyMap());
+        assertEquals(LoadType.AUXILIARY, network.getLoad("LOAD3").getLoadType());
+    }
 
     @Test
     void generator() {

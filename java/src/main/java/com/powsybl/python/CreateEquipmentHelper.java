@@ -54,6 +54,7 @@ final class CreateEquipmentHelper {
     private static void createLoad(Network network, String id, Map<String, Double> doubleMap, Map<String, String> strMap) {
         LoadAdder loadAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newLoad()
                 .setId(id);
+        Optional.ofNullable(strMap.get("type")).ifPresent(t -> loadAdder.setLoadType(LoadType.valueOf(t)));
         createInjection(loadAdder, strMap);
         loadAdder.setP0(orElseNan(doubleMap, "p0"))
                 .setQ0(orElseNan(doubleMap, "q0"))
@@ -72,7 +73,7 @@ final class CreateEquipmentHelper {
                 .setTargetV(orElseNan(doubleMap, "target_v"))
                 .setRatedS(orElseNan(doubleMap, "rated_s"))
                 .setVoltageRegulatorOn(intMap.get("voltage_regulator_on") == 1);
-        Optional.ofNullable(strMap.get("energy_source")).ifPresentOrElse(v -> generatorAdder.setEnergySource(EnergySource.valueOf(v)), () -> { });
+        Optional.ofNullable(strMap.get("energy_source")).ifPresent(v -> generatorAdder.setEnergySource(EnergySource.valueOf(v)));
         generatorAdder.add();
     }
 
