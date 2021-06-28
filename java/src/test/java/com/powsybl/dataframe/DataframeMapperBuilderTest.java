@@ -1,6 +1,8 @@
 package com.powsybl.dataframe;
 
 import com.google.common.base.Functions;
+import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.impl.Series;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -123,11 +125,11 @@ class DataframeMapperBuilderTest {
             new Element("el2", "val2", 2, 20, Color.BLUE)
         );
 
-        List<DataframeHandlerImpl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DataframeHandlerImpl(series::add));
+        List<Series> series = new ArrayList<>();
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add));
 
         assertThat(series)
-            .extracting(DataframeHandlerImpl.Series::getName)
+            .extracting(Series::getName)
             .containsExactly("id", "str", "int", "double", "color");
     }
 

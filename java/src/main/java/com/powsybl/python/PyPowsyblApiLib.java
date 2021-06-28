@@ -22,8 +22,6 @@ import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
-import com.powsybl.iidm.parameters.Parameter;
-import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -204,14 +202,6 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> freeArrayPointer(arrayPtr));
     }
 
-    private static final DataframeMapper<Importer> PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter>()
-            .itemsProvider(Importer::getParameters)
-            .stringsIndex("name", Parameter::getName)
-            .strings("description", Parameter::getDescription)
-            .enums("type", ParameterType.class, Parameter::getType)
-            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
-            .build();
-
     @CEntryPoint(name = "createImporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createImporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -221,7 +211,7 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return CDataframeHandler.createCDataframe(PARAMETERS_MAPPER, importer);
+            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
         });
     }
 
@@ -603,7 +593,7 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return CDataframeHandler.createCDataframe(mapper, network);
+            return Dataframes.createCDataframe(mapper, network);
         });
     }
 

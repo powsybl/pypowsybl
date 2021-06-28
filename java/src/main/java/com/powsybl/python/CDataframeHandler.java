@@ -6,10 +6,9 @@
  */
 package com.powsybl.python;
 
-import com.powsybl.dataframe.DataframeMapper;
+import com.powsybl.dataframe.DataframeHandler;
 import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesPointer;
-import com.powsybl.dataframe.DataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -37,12 +36,6 @@ public class CDataframeHandler implements DataframeHandler {
     public CDataframeHandler() {
         this.dataframePtr = WordFactory.nullPointer();
         this.currentIndex = 0;
-    }
-
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
-        CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler);
-        return handler.getDataframePtr();
     }
 
     public ArrayPointer<SeriesPointer> getDataframePtr() {

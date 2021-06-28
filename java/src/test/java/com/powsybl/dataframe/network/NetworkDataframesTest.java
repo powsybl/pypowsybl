@@ -7,8 +7,8 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeHandlerImpl;
-import com.powsybl.dataframe.DataframeHandlerImpl.Series;
+import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -31,7 +31,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DataframeHandlerImpl(series::add));
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add));
         return series;
     }
 
