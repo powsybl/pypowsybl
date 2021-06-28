@@ -10,6 +10,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.network.NetworkDataframeMapper;
+import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -20,11 +23,11 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.parameters.Parameter;
+import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.dataframe.*;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
@@ -201,6 +204,14 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> freeArrayPointer(arrayPtr));
     }
 
+    private static final DataframeMapper<Importer> PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter>()
+            .itemsProvider(Importer::getParameters)
+            .stringsIndex("name", Parameter::getName)
+            .strings("description", Parameter::getDescription)
+            .enums("type", ParameterType.class, Parameter::getType)
+            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
+            .build();
+
     @CEntryPoint(name = "createImporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createImporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -210,13 +221,7 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            List<Parameter> parameters = importer.getParameters();
-            return new SeriesPointerArrayBuilder<>(parameters)
-                .addStringSeries("name", true, Parameter::getName)
-                .addStringSeries("description", Parameter::getDescription)
-                .addEnumSeries("type", Parameter::getType)
-                .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
-                .build();
+            return CDataframeHandler.createCDataframe(PARAMETERS_MAPPER, importer);
         });
     }
 
@@ -596,11 +601,9 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            CDataframeHandler handler = new CDataframeHandler();
-            mapper.createDataframe(network, handler);
-            return handler.getDataframePtr();
+            return CDataframeHandler.createCDataframe(mapper, network);
         });
     }
 
