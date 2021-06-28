@@ -28,32 +28,33 @@ final class CreateEquipmentHelper {
     private static final Map<String, SeriesDataType> GEN_MAPS = INJECTION_MAPS;
     private static final Map<String, SeriesDataType> BAT_MAPS = INJECTION_MAPS;
 
-    static void createElement(PyPowsyblApiHeader.ElementType elementType, Network network, String id,
-                              Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+    static void createElement(PyPowsyblApiHeader.ElementType elementType, Network network,                              Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
         switch (elementType) {
             case LOAD:
-                createLoad(network, id, doubleMap, strMap);
+                createLoad(network, doubleMap, strMap);
                 break;
             case GENERATOR:
-                createGenerator(network, id, doubleMap, strMap, intMap);
+                createGenerator(network, doubleMap, strMap, intMap);
+                break;
+            case BUSBAR_SECTION:
+                createBusbar(network, doubleMap, strMap, intMap);
                 break;
             case BATTERY:
-                createBat(network, id, doubleMap, strMap, intMap);
+                createBat(network, doubleMap, strMap, intMap);
                 break;
             case SHUNT_COMPENSATOR:
-                createShunt(network, id, doubleMap, strMap, intMap);
+                createShunt(network, doubleMap, strMap, intMap);
                 break;
             case STATIC_VAR_COMPENSATOR:
-                createSVC(network, id, doubleMap, strMap, intMap);
+                createSVC(network, doubleMap, strMap, intMap);
                 break;
             default:
                 throw new PowsyblException();
         }
     }
 
-    private static void createLoad(Network network, String id, Map<String, Double> doubleMap, Map<String, String> strMap) {
-        LoadAdder loadAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newLoad()
-                .setId(id);
+    private static void createLoad(Network network, Map<String, Double> doubleMap, Map<String, String> strMap) {
+        LoadAdder loadAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newLoad();
         Optional.ofNullable(strMap.get("type")).ifPresent(t -> loadAdder.setLoadType(LoadType.valueOf(t)));
         createInjection(loadAdder, strMap);
         loadAdder.setP0(orElseNan(doubleMap, "p0"))
@@ -61,10 +62,17 @@ final class CreateEquipmentHelper {
                 .add();
     }
 
-    private static void createGenerator(Network network, String id, Map<String, Double> doubleMap,
+    private static void createBusbar(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        BusbarSectionAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).getNodeBreakerView()
+                .newBusbarSection();
+        createIdentifiable(adder, strMap);
+        adder.setNode(intMap.get("node"));
+        adder.add();
+    }
+
+    private static void createGenerator(Network network, Map<String, Double> doubleMap,
                                         Map<String, String> strMap, Map<String, Integer> intMap) {
-        GeneratorAdder generatorAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newGenerator()
-                .setId(id);
+        GeneratorAdder generatorAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newGenerator();
         createInjection(generatorAdder, strMap);
         generatorAdder.setMaxP(orElseNan(doubleMap, "max_p"))
                 .setMinP(orElseNan(doubleMap, "min_p"))
@@ -77,11 +85,10 @@ final class CreateEquipmentHelper {
         generatorAdder.add();
     }
 
-    private static void createBat(Network network, String id, Map<String, Double> doubleMap,
+    private static void createBat(Network network, Map<String, Double> doubleMap,
                                   Map<String, String> strMap, Map<String, Integer> intMap) {
         BatteryAdder batteryAdder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
-                .newBattery()
-                .setId(id);
+                .newBattery();
         createInjection(batteryAdder, strMap);
         batteryAdder.setMaxP(orElseNan(doubleMap, "max_p"))
                 .setMinP(orElseNan(doubleMap, "min_p"))
@@ -90,11 +97,10 @@ final class CreateEquipmentHelper {
                 .add();
     }
 
-    private static void createShunt(Network network, String id, Map<String, Double> doubleMap,
+    private static void createShunt(Network network, Map<String, Double> doubleMap,
                                     Map<String, String> strMap, Map<String, Integer> intMap) {
         ShuntCompensatorAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
-                .newShuntCompensator()
-                .setId(id);
+                .newShuntCompensator();
         createInjection(adder, strMap);
         adder.setSectionCount(intMap.get("section_count"))
                 .setTargetDeadband(orElseNan(doubleMap, "target_deadband"))
@@ -102,10 +108,10 @@ final class CreateEquipmentHelper {
         adder.add();
     }
 
-    private static void createSVC(Network network, String id, Map<String, Double> doubleMap,
+    private static void createSVC(Network network, Map<String, Double> doubleMap,
                                   Map<String, String> strMap, Map<String, Integer> intMap) {
         StaticVarCompensatorAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
-                .newStaticVarCompensator().setId(id);
+                .newStaticVarCompensator();
         createInjection(adder, strMap);
         adder.setBmax(orElseNan(doubleMap, "b_max"))
                 .setBmin(orElseNan(doubleMap, "b_min"))
@@ -115,7 +121,13 @@ final class CreateEquipmentHelper {
                 .add();
     }
 
+    private static void createIdentifiable(IdentifiableAdder adder, Map<String, String> strMap) {
+        adder.setId(strMap.get("id"));
+        Optional.ofNullable(strMap.get("name")).ifPresent(adder::setName);
+    }
+
     private static void createInjection(InjectionAdder adder, Map<String, String> strMap) {
+        createIdentifiable(adder, strMap);
         adder.setConnectableBus(strMap.get(CONNECTABLE_BUS_ID))
                 .setBus(strMap.get("bus_id"));
     }

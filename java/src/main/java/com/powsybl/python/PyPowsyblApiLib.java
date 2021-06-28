@@ -757,7 +757,7 @@ public final class PyPowsyblApiLib {
             Map<String, String> strMap = mergeIntoMap(CTypeUtil.toStringList(stringKeysPtr, stringMapCount),
                     CTypeUtil.toStringList(stringValsPtr, stringMapCount));
             Map<String, Integer> intMaps = mergeIntoMap(CTypeUtil.toStringList(intKeysPtr, intMapCount), CTypeUtil.toIntegerList(intValsPtr, intMapCount));
-            CreateEquipmentHelper.createElement(elementType, network, id, doubleMap, strMap, intMaps);
+            CreateEquipmentHelper.createElement(elementType, network, doubleMap, strMap, intMaps);
         });
     }
 
