@@ -25,10 +25,10 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_load_network_from_string(self):
         file_content = """
-        ##C 2007.05.01
-        ##N
-        ##ZBE
-        BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
+##C 2007.05.01
+##N
+##ZBE
+BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
         """
         n = pp.network.load_from_string('simple-eu.uct', file_content)
         self.assertEqual(1, len(n.get_substations()))
