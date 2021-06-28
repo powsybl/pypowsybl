@@ -1,0 +1,4 @@
+[run]
+command_line=-m unittest discover --start-directory tests
+branch = True
+include = */pypowsybl/*
