@@ -93,6 +93,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
           py::arg("parameters"));
 
+    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
+          py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
+
     m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
           py::arg("format"), py::arg("parameters"), py::arg("parameters"));
 
@@ -251,6 +254,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
+    m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
+          py::arg("network"), py::arg("container_id"));
+
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
@@ -407,6 +413,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
     m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
 
+    m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
+          py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
+          py::arg("contingency_ids"));
 
+    py::enum_<contingency_context_type>(m, "ContingencyContextType")
+            .value("ALL", contingency_context_type::ALL)
+            .value("NONE", contingency_context_type::NONE)
+            .value("SPECIFIC", contingency_context_type::SPECIFIC)
+            .export_values();
 
+    m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+
+    m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
+          py::arg("result"));
+    m.def("get_bus_results", &pypowsybl::getBusResults, "create a table with all bus results computed after security analysis",
+          py::arg("result"));
+    m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
+          "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
 }

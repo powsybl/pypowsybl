@@ -6,6 +6,10 @@
  */
 package com.powsybl.dataframe.impl;
 
+import com.powsybl.commons.PowsyblException;
+
+import java.util.Optional;
+
 /**
  * POJO representation of a series.
  * Using a "union type" for now (only one type of array is used).
@@ -61,18 +65,22 @@ public class Series {
     }
 
     public double[] getDoubles() {
-        return doubles;
+        return Optional.ofNullable(doubles)
+            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type double"));
     }
 
     public int[] getInts() {
-        return ints;
+        return Optional.ofNullable(ints)
+            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type int"));
     }
 
     public boolean[] getBooleans() {
-        return booleans;
+        return Optional.ofNullable(booleans)
+            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type boolean"));
     }
 
     public String[] getStrings() {
-        return strings;
+        return Optional.ofNullable(strings)
+            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type string"));
     }
 }
