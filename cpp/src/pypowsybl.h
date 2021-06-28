@@ -105,8 +105,6 @@ enum ConnectedComponentMode {
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 
-void freeLoadflowParamterPointer(load_flow_parameters& parameters);
-
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);

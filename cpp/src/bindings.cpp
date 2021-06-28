@@ -163,7 +163,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                  parameters->countries_to_balance = config_params->countries_to_balance;
                  parameters->countries_to_balance_count = config_params->countries_to_balance_count;
                  parameters->connected_component_mode = config_params->connected_component_mode;
-                 pypowsybl::freeLoadflowParamterPointer(*config_params);
+                 delete config_params;
                 return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
                     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
                     delete ptr;
