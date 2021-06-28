@@ -6,8 +6,10 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.iidm.network.StaticVarCompensator;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
+import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -58,5 +60,29 @@ class CreateEquipmentHelperTest {
         CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR,
                 network, "SHUNT2", doubleMap, strMap, ints);
         assertEquals(2, network.getShuntCompensatorCount());
+    }
+
+    @Test
+    void svc() {
+        var network = SvcTestCaseFactory.create();
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("b_min", 0.0003),
+                entry("b_max", 0.0009),
+                entry("target_v", 30.0),
+                entry("voltage_setpoint", 391.0)
+        );
+        Map<String, Integer> ints = Map.ofEntries(
+                entry("section_count", 4)
+        );
+        var mode = StaticVarCompensator.RegulationMode.OFF;
+        Map<String, String> strMap = Map.ofEntries(
+                entry("voltage_level_id", "VL2"),
+                entry("connectable_bus_id", "B2"),
+                entry("regulation_mode", mode.name()),
+                entry("bus_id", "B2"));
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.STATIC_VAR_COMPENSATOR,
+                network, "SVC", doubleMap, strMap, ints);
+        assertEquals(2, network.getStaticVarCompensatorCount());
+        assertEquals(mode, network.getStaticVarCompensator("SVC").getRegulationMode());
     }
 }

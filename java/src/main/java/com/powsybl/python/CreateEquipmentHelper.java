@@ -43,6 +43,9 @@ final class CreateEquipmentHelper {
             case SHUNT_COMPENSATOR:
                 createShunt(network, id, doubleMap, strMap, intMap);
                 break;
+            case STATIC_VAR_COMPENSATOR:
+                createSVC(network, id, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
@@ -96,6 +99,19 @@ final class CreateEquipmentHelper {
                 .setTargetDeadband(orElseNan(doubleMap, "target_deadband"))
                 .setTargetV(orElseNan(doubleMap, "target_v"));
         adder.add();
+    }
+
+    private static void createSVC(Network network, String id, Map<String, Double> doubleMap,
+                                  Map<String, String> strMap, Map<String, Integer> intMap) {
+        StaticVarCompensatorAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID))
+                .newStaticVarCompensator().setId(id);
+        createInjection(adder, strMap);
+        adder.setBmax(orElseNan(doubleMap, "b_max"))
+                .setBmin(orElseNan(doubleMap, "b_min"))
+                .setRegulationMode(StaticVarCompensator.RegulationMode.valueOf(strMap.get("regulation_mode")))
+                .setVoltageSetpoint(orElseNan(doubleMap, "voltage_setpoint"))
+                .setReactivePowerSetpoint(orElseNan(doubleMap, "reactive_power_setpoint"))
+                .add();
     }
 
     private static void createInjection(InjectionAdder adder, Map<String, String> strMap) {

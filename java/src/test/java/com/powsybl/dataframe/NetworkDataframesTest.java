@@ -198,7 +198,9 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q",
+                    "b_min", "b_max",
+                    "voltage_level_id", "bus_id");
     }
 
     @Test

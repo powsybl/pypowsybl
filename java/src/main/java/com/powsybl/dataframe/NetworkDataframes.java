@@ -344,6 +344,8 @@ public final class NetworkDataframes {
                    StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
+            .doubles("b_min", StaticVarCompensator::getBmin)
+            .doubles("b_max", StaticVarCompensator::getBmax)
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", svc -> getBusId(svc.getTerminal()))
             .addProperties()
