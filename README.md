@@ -6,7 +6,11 @@
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 [![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/powsybl)
 
-The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
+
+
+The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
 
 ## Installation
@@ -29,7 +33,7 @@ Requirements:
 
 - Maven >= 3.1
 - Cmake >= 3.14
-- C++11 compiler 
+- C++11 compiler
 - Python >= 3.7
 - [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
