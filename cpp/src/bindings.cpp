@@ -93,6 +93,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
           py::arg("parameters"));
 
+    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
+          py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
+
     m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
           py::arg("format"), py::arg("parameters"), py::arg("parameters"));
 
