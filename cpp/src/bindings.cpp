@@ -97,10 +97,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
 
     m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
-          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
+          py::arg("format"), py::arg("parameters"));
 
     m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format",
-          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
+          py::arg("format"), py::arg("parameters"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
