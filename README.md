@@ -46,7 +46,7 @@ pip3 install . --user
 
 To run unit tests:
 ```bash
-python3 -m unittest tests/test.py
+python3 -m unittest discover --start-directory tests
 ```
 
 ## Usage
