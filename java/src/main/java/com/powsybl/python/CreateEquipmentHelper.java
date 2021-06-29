@@ -28,7 +28,8 @@ final class CreateEquipmentHelper {
     private static final Map<String, SeriesDataType> GEN_MAPS = INJECTION_MAPS;
     private static final Map<String, SeriesDataType> BAT_MAPS = INJECTION_MAPS;
 
-    static void createElement(PyPowsyblApiHeader.ElementType elementType, Network network,                              Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+    static void createElement(PyPowsyblApiHeader.ElementType elementType, Network network,
+                              Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
         switch (elementType) {
             case LOAD:
                 createLoad(network, doubleMap, strMap);
@@ -42,6 +43,9 @@ final class CreateEquipmentHelper {
             case BATTERY:
                 createBat(network, doubleMap, strMap, intMap);
                 break;
+            case DANGLING_LINE:
+                createDanglingLine(network, doubleMap, strMap, intMap);
+                break;
             case SHUNT_COMPENSATOR:
                 createShunt(network, doubleMap, strMap, intMap);
                 break;
@@ -51,6 +55,18 @@ final class CreateEquipmentHelper {
             default:
                 throw new PowsyblException();
         }
+    }
+
+    private static void createDanglingLine(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        DanglingLineAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newDanglingLine();
+        createInjection(adder, strMap);
+        adder.setP0(orElseNan(doubleMap, "p0"))
+                .setQ0(orElseNan(doubleMap, "q0"))
+                .setR(orElseNan(doubleMap, "r"))
+                .setX(orElseNan(doubleMap, "x"))
+                .setG(orElseNan(doubleMap, "g"))
+                .setB(orElseNan(doubleMap, "b"));
+        adder.add();
     }
 
     private static void createLoad(Network network, Map<String, Double> doubleMap, Map<String, String> strMap) {

@@ -8,10 +8,7 @@ package com.powsybl.python;
 
 import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.StaticVarCompensator;
-import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
-import com.powsybl.iidm.network.test.HvdcTestNetwork;
-import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
-import com.powsybl.iidm.network.test.SvcTestCaseFactory;
+import com.powsybl.iidm.network.test.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -25,6 +22,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 class CreateEquipmentHelperTest {
+
+    @Test
+    void danglingLine() {
+        var network = DanglingLineNetworkFactory.create();
+        Map<String, String> strMap = Map.ofEntries(
+                entry("id", "dl2"),
+                entry("name", "name-dl2"),
+                entry("connectable_bus_id", "BUS"),
+                entry("bus_id", "BUS"),
+                entry("voltage_level_id", "VL"));
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("r", 0.6d),
+                entry("x", 1d),
+                entry("g", Math.pow(10, -6)),
+                entry("b", Math.pow(10, -6) * 4),
+                entry("p0", 102d),
+                entry("q0", 151d)
+        );
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.DANGLING_LINE, network, doubleMap, strMap, Collections.emptyMap());
+        assertEquals(2, network.getDanglingLineCount());
+    }
 
     @Test
     void busbar() {
