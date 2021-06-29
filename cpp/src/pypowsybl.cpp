@@ -245,6 +245,22 @@ void* loadNetwork(const std::string& file, const std::map<std::string, std::stri
                               parameterValuesPtr.get(), parameterValues.size());
 }
 
+void* loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    return callJava<void*>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
+                           parameterNamesPtr.get(), parameterNames.size(),
+                           parameterValuesPtr.get(), parameterValues.size());
+}
+
 void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
@@ -297,6 +313,10 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::sha
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
+}
+
+std::string getSingleLineDiagramSvg(void* network, const std::string& containerId) {
+    return std::string(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
 void* createSecurityAnalysis() {

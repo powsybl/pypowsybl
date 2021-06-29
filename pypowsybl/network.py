@@ -15,6 +15,22 @@ from typing import Set
 import pandas as pd
 
 
+class SingleLineDiagram:
+    """ This class represents a single line diagram."""
+    def __init__(self, svg: str):
+        self._svg = svg
+
+    @property
+    def svg(self):
+        return self._svg
+
+    def __str__(self):
+        return self._svg
+
+    def _repr_svg_(self):
+        return self._svg
+
+
 class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
@@ -53,7 +69,24 @@ class Network(ObjectHandle):
         _pypowsybl.reduce_network(self.ptr, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
+        """ Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
+
+        Args:
+            container_id: a voltage level id or a substation id
+            svg_file: a svg file path
+        """
         _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+
+    def get_single_line_diagram(self, container_id: str):
+        """ Create a single line diagram from a voltage level or a substation.
+
+        Args:
+            container_id: a voltage level id or a substation id
+
+        Returns:
+            the single line diagram
+        """
+        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self.ptr, container_id))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
@@ -256,23 +289,31 @@ class Network(ObjectHandle):
             element_type (ElementType): the element type
             df (DataFrame): the ``Pandas`` data frame
         """
-        for seriesName in df.columns.values:
-            series = df[seriesName]
-            series_type = _pypowsybl.get_series_type(element_type, seriesName)
+        for series_name in df.columns.values:
+            series = df[series_name]
+            series_type = _pypowsybl.get_series_type(element_type, series_name)
             if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, series_name, df.index.values,
                                                                    series.values, len(series))
             elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
                 raise PyPowsyblError(
-                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
+                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
+
+    def update_buses(self, df: pd.DataFrame):
+        """ Update buses with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.BUS, df)
 
     def update_switches(self, df: pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
@@ -538,10 +579,25 @@ def get_import_parameters(format: str) -> pd.DataFrame:
 def load(file: str, parameters: dict = {}) -> Network:
     """ Load a network from a file. File should be in a supported format.
 
-    :param file: a file
-    :type file: str
-    :param parameters: a map of parameters
-    :type parameters: dict, optional
-    :return: a network
+    Args:
+       file (str): a file
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
     """
     return Network(_pypowsybl.load_network(file, parameters))
+
+
+def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+    """ Load a network from a string. File content should be in a supported format.
+
+    Args:
+       file_name (str): file name
+       file_content (str): file content
+       parameters (dict, optional): a map of parameters
+
+    Returns:
+        a network
+    """
+    return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))

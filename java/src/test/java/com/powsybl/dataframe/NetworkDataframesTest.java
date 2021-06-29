@@ -58,9 +58,15 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "v_mag", "v_angle");
+            .containsExactly("id", "v_mag", "v_angle", "connected_component", "synchronous_component", "voltage_level_id");
         assertThat(series.get(1).getDoubles())
             .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        assertThat(series.get(3).getInts())
+            .containsExactly(0, 0, 0, 0);
+        assertThat(series.get(4).getInts())
+            .containsExactly(0, 0, 0, 0);
+        assertThat(series.get(5).getStrings())
+            .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
     }
 
     @Test

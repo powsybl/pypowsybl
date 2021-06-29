@@ -50,6 +50,11 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -254,6 +259,24 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "loadNetworkFromString")
+    public static ObjectHandle loadNetworkFromString(IsolateThread thread, CCharPointer fileName, CCharPointer fileContent,
+                                                     CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                     CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String fileNameStr = CTypeUtil.toString(fileName);
+            String fileContentStr = CTypeUtil.toString(fileContent);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
+                Network network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+                return ObjectHandles.getGlobal().create(network);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     @CEntryPoint(name = "dumpNetwork")
     public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
@@ -404,6 +427,17 @@ public final class PyPowsyblApiLib {
             String containerIdStr = CTypeUtil.toString(containerId);
             String svgFileStr = CTypeUtil.toString(svgFile);
             SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr);
+        });
+    }
+
+    @CEntryPoint(name = "getSingleLineDiagramSvg")
+    public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
+                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String containerIdStr = CTypeUtil.toString(containerId);
+            String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
         });
     }
 
