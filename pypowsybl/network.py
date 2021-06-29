@@ -59,6 +59,16 @@ class Network(ObjectHandle):
         """
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
 
+    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}):
+        """Save a network to a file using a specified format.
+
+        :param format: format to save the network
+        :type format: str, defaults to 'XIIDM'
+        :param parameters: a map of parameters
+        :type parameters: dict
+        """
+        return _pypowsybl.dump_network_to_string(self.ptr, format, parameters)
+
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):
         vls = []

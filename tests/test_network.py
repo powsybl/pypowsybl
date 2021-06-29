@@ -33,6 +33,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.load_from_string('simple-eu.uct', file_content)
         self.assertEqual(1, len(n.get_substations()))
 
+    def test_dump_to_string(self):
+        bat_path = TEST_DIR.joinpath('battery.xiidm')
+        xml = bat_path.read_text()
+        n = pp.network.load(str(bat_path))
+        self.assertEqual(xml, n.dump_to_string())
+
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
         self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
