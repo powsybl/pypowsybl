@@ -433,4 +433,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"));
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
+
+    m.def("get_current_limits", &pypowsybl::getCurrentLimits,
+          "get all information as a dataframe about current limits on a network", py::arg("network"));
 }

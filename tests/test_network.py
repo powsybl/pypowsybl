@@ -10,7 +10,6 @@ import pandas as pd
 import pathlib
 from numpy import NaN
 
-
 TEST_DIR = pathlib.Path(__file__).parent
 
 
@@ -82,7 +81,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_eurostag_tutorial_example1_network()
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                         'voltage_level_id'],
                                 data=[[NaN, NaN, 0, 0, 'VLGEN'],
                                       [380, NaN, 0, 0, 'VLHV1'],
                                       [380, NaN, 0, 0, 'VLHV2'],
@@ -92,7 +92,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[400, 0]]))
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                         'voltage_level_id'],
                                 data=[[400, 0, 0, 0, 'VLGEN'],
                                       [380, NaN, 0, 0, 'VLHV1'],
                                       [380, NaN, 0, 0, 'VLHV2'],
@@ -314,6 +315,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
+
+    def test_current_limits(self):
+        network = pp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual(9, len(network.get_current_limits()))
+        self.assertEqual(5, len(network.get_current_limits().loc['NHV1_NHV2_1']))
+        current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
+                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
+                                columns=['side', 'value', 'acceptable_duration', 'is_fictitious'],
+                                data=[['TWO', 1200.0, 600, False]])
+        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
 
 if __name__ == '__main__':

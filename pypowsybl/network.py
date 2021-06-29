@@ -452,6 +452,14 @@ class Network(ObjectHandle):
         """
         return _pypowsybl.get_variant_ids(self.ptr)
 
+    def get_current_limits(self):
+        """
+        Get the list of all current limits on the network paired with their branch id.
+        Returns:
+            all current limits on the network
+        """
+        return create_data_frame_from_series_array(_pypowsybl.get_current_limits(self.ptr))
+
 
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.

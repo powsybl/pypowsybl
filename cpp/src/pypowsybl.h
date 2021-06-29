@@ -213,6 +213,7 @@ SeriesArray* getBusResults(void* securityAnalysisResult);
 
 SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult);
 
+SeriesArray* getCurrentLimits(void* network);
 }
 
 #endif //PYPOWSYBL_H

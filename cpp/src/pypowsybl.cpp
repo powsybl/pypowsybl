@@ -496,8 +496,8 @@ void addMonitoredElements(void* securityAnalysisContext, contingency_context_typ
     threeWindingsTransformerIds.size(), contingencyIdsPtr.get(), contingencyIds.size());
 }
 
-SeriesArray* getSecurityAnalysisResult(void* securityAnalysisResult) {
-    return new SeriesArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
+ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult) {
+    return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
 }
 
 SeriesArray* getLimitViolations(void* securityAnalysisResult) {
@@ -514,5 +514,9 @@ SeriesArray* getBusResults(void* securityAnalysisResult) {
 
 SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
+}
+
+SeriesArray* getCurrentLimits(void* network) {
+    return new SeriesArray(callJava<array*>(::getCurrentLimits, network));
 }
 }

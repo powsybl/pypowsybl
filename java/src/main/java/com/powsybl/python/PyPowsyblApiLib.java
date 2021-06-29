@@ -18,6 +18,7 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
+import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -1084,6 +1085,36 @@ public final class PyPowsyblApiLib {
                 .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
                 .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
                 .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
+                .build();
+        });
+    }
+
+    @CEntryPoint(name = "getCurrentLimits")
+    public static ArrayPointer<SeriesPointer> getCurrentLimits(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<TemporaryLimitContext> temporaryLimitContexts = new ArrayList<>();
+            network.getBranchStream().forEach(branch -> {
+                if (branch.getCurrentLimits1() != null) {
+                    temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
+                    temporaryLimitContexts.addAll(branch.getCurrentLimits1().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
+                            temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
+                }
+                if (branch.getCurrentLimits2() != null) {
+                    temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
+                    temporaryLimitContexts.addAll(branch.getCurrentLimits2().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
+                            temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
+                }
+            });
+            return new SeriesPointerArrayBuilder<>(temporaryLimitContexts)
+                .addStringSeries("branch_id", true, TemporaryLimitContext::getBranchId)
+                .addStringSeries("name", true, TemporaryLimitContext::getName)
+                .addEnumSeries("side", TemporaryLimitContext::getSide)
+                .addDoubleSeries("value", TemporaryLimitContext::getValue)
+                .addIntSeries("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
+                .addBooleanSeries("is_fictitious", TemporaryLimitContext::isFictitious)
                 .build();
         });
     }
