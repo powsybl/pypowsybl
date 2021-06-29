@@ -20,10 +20,11 @@ import pandas as pd
 
 TO_REMOVE='TO_REMOVE'
 
+
 class Zone:
-    def __init__(self, id: str, shift_keys_by_injections_ids: Dict[str, float] = {}):
+    def __init__(self, id: str, shift_keys_by_injections_ids: Dict[str, float] = None):
         self._id = id
-        self._shift_keys_by_injections_ids = shift_keys_by_injections_ids
+        self._shift_keys_by_injections_ids = {} if shift_keys_by_injections_ids is None else shift_keys_by_injections_ids
 
     @property
     def id(self):
@@ -36,10 +37,6 @@ class Zone:
     @property
     def injections_ids(self):
         return list(self._shift_keys_by_injections_ids.keys())
-
-    @property
-    def shift_keys_by_injections_ids(self):
-        return self._shift_keys_by_injections_ids
 
     def get_shift_key(self, injection_id: str):
         shift_key = self._shift_keys_by_injections_ids.get(injection_id)
@@ -206,11 +203,6 @@ class SensitivityAnalysis(ContingencyContainer):
         ContingencyContainer.__init__(self, ptr)
         self.branches_ids = None
         self.branch_data_frame_index = None
-
-    @staticmethod
-    def __create_cpp_zone(zone: Zone) -> _pypowsybl.Zone:
-        return _pypowsybl.Zone(zone.id, list(zone.shift_keys_by_injections_ids.keys()),
-                               list(zone.shift_keys_by_injections_ids.values()))
 
     def set_zones(self, zones: List[Zone]):
         """ Define zones that will be used in branch flow factor matrix.

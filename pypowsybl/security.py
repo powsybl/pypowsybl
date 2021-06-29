@@ -15,7 +15,7 @@ from _pypowsybl import Side
 from _pypowsybl import ContingencyContextType
 from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
-from pypowsybl.util import ContingencyContainer
+from pypowsybl.util import ContingencyContainer, ObjectHandle as _ObjectHandle
 from prettytable import PrettyTable
 
 ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
@@ -37,9 +37,13 @@ LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
                                        f")"
 
 
-class SecurityAnalysisResult:
+class SecurityAnalysisResult(_ObjectHandle):
+    """
+    The result of a security analysis.
+    """
+
     def __init__(self, result):
-        self.ptr = result
+        super().__init__(result)
         results = _pypowsybl.get_security_analysis_result(result)
         self._post_contingency_results = {}
         for result in results:
@@ -59,7 +63,7 @@ class SecurityAnalysisResult:
     def find_post_contingency_result(self, contingency_id: str):
         result = self._post_contingency_results[contingency_id]
         if not result:
-            raise Exception("Contingency '%s' not found".format(contingency_id))
+            raise KeyError("Contingency {} not found".format(contingency_id))
         return result
 
     def get_table(self):
