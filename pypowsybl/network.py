@@ -50,22 +50,22 @@ class Network(ObjectHandle):
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
         """Save a network to a file using a specified format.
 
-        :param file: a file
-        :type file: str
-        :param format: format to save the network
-        :type format: str, defaults to 'XIIDM'
-        :param parameters: a map of parameters
-        :type parameters: dict
+        Args:
+            file (str): a file
+            format (str, optional): format to save the network, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
         """
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}):
+    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
         """Save a network to a string using a specified format.
 
-        :param format: format to save the network
-        :type format: str, defaults to 'XIIDM'
-        :param parameters: a map of parameters
-        :type parameters: dict
+        Args:
+            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
+
+        Returns:
+            a string representing network
         """
         return _pypowsybl.dump_network_to_string(self.ptr, format, parameters)
 
