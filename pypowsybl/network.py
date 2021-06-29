@@ -60,7 +60,7 @@ class Network(ObjectHandle):
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}):
-        """Save a network to a file using a specified format.
+        """Save a network to a string using a specified format.
 
         :param format: format to save the network
         :type format: str, defaults to 'XIIDM'

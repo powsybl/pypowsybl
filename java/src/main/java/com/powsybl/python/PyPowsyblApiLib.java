@@ -302,14 +302,16 @@ public final class PyPowsyblApiLib {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             MemDataSource dataSource = new MemDataSource();
             var exporter = Exporters.getExporter(formatStr);
+            if (exporter == null) {
+                throw new PowsyblException("No expoxter found for '" + formatStr + "' to export as a string");
+            }
             exporter.export(network, parameters, dataSource);
             try {
-                var exts = dataSource.listNames(".*?");
-                if (exts.size() != 1) {
-                    throw new PowsyblException("Datasource file error");
+                var names = dataSource.listNames(".*?");
+                if (names.size() != 1) {
+                    throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
                 }
-                String ext = Iterables.getOnlyElement(exts).substring(1);
-                try (InputStream is = new ByteArrayInputStream(dataSource.getData(null, ext));
+                try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
                      ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                     IOUtils.copy(is, os);
                     return CTypeUtil.toCharPtr(os.toString());
