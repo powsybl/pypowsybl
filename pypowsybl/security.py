@@ -63,7 +63,7 @@ class SecurityAnalysisResult(_ObjectHandle):
     def find_post_contingency_result(self, contingency_id: str):
         result = self._post_contingency_results[contingency_id]
         if not result:
-            raise Exception("Contingency '%s' not found".format(contingency_id))
+            raise KeyError("Contingency {} not found".format(contingency_id))
         return result
 
     def get_table(self):
