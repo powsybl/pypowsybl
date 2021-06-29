@@ -289,23 +289,23 @@ class Network(ObjectHandle):
             element_type (ElementType): the element type
             df (DataFrame): the ``Pandas`` data frame
         """
-        for seriesName in df.columns.values:
-            series = df[seriesName]
-            series_type = _pypowsybl.get_series_type(element_type, seriesName)
+        for series_name in df.columns.values:
+            series = df[series_name]
+            series_type = _pypowsybl.get_series_type(element_type, series_name)
             if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, series_name, df.index.values,
                                                                    series.values, len(series))
             elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
                 raise PyPowsyblError(
-                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
+                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
 
     def update_buses(self, df: pd.DataFrame):
         """ Update buses with a ``Pandas`` data frame.
