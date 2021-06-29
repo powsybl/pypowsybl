@@ -139,6 +139,8 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
 void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
+void* loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
+
 void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
 
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
@@ -151,11 +153,13 @@ LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::sha
 
 void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
 
+std::string getSingleLineDiagramSvg(void* network, const std::string& containerId);
+
 void* createSecurityAnalysis();
 
 void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-ContingencyResultArray* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
+void* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
 
 void* createSensitivityAnalysis();
 
@@ -199,6 +203,18 @@ void removeVariant(void* network, std::string& variant);
 void cloneVariant(void* network, std::string& src, std::string& variant, bool mayOverwrite);
 
 std::vector<std::string> getVariantsIds(void* network);
+
+void addMonitoredElements(void* securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
+                      const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
+                      const std::vector<std::string>& contingencyIds);
+
+ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult);
+
+SeriesArray* getBranchResults(void* securityAnalysisResult);
+
+SeriesArray* getBusResults(void* securityAnalysisResult);
+
+SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult);
 
 }
 

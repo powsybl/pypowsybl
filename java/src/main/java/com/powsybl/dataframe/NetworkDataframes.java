@@ -146,10 +146,14 @@ public final class NetworkDataframes {
     }
 
     static DataframeMapper buses() {
-        return DataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream())
+        return DataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
+                                               getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
             .stringsIndex("id", Bus::getId)
             .doubles("v_mag", Bus::getV, Bus::setV)
             .doubles("v_angle", Bus::getAngle, Bus::setAngle)
+            .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
+            .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
+            .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
             .addProperties()
             .build();
     }
