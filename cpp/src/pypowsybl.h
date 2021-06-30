@@ -142,6 +142,8 @@ void* loadNetworkFromString(const std::string& fileName, const std::string& file
 
 void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
 
+std::string dumpNetworkToString(void* network, const std::string& format, const std::map<std::string, std::string>& parameters);
+
 void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
 LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);

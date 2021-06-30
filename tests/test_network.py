@@ -4,11 +4,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
-import pypowsybl as pp
-import pandas as pd
+import copy
 import pathlib
+import unittest
+
+import pandas as pd
 from numpy import NaN
+
+import pypowsybl as pp
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -31,6 +34,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         """
         n = pp.network.load_from_string('simple-eu.uct', file_content)
         self.assertEqual(1, len(n.get_substations()))
+
+    def test_dump_to_string(self):
+        bat_path = TEST_DIR.joinpath('battery.xiidm')
+        xml = bat_path.read_text()
+        n = pp.network.load(str(bat_path))
+        self.assertEqual(xml, n.dump_to_string())
 
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
@@ -316,16 +325,23 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
 
-    def test_current_limits(self):
-        network = pp.network.create_eurostag_tutorial_example1_network()
-        self.assertEqual(9, len(network.get_current_limits()))
-        self.assertEqual(5, len(network.get_current_limits().loc['NHV1_NHV2_1']))
-        current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
-        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
-                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
-                                columns=['side', 'value', 'acceptable_duration', 'is_fictitious'],
-                                data=[['TWO', 1200.0, 600, False]])
-        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
+
+def test_current_limits(self):
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    self.assertEqual(9, len(network.get_current_limits()))
+    self.assertEqual(5, len(network.get_current_limits().loc['NHV1_NHV2_1']))
+    current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
+    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
+                                                            tuples=[('NHV1_NHV2_1', '10\'')]),
+                            columns=['side', 'value', 'acceptable_duration', 'is_fictitious'],
+                            data=[['TWO', 1200.0, 600, False]])
+    pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
+
+def test_deep_copy(self):
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    copy_n = copy.deepcopy(n)
+    self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
+                     copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
 
 
 if __name__ == '__main__':

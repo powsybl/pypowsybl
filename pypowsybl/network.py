@@ -4,15 +4,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import sys
 import _pypowsybl
-from _pypowsybl import PyPowsyblError
+import sys
 from _pypowsybl import ElementType
-from pypowsybl.util import ObjectHandle
-from pypowsybl.util import create_data_frame_from_series_array
+from _pypowsybl import PyPowsyblError
 from typing import List
 from typing import Set
+
 import pandas as pd
+
+from pypowsybl.util import ObjectHandle
+from pypowsybl.util import create_data_frame_from_series_array
 
 
 class SingleLineDiagram:
@@ -35,6 +37,14 @@ class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
+    def __getstate__(self):
+        return {'xml': self.dump_to_string()}
+
+    def __setstate__(self, state):
+        xml = state['xml']
+        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
+        self.ptr = n
+
     def open_switch(self, id: str):
         return _pypowsybl.update_switch_position(self.ptr, id, True)
 
@@ -50,14 +60,24 @@ class Network(ObjectHandle):
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
         """Save a network to a file using a specified format.
 
-        :param file: a file
-        :type file: str
-        :param format: format to save the network
-        :type format: str, defaults to 'XIIDM'
-        :param parameters: a map of parameters
-        :type parameters: dict
+        Args:
+            file (str): a file
+            format (str, optional): format to save the network, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
         """
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
+
+    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
+        """Save a network to a string using a specified format.
+
+        Args:
+            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
+
+        Returns:
+            a string representing network
+        """
+        return _pypowsybl.dump_network_to_string(self.ptr, format, parameters)
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):

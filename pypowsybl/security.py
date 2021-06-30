@@ -47,7 +47,6 @@ class SecurityAnalysisResult(_ObjectHandle):
         results = _pypowsybl.get_security_analysis_result(self.ptr)
         self._post_contingency_results = {}
         for result in results:
-            print(result)
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
             else:
@@ -93,6 +92,7 @@ class SecurityAnalysisResult(_ObjectHandle):
 
     @property
     def branch_results(self):
+
         return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self.ptr))
 
     @property
