@@ -52,9 +52,27 @@ final class CreateEquipmentHelper {
             case STATIC_VAR_COMPENSATOR:
                 createSVC(network, doubleMap, strMap, intMap);
                 break;
+            case VSC_CONVERTER_STATION:
+                createVSC(network, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
+    }
+
+    private static void createHvdc(HvdcConverterStationAdder adder, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        createInjection(adder, strMap);
+        adder.setLossFactor(orElseFloatNan(doubleMap, "loss_factor"));
+    }
+
+    private static void createVSC(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        VscConverterStationAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newVscConverterStation();
+        createHvdc(adder, doubleMap, strMap, intMap);
+        adder.setVoltageSetpoint(orElseNan(doubleMap, "voltage_setpoint"))
+                .setReactivePowerSetpoint(orElseNan(doubleMap, "reactive_power_setpoint"))
+                // TODO NPL
+                .setVoltageRegulatorOn(intMap.get("voltage_regulator_on") == 1);
+        adder.add();
     }
 
     private static void createDanglingLine(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
@@ -150,6 +168,11 @@ final class CreateEquipmentHelper {
 
     private static double orElseNan(Map<String, Double> doubleMap, String field) {
         return Optional.ofNullable(doubleMap.get(field)).orElse(Double.NaN);
+    }
+
+    private static float orElseFloatNan(Map<String, Double> doubleMap, String field) {
+        return Optional.ofNullable(doubleMap.get(field))
+                .map((Double::floatValue)).orElse(Float.NaN);
     }
 
     static int getAdderSeriesType(PyPowsyblApiHeader.ElementType type, String fieldName) {
