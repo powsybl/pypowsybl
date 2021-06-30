@@ -113,6 +113,10 @@ void init();
 
 void setDebugMode(bool debug);
 
+void setConfigRead(bool configRead);
+
+bool isConfigRead();
+
 std::string getVersionTable();
 
 void* createEmptyNetwork(const std::string& id);

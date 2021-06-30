@@ -70,6 +70,8 @@ import static com.powsybl.python.PyPowsyblApiHeader.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
+    static boolean readConfig = false;
+
     private PyPowsyblApiLib() {
     }
 
@@ -132,6 +134,18 @@ public final class PyPowsyblApiLib {
             Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
         });
+    }
+
+    @CEntryPoint(name = "setConfigRead")
+    public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            readConfig = read;
+        });
+    }
+
+    @CEntryPoint(name = "isConfigRead")
+    public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> readConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")

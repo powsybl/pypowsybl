@@ -194,6 +194,14 @@ void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
+void setConfigRead(bool configRead) {
+    callJava<>(::setConfigRead, configRead);
+}
+
+bool isConfigRead() {
+    return callJava<bool>(::isConfigRead);
+}
+
 std::string getVersionTable() {
     return std::string(callJava<char*>(::getVersionTable));
 }
