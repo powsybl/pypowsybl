@@ -24,6 +24,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CreateEquipmentHelperTest {
 
     @Test
+    void lcc() {
+        var network = HvdcTestNetwork.createLcc();
+        Map<String, String> strMap = Map.ofEntries(
+                entry("id", "C3"),
+                entry("name", "name-c3"),
+                entry("connectable_bus_id", "B1"),
+                entry("bus_id", "B1"),
+                entry("voltage_level_id", "VL1"));
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("loss_factor", 0.9d),
+                entry("power_factor", 0.9d)
+        );
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION, network, doubleMap, strMap, Collections.emptyMap());
+        assertEquals(3, network.getLccConverterStationCount());
+    }
+
+    @Test
     void vsc() {
         var network = HvdcTestNetwork.createVsc();
         Map<String, String> strMap = Map.ofEntries(

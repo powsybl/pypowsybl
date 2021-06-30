@@ -55,9 +55,19 @@ final class CreateEquipmentHelper {
             case VSC_CONVERTER_STATION:
                 createVSC(network, doubleMap, strMap, intMap);
                 break;
+            case LCC_CONVERTER_STATION:
+                createLCC(network, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
+    }
+
+    private static void createLCC(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        LccConverterStationAdder adder = network.getVoltageLevel(strMap.get(VOLTAGE_LEVEL_ID)).newLccConverterStation();
+        createHvdc(adder, doubleMap, strMap, intMap);
+        adder.setPowerFactor(orElseFloatNan(doubleMap, "power_factor"));
+        adder.add();
     }
 
     private static void createHvdc(HvdcConverterStationAdder adder, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
