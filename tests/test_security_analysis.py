@@ -29,8 +29,8 @@ class SecurityAnalysisTestCase(unittest.TestCase):
         sa.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
 
         sa_result = sa.run_ac(n)
-        bus_results = sa_result.get_bus_results()
-        branch_results = sa_result.get_branch_results()
+        bus_results = sa_result.bus_results
+        branch_results = sa_result.branch_results
 
         expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'voltage_level_id', 'bus_id'],
                                                                 tuples=[('', 'VLHV2', 'NHV2'),
