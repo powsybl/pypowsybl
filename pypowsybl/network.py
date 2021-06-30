@@ -41,8 +41,8 @@ class Network(ObjectHandle):
         return {'xml': self.dump_to_string()}
 
     def __setstate__(self, state):
-        str = state['xml']
-        n = _pypowsybl.load_network_from_string('tmp.xiidm', str, {})
+        xml = state['xml']
+        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
         self.ptr = n
 
     def open_switch(self, id: str):
