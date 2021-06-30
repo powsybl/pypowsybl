@@ -4,12 +4,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
-import pypowsybl as pp
-import pandas as pd
+import copy
 import pathlib
+import unittest
+
+import pandas as pd
 from numpy import NaN
 
+import pypowsybl as pp
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -321,6 +323,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
 
+    def test_deep_copy(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        copy_n = copy.deepcopy(n)
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
+                         copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
 
 if __name__ == '__main__':
     unittest.main()
