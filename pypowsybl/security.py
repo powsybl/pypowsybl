@@ -4,7 +4,7 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import List, Union
+from typing import Union, Dict
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 from typing import List
@@ -55,11 +55,11 @@ class SecurityAnalysisResult(_ObjectHandle):
         self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self.ptr))
 
     @property
-    def pre_contingency_result(self):
+    def pre_contingency_result(self) -> ContingencyResult:
         return self._pre_contingency_result
 
     @property
-    def post_contingency_results(self):
+    def post_contingency_results(self) -> Dict[str, ContingencyResult]:
         return self._post_contingency_results
 
     def find_post_contingency_result(self, contingency_id: str):

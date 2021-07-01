@@ -561,8 +561,8 @@ public final class PyPowsyblApiLib {
                     .collect(Collectors.toList())));
             return new SeriesPointerArrayBuilder<>(limitViolations)
                     .addStringSeries("contingency_id", true, LimitViolationContext::getContingencyId)
-                    .addStringSeries("violation_id", true, LimitViolation::getSubjectId)
-                    .addStringSeries("violation_name", p -> Objects.toString(p.getSubjectName(), ""))
+                    .addStringSeries("subject_id", true, LimitViolation::getSubjectId)
+                    .addStringSeries("subject_name", p -> Objects.toString(p.getSubjectName(), ""))
                     .addEnumSeries("limit_type", LimitViolation::getLimitType)
                     .addStringSeries("limit_name", p -> Objects.toString(p.getLimitName(), ""))
                     .addDoubleSeries("limit", LimitViolation::getLimit)
