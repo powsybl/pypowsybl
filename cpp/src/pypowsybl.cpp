@@ -22,8 +22,8 @@ void init() {
 
 //Destruction of java object when the shared_ptr has no more references
 java_handle::java_handle(void* handle):
-    handle_(handle, [](void* ptr) {
-        destroyObjectHandle(ptr);
+    handle_(handle, [](void* to_be_deleted) {
+        callJava<>(::destroyObjectHandle, to_be_deleted);
     })
 {
 }
@@ -479,10 +479,6 @@ void updateNetworkElementsWithStringSeries(java_handle network, element_type ele
     ToCharPtrPtr valuePtr(values);
     callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
                 idPtr.get(), valuePtr.get(), elementCount);
-}
-
-void destroyObjectHandle(void* objectHandle) {
-    callJava<>(::destroyObjectHandle, objectHandle);
 }
 
 std::string getWorkingVariantId(void* network) {

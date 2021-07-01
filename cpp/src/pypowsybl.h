@@ -210,8 +210,6 @@ void updateNetworkElementsWithDoubleSeries(java_handle network, element_type ele
 void updateNetworkElementsWithStringSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount);
 
-void destroyObjectHandle(void* objectHandle);
-
 std::string getWorkingVariantId(void* network);
 
 void setWorkingVariant(void* network, std::string& variant);

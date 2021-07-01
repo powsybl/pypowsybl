@@ -410,8 +410,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
 
-    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
-
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
