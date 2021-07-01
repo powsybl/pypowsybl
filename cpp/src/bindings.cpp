@@ -428,6 +428,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
 
+    m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
+
     m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
           py::arg("result"));
     m.def("get_bus_results", &pypowsybl::getBusResults, "create a table with all bus results computed after security analysis",
