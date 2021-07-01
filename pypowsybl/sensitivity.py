@@ -262,7 +262,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
+        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, parameters, provider),
                                            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 

@@ -161,7 +161,7 @@ class SecurityAnalysis(ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network.ptr, parameters, provider))
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, parameters, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,
