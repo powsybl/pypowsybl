@@ -15,7 +15,6 @@ from _pypowsybl import ElementType
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import datetime as _datetime
-import pandas as _pd
 import numpy as _np
 
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
@@ -149,6 +148,10 @@ class Network(object):
         xml = state['xml']
         n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
         self._handle = n
+
+    def per_unit_network(self, sn):
+        import pypowsybl.perunitnetwork as pu
+        return pu.PerUnitNetwork(sn, self._handle)
 
     def open_switch(self, id: str):
         return _pypowsybl.update_switch_position(self._handle, id, True)
@@ -960,7 +963,8 @@ class Network(object):
             \                 2 1.150767 0.0 0.0 0.0 0.0
             ========== ======== ======== === === === ===
         """
-        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
+        ratio_tap_changer_steps = self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
+        return ratio_tap_changer_steps
 
     def get_phase_tap_changer_steps(self) -> _DataFrame:
         """
@@ -999,7 +1003,8 @@ class Network(object):
             ...      ...  ...    ...       ...       ... ... ...
             === ======== ==== ====== ========= ========= === ===
         """
-        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
+        phase_tap_changer_steps = self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
+        return phase_tap_changer_steps
 
     def get_ratio_tap_changers(self) -> _DataFrame:
         """
@@ -1038,7 +1043,8 @@ class Network(object):
             NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
             ========== === ======= ======== ========== ======= ========== ======== =============== =================
         """
-        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
+        ratio_tap_changers = self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
+        return ratio_tap_changers
 
     def get_phase_tap_changers(self) -> _DataFrame:
         """
@@ -1516,6 +1522,15 @@ class Network(object):
                 In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
+
+    def update_busbar_sections(self, df):
+        """Update phase tap changers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+
+        """
+        return self.update_elements(_pypowsybl.ElementType.BUSBAR_SECTION, df)
 
     def get_working_variant_id(self):
         """
