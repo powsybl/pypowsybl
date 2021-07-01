@@ -20,6 +20,14 @@ void init() {
     }
 }
 
+//Destruction of java object when the shared_ptr has no more references
+java_handle::java_handle(void* handle):
+    handle_(handle, [](void* ptr) {
+        destroyObjectHandle(ptr);
+    })
+{
+}
+
 class GraalVmGuard {
 public:
     GraalVmGuard() {
@@ -206,8 +214,8 @@ void* createIeeeNetwork(int busCount) {
     return callJava<void*>(::createIeeeNetwork, busCount);
 }
 
-void* createEurostagTutorialExample1Network() {
-    return callJava<void*>(::createEurostagTutorialExample1Network);
+java_handle createEurostagTutorialExample1Network() {
+    return callJava<java_handle>(::createEurostagTutorialExample1Network);
 }
 
 void* createFourSubstationsNodeBreakerNetwork() {
@@ -441,7 +449,7 @@ matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::
                                 (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType) {
+SeriesArray* createNetworkElementsSeriesArray(java_handle network, element_type elementType) {
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
 }
 
@@ -449,7 +457,7 @@ int getSeriesType(element_type elementType, const std::string& seriesName) {
     return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
 }
 
-void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithIntSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
     ToIntPtr valuePtr(values);
@@ -457,7 +465,7 @@ void updateNetworkElementsWithIntSeries(void* network, element_type elementType,
                     idPtr.get(), valuePtr.get(), elementCount);
 }
 
-void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithDoubleSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<double>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
     ToDoublePtr valuePtr(values);
@@ -465,7 +473,7 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
                     idPtr.get(), valuePtr.get(), elementCount);
 }
 
-void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithStringSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount) {
     ToCharPtrPtr idPtr(ids);
     ToCharPtrPtr valuePtr(values);

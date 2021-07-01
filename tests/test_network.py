@@ -187,6 +187,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_update_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         generators = n.get_generators()
+        print(generators)
         self.assertEqual(607, generators['target_p']['GEN'])
         self.assertTrue(generators['voltage_regulator_on']['GEN'])
         generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],

@@ -27,6 +27,27 @@ public:
     }
 };
 
+/**
+ * Wraps a void* corresponding to a graalvm ObjectHandle
+ * in order to handle its destruction.
+ */
+class java_handle {
+public:
+    //Implicit constructor from void* returned by graalvm
+    java_handle(void* handle);
+    ~java_handle() {}
+
+    //Implicit conversion to void* for use as input to graalvm
+    operator void*() {
+        return handle_.get();
+    }
+
+private:
+    //Object handle destruction will be called when no more reference
+    std::shared_ptr<void> handle_;
+};
+
+
 template<typename T>
 class Array {
 public:
@@ -118,7 +139,7 @@ void* createEmptyNetwork(const std::string& id);
 
 void* createIeeeNetwork(int busCount);
 
-void* createEurostagTutorialExample1Network();
+java_handle createEurostagTutorialExample1Network();
 
 void* createFourSubstationsNodeBreakerNetwork();
 
@@ -176,17 +197,17 @@ matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::str
 
 matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
+SeriesArray* createNetworkElementsSeriesArray(java_handle network, element_type elementType);
 
 int getSeriesType(element_type elementType, const std::string& seriesName);
 
-void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithIntSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount);
 
-void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithDoubleSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<double>& values, int elementCount);
 
-void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithStringSeries(java_handle network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount);
 
 void destroyObjectHandle(void* objectHandle);

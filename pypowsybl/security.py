@@ -15,7 +15,7 @@ from _pypowsybl import LimitViolation
 from _pypowsybl import ContingencyContextType
 from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
-from pypowsybl.util import ContingencyContainer, ObjectHandle as _ObjectHandle
+from pypowsybl.util import ContingencyContainer
 from prettytable import PrettyTable
 import pandas as pd
 
@@ -38,14 +38,14 @@ LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
                                        f")"
 
 
-class SecurityAnalysisResult(_ObjectHandle):
+class SecurityAnalysisResult(object):
     """
     The result of a security analysis.
     """
 
-    def __init__(self, result):
-        self.ptr = result
-        results = _pypowsybl.get_security_analysis_result(self.ptr)
+    def __init__(self, handle):
+        self._handle = handle
+        results = _pypowsybl.get_security_analysis_result(self._handle)
         self._post_contingency_results = {}
         for result in results:
             print(result)
@@ -53,7 +53,7 @@ class SecurityAnalysisResult(_ObjectHandle):
                 self._post_contingency_results[result.contingency_id] = result
             else:
                 self._pre_contingency_result = result
-        self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self.ptr))
+        self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
     def pre_contingency_result(self) -> ContingencyResult:
@@ -120,7 +120,7 @@ class SecurityAnalysisResult(_ObjectHandle):
         Returns:
             Results (P, Q, I) for monitored branches
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self.ptr))
+        return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
 
     @property
     def bus_results(self) -> pd.DataFrame:
@@ -129,7 +129,7 @@ class SecurityAnalysisResult(_ObjectHandle):
         Returns:
             Bus results (voltage angle and magnitude) for monitored voltage levels
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self.ptr))
+        return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
 
     @property
     def three_windings_transformer_results(self) -> pd.DataFrame:
@@ -138,7 +138,7 @@ class SecurityAnalysisResult(_ObjectHandle):
         Returns:
             Results (P, Q, I) for monitored three winding transformers
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self.ptr))
+        return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
 
 
 class SecurityAnalysis(ContingencyContainer):
@@ -146,8 +146,8 @@ class SecurityAnalysis(ContingencyContainer):
     Allows to run a security analysis on a network.
     """
 
-    def __init__(self, ptr):
-        ContingencyContainer.__init__(self, ptr)
+    def __init__(self, handle):
+        ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: Network, parameters: Parameters = Parameters(),
                provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
@@ -161,7 +161,7 @@ class SecurityAnalysis(ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self.ptr, network.ptr, parameters, provider))
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network.ptr, parameters, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,
@@ -195,7 +195,7 @@ class SecurityAnalysis(ContingencyContainer):
         elif type(contingency_ids) == str:
             contingency_ids = [contingency_ids]
 
-        _pypowsybl.add_monitored_elements(self.ptr, contingency_context_type, branch_ids, voltage_level_ids,
+        _pypowsybl.add_monitored_elements(self._handle, contingency_context_type, branch_ids, voltage_level_ids,
                                           three_windings_transformer_ids, contingency_ids)
 
     def add_precontingency_monitored_elements(self,
