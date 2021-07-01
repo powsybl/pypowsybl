@@ -24,6 +24,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CreateEquipmentHelperTest {
 
     @Test
+    void line() {
+        var network = EurostagTutorialExample1Factory.create();
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("r", 4.0),
+                entry("x", 4.0),
+                entry("g1", 4.0),
+                entry("b1", 4.0),
+                entry("g2", 4.0),
+                entry("b2", 4.0)
+        );
+        Map<String, String> strMap = Map.ofEntries(
+                entry("id", "L3"),
+                entry("name", "l3"),
+                entry("bus1_id", "NHV1"),
+                entry("bus2_id", "NHV2"),
+                entry("voltage_level1_id", "VLHV1"),
+                entry("voltage_level2_id", "VLHV2"),
+                entry("connectable_bus1_id", "NHV1"),
+                entry("connectable_bus2_id", "NHV2"));
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.LINE, network, doubleMap, strMap, Collections.emptyMap());
+        assertEquals(3, network.getLineCount());
+    }
+
+    @Test
     void lcc() {
         var network = HvdcTestNetwork.createLcc();
         Map<String, String> strMap = Map.ofEntries(
