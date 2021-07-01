@@ -17,6 +17,7 @@ from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
 from pypowsybl.util import ContingencyContainer, ObjectHandle as _ObjectHandle
 from prettytable import PrettyTable
+import pandas as pd
 
 ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
                                           f"contingency_id={self.contingency_id!r}" \
@@ -56,13 +57,28 @@ class SecurityAnalysisResult(_ObjectHandle):
 
     @property
     def pre_contingency_result(self) -> ContingencyResult:
+        """ Result for the pre-contingency state.
+
+        Returns:
+            Result for the pre-contingency state.
+        """
         return self._pre_contingency_result
 
     @property
     def post_contingency_results(self) -> Dict[str, ContingencyResult]:
+        """ Results for the contingencies, as a dictionary contingency ID -> result.
+
+        Returns:
+            Results for the contingencies, as a dictionary contingency ID -> result.
+        """
         return self._post_contingency_results
 
     def find_post_contingency_result(self, contingency_id: str):
+        """ Result for the specified contingency
+
+        Returns:
+            Result for the specified contingency
+        """
         result = self._post_contingency_results[contingency_id]
         if not result:
             raise KeyError("Contingency {} not found".format(contingency_id))
@@ -89,19 +105,39 @@ class SecurityAnalysisResult(_ObjectHandle):
         return table
 
     @property
-    def limit_violations(self):
+    def limit_violations(self) -> pd.DataFrame:
+        """ All limit violations in a dataframe representation.
+
+        Returns:
+            All limit violations in a dataframe representation.
+        """
         return self._limit_violations
 
     @property
-    def branch_results(self):
+    def branch_results(self) -> pd.DataFrame:
+        """ Results (P, Q, I) for monitored branches
+
+        Returns:
+            Results (P, Q, I) for monitored branches
+        """
         return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self.ptr))
 
     @property
-    def bus_results(self):
+    def bus_results(self) -> pd.DataFrame:
+        """ Bus results (voltage angle and magnitude) for monitored voltage levels
+
+        Returns:
+            Bus results (voltage angle and magnitude) for monitored voltage levels
+        """
         return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self.ptr))
 
     @property
-    def three_windings_transformer_results(self):
+    def three_windings_transformer_results(self) -> pd.DataFrame:
+        """ Results (P, Q, I) for monitored three winding transformers
+
+        Returns:
+            Results (P, Q, I) for monitored three winding transformers
+        """
         return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self.ptr))
 
 
