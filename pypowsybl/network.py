@@ -4,15 +4,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import sys
 import _pypowsybl
-from _pypowsybl import PyPowsyblError
+import sys
 from _pypowsybl import ElementType
-from pypowsybl.util import ObjectHandle
-from pypowsybl.util import create_data_frame_from_series_array
+from _pypowsybl import PyPowsyblError
 from typing import List
 from typing import Set
+
 import pandas as pd
+
+from pypowsybl.util import ObjectHandle
+from pypowsybl.util import create_data_frame_from_series_array
 
 
 class SingleLineDiagram:
@@ -452,32 +454,85 @@ class Network(ObjectHandle):
         """
         return _pypowsybl.get_variant_ids(self.ptr)
 
-    def new_load(self, df: pd.DataFrame):
-        self.new_element(_pypowsybl.ElementType.LOAD, df)
-
     def create_loads(self, df: pd.DataFrame):
         """ Create loads with a ``Pandas`` data frame.
 
-        :param df:
-        :return:
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
         """
         self.create_element(_pypowsybl.ElementType.LOAD, df)
 
     def create_generators(self, df: pd.DataFrame):
-        """ Create generators a ``Pandas`` data frame.
+        """ Create generators with a ``Pandas`` data frame.
 
-        :param df:
-        :return:
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
         """
         self.create_element(_pypowsybl.ElementType.GENERATOR, df)
 
-    def create_batteries(self, df: pd.DataFrame):
-        """ Create create_batteries a ``Pandas`` data frame.
+    def create_busbar_sections(self, df: pd.DataFrame):
+        """ Create busbar sections with a ``Pandas`` data frame.
 
-        :param df:
-        :return:
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.BUSBAR_SECTION, df)
+
+    def create_batteries(self, df: pd.DataFrame):
+        """ Create batteries with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
         """
         self.create_element(_pypowsybl.ElementType.BATTERY, df)
+
+    def create_dangling_lines(self, df: pd.DataFrame):
+        """ Create dangling lines with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.DANGLING_LINE, df)
+
+    def create_static_var_compensators(self, df: pd.DataFrame):
+        """ Create static var compensators with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
+
+    def create_vsc_converter_stations(self, df: pd.DataFrame):
+        """ Create vsc converter stations with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
+
+    def create_lcc_converter_stations(self, df: pd.DataFrame):
+        """ Create lcc converter stations with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.LCC_CONVERTER_STATION, df)
+
+    def create_lines(self, df: pd.DataFrame):
+        """ Create lines with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.LINE, df)
+
+    def create_2_windings_transformers(self, df: pd.DataFrame):
+        """ Create 2_windings_transformers with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        self.create_element(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
     def create_element(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         types_map = {}
@@ -491,6 +546,8 @@ class Network(ObjectHandle):
             str_vals = []
             int_keys = []
             int_vals = []
+            str_keys.append('id')
+            str_vals.append(index)
             for col in df.columns:
                 series_type = types_map.get(col)
                 if series_type == 2 or series_type == 3:
@@ -502,7 +559,7 @@ class Network(ObjectHandle):
                 elif series_type == 0:
                     str_keys.append(col)
                     str_vals.append(row[col])
-            _pypowsybl.create_element(self.ptr, index, element_type, double_keys, double_vals, str_keys, str_vals, int_keys, int_vals)
+            _pypowsybl.create_element(self.ptr, element_type, double_keys, double_vals, str_keys, str_vals, int_keys, int_vals)
 
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.

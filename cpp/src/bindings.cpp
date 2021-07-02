@@ -406,7 +406,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("element_count"));
 
     m.def("create_element", &pypowsybl::createElement, "Add an equipment in network",
-          py::arg("network"), py::arg("id"), py::arg("element_type"), py::arg("double_keys"), py::arg("double_vals"),
+          py::arg("network"), py::arg("element_type"), py::arg("double_keys"), py::arg("double_vals"),
           py::arg("str_keys"), py::arg("str_vals"), py::arg("int_keys"), py::arg("int_vals"));
 
     m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));

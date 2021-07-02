@@ -777,14 +777,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "createElement")
     public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
-                                     CCharPointer idPtr, ElementType elementType,
+                                     ElementType elementType,
                                      CCharPointerPointer doubleKeysPtr, CDoublePointer doubleValsPtr, int doubleMapCount,
                                      CCharPointerPointer stringKeysPtr, CCharPointerPointer stringValsPtr, int stringMapCount,
                                      CCharPointerPointer intKeysPtr, CIntPointer intValsPtr, int intMapCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String id = CTypeUtil.toString(idPtr);
             List<String> doubleKeys = CTypeUtil.toStringList(doubleKeysPtr, doubleMapCount);
             List<Double> doubleVals = CTypeUtil.toDoubleList(doubleValsPtr, doubleMapCount);
             Map<String, Double> doubleMap = mergeIntoMap(doubleKeys, doubleVals);

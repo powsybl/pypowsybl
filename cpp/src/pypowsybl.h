@@ -187,7 +187,7 @@ void updateNetworkElementsWithDoubleSeries(void* network, element_type elementTy
 void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount);
 
-void createElement(void *network, const std::string &id, element_type elementType,
+void createElement(void *network, element_type elementType,
                    const std::vector<std::string> &doubleKeys, const std::vector<double> &doubleVals,
                    const std::vector<std::string> &strKeys, const std::vector<std::string> &strVals,
                    const std::vector<std::string> &intKeys, const std::vector<int> &intVals);

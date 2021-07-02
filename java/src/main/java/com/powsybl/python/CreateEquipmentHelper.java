@@ -240,7 +240,7 @@ final class CreateEquipmentHelper {
 
     private static float orElseFloatNan(Map<String, Double> doubleMap, String field) {
         return Optional.ofNullable(doubleMap.get(field))
-                .map((Double::floatValue)).orElse(Float.NaN);
+                .map(Double::floatValue).orElse(Float.NaN);
     }
 
     static int getAdderSeriesType(PyPowsyblApiHeader.ElementType type, String fieldName) {
