@@ -24,6 +24,7 @@ final class CreateEquipmentHelper {
     private static final String CONNECTABLE_BUS_ID = "connectable_bus_id";
     private static final String CONNECTABLE_BUS1_ID = "connectable_bus1_id";
     private static final String CONNECTABLE_BUS2_ID = "connectable_bus2_id";
+    private static final String SUBSTATION_ID = "substation_id";
     private static final String VOLTAGE_LEVEL_ID = "voltage_level_id";
     private static final String VOLTAGE_LEVEL1_ID = "voltage_level1_id";
     private static final String VOLTAGE_LEVEL2_ID = "voltage_level2_id";
@@ -70,9 +71,25 @@ final class CreateEquipmentHelper {
             case LINE:
                 createLine(network, doubleMap, strMap, intMap);
                 break;
+            case TWO_WINDINGS_TRANSFORMER:
+                createTwt2(network, doubleMap, strMap, intMap);
+                break;
             default:
                 throw new PowsyblException();
         }
+    }
+
+    private static void createTwt2(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {
+        var adder = network.getSubstation(strMap.get(SUBSTATION_ID)).newTwoWindingsTransformer();
+        createBranch(adder, doubleMap, strMap, intMap);
+        adder.setRatedU1(orElseFloatNan(doubleMap, "rated_u1"))
+                .setRatedU2(orElseFloatNan(doubleMap, "rated_u1"))
+                .setRatedS(orElseFloatNan(doubleMap, "rated_s"))
+                .setB(orElseNan(doubleMap, "b"))
+                .setG(orElseNan(doubleMap, "g"))
+                .setR(orElseNan(doubleMap, "r"))
+                .setX(orElseNan(doubleMap, "x"));
+        adder.add();
     }
 
     private static void createLine(Network network, Map<String, Double> doubleMap, Map<String, String> strMap, Map<String, Integer> intMap) {

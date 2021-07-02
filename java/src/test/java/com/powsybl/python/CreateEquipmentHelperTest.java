@@ -24,6 +24,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CreateEquipmentHelperTest {
 
     @Test
+    void twt2() {
+        var network = EurostagTutorialExample1Factory.create();
+        Map<String, Double> doubleMap = Map.ofEntries(
+                entry("rated_u1", 4.0),
+                entry("rated_u2", 4.0),
+                entry("rated_s", 4.0),
+                entry("r", 4.0),
+                entry("x", 4.0),
+                entry("g", 4.0),
+                entry("b", 4.0)
+        );
+        Map<String, String> strMap = Map.ofEntries(
+                entry("id", "test"),
+                entry("substation_id", "P1"),
+                entry("name", "l3"),
+                entry("bus1_id", "NGEN"),
+                entry("bus2_id", "NHV1"),
+                entry("voltage_level1_id", "VLGEN"),
+                entry("voltage_level2_id", "VLHV1"),
+                entry("connectable_bus1_id", "NGEN"),
+                entry("connectable_bus2_id", "NHV1"));
+        CreateEquipmentHelper.createElement(PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER, network, doubleMap, strMap, Collections.emptyMap());
+        assertEquals(3, network.getTwoWindingsTransformerCount());
+    }
+
+    @Test
     void line() {
         var network = EurostagTutorialExample1Factory.create();
         Map<String, Double> doubleMap = Map.ofEntries(
