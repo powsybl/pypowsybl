@@ -4,15 +4,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import sys
 import _pypowsybl
-from _pypowsybl import PyPowsyblError
+import sys
 from _pypowsybl import ElementType
-from pypowsybl.util import ObjectHandle
-from pypowsybl.util import create_data_frame_from_series_array
+from _pypowsybl import PyPowsyblError
 from typing import List
 from typing import Set
+
 import pandas as pd
+
+from pypowsybl.util import ObjectHandle
+from pypowsybl.util import create_data_frame_from_series_array
 
 
 class SingleLineDiagram:
@@ -35,6 +37,14 @@ class Network(ObjectHandle):
     def __init__(self, ptr):
         ObjectHandle.__init__(self, ptr)
 
+    def __getstate__(self):
+        return {'xml': self.dump_to_string()}
+
+    def __setstate__(self, state):
+        xml = state['xml']
+        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
+        self.ptr = n
+
     def open_switch(self, id: str):
         return _pypowsybl.update_switch_position(self.ptr, id, True)
 
@@ -50,14 +60,24 @@ class Network(ObjectHandle):
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
         """Save a network to a file using a specified format.
 
-        :param file: a file
-        :type file: str
-        :param format: format to save the network
-        :type format: str, defaults to 'XIIDM'
-        :param parameters: a map of parameters
-        :type parameters: dict
+        Args:
+            file (str): a file
+            format (str, optional): format to save the network, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
         """
         _pypowsybl.dump_network(self.ptr, file, format, parameters)
+
+    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
+        """Save a network to a string using a specified format.
+
+        Args:
+            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
+
+        Returns:
+            a string representing network
+        """
+        return _pypowsybl.dump_network_to_string(self.ptr, format, parameters)
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):
@@ -289,23 +309,23 @@ class Network(ObjectHandle):
             element_type (ElementType): the element type
             df (DataFrame): the ``Pandas`` data frame
         """
-        for seriesName in df.columns.values:
-            series = df[seriesName]
-            series_type = _pypowsybl.get_series_type(element_type, seriesName)
+        for series_name in df.columns.values:
+            series = df[series_name]
+            series_type = _pypowsybl.get_series_type(element_type, series_name)
             if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, seriesName, df.index.values,
+                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, series_name, df.index.values,
                                                                    series.values, len(series))
             elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, seriesName,
+                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
                 raise PyPowsyblError(
-                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {seriesName}')
+                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
 
     def update_buses(self, df: pd.DataFrame):
         """ Update buses with a ``Pandas`` data frame.

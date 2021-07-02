@@ -8,15 +8,18 @@ package com.powsybl.python;
 
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -42,5 +45,23 @@ public class SecurityAnalysisTest {
         assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             610.5621535433195, 3.3405627152965636, 1008.9287882269936, -600.9961559564283,
             -285.379146550659, 1047.8257691455567));
+    }
+
+    @Test
+    void testSecurityAnalysis() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
+        analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
+        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
+
+        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
+        Assertions.assertThat(series)
+            .extracting(Series::getName)
+            .containsExactly("contingency_id", "subject_id", "subject_name", "limit_type", "limit_name", "limit",
+                             "acceptable_duration", "limit_reduction", "value", "side");
+        Assertions.assertThat(series.get(0).getStrings())
+            .containsExactly("First contingency", "First contingency");
+        Assertions.assertThat(series.get(1).getStrings())
+            .containsExactly("NHV1_NHV2_2", "VLHV1");
     }
 }

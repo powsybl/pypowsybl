@@ -4,12 +4,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
-import pypowsybl as pp
-import pandas as pd
+import copy
 import pathlib
+import unittest
+
+import pandas as pd
 from numpy import NaN
 
+import pypowsybl as pp
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -32,6 +34,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         """
         n = pp.network.load_from_string('simple-eu.uct', file_content)
         self.assertEqual(1, len(n.get_substations()))
+
+    def test_dump_to_string(self):
+        bat_path = TEST_DIR.joinpath('battery.xiidm')
+        xml = bat_path.read_text()
+        n = pp.network.load(str(bat_path))
+        self.assertEqual(xml, n.dump_to_string())
 
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
@@ -70,9 +78,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                             nominal_voltages={24, 150}))
         self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}))
         self.assertEqual(['LOAD'], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
-                                                      countries={'FR'}))
+                                                      countries={'BE'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
-                                                countries={'BE'}))
+                                                countries={'FR'}))
         self.assertEqual(['NGEN_NHV1'], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
                                                            nominal_voltages={24}, countries={'FR'}))
         self.assertEqual([], n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
@@ -82,20 +90,22 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_eurostag_tutorial_example1_network()
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                         'voltage_level_id'],
                                 data=[[NaN, NaN, 0, 0, 'VLGEN'],
-                                      [NaN, NaN, 0, 0, 'VLHV1'],
-                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [380, NaN, 0, 0, 'VLHV1'],
+                                      [380, NaN, 0, 0, 'VLHV2'],
                                       [NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
         n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[400, 0]]))
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component', 'voltage_level_id'],
+                                columns=['v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                         'voltage_level_id'],
                                 data=[[400, 0, 0, 0, 'VLGEN'],
-                                      [NaN, NaN, 0, 0, 'VLHV1'],
-                                      [NaN, NaN, 0, 0, 'VLHV2'],
+                                      [380, NaN, 0, 0, 'VLHV1'],
+                                      [380, NaN, 0, 0, 'VLHV2'],
                                       [NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
@@ -314,6 +324,25 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
+
+    def test_deep_copy(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        copy_n = copy.deepcopy(n)
+        self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
+                         copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER))
+
+    def test_get_lines(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
+                                columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2', 'voltage_level1_id',
+                                         'voltage_level2_id', 'bus1_id', 'bus2_id'],
+                                data=[[0.01, 19.1, 0, 0, 0, 0, 109.889, 190.023, -109.886, -184.517, 'S2VL1', 'S3VL1',
+                                       'S2VL1_0', 'S3VL1_0'],
+                                      [0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, -240, 2.5415, 'S3VL1', 'S4VL1',
+                                       'S3VL1_0', 'S4VL1_0']])
+
+        lines = n.get_lines()
+        pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
 
 
 if __name__ == '__main__':

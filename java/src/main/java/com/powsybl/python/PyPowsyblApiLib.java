@@ -8,7 +8,9 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
@@ -36,6 +38,7 @@ import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.tools.Version;
+import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -51,10 +54,7 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -182,7 +182,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createEurostagTutorialExample1Network")
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = EurostagTutorialExample1Factory.create();
+            Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -283,6 +283,37 @@ public final class PyPowsyblApiLib {
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
+        });
+    }
+
+    @CEntryPoint(name = "dumpNetworkToString")
+    public static CCharPointer dumpNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+                                                   CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                   CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String formatStr = CTypeUtil.toString(format);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            MemDataSource dataSource = new MemDataSource();
+            var exporter = Exporters.getExporter(formatStr);
+            if (exporter == null) {
+                throw new PowsyblException("No expoxter found for '" + formatStr + "' to export as a string");
+            }
+            exporter.export(network, parameters, dataSource);
+            try {
+                var names = dataSource.listNames(".*?");
+                if (names.size() != 1) {
+                    throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
+                }
+                try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
+                     ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    IOUtils.copy(is, os);
+                    return CTypeUtil.toCharPtr(os.toString());
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         });
     }
 
@@ -492,8 +523,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                             CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -509,6 +540,14 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
             return createContingencyResultArrayPointer(result);
+        });
+    }
+
+    @CEntryPoint(name = "getLimitViolations")
+    public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
         });
     }
 
@@ -941,11 +980,11 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "addMonitoredElements")
     public static void addMonitoredElements(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, RawContingencyContextType contingencyContextType,
-                                        CCharPointerPointer branchIds, int branchIdsCount,
-                                        CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
-                                        CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
-                                        CCharPointerPointer contingencyIds, int contingencyIdsCount,
-                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+                                            CCharPointerPointer branchIds, int branchIdsCount,
+                                            CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
+                                            CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
+                                            CCharPointerPointer contingencyIds, int contingencyIdsCount,
+                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);

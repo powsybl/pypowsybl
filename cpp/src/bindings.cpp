@@ -96,8 +96,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
           py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
 
-    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
-          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("network"),
+          py::arg("file"),py::arg("format"), py::arg("parameters"));
+
+    m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format",
+          py::arg("network"), py::arg("format"), py::arg("parameters"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
@@ -424,6 +427,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .export_values();
 
     m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+
+    m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
 
     m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
           py::arg("result"));

@@ -8,13 +8,18 @@ package com.powsybl.python;
 
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.security.LimitViolation;
+import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -37,6 +42,7 @@ public final class Dataframes {
     private static final DataframeMapper<SecurityAnalysisResult> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
     private static final DataframeMapper<SecurityAnalysisResult> T3WT_RESULTS_MAPPER = createThreeWindingsTransformersResults();
     private static final DataframeMapper<SecurityAnalysisResult> BUS_RESULTS_MAPPER = createBusResultsMapper();
+    private static final DataframeMapper<SecurityAnalysisResult> LIMIT_VIOLATIONS_MAPPER = createLimitViolationsMapper();
 
     private Dataframes() {
     }
@@ -48,6 +54,15 @@ public final class Dataframes {
         CDataframeHandler handler = new CDataframeHandler();
         mapper.createDataframe(object, handler);
         return handler.getDataframePtr();
+    }
+
+    /**
+     * Maps an object to java series
+     */
+    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object) {
+        List<Series> series = new ArrayList<>();
+        mapper.createDataframe(object, new DefaultDataframeHandler(series::add));
+        return List.copyOf(series);
     }
 
     /**
@@ -67,6 +82,10 @@ public final class Dataframes {
 
     public static DataframeMapper<SecurityAnalysisResult> threeWindingsTransformerResultsMapper() {
         return T3WT_RESULTS_MAPPER;
+    }
+
+    public static DataframeMapper<SecurityAnalysisResult> limitViolationsMapper() {
+        return LIMIT_VIOLATIONS_MAPPER;
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
@@ -146,6 +165,33 @@ public final class Dataframes {
             .doubles("p3", ThreeWindingsTransformerResultContext::getP3)
             .doubles("q3", ThreeWindingsTransformerResultContext::getQ3)
             .doubles("i3", ThreeWindingsTransformerResultContext::getI3)
+            .build();
+    }
+
+    private static List<LimitViolationContext> getLimitViolations(SecurityAnalysisResult result) {
+        List<LimitViolationContext> limitViolations = result.getPreContingencyResult().getLimitViolationsResult().getLimitViolations()
+            .stream().map(limitViolation -> new LimitViolationContext("", limitViolation)).collect(Collectors.toList());
+        result.getPostContingencyResults()
+            .forEach(postContingencyResult -> limitViolations.addAll(postContingencyResult.getLimitViolationsResult()
+                                                                         .getLimitViolations().stream()
+                                                                         .map(limitViolation -> new LimitViolationContext(postContingencyResult.getContingency().getId(), limitViolation))
+                                                                         .collect(Collectors.toList())));
+        return limitViolations;
+    }
+
+    private static DataframeMapper<SecurityAnalysisResult> createLimitViolationsMapper() {
+        return new DataframeMapperBuilder<SecurityAnalysisResult, LimitViolationContext>()
+            .itemsProvider(Dataframes::getLimitViolations)
+            .stringsIndex("contingency_id", LimitViolationContext::getContingencyId)
+            .stringsIndex("subject_id", LimitViolation::getSubjectId)
+            .strings("subject_name", p -> Objects.toString(p.getSubjectName(), ""))
+            .enums("limit_type", LimitViolationType.class, LimitViolation::getLimitType)
+            .strings("limit_name", p -> Objects.toString(p.getLimitName(), ""))
+            .doubles("limit", LimitViolation::getLimit)
+            .ints("acceptable_duration", LimitViolation::getAcceptableDuration)
+            .doubles("limit_reduction", LimitViolation::getLimitReduction)
+            .doubles("value", LimitViolation::getValue)
+            .strings("side", p -> Objects.toString(p.getSide(), ""))
             .build();
     }
 }

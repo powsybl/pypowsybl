@@ -90,7 +90,7 @@ public final class NetworkDataframes {
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getQ1() {
-        return b -> b.getTerminal1().getP();
+        return b -> b.getTerminal1().getQ();
     }
 
     static <U extends Branch<U>> DoubleUpdater<U> setP1() {
@@ -106,7 +106,7 @@ public final class NetworkDataframes {
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getQ2() {
-        return b -> b.getTerminal2().getP();
+        return b -> b.getTerminal2().getQ();
     }
 
     static <U extends Branch<U>> DoubleUpdater<U> setP2() {

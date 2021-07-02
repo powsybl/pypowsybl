@@ -276,6 +276,21 @@ void dumpNetwork(void* network, const std::string& file, const std::string& form
                 parameterValuesPtr.get(), parameterValues.size());
 }
 
+std::string dumpNetworkToString(void* network, const std::string& format, const std::map<std::string, std::string>& parameters) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    return std::string(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+             parameterValuesPtr.get(), parameterValues.size()));
+}
+
 void reduceNetwork(void* network, double v_min, double v_max, const std::vector<std::string>& ids,
                    const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
     ToCharPtrPtr elementIdPtr(ids);
@@ -498,6 +513,10 @@ void addMonitoredElements(void* securityAnalysisContext, contingency_context_typ
 
 ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult) {
     return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
+}
+
+SeriesArray* getLimitViolations(void* securityAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getLimitViolations, securityAnalysisResult));
 }
 
 SeriesArray* getBranchResults(void* securityAnalysisResult) {
