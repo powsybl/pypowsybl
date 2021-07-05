@@ -15,17 +15,17 @@ import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.network.NetworkDataframeMapper;
+import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
-import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -220,13 +220,7 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            List<Parameter> parameters = importer.getParameters();
-            return new SeriesPointerArrayBuilder<>(parameters)
-                .addStringSeries("name", true, Parameter::getName)
-                .addStringSeries("description", Parameter::getDescription)
-                .addEnumSeries("type", Parameter::getType)
-                .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
-                .build();
+            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
         });
     }
 
@@ -553,25 +547,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            List<LimitViolationContext> limitViolations = result.getPreContingencyResult().getLimitViolationsResult().getLimitViolations()
-                .stream().map(limitViolation -> new LimitViolationContext("", limitViolation)).collect(Collectors.toList());
-            result.getPostContingencyResults()
-                .forEach(postContingencyResult -> limitViolations.addAll(postContingencyResult.getLimitViolationsResult()
-                    .getLimitViolations().stream()
-                    .map(limitViolation -> new LimitViolationContext(postContingencyResult.getContingency().getId(), limitViolation))
-                    .collect(Collectors.toList())));
-            return new SeriesPointerArrayBuilder<>(limitViolations)
-                    .addStringSeries("contingency_id", true, LimitViolationContext::getContingencyId)
-                    .addStringSeries("violation_id", true, LimitViolation::getSubjectId)
-                    .addStringSeries("violation_name", p -> Objects.toString(p.getSubjectName(), ""))
-                    .addEnumSeries("limit_type", LimitViolation::getLimitType)
-                    .addStringSeries("limit_name", p -> Objects.toString(p.getLimitName(), ""))
-                    .addDoubleSeries("limit", LimitViolation::getLimit)
-                    .addIntSeries("acceptable_duration", LimitViolation::getAcceptableDuration)
-                    .addDoubleSeries("limit_reduction", LimitViolation::getLimitReduction)
-                    .addDoubleSeries("value", LimitViolation::getValue)
-                    .addStringSeries("side", p -> Objects.toString(p.getSide(), ""))
-                    .build();
+            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
         });
     }
 
@@ -700,11 +676,9 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            CDataframeHandler handler = new CDataframeHandler();
-            mapper.createDataframe(network, handler);
-            return handler.getDataframePtr();
+            return Dataframes.createCDataframe(mapper, network);
         });
     }
 
@@ -894,6 +868,8 @@ public final class PyPowsyblApiLib {
                 return ElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT:
                 return ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case CURRENT_LIMITS:
+                return ElementType.CURRENT_LIMITS;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -945,6 +921,8 @@ public final class PyPowsyblApiLib {
                 return DataframeElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT:
                 return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case CURRENT_LIMITS:
+                return DataframeElementType.CURRENT_LIMITS;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -1029,24 +1007,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BranchResultContext> branchResults = result.getPreContingencyResult()
-                .getPreContingencyBranchResults().stream()
-                .map(branchResult -> new BranchResultContext(branchResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(branchResults)
-                .addStringSeries("contingency_id", true, BranchResultContext::getContingencyId)
-                .addStringSeries("branch_id", true, BranchResultContext::getBranchId)
-                .addDoubleSeries("p1", BranchResultContext::getP1)
-                .addDoubleSeries("q1", BranchResultContext::getQ1)
-                .addDoubleSeries("i1", BranchResultContext::getI1)
-                .addDoubleSeries("p2", BranchResultContext::getP2)
-                .addDoubleSeries("q2", BranchResultContext::getQ2)
-                .addDoubleSeries("i2", BranchResultContext::getI2)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
         });
     }
 
@@ -1054,21 +1015,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BusResultContext> busResults = result.getPreContingencyResult()
-                .getPreContingencyBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(busResults)
-                .addStringSeries("contingency_id", true, BusResultContext::getContingencyId)
-                .addStringSeries("voltage_level_id", true, BusResultContext::getVoltageLevelId)
-                .addStringSeries("bus_id", true, BusResultContext::getBusId)
-                .addDoubleSeries("v_mag", BusResultContext::getV)
-                .addDoubleSeries("v_angle", BusResultContext::getAngle)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
         });
     }
 
@@ -1076,59 +1023,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
-                .getPreContingencyThreeWindingsTransformerResults().stream()
-                .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getThreeWindingsTransformerResult()
-                    .forEach(threeWindingsTransformerResult ->
-                        threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
-                            postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(threeWindingsTransformerResults)
-                .addStringSeries("contingency_id", true, ThreeWindingsTransformerResultContext::getContingencyId)
-                .addStringSeries("transformer_id", true, ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
-                .addDoubleSeries("p1", ThreeWindingsTransformerResultContext::getP1)
-                .addDoubleSeries("q1", ThreeWindingsTransformerResultContext::getQ1)
-                .addDoubleSeries("i1", ThreeWindingsTransformerResultContext::getI1)
-                .addDoubleSeries("p2", ThreeWindingsTransformerResultContext::getP2)
-                .addDoubleSeries("q2", ThreeWindingsTransformerResultContext::getQ2)
-                .addDoubleSeries("i2", ThreeWindingsTransformerResultContext::getI2)
-                .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
-                .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
-                .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
-                .build();
-        });
-    }
-
-    @CEntryPoint(name = "getCurrentLimits")
-    public static ArrayPointer<SeriesPointer> getCurrentLimits(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<TemporaryLimitContext> temporaryLimitContexts = new ArrayList<>();
-            network.getBranchStream().forEach(branch -> {
-                if (branch.getCurrentLimits1() != null) {
-                    temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
-                    temporaryLimitContexts.addAll(branch.getCurrentLimits1().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
-                            temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
-                }
-                if (branch.getCurrentLimits2() != null) {
-                    temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
-                    temporaryLimitContexts.addAll(branch.getCurrentLimits2().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
-                            temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
-                }
-            });
-            return new SeriesPointerArrayBuilder<>(temporaryLimitContexts)
-                .addStringSeries("branch_id", true, TemporaryLimitContext::getBranchId)
-                .addStringSeries("name", true, TemporaryLimitContext::getName)
-                .addEnumSeries("side", TemporaryLimitContext::getSide)
-                .addDoubleSeries("value", TemporaryLimitContext::getValue)
-                .addIntSeries("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
-                .addBooleanSeries("is_fictitious", TemporaryLimitContext::isFictitious)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
         });
     }
 }

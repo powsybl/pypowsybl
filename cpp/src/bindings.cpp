@@ -37,6 +37,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
+    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
+
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
@@ -77,6 +79,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
+            .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
@@ -408,8 +411,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
 
-    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
-
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
@@ -436,7 +437,4 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"));
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
-
-    m.def("get_current_limits", &pypowsybl::getCurrentLimits,
-          "get all information as a dataframe about current limits on a network", py::arg("network"));
 }

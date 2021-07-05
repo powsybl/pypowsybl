@@ -6,42 +6,42 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.iidm.network.Network;
-
 import java.util.List;
 
 /**
- * Provides methods to map an object's data to/from dataframes.
+ * Provides methods to map an object's data to/from dataframe representation.
+ * A dataframe is basically a table of values, where columns have a given type and name,
+ * and rows correspond to one item.
  *
  * The dataframe data can be read by a {@link DataframeHandler},
  * and provided by variants of "indexed series".
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public interface DataframeMapper {
+public interface DataframeMapper<T> {
 
     /**
      * Provides dataframe data to the handler, which is responsible to
      * format it as needed.
      */
-    void createDataframe(Network network, DataframeHandler dataframeHandler);
+    void createDataframe(T object, DataframeHandler dataframeHandler);
 
     List<SeriesMetadata> getSeriesMetadata();
 
     SeriesMetadata getSeriesMetadata(String seriesName);
 
     /**
-     * Updates network data with the provided series.
+     * Updates object data with the provided series.
      */
-    void updateDoubleSeries(Network network, String seriesName, DoubleIndexedSeries values);
+    void updateDoubleSeries(T object, String seriesName, DoubleIndexedSeries values);
 
     /**
-     * Updates network data with the provided series.
+     * Updates object data with the provided series.
      */
-    void updateIntSeries(Network network, String seriesName, IntIndexedSeries values);
+    void updateIntSeries(T object, String seriesName, IntIndexedSeries values);
 
     /**
-     * Updates network data with the provided series.
+     * Updates object data with the provided series.
      */
-    void updateStringSeries(Network network, String seriesName, IndexedSeries<String> values);
+    void updateStringSeries(T object, String seriesName, IndexedSeries<String> values);
 }

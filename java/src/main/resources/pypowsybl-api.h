@@ -81,6 +81,7 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
+    CURRENT_LIMITS,
 } element_type;
 
 typedef enum {
