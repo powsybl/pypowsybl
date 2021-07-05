@@ -7,7 +7,7 @@
  */
 
 /**
- * Provides mapping between the network and dataframe (=table) based views.
+ * Provides mapping between java classes and dataframe (=table) based views.
  *
  * Mapping is defined by instances of {@link com.powsybl.dataframe.DataframeMapper}.
  *

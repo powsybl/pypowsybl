@@ -4,11 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.dataframe;
+package com.powsybl.dataframe.network;
 
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
-import com.powsybl.dataframe.DataframeHandlerImpl.Series;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,9 +29,9 @@ class NetworkDataframesTest {
 
     private static List<Series> createDataFrame(DataframeElementType type, Network network) {
         List<Series> series = new ArrayList<>();
-        DataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
+        NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DataframeHandlerImpl(series::add));
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add));
         return series;
     }
 

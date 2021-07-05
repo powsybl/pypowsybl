@@ -22,5 +22,9 @@
   {
     "name":"com.univocity.parsers.conversions.ValidatedConversion",
     "allPublicMethods":true
+  },
+  {
+    "name":"com.univocity.parsers.conversions.NullStringConversion",
+    "allPublicMethods":true
   }
 ]

@@ -6,9 +6,9 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.dataframe.DataframeHandler;
 import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesPointer;
-import com.powsybl.dataframe.DataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;

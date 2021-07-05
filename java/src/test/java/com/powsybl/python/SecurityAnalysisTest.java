@@ -8,20 +8,18 @@ package com.powsybl.python;
 
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.security.LimitViolation;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -56,28 +54,14 @@ public class SecurityAnalysisTest {
         analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
         SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
 
-        List<LimitViolationContext> limitViolations = result.getPreContingencyResult().getLimitViolationsResult().getLimitViolations()
-            .stream().map(limitViolation -> new LimitViolationContext("", limitViolation)).collect(Collectors.toList());
-        result.getPostContingencyResults()
-            .forEach(postContingencyResult -> limitViolations.addAll(postContingencyResult.getLimitViolationsResult()
-                .getLimitViolations().stream()
-                .map(limitViolation -> new LimitViolationContext(postContingencyResult.getContingency().getId(), limitViolation))
-                .collect(Collectors.toList())));
-        List<List> series = new SeriesPointerArrayBuilder<>(limitViolations)
-                .addStringSeries("contingency_id", true, LimitViolationContext::getContingencyId)
-                .addStringSeries("violation_id", true, LimitViolation::getSubjectId)
-                .addStringSeries("violation_name", p -> Objects.toString(p.getSubjectName(), ""))
-                .addEnumSeries("limit_type", LimitViolation::getLimitType)
-                .addStringSeries("limit_name", p -> Objects.toString(p.getLimitName(), ""))
-                .addDoubleSeries("limit", LimitViolation::getLimit)
-                .addIntSeries("acceptable_duration", LimitViolation::getAcceptableDuration)
-                .addDoubleSeries("limit_reduction", LimitViolation::getLimitReduction)
-                .addDoubleSeries("value", LimitViolation::getValue)
-                .addStringSeries("side", p -> Objects.toString(p.getSide(), ""))
-                .buildJavaSeries();
-        assertThat(series).hasSize(10).contains(Arrays.asList("First contingency", "First contingency"))
-                .contains(Arrays.asList("NHV1_NHV2_2", "VLHV1"))
-                .contains(Arrays.asList("CURRENT", "LOW_VOLTAGE"));
-
+        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
+        Assertions.assertThat(series)
+            .extracting(Series::getName)
+            .containsExactly("contingency_id", "subject_id", "subject_name", "limit_type", "limit_name", "limit",
+                             "acceptable_duration", "limit_reduction", "value", "side");
+        Assertions.assertThat(series.get(0).getStrings())
+            .containsExactly("First contingency", "First contingency");
+        Assertions.assertThat(series.get(1).getStrings())
+            .containsExactly("NHV1_NHV2_2", "VLHV1");
     }
 }
