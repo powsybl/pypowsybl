@@ -344,6 +344,23 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
 
+    def test_dangling_lines(self):
+        n = pp.network._create_dangling_lines_network()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'voltage_level_id', 'bus_id'],
+                                data=[[10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, 'VL', 'VL_0']])
+        dangling_lines = n.get_dangling_lines()
+        pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False)
+
+    def test_batteries(self):
+        n = pp.network._create_battery_network()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
+                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'voltage_level_id', 'bus_id'],
+                                data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, 'VLBAT', 'VLBAT_0'],
+                                      [200, -200, 100, 200, -605, -225, 'VLBAT', 'VLBAT_0']])
+        batteries = n.get_batteries()
+        pd.testing.assert_frame_equal(expected, batteries, check_dtype=False)
+
 
 if __name__ == '__main__':
     unittest.main()

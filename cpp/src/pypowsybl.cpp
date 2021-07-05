@@ -222,6 +222,14 @@ JavaHandle createFourSubstationsNodeBreakerNetwork() {
     return callJava<JavaHandle>(::createFourSubstationsNodeBreakerNetwork);
 }
 
+JavaHandle createBatteryNetwork() {
+    return callJava<JavaHandle>(::createBatteryNetwork);
+}
+
+JavaHandle createDanglingLineNetwork() {
+    return callJava<JavaHandle>(::createDanglingLineNetwork);
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);

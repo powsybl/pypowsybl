@@ -18,6 +18,7 @@ from pypowsybl.util import create_data_frame_from_series_array
 
 class SingleLineDiagram:
     """ This class represents a single line diagram."""
+
     def __init__(self, svg: str):
         self._svg = svg
 
@@ -509,6 +510,14 @@ def create_ieee300() -> Network:
 
 def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
+
+
+def _create_battery_network() -> Network:
+    return Network(_pypowsybl.create_battery_network())
+
+
+def _create_dangling_lines_network() -> Network:
+    return Network(_pypowsybl.create_dangling_line_network())
 
 
 def create_four_substations_node_breaker_network() -> Network:
