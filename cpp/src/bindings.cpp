@@ -37,7 +37,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
-    py::class_<pypowsybl::java_handle>(m, "java_handle");
+    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
 
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
