@@ -8,11 +8,15 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.network.NetworkDataframeMapper;
+import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -22,7 +26,6 @@ import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
-import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -35,6 +38,7 @@ import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.tools.Version;
+import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -50,10 +54,7 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -181,7 +182,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createEurostagTutorialExample1Network")
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = EurostagTutorialExample1Factory.create();
+            Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -219,13 +220,7 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            List<Parameter> parameters = importer.getParameters();
-            return new SeriesPointerArrayBuilder<>(parameters)
-                .addStringSeries("name", true, Parameter::getName)
-                .addStringSeries("description", Parameter::getDescription)
-                .addEnumSeries("type", Parameter::getType)
-                .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
-                .build();
+            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
         });
     }
 
@@ -288,6 +283,37 @@ public final class PyPowsyblApiLib {
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
+        });
+    }
+
+    @CEntryPoint(name = "dumpNetworkToString")
+    public static CCharPointer dumpNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+                                                   CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                   CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String formatStr = CTypeUtil.toString(format);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            MemDataSource dataSource = new MemDataSource();
+            var exporter = Exporters.getExporter(formatStr);
+            if (exporter == null) {
+                throw new PowsyblException("No expoxter found for '" + formatStr + "' to export as a string");
+            }
+            exporter.export(network, parameters, dataSource);
+            try {
+                var names = dataSource.listNames(".*?");
+                if (names.size() != 1) {
+                    throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
+                }
+                try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
+                     ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    IOUtils.copy(is, os);
+                    return CTypeUtil.toCharPtr(os.toString());
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         });
     }
 
@@ -497,8 +523,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                             CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -514,6 +540,14 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
             return createContingencyResultArrayPointer(result);
+        });
+    }
+
+    @CEntryPoint(name = "getLimitViolations")
+    public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
         });
     }
 
@@ -642,11 +676,9 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            CDataframeHandler handler = new CDataframeHandler();
-            mapper.createDataframe(network, handler);
-            return handler.getDataframePtr();
+            return Dataframes.createCDataframe(mapper, network);
         });
     }
 
@@ -965,11 +997,11 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "addMonitoredElements")
     public static void addMonitoredElements(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, RawContingencyContextType contingencyContextType,
-                                        CCharPointerPointer branchIds, int branchIdsCount,
-                                        CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
-                                        CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
-                                        CCharPointerPointer contingencyIds, int contingencyIdsCount,
-                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+                                            CCharPointerPointer branchIds, int branchIdsCount,
+                                            CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
+                                            CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
+                                            CCharPointerPointer contingencyIds, int contingencyIdsCount,
+                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
@@ -988,24 +1020,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BranchResultContext> branchResults = result.getPreContingencyResult()
-                    .getPreContingencyBranchResults().stream()
-                    .map(branchResult -> new BranchResultContext(branchResult, null))
-                    .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(branchResults)
-                .addStringSeries("contingency_id", true, BranchResultContext::getContingencyId)
-                .addStringSeries("branch_id", true, BranchResultContext::getBranchId)
-                .addDoubleSeries("p1", BranchResultContext::getP1)
-                .addDoubleSeries("q1", BranchResultContext::getQ1)
-                .addDoubleSeries("i1", BranchResultContext::getI1)
-                .addDoubleSeries("p2", BranchResultContext::getP2)
-                .addDoubleSeries("q2", BranchResultContext::getQ2)
-                .addDoubleSeries("i2", BranchResultContext::getI2)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
         });
     }
 
@@ -1013,21 +1028,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BusResultContext> busResults = result.getPreContingencyResult()
-                .getPreContingencyBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(busResults)
-                .addStringSeries("contingency_id", true, BusResultContext::getContingencyId)
-                .addStringSeries("voltage_level_id", true, BusResultContext::getVoltageLevelId)
-                .addStringSeries("bus_id", true, BusResultContext::getBusId)
-                .addDoubleSeries("v_mag", BusResultContext::getV)
-                .addDoubleSeries("v_angle", BusResultContext::getAngle)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
         });
     }
 
@@ -1035,29 +1036,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
-                .getPreContingencyThreeWindingsTransformerResults().stream()
-                .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getThreeWindingsTransformerResult()
-                    .forEach(threeWindingsTransformerResult ->
-                        threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
-                            postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(threeWindingsTransformerResults)
-                .addStringSeries("contingency_id", true, ThreeWindingsTransformerResultContext::getContingencyId)
-                .addStringSeries("transformer_id", true, ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
-                .addDoubleSeries("p1", ThreeWindingsTransformerResultContext::getP1)
-                .addDoubleSeries("q1", ThreeWindingsTransformerResultContext::getQ1)
-                .addDoubleSeries("i1", ThreeWindingsTransformerResultContext::getI1)
-                .addDoubleSeries("p2", ThreeWindingsTransformerResultContext::getP2)
-                .addDoubleSeries("q2", ThreeWindingsTransformerResultContext::getQ2)
-                .addDoubleSeries("i2", ThreeWindingsTransformerResultContext::getI2)
-                .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
-                .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
-                .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
         });
     }
 }

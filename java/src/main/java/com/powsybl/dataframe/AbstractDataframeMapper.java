@@ -7,29 +7,24 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Network;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public abstract class AbstractDataframeMapper<T> implements DataframeMapper {
+public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T> {
 
-    protected final Map<String, SeriesMapper<T>> seriesMappers;
-    private final boolean addProperties;
+    protected final Map<String, SeriesMapper<U>> seriesMappers;
 
-    public AbstractDataframeMapper(List<SeriesMapper<T>> seriesMappers, boolean addProperties) {
+    public AbstractDataframeMapper(List<SeriesMapper<U>> seriesMappers) {
         this.seriesMappers = seriesMappers.stream()
             .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
-        this.addProperties = addProperties;
     }
 
     @Override
@@ -39,7 +34,7 @@ public abstract class AbstractDataframeMapper<T> implements DataframeMapper {
 
     @Override
     public SeriesMetadata getSeriesMetadata(String seriesName) {
-        SeriesMapper<T> mapper = seriesMappers.get(seriesName);
+        SeriesMapper<U> mapper = seriesMappers.get(seriesName);
         if (mapper == null) {
             throw new PowsyblException("No series named " + seriesName);
         }
@@ -51,52 +46,38 @@ public abstract class AbstractDataframeMapper<T> implements DataframeMapper {
         return seriesMappers.get(seriesName) != null;
     }
 
-    public void createDataframe(Network network, DataframeHandler dataframeHandler) {
+    public void createDataframe(T object, DataframeHandler dataframeHandler) {
         dataframeHandler.allocate(seriesMappers.size());
-        List<T> items = getItems(network);
+        List<U> items = getItems(object);
         seriesMappers.values().stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
-        if (addProperties) {
-            addPropertiesSeries(items);
-        }
-    }
-
-    private void addPropertiesSeries(List<T> items) {
-        Stream<String> propertyNames = items.stream()
-            .map(Identifiable.class::cast)
-            .filter(Identifiable::hasProperty)
-            .flatMap(e -> e.getPropertyNames().stream())
-            .distinct();
-        propertyNames.forEach(property -> {
-            new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property));
-        });
     }
 
     @Override
-    public void updateDoubleSeries(Network network, String seriesName, DoubleIndexedSeries values) {
-        SeriesMapper<T> series = seriesMappers.get(seriesName);
+    public void updateDoubleSeries(T object, String seriesName, DoubleIndexedSeries values) {
+        SeriesMapper<U> series = seriesMappers.get(seriesName);
         for (int i = 0; i < values.getSize(); i++) {
-            series.updateDouble(getItem(network, values.getId(i)), values.getValue(i));
+            series.updateDouble(getItem(object, values.getId(i)), values.getValue(i));
         }
     }
 
     @Override
-    public void updateIntSeries(Network network, String seriesName, IntIndexedSeries values) {
-        SeriesMapper<T> series = seriesMappers.get(seriesName);
+    public void updateIntSeries(T object, String seriesName, IntIndexedSeries values) {
+        SeriesMapper<U> series = seriesMappers.get(seriesName);
         for (int i = 0; i < values.getSize(); i++) {
-            series.updateInt(getItem(network, values.getId(i)), values.getValue(i));
+            series.updateInt(getItem(object, values.getId(i)), values.getValue(i));
         }
     }
 
     @Override
-    public void updateStringSeries(Network network, String seriesName, IndexedSeries<String> values) {
-        SeriesMapper<T> series = seriesMappers.get(seriesName);
+    public void updateStringSeries(T object, String seriesName, IndexedSeries<String> values) {
+        SeriesMapper<U> series = seriesMappers.get(seriesName);
         for (int i = 0; i < values.getSize(); i++) {
-            series.updateString(getItem(network, values.getId(i)), values.getValue(i));
+            series.updateString(getItem(object, values.getId(i)), values.getValue(i));
         }
     }
 
-    protected abstract List<T> getItems(Network network);
+    protected abstract List<U> getItems(T object);
 
-    protected abstract T getItem(Network network, String id);
+    protected abstract U getItem(T object, String id);
 
 }

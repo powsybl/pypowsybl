@@ -41,8 +41,8 @@ ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
 
 
 def run_ac(network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow'):
-    return _pypowsybl.run_load_flow(network.ptr, False, parameters, provider)
+    return _pypowsybl.run_load_flow(network._handle, False, parameters, provider)
 
 
 def run_dc(network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow'):
-    return _pypowsybl.run_load_flow(network.ptr, True, parameters, provider)
+    return _pypowsybl.run_load_flow(network._handle, True, parameters, provider)
