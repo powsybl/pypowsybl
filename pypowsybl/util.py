@@ -11,28 +11,20 @@ import pandas as pd
 from _pypowsybl import PyPowsyblError
 
 
-class ObjectHandle:
-    def __init__(self, ptr):
-        self.ptr = ptr
-
-    def __del__(self):
-        _pypowsybl.destroy_object_handle(self.ptr)
-
-
-class ContingencyContainer(ObjectHandle):
-    def __init__(self, ptr):
-        ObjectHandle.__init__(self, ptr)
+class ContingencyContainer(object):
+    def __init__(self, handle):
+        self._handle = handle
 
     def add_single_element_contingency(self, element_id: str, contingency_id: str = None):
-        _pypowsybl.add_contingency(self.ptr, contingency_id if contingency_id else element_id, [element_id])
+        _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
 
     def add_multiple_elements_contingency(self, elements_ids: List[str], contingency_id: str):
-        _pypowsybl.add_contingency(self.ptr, contingency_id, elements_ids)
+        _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
     def add_single_element_contingencies(self, elements_ids: List[str], contingency_id_provider: Callable[[str], str] = None):
         for element_id in elements_ids:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
-            _pypowsybl.add_contingency(self.ptr, contingency_id, [element_id])
+            _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
 
 def create_data_frame_from_series_array(series_array):

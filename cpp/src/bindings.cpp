@@ -37,6 +37,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
+    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
+
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
@@ -407,8 +409,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
-
-    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
 
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
