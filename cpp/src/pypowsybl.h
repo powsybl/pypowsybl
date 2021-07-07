@@ -133,6 +133,8 @@ void init();
 
 void setDebugMode(bool debug);
 
+std::string representation(const JavaHandle& network);
+
 std::string getVersionTable();
 
 JavaHandle createEmptyNetwork(const std::string& id);

@@ -45,6 +45,9 @@ class Network(object):
         n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
         self._handle = n
 
+    def __repr__(self):
+        return _pypowsybl.representation(self._handle)
+
     def open_switch(self, id: str):
         return _pypowsybl.update_switch_position(self._handle, id, True)
 

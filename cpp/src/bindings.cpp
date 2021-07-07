@@ -41,6 +41,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
+    m.def("representation", &pypowsybl::representation, "Get the network representation string", py::arg("network"));
+
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
     m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",

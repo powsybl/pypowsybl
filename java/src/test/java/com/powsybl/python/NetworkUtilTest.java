@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -25,5 +26,14 @@ class NetworkUtilTest {
         Network network = EurostagTutorialExample1Factory.create();
         List<String> elementsIds = NetworkUtil.getElementsIds(network, PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER, Collections.singleton(24.0), Collections.singleton("FR"), true, true, false);
         assertEquals(Collections.singletonList("NGEN_NHV1"), elementsIds);
+
+        network.setCaseDate(DateTime.parse("2021-07-07T10:45:38.573+02:00"));
+        String expectedRepresentation = "---- Main attributes ----\n" +
+                "id:sim1\n" +
+                "name:sim1\n" +
+                "caseDate:2021-07-07T10:45:38.573+02:00\n" +
+                "forecastDistance:0\n" +
+                "sourceFormat:test\n";
+        assertEquals(expectedRepresentation, NetworkUtil.representation(network));
     }
 }

@@ -202,6 +202,10 @@ void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
+std::string representation(const JavaHandle& network) {
+    return std::string(callJava<char*>(::representation, network));
+}
+
 std::string getVersionTable() {
     return std::string(callJava<char*>(::getVersionTable));
 }

@@ -10,7 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -39,7 +39,10 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -61,6 +64,11 @@ public final class PyPowsyblApiLib {
             Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
         });
+    }
+
+    @CEntryPoint(name = "representation")
+    public static CCharPointer representation(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(NetworkUtil.representation(ObjectHandles.getGlobal().get(networkHandle))));
     }
 
     @CEntryPoint(name = "getVersionTable")
