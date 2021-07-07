@@ -55,3 +55,9 @@ build/*
 
 # notebooks
 notebooks/.ipynb_checkpoints
+
+# benchmarks
+benchmarks/results
+benchmarks/html
+benchmarks/env
+benchmarks/_asv_compare.conf.json
