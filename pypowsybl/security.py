@@ -48,7 +48,6 @@ class SecurityAnalysisResult(object):
         results = _pypowsybl.get_security_analysis_result(self._handle)
         self._post_contingency_results = {}
         for result in results:
-            print(result)
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
             else:

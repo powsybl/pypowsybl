@@ -52,6 +52,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
 
+    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an example network with batteries");
+
+    m.def("create_dangling_line_network", &pypowsybl::createDanglingLineNetwork, "Create an example network with dangling lines");
+
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
