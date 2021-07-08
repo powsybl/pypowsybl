@@ -36,6 +36,12 @@ class SingleLineDiagram:
 class Network(object):
     def __init__(self, handle):
         self._handle = handle
+        att = _pypowsybl.get_main_attributes(self._handle)
+        self.id = att.id
+        self.name = att.name
+        self.source_format = att.source_format
+        self.forecast_distance = att.forecast_distance
+        self.case_date = att.case_date
 
     def __getstate__(self):
         return {'xml': self.dump_to_string()}

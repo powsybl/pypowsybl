@@ -283,6 +283,31 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TWO", pypowsybl::Side::TWO)
             .export_values();
 
+    py::class_<main_attributes>(m, "MainAttributes")
+//            .def(py::init([]() {
+//                attributes = new main_attributes();
+//
+//                return std::shared_ptr<main_attributes>(attributes, [](main_attributes* ptr){
+//                    pypowsybl::freeMainAttributes(ptr);
+//                    delete ptr;
+//                });
+//            }))
+            .def_property_readonly("id", [](const main_attributes& att) {
+                return att.id;
+            })
+            .def_property_readonly("name", [](const main_attributes& att) {
+                return att.name;
+            })
+            .def_property_readonly("source_format", [](const main_attributes& att) {
+                return att.source_format;
+            })
+            .def_property_readonly("forecast_distance", [](const main_attributes& att) {
+                return att.forecast_distance;
+            })
+            .def_property_readonly("case_date", [](const main_attributes& att) {
+                return att.case_date;
+            });
+
     py::class_<limit_violation>(m, "LimitViolation")
             .def_property_readonly("subject_id", [](const limit_violation& v) {
                 return v.subject_id;
@@ -413,7 +438,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
-
+    m.def("get_main_attributes", &pypowsybl::getMainAttributes, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));

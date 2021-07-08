@@ -118,6 +118,21 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "getMainAttributes")
+    public static PyPowsyblApiHeader.MainAttributesPointer getMainAttributes(IsolateThread thread, ObjectHandle networkHandle,
+                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return PyPowsyblApiHeader.allocMainAttributePointer(NetworkUtil.mainAttributesMap(network));
+        });
+    }
+
+    @CEntryPoint(name = "freeMainAttributes")
+    public static void freeMainAttributes(IsolateThread thread, PyPowsyblApiHeader.MainAttributesPointer ptr,
+                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> PyPowsyblApiHeader.freeMainAttributePointer(ptr));
+    }
+
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                            CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {

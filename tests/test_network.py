@@ -67,6 +67,14 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertTrue(n.disconnect('L1-2-1'))
         self.assertTrue(n.connect('L1-2-1'))
 
+    def test_network_attributes(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual('sim1', n.id)
+        self.assertEqual('2018-01-01T11:00:00.000+01:00', n.case_date)
+        self.assertEqual('sim1', n.name)
+        self.assertEqual(0, n.forecast_distance)
+        self.assertEqual('test', n.source_format)
+
     def test_get_network_element_ids(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],

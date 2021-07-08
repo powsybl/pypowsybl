@@ -17,6 +17,8 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
 
+import java.util.Map;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -62,6 +64,58 @@ public final class PyPowsyblApiHeader {
     static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
+    }
+
+    @CStruct("main_attributes")
+    interface MainAttributesPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("case_date")
+        CCharPointer getCaseDate();
+
+        @CField("case_date")
+        void setCaseDate(CCharPointer caseDate);
+
+        @CField("source_format")
+        CCharPointer getSourceFormat();
+
+        @CField("source_format")
+        void setSourceFormat(CCharPointer sourceFormat);
+
+        @CField("forecast_distance")
+        int getForecastDistance();
+
+        @CField("forecast_distance")
+        void setForecastDistance(int forecastDistance);
+    }
+
+    static MainAttributesPointer allocMainAttributePointer(Map<String, String> mainAttributes) {
+        MainAttributesPointer ptr = UnmanagedMemory.calloc(SizeOf.get(MainAttributesPointer.class));
+        ptr.setId(CTypeUtil.toCharPtr(mainAttributes.get("id")));
+        ptr.setName(CTypeUtil.toCharPtr(mainAttributes.get("name")));
+        ptr.setSourceFormat(CTypeUtil.toCharPtr(mainAttributes.get("sourceFormat")));
+        ptr.setForecastDistance(Integer.parseInt(mainAttributes.get("forecastDistance")));
+        ptr.setCaseDate(CTypeUtil.toCharPtr(mainAttributes.get("caseDate")));
+        return ptr;
+    }
+
+    static void freeMainAttributePointer(MainAttributesPointer mainAttributesPointer) {
+        UnmanagedMemory.free(mainAttributesPointer.getId());
+        UnmanagedMemory.free(mainAttributesPointer.getSourceFormat());
+        UnmanagedMemory.free(mainAttributesPointer.getName());
+        UnmanagedMemory.free(mainAttributesPointer.getSourceFormat());
+        UnmanagedMemory.free(mainAttributesPointer);
     }
 
     @CStruct("load_flow_component_result")
