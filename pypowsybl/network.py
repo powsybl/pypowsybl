@@ -36,7 +36,7 @@ class SingleLineDiagram:
 class Network(object):
     def __init__(self, handle):
         self._handle = handle
-        att = _pypowsybl.get_main_attributes(self._handle)
+        att = _pypowsybl.get_network_metadata(self._handle)
         self.id = att.id
         self.name = att.name
         self.source_format = att.source_format

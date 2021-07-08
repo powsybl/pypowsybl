@@ -23,7 +23,7 @@ public final class NetworkUtil {
     private NetworkUtil() {
     }
 
-    static Map<String, String> mainAttributesMap(Network network) {
+    static Map<String, String> metadataMap(Network network) {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("id", network.getId());
         map.put("name", network.getNameOrId());

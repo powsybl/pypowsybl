@@ -14,13 +14,13 @@ typedef struct array_struct {
     int length;
 } array;
 
-typedef struct main_attributes_struct {
+typedef struct network_metadata_struct {
     char* id;
     char* name;
     char* case_date;
     char* source_format;
     int forecast_distance;
-} main_attributes;
+} network_metadata;
 
 typedef struct load_flow_component_result_struct {
     int connected_component_num;

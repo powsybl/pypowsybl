@@ -246,12 +246,11 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
 }
 
-main_attributes* getMainAttributes(const JavaHandle& network) {
-    return callJava<main_attributes*>(::getMainAttributes, network);
-}
-
-void freeMainAttributes(main_attributes& main_attributes) {
-    callJava(::freeMainAttributes, &main_attributes);
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) {
+    network_metadata* attributes = callJava<network_metadata*>(::getNetworkMetadata, network);
+    return std::shared_ptr<network_metadata>(attributes, [](network_metadata* ptr){
+        callJava(::freeNetworkMetadata, ptr);
+    });
 }
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {

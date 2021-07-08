@@ -161,8 +161,7 @@ std::vector<std::string> getNetworkExportFormats();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
-main_attributes* getMainAttributes(const JavaHandle& network);
-void freeMainAttributes(main_attributes& main_attributes);
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 

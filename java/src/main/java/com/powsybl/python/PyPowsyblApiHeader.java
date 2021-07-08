@@ -66,8 +66,8 @@ public final class PyPowsyblApiHeader {
         UnmanagedMemory.free(arrayPointer);
     }
 
-    @CStruct("main_attributes")
-    interface MainAttributesPointer extends PointerBase {
+    @CStruct("network_metadata")
+    interface NetworkMetadataPointer extends PointerBase {
 
         @CField("id")
         CCharPointer getId();
@@ -100,22 +100,18 @@ public final class PyPowsyblApiHeader {
         void setForecastDistance(int forecastDistance);
     }
 
-    static MainAttributesPointer allocMainAttributePointer(Map<String, String> mainAttributes) {
-        MainAttributesPointer ptr = UnmanagedMemory.calloc(SizeOf.get(MainAttributesPointer.class));
-        ptr.setId(CTypeUtil.toCharPtr(mainAttributes.get("id")));
-        ptr.setName(CTypeUtil.toCharPtr(mainAttributes.get("name")));
-        ptr.setSourceFormat(CTypeUtil.toCharPtr(mainAttributes.get("sourceFormat")));
-        ptr.setForecastDistance(Integer.parseInt(mainAttributes.get("forecastDistance")));
-        ptr.setCaseDate(CTypeUtil.toCharPtr(mainAttributes.get("caseDate")));
+    static NetworkMetadataPointer allocMainAttributePointer(Map<String, String> networkMetadata) {
+        NetworkMetadataPointer ptr = UnmanagedMemory.calloc(SizeOf.get(NetworkMetadataPointer.class));
+        ptr.setId(CTypeUtil.toCharPtr(networkMetadata.get("id")));
+        ptr.setName(CTypeUtil.toCharPtr(networkMetadata.get("name")));
+        ptr.setSourceFormat(CTypeUtil.toCharPtr(networkMetadata.get("sourceFormat")));
+        ptr.setForecastDistance(Integer.parseInt(networkMetadata.get("forecastDistance")));
+        ptr.setCaseDate(CTypeUtil.toCharPtr(networkMetadata.get("caseDate")));
         return ptr;
     }
 
-    static void freeMainAttributePointer(MainAttributesPointer mainAttributesPointer) {
-        UnmanagedMemory.free(mainAttributesPointer.getId());
-        UnmanagedMemory.free(mainAttributesPointer.getSourceFormat());
-        UnmanagedMemory.free(mainAttributesPointer.getName());
-        UnmanagedMemory.free(mainAttributesPointer.getSourceFormat());
-        UnmanagedMemory.free(mainAttributesPointer);
+    static void freeMainAttributePointer(NetworkMetadataPointer networkMetadataPointer) {
+        UnmanagedMemory.free(networkMetadataPointer);
     }
 
     @CStruct("load_flow_component_result")
