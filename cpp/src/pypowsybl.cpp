@@ -246,6 +246,10 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
 }
 
+SeriesArray* createExporterParametersSeriesArray(const std::string& format) {
+    return new SeriesArray(callJava<array*>(::createExporterParametersSeriesArray, (char*) format.data()));
+}
+
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;

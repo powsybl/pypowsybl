@@ -10,7 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -39,7 +39,10 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -93,7 +96,20 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
+            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
+        });
+    }
+
+    @CEntryPoint(name = "createExporterParametersSeriesArray")
+    static ArrayPointer<SeriesPointer> createExporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String format = CTypeUtil.toString(formatPtr);
+            var exporter = Exporters.getExporter(format);
+            if (exporter == null) {
+                throw new PowsyblException("Format '" + format + "' not supported");
+            }
+            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
         });
     }
 

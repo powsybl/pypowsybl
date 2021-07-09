@@ -54,6 +54,16 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('BOOLEAN', parameters['type']['psse.import.ignore-base-voltage'])
         self.assertEqual('false', parameters['default']['psse.import.ignore-base-voltage'])
 
+    def test_get_export_parameters(self):
+        parameters = pp.network.get_export_parameters('CGMES')
+        self.assertEqual(4, len(parameters))
+        name = 'iidm.export.cgmes.using-only-network'
+        self.assertEqual(name, parameters.index.tolist()[0])
+        self.assertEqual('Export to CGMES using only information present in IIDM Network (including extensions and aliases)',
+                         parameters['description'][name])
+        self.assertEqual('BOOLEAN', parameters['type'][name])
+        self.assertEqual('false', parameters['default'][name])
+
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
         self.assertEqual(['CGMES', 'UCTE', 'XIIDM', 'ADN'], formats)

@@ -10,6 +10,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.parameters.Parameter;
 import com.powsybl.iidm.parameters.ParameterType;
@@ -31,13 +32,21 @@ import java.util.stream.Collectors;
  */
 public final class Dataframes {
 
-    private static final DataframeMapper<Importer> PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter>()
+    private static final DataframeMapper<Importer> IMPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter>()
         .itemsProvider(Importer::getParameters)
         .stringsIndex("name", Parameter::getName)
         .strings("description", Parameter::getDescription)
         .enums("type", ParameterType.class, Parameter::getType)
         .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
         .build();
+
+    private static final DataframeMapper<Exporter> EXPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Exporter, Parameter>()
+            .itemsProvider(Exporter::getParameters)
+            .stringsIndex("name", Parameter::getName)
+            .strings("description", Parameter::getDescription)
+            .enums("type", ParameterType.class, Parameter::getType)
+            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
+            .build();
 
     private static final DataframeMapper<SecurityAnalysisResult> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
     private static final DataframeMapper<SecurityAnalysisResult> T3WT_RESULTS_MAPPER = createThreeWindingsTransformersResults();
@@ -68,8 +77,12 @@ public final class Dataframes {
     /**
      * A mapper which maps an importer to a dataframe containing its parameters.
      */
-    public static DataframeMapper<Importer> parametersMapper() {
-        return PARAMETERS_MAPPER;
+    static DataframeMapper<Importer> importerParametersMapper() {
+        return IMPORTER_PARAMETERS_MAPPER;
+    }
+
+    static DataframeMapper<Exporter> exporterParametersMapper() {
+        return EXPORTER_PARAMETERS_MAPPER;
     }
 
     public static DataframeMapper<SecurityAnalysisResult> branchResultsMapper() {
