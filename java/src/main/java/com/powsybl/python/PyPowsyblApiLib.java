@@ -10,7 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -37,9 +37,13 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -407,12 +411,29 @@ public final class PyPowsyblApiLib {
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             // don't need to free char* from id field as it is done by python
+            System.out.println("Freeing series array");
             for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-                SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+                freeSeries(seriesPtrArrayPtr.getPtr().addressOf(i));
             }
             freeArrayPointer(seriesPtrArrayPtr);
         });
+    }
+
+    private static void freeSeries(SeriesPointer seriesPointer) {
+        System.out.println("Freeing series");
+        if (seriesPointer.getType() == CDataframeHandler.STRING_SERIES_TYPE) {
+            System.out.println("Freeing series of type string");
+            freeArrayContent(seriesPointer.data());
+        }
+        UnmanagedMemory.free(seriesPointer.data().getPtr());
+        UnmanagedMemory.free(seriesPointer.getName());
+    }
+
+    private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
+        for (int i = 0; i < array.getLength(); i++) {
+            System.out.println("Freeing " + CTypeConversion.toJavaString(array.getPtr().read(i)));
+            UnmanagedMemory.free(array.getPtr().read(i));
+        }
     }
 
     @CEntryPoint(name = "getSeriesType")

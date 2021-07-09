@@ -91,6 +91,7 @@ Array<limit_violation>::~Array() {
 
 template<>
 Array<series>::~Array() {
+    std::cout<<"Destroying series array"<<std::endl;
     callJava<>(::freeSeriesArray, delegate_);
 }
 
@@ -458,6 +459,7 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 }
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType) {
+    std::cout<<"Creating series array"<<std::endl;
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
 }
 
