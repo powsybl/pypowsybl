@@ -38,11 +38,46 @@ class Network(object):
     def __init__(self, handle):
         self._handle = handle
         att = _pypowsybl.get_network_metadata(self._handle)
-        self.id = att.id
-        self.name = att.name
-        self.source_format = att.source_format
-        self.forecast_distance = att.forecast_distance
-        self.case_date = datetime.datetime.fromtimestamp(att.case_date)
+        self._id = att.id
+        self._name = att.name
+        self._source_format = att.source_format
+        self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = datetime.datetime.utcfromtimestamp(att.case_date)
+
+    @property
+    def id(self) -> str:
+        """
+        ID of this network
+        """
+        return self._id
+
+    @property
+    def name(self) -> str:
+        """
+        Name of this network
+        """
+        return self._name
+
+    @property
+    def source_format(self) -> str:
+        """
+        Format of the source where this network came from.
+        """
+        return self._source_format
+
+    @property
+    def case_date(self) -> datetime.datetime:
+        """
+        Date of this network case, in UTC timezone.
+        """
+        return self._case_date
+
+    @property
+    def forecast_distance(self) -> datetime.timedelta:
+        """
+        The forecast distance: 0 for a snapshot.
+        """
+        return self._forecast_distance
 
     def __getstate__(self):
         return {'xml': self.dump_to_string()}

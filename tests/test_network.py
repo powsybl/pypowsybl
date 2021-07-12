@@ -70,9 +70,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_network_attributes(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual('sim1', n.id)
-        self.assertEqual(datetime.datetime(2018, 1, 1, 11, 0), n.case_date)
+        self.assertEqual(datetime.datetime(2018, 1, 1, 10, 0), n.case_date)
         self.assertEqual('sim1', n.name)
-        self.assertEqual(0, n.forecast_distance)
+        self.assertEqual(datetime.timedelta(0), n.forecast_distance)
         self.assertEqual('test', n.source_format)
 
     def test_get_network_element_ids(self):
