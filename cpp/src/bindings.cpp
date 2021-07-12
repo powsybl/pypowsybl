@@ -30,6 +30,17 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+py::list toPythonStringList(const series& s) {
+	//Last argument is to bind lifetime of series to the returned array
+    char** data = (char**) s.data.ptr;
+    py::list l(s.data.length);
+    for (int i = 0; i < s.data.length; i++) {
+        char* str = data[i];
+        l[i] = py::str(str ? str : "");
+    } 
+    return l;
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -382,7 +393,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("data", [](const series& s) -> py::object {
                 switch(s.type) {
                     case 0:
-                        return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                        return toPythonStringList(s);
                     case 1:
                         return seriesAsNumpyArray<double>(s);
                     case 2:
