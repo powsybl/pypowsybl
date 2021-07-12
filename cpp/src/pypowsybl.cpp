@@ -26,13 +26,17 @@ public:
         if (!isolate) {
             throw std::runtime_error("isolate has not been created");
         }
-        if (graal_attach_thread(isolate, &thread_) != 0) {
-            throw std::runtime_error("graal_create_isolate error");
+        //if thread already attached to the isolate,
+        //we assume it's a nested call --> do nothing
+        if (graal_get_current_thread(isolate) == nullptr) {
+            if (graal_attach_thread(isolate, &thread_) != 0) {
+                throw std::runtime_error("graal_create_isolate error");
+            }
         }
     }
 
     ~GraalVmGuard() noexcept(false) {
-        if (graal_detach_thread(thread_) != 0) {
+        if (thread_ != nullptr && graal_detach_thread(thread_) != 0) {
             throw std::runtime_error("graal_detach_thread error");
         }
     }
