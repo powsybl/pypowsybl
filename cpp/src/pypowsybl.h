@@ -175,6 +175,8 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, element_type elementType);
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);

@@ -260,6 +260,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
+    m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("element_type"));
+
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 

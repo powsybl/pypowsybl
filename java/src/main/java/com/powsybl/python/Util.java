@@ -70,7 +70,7 @@ public final class Util {
         T get();
     }
 
-    public static <T extends WordBase> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, PointerProvider<T> supplier) {
+    static <T extends WordBase> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, PointerProvider<T> supplier) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();

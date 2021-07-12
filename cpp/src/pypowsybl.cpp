@@ -371,6 +371,10 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, element_type elementType) {
+    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, elementType));
+}
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }

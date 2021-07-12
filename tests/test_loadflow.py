@@ -5,10 +5,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import unittest
+from _pypowsybl import ElementType
+
 import pypowsybl as pp
 
 
 class LoadflowTestCase(unittest.TestCase):
+
+    def test_validation(self):
+        n = pp.network.create_ieee14()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n, [ElementType.GENERATOR, ElementType.BUS])
+        self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.01)
+        self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.01)
 
     def test_run_lf(self):
         n = pp.network.create_ieee14()

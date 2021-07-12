@@ -12,7 +12,8 @@ from _pypowsybl import VoltageInitMode
 from _pypowsybl import BalanceType
 from _pypowsybl import ConnectedComponentMode
 from pypowsybl.network import Network
-
+from pypowsybl.util import create_data_frame_from_series_array
+from _pypowsybl import ElementType
 
 Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                    f"voltage_init_mode={self.voltage_init_mode.name}"\
@@ -46,3 +47,40 @@ def run_ac(network: Network, parameters: Parameters = Parameters(), provider = '
 
 def run_dc(network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow'):
     return _pypowsybl.run_load_flow(network._handle, True, parameters, provider)
+
+
+def run_validation(network: Network, element_types = []):
+    result = ValidationResult()
+    for element_type in element_types:
+        series_array = _pypowsybl.run_load_flow_validation(network._handle, element_type)
+        value = create_data_frame_from_series_array(series_array)
+        if element_type == ElementType.BUS:
+            result.buses = value
+        elif element_type == ElementType.GENERATOR:
+            result.generators = value
+        else:
+            raise Exception(element_type + " not support")
+    return result
+
+
+class ValidationResult:
+
+    def __init__(self):
+        self._buses = None
+        self._generators = None
+
+    @property
+    def buses(self):
+        return self._buses
+
+    @buses.setter
+    def buses(self, value):
+        self._buses = value
+
+    @property
+    def generators(self):
+        return self._generators
+
+    @generators.setter
+    def generators(self, value):
+        self._generators = value
