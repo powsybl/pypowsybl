@@ -45,13 +45,16 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
+//copies to string and frees memory allocated by java
+std::string toString(char* cstring);
+
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
     f(guard.thread(), args..., &exc);
     if (exc.message) {
-        throw PyPowsyblError(exc.message);
+        throw PyPowsyblError(toString(exc.message));
     }
 }
 
@@ -61,7 +64,7 @@ T callJava(F f, ARGS... args) {
     exception_handler exc;
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
-        throw PyPowsyblError(exc.message);
+        throw PyPowsyblError(toString(exc.message));
     }
     return r;
 }
