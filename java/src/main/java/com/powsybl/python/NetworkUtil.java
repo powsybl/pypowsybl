@@ -9,9 +9,7 @@ package com.powsybl.python;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,16 +19,6 @@ import java.util.stream.Collectors;
 public final class NetworkUtil {
 
     private NetworkUtil() {
-    }
-
-    static Map<String, String> metadataMap(Network network) {
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put("id", network.getId());
-        map.put("name", network.getNameOrId());
-        map.put("caseDate", network.getCaseDate().toString());
-        map.put("forecastDistance", network.getForecastDistance() + "");
-        map.put("sourceFormat", network.getSourceFormat());
-        return map;
     }
 
     static boolean updateSwitchPosition(Network network, String switchId, boolean open) {

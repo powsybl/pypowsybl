@@ -17,7 +17,7 @@ typedef struct array_struct {
 typedef struct network_metadata_struct {
     char* id;
     char* name;
-    char* case_date;
+    double case_date; //seconds since epoch
     char* source_format;
     int forecast_distance;
 } network_metadata;

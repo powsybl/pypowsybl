@@ -23,8 +23,10 @@ import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -123,14 +125,31 @@ public final class PyPowsyblNetworkApiLib {
                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return PyPowsyblApiHeader.allocMainAttributePointer(NetworkUtil.metadataMap(network));
+            return createNetworkMetadata(network);
         });
     }
 
     @CEntryPoint(name = "freeNetworkMetadata")
     public static void freeNetworkMetadata(IsolateThread thread, PyPowsyblApiHeader.NetworkMetadataPointer ptr,
                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> PyPowsyblApiHeader.freeNetworkMetadata(ptr));
+        doCatch(exceptionHandlerPtr, () -> freeNetworkMetadata(ptr));
+    }
+
+    private static PyPowsyblApiHeader.NetworkMetadataPointer createNetworkMetadata(Network network) {
+        PyPowsyblApiHeader.NetworkMetadataPointer ptr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.NetworkMetadataPointer.class));
+        ptr.setId(CTypeUtil.toCharPtr(network.getId()));
+        ptr.setName(CTypeUtil.toCharPtr(network.getNameOrId()));
+        ptr.setSourceFormat(CTypeUtil.toCharPtr(network.getSourceFormat()));
+        ptr.setForecastDistance(network.getForecastDistance());
+        ptr.setCaseDate(network.getCaseDate().getMillis() / 1000.0d);
+        return ptr;
+    }
+
+    private static void freeNetworkMetadata(PyPowsyblApiHeader.NetworkMetadataPointer networkMetadataPointer) {
+        UnmanagedMemory.free(networkMetadataPointer.getId());
+        UnmanagedMemory.free(networkMetadataPointer.getName());
+        UnmanagedMemory.free(networkMetadataPointer.getSourceFormat());
+        UnmanagedMemory.free(networkMetadataPointer);
     }
 
     @CEntryPoint(name = "loadNetwork")

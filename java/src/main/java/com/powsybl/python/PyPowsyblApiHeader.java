@@ -17,8 +17,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
 
-import java.util.Map;
-
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -82,10 +80,10 @@ public final class PyPowsyblApiHeader {
         void setName(CCharPointer name);
 
         @CField("case_date")
-        CCharPointer getCaseDate();
+        double getCaseDate();
 
         @CField("case_date")
-        void setCaseDate(CCharPointer caseDate);
+        void setCaseDate(double millis);
 
         @CField("source_format")
         CCharPointer getSourceFormat();
@@ -98,24 +96,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("forecast_distance")
         void setForecastDistance(int forecastDistance);
-    }
-
-    static NetworkMetadataPointer allocMainAttributePointer(Map<String, String> networkMetadata) {
-        NetworkMetadataPointer ptr = UnmanagedMemory.calloc(SizeOf.get(NetworkMetadataPointer.class));
-        ptr.setId(CTypeUtil.toCharPtr(networkMetadata.get("id")));
-        ptr.setName(CTypeUtil.toCharPtr(networkMetadata.get("name")));
-        ptr.setSourceFormat(CTypeUtil.toCharPtr(networkMetadata.get("sourceFormat")));
-        ptr.setForecastDistance(Integer.parseInt(networkMetadata.get("forecastDistance")));
-        ptr.setCaseDate(CTypeUtil.toCharPtr(networkMetadata.get("caseDate")));
-        return ptr;
-    }
-
-    static void freeNetworkMetadata(NetworkMetadataPointer networkMetadataPointer) {
-        UnmanagedMemory.free(networkMetadataPointer.getId());
-        UnmanagedMemory.free(networkMetadataPointer.getName());
-        UnmanagedMemory.free(networkMetadataPointer.getCaseDate());
-        UnmanagedMemory.free(networkMetadataPointer.getSourceFormat());
-        UnmanagedMemory.free(networkMetadataPointer);
     }
 
     @CStruct("load_flow_component_result")

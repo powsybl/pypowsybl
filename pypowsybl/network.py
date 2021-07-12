@@ -12,6 +12,7 @@ from typing import List
 from typing import Set
 
 import pandas as pd
+import datetime
 
 from pypowsybl.util import create_data_frame_from_series_array
 
@@ -41,7 +42,7 @@ class Network(object):
         self.name = att.name
         self.source_format = att.source_format
         self.forecast_distance = att.forecast_distance
-        self.case_date = att.case_date
+        self.case_date = datetime.datetime.fromtimestamp(att.case_date)
 
     def __getstate__(self):
         return {'xml': self.dump_to_string()}
