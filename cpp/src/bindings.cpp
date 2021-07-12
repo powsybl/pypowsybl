@@ -30,11 +30,6 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
-template<typename F>
-py::str toPythonString(F function) {
-
-}
-
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
