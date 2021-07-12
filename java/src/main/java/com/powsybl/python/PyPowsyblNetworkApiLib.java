@@ -130,7 +130,7 @@ public final class PyPowsyblNetworkApiLib {
     @CEntryPoint(name = "freeNetworkMetadata")
     public static void freeNetworkMetadata(IsolateThread thread, PyPowsyblApiHeader.NetworkMetadataPointer ptr,
                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> PyPowsyblApiHeader.freeMainAttributePointer(ptr));
+        doCatch(exceptionHandlerPtr, () -> PyPowsyblApiHeader.freeNetworkMetadata(ptr));
     }
 
     @CEntryPoint(name = "loadNetwork")

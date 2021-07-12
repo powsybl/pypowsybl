@@ -110,7 +110,11 @@ public final class PyPowsyblApiHeader {
         return ptr;
     }
 
-    static void freeMainAttributePointer(NetworkMetadataPointer networkMetadataPointer) {
+    static void freeNetworkMetadata(NetworkMetadataPointer networkMetadataPointer) {
+        UnmanagedMemory.free(networkMetadataPointer.getId());
+        UnmanagedMemory.free(networkMetadataPointer.getName());
+        UnmanagedMemory.free(networkMetadataPointer.getCaseDate());
+        UnmanagedMemory.free(networkMetadataPointer.getSourceFormat());
         UnmanagedMemory.free(networkMetadataPointer);
     }
 
