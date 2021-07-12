@@ -75,6 +75,13 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(datetime.timedelta(0), n.forecast_distance)
         self.assertEqual('test', n.source_format)
 
+    def test_network_representation(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00, ' \
+                   'forecast_distance=0:00:00, source_format=test)'
+        self.assertEqual(expected, str(n))
+        self.assertEqual(expected, repr(n))
+
     def test_get_network_element_ids(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(['NGEN_NHV1', 'NHV2_NLOAD'],
