@@ -79,6 +79,13 @@ class Network(object):
         """
         return self._forecast_distance
 
+    def __str__(self) -> str:
+        return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
+               f'forecast_distance={self.forecast_distance}, source_format={self.source_format})'
+
+    def __repr__(self) -> str:
+        return str(self)
+
     def __getstate__(self):
         return {'xml': self.dump_to_string()}
 
