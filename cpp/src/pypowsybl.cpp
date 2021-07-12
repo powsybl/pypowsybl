@@ -26,13 +26,20 @@ public:
         if (!isolate) {
             throw std::runtime_error("isolate has not been created");
         }
-        if (graal_attach_thread(isolate, &thread_) != 0) {
-            throw std::runtime_error("graal_create_isolate error");
-        }
+        //if thread already attached to the isolate,
+        //we assume it's a nested call --> do nothing
+
+        thread_ = graal_get_current_thread(isolate);
+        if (thread_ == nullptr) {
+            if (graal_attach_thread(isolate, &thread_) != 0) {
+                throw std::runtime_error("graal_create_isolate error");
+            }
+            shouldDetach = true;
+       }
     }
 
     ~GraalVmGuard() noexcept(false) {
-        if (graal_detach_thread(thread_) != 0) {
+        if (shouldDetach && graal_detach_thread(thread_) != 0) {
             throw std::runtime_error("graal_detach_thread error");
         }
     }
@@ -42,8 +49,12 @@ public:
     }
 
 private:
+    bool shouldDetach = false;
     graal_isolatethread_t* thread_ = nullptr;
 };
+
+//copies to string and frees memory allocated by java
+std::string toString(char* cstring);
 
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
@@ -51,7 +62,7 @@ void callJava(F f, ARGS... args) {
     exception_handler exc;
     f(guard.thread(), args..., &exc);
     if (exc.message) {
-        throw PyPowsyblError(exc.message);
+        throw PyPowsyblError(toString(exc.message));
     }
 }
 
@@ -61,7 +72,7 @@ T callJava(F f, ARGS... args) {
     exception_handler exc;
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
-        throw PyPowsyblError(exc.message);
+        throw PyPowsyblError(toString(exc.message));
     }
     return r;
 }
@@ -198,12 +209,23 @@ void deleteCharPtrPtr(char** charPtrPtr, int length) {
     delete charPtrPtr;
 }
 
+void freeCString(char* str) {
+    callJava<>(::freeString, str);
+}
+
+//copies to string and frees memory allocated by java
+std::string toString(char* cstring) {
+    std::string res = cstring;
+    freeCString(cstring);
+    return res;
+}
+
 void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
 std::string getVersionTable() {
-    return std::string(callJava<char*>(::getVersionTable));
+    return toString(callJava<char*>(::getVersionTable));
 }
 
 JavaHandle createEmptyNetwork(const std::string& id) {
@@ -303,7 +325,7 @@ std::string dumpNetworkToString(const JavaHandle& network, const std::string& fo
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return std::string(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    return toString(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
              parameterValuesPtr.get(), parameterValues.size()));
 }
 
@@ -347,7 +369,7 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
-    return std::string(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+    return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -490,7 +512,7 @@ void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_ty
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
-    return std::string(callJava<char*>(::getWorkingVariantId, network));
+    return toString(callJava<char*>(::getWorkingVariantId, network));
 }
 
 void setWorkingVariant(const JavaHandle& network, std::string& variant) {
@@ -542,4 +564,5 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
 }
+
 }
