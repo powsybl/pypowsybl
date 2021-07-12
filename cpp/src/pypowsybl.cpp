@@ -198,12 +198,23 @@ void deleteCharPtrPtr(char** charPtrPtr, int length) {
     delete charPtrPtr;
 }
 
+void freeCString(char* str) {
+    callJava<>(::freeString, str);
+}
+
+//copies to string and frees memory allocated by java
+std::string toString(char* cstring) {
+    std::string res = cstring;
+    freeCString(cstring);
+    return res;
+}
+
 void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
 std::string getVersionTable() {
-    return std::string(callJava<char*>(::getVersionTable));
+    return toString(callJava<char*>(::getVersionTable));
 }
 
 JavaHandle createEmptyNetwork(const std::string& id) {
@@ -303,7 +314,7 @@ std::string dumpNetworkToString(const JavaHandle& network, const std::string& fo
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return std::string(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    return toString(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
              parameterValuesPtr.get(), parameterValues.size()));
 }
 
@@ -347,7 +358,7 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
-    return std::string(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+    return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -490,7 +501,7 @@ void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_ty
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
-    return std::string(callJava<char*>(::getWorkingVariantId, network));
+    return toString(callJava<char*>(::getWorkingVariantId, network));
 }
 
 void setWorkingVariant(const JavaHandle& network, std::string& variant) {
@@ -542,4 +553,5 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
 }
+
 }
