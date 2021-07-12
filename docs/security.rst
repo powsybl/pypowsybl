@@ -27,8 +27,6 @@ the violations created by the contingency, they are collected by contingency in 
     >>> security_analysis = pp.security.create_analysis()
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     >>> result = security_analysis.run_ac(network)
-    ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[3])
-    ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[2])
     >>> result.pre_contingency_result
     ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[3])
     >>> result.post_contingency_results
@@ -68,9 +66,6 @@ Information can be obtained on buses, branches and three windings transformers.
     >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
     >>> security_analysis.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
     >>> results = security_analysis.run_ac(network)
-    ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[0])
-    ContingencyResult(contingency_id='NGEN_NHV1', status=CONVERGED, limit_violations=[2])
-    ContingencyResult(contingency_id='NHV1_NHV2_1', status=CONVERGED, limit_violations=[2])
     >>> results.bus_results
                                              v_mag  v_angle
     contingency_id voltage_level_id bus_id
