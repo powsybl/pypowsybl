@@ -19,6 +19,17 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.00001)
         self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.00001)
         self.assertAlmostEqual(156.887407, validation.branch_flows['p1']['L1-2-1'], delta=0.00001)
+        n2 = pp.network.create_four_substations_node_breaker_network()
+        pp.loadflow.run_ac(n)
+        validation2 = pp.loadflow.run_validation(n2, [ElementType.STATIC_VAR_COMPENSATOR])
+        self.assertEqual(1, len(validation2.svcs))
+        self.assertTrue(validation2.svcs['validated']['SVC'])
+
+    def test_twt_validation(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n, [ElementType.TWO_WINDINGS_TRANSFORMER])
+        self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
 
     def test_run_lf(self):
         n = pp.network.create_ieee14()
