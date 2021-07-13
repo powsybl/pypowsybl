@@ -83,6 +83,7 @@ class ValidationResult:
         self._shunts = None
         self._twts = None
         self._twt3ws = None
+        self._valid = True
 
     @property
     def branch_flows(self):
@@ -91,6 +92,7 @@ class ValidationResult:
     @branch_flows.setter
     def branch_flows(self, value):
         self._branch_flows = value
+        self._valid &= all(value["validated"].tolist())
 
     @property
     def buses(self):
@@ -99,6 +101,7 @@ class ValidationResult:
     @buses.setter
     def buses(self, value):
         self._buses = value
+        self._valid &= all(value["validated"].tolist())
 
     @property
     def generators(self):
@@ -107,6 +110,7 @@ class ValidationResult:
     @generators.setter
     def generators(self, value):
         self._generators = value
+        self._valid &= all(value["validated"].tolist())
 
     @property
     def svcs(self):
@@ -115,6 +119,7 @@ class ValidationResult:
     @svcs.setter
     def svcs(self, value):
         self._svcs = value
+        self._valid &= all(value["validated"].tolist())
 
     @property
     def shunts(self):
@@ -123,6 +128,7 @@ class ValidationResult:
     @shunts.setter
     def shunts(self, value):
         self._shunts = value
+        self._valid &= all(value["validated"].tolist())
         
     @property
     def twts(self):
@@ -131,6 +137,7 @@ class ValidationResult:
     @twts.setter
     def twts(self, value):
         self._twts = value
+        self._valid &= all(value["validated"].tolist())
         
     @property
     def twt3ws(self):
@@ -139,3 +146,8 @@ class ValidationResult:
     @twt3ws.setter
     def twt3ws(self, value):
         self._twt3ws = value
+        self._valid &= all(value["validated"].tolist())
+
+    @property
+    def valid(self):
+        return self._valid
