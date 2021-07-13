@@ -15,9 +15,10 @@ class LoadflowTestCase(unittest.TestCase):
     def test_validation(self):
         n = pp.network.create_ieee14()
         pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n, [ElementType.GENERATOR, ElementType.BUS])
-        self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.01)
-        self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.01)
+        validation = pp.loadflow.run_validation(n, [ElementType.BRANCH, ElementType.GENERATOR, ElementType.BUS])
+        self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.00001)
+        self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.00001)
+        self.assertAlmostEqual(156.887407, validation.branch_flows['p1']['L1-2-1'], delta=0.00001)
 
     def test_run_lf(self):
         n = pp.network.create_ieee14()

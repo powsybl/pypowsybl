@@ -58,6 +58,8 @@ def run_validation(network: Network, element_types = []):
             result.buses = value
         elif element_type == ElementType.GENERATOR:
             result.generators = value
+        elif element_type == ElementType.BRANCH:
+            result.branch_flows = value
         else:
             raise Exception(element_type + " not support")
     return result
@@ -66,8 +68,17 @@ def run_validation(network: Network, element_types = []):
 class ValidationResult:
 
     def __init__(self):
+        self._branch_flows = None
         self._buses = None
         self._generators = None
+
+    @property
+    def branch_flows(self):
+        return self._branch_flows
+
+    @branch_flows.setter
+    def branch_flows(self, value):
+        self._branch_flows = value
 
     @property
     def buses(self):

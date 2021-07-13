@@ -68,6 +68,7 @@ typedef struct contingency_result_struct {
 
 typedef enum {
     BUS = 0,
+    BRANCH,
     LINE,
     TWO_WINDINGS_TRANSFORMER,
     THREE_WINDINGS_TRANSFORMER,

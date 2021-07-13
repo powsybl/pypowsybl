@@ -7,10 +7,7 @@
 package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.loadflow.BusValidationWriter;
-import com.powsybl.dataframe.loadflow.DefaultInMemoryValidationWriter;
-import com.powsybl.dataframe.loadflow.GeneratorValidationWriter;
-import com.powsybl.dataframe.loadflow.Validations;
+import com.powsybl.dataframe.loadflow.*;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.loadflow.validation.ValidationType;
@@ -51,6 +48,10 @@ public final class PyPowsyblLoadFlowApiLib {
         ValidationConfig validationConfig = ValidationConfig.load();
         DefaultInMemoryValidationWriter writer;
         switch (elementType) {
+            case BRANCH:
+                writer = new BranchValidationWriter();
+                ValidationType.FLOWS.check(network, validationConfig, writer);
+                break;
             case BUS:
                 writer = new BusValidationWriter();
                 ValidationType.BUSES.check(network, validationConfig, writer);
@@ -67,6 +68,8 @@ public final class PyPowsyblLoadFlowApiLib {
 
     private static ArrayPointer<SeriesPointer> createCDataFrame(DefaultInMemoryValidationWriter validationWriter, ElementType elementType) {
         switch (elementType) {
+            case BRANCH:
+                return Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter);
             case BUS:
                 return Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter);
             case GENERATOR:

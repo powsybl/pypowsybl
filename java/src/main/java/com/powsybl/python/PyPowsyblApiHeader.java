@@ -312,6 +312,7 @@ public final class PyPowsyblApiHeader {
     @CEnum("element_type")
     public enum ElementType {
         BUS,
+        BRANCH,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
         THREE_WINDINGS_TRANSFORMER,
