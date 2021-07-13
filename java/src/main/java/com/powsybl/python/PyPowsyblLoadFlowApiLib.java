@@ -67,6 +67,15 @@ public final class PyPowsyblLoadFlowApiLib {
             case SHUNT_COMPENSATOR:
                 writer = new ShuntValidationWriter();
                 ValidationType.SHUNTS.check(network, validationConfig, writer);
+                break;
+            case TWO_WINDINGS_TRANSFORMER:
+                writer = new TwtValidationWriter();
+                ValidationType.TWTS.check(network, validationConfig, writer);
+                break;
+            case THREE_WINDINGS_TRANSFORMER:
+                writer = new Twt3wValidationWriter();
+                ValidationType.TWTS3W.check(network, validationConfig, writer);
+                break;
             default:
                 throw new PowsyblException("Validation '" + elementType + "' not supported");
         }
@@ -85,6 +94,10 @@ public final class PyPowsyblLoadFlowApiLib {
                 return Dataframes.createCDataframe(Validations.svcsValidationMapper(), (SvcValidationWriter) validationWriter);
             case SHUNT_COMPENSATOR:
                 return Dataframes.createCDataframe(Validations.shuntsValidationMapper(), (ShuntValidationWriter) validationWriter);
+            case TWO_WINDINGS_TRANSFORMER:
+                return Dataframes.createCDataframe(Validations.twtsValidationMapper(), (TwtValidationWriter) validationWriter);
+            case THREE_WINDINGS_TRANSFORMER:
+                return Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), (Twt3wValidationWriter) validationWriter);
             default:
                 throw new PowsyblException("Validation '" + elementType + "' not supported");
         }

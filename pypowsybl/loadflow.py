@@ -64,6 +64,10 @@ def run_validation(network: Network, element_types = []):
             result.svcs = value
         elif element_type == ElementType.SHUNT_COMPENSATOR:
             result.shunts = value
+        elif element_type == ElementType.TWO_WINDINGS_TRANSFORMER:
+            result.twts = value
+        elif element_type == ElementType.THREE_WINDINGS_TRANSFORMER:
+            result.twt3ws = value
         else:
             raise Exception(element_type + " not support")
     return result
@@ -77,6 +81,8 @@ class ValidationResult:
         self._generators = None
         self._svcs = None
         self._shunts = None
+        self._twts = None
+        self._twt3ws = None
 
     @property
     def branch_flows(self):
@@ -117,3 +123,19 @@ class ValidationResult:
     @shunts.setter
     def shunts(self, value):
         self._shunts = value
+        
+    @property
+    def twts(self):
+        return self._twts
+
+    @twts.setter
+    def twts(self, value):
+        self._twts = value
+        
+    @property
+    def twt3ws(self):
+        return self._twt3ws
+
+    @twt3ws.setter
+    def twt3ws(self, value):
+        self._twt3ws = value
