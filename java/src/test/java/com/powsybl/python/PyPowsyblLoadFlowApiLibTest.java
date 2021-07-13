@@ -31,11 +31,11 @@ class PyPowsyblLoadFlowApiLibTest {
         DefaultInMemoryValidationWriter<BusValidationWriter.ValidationData> buses = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ElementType.BUS);
         Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), buses))
                 .extracting(Series::getName)
-                .containsExactly("id", "incoming_p");
+                .contains("id", "incoming_p");
 
         DefaultInMemoryValidationWriter<GeneratorValidationWriter.ValidationData> gens = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ElementType.GENERATOR);
         Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), gens))
                 .extracting(Series::getName)
-                .containsExactly("id", "p");
+                .contains("id", "p");
     }
 }
