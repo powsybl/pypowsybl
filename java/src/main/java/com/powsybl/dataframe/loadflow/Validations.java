@@ -14,9 +14,9 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
  */
 public final class Validations {
 
-    public static DataframeMapper<DefaultInMemoryValidationWriter<BranchValidationWriter.ValidationData>> branchValidationsMapper() {
-        return new DataframeMapperBuilder<DefaultInMemoryValidationWriter<BranchValidationWriter.ValidationData>, BranchValidationWriter.ValidationData>()
-                .itemsProvider(DefaultInMemoryValidationWriter::getList)
+    public static DataframeMapper<BranchValidationWriter> branchValidationsMapper() {
+        return new DataframeMapperBuilder<BranchValidationWriter, BranchValidationWriter.ValidationData>()
+                .itemsProvider(BranchValidationWriter::getList)
                 .stringsIndex("id", BranchValidationWriter.ValidationData::getBranchId)
                 .doubles("p1", BranchValidationWriter.ValidationData::getP1)
                 .doubles("p1Calc", BranchValidationWriter.ValidationData::getP1Calc)
@@ -52,9 +52,9 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<DefaultInMemoryValidationWriter<BusValidationWriter.ValidationData>> busValidationsMapper() {
-        return new DataframeMapperBuilder<DefaultInMemoryValidationWriter<BusValidationWriter.ValidationData>, BusValidationWriter.ValidationData>()
-                .itemsProvider(DefaultInMemoryValidationWriter::getList)
+    public static DataframeMapper<BusValidationWriter> busValidationsMapper() {
+        return new DataframeMapperBuilder<BusValidationWriter, BusValidationWriter.ValidationData>()
+                .itemsProvider(BusValidationWriter::getList)
                 .stringsIndex("id", BusValidationWriter.ValidationData::getId)
                 .doubles("incoming_p", BusValidationWriter.ValidationData::getIncomingP)
                 .doubles("incoming_q", BusValidationWriter.ValidationData::getIncomingQ)
@@ -83,9 +83,9 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<DefaultInMemoryValidationWriter<GeneratorValidationWriter.ValidationData>> generatorValidationsMapper() {
-        return new DataframeMapperBuilder<DefaultInMemoryValidationWriter<GeneratorValidationWriter.ValidationData>, GeneratorValidationWriter.ValidationData>()
-                .itemsProvider(DefaultInMemoryValidationWriter::getList)
+    public static DataframeMapper<GeneratorValidationWriter> generatorValidationsMapper() {
+        return new DataframeMapperBuilder<GeneratorValidationWriter, GeneratorValidationWriter.ValidationData>()
+                .itemsProvider(GeneratorValidationWriter::getList)
                 .stringsIndex("id", GeneratorValidationWriter.ValidationData::getId)
                 .doubles("p", GeneratorValidationWriter.ValidationData::getP)
                 .doubles("q", GeneratorValidationWriter.ValidationData::getQ)
@@ -102,6 +102,45 @@ public final class Validations {
                 .doubles("maxQ", GeneratorValidationWriter.ValidationData::getMaxQ)
                 .booleans("mainComponent", GeneratorValidationWriter.ValidationData::isMainComponent)
                 .booleans("validated", GeneratorValidationWriter.ValidationData::isValidated)
+                .build();
+    }
+
+    public static DataframeMapper<SvcValidationWriter> svcsValidationMapper() {
+        return new DataframeMapperBuilder<SvcValidationWriter, SvcValidationWriter.ValidationData>()
+                .itemsProvider(SvcValidationWriter::getList)
+                .stringsIndex("id", SvcValidationWriter.ValidationData::getSvcId)
+                .doubles("p", SvcValidationWriter.ValidationData::getP)
+                .doubles("q", SvcValidationWriter.ValidationData::getQ)
+                .doubles("vControlled", SvcValidationWriter.ValidationData::getvControlled)
+                .doubles("vController", SvcValidationWriter.ValidationData::getvController)
+                .doubles("nominalVcontroller", SvcValidationWriter.ValidationData::getNominalVcontroller)
+                .doubles("reactivePowerSetpoint", SvcValidationWriter.ValidationData::getReactivePowerSetpoint)
+                .doubles("voltageSetpoint", SvcValidationWriter.ValidationData::getVoltageSetpoint)
+                .booleans("connected", SvcValidationWriter.ValidationData::isConnected)
+                .strings("mode", data -> data.getRegulationMode().name())
+                .doubles("bMin", SvcValidationWriter.ValidationData::getbMin)
+                .doubles("bMax", SvcValidationWriter.ValidationData::getbMax)
+                .booleans("mainComponent", SvcValidationWriter.ValidationData::isMainComponent)
+                .booleans("validated", SvcValidationWriter.ValidationData::isValidated)
+                .build();
+    }
+
+    public static DataframeMapper<ShuntValidationWriter> shuntsValidationMapper() {
+        return new DataframeMapperBuilder<ShuntValidationWriter, ShuntValidationWriter.ValidationData>()
+                .itemsProvider(ShuntValidationWriter::getList)
+                .stringsIndex("id", ShuntValidationWriter.ValidationData::getShuntId)
+                .doubles("q", ShuntValidationWriter.ValidationData::getQ)
+                .doubles("expectedQ", ShuntValidationWriter.ValidationData::getExpectedQ)
+                .doubles("p", ShuntValidationWriter.ValidationData::getP)
+                .ints("currentSectionCount", ShuntValidationWriter.ValidationData::getCurrentSectionCount)
+                .ints("maximumSectionCount", ShuntValidationWriter.ValidationData::getMaximumSectionCount)
+                .doubles("bPerSection", ShuntValidationWriter.ValidationData::getbPerSection)
+                .doubles("v", ShuntValidationWriter.ValidationData::getV)
+                .booleans("connected", ShuntValidationWriter.ValidationData::isConnected)
+                .doubles("qMax", ShuntValidationWriter.ValidationData::getqMax)
+                .doubles("nominalV", ShuntValidationWriter.ValidationData::getNominalV)
+                .booleans("mainComponent", ShuntValidationWriter.ValidationData::isMainComponent)
+                .booleans("validated", ShuntValidationWriter.ValidationData::isValidated)
                 .build();
     }
 

@@ -81,95 +81,95 @@ public class BusValidationWriter extends DefaultInMemoryValidationWriter<BusVali
             return incomingP;
         }
 
-        public double getIncomingQ() {
+        double getIncomingQ() {
             return incomingQ;
         }
 
-        public double getLoadP() {
+        double getLoadP() {
             return loadP;
         }
 
-        public double getLoadQ() {
+        double getLoadQ() {
             return loadQ;
         }
 
-        public double getGenP() {
+        double getGenP() {
             return genP;
         }
 
-        public double getGenQ() {
+        double getGenQ() {
             return genQ;
         }
 
-        public double getBatP() {
+        double getBatP() {
             return batP;
         }
 
-        public double getBatQ() {
+        double getBatQ() {
             return batQ;
         }
 
-        public double getShuntP() {
+        double getShuntP() {
             return shuntP;
         }
 
-        public double getShuntQ() {
+        double getShuntQ() {
             return shuntQ;
         }
 
-        public double getSvcP() {
+        double getSvcP() {
             return svcP;
         }
 
-        public double getSvcQ() {
+        double getSvcQ() {
             return svcQ;
         }
 
-        public double getVscCSP() {
+        double getVscCSP() {
             return vscCSP;
         }
 
-        public double getVscCSQ() {
+        double getVscCSQ() {
             return vscCSQ;
         }
 
-        public double getLineP() {
+        double getLineP() {
             return lineP;
         }
 
-        public double getLineQ() {
+        double getLineQ() {
             return lineQ;
         }
 
-        public double getDanglingLineP() {
+        double getDanglingLineP() {
             return danglingLineP;
         }
 
-        public double getDanglingLineQ() {
+        double getDanglingLineQ() {
             return danglingLineQ;
         }
 
-        public double getTwtP() {
+        double getTwtP() {
             return twtP;
         }
 
-        public double getTwtQ() {
+        double getTwtQ() {
             return twtQ;
         }
 
-        public double getTltP() {
+        double getTltP() {
             return tltP;
         }
 
-        public double getTltQ() {
+        double getTltQ() {
             return tltQ;
         }
 
-        public boolean isMainComponent() {
+        boolean isMainComponent() {
             return mainComponent;
         }
 
-        public boolean isValidated() {
+        boolean isValidated() {
             return validated;
         }
     }

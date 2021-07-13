@@ -60,6 +60,10 @@ def run_validation(network: Network, element_types = []):
             result.generators = value
         elif element_type == ElementType.BRANCH:
             result.branch_flows = value
+        elif element_type == ElementType.STATIC_VAR_COMPENSATOR:
+            result.svcs = value
+        elif element_type == ElementType.SHUNT_COMPENSATOR:
+            result.shunts = value
         else:
             raise Exception(element_type + " not support")
     return result
@@ -71,6 +75,8 @@ class ValidationResult:
         self._branch_flows = None
         self._buses = None
         self._generators = None
+        self._svcs = None
+        self._shunts = None
 
     @property
     def branch_flows(self):
@@ -95,3 +101,19 @@ class ValidationResult:
     @generators.setter
     def generators(self, value):
         self._generators = value
+
+    @property
+    def svcs(self):
+        return self._svcs
+
+    @svcs.setter
+    def svcs(self, value):
+        self._svcs = value
+
+    @property
+    def shunts(self):
+        return self._shunts
+
+    @shunts.setter
+    def shunts(self, value):
+        self._shunts = value

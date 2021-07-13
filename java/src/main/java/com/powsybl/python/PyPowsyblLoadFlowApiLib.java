@@ -60,6 +60,13 @@ public final class PyPowsyblLoadFlowApiLib {
                 writer = new GeneratorValidationWriter();
                 ValidationType.GENERATORS.check(network, validationConfig, writer);
                 break;
+            case STATIC_VAR_COMPENSATOR:
+                writer = new SvcValidationWriter();
+                ValidationType.SVCS.check(network, validationConfig, writer);
+                break;
+            case SHUNT_COMPENSATOR:
+                writer = new ShuntValidationWriter();
+                ValidationType.SHUNTS.check(network, validationConfig, writer);
             default:
                 throw new PowsyblException("Validation '" + elementType + "' not supported");
         }
@@ -69,11 +76,15 @@ public final class PyPowsyblLoadFlowApiLib {
     private static ArrayPointer<SeriesPointer> createCDataFrame(DefaultInMemoryValidationWriter validationWriter, ElementType elementType) {
         switch (elementType) {
             case BRANCH:
-                return Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter);
+                return Dataframes.createCDataframe(Validations.branchValidationsMapper(), (BranchValidationWriter) validationWriter);
             case BUS:
-                return Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter);
+                return Dataframes.createCDataframe(Validations.busValidationsMapper(), (BusValidationWriter) validationWriter);
             case GENERATOR:
-                return Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter);
+                return Dataframes.createCDataframe(Validations.generatorValidationsMapper(), (GeneratorValidationWriter) validationWriter);
+            case STATIC_VAR_COMPENSATOR:
+                return Dataframes.createCDataframe(Validations.svcsValidationMapper(), (SvcValidationWriter) validationWriter);
+            case SHUNT_COMPENSATOR:
+                return Dataframes.createCDataframe(Validations.shuntsValidationMapper(), (ShuntValidationWriter) validationWriter);
             default:
                 throw new PowsyblException("Validation '" + elementType + "' not supported");
         }
