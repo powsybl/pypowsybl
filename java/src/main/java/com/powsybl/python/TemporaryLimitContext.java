@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.powsybl.python;
 
 import com.powsybl.iidm.network.Branch;
@@ -8,6 +14,7 @@ import java.util.Objects;
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
 public class TemporaryLimitContext {
+
     private final String branchId;
     private final String name;
     private final Branch.Side side;
@@ -25,12 +32,7 @@ public class TemporaryLimitContext {
     }
 
     public TemporaryLimitContext(String branchId, String name, Branch.Side side, double value) {
-        this.branchId = Objects.requireNonNull(branchId);
-        this.name = Objects.requireNonNull(name);
-        this.side = Objects.requireNonNull(side);
-        this.value = value;
-        this.acceptableDuration = -1;
-        this.isFictitious = false;
+        this(branchId, name, side, value, -1, false);
     }
 
     public String getBranchId() {

@@ -10,6 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.iidm.network.*;
+import com.powsybl.python.NetworkUtil;
 import com.powsybl.python.TemporaryLimitContext;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -19,7 +20,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
@@ -476,7 +476,7 @@ public final class NetworkDataframes {
     }
 
     private static NetworkDataframeMapper currentLimits() {
-        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getCurrentLimits)
+        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getCurrentLimits)
             .stringsIndex("branch_id", TemporaryLimitContext::getBranchId)
             .stringsIndex("name", TemporaryLimitContext::getName)
             .enums("side", Branch.Side.class, TemporaryLimitContext::getSide)
@@ -484,25 +484,6 @@ public final class NetworkDataframes {
             .ints("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
             .booleans("is_fictitious", TemporaryLimitContext::isFictitious)
             .build();
-    }
-
-    private static Stream<TemporaryLimitContext> getCurrentLimits(Network network) {
-        List<TemporaryLimitContext> temporaryLimitContexts = new ArrayList<>();
-        network.getBranchStream().forEach(branch -> {
-            if (branch.getCurrentLimits1() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
-                temporaryLimitContexts.addAll(branch.getCurrentLimits1().getTemporaryLimits().stream()
-                    .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
-                        temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
-            }
-            if (branch.getCurrentLimits2() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
-                temporaryLimitContexts.addAll(branch.getCurrentLimits2().getTemporaryLimits().stream()
-                    .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
-                        temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious())).collect(Collectors.toList()));
-            }
-        });
-        return temporaryLimitContexts.stream();
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
