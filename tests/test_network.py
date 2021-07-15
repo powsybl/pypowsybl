@@ -193,6 +193,14 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         steps = n.get_ratio_tap_changer_steps()
         self.assertEqual(0.8505666905244191, steps.loc['NHV2_NLOAD']['rho'][0])
         self.assertEqual(0.8505666905244191, steps.loc[('NHV2_NLOAD', 0), 'rho'])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
+                                            names=['id', 'position']),
+            columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[0.850567, 0, 0, 0, 0],
+                  [1.00067, 0, 0, 0, 0],
+                  [1.15077, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, steps, check_dtype=False)
 
     def test_phase_tap_changer_steps_data_frame(self):
         n = pp.network.create_ieee300()
@@ -276,8 +284,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_eurostag_tutorial_example1_network()
         tap_changers = n.get_ratio_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                          'target_v', 'target_deadband'], tap_changers.columns.tolist())
-        self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0], tap_changers.loc['NHV2_NLOAD'].tolist())
+                          'target_v', 'target_deadband', 'regulating_bus_id'], tap_changers.columns.tolist())
+        self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0'], tap_changers.loc['NHV2_NLOAD'].tolist())
 
         update = pd.DataFrame(index=['NHV2_NLOAD'],
                               columns=['tap', 'regulating', 'target_v'],
@@ -294,7 +302,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         tap_changers = n.get_phase_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+                          'regulation_value', 'target_deadband', 'regulating_bus_id'], tap_changers.columns.tolist())
         twt_values = tap_changers.loc['TWT']
         self.assertEqual(15, twt_values.tap)
         self.assertEqual(0, twt_values.low_tap)
@@ -312,7 +320,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
         tap_changers = n.get_phase_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-                          'regulation_value', 'target_deadband'], tap_changers.columns.tolist())
+                          'regulation_value', 'target_deadband', 'regulating_bus_id'], tap_changers.columns.tolist())
         twt_values = tap_changers.loc['TWT']
         self.assertEqual(10, twt_values.tap)
         self.assertEqual(True, twt_values.regulating)
@@ -376,7 +384,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                                 columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id'],
                                 data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0'],
-                                      [200, -200, 100, 200, -605, -225,  NaN, 'VLBAT', 'VLBAT_0']])
+                                      [200, -200, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0']])
         batteries = n.get_batteries()
         pd.testing.assert_frame_equal(expected, batteries, check_dtype=False)
 
