@@ -93,6 +93,16 @@ typedef enum {
 } element_type;
 
 typedef enum {
+    FLOWS = 0,
+    GENERATORS,
+    BUSES,
+    SVCS,
+    SHUNTS,
+    TWTS,
+    TWTS3W,
+} validation_type;
+
+typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,

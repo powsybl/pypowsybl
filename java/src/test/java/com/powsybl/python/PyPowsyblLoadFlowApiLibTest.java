@@ -27,12 +27,12 @@ class PyPowsyblLoadFlowApiLibTest {
         final Network network = IeeeCdfNetworkFactory.create9();
         LoadFlow.Runner runner = LoadFlow.find("OpenLoadFlow");
         runner.run(network, new LoadFlowParameters());
-        BusValidationWriter buses = (BusValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ElementType.BUS);
+        BusValidationWriter buses = (BusValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
         Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), buses))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");
 
-        GeneratorValidationWriter gens = (GeneratorValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ElementType.GENERATOR);
+        GeneratorValidationWriter gens = (GeneratorValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
         Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), gens))
                 .extracting(Series::getName)
                 .contains("id", "p");

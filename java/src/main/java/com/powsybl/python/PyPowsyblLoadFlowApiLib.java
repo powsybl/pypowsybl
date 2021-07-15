@@ -31,75 +31,75 @@ public final class PyPowsyblLoadFlowApiLib {
 
     @CEntryPoint(name = "runLoadFlowValidation")
     public static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                  ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                  PyPowsyblApiHeader.ValidationType validationType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createLoadFlowValidationSeriesArray(network, elementType);
+            return createLoadFlowValidationSeriesArray(network, validationType);
         });
     }
 
-    static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(Network network, ElementType elementType) {
-        DefaultInMemoryValidationWriter writer = createLoadFlowValidationWriter(network, elementType);
-        return createCDataFrame(writer, elementType);
+    static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(Network network, PyPowsyblApiHeader.ValidationType validationType) {
+        DefaultInMemoryValidationWriter writer = createLoadFlowValidationWriter(network, validationType);
+        return createCDataFrame(writer, validationType);
     }
 
     // package scope for unit testing
-    static DefaultInMemoryValidationWriter createLoadFlowValidationWriter(Network network, ElementType elementType) {
+    static DefaultInMemoryValidationWriter createLoadFlowValidationWriter(Network network, PyPowsyblApiHeader.ValidationType validationType) {
         ValidationConfig validationConfig = ValidationConfig.load();
         DefaultInMemoryValidationWriter writer;
-        switch (elementType) {
-            case BRANCH:
+        switch (validationType) {
+            case FLOWS:
                 writer = new BranchValidationWriter();
                 ValidationType.FLOWS.check(network, validationConfig, writer);
                 break;
-            case BUS:
+            case BUSES:
                 writer = new BusValidationWriter();
                 ValidationType.BUSES.check(network, validationConfig, writer);
                 break;
-            case GENERATOR:
+            case GENERATORS:
                 writer = new GeneratorValidationWriter();
                 ValidationType.GENERATORS.check(network, validationConfig, writer);
                 break;
-            case STATIC_VAR_COMPENSATOR:
+            case SVCS:
                 writer = new SvcValidationWriter();
                 ValidationType.SVCS.check(network, validationConfig, writer);
                 break;
-            case SHUNT_COMPENSATOR:
+            case SHUNTS:
                 writer = new ShuntValidationWriter();
                 ValidationType.SHUNTS.check(network, validationConfig, writer);
                 break;
-            case TWO_WINDINGS_TRANSFORMER:
+            case TWTS:
                 writer = new TwtValidationWriter();
                 ValidationType.TWTS.check(network, validationConfig, writer);
                 break;
-            case THREE_WINDINGS_TRANSFORMER:
+            case TWTS3W:
                 writer = new Twt3wValidationWriter();
                 ValidationType.TWTS3W.check(network, validationConfig, writer);
                 break;
             default:
-                throw new PowsyblException("Validation '" + elementType + "' not supported");
+                throw new PowsyblException("Validation '" + validationType + "' not supported");
         }
         return writer;
     }
 
-    private static ArrayPointer<SeriesPointer> createCDataFrame(DefaultInMemoryValidationWriter validationWriter, ElementType elementType) {
-        switch (elementType) {
-            case BRANCH:
+    private static ArrayPointer<SeriesPointer> createCDataFrame(DefaultInMemoryValidationWriter validationWriter, PyPowsyblApiHeader.ValidationType validationType) {
+        switch (validationType) {
+            case FLOWS:
                 return Dataframes.createCDataframe(Validations.branchValidationsMapper(), (BranchValidationWriter) validationWriter);
-            case BUS:
+            case BUSES:
                 return Dataframes.createCDataframe(Validations.busValidationsMapper(), (BusValidationWriter) validationWriter);
-            case GENERATOR:
+            case GENERATORS:
                 return Dataframes.createCDataframe(Validations.generatorValidationsMapper(), (GeneratorValidationWriter) validationWriter);
-            case STATIC_VAR_COMPENSATOR:
+            case SVCS:
                 return Dataframes.createCDataframe(Validations.svcsValidationMapper(), (SvcValidationWriter) validationWriter);
-            case SHUNT_COMPENSATOR:
+            case SHUNTS:
                 return Dataframes.createCDataframe(Validations.shuntsValidationMapper(), (ShuntValidationWriter) validationWriter);
-            case TWO_WINDINGS_TRANSFORMER:
+            case TWTS:
                 return Dataframes.createCDataframe(Validations.twtsValidationMapper(), (TwtValidationWriter) validationWriter);
-            case THREE_WINDINGS_TRANSFORMER:
+            case TWTS3W:
                 return Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), (Twt3wValidationWriter) validationWriter);
             default:
-                throw new PowsyblException("Validation '" + elementType + "' not supported");
+                throw new PowsyblException("Validation '" + validationType + "' not supported");
         }
     }
 }

@@ -13,7 +13,7 @@ from _pypowsybl import BalanceType
 from _pypowsybl import ConnectedComponentMode
 from pypowsybl.network import Network
 from pypowsybl.util import create_data_frame_from_series_array
-from _pypowsybl import ElementType
+from _pypowsybl import ValidationType
 
 Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                    f"voltage_init_mode={self.voltage_init_mode.name}"\
@@ -49,27 +49,27 @@ def run_dc(network: Network, parameters: Parameters = Parameters(), provider = '
     return _pypowsybl.run_load_flow(network._handle, True, parameters, provider)
 
 
-def run_validation(network: Network, element_types = []):
+def run_validation(network: Network, validation_types = []):
     result = ValidationResult()
-    for element_type in element_types:
-        series_array = _pypowsybl.run_load_flow_validation(network._handle, element_type)
+    for validation_type in validation_types:
+        series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type)
         value = create_data_frame_from_series_array(series_array)
-        if element_type == ElementType.BUS:
+        if validation_type == ValidationType.BUSES:
             result.buses = value
-        elif element_type == ElementType.GENERATOR:
+        elif validation_type == ValidationType.GENERATORS:
             result.generators = value
-        elif element_type == ElementType.BRANCH:
+        elif validation_type == ValidationType.FLOWS:
             result.branch_flows = value
-        elif element_type == ElementType.STATIC_VAR_COMPENSATOR:
+        elif validation_type == ValidationType.SVCS:
             result.svcs = value
-        elif element_type == ElementType.SHUNT_COMPENSATOR:
+        elif validation_type == ValidationType.SHUNTS:
             result.shunts = value
-        elif element_type == ElementType.TWO_WINDINGS_TRANSFORMER:
+        elif validation_type == ValidationType.TWTS:
             result.twts = value
-        elif element_type == ElementType.THREE_WINDINGS_TRANSFORMER:
+        elif validation_type == ValidationType.TWTS3W:
             result.twt3ws = value
         else:
-            raise Exception(element_type + " not support")
+            raise Exception(validation_type + " not support")
     return result
 
 

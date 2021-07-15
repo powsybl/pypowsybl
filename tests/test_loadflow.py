@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import unittest
-from _pypowsybl import ElementType
+from _pypowsybl import ValidationType
 
 import pypowsybl as pp
 
@@ -15,21 +15,21 @@ class LoadflowTestCase(unittest.TestCase):
     def test_validation(self):
         n = pp.network.create_ieee14()
         pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n, [ElementType.BRANCH, ElementType.GENERATOR, ElementType.BUS])
+        validation = pp.loadflow.run_validation(n, [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
         self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.00001)
         self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.00001)
         self.assertAlmostEqual(156.887407, validation.branch_flows['p1']['L1-2-1'], delta=0.00001)
         self.assertFalse(validation.valid)
         n2 = pp.network.create_four_substations_node_breaker_network()
         pp.loadflow.run_ac(n)
-        validation2 = pp.loadflow.run_validation(n2, [ElementType.STATIC_VAR_COMPENSATOR])
+        validation2 = pp.loadflow.run_validation(n2, [ValidationType.SVCS])
         self.assertEqual(1, len(validation2.svcs))
         self.assertTrue(validation2.svcs['validated']['SVC'])
 
     def test_twt_validation(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n, [ElementType.TWO_WINDINGS_TRANSFORMER])
+        validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
         self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
         self.assertTrue(validation.valid)
 
