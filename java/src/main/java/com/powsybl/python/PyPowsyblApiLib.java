@@ -55,6 +55,8 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
+    static boolean debug = false;
+
     private PyPowsyblApiLib() {
     }
 
@@ -62,6 +64,7 @@ public final class PyPowsyblApiLib {
     public static void setDebugMode(IsolateThread thread, boolean debug, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            PyPowsyblApiLib.debug = debug;
             rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
         });
     }

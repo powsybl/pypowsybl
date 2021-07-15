@@ -11,6 +11,10 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -32,8 +36,24 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
+        String nonNullMessage;
+        if (PyPowsyblApiLib.debug) {
+            nonNullMessage = traceMessage(t);
+        } else {
+            nonNullMessage = Objects.toString(t.getMessage(), t.getClass().getSimpleName());
+        }
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
+    }
+
+    private static String traceMessage(Throwable t) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             PrintStream ps = new PrintStream(baos)) {
+            t.printStackTrace(ps);
+            baos.flush();
+            return new String(baos.toByteArray());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public static void doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
