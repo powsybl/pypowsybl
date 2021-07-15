@@ -52,6 +52,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
 
+    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an example network with batteries");
+
+    m.def("create_dangling_line_network", &pypowsybl::createDanglingLineNetwork, "Create an example network with dangling lines");
+
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
@@ -280,6 +284,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TWO", pypowsybl::Side::TWO)
             .export_values();
 
+    py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
+            .def_property_readonly("id", [](const network_metadata& att) {
+                return att.id;
+            })
+            .def_property_readonly("name", [](const network_metadata& att) {
+                return att.name;
+            })
+            .def_property_readonly("source_format", [](const network_metadata& att) {
+                return att.source_format;
+            })
+            .def_property_readonly("forecast_distance", [](const network_metadata& att) {
+                return att.forecast_distance;
+            })
+            .def_property_readonly("case_date", [](const network_metadata& att) {
+                return att.case_date;
+            });
+
     py::class_<limit_violation>(m, "LimitViolation")
             .def_property_readonly("subject_id", [](const limit_violation& v) {
                 return v.subject_id;
@@ -410,7 +431,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
-
+    m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));

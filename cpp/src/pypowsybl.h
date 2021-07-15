@@ -145,6 +145,10 @@ JavaHandle createFourSubstationsNodeBreakerNetwork();
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
+JavaHandle createBatteryNetwork();
+
+JavaHandle createDanglingLineNetwork();
+
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
 
 std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
@@ -156,6 +160,8 @@ std::vector<std::string> getNetworkImportFormats();
 std::vector<std::string> getNetworkExportFormats();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
+
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
