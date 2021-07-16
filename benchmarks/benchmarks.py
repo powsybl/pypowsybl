@@ -11,8 +11,6 @@ class TimeSuite:
     """
     def setup(self):
         self.n = pp.network.create_eurostag_tutorial_example1_network()
-        for x in range(500):
-            self.d[x] = None
 
     def time_loadflow(self):
         pp.loadflow.run_ac(self.n)

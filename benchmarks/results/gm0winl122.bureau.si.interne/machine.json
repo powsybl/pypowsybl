@@ -1,9 +1,0 @@
-{
-    "arch": "x86_64",
-    "cpu": "Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz",
-    "machine": "gm0winl122.bureau.si.interne",
-    "num_cpu": "8",
-    "os": "Linux 5.1.18-200.fc29.x86_64",
-    "ram": "32511360",
-    "version": 1
-}
