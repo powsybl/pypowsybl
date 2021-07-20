@@ -466,6 +466,7 @@ public final class NetworkDataframes {
             .booleans("regulating", t -> t.getRatioTapChanger().isRegulating(), (t, v) -> t.getRatioTapChanger().setRegulating(v))
             .doubles("target_v", t -> t.getRatioTapChanger().getTargetV(), (t, v) -> t.getRatioTapChanger().setTargetV(v))
             .doubles("target_deadband", t -> t.getRatioTapChanger().getTargetDeadband(), (t, v) -> t.getRatioTapChanger().setTargetDeadband(v))
+            .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
             .build();
     }
 
@@ -484,6 +485,7 @@ public final class NetworkDataframes {
             .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPhaseTapChanger().getRegulationMode(), (t, v) -> t.getPhaseTapChanger().setRegulationMode(v))
             .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
             .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
+            .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
             .build();
     }
 
@@ -534,8 +536,12 @@ public final class NetworkDataframes {
     }
 
     private static String getBusId(Terminal t) {
-        Bus bus = t.getBusView().getBus();
-        return bus != null ? bus.getId() : "";
+        if (t == null) {
+            return "";
+        } else {
+            Bus bus = t.getBusView().getBus();
+            return bus != null ? bus.getId() : "";
+        }
     }
 
     /**
