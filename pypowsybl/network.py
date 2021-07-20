@@ -451,6 +451,14 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
+    def update_lines(self, df: pd.DataFrame):
+        """ Update lines with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.LINE, df)
+
     def update_2_windings_transformers(self, df: pd.DataFrame):
         """ Update 2 windings transformers with a ``Pandas`` data frame.
 
