@@ -140,15 +140,16 @@ public final class NetworkDataframes {
             .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .doubles("i", g -> g.getTerminal().getI())
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }
 
     static NetworkDataframeMapper buses() {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
-                                               getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
+            getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
             .stringsIndex("id", Bus::getId)
             .doubles("v_mag", Bus::getV, Bus::setV)
             .doubles("v_angle", Bus::getAngle, Bus::setAngle)
@@ -167,8 +168,9 @@ public final class NetworkDataframes {
             .doubles("q0", Load::getQ0, Load::setQ0)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .doubles("i", g -> g.getTerminal().getI())
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }
@@ -182,8 +184,9 @@ public final class NetworkDataframes {
             .doubles("q0", Battery::getQ0, Battery::setQ0)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .doubles("i", g -> g.getTerminal().getI())
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }
@@ -194,8 +197,9 @@ public final class NetworkDataframes {
             .enums("model_type", ShuntCompensatorModelType.class, ShuntCompensator::getModelType)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
-            .strings("voltage_level_id",  getVoltageLevelId())
-            .strings("bus_id",  g -> getBusId(g.getTerminal()))
+            .doubles("i", g -> g.getTerminal().getI())
+            .strings("voltage_level_id", getVoltageLevelId())
+            .strings("bus_id", g -> getBusId(g.getTerminal()))
             .addProperties()
             .build();
     }
@@ -211,8 +215,10 @@ public final class NetworkDataframes {
             .doubles("b2", Line::getB2, Line::setB2)
             .doubles("p1", getP1(), setP1())
             .doubles("q1", getQ1(), setQ1())
+            .doubles("i1", l -> l.getTerminal1().getI())
             .doubles("p2", getP2(), setP2())
             .doubles("q2", getQ2(), setQ2())
+            .doubles("i2", l -> l.getTerminal2().getI())
             .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
             .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
             .strings("bus1_id", l -> getBusId(l.getTerminal1()))
@@ -233,8 +239,10 @@ public final class NetworkDataframes {
             .doubles("rated_s", TwoWindingsTransformer::getRatedS, TwoWindingsTransformer::setRatedS)
             .doubles("p1", getP1(), setP1())
             .doubles("q1", getQ1(), setQ1())
+            .doubles("i1", twt -> twt.getTerminal1().getI())
             .doubles("p2", getP2(), setP2())
             .doubles("q2", getQ2(), setQ2())
+            .doubles("i2", twt -> twt.getTerminal2().getI())
             .strings("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
             .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
             .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
@@ -256,7 +264,8 @@ public final class NetworkDataframes {
             .ints("ratio_tap_position1", getRatioTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
             .ints("phase_tap_position1", getPhaseTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
             .doubles("p1", twt -> twt.getLeg1().getTerminal().getP(), (twt, v) -> twt.getLeg1().getTerminal().setP(v))
-            .doubles("q1", twt -> twt.getLeg1().getTerminal().getP(), (twt, v) -> twt.getLeg1().getTerminal().setQ(v))
+            .doubles("q1", twt -> twt.getLeg1().getTerminal().getQ(), (twt, v) -> twt.getLeg1().getTerminal().setQ(v))
+            .doubles("i1", twt -> twt.getLeg1().getTerminal().getI())
             .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
             .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
             .doubles("r2", twt -> twt.getLeg2().getR(), (twt, v) -> twt.getLeg2().setR(v))
@@ -268,7 +277,8 @@ public final class NetworkDataframes {
             .ints("ratio_tap_position2", getRatioTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
             .ints("phase_tap_position2", getPhaseTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
             .doubles("p2", twt -> twt.getLeg2().getTerminal().getP(), (twt, v) -> twt.getLeg2().getTerminal().setP(v))
-            .doubles("q2", twt -> twt.getLeg2().getTerminal().getP(), (twt, v) -> twt.getLeg2().getTerminal().setQ(v))
+            .doubles("q2", twt -> twt.getLeg2().getTerminal().getQ(), (twt, v) -> twt.getLeg2().getTerminal().setQ(v))
+            .doubles("i2", twt -> twt.getLeg2().getTerminal().getI())
             .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
             .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
             .doubles("r3", twt -> twt.getLeg3().getR(), (twt, v) -> twt.getLeg3().setR(v))
@@ -280,7 +290,8 @@ public final class NetworkDataframes {
             .ints("ratio_tap_position3", getRatioTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
             .ints("phase_tap_position3", getPhaseTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
             .doubles("p3", twt -> twt.getLeg3().getTerminal().getP(), (twt, v) -> twt.getLeg3().getTerminal().setP(v))
-            .doubles("q3", twt -> twt.getLeg3().getTerminal().getP(), (twt, v) -> twt.getLeg3().getTerminal().setQ(v))
+            .doubles("q3", twt -> twt.getLeg3().getTerminal().getQ(), (twt, v) -> twt.getLeg3().getTerminal().setQ(v))
+            .doubles("i3", twt -> twt.getLeg3().getTerminal().getI())
             .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
             .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
             .addProperties()
@@ -294,10 +305,11 @@ public final class NetworkDataframes {
             .doubles("x", DanglingLine::getX, DanglingLine::setX)
             .doubles("g", DanglingLine::getG, DanglingLine::setG)
             .doubles("b", DanglingLine::getB, DanglingLine::setB)
-            .doubles("p0", DanglingLine::getP0, DanglingLine::setQ0)
-            .doubles("q0", DanglingLine::getQ0, DanglingLine::setP0)
+            .doubles("p0", DanglingLine::getP0, DanglingLine::setP0)
+            .doubles("q0", DanglingLine::getQ0, DanglingLine::setQ0)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
+            .doubles("i", dl -> dl.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", dl -> getBusId(dl.getTerminal()))
             .addProperties()
@@ -311,6 +323,7 @@ public final class NetworkDataframes {
             .doubles("loss_factor", LccConverterStation::getLossFactor, (lcc, v) -> lcc.setLossFactor((float) v))
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
+            .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", st -> getBusId(st.getTerminal()))
             .addProperties()
@@ -325,6 +338,7 @@ public final class NetworkDataframes {
             .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
+            .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", st -> getBusId(st.getTerminal()))
             .addProperties()
@@ -337,9 +351,10 @@ public final class NetworkDataframes {
             .doubles("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
             .doubles("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
             .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
-                   StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
+                StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
             .doubles("p", getP(), setP())
             .doubles("q", getQ(), setQ())
+            .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", svc -> getBusId(svc.getTerminal()))
             .addProperties()
@@ -420,7 +435,7 @@ public final class NetworkDataframes {
     }
 
     private static NetworkDataframeMapper ptcSteps() {
-        Function<Network, Stream<Triple<String, PhaseTapChanger, Integer>>>  phaseTapChangerSteps = network ->
+        Function<Network, Stream<Triple<String, PhaseTapChanger, Integer>>> phaseTapChangerSteps = network ->
             network.getTwoWindingsTransformerStream()
                 .filter(twt -> twt.getPhaseTapChanger() != null)
                 .flatMap(twt -> twt.getPhaseTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getPhaseTapChanger(), position)));
@@ -474,7 +489,7 @@ public final class NetworkDataframes {
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
         return Stream.concat(network.getGeneratorStream().map(g -> Pair.of(g.getId(), g)),
-                             network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
+            network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
     }
 
     private static Stream<Triple<String, Integer, ReactiveCapabilityCurve.Point>> streamPoints(Network network) {

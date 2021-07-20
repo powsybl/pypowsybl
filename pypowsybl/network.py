@@ -12,6 +12,7 @@ from typing import List
 from typing import Set
 
 import pandas as pd
+import datetime
 
 from pypowsybl.util import create_data_frame_from_series_array
 
@@ -36,6 +37,54 @@ class SingleLineDiagram:
 class Network(object):
     def __init__(self, handle):
         self._handle = handle
+        att = _pypowsybl.get_network_metadata(self._handle)
+        self._id = att.id
+        self._name = att.name
+        self._source_format = att.source_format
+        self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = datetime.datetime.utcfromtimestamp(att.case_date)
+
+    @property
+    def id(self) -> str:
+        """
+        ID of this network
+        """
+        return self._id
+
+    @property
+    def name(self) -> str:
+        """
+        Name of this network
+        """
+        return self._name
+
+    @property
+    def source_format(self) -> str:
+        """
+        Format of the source where this network came from.
+        """
+        return self._source_format
+
+    @property
+    def case_date(self) -> datetime.datetime:
+        """
+        Date of this network case, in UTC timezone.
+        """
+        return self._case_date
+
+    @property
+    def forecast_distance(self) -> datetime.timedelta:
+        """
+        The forecast distance: 0 for a snapshot.
+        """
+        return self._forecast_distance
+
+    def __str__(self) -> str:
+        return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
+               f'forecast_distance={self.forecast_distance}, source_format={self.source_format})'
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def __getstate__(self):
         return {'xml': self.dump_to_string()}

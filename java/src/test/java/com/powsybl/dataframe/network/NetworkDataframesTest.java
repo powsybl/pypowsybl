@@ -80,7 +80,7 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
-                             "target_q", "voltage_regulator_on", "p", "q", "voltage_level_id", "bus_id");
+                "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id");
 
         assertThat(series.get(2).getDoubles())
             .containsExactly(607);
@@ -97,7 +97,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "max_p", "min_p", "p0", "q0", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "max_p", "min_p", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -107,7 +107,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "type", "p0", "q0", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "type", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -117,7 +117,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g", "b", "p0", "q0", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "r", "x", "g", "b", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -127,8 +127,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "p2", "q2",
-                             "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id");
+            .containsExactly("id", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "i1", "p2", "q2", "i2",
+                "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id");
     }
 
     @Test
@@ -138,7 +138,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "model_type", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "model_type", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -148,7 +148,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "power_factor", "loss_factor", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -159,7 +159,7 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "voltage_regulator_on",
-                             "p", "q", "voltage_level_id", "bus_id");
+                "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test
@@ -169,8 +169,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "p2", "q2",
-                             "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id");
+            .containsExactly("id", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
+                "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id");
     }
 
     @Test
@@ -181,9 +181,9 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "rated_u0",
-                             "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "voltage_level1_id", "bus1_id",
-                             "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "voltage_level2_id", "bus2_id",
-                             "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "voltage_level3_id", "bus3_id");
+                "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id",
+                "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id",
+                "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id");
     }
 
     @Test
@@ -194,7 +194,7 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "converters_mode", "active_power_setpoint", "max_p", "nominal_v", "r",
-                             "converter_station1_id", "converter_station2_id");
+                "converter_station1_id", "converter_station2_id");
     }
 
     @Test
@@ -204,7 +204,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "voltage_level_id", "bus_id");
+            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id");
     }
 
     @Test

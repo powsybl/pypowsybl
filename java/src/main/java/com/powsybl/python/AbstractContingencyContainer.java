@@ -7,14 +7,8 @@
 package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.contingency.BranchContingency;
-import com.powsybl.contingency.Contingency;
-import com.powsybl.contingency.ContingencyElement;
-import com.powsybl.contingency.HvdcLineContingency;
-import com.powsybl.iidm.network.Branch;
-import com.powsybl.iidm.network.HvdcLine;
-import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.contingency.*;
+import com.powsybl.iidm.network.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +37,18 @@ abstract class AbstractContingencyContainer implements ContingencyContainer {
             return new BranchContingency(elementId);
         } else if (identifiable instanceof HvdcLine) {
             return new HvdcLineContingency(elementId);
+        } else if (identifiable instanceof BusbarSection) {
+            return new BusbarSectionContingency(elementId);
+        } else if (identifiable instanceof Generator) {
+            return new GeneratorContingency(elementId);
+        } else if (identifiable instanceof DanglingLine) {
+            return new DanglingLineContingency(elementId);
+        } else if (identifiable instanceof StaticVarCompensator) {
+            return new StaticVarCompensatorContingency(elementId);
+        } else if (identifiable instanceof ShuntCompensator) {
+            return new ShuntCompensatorContingency(elementId);
+        } else if (identifiable instanceof ThreeWindingsTransformer) {
+            return new ThreeWindingsTransformerContingency(elementId);
         } else {
             throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
         }

@@ -10,7 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -39,7 +39,10 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -79,9 +82,9 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeStringArray")
-    public static void freeStringArray(IsolateThread thread, ArrayPointer<?> arrayPtr,
+    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(arrayPtr));
+        doCatch(exceptionHandlerPtr, () -> freeArrayContent(arrayPtr));
     }
 
     @CEntryPoint(name = "createImporterParametersSeriesArray")
@@ -150,7 +153,9 @@ public final class PyPowsyblApiLib {
     public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr,
                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
+            for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
+                UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+            }
             freeArrayPointer(componentResultArrayPtr);
         });
     }
@@ -285,9 +290,15 @@ public final class PyPowsyblApiLib {
     public static void freeContingencyResultArrayPointer(IsolateThread thread, ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
             for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
                 ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(contingencyResultPtrPlus.getContingencyId());
+                for (int l = 0; l < contingencyResultPtrPlus.limitViolations().getLength(); l++) {
+                    LimitViolationPointer violation = contingencyResultPtrPlus.limitViolations().getPtr().addressOf(l);
+                    UnmanagedMemory.free(violation.getSubjectId());
+                    UnmanagedMemory.free(violation.getSubjectName());
+                    UnmanagedMemory.free(violation.getLimitName());
+                }
                 UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
             }
             freeArrayPointer(contingencyResultArrayPtr);
@@ -406,13 +417,29 @@ public final class PyPowsyblApiLib {
     public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
             for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-                SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+                freeSeries(seriesPtrArrayPtr.getPtr().addressOf(i));
             }
             freeArrayPointer(seriesPtrArrayPtr);
         });
+    }
+
+    private static void freeSeries(SeriesPointer seriesPointer) {
+        if (seriesPointer.getType() == CDataframeHandler.STRING_SERIES_TYPE) {
+            freeArrayContent(seriesPointer.data());
+        }
+        UnmanagedMemory.free(seriesPointer.data().getPtr());
+        UnmanagedMemory.free(seriesPointer.getName());
+    }
+
+    /**
+     * Frees C strings memory
+     * @param array
+     */
+    private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
+        for (int i = 0; i < array.getLength(); i++) {
+            UnmanagedMemory.free(array.getPtr().read(i));
+        }
     }
 
     @CEntryPoint(name = "getSeriesType")
@@ -483,5 +510,10 @@ public final class PyPowsyblApiLib {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
             return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
         });
+    }
+
+    @CEntryPoint(name = "freeString")
+    public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
 }

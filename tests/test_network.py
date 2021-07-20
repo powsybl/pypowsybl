@@ -7,7 +7,7 @@
 import copy
 import pathlib
 import unittest
-
+import datetime
 import pandas as pd
 from numpy import NaN
 
@@ -66,6 +66,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_ieee14()
         self.assertTrue(n.disconnect('L1-2-1'))
         self.assertTrue(n.connect('L1-2-1'))
+
+    def test_network_attributes(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual('sim1', n.id)
+        self.assertEqual(datetime.datetime(2018, 1, 1, 10, 0), n.case_date)
+        self.assertEqual('sim1', n.name)
+        self.assertEqual(datetime.timedelta(0), n.forecast_distance)
+        self.assertEqual('test', n.source_format)
+
+    def test_network_representation(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00, ' \
+                   'forecast_distance=0:00:00, source_format=test)'
+        self.assertEqual(expected, str(n))
+        self.assertEqual(expected, repr(n))
 
     def test_get_network_element_ids(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -213,7 +228,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.get_2_windings_transformers()
-        self.assertEqual(['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'p2', 'q2',
+        self.assertEqual(['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
                           'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id'],
                          df.columns.tolist())
         load_tfo = df.loc['NHV2_NLOAD']
@@ -334,11 +349,15 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_lines(self):
         n = pp.network.create_four_substations_node_breaker_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
-                                columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2', 'voltage_level1_id',
+                                columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
+                                         'voltage_level1_id',
                                          'voltage_level2_id', 'bus1_id', 'bus2_id'],
-                                data=[[0.01, 19.1, 0, 0, 0, 0, 109.889, 190.023, -109.886, -184.517, 'S2VL1', 'S3VL1',
+                                data=[[0.01, 19.1, 0, 0, 0, 0, 109.889, 190.023, 309.979, -109.886, -184.517, 309.978,
+                                       'S2VL1',
+                                       'S3VL1',
                                        'S2VL1_0', 'S3VL1_0'],
-                                      [0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, -240, 2.5415, 'S3VL1', 'S4VL1',
+                                      [0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.43, -240, 2.5415, 346.43, 'S3VL1',
+                                       'S4VL1',
                                        'S3VL1_0', 'S4VL1_0']])
 
         lines = n.get_lines()
@@ -360,17 +379,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_dangling_lines(self):
         n = pp.network._create_dangling_lines_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'voltage_level_id', 'bus_id'],
-                                data=[[10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, 'VL', 'VL_0']])
+                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id'],
+                                data=[[10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0']])
         dangling_lines = n.get_dangling_lines()
         pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False)
 
     def test_batteries(self):
         n = pp.network._create_battery_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'voltage_level_id', 'bus_id'],
-                                data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, 'VLBAT', 'VLBAT_0'],
-                                      [200, -200, 100, 200, -605, -225, 'VLBAT', 'VLBAT_0']])
+                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id'],
+                                data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0'],
+                                      [200, -200, 100, 200, -605, -225,  NaN, 'VLBAT', 'VLBAT_0']])
         batteries = n.get_batteries()
         pd.testing.assert_frame_equal(expected, batteries, check_dtype=False)
 
