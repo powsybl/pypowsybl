@@ -21,12 +21,12 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class SecurityAnalysisTest {
+class SecurityAnalysisTest {
 
     @Test
     void testStateMonitors() {
