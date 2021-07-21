@@ -10,7 +10,6 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
-import com.powsybl.dataframe.IntSeriesMapper;
 import com.powsybl.iidm.network.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -130,11 +129,32 @@ public final class NetworkDataframes {
 
     private static <U extends Injection<U>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
         return (g, b) -> {
-            if (b) {
-                g.getTerminal().connect();
-            } else {
-                g.getTerminal().disconnect();
-            }
+            Boolean res = b ? g.getTerminal().connect() : g.getTerminal().disconnect();
+        };
+    }
+
+    private static <U extends Branch<U>> BooleanSeriesMapper.BooleanUpdater<U> connectBranchSide1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal1().connect() : g.getTerminal1().disconnect();
+        };
+    }
+
+    private static <U extends Branch<U>> BooleanSeriesMapper.BooleanUpdater<U> connectBranchSide2() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal2().connect() : g.getTerminal2().disconnect();
+        };
+    }
+
+    private static BooleanSeriesMapper.BooleanUpdater<HvdcLine> connectHvdcStation1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getConverterStation1().getTerminal().connect() : g.getConverterStation1().getTerminal().disconnect();
+
+        };
+    }
+
+    private static BooleanSeriesMapper.BooleanUpdater<HvdcLine> connectHvdcStation2() {
+        return (g, b) -> {
+            Boolean res = b ? g.getConverterStation2().getTerminal().connect() : g.getConverterStation2().getTerminal().disconnect();
         };
     }
 
@@ -155,6 +175,7 @@ public final class NetworkDataframes {
             .doubles("i", g -> g.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", g -> getBusId(g.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -183,6 +204,7 @@ public final class NetworkDataframes {
             .doubles("i", g -> g.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", g -> getBusId(g.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -199,6 +221,7 @@ public final class NetworkDataframes {
             .doubles("i", g -> g.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", g -> getBusId(g.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -238,6 +261,8 @@ public final class NetworkDataframes {
             .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
             .strings("bus1_id", l -> getBusId(l.getTerminal1()))
             .strings("bus2_id", l -> getBusId(l.getTerminal2()))
+            .booleans("connected1", g -> g.getTerminal1().isConnected(), connectBranchSide1())
+            .booleans("connected2", g -> g.getTerminal2().isConnected(), connectBranchSide2())
             .addProperties()
             .build();
     }
@@ -262,6 +287,8 @@ public final class NetworkDataframes {
             .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
             .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
             .strings("bus2_id", twt -> getBusId(twt.getTerminal2()))
+            .booleans("connected1", g -> g.getTerminal1().isConnected(), connectBranchSide1())
+            .booleans("connected2", g -> g.getTerminal2().isConnected(), connectBranchSide2())
             .addProperties()
             .build();
     }
@@ -283,6 +310,7 @@ public final class NetworkDataframes {
             .doubles("i1", twt -> twt.getLeg1().getTerminal().getI())
             .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
             .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
+            .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected())
             .doubles("r2", twt -> twt.getLeg2().getR(), (twt, v) -> twt.getLeg2().setR(v))
             .doubles("x2", twt -> twt.getLeg2().getX(), (twt, v) -> twt.getLeg2().setX(v))
             .doubles("g2", twt -> twt.getLeg2().getG(), (twt, v) -> twt.getLeg2().setG(v))
@@ -296,6 +324,7 @@ public final class NetworkDataframes {
             .doubles("i2", twt -> twt.getLeg2().getTerminal().getI())
             .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
             .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
+            .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected())
             .doubles("r3", twt -> twt.getLeg3().getR(), (twt, v) -> twt.getLeg3().setR(v))
             .doubles("x3", twt -> twt.getLeg3().getX(), (twt, v) -> twt.getLeg3().setX(v))
             .doubles("g3", twt -> twt.getLeg3().getG(), (twt, v) -> twt.getLeg3().setG(v))
@@ -309,6 +338,7 @@ public final class NetworkDataframes {
             .doubles("i3", twt -> twt.getLeg3().getTerminal().getI())
             .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
             .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
+            .booleans("connected3", g -> g.getLeg3().getTerminal().isConnected())
             .addProperties()
             .build();
     }
@@ -327,6 +357,7 @@ public final class NetworkDataframes {
             .doubles("i", dl -> dl.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", dl -> getBusId(dl.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -341,6 +372,7 @@ public final class NetworkDataframes {
             .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", st -> getBusId(st.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -356,6 +388,7 @@ public final class NetworkDataframes {
             .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", st -> getBusId(st.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -372,6 +405,7 @@ public final class NetworkDataframes {
             .doubles("i", st -> st.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", svc -> getBusId(svc.getTerminal()))
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -415,6 +449,7 @@ public final class NetworkDataframes {
             .doubles("v", BusbarSection::getV)
             .doubles("angle", BusbarSection::getAngle)
             .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -429,6 +464,8 @@ public final class NetworkDataframes {
             .doubles("r", HvdcLine::getR, HvdcLine::setR)
             .strings("converter_station1_id", l -> l.getConverterStation1().getId())
             .strings("converter_station2_id", l -> l.getConverterStation2().getId())
+            .booleans("connected1", g -> g.getConverterStation1().getTerminal().isConnected(), connectHvdcStation1())
+            .booleans("connected2", g -> g.getConverterStation2().getTerminal().isConnected(), connectHvdcStation2())
             .addProperties()
             .build();
     }
