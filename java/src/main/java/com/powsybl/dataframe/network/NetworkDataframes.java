@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.iidm.network.*;
@@ -126,6 +127,16 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
+    private static <U extends Injection<U>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
+        return (g, b) -> {
+            if (b) {
+                g.getTerminal().connect();
+            } else {
+                g.getTerminal().disconnect();
+            }
+        };
+    }
+
     static NetworkDataframeMapper generators() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
             .stringsIndex("id", Generator::getId)
@@ -200,6 +211,9 @@ public final class NetworkDataframes {
             .doubles("i", g -> g.getTerminal().getI())
             .strings("voltage_level_id", getVoltageLevelId())
             .strings("bus_id", g -> getBusId(g.getTerminal()))
+            .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
+            .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
+            .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
             .addProperties()
             .build();
     }
@@ -565,3 +579,4 @@ public final class NetworkDataframes {
         return twt;
     }
 }
+
