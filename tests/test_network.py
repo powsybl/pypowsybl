@@ -407,7 +407,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'section_count', 'connected'],
                                 data=[['LINEAR', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', 1, 1, True]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
-        n.update_shunt_compensator(
+        n.update_shunt_compensators(
             pd.DataFrame(index=['SHUNT'], columns=['q', 'section_count', 'connected'], data=[[1900, 0, False]]))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                                 columns=['model_type', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'max_section_count',
