@@ -369,7 +369,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
 
-        lines_update = pd.DataFrame(index=['LINE_S2S3'], columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],
+        lines_update = pd.DataFrame(index=['LINE_S2S3'],
+                                    columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],
                                     data=[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]])
         n.update_lines(lines_update)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
@@ -397,8 +398,22 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id'],
                                 data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0'],
                                       [200, -200, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0']])
-        batteries = n.get_batteries()
-        pd.testing.assert_frame_equal(expected, batteries, check_dtype=False)
+        pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
+
+    def test_shunt(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
+                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                         'voltage_level_id', 'bus_id', 'connected'],
+                                data=[['LINEAR', 1, 1, NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+        pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
+        n.update_shunt_compensators(
+            pd.DataFrame(index=['SHUNT'], columns=['q', 'section_count', 'connected'], data=[[1900, 0, False]]))
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
+                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                         'voltage_level_id', 'bus_id', 'connected'],
+                                data=[['LINEAR', 1, 0, NaN, 1900, NaN, 'S1VL2', '', False]])
+        pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
 
 
 if __name__ == '__main__':
