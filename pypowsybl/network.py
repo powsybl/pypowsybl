@@ -484,16 +484,16 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
-    def update_shunt_compensator(self, df: pd.DataFrame):
-        """
+    def update_shunt_compensators(self, df: pd.DataFrame):
+        """ Update shunt compensators with a ``Pandas`` data frame.
 
         Args:
            df (DataFrame): the ``Pandas`` data frame
-           columns that can be updated :
-               - p
-               - q
-               - section_count
-               - connected
+               columns that can be updated :
+                   - p
+                   - q
+                   - section_count
+                   - connected
 
         Returns:
             a dataframe updated

@@ -406,16 +406,16 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_shunt(self):
         n = pp.network.create_four_substations_node_breaker_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'max_section_count',
-                                         'section_count', 'connected'],
-                                data=[['LINEAR', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', 1, 1, True]])
+                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                         'voltage_level_id', 'bus_id', 'connected'],
+                                data=[['LINEAR', 1, 1, NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
-        n.update_shunt_compensator(
+        n.update_shunt_compensators(
             pd.DataFrame(index=['SHUNT'], columns=['q', 'section_count', 'connected'], data=[[1900, 0, False]]))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'max_section_count',
-                                         'section_count', 'connected'],
-                                data=[['LINEAR', NaN, 1900, NaN, 'S1VL2', '', 1, 0, False]])
+                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                         'voltage_level_id', 'bus_id', 'connected'],
+                                data=[['LINEAR', 1, 0, NaN, 1900, NaN, 'S1VL2', '', False]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
 
 
