@@ -36,7 +36,7 @@ the violations created by the contingency, they are collected by contingency in 
     contingency_id    subject_id
                       NHV1_NHV2_1                   CURRENT              500.0           2147483647              1.0   623.568946  ONE
                       NHV1_NHV2_2                   CURRENT              500.0           2147483647              1.0   655.409876  TWO
-                      VLHV1                     LOW_VOLTAGE              500.0           2147483647              1.0   398.917401
+                      VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   398.917401
     First contingency NHV1_NHV2_2                   CURRENT             1200.0                   60              1.0  1438.021676  ONE
                       NHV1_NHV2_2                   CURRENT              500.0           2147483647              1.0  1477.824335  TWO
 
@@ -73,12 +73,12 @@ Information can be obtained on buses, branches and three windings transformers.
     NGEN_NHV1      VLHV2            NHV2    569.04    -1.71
     NHV1_NHV2_1    VLHV2            NHV2    366.58    -7.50
     >>> results.branch_results
-                                   p1   q1       i1      p2      q2       i2
+                                   p1     q1       i1      p2      q2       i2
     contingency_id branch_id
-                   NHV1_NHV2_2 302.44 0.99   456.77 -300.43 -137.19   488.99
-    NGEN_NHV1      NHV1_NHV2_2 301.06 0.00   302.80 -300.19 -116.60   326.75
-                   NHV1_NHV2_1 301.06 0.00   302.80 -300.19 -116.60   326.75
-    NHV1_NHV2_1    NHV1_NHV2_2 610.56 3.34 1,008.93 -601.00 -285.38 1,047.83
+                   NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99
+    NGEN_NHV1      NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75
+                   NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75
+    NHV1_NHV2_1    NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83
 
 .. testcleanup:: security.monitored_elements
 
