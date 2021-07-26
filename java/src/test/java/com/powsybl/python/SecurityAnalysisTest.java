@@ -12,6 +12,7 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
@@ -37,14 +38,18 @@ class SecurityAnalysisTest {
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         Network network = EurostagTutorialExample1Factory.create();
-        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
+        LoadFlowParameters parameters = new LoadFlowParameters();
+        OpenLoadFlowParameters parametersExt = new OpenLoadFlowParameters()
+                .setPlausibleActivePowerLimit(10000);
+        parameters.addExtension(OpenLoadFlowParameters.class, parametersExt);
+        SecurityAnalysisResult result = analysisContext.run(network, parameters, "OpenSecurityAnalysis");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            302.4447139817743, 98.74096413331662, 456.77318626755226, -300.43452489238985,
-            -137.18797524910812, 488.9967519384151));
+            302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
+            -137.18849307164064, 488.99279636727357));
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            610.5613831822664, 334.04127276791144, 1008.8958298589155, -600.996000744857,
-            -285.37366092916557, 1047.7927725175136));
+            610.5621535433195, 334.0562715296563, 1008.9287882269937, -600.9961559564283,
+            -285.379146550659, 1047.825769145557));
     }
 
     @Test
