@@ -179,10 +179,45 @@ class Network(object):
         series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
         return create_data_frame_from_series_array(series_array)
 
-
     def get_buses(self) -> pd.DataFrame:
-        return self.get_elements(_pypowsybl.ElementType.BUS)
+        """ Get buses as a ``Pandas`` data frame.
 
+                Note:
+                    The resulting dataframe will have the following columns:
+
+                      - "v_mag": Get the voltage magnitude of the bus (in kV)
+                      - "v_angle": the voltage angle of the bus (in degree)
+                      - "connected_component": the number of terminals connected to this bus
+                      - "synchronous_component": the number of synchronous components that the bus is part of
+                      - "voltage_level_id": at which substation the bus is connected
+
+                    This dataframe is index by the name of the LCC converter
+
+                Examples
+
+                    .. code-block:: python
+
+                        import pypowsybl as pypo
+                        net = pypo.network.create_four_substations_node_breaker_network()
+                        net.get_buses()
+
+                    It outputs something like:
+
+                    ======= ======== ======= =================== ===================== ================
+                          .    v_mag v_angle connected_component synchronous_component voltage_level_id
+                    ======= ======== ======= =================== ===================== ================
+                    id
+                    S1VL1_0 224.6139  2.2822                   0                     1            S1VL1
+                    S1VL2_0 400.0000  0.0000                   0                     1            S1VL2
+                    S2VL1_0 408.8470  0.7347                   0                     0            S2VL1
+                    S3VL1_0 400.0000  0.0000                   0                     0            S3VL1
+                    S4VL1_0 400.0000 -1.1259                   0                     0            S4VL1
+                    ======= ======== ======= =================== ===================== ================
+
+                Returns:
+                    a buses data frame
+                """
+        return self.get_elements(_pypowsybl.ElementType.BUS)
 
     def get_generators(self) -> pd.DataFrame:
         """  Get generators as a ``Pandas`` data frame.
@@ -196,7 +231,7 @@ class Network(object):
                   - "target_p": the target active value for the generator (in MW)
                   - "max_p": the maximum active value for the generator  (MW)
                   - "min_p": the minimum active value for the generator  (MW)
-                  - "target_v": the target voltage magnitude value for the generator (in pair unit)
+                  - "target_v": the target voltage magnitude value for the generator (in kV)
                   - "target_q": the target reactive value for the generator (in MVAr)
                   - "voltage_regulator_on":
                   - "p" the actual active production of the generator (Nan if no powerflow has been computed)
@@ -212,20 +247,20 @@ class Network(object):
 
                     import pypowsybl as pypo
                     net = pypo.network.create_ieee14()
-                    net.create_generators_data_frame()
+                    net.get_generators()
 
                 It outputs something like:
 
-                ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
-                 .    energy_source target_p   max_p   min_p  target_v  target_q  voltage_regulator_on   p    q   voltage_level_id bus_id
-                ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
+                ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
+                   . energy_source target_p  max_p   min_p target_v target_q voltage_regulator_on   p   q voltage_level_id bus_id
+                ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
                 id
-                B1-G         OTHER     232.4  9999.0 -9999.0     1.060     -16.9                  True  NaN  NaN              VL1  VL1_0
-                B2-G         OTHER      40.0  9999.0 -9999.0     1.045      42.4                  True  NaN  NaN              VL2  VL2_0
-                B3-G         OTHER       0.0  9999.0 -9999.0     1.010      23.4                  True  NaN  NaN              VL3  VL3_0
-                B6-G         OTHER       0.0  9999.0 -9999.0     1.070      12.2                  True  NaN  NaN              VL6  VL6_0
-                B8-G         OTHER       0.0  9999.0 -9999.0     1.090      17.4                  True  NaN  NaN              VL8  VL8_0
-                ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
+                B1-G         OTHER    232.4 9999.0 -9999.0    1.060    -16.9                 True NaN NaN              VL1  VL1_0
+                B2-G         OTHER     40.0 9999.0 -9999.0    1.045     42.4                 True NaN NaN              VL2  VL2_0
+                B3-G         OTHER      0.0 9999.0 -9999.0    1.010     23.4                 True NaN NaN              VL3  VL3_0
+                B6-G         OTHER      0.0 9999.0 -9999.0    1.070     12.2                 True NaN NaN              VL6  VL6_0
+                B8-G         OTHER      0.0 9999.0 -9999.0    1.090     17.4                 True NaN NaN              VL8  VL8_0
+                ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
 
 
             .. warning::
@@ -240,7 +275,6 @@ class Network(object):
                 """
         return self.get_elements(_pypowsybl.ElementType.GENERATOR)
 
-
     def get_loads(self) -> pd.DataFrame:
         """ Get loads as a ``Pandas`` data frame.
         Returns:
@@ -254,6 +288,7 @@ class Network(object):
               - "q0": the reactive load consumption setpoint  (MVAr)
               - "p": the result active load consumption, it is Nan is not powerflow has been computed (MW)
               - "q": the result reactive load consumption, it is Nan is not powerflow has been computed (MVAr)
+              - "i": the current on the load, Nan if no powerlow are computed (in A)
               - "voltage_level_id": at which substation this load is connected
               - "bus_id": at which bus this load is connected
 
@@ -265,30 +300,29 @@ class Network(object):
 
                 import pypowsybl as pypo
                 net = pypo.network.create_ieee14()
-                net.create_loads_data_frame()
+                net.get_loads()
 
             It outputs something like:
 
-            ===== ========== ===== ===== === === ================ =======
-              .         type    p0    q0   p   q voltage_level_id  bus_id
-            ===== ========== ===== ===== === === ================ =======
+            ===== ========== ===== ===== === === ================ ======= =========
+                .       type    p0    q0   p   q voltage_level_id  bus_id connected
+            ===== ========== ===== ===== === === ================ ======= =========
             id
-            B2-L   UNDEFINED  21.7  12.7 NaN NaN              VL2   VL2_0
-            B3-L   UNDEFINED  94.2  19.0 NaN NaN              VL3   VL3_0
-            B4-L   UNDEFINED  47.8  -3.9 NaN NaN              VL4   VL4_0
-            B5-L   UNDEFINED   7.6   1.6 NaN NaN              VL5   VL5_0
-            B6-L   UNDEFINED  11.2   7.5 NaN NaN              VL6   VL6_0
-            B9-L   UNDEFINED  29.5  16.6 NaN NaN              VL9   VL9_0
-            B10-L  UNDEFINED   9.0   5.8 NaN NaN             VL10  VL10_0
-            B11-L  UNDEFINED   3.5   1.8 NaN NaN             VL11  VL11_0
-            B12-L  UNDEFINED   6.1   1.6 NaN NaN             VL12  VL12_0
-            B13-L  UNDEFINED  13.5   5.8 NaN NaN             VL13  VL13_0
-            B14-L  UNDEFINED  14.9   5.0 NaN NaN             VL14  VL14_0
-            ===== ========== ===== ===== === === ================ =======
+            B2-L   UNDEFINED  21.7  12.7 NaN NaN              VL2   VL2_0      True
+            B3-L   UNDEFINED  94.2  19.0 NaN NaN              VL3   VL3_0      True
+            B4-L   UNDEFINED  47.8  -3.9 NaN NaN              VL4   VL4_0      True
+            B5-L   UNDEFINED   7.6   1.6 NaN NaN              VL5   VL5_0      True
+            B6-L   UNDEFINED  11.2   7.5 NaN NaN              VL6   VL6_0      True
+            B9-L   UNDEFINED  29.5  16.6 NaN NaN              VL9   VL9_0      True
+            B10-L  UNDEFINED   9.0   5.8 NaN NaN             VL10  VL10_0      True
+            B11-L  UNDEFINED   3.5   1.8 NaN NaN             VL11  VL11_0      True
+            B12-L  UNDEFINED   6.1   1.6 NaN NaN             VL12  VL12_0      True
+            B13-L  UNDEFINED  13.5   5.8 NaN NaN             VL13  VL13_0      True
+            B14-L  UNDEFINED  14.9   5.0 NaN NaN             VL14  VL14_0      True
+            ===== ========== ===== ===== === === ================ ======= =========
 
         """
         return self.get_elements(_pypowsybl.ElementType.LOAD)
-
 
     def get_batteries(self) -> pd.DataFrame:
         """ Get batteries as a ``Pandas`` data frame.
@@ -298,115 +332,116 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BATTERY)
 
-
-    def create_buses_data_frame(self) -> pd.DataFrame:
-        """
-
-        Returns:
-            The bus data frame.
-
-        Note:
-            The resulting dataframe will have the following columns:
-
-              - "v_mag": the voltage magnitude (in pair unit)
-              - "v_ang": the voltage angle (in degree)
-
-            This dataframe is index by the name of the buses
-
-        Examples
-
-            .. code-block:: python
-
-                import pypowsybl as pypo
-                net = pypo.network.create_ieee14()
-                net.create_buses_data_frame()
-
-            It outputs something like:
-
-            ======  =======  =========
-             .      `v_mag`   `v_ang`
-            ======  =======  =========
-            id
-            VL1_0   1.060     0.00
-            VL2_0   1.045    -4.98
-            VL3_0   1.010    -12.72
-            VL4_0   1.019    -10.33
-            VL5_0   1.020     -8.78
-            VL6_0   1.070    -14.22
-            VL7_0   1.062    -13.37
-            VL8_0   1.090    -13.36
-            VL9_0   1.056    -14.94
-            VL10_0  1.051    -15.10
-            VL11_0  1.057    -14.79
-            VL12_0  1.055    -15.07
-            VL13_0  1.050    -15.16
-            VL14_0  1.036    -16.04
-            ======  =======  =========
-
-        """
-        return self.create_elements_data_frame(_pypowsybl.ElementType.BUS)
-
-
     def get_lines(self) -> pd.DataFrame:
         """ Get lines as a ``Pandas`` data frame.
 
-        Returns:
-    <<<<<<< HEAD
-            a lines data frame
-    ||||||| merged common ancestors
-            the generator data frame
-    =======
-            the generator data frame.
+                Returns:
+                    a lines data frame
+                Note:
+                    The resulting dataframe will have the following columns:
 
-        Note:
-            The resulting dataframe will have the following columns:
+                      - "r": the resistance of the line (in Ohm)
+                      - "x": the reactance of the line (in Ohm)
+                      - "g1": the  conductance of line at its "1" side (in Siemens)
+                      - "b1": the susceptance of line at its "1" side (in Siemens)
+                      - "g2": the  conductance of line at its "2" side (in Siemens)
+                      - "b2": the susceptance of line at its "2" side (in Siemens)
+                      - "p1": the active flow on the line at its "1" side, Nan if no powerlow are computed (in MW)
+                      - "q1": the reactive flow on the line at its "1" side, Nan if no powerlow are computed  (in MVAr)
+                      - "i1": the current on the line at its "1" side, Nan if no powerlow are computed (in A)
+                      - "p2": the active flow on the line at its "2" side, Nan if no powerlow are computed  (in MW)
+                      - "q2": the reactive flow on the line at its "2" side, Nan if no powerlow are computed  (in MVAr)
+                      - "i2": the current on the line at its "2" side, Nan if no powerlow are computed (in A)
+                      - "voltage_level1_id": at which substation the "1" side of the powerline is connected
+                      - "voltage_level2_id": at which substation the "2" side of the powerline is connected
+                      - "bus1_id": at which bus the "1" side of the powerline is connected
+                      - "bus2_id": at which bus the "2" side of the powerline is connected
+                      - "connected1": indicate if the side "1" of the line is connected to a bus
+                      - "connected2": indicate if the side "2" of the line is connected to a bus
 
-              - "energy_source": the energy source used to fuel the generator
-              - "target_p": the target active value for the generator (in MW)
-              - "max_p": the maximum active value for the generator  (MW)
-              - "min_p": the minimum active value for the generator  (MW)
-              - "target_v": the target voltage magnitude value for the generator (in pair unit)
-              - "target_q": the target reactive value for the generator (in MVAr)
-              - "voltage_regulator_on":
-              - "p" the actual active production of the generator (Nan if no powerflow has been computed)
-              - "q" the actual reactive production of the generator (Nan if no powerflow has been computed)
-              - "voltage_level_id": at which substation this generator is connected
-              - "bus_id": at which bus this generator is computed
+                    This dataframe is index by the name of the powerlines
 
-            This dataframe is index by the name of the generators
+                Examples
 
-        Examples
+                    .. code-block:: python
 
-            .. code-block:: python
+                        import pypowsybl as pypo
+                        net = pypo.network.create_ieee14()
+                        net.get_lines()
 
-                import pypowsybl as pypo
-                net = pypo.network.create_ieee14()
-                net.create_generators_data_frame()
+                    It outputs something like:
 
-            It outputs something like:
-
-            ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
-             .    energy_source target_p   max_p   min_p  target_v  target_q  voltage_regulator_on   p    q   voltage_level_id bus_id
-            ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
-            id
-            B1-G         OTHER     232.4  9999.0 -9999.0     1.060     -16.9                  True  NaN  NaN              VL1  VL1_0
-            B2-G         OTHER      40.0  9999.0 -9999.0     1.045      42.4                  True  NaN  NaN              VL2  VL2_0
-            B3-G         OTHER       0.0  9999.0 -9999.0     1.010      23.4                  True  NaN  NaN              VL3  VL3_0
-            B6-G         OTHER       0.0  9999.0 -9999.0     1.070      12.2                  True  NaN  NaN              VL6  VL6_0
-            B8-G         OTHER       0.0  9999.0 -9999.0     1.090      17.4                  True  NaN  NaN              VL8  VL8_0
-            ====  ============= ========  ====== =======  ========  ========  ====================  ==== ==== ================ ======
-        """
+                    ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+                           .         r         x   g1    b1   g2    b2  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+                    ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+                    id
+                    L1-2-1    0.000194  0.000592  0.0  2.64  0.0  2.64 NaN NaN NaN NaN NaN NaN               VL1               VL2   VL1_0   VL2_0       True       True
+                    L1-5-1    0.000540  0.002230  0.0  2.46  0.0  2.46 NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
+                    L2-3-1    0.000470  0.001980  0.0  2.19  0.0  2.19 NaN NaN NaN NaN NaN NaN               VL2               VL3   VL2_0   VL3_0       True       True
+                    L2-4-1    0.000581  0.001763  0.0  1.70  0.0  1.70 NaN NaN NaN NaN NaN NaN               VL2               VL4   VL2_0   VL4_0       True       True
+                    L2-5-1    0.000570  0.001739  0.0  1.73  0.0  1.73 NaN NaN NaN NaN NaN NaN               VL2               VL5   VL2_0   VL5_0       True       True
+                    L3-4-1    0.000670  0.001710  0.0  0.64  0.0  0.64 NaN NaN NaN NaN NaN NaN               VL3               VL4   VL3_0   VL4_0       True       True
+                    L4-5-1    0.000134  0.000421  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL4               VL5   VL4_0   VL5_0       True       True
+                    L6-11-1   0.000950  0.001989  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL6              VL11   VL6_0  VL11_0       True       True
+                    L6-12-1   0.001229  0.002558  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL6              VL12   VL6_0  VL12_0       True       True
+                    L6-13-1   0.000661  0.001303  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL6              VL13   VL6_0  VL13_0       True       True
+                    L7-8-1    0.000000  0.001762  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL7               VL8   VL7_0   VL8_0       True       True
+                    L7-9-1    0.000000  0.001100  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL7               VL9   VL7_0   VL9_0       True       True
+                    L9-10-1   0.000318  0.000845  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL9              VL10   VL9_0  VL10_0       True       True
+                    L9-14-1   0.001271  0.002704  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN               VL9              VL14   VL9_0  VL14_0       True       True
+                    L10-11-1  0.000821  0.001921  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN              VL10              VL11  VL10_0  VL11_0       True       True
+                    L12-13-1  0.002209  0.001999  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN              VL12              VL13  VL12_0  VL13_0       True       True
+                    L13-14-1  0.001709  0.003480  0.0  0.00  0.0  0.00 NaN NaN NaN NaN NaN NaN              VL13              VL14  VL13_0  VL14_0       True       True
+                    ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+                """
         return self.get_elements(_pypowsybl.ElementType.LINE)
-
 
     def get_2_windings_transformers(self) -> pd.DataFrame:
         """ Get 2 windings transformers as a ``Pandas`` data frame.
 
         Returns:
             a 2 windings transformers data frame
+        Note:
+            The resulting dataframe will have the following columns:
+
+              -  "r": the resistance of the transformer at its "2" side  (in Ohm)
+              -  "x": the reactance of the transformer at its "2" side (in Ohm)
+              -  "b": the susceptance of transformer at its "2" side (in Siemens)
+              -  "g": the  conductance of transformer at its "2" side (in Siemens)
+              -  "rated_u1": The rated voltage of the transformer at side 1 (in kV)
+              -  "rated_u2": The rated voltage of the transformer at side 2 (in kV)
+              -  "rated_s":
+              -  "p1": the active flow on the transformer at its "1" side, Nan if no powerlow are computed (in MW)
+              -  "q1": the reactive flow on the transformer at its "1" side, Nan if no powerlow are computed  (in MVAr)
+              -  "i1": the current on the transformer at its "1" side, Nan if no powerlow are computed (in A)
+              -  "p2": the active flow on the transformer at its "2" side, Nan if no powerlow are computed  (in MW)
+              -  "q2": the reactive flow on the transformer at its "2" side, Nan if no powerlow are computed  (in MVAr)
+              -  "i2": the current on the transformer at its "2" side, Nan if no powerlow are computed (in A)
+              -  "voltage_level1_id": at which substation the "1" side of the transformer is connected
+              -  "voltage_level2_id": at which substation the "2" side of the transformer is connected
+              -  "connected1": indicate if the side "1" of the transformer is connected to a bus
+              -  "connected2": indicate if the side "2" of the transformer is connected to a bus
+            This dataframe is index by the name of the two windings transformers
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_ieee14()
+                net.get_2_windings_transformers()
+
+            It outputs something like:
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+                 .    r        x   g   b rated_u1 rated_u2 rated_s  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+            id
+            T4-7-1  0.0 0.409875 0.0 0.0  132.030     14.0     NaN NaN NaN NaN NaN NaN NaN               VL4               VL7   VL4_0   VL7_0       True       True
+            T4-9-1  0.0 0.800899 0.0 0.0  130.815     12.0     NaN NaN NaN NaN NaN NaN NaN               VL4               VL9   VL4_0   VL9_0       True       True
+            T5-6-1  0.0 0.362909 0.0 0.0  125.820     12.0     NaN NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+
         """
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
-
 
     def get_3_windings_transformers(self) -> pd.DataFrame:
         """ Get 3 windings transformers as a ``Pandas`` data frame.
@@ -416,7 +451,6 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
 
-
     def get_shunt_compensators(self) -> pd.DataFrame:
         """ Get shunt compensators as a ``Pandas`` data frame.
 
@@ -425,22 +459,17 @@ class Network(object):
         Note:
             The resulting dataframe will have the following columns:
 
-              - "r": the resistance of the line (in Ohm)
-              - "x": the reactance of the line (TODO unit, pu or not ?)
-              - "b1": the susceptance of line at its "1" side (TODO unit, pu or not ?)
-              - "g1": the  conductance of line at its "1" side (TODO unit, pu or not ?)
-              - "b2": the susceptance of line at its "2" side (TODO unit, pu or not ?)
-              - "g2": the  conductance of line at its "2" side (TODO unit, pu or not ?)
-              - "p1": the active flow on the line at its "1" side, Nan if no powerlow are computed (in MW)
-              - "q1": the reactive flow on the line at its "1" side, Nan if no powerlow are computed  (in MVAr)
-              - "p2": the active flow on the line at its "2" side, Nan if no powerlow are computed  (in MW)
-              - "q2": the reactive flow on the line at its "2" side, Nan if no powerlow are computed  (in MVAr)
-              -  "voltage_level1_id": at which substation the "1" side of the powerline is connected
-              -  "voltage_level2_id": at which substation the "2" side of the powerline is connected
-              -  "bus1_id": at which bus the "1" side of the powerline is connected
-              -  "bus2_id": at which bus the "2" side of the powerline is connected
+              - "model_type":
+              - "max_section_count": The maximum number of sections that may be switched on
+              - "section_count": The current number of section that may be switched on
+              - "p": the active flow on the shunt, Nan if no powerlow are computed (in MW)
+              - "q": the reactive flow on the shunt, Nan if no powerlow are computed  (in MVAr)
+              - "i": the current in the shunt, Nan if no powerlow are computed  (in A)
+              - "voltage_level_id": at which substation the shunt is connected
+              - "bus_id": indicate at which bus the shunt is connected
+              - "connected": indicate if the shunt is connected to a bus
 
-            This dataframe is index by the name of the powerlines
+            This dataframe is index by the name of the shunt compensators
 
         Examples
 
@@ -448,74 +477,225 @@ class Network(object):
 
                 import pypowsybl as pypo
                 net = pypo.network.create_ieee14()
-                net.create_lines_data_frame()
+                net.get_shunt_compensators()
 
             It outputs something like:
 
-            ========  ========  ========  ===  ====  ===  ==== === === === ==== ================= ================= ======= =======
-                .            r         x   g1    b1   g2    b2  p1  q1  p2  q2  voltage_level1_id voltage_level2_id bus1_id bus2_id
-            ========  ========  ========  ===  ====  ===  ==== === === === ==== ================= ================= ======= =======
+            ===== ========== ================= ============= === === === ================ ====== =========
+                . model_type max_section_count section_count   p   q   i voltage_level_id bus_id connected
+            ===== ========== ================= ============= === === === ================ ====== =========
             id
-            L1-2-1    0.000194  0.000592  0.0  2.64  0.0  2.64 NaN NaN NaN NaN               VL1               VL2   VL1_0   VL2_0
-            L1-5-1    0.000540  0.002230  0.0  2.46  0.0  2.46 NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0
-            L2-3-1    0.000470  0.001980  0.0  2.19  0.0  2.19 NaN NaN NaN NaN               VL2               VL3   VL2_0   VL3_0
-            L2-4-1    0.000581  0.001763  0.0  1.70  0.0  1.70 NaN NaN NaN NaN               VL2               VL4   VL2_0   VL4_0
-            L2-5-1    0.000570  0.001739  0.0  1.73  0.0  1.73 NaN NaN NaN NaN               VL2               VL5   VL2_0   VL5_0
-            L3-4-1    0.000670  0.001710  0.0  0.64  0.0  0.64 NaN NaN NaN NaN               VL3               VL4   VL3_0   VL4_0
-            L4-5-1    0.000134  0.000421  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL4               VL5   VL4_0   VL5_0
-            L6-11-1   0.000950  0.001989  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL6              VL11   VL6_0  VL11_0
-            L6-12-1   0.001229  0.002558  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL6              VL12   VL6_0  VL12_0
-            L6-13-1   0.000661  0.001303  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL6              VL13   VL6_0  VL13_0
-            L7-8-1    0.000000  0.001762  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL7               VL8   VL7_0   VL8_0
-            L7-9-1    0.000000  0.001100  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL7               VL9   VL7_0   VL9_0
-            L9-10-1   0.000318  0.000845  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL9              VL10   VL9_0  VL10_0
-            L9-14-1   0.001271  0.002704  0.0  0.00  0.0  0.00 NaN NaN NaN NaN               VL9              VL14   VL9_0  VL14_0
-            L10-11-1  0.000821  0.001921  0.0  0.00  0.0  0.00 NaN NaN NaN NaN              VL10              VL11  VL10_0  VL11_0
-            L12-13-1  0.002209  0.001999  0.0  0.00  0.0  0.00 NaN NaN NaN NaN              VL12              VL13  VL12_0  VL13_0
-            L13-14-1  0.001709  0.003480  0.0  0.00  0.0  0.00 NaN NaN NaN NaN              VL13              VL14  VL13_0  VL14_0
-            ========  ========  ========  ===  ====  ===  ==== === === === ==== ================= ================= ======= =======
+            B9-SH     LINEAR                 1             1 NaN NaN NaN              VL9  VL9_0      True
+            ===== ========== ================= ============= === === === ================ ====== =========
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
-
 
     def get_dangling_lines(self) -> pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
 
         Returns:
             a dangling lines data frame
+
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "r": The resistance of the dangling line (Ohm)
+              - "x": The reactance of the dangling line (Ohm)
+              - "g": the conductance of dangling line (in Siemens)
+              - "b": the susceptance of dangling line (in Siemens)
+              - "p0": The active power setpoint
+              - "q0": The reactive power setpoint
+              - "p": active flow on the dangling line, Nan if no powerlow are computed (in MW)
+              - "q": the reactive flow on the dangling line, Nan if no powerlow are computed  (in MVAr)
+              - "i": The current on the dangling line, Nan if no powerlow are computed (in A)
+              - "voltage_level_id": at which substation the dangling line is connected
+              - "bus_id": at which bus the dangling line is connected
+              - "connected": indicate if the dangling line is connected to a bus
+
+            This dataframe is index by the name of the dangling lines
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network._create_dangling_lines_network()
+                net.get_dangling_lines()
+
+
+            It outputs something like:
+
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
+             .    r   x      g       b   p0   q0   p   q   i voltage_level_id bus_id connected
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
+            id
+            DL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
         """
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
 
-
     def get_lcc_converter_stations(self) -> pd.DataFrame:
         """ Get LCC converter stations as a ``Pandas`` data frame.
+
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "power_factor": the power factor
+              - "loss_factor": the loss factor
+              - "p": active flow on the LCC converter station, Nan if no powerlow are computed (in MW)
+              - "q": the reactive flow on the LCC converter station, Nan if no powerlow are computed  (in MVAr)
+              - "i": The current on the LCC converter station, Nan if no powerlow are computed (in A)
+              - "voltage_level_id": at which substation the LCC converter station is connected
+              - "bus_id": at which bus the LCC converter station is connected
+              - "connected": indicate if the LCC converter station is connected to a bus
+
+            This dataframe is index by the name of the LCC converter
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_lcc_converter_stations()
+
+
+
+            It outputs something like:
+
+            ======== ============ ===========  ====== === === ================ ======= =========
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
+            ======== ============ ===========  ====== === === ================ ======= =========
+            id
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
+            ======== ============ ===========  ====== === === ================ ======= =========
 
         Returns:
             a LCC converter stations data frame
         """
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
 
-
     def get_vsc_converter_stations(self) -> pd.DataFrame:
         """ Get VSC converter stations as a ``Pandas`` data frame.
 
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "voltage_setpoint": The voltage setpoint
+              - "reactive_power_setpoint": The reactive power setpoint
+              - "voltage_regulator_on": The voltage regulator status
+              - "p": active flow on the VSC  converter station, Nan if no powerlow are computed (in MW)
+              - "q": the reactive flow on the VSC converter station, Nan if no powerlow are computed  (in MVAr)
+              - "i": The current on the VSC converter station, Nan if no powerlow are computed (in A)
+              - "voltage_level_id": at which substation the VSC converter station is connected
+              - "bus_id": at which bus the VSC converter station is connected
+              - "connected": indicate if the VSC converter station is connected to a bus
+
+            This dataframe is index by the name of the VSC converter
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_vsc_converter_stations()
+
+
+
+            It outputs something like:
+
+            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                .    voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            id
+                VSC1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+
         Returns:
-            a VSC converter stations data frame
+            a VCS converter stations data frame
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
-
     def get_static_var_compensators(self) -> pd.DataFrame:
         """ Get static var compensators as a ``Pandas`` data frame.
+
+         Note:
+            The resulting dataframe will have the following columns:
+
+              - "voltage_setpoint": The voltage setpoint
+              - "reactive_power_setpoint": The reactive power setpoint
+              - "regulation_mode": The regulation mode
+              - "p": active flow on the var compensator, Nan if no powerlow are computed (in MW)
+              - "q": the reactive flow on the var compensator, Nan if no powerlow are computed  (in MVAr)
+              - "i": The current on the var compensator, Nan if no powerlow are computed (in A)
+              - "voltage_level_id": at which substation the var compensator is connected
+              - "bus_id": at which bus the var compensator is connected
+              - "connected": indicate if the var compensator is connected to a bus
+
+            This dataframe is index by the name of the var compensator
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_static_var_compensators()
+
+
+
+            It outputs something like:
+
+            ======== ================ ======================= =============== === ======== === ================ ======= =========
+                .    voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            ======== ================ ======================= =============== === ======== === ================ ======= =========
+            id
+                 SVC            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ================ ======================= =============== === ======== === ================ ======= =========
 
         Returns:
             a static var compensators data frame
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
-
     def get_voltage_levels(self) -> pd.DataFrame:
         """ Get voltage levels as a ``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "substation_id": at which substation the voltage level belongs
+              - "nominal_v": The nominal voltage
+              - "high_voltage_limit": the high voltage limit
+              - "low_voltage_limit": the low voltage limit
+
+            This dataframe is index by the name of the voltage levels
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_voltage_levels()
+
+
+
+            It outputs something like:
+
+            ========= ============= ========= ================== =================
+                .     substation_id nominal_v high_voltage_limit low_voltage_limit
+            ========= ============= ========= ================== =================
+            id
+                S1VL1            S1     225.0              240.0             220.0
+                S1VL2            S1     400.0              440.0             390.0
+                S2VL1            S2     400.0              440.0             390.0
+                S3VL1            S3     400.0              440.0             390.0
+                S4VL1            S4     400.0              440.0             390.0
+            ========= ============= ========= ================== =================
+
         Returns:
             a voltage levels data frame
             Args:
@@ -527,11 +707,44 @@ class Network(object):
     def get_busbar_sections(self) -> pd.DataFrame:
         """ Get busbar sections as a ``Pandas`` data frame.
 
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "fictitious": indicate if the busbar section is part of the model and not of the actual network
+              - "v": The voltage magnitude of the busbar section (in kV)
+              - "angle": the voltage angle of the busbar section (in radian)
+              - "voltage_level_id": at which substation the busbar section is connected
+              - "connected": indicate if the busbar section is connected to a bus
+
+            This dataframe is index by the name of the busbar sections
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_busbar_sections()
+
+
+
+            It outputs something like:
+
+            ========== ========== ======== ======== ================ =========
+                 .     fictitious        v   angle voltage_level_id connected
+            ========== ========== ======== ======== ================ =========
+            id
+             S1VL1_BBS      False 224.6139   2.2822            S1VL1      True
+            S1VL2_BBS1      False 400.0000   0.0000            S1VL2      True
+            S1VL2_BBS2      False 400.0000   0.0000            S1VL2      True
+             S2VL1_BBS      False 408.8470   0.7347            S2VL1      True
+             S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
+             S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
+            ========== ========== ========  ======= ================ =========
         Returns:
             a busbar sections data frame
         """
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION)
-
 
     def get_substations(self) -> pd.DataFrame:
         """ Get substations ``Pandas`` data frame.
@@ -541,60 +754,224 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION)
 
-
     def get_hvdc_lines(self) -> pd.DataFrame:
         """ Get HVDC lines as a ``Pandas`` data frame.
 
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "converters_mode":
+              - "active_power_setpoint": (in MW)
+              - "max_p": the maximum of active power that can pass through the hvdc line (in MW)
+              - "nominal_v": nominal voltage (in kV)
+              - "r": the resistance of the hvdc line (in Ohm)
+              - "converter_station1_id": at which converter station the hvdc line is connected on side "1"
+              - "converter_station2_id": at which converter station the hvdc line is connected on side "2"
+              - "connected1": indicate if the busbar section on side "1" is connected to a bus
+              - "connected2": indicate if the busbar section on side "2" is connected to a bus
+
+            This dataframe is index by the name of the hvdc lines
+
+        Examples
+
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_hvdc_lines()
+
+            It outputs something like:
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
+                .                  converters_mode active_power_setpoint max_p nominal_v    r converter_station1_id converter_station2_id connected1 connected2
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
+            id
+            HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0 300.0     400.0  1.0                  VSC1                  VSC2       True       True
+            HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0 300.0     400.0  1.0                  LCC1                  LCC2       True       True
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
         Returns:
             a HVDC lines data frame
         """
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE)
 
-
     def get_switches(self) -> pd.DataFrame:
         """ Get switches as a ``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
 
+              - "kind": the kind of switch
+              - "open": the open status of the switch
+              - "retained": the retain status of the switch
+              - "voltage_level_id": at which substation the switch is connected
+
+            This dataframe is index by the name of the switches
+        Examples
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_switches()
+
+            It outputs something like:
+
+            ============================ ============ ====== ======== ================
+                                       .         kind   open retained voltage_level_id
+            ============================ ============ ====== ======== ================
+            id
+              S1VL1_BBS_LD1_DISCONNECTOR DISCONNECTOR  False    False            S1VL1
+                       S1VL1_LD1_BREAKER      BREAKER  False     True            S1VL1
+              S1VL1_BBS_TWT_DISCONNECTOR DISCONNECTOR  False    False            S1VL1
+                       S1VL1_TWT_BREAKER      BREAKER  False     True            S1VL1
+             S1VL2_BBS1_TWT_DISCONNECTOR DISCONNECTOR  False    False            S1VL2
+             S1VL2_BBS2_TWT_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
+                       S1VL2_TWT_BREAKER      BREAKER  False     True            S1VL2
+            S1VL2_BBS1_VSC1_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
+                                     ...          ...    ...      ...              ...
+            ============================ ============ ====== ======== ================
         Returns:
             a switches data frame
         """
         return self.get_elements(_pypowsybl.ElementType.SWITCH)
 
-
     def get_ratio_tap_changer_steps(self) -> pd.DataFrame:
         """ Get ratio tap changer steps as a ``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
+
+              - "rho":
+              - "r": the resistance of the ratio tap changer step (in Ohm)
+              - "x": The reactance of the ratio tap changer step (Ohm)
+              - "g": the conductance of the ratio tap changer step (in Siemens)
+              - "b": the susceptance of the ratio tap changer step (in Siemens)
+            This dataframe is index by the id of the transformer and the position of the ratio tap changer step
+        Examples
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changer_steps()
+
+            It outputs something like:
+
+            ========== ======== ======== === === === ===
+                     .        .      rho   r   x   g   b
+            ========== ======== ======== === === === ===
+            id         position
+            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
+                              1 1.000667 0.0 0.0 0.0 0.0
+                              2 1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ======== === === === ===
 
         Returns:
             a ratio tap changer steps data frame
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
 
-
     def get_phase_tap_changer_steps(self) -> pd.DataFrame:
         """ Get phase tap changer steps as a ``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
 
+              - "rho": the voltage ratio (in per unit)
+              - "alpha": the angle difference (in degree)
+              - "r": the resistance of the phase tap changer step (in Ohm)
+              - "x": The reactance of the phase tap changer step (Ohm)
+              - "g": the conductance of the phase tap changer step (in Siemens)
+              - "b": the susceptance of the phase tap changer step (in Siemens)
+            This dataframe is index by the id of the transformer and the position of the phase tap changer step
+        Examples
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changer_steps()
+
+            It outputs something like:
+
+            === ======== ==== ====== ========= ========= === ===
+              .        .  rho  alpha         r         x   g   b
+            === ======== ==== ====== ========= ========= === ===
+            id  position
+            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
+                       1  1.0 -40.18 31.720245 21.720242 0.0 0.0
+                       2  1.0 -37.54 23.655737 13.655735 0.0 0.0
+                       3  1.0 -34.90 16.263271  6.263268 0.0 0.0
+                       4  1.0 -32.26  9.542847  4.542842 0.0 0.0
+                       5  1.0 -29.60  3.494477  3.494477 0.0 0.0
+                     ...  ...    ...       ...       ... ... ...
+            === ======== ==== ====== ========= ========= === ===
         Returns:
             a phase tap changer steps data frame
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
-
     def get_ratio_tap_changers(self) -> pd.DataFrame:
         """ Create a ratio tap changers``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
 
+              - "tap":
+              - "low_tap":
+              - "high_tap":
+              - "step_count":
+              - "on_load":
+              - "regulating":
+              - "target_v":
+              - "target_deadband":
+              - "regulationg_bus_id":
+            This dataframe is index by the name of the transformer
+        Examples
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changers()
+
+            It outputs something like:
+
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+                     . tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            id
+            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
         Returns:
             the ratio tap changers data frame
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
 
-
     def get_phase_tap_changers(self) -> pd.DataFrame:
         """ Create a phase tap changers``Pandas`` data frame.
+        Note:
+            The resulting dataframe will have the following columns:
 
+              - "tap":
+              - "low_tap":
+              - "high_tap":
+              - "step_count":
+              - "regulating":
+              - "regulation_mode":
+              - "target_deadband":
+              - "regulationg_bus_id":
+            This dataframe is index by the name of the transformer
+        Examples
+            .. code-block:: python
+
+                import pypowsybl as pypo
+                net = pypo.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changers()
+
+            It outputs something like:
+
+            === === ======= ======== ========== ========== =============== ================ =============== =================
+              . tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === === ======= ======== ========== ========== =============== ================ =============== =================
+            id
+            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === === ======= ======== ========== ========== =============== ================ =============== =================
         Returns:
             the phase tap changers data frame
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
-
 
     def get_reactive_capability_curve_points(self) -> pd.DataFrame:
         """ Get reactive capability curve points as a ``Pandas`` data frame.
@@ -603,7 +980,6 @@ class Network(object):
             a reactive capability curve points data frame
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
-
 
     def update_elements(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
         """ Update network elements with a ``Pandas`` data frame for a specified element type.
@@ -633,143 +1009,245 @@ class Network(object):
                 raise PyPowsyblError(
                     f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
 
-
     def update_buses(self, df: pd.DataFrame):
         """ Update buses with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_buses()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "v_mag"
+                - "v_angle"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df)
 
-
     def update_switches(self, df: pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_switches()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "open"
+                - "retained"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df)
 
-
     def update_generators(self, df: pd.DataFrame):
         """ Update generators with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_generators()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "target_p"
+                - "max_p"
+                - "min_p"
+                - "target_v"
+                - "target_q"
+                - "voltage_regulator_on"
+                - "p"
+                - "q"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df)
 
-
     def update_loads(self, df: pd.DataFrame):
         """ Update loads with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_loads()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "p0"
+                - "q0"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df)
 
-
     def update_batteries(self, df: pd.DataFrame):
         """ Update batteries with a ``Pandas`` data frame.
-
-        Available columns names:
-        - p0
-        - q0
+            This method updates element of :func:`~pypowsybl.network.get_batteries()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "p0"
+                - "q0"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df)
 
-
     def update_dangling_lines(self, df: pd.DataFrame):
         """ Update dangling lines with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_dangling_lines()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "r"
+                - "x"
+                - "g"
+                - "b"
+                - "p0"
+                - "q0"
+                - "p"
+                - "q"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df)
 
-
     def update_vsc_converter_stations(self, df: pd.DataFrame):
         """ Update VSC converter stations with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_vsc_converter_stations()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+             columns that can be updated :
+                - "voltage_setpoint"
+                - "reactive_power_setpoint"
+                - "voltage_regulator_on"
+                - "p"
+                - "q"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
 
-
     def update_static_var_compensators(self, df: pd.DataFrame):
         """ Update static var compensators with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_static_var_compensators()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "voltage_setpoint"
+                - "reactive_power_setpoint"
+                - "regulation_mode"
+                - "p"
+                - "q"
+                - "connected"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
 
-
     def update_hvdc_lines(self, df: pd.DataFrame):
         """ Update HVDC lines with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_hvdc_lines()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "converters_mode"
+                - "active_power_setpoint"
+                - "max_p"
+                - "nominal_v"
+                - "r"
+                - "connected1"
+                - "connected2"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
-
     def update_lines(self, df: pd.DataFrame):
         """ Update lines with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_lines()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "r"
+                - "x"
+                - "g1"
+                - "b1"
+                - "g2"
+                - "b2"
+                - "p1"
+                - "q1"
+                - "p2"
+                - "q2"
+                - "connected1"
+                - "connected2"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.LINE, df)
 
-
     def update_2_windings_transformers(self, df: pd.DataFrame):
         """ Update 2 windings transformers with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_2_windings_transformers()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "r"
+                - "x"
+                - "g"
+                - "b"
+                - "rated_u1"
+                - "rated_u2"
+                - "rated_s"
+                - "p1"
+                - "q1"
+                - "p2"
+                - "q2"
+                - "connected1"
+                - "connected2"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
-
     def update_ratio_tap_changers(self, df: pd.DataFrame):
         """ Update ratio tap changers with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_ratio_tap_changers()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "tap"
+                - "on_load"
+                - "regulating"
+                - "target_v"
+                - "target_deadband"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
 
-
     def update_phase_tap_changers(self, df: pd.DataFrame):
         """ Update phase tap changers with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_phase_tap_changers()`
         Args:
             df (DataFrame): the ``Pandas`` data frame
+            columns that can be updated :
+                - "tap"
+                - "regulating"
+                - "regulation_mode"
+                - "regulation_value"
+                - "target_deadband"
+        Returns:
+            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
-
     def update_shunt_compensators(self, df: pd.DataFrame):
         """ Update shunt compensators with a ``Pandas`` data frame.
-
+            This method updates element of :func:`~pypowsybl.network.get_shunt_compensators()`
         Args:
            df (DataFrame): the ``Pandas`` data frame
-               columns that can be updated :
-                   - p
-                   - q
-                   - section_count
-                   - connected
-
+           columns that can be updated :
+               - "section_count"
+               - "p"
+               - "q"
+               - "connected"
         Returns:
             a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
-
 
     def get_working_variant_id(self):
         """ The current working variant ID
@@ -779,7 +1257,6 @@ class Network(object):
 
         """
         return _pypowsybl.get_working_variant_id(self._handle)
-
 
     def clone_variant(self, src: str, target: str, may_overwrite=True):
         """ Creates a copy of the source variant
@@ -791,7 +1268,6 @@ class Network(object):
         """
         _pypowsybl.clone_variant(self._handle, src, target, may_overwrite)
 
-
     def set_working_variant(self, variant: str):
         """ Changes the working variant. The provided variant ID must correspond
         to an existing variant, for example created by a call to `clone_variant`.
@@ -801,7 +1277,6 @@ class Network(object):
         """
         _pypowsybl.set_working_variant(self._handle, variant)
 
-
     def remove_variant(self, variant: str):
         """
         Removes a variant from the network.
@@ -810,7 +1285,6 @@ class Network(object):
             variant: id of the variant to be deleted
         """
         _pypowsybl.remove_variant(self._handle, variant)
-
 
     def get_variant_ids(self):
         """
