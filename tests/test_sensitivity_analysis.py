@@ -6,6 +6,7 @@
 #
 import unittest
 import pypowsybl as pp
+import pandas as pd
 from pypowsybl import PyPowsyblError
 import pathlib
 
@@ -17,6 +18,11 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
 
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
+        # fix max_p to be less than olf max_p plausible value
+        # (otherwise generators will be discarded from slack distribution)
+        generators = pd.DataFrame(data=[4999.0, 4999.0, 4999.0, 4999.0, 4999.0],
+                                  columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
+        n.update_generators(generators)
         sa = pp.sensitivity.create_dc_analysis()
         sa.add_single_element_contingency('L1-2-1')
         sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
@@ -72,7 +78,7 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
 
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.GENERATOR_MAX_P)
         self.assertEqual(3, len(zone_fr.injections_ids))
-        self.assertEqual(9000, zone_fr.get_shift_key('FFR2AA1 _generator'))
+        self.assertEqual(4999, zone_fr.get_shift_key('FFR2AA1 _generator'))
 
         zone_fr = pp.sensitivity.create_country_zone(n, 'FR', pp.sensitivity.ZoneKeyType.LOAD_P0)
         self.assertEqual(3, len(zone_fr.injections_ids))

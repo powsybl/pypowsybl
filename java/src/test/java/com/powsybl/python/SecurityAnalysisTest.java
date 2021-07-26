@@ -12,7 +12,6 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
@@ -37,12 +36,8 @@ class SecurityAnalysisTest {
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
-        Network network = EurostagTutorialExample1Factory.create();
-        LoadFlowParameters parameters = new LoadFlowParameters();
-        OpenLoadFlowParameters parametersExt = new OpenLoadFlowParameters()
-                .setPlausibleActivePowerLimit(10000);
-        parameters.addExtension(OpenLoadFlowParameters.class, parametersExt);
-        SecurityAnalysisResult result = analysisContext.run(network, parameters, "OpenSecurityAnalysis");
+        Network network = NetworkUtil.createEurostagTutorialExample1();
+        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
             -137.18849307164064, 488.99279636727357));
