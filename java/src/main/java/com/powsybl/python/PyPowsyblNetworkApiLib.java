@@ -16,7 +16,6 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.DanglingLineNetworkFactory;
-import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.reducer.*;
 import org.apache.commons.io.IOUtils;
@@ -91,7 +90,7 @@ public final class PyPowsyblNetworkApiLib {
     @CEntryPoint(name = "createEurostagTutorialExample1Network")
     public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+            Network network = NetworkUtil.createEurostagTutorialExample1WithFixedCurrentLimits();
             return ObjectHandles.getGlobal().create(network);
         });
     }
