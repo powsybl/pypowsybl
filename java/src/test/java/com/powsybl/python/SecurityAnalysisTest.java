@@ -39,12 +39,12 @@ class SecurityAnalysisTest {
         Network network = EurostagTutorialExample1Factory.create();
         SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
-            -137.18849307164064, 488.99279636727357));
+            302.4447139817743, 98.74096413331662, 456.77318626755226, -300.43452489238985,
+            -137.18797524910812, 488.9967519384151));
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            610.5621535433195, 334.0562715296563, 1008.9287882269937, -600.9961559564283,
-            -285.379146550659, 1047.825769145557));
+            610.5613831822664, 334.04127276791144, 1008.8958298589155, -600.996000744857,
+            -285.37366092916557, 1047.7927725175136));
     }
 
     @Test
