@@ -4,19 +4,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import sys
 import _pypowsybl
-from _pypowsybl import PyPowsyblError
+import sys
 from _pypowsybl import ElementType
-from pypowsybl.util import ObjectHandle
-from pypowsybl.util import create_data_frame_from_series_array
+from _pypowsybl import PyPowsyblError
 from typing import List
 from typing import Set
+
 import pandas as pd
+import datetime
+
+from pypowsybl.util import create_data_frame_from_series_array
 
 
 class SingleLineDiagram:
     """ This class represents a single line diagram."""
+
     def __init__(self, svg: str):
         self._svg = svg
 
@@ -31,33 +34,99 @@ class SingleLineDiagram:
         return self._svg
 
 
-class Network(ObjectHandle):
-    def __init__(self, ptr):
-        ObjectHandle.__init__(self, ptr)
+class Network(object):
+    def __init__(self, handle):
+        self._handle = handle
+        att = _pypowsybl.get_network_metadata(self._handle)
+        self._id = att.id
+        self._name = att.name
+        self._source_format = att.source_format
+        self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = datetime.datetime.utcfromtimestamp(att.case_date)
+
+    @property
+    def id(self) -> str:
+        """
+        ID of this network
+        """
+        return self._id
+
+    @property
+    def name(self) -> str:
+        """
+        Name of this network
+        """
+        return self._name
+
+    @property
+    def source_format(self) -> str:
+        """
+        Format of the source where this network came from.
+        """
+        return self._source_format
+
+    @property
+    def case_date(self) -> datetime.datetime:
+        """
+        Date of this network case, in UTC timezone.
+        """
+        return self._case_date
+
+    @property
+    def forecast_distance(self) -> datetime.timedelta:
+        """
+        The forecast distance: 0 for a snapshot.
+        """
+        return self._forecast_distance
+
+    def __str__(self) -> str:
+        return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
+               f'forecast_distance={self.forecast_distance}, source_format={self.source_format})'
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __getstate__(self):
+        return {'xml': self.dump_to_string()}
+
+    def __setstate__(self, state):
+        xml = state['xml']
+        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
+        self._handle = n
 
     def open_switch(self, id: str):
-        return _pypowsybl.update_switch_position(self.ptr, id, True)
+        return _pypowsybl.update_switch_position(self._handle, id, True)
 
     def close_switch(self, id: str):
-        return _pypowsybl.update_switch_position(self.ptr, id, False)
+        return _pypowsybl.update_switch_position(self._handle, id, False)
 
     def connect(self, id: str):
-        return _pypowsybl.update_connectable_status(self.ptr, id, True)
+        return _pypowsybl.update_connectable_status(self._handle, id, True)
 
     def disconnect(self, id: str):
-        return _pypowsybl.update_connectable_status(self.ptr, id, False)
+        return _pypowsybl.update_connectable_status(self._handle, id, False)
 
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
         """Save a network to a file using a specified format.
 
-        :param file: a file
-        :type file: str
-        :param format: format to save the network
-        :type format: str, defaults to 'XIIDM'
-        :param parameters: a map of parameters
-        :type parameters: dict
+        Args:
+            file (str): a file
+            format (str, optional): format to save the network, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
         """
-        _pypowsybl.dump_network(self.ptr, file, format, parameters)
+        _pypowsybl.dump_network(self._handle, file, format, parameters)
+
+    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
+        """Save a network to a string using a specified format.
+
+        Args:
+            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
+            parameters (dict, optional): a map of parameters
+
+        Returns:
+            a string representing network
+        """
+        return _pypowsybl.dump_network_to_string(self._handle, format, parameters)
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):
@@ -66,7 +135,7 @@ class Network(ObjectHandle):
         for v in vl_depths:
             vls.append(v[0])
             depths.append(v[1])
-        _pypowsybl.reduce_network(self.ptr, v_min, v_max, ids, vls, depths, with_dangling_lines)
+        _pypowsybl.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
         """ Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
@@ -75,7 +144,7 @@ class Network(ObjectHandle):
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
         """
-        _pypowsybl.write_single_line_diagram_svg(self.ptr, container_id, svg_file)
+        _pypowsybl.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
     def get_single_line_diagram(self, container_id: str):
         """ Create a single line diagram from a voltage level or a substation.
@@ -86,13 +155,13 @@ class Network(ObjectHandle):
         Returns:
             the single line diagram
         """
-        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self.ptr, container_id))
+        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
                          not_connected_to_same_bus_at_both_sides: bool = False) -> List[str]:
-        return _pypowsybl.get_network_elements_ids(self.ptr, element_type,
+        return _pypowsybl.get_network_elements_ids(self._handle, element_type,
                                                    [] if nominal_voltages is None else list(nominal_voltages),
                                                    [] if countries is None else list(countries),
                                                    main_connected_component, main_synchronous_component,
@@ -106,7 +175,7 @@ class Network(ObjectHandle):
         Returns:
             a network elements data frame for the specified element type
         """
-        series_array = _pypowsybl.create_network_elements_series_array(self.ptr, element_type)
+        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
         return create_data_frame_from_series_array(series_array)
 
     def get_buses(self) -> pd.DataFrame:
@@ -293,14 +362,15 @@ class Network(ObjectHandle):
             series = df[series_name]
             series_type = _pypowsybl.get_series_type(element_type, series_name)
             if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self.ptr, element_type, series_name, df.index.values,
+                _pypowsybl.update_network_elements_with_int_series(self._handle, element_type, series_name,
+                                                                   df.index.values,
                                                                    series.values, len(series))
             elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self.ptr, element_type, series_name,
+                _pypowsybl.update_network_elements_with_double_series(self._handle, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self.ptr, element_type, series_name,
+                _pypowsybl.update_network_elements_with_string_series(self._handle, element_type, series_name,
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
@@ -382,6 +452,14 @@ class Network(ObjectHandle):
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
+    def update_lines(self, df: pd.DataFrame):
+        """ Update lines with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.LINE, df)
+
     def update_2_windings_transformers(self, df: pd.DataFrame):
         """ Update 2 windings transformers with a ``Pandas`` data frame.
 
@@ -406,6 +484,22 @@ class Network(ObjectHandle):
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
+    def update_shunt_compensators(self, df: pd.DataFrame):
+        """ Update shunt compensators with a ``Pandas`` data frame.
+
+        Args:
+           df (DataFrame): the ``Pandas`` data frame
+               columns that can be updated :
+                   - p
+                   - q
+                   - section_count
+                   - connected
+
+        Returns:
+            a dataframe updated
+        """
+        return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
+
     def get_working_variant_id(self):
         """ The current working variant ID
 
@@ -413,7 +507,7 @@ class Network(ObjectHandle):
             the id of the currently selected variant
 
         """
-        return _pypowsybl.get_working_variant_id(self.ptr)
+        return _pypowsybl.get_working_variant_id(self._handle)
 
     def clone_variant(self, src: str, target: str, may_overwrite=True):
         """ Creates a copy of the source variant
@@ -423,7 +517,7 @@ class Network(ObjectHandle):
             target: id of the new variant that will be a copy of src
             may_overwrite: indicates if the target can be overwritten when it already exists
         """
-        _pypowsybl.clone_variant(self.ptr, src, target, may_overwrite)
+        _pypowsybl.clone_variant(self._handle, src, target, may_overwrite)
 
     def set_working_variant(self, variant: str):
         """ Changes the working variant. The provided variant ID must correspond
@@ -432,7 +526,7 @@ class Network(ObjectHandle):
         Args:
             variant: id of the variant selected (it must exist)
         """
-        _pypowsybl.set_working_variant(self.ptr, variant)
+        _pypowsybl.set_working_variant(self._handle, variant)
 
     def remove_variant(self, variant: str):
         """
@@ -441,7 +535,7 @@ class Network(ObjectHandle):
         Args:
             variant: id of the variant to be deleted
         """
-        _pypowsybl.remove_variant(self.ptr, variant)
+        _pypowsybl.remove_variant(self._handle, variant)
 
     def get_variant_ids(self):
         """
@@ -450,7 +544,7 @@ class Network(ObjectHandle):
         Returns:
             all the ids of the existing variants
         """
-        return _pypowsybl.get_variant_ids(self.ptr)
+        return _pypowsybl.get_variant_ids(self._handle)
 
 
 def create_empty(id: str = "Default") -> Network:
@@ -490,6 +584,14 @@ def create_ieee300() -> Network:
 
 def create_eurostag_tutorial_example1_network() -> Network:
     return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
+
+
+def _create_battery_network() -> Network:
+    return Network(_pypowsybl.create_battery_network())
+
+
+def _create_dangling_lines_network() -> Network:
+    return Network(_pypowsybl.create_dangling_line_network())
 
 
 def create_four_substations_node_breaker_network() -> Network:

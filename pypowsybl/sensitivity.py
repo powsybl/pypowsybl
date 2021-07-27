@@ -11,7 +11,6 @@ import _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network
 from pypowsybl.util import ContingencyContainer
-from pypowsybl.util import ObjectHandle
 from _pypowsybl import PyPowsyblError
 from typing import List, Optional, Dict, Tuple
 from enum import Enum
@@ -96,14 +95,14 @@ def create_country_zone(network: Network, country: str, key_type: ZoneKeyType = 
     return Zone(country, shift_keys_by_id)
 
 
-class DcSensitivityAnalysisResult(ObjectHandle):
+class DcSensitivityAnalysisResult(object):
     """ Represents the result of a DC sensitivity analysis.
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
 
     def __init__(self, result_context_ptr, branches_ids: List[str], branch_data_frame_index: List[str]):
-        ObjectHandle.__init__(self, result_context_ptr)
+        self._handle = result_context_ptr
         self.result_context_ptr = result_context_ptr
         self.branches_ids = branches_ids
         self.branch_data_frame_index = branch_data_frame_index
@@ -199,8 +198,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
 
 class SensitivityAnalysis(ContingencyContainer):
     """ Base class for sensitivity analysis. Do not instantiate it directly!"""
-    def __init__(self, ptr):
-        ContingencyContainer.__init__(self, ptr)
+    def __init__(self, handle):
+        ContingencyContainer.__init__(self, handle)
         self.branches_ids = None
         self.branch_data_frame_index = None
 
@@ -213,7 +212,7 @@ class SensitivityAnalysis(ContingencyContainer):
         for zone in zones:
             _zones.append(_pypowsybl.Zone(zone.id, list(zone.shift_keys_by_injections_ids.keys()),
                                           list(zone.shift_keys_by_injections_ids.values())))
-        _pypowsybl.set_zones(self.ptr, _zones)
+        _pypowsybl.set_zones(self._handle, _zones)
 
     def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List):
         """ Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
@@ -242,15 +241,15 @@ class SensitivityAnalysis(ContingencyContainer):
             else:
                 raise PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
 
-        _pypowsybl.set_branch_flow_factor_matrix(self.ptr, branches_ids, flatten_variables_ids)
+        _pypowsybl.set_branch_flow_factor_matrix(self._handle, branches_ids, flatten_variables_ids)
         self.branches_ids = branches_ids
         self.branch_data_frame_index = branch_data_frame_index
 
 
 class DcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents a DC sensitivity analysis."""
-    def __init__(self, ptr):
-        SensitivityAnalysis.__init__(self, ptr)
+    def __init__(self, handle):
+        SensitivityAnalysis.__init__(self, handle)
 
     def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
@@ -263,14 +262,14 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, True, parameters, provider),
+        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, parameters, provider),
                                            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
 class AcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents an AC sensitivity analysis."""
-    def __init__(self, ptr):
-        SensitivityAnalysis.__init__(self, ptr)
+    def __init__(self, handle):
+        SensitivityAnalysis.__init__(self, handle)
         self.bus_voltage_ids = None
         self.target_voltage_ids = None
 
@@ -282,7 +281,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
             bus_ids: IDs of buses for which voltage sensitivities should be computed
             target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
         """
-        _pypowsybl.set_bus_voltage_factor_matrix(self.ptr, bus_ids, target_voltage_ids)
+        _pypowsybl.set_bus_voltage_factor_matrix(self._handle, bus_ids, target_voltage_ids)
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
@@ -297,7 +296,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self.ptr, network.ptr, False, parameters, provider),
+        return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, parameters, provider),
                                            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
                                            bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 

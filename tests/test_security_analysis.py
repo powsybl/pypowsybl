@@ -12,11 +12,24 @@ import pandas as pd
 class SecurityAnalysisTestCase(unittest.TestCase):
 
     def test_security_analysis(self):
+        pd.set_option('display.max_columns', None)
         n = pp.network.create_eurostag_tutorial_example1_network()
         sa = pp.security.create_analysis()
         sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
         sa_result = sa.run_ac(n)
-        self.assertEqual(1, len(sa_result._post_contingency_results))
+        self.assertEqual(1, len(sa_result.post_contingency_results))
+        self.assertEqual('CONVERGED', sa_result.pre_contingency_result.status.name)
+        self.assertEqual('CONVERGED', sa_result.post_contingency_results['First contingency'].status.name)
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'subject_id'],
+                                                                tuples=[('First contingency', 'NHV1_NHV2_2'),
+                                                                        ('First contingency', 'VLHV1')]),
+                                columns=['subject_name', 'limit_type', 'limit_name', 'limit', 'acceptable_duration',
+                                         'limit_reduction', 'value', 'side'],
+                                data=[
+                                    ['', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
+                                    ['', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
+                                ])
+        pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
 
     def test_monitored_elements(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -29,8 +42,8 @@ class SecurityAnalysisTestCase(unittest.TestCase):
         sa.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
 
         sa_result = sa.run_ac(n)
-        bus_results = sa_result.get_bus_results()
-        branch_results = sa_result.get_branch_results()
+        bus_results = sa_result.bus_results
+        branch_results = sa_result.branch_results
 
         expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'voltage_level_id', 'bus_id'],
                                                                 tuples=[('', 'VLHV2', 'NHV2'),

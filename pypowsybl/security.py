@@ -4,19 +4,20 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import List, Union
+from typing import Union, Dict
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
+
+from typing import List
 
 import _pypowsybl
 from _pypowsybl import ContingencyResult
 from _pypowsybl import LimitViolation
-from _pypowsybl import LimitType
-from _pypowsybl import Side
 from _pypowsybl import ContingencyContextType
 from pypowsybl.network import Network
 from pypowsybl.loadflow import Parameters
-from pypowsybl.util import ContingencyContainer, ObjectHandle as _ObjectHandle
+from pypowsybl.util import ContingencyContainer
 from prettytable import PrettyTable
+import pandas as pd
 
 ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
                                           f"contingency_id={self.contingency_id!r}" \
@@ -37,30 +38,46 @@ LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
                                        f")"
 
 
-class SecurityAnalysisResult(_ObjectHandle):
+class SecurityAnalysisResult(object):
     """
     The result of a security analysis.
     """
 
-    def __init__(self, result):
-        super().__init__(result)
-        results = _pypowsybl.get_security_analysis_result(result)
+    def __init__(self, handle):
+        self._handle = handle
+        results = _pypowsybl.get_security_analysis_result(self._handle)
         self._post_contingency_results = {}
         for result in results:
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
             else:
                 self._pre_contingency_result = result
+        self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
-    def pre_contingency_result(self):
+    def pre_contingency_result(self) -> ContingencyResult:
+        """ Result for the pre-contingency state.
+
+        Returns:
+            Result for the pre-contingency state.
+        """
         return self._pre_contingency_result
 
     @property
-    def post_contingency_results(self):
-        return self._post_contingency_results.values()
+    def post_contingency_results(self) -> Dict[str, ContingencyResult]:
+        """ Results for the contingencies, as a dictionary contingency ID -> result.
+
+        Returns:
+            Results for the contingencies, as a dictionary contingency ID -> result.
+        """
+        return self._post_contingency_results
 
     def find_post_contingency_result(self, contingency_id: str):
+        """ Result for the specified contingency
+
+        Returns:
+            Result for the specified contingency
+        """
         result = self._post_contingency_results[contingency_id]
         if not result:
             raise KeyError("Contingency {} not found".format(contingency_id))
@@ -86,14 +103,41 @@ class SecurityAnalysisResult(_ObjectHandle):
                                limit_violation.side.name])
         return table
 
-    def get_branch_results(self):
-        return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self.ptr))
+    @property
+    def limit_violations(self) -> pd.DataFrame:
+        """ All limit violations in a dataframe representation.
 
-    def get_bus_results(self):
-        return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self.ptr))
+        Returns:
+            All limit violations in a dataframe representation.
+        """
+        return self._limit_violations
 
-    def get_three_windings_transformer_results(self):
-        return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self.ptr))
+    @property
+    def branch_results(self) -> pd.DataFrame:
+        """ Results (P, Q, I) for monitored branches
+
+        Returns:
+            Results (P, Q, I) for monitored branches
+        """
+        return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
+
+    @property
+    def bus_results(self) -> pd.DataFrame:
+        """ Bus results (voltage angle and magnitude) for monitored voltage levels
+
+        Returns:
+            Bus results (voltage angle and magnitude) for monitored voltage levels
+        """
+        return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
+
+    @property
+    def three_windings_transformer_results(self) -> pd.DataFrame:
+        """ Results (P, Q, I) for monitored three winding transformers
+
+        Returns:
+            Results (P, Q, I) for monitored three winding transformers
+        """
+        return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
 
 
 class SecurityAnalysis(ContingencyContainer):
@@ -101,8 +145,8 @@ class SecurityAnalysis(ContingencyContainer):
     Allows to run a security analysis on a network.
     """
 
-    def __init__(self, ptr):
-        ContingencyContainer.__init__(self, ptr)
+    def __init__(self, handle):
+        ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: Network, parameters: Parameters = Parameters(),
                provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
@@ -116,7 +160,7 @@ class SecurityAnalysis(ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self.ptr, network.ptr, parameters, provider))
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, parameters, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,
@@ -150,7 +194,7 @@ class SecurityAnalysis(ContingencyContainer):
         elif type(contingency_ids) == str:
             contingency_ids = [contingency_ids]
 
-        _pypowsybl.add_monitored_elements(self.ptr, contingency_context_type, branch_ids, voltage_level_ids,
+        _pypowsybl.add_monitored_elements(self._handle, contingency_context_type, branch_ids, voltage_level_ids,
                                           three_windings_transformer_ids, contingency_ids)
 
     def add_precontingency_monitored_elements(self,

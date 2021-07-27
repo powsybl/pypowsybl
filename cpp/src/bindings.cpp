@@ -36,6 +36,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
+    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
+
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
@@ -52,6 +54,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
 
     m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
+
+    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an example network with batteries");
+
+    m.def("create_dangling_line_network", &pypowsybl::createDanglingLineNetwork, "Create an example network with dangling lines");
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
@@ -99,8 +105,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
           py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
 
-    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
-          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("network"),
+          py::arg("file"),py::arg("format"), py::arg("parameters"));
+
+    m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format",
+          py::arg("network"), py::arg("format"), py::arg("parameters"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
@@ -270,6 +279,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TWO", pypowsybl::Side::TWO)
             .export_values();
 
+    py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
+            .def_property_readonly("id", [](const network_metadata& att) {
+                return att.id;
+            })
+            .def_property_readonly("name", [](const network_metadata& att) {
+                return att.name;
+            })
+            .def_property_readonly("source_format", [](const network_metadata& att) {
+                return att.source_format;
+            })
+            .def_property_readonly("forecast_distance", [](const network_metadata& att) {
+                return att.forecast_distance;
+            })
+            .def_property_readonly("case_date", [](const network_metadata& att) {
+                return att.case_date;
+            });
+
     py::class_<limit_violation>(m, "LimitViolation")
             .def_property_readonly("subject_id", [](const limit_violation& v) {
                 return v.subject_id;
@@ -400,9 +426,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
-
-    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
-
+    m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
@@ -420,6 +444,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .export_values();
 
     m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+
+    m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
 
     m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
           py::arg("result"));

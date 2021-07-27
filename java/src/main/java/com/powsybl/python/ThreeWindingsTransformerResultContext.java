@@ -27,3 +27,4 @@ public class ThreeWindingsTransformerResultContext extends ThreeWindingsTransfor
         return contingencyId;
     }
 }
+

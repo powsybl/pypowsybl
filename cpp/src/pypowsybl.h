@@ -27,6 +27,27 @@ public:
     }
 };
 
+/**
+ * Wraps a void* corresponding to a graalvm ObjectHandle
+ * in order to handle its destruction.
+ */
+class JavaHandle {
+public:
+    //Implicit constructor from void* returned by graalvm
+    JavaHandle(void* handle);
+    ~JavaHandle() {}
+
+    //Implicit conversion to void* for use as input to graalvm
+    operator void*() {
+        return handle_.get();
+    }
+
+private:
+    //Object handle destruction will be called when no more reference
+    std::shared_ptr<void> handle_;
+};
+
+
 template<typename T>
 class Array {
 public:
@@ -119,19 +140,23 @@ bool isConfigRead();
 
 std::string getVersionTable();
 
-void* createEmptyNetwork(const std::string& id);
+JavaHandle createEmptyNetwork(const std::string& id);
 
-void* createIeeeNetwork(int busCount);
+JavaHandle createIeeeNetwork(int busCount);
 
-void* createEurostagTutorialExample1Network();
+JavaHandle createEurostagTutorialExample1Network();
 
-void* createFourSubstationsNodeBreakerNetwork();
+JavaHandle createFourSubstationsNodeBreakerNetwork();
 
-bool updateSwitchPosition(void* network, const std::string& id, bool open);
+bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
-bool updateConnectableStatus(void* network, const std::string& id, bool connected);
+JavaHandle createBatteryNetwork();
 
-std::vector<std::string> getNetworkElementsIds(void* network, element_type elementType, const std::vector<double>& nominalVoltages,
+JavaHandle createDanglingLineNetwork();
+
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
+
+std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
                                                const std::vector<std::string>& countries, bool mainCc, bool mainSc,
                                                bool notConnectedToSameBusAtBothSides);
 
@@ -141,84 +166,88 @@ std::vector<std::string> getNetworkExportFormats();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
-void* loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
-void* loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
-void dumpNetwork(void* network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
 
-void reduceNetwork(void* network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
+void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
 
 load_flow_parameters* defaultParameters();
 
 load_flow_parameters* readParameters();
 
-LoadFlowComponentResultArray* runLoadFlow(void* network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
+std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters);
 
-void writeSingleLineDiagramSvg(void* network, const std::string& containerId, const std::string& svgFile);
+void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-std::string getSingleLineDiagramSvg(void* network, const std::string& containerId);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
-void* createSecurityAnalysis();
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
-void addContingency(void* analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
-void* runSecurityAnalysis(void* securityAnalysisContext, void* network, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle createSecurityAnalysis();
 
-void* createSensitivityAnalysis();
+void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-void setZones(void* sensitivityAnalysisContext, const std::vector<::zone*>& zones);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider);
 
-void setBranchFlowFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
+JavaHandle createSensitivityAnalysis();
 
-void setBusVoltageFactorMatrix(void* sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
+void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
-void* runSensitivityAnalysis(void* sensitivityAnalysisContext, void* network, bool dc, load_flow_parameters& parameters, const std::string& provider);
+void setBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
 
-matrix* getBranchFlowsSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string &contingencyId);
+void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-matrix* getBusVoltagesSensitivityMatrix(void* sensitivityAnalysisResultContext, const std::string &contingencyId);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider);
 
-matrix* getReferenceFlows(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
 
-matrix* getReferenceVoltages(void* sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(void* network, element_type elementType);
+matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType);
 
 int getSeriesType(element_type elementType, const std::string& seriesName);
 
-void updateNetworkElementsWithIntSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithIntSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                         const std::vector<int>& values, int elementCount);
 
-void updateNetworkElementsWithDoubleSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithDoubleSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<double>& values, int elementCount);
 
-void updateNetworkElementsWithStringSeries(void* network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
+void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
                                            const std::vector<std::string>& values, int elementCount);
 
-void destroyObjectHandle(void* objectHandle);
+std::string getWorkingVariantId(const JavaHandle& network);
 
-std::string getWorkingVariantId(void* network);
+void setWorkingVariant(const JavaHandle& network, std::string& variant);
 
-void setWorkingVariant(void* network, std::string& variant);
+void removeVariant(const JavaHandle& network, std::string& variant);
 
-void removeVariant(void* network, std::string& variant);
+void cloneVariant(const JavaHandle& network, std::string& src, std::string& variant, bool mayOverwrite);
 
-void cloneVariant(void* network, std::string& src, std::string& variant, bool mayOverwrite);
+std::vector<std::string> getVariantsIds(const JavaHandle& network);
 
-std::vector<std::string> getVariantsIds(void* network);
-
-void addMonitoredElements(void* securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
+void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds);
 
-ContingencyResultArray* getSecurityAnalysisResult(void* securityAnalysisResult);
+SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
-SeriesArray* getBranchResults(void* securityAnalysisResult);
+ContingencyResultArray* getSecurityAnalysisResult(const JavaHandle& securityAnalysisResult);
 
-SeriesArray* getBusResults(void* securityAnalysisResult);
+SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
 
-SeriesArray* getThreeWindingsTransformerResults(void* securityAnalysisResult);
+SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
+
+SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
 
 }
 

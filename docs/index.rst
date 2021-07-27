@@ -16,6 +16,7 @@ It is a python binding for the `powsybl <https://www.powsybl.org/>`_ java framew
    network
    loadflow
    sensitivity
+   security
 
 Indices and tables
 ==================

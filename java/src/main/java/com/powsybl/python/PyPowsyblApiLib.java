@@ -9,21 +9,14 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.contingency.ContingencyContextType;
-import com.powsybl.dataframe.*;
-import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
+import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
-import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
-import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
-import com.powsybl.iidm.parameters.Parameter;
-import com.powsybl.iidm.reducer.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -44,25 +37,17 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CIntPointer;
-import org.graalvm.word.WordBase;
-import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.*;
+import static com.powsybl.python.Util.*;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -73,59 +58,6 @@ public final class PyPowsyblApiLib {
     static boolean readConfig = false;
 
     private PyPowsyblApiLib() {
-    }
-
-    private static void setException(ExceptionHandlerPointer exceptionHandlerPtr, Throwable t) {
-        LoggerFactory.getLogger(PyPowsyblApiLib.class).debug(t.getMessage(), t);
-        // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
-        // typically a NullPointerException has a null message and an empty string message need to be set in order to
-        // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
-        exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
-    }
-
-    private static void doCatch(ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
-        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
-        try {
-            runnable.run();
-        } catch (Throwable t) {
-            setException(exceptionHandlerPtr, t);
-        }
-    }
-
-    private static boolean doCatch(ExceptionHandlerPointer exceptionHandlerPtr, BooleanSupplier supplier) {
-        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
-        try {
-            return supplier.getAsBoolean();
-        } catch (Throwable t) {
-            setException(exceptionHandlerPtr, t);
-            return false;
-        }
-    }
-
-    private static int doCatch(ExceptionHandlerPointer exceptionHandlerPtr, IntSupplier supplier) {
-        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
-        try {
-            return supplier.getAsInt();
-        } catch (Throwable t) {
-            setException(exceptionHandlerPtr, t);
-            return -1;
-        }
-    }
-
-    interface PointerProvider<T extends WordBase> {
-
-        T get();
-    }
-
-    private static <T extends WordBase> T doCatch(ExceptionHandlerPointer exceptionHandlerPtr, PointerProvider<T> supplier) {
-        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            setException(exceptionHandlerPtr, t);
-            return WordFactory.zero();
-        }
     }
 
     @CEntryPoint(name = "setDebugMode")
@@ -153,61 +85,6 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(Version.getTableString()));
     }
 
-    @CEntryPoint(name = "createEmptyNetwork")
-    public static ObjectHandle createEmptyNetwork(IsolateThread thread, CCharPointer id, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String idStr = CTypeUtil.toString(id);
-            Network network = Network.create(idStr, "");
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createIeeeNetwork")
-    public static ObjectHandle createIeeeNetwork(IsolateThread thread, int busCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network;
-            switch (busCount) {
-                case 9:
-                    network = IeeeCdfNetworkFactory.create9();
-                    break;
-                case 14:
-                    network = IeeeCdfNetworkFactory.create14();
-                    break;
-                case 30:
-                    network = IeeeCdfNetworkFactory.create30();
-                    break;
-                case 57:
-                    network = IeeeCdfNetworkFactory.create57();
-                    break;
-                case 118:
-                    network = IeeeCdfNetworkFactory.create118();
-                    break;
-                case 300:
-                    network = IeeeCdfNetworkFactory.create300();
-                    break;
-                default:
-                    throw new PowsyblException("IEEE " + busCount + " buses case not found");
-            }
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createEurostagTutorialExample1Network")
-    public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = EurostagTutorialExample1Factory.create();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
-        CCharPointerPointer stringListPtr = UnmanagedMemory.calloc(stringList.size() * SizeOf.get(CCharPointerPointer.class));
-        for (int i = 0; i < stringList.size(); i++) {
-            stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
-        }
-        return allocArrayPointer(stringListPtr, stringList.size());
-    }
-
     @CEntryPoint(name = "getNetworkImportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Importers.getFormats())));
@@ -219,9 +96,9 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "freeStringArray")
-    public static void freeStringArray(IsolateThread thread, ArrayPointer<?> arrayPtr,
+    public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(arrayPtr));
+        doCatch(exceptionHandlerPtr, () -> freeArrayContent(arrayPtr));
     }
 
     @CEntryPoint(name = "createImporterParametersSeriesArray")
@@ -233,111 +110,7 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            List<Parameter> parameters = importer.getParameters();
-            return new SeriesPointerArrayBuilder<>(parameters)
-                .addStringSeries("name", true, Parameter::getName)
-                .addStringSeries("description", Parameter::getDescription)
-                .addEnumSeries("type", Parameter::getType)
-                .addStringSeries("default", p -> Objects.toString(p.getDefaultValue(), ""))
-                .build();
-        });
-    }
-
-    private static Properties createParameters(CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                               CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount) {
-        List<String> parameterNames = toStringList(parameterNamesPtrPtr, parameterNamesCount);
-        List<String> parameterValues = toStringList(parameterValuesPtrPtr, parameterValuesCount);
-        Properties parameters = new Properties();
-        for (int i = 0; i < parameterNames.size(); i++) {
-            parameters.setProperty(parameterNames.get(i), parameterValues.get(i));
-        }
-        return parameters;
-    }
-
-    @CEntryPoint(name = "createFourSubstationsNodeBreakerNetwork")
-    public static ObjectHandle createFourSubstationsNodeBreakerNetwork(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = FourSubstationsNodeBreakerFactory.create();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "loadNetwork")
-    public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String fileStr = CTypeUtil.toString(file);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Network network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "loadNetworkFromString")
-    public static ObjectHandle loadNetworkFromString(IsolateThread thread, CCharPointer fileName, CCharPointer fileContent,
-                                                     CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                                     CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String fileNameStr = CTypeUtil.toString(fileName);
-            String fileContentStr = CTypeUtil.toString(fileContent);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-                return ObjectHandles.getGlobal().create(network);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    @CEntryPoint(name = "dumpNetwork")
-    public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
-                                   CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                   CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String fileStr = CTypeUtil.toString(file);
-            String formatStr = CTypeUtil.toString(format);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
-        });
-    }
-
-    @CEntryPoint(name = "reduceNetwork")
-    public static void reduceNetwork(IsolateThread thread, ObjectHandle networkHandle,
-                                     double vMin, double vMax,
-                                     CCharPointerPointer idsPtrPtr, int idsCount,
-                                     CCharPointerPointer vlsPtrPtr, int vlsCount,
-                                     CIntPointer depthsPtr, int depthsCount,
-                                     boolean withDanglingLines,
-                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReductionOptions options = new ReductionOptions();
-            options.withDanglingLlines(withDanglingLines);
-            List<NetworkPredicate> predicates = new ArrayList<>();
-            if (vMax != Double.MAX_VALUE || vMin != 0) {
-                predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
-            }
-            if (idsCount != 0) {
-                List<String> ids = toStringList(idsPtrPtr, idsCount);
-                predicates.add(new IdentifierNetworkPredicate(ids));
-            }
-            if (depthsCount != 0) {
-                final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
-                final List<String> voltageLeveles = toStringList(vlsPtrPtr, vlsCount);
-                for (int i = 0; i < depths.size(); i++) {
-                    predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
-                }
-            }
-            final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
-            NetworkReducer.builder()
-                .withNetworkPredicate(orNetworkPredicate)
-                .withReductionOptions(options)
-                .build()
-                .reduce(network);
+            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
         });
     }
 
@@ -435,7 +208,9 @@ public final class PyPowsyblApiLib {
     public static void freeLoadFlowComponentResultPointer(IsolateThread thread, ArrayPointer<LoadFlowComponentResultPointer> componentResultArrayPtr,
                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
+            for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
+                UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+            }
             freeArrayPointer(componentResultArrayPtr);
         });
     }
@@ -457,20 +232,6 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String idStr = CTypeUtil.toString(id);
             return NetworkUtil.updateConnectableStatus(network, idStr, connected);
-        });
-    }
-
-    @CEntryPoint(name = "getNetworkElementsIds")
-    public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                          CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
-                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
-                                                                          boolean notConnectedToSameBusAtBothSides, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
-            Set<String> countries = new HashSet<>(toStringList(countryPtr, countryCount));
-            List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
-            return createCharPtrArray(elementsIds);
         });
     }
 
@@ -552,8 +313,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                                             ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                             CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -572,13 +333,27 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "getLimitViolations")
+    public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
+        });
+    }
+
     @CEntryPoint(name = "freeContingencyResultArrayPointer")
     public static void freeContingencyResultArrayPointer(IsolateThread thread, ArrayPointer<ContingencyResultPointer> contingencyResultArrayPtr,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
             for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
                 ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(contingencyResultPtrPlus.getContingencyId());
+                for (int l = 0; l < contingencyResultPtrPlus.limitViolations().getLength(); l++) {
+                    LimitViolationPointer violation = contingencyResultPtrPlus.limitViolations().getPtr().addressOf(l);
+                    UnmanagedMemory.free(violation.getSubjectId());
+                    UnmanagedMemory.free(violation.getSubjectName());
+                    UnmanagedMemory.free(violation.getLimitName());
+                }
                 UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
             }
             freeArrayPointer(contingencyResultArrayPtr);
@@ -693,29 +468,33 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "createNetworkElementsSeriesArray")
-    public static ArrayPointer<SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                               ElementType elementType, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            CDataframeHandler handler = new CDataframeHandler();
-            mapper.createDataframe(network, handler);
-            return handler.getDataframePtr();
-        });
-    }
-
     @CEntryPoint(name = "freeSeriesArray")
     public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            // don't need to free char* from id field as it is done by python
             for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-                SeriesPointer seriesPtrPlus = seriesPtrArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(seriesPtrPlus.data().getPtr());
+                freeSeries(seriesPtrArrayPtr.getPtr().addressOf(i));
             }
             freeArrayPointer(seriesPtrArrayPtr);
         });
+    }
+
+    private static void freeSeries(SeriesPointer seriesPointer) {
+        if (seriesPointer.getType() == CDataframeHandler.STRING_SERIES_TYPE) {
+            freeArrayContent(seriesPointer.data());
+        }
+        UnmanagedMemory.free(seriesPointer.data().getPtr());
+        UnmanagedMemory.free(seriesPointer.getName());
+    }
+
+    /**
+     * Frees C strings memory
+     * @param array
+     */
+    private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
+        for (int i = 0; i < array.getLength(); i++) {
+            UnmanagedMemory.free(array.getPtr().read(i));
+        }
     }
 
     @CEntryPoint(name = "getSeriesType")
@@ -729,222 +508,9 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    private static int convert(SeriesDataType type) {
-        switch (type) {
-            case STRING:
-                return CDataframeHandler.STRING_SERIES_TYPE;
-            case DOUBLE:
-                return CDataframeHandler.DOUBLE_SERIES_TYPE;
-            case INT:
-                return CDataframeHandler.INT_SERIES_TYPE;
-            case BOOLEAN:
-                return CDataframeHandler.BOOLEAN_SERIES_TYPE;
-            default:
-                throw new IllegalStateException("Unexpected series type: " + type);
-        }
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
-    public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                          ElementType elementType, CCharPointer seriesNamePtr,
-                                                          CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr,
-                                                          int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
-    }
-
-    private static IntIndexedSeries createIntSeries(CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr, int elementCount) {
-        return new IntIndexedSeries() {
-            @Override
-            public int getSize() {
-                return elementCount;
-            }
-
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public int getValue(int index) {
-                return valuePtr.read(index);
-            }
-        };
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithDoubleSeries")
-    public static void updateNetworkElementsWithDoubleSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                             ElementType elementType, CCharPointer seriesNamePtr,
-                                                             CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr,
-                                                             int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
-    }
-
-    private static DoubleIndexedSeries createDoubleSeries(CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr, int elementCount) {
-        return new DoubleIndexedSeries() {
-            @Override
-            public int getSize() {
-                return elementCount;
-            }
-
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public double getValue(int index) {
-                return valuePtr.read(index);
-            }
-        };
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithStringSeries")
-    public static void updateNetworkElementsWithStringSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                             ElementType elementType, CCharPointer seriesNamePtr,
-                                                             CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr,
-                                                             int elementCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
-    }
-
-    private static IndexedSeries<String> createStringSeries(CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr, int elementCount) {
-        return new IndexedSeries<>() {
-            @Override
-            public int getSize() {
-                return elementCount;
-            }
-
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public String getValue(int index) {
-                return CTypeUtil.toString(valuePtr.read(index));
-            }
-        };
-    }
-
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
-    }
-
-    private static ElementType convert(DataframeElementType type) {
-        switch (type) {
-            case BUS:
-                return ElementType.BUS;
-            case LINE:
-                return ElementType.LINE;
-            case TWO_WINDINGS_TRANSFORMER:
-                return ElementType.TWO_WINDINGS_TRANSFORMER;
-            case THREE_WINDINGS_TRANSFORMER:
-                return ElementType.THREE_WINDINGS_TRANSFORMER;
-            case GENERATOR:
-                return ElementType.GENERATOR;
-            case LOAD:
-                return ElementType.LOAD;
-            case BATTERY:
-                return ElementType.BATTERY;
-            case SHUNT_COMPENSATOR:
-                return ElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE:
-                return ElementType.DANGLING_LINE;
-            case LCC_CONVERTER_STATION:
-                return ElementType.LCC_CONVERTER_STATION;
-            case VSC_CONVERTER_STATION:
-                return ElementType.VSC_CONVERTER_STATION;
-            case STATIC_VAR_COMPENSATOR:
-                return ElementType.STATIC_VAR_COMPENSATOR;
-            case SWITCH:
-                return ElementType.SWITCH;
-            case VOLTAGE_LEVEL:
-                return ElementType.VOLTAGE_LEVEL;
-            case SUBSTATION:
-                return ElementType.SUBSTATION;
-            case BUSBAR_SECTION:
-                return ElementType.BUSBAR_SECTION;
-            case HVDC_LINE:
-                return ElementType.HVDC_LINE;
-            case RATIO_TAP_CHANGER_STEP:
-                return ElementType.RATIO_TAP_CHANGER_STEP;
-            case PHASE_TAP_CHANGER_STEP:
-                return ElementType.PHASE_TAP_CHANGER_STEP;
-            case RATIO_TAP_CHANGER:
-                return ElementType.RATIO_TAP_CHANGER;
-            case PHASE_TAP_CHANGER:
-                return ElementType.PHASE_TAP_CHANGER;
-            case REACTIVE_CAPABILITY_CURVE_POINT:
-                return ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
-            default:
-                throw new PowsyblException("Unknown element type : " + type);
-        }
-    }
-
-    private static DataframeElementType convert(ElementType type) {
-        switch (type) {
-            case BUS:
-                return DataframeElementType.BUS;
-            case LINE:
-                return DataframeElementType.LINE;
-            case TWO_WINDINGS_TRANSFORMER:
-                return DataframeElementType.TWO_WINDINGS_TRANSFORMER;
-            case THREE_WINDINGS_TRANSFORMER:
-                return DataframeElementType.THREE_WINDINGS_TRANSFORMER;
-            case GENERATOR:
-                return DataframeElementType.GENERATOR;
-            case LOAD:
-                return DataframeElementType.LOAD;
-            case BATTERY:
-                return DataframeElementType.BATTERY;
-            case SHUNT_COMPENSATOR:
-                return DataframeElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE:
-                return DataframeElementType.DANGLING_LINE;
-            case LCC_CONVERTER_STATION:
-                return DataframeElementType.LCC_CONVERTER_STATION;
-            case VSC_CONVERTER_STATION:
-                return DataframeElementType.VSC_CONVERTER_STATION;
-            case STATIC_VAR_COMPENSATOR:
-                return DataframeElementType.STATIC_VAR_COMPENSATOR;
-            case SWITCH:
-                return DataframeElementType.SWITCH;
-            case VOLTAGE_LEVEL:
-                return DataframeElementType.VOLTAGE_LEVEL;
-            case SUBSTATION:
-                return DataframeElementType.SUBSTATION;
-            case BUSBAR_SECTION:
-                return DataframeElementType.BUSBAR_SECTION;
-            case HVDC_LINE:
-                return DataframeElementType.HVDC_LINE;
-            case RATIO_TAP_CHANGER_STEP:
-                return DataframeElementType.RATIO_TAP_CHANGER_STEP;
-            case PHASE_TAP_CHANGER_STEP:
-                return DataframeElementType.PHASE_TAP_CHANGER_STEP;
-            case RATIO_TAP_CHANGER:
-                return DataframeElementType.RATIO_TAP_CHANGER;
-            case PHASE_TAP_CHANGER:
-                return DataframeElementType.PHASE_TAP_CHANGER;
-            case REACTIVE_CAPABILITY_CURVE_POINT:
-                return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
-            default:
-                throw new PowsyblException("Unknown element type : " + type);
-        }
     }
 
     @CEntryPoint(name = "getWorkingVariantId")
@@ -956,58 +522,13 @@ public final class PyPowsyblApiLib {
 
     }
 
-    @CEntryPoint(name = "cloneVariant")
-    public static void cloneVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer src, CCharPointer variant, boolean mayOverwrite, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().cloneVariant(CTypeUtil.toString(src), CTypeUtil.toString(variant), mayOverwrite);
-        });
-    }
-
-    @CEntryPoint(name = "setWorkingVariant")
-    public static void setWorkingVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().setWorkingVariant(CTypeUtil.toString(variant));
-        });
-    }
-
-    @CEntryPoint(name = "removeVariant")
-    public static void removeVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
-        });
-    }
-
-    @CEntryPoint(name = "getVariantsIds")
-    public static ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
-        });
-    }
-
-    private static ContingencyContextType convert(RawContingencyContextType type) {
-        switch (type) {
-            case ALL:
-                return ContingencyContextType.ALL;
-            case NONE:
-                return ContingencyContextType.NONE;
-            case SPECIFIC:
-                return ContingencyContextType.SPECIFIC;
-            default:
-                throw new PowsyblException("Unknown contingency context type : " + type);
-        }
-    }
-
     @CEntryPoint(name = "addMonitoredElements")
     public static void addMonitoredElements(IsolateThread thread, ObjectHandle securityAnalysisContextHandle, RawContingencyContextType contingencyContextType,
-                                        CCharPointerPointer branchIds, int branchIdsCount,
-                                        CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
-                                        CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
-                                        CCharPointerPointer contingencyIds, int contingencyIdsCount,
-                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+                                            CCharPointerPointer branchIds, int branchIdsCount,
+                                            CCharPointerPointer voltageLevelIds, int voltageLevelIdCount,
+                                            CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
+                                            CCharPointerPointer contingencyIds, int contingencyIdsCount,
+                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
@@ -1026,24 +547,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BranchResultContext> branchResults = result.getPreContingencyResult()
-                    .getPreContingencyBranchResults().stream()
-                    .map(branchResult -> new BranchResultContext(branchResult, null))
-                    .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(branchResults)
-                .addStringSeries("contingency_id", true, BranchResultContext::getContingencyId)
-                .addStringSeries("branch_id", true, BranchResultContext::getBranchId)
-                .addDoubleSeries("p1", BranchResultContext::getP1)
-                .addDoubleSeries("q1", BranchResultContext::getQ1)
-                .addDoubleSeries("i1", BranchResultContext::getI1)
-                .addDoubleSeries("p2", BranchResultContext::getP2)
-                .addDoubleSeries("q2", BranchResultContext::getQ2)
-                .addDoubleSeries("i2", BranchResultContext::getI2)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
         });
     }
 
@@ -1051,21 +555,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<BusResultContext> busResults = result.getPreContingencyResult()
-                .getPreContingencyBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(busResults)
-                .addStringSeries("contingency_id", true, BusResultContext::getContingencyId)
-                .addStringSeries("voltage_level_id", true, BusResultContext::getVoltageLevelId)
-                .addStringSeries("bus_id", true, BusResultContext::getBusId)
-                .addDoubleSeries("v_mag", BusResultContext::getV)
-                .addDoubleSeries("v_angle", BusResultContext::getAngle)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
         });
     }
 
@@ -1073,29 +563,12 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
-                .getPreContingencyThreeWindingsTransformerResults().stream()
-                .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
-                .collect(Collectors.toList());
-            result.getPostContingencyResults().forEach(postContingencyResult -> {
-                postContingencyResult.getThreeWindingsTransformerResult()
-                    .forEach(threeWindingsTransformerResult ->
-                        threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
-                            postContingencyResult.getContingency().getId())));
-            });
-            return new SeriesPointerArrayBuilder<>(threeWindingsTransformerResults)
-                .addStringSeries("contingency_id", true, ThreeWindingsTransformerResultContext::getContingencyId)
-                .addStringSeries("transformer_id", true, ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
-                .addDoubleSeries("p1", ThreeWindingsTransformerResultContext::getP1)
-                .addDoubleSeries("q1", ThreeWindingsTransformerResultContext::getQ1)
-                .addDoubleSeries("i1", ThreeWindingsTransformerResultContext::getI1)
-                .addDoubleSeries("p2", ThreeWindingsTransformerResultContext::getP2)
-                .addDoubleSeries("q2", ThreeWindingsTransformerResultContext::getQ2)
-                .addDoubleSeries("i2", ThreeWindingsTransformerResultContext::getI2)
-                .addDoubleSeries("p3", ThreeWindingsTransformerResultContext::getP3)
-                .addDoubleSeries("q3", ThreeWindingsTransformerResultContext::getQ3)
-                .addDoubleSeries("i3", ThreeWindingsTransformerResultContext::getI3)
-                .build();
+            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
         });
+    }
+
+    @CEntryPoint(name = "freeString")
+    public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
 }
