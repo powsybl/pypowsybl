@@ -362,7 +362,8 @@ class Network(object):
             series = df[series_name]
             series_type = _pypowsybl.get_series_type(element_type, series_name)
             if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self._handle, element_type, series_name, df.index.values,
+                _pypowsybl.update_network_elements_with_int_series(self._handle, element_type, series_name,
+                                                                   df.index.values,
                                                                    series.values, len(series))
             elif series_type == 1:
                 _pypowsybl.update_network_elements_with_double_series(self._handle, element_type, series_name,
@@ -451,6 +452,14 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
+    def update_lines(self, df: pd.DataFrame):
+        """ Update lines with a ``Pandas`` data frame.
+
+        Args:
+            df (DataFrame): the ``Pandas`` data frame
+        """
+        return self.update_elements(_pypowsybl.ElementType.LINE, df)
+
     def update_2_windings_transformers(self, df: pd.DataFrame):
         """ Update 2 windings transformers with a ``Pandas`` data frame.
 
@@ -474,6 +483,22 @@ class Network(object):
             df (DataFrame): the ``Pandas`` data frame
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
+
+    def update_shunt_compensators(self, df: pd.DataFrame):
+        """ Update shunt compensators with a ``Pandas`` data frame.
+
+        Args:
+           df (DataFrame): the ``Pandas`` data frame
+               columns that can be updated :
+                   - p
+                   - q
+                   - section_count
+                   - connected
+
+        Returns:
+            a dataframe updated
+        """
+        return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
 
     def get_working_variant_id(self):
         """ The current working variant ID
