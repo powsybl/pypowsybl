@@ -16,6 +16,9 @@ DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class SensitivityAnalysisTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
         # fix max_p to be less than olf max_p plausible value

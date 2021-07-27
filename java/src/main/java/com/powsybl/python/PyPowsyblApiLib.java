@@ -55,7 +55,7 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = false;
+    static boolean readConfig = true;
 
     private PyPowsyblApiLib() {
     }

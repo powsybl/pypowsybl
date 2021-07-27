@@ -251,7 +251,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
     def __init__(self, handle):
         SensitivityAnalysis.__init__(self, handle)
 
-    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters = None, provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -262,7 +262,10 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, parameters, provider),
+        p = parameters
+        if parameters is None:
+            p = Parameters()
+        return DcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider),
                                            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
@@ -285,7 +288,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run(self, network: Network, parameters: Parameters = Parameters(), provider: str = 'OpenSensitivityAnalysis') -> AcSensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters = None, provider: str = 'OpenSensitivityAnalysis') -> AcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -296,7 +299,10 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, parameters, provider),
+        p = parameters
+        if parameters is None:
+            p = Parameters()
+        return AcSensitivityAnalysisResult(_pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider),
                                            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
                                            bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
