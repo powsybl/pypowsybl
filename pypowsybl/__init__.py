@@ -36,11 +36,11 @@ def set_debug_mode(debug: bool = True) -> None:
     _pypowsybl.set_debug_mode(debug)
 
 
-def set_config_read(read_config: bool = False) -> None:
+def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
 
     Args:
-        read_config(bool, optional): defaults to False
+        read_config(bool): defaults to True
     """
     _pypowsybl.set_config_read(read_config)
 
