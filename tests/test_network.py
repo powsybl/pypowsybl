@@ -379,7 +379,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_lines(lines_update)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
                                 columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
-                                         'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'],
+                                         'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1',
+                                         'connected2'],
                                 data=[[1, 2, 3, 4, 5, 6, 7, 8, 15.011282, 9, 10, 19.418634,
                                        'S2VL1', 'S3VL1', 'S2VL1_0', 'S3VL1_0', True, True],
                                       [0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415, 346.429584,
@@ -390,7 +391,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_dangling_lines(self):
         n = pp.network._create_dangling_lines_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                                columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                         'connected'],
                                 data=[[10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True]])
         dangling_lines = n.get_dangling_lines()
         pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False)
@@ -398,7 +400,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_batteries(self):
         n = pp.network._create_battery_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                                columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                         'connected'],
                                 data=[[9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True],
                                       [200, -200, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
@@ -406,16 +409,29 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_shunt(self):
         n = pp.network.create_four_substations_node_breaker_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                columns=['g', 'b', 'model_type', 'max_section_count', 'section_count',
+                                         'voltage_regulation_on', 'target_v',
+                                         'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                          'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['LINEAR', 1, 1, NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+                                data=[[0.0, -0.012, 'LINEAR', 1, 1, False, NaN, NaN,
+                                       'S1VL2_0', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
         n.update_shunt_compensators(
-            pd.DataFrame(index=['SHUNT'], columns=['q', 'section_count', 'connected'], data=[[1900, 0, False]]))
+            pd.DataFrame(index=['SHUNT'],
+                         columns=['q', 'section_count', 'target_v', 'target_deadband',
+                                  'connected'],
+                         data=[[1900, 0, 50, 3, False]]))
+        n.update_shunt_compensators(
+            pd.DataFrame(index=['SHUNT'],
+                         columns=['voltage_regulation_on'],
+                         data=[[True]]))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                columns=['g', 'b', 'model_type', 'max_section_count', 'section_count',
+                                         'voltage_regulation_on', 'target_v',
+                                         'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                          'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['LINEAR', 1, 0, NaN, 1900, NaN, 'S1VL2', '', False]])
+                                data=[[0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
+                                       '', NaN, 1900, NaN, 'S1VL2', '', False]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
 
 
