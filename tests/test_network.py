@@ -10,7 +10,6 @@ import unittest
 import datetime
 import pandas as pd
 from numpy import NaN
-from tabulate import tabulate
 
 import pypowsybl as pp
 
