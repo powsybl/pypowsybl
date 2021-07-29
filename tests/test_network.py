@@ -10,6 +10,7 @@ import unittest
 import datetime
 import pandas as pd
 from numpy import NaN
+from tabulate import tabulate
 
 import pypowsybl as pp
 from pypowsybl.network import Network
@@ -447,16 +448,29 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_shunt(self):
         n = pp.network.create_four_substations_node_breaker_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                columns=['g', 'b', 'model_type', 'max_section_count', 'section_count',
+                                         'voltage_regulation_on', 'target_v',
+                                         'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                          'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['LINEAR', 1, 1, NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+                                data=[[0.0, -0.012, 'LINEAR', 1, 1, False, NaN, NaN,
+                                       'S1VL2_0', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
         n.update_shunt_compensators(
-            pd.DataFrame(index=['SHUNT'], columns=['q', 'section_count', 'connected'], data=[[1900, 0, False]]))
+            pd.DataFrame(index=['SHUNT'],
+                         columns=['q', 'section_count', 'target_v', 'target_deadband',
+                                  'connected'],
+                         data=[[1900, 0, 50, 3, False]]))
+        n.update_shunt_compensators(
+            pd.DataFrame(index=['SHUNT'],
+                         columns=['voltage_regulation_on'],
+                         data=[[True]]))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                                columns=['model_type', 'max_section_count', 'section_count', 'p', 'q', 'i',
+                                columns=['g', 'b', 'model_type', 'max_section_count', 'section_count',
+                                         'voltage_regulation_on', 'target_v',
+                                         'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                          'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['LINEAR', 1, 0, NaN, 1900, NaN, 'S1VL2', '', False]])
+                                data=[[0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
+                                       '', NaN, 1900, NaN, 'S1VL2', '', False]])
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
 
     def test_3_windings_transformers(self):
