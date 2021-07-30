@@ -589,8 +589,10 @@ def create_ieee300() -> Network:
 def create_eurostag_tutorial_example1_network() -> Network:
     return _create_network('eurostag_tutorial_example1')
 
+
 def create_four_substations_node_breaker_network() -> Network:
     return _create_network('four_substations_node_breaker')
+
 
 def get_import_formats() -> List[str]:
     """ Get list of supported import formats
