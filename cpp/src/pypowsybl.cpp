@@ -228,28 +228,8 @@ std::string getVersionTable() {
     return toString(callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createEmptyNetwork(const std::string& id) {
-    return callJava<JavaHandle>(::createEmptyNetwork, (char*) id.data());
-}
-
-JavaHandle createIeeeNetwork(int busCount) {
-    return callJava<JavaHandle>(::createIeeeNetwork, busCount);
-}
-
-JavaHandle createEurostagTutorialExample1Network() {
-    return callJava<JavaHandle>(::createEurostagTutorialExample1Network);
-}
-
-JavaHandle createFourSubstationsNodeBreakerNetwork() {
-    return callJava<JavaHandle>(::createFourSubstationsNodeBreakerNetwork);
-}
-
-JavaHandle createBatteryNetwork() {
-    return callJava<JavaHandle>(::createBatteryNetwork);
-}
-
-JavaHandle createDanglingLineNetwork() {
-    return callJava<JavaHandle>(::createDanglingLineNetwork);
+JavaHandle createNetwork(const std::string& name, const std::string& id) {
+    return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
 std::vector<std::string> getNetworkImportFormats() {

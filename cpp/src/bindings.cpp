@@ -43,18 +43,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
-          py::arg("id"));
-
-    m.def("create_ieee_network", &pypowsybl::createIeeeNetwork, "Create an IEEE network", py::arg("bus_count"));
-
-    m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
-
-    m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
-
-    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an example network with batteries");
-
-    m.def("create_dangling_line_network", &pypowsybl::createDanglingLineNetwork, "Create an example network with dangling lines");
+    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
