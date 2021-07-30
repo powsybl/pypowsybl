@@ -454,6 +454,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'voltage_level_id', 'bus_id', 'connected'],
                                 data=[[0.0, -0.012, 'LINEAR', 1, 1, False, NaN, NaN,
                                        'S1VL2_0', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+        print('')
+        print(tabulate(n.get_shunt_compensators(), n.get_shunt_compensators().columns))
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
         n.update_shunt_compensators(
             pd.DataFrame(index=['SHUNT'],
@@ -514,7 +516,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('ieee57cdf', n.id)
         n = pp.network.create_ieee118()
         self.assertEqual('ieee118cdf', n.id)
-
 
 if __name__ == '__main__':
     unittest.main()
