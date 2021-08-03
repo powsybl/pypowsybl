@@ -562,43 +562,88 @@ def _create_network(name, network_id=''):
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.
 
-    :param id: id of the network, defaults to 'Default'
-    :type id: str, optional
-    :return: an empty network
-    :rtype: Network
+    Args:
+        id: id of the network, defaults to 'Default'
+
+    Returns:
+        a new empty network
     """
     return _create_network('empty', network_id=id)
 
 
 def create_ieee9() -> Network:
+    """ Create an instance of IEEE 9 bus network
+
+    Returns:
+        a new instance of IEEE 9 bus network
+    """
     return _create_network('ieee9')
 
 
 def create_ieee14() -> Network:
+    """ Create an instance of IEEE 14 bus network
+
+    Returns:
+        a new instance of IEEE 14 bus network
+    """
     return _create_network('ieee14')
 
 
 def create_ieee30() -> Network:
+    """ Create an instance of IEEE 30 bus network
+
+    Returns:
+        a new instance of IEEE 30 bus network
+    """
     return _create_network('ieee30')
 
 
 def create_ieee57() -> Network:
+    """ Create an instance of IEEE 57 bus network
+
+    Returns:
+        a new instance of IEEE 57 bus network
+    """
     return _create_network('ieee57')
 
 
 def create_ieee118() -> Network:
+    """ Create an instance of IEEE 118 bus network
+
+    Returns:
+        a new instance of IEEE 118 bus network
+    """
     return _create_network('ieee118')
 
 
 def create_ieee300() -> Network:
+    """ Create an instance of IEEE 300 bus network
+
+    Returns:
+        a new instance of IEEE 300 bus network
+    """
     return _create_network('ieee300')
 
 
 def create_eurostag_tutorial_example1_network() -> Network:
+    """ Create an instance of example 1 network of Eurostag tutorial
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial
+    """
     return _create_network('eurostag_tutorial_example1')
 
 
 def create_four_substations_node_breaker_network() -> Network:
+    """ Create an instance of powsybl "4 substations" test case.
+
+    It is meant to contain most network element types that can be
+    represented in powsybl networks.
+    The topology is in node-breaker representation.
+
+    Returns:
+        a new instance of powsybl "4 substations" test case
+    """
     return _create_network('four_substations_node_breaker')
 
 
