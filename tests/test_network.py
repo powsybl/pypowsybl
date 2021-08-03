@@ -504,6 +504,15 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                       [False, 400.0000, -1.1259, 'S4VL1', True]])
         pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
 
+    def test_non_linear_shunt(self):
+        n = self.create_non_linear_shunt_network()
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)],
+                                            names=['id', 'section']),
+                                columns=['g', 'b'],
+                                data=[[0.0, 0.00001],
+                                      [0.3, 0.02000]])
+        pd.testing.assert_frame_equal(expected, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+
     def test_create_network(self):
         n = pp.network.create_ieee9()
         self.assertEqual('ieee9cdf', n.id)

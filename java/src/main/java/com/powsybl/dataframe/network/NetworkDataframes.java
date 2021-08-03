@@ -53,6 +53,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.LOAD, loads());
         mappers.put(DataframeElementType.BATTERY, batteries());
         mappers.put(DataframeElementType.SHUNT_COMPENSATOR, shunts());
+        mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -245,6 +246,22 @@ public final class NetworkDataframes {
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper shuntsNonLinear() {
+        Function<Network, Stream<Triple<String, ShuntCompensatorNonLinearModel.Section, Integer>>> nonLinearShunts = network ->
+                network.getShuntCompensatorStream()
+                        .filter(sc -> sc.getModelType() == ShuntCompensatorModelType.NON_LINEAR)
+                        .flatMap(shuntCompensator -> {
+                            ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
+                            return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator.getId(), section, model.getAllSections().indexOf(section)));
+                        });
+        return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts)
+                .stringsIndex("id", Triple::getLeft)
+                .intsIndex("section", Triple::getRight)
+                .doubles("g", p -> p.getMiddle().getG())
+                .doubles("b", p -> p.getMiddle().getB())
                 .build();
     }
 
@@ -511,7 +528,7 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper rtcs() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                        .filter(t -> t.getRatioTapChanger() != null), NetworkDataframes::getT2OrThrow)
+                .filter(t -> t.getRatioTapChanger() != null), NetworkDataframes::getT2OrThrow)
                 .stringsIndex("id", TwoWindingsTransformer::getId)
                 .ints("tap", t -> t.getRatioTapChanger().getTapPosition(), (t, p) -> t.getRatioTapChanger().setTapPosition(p))
                 .ints("low_tap", t -> t.getRatioTapChanger().getLowTapPosition())
@@ -527,7 +544,7 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper ptcs() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                        .filter(t -> t.getPhaseTapChanger() != null), NetworkDataframes::getT2OrThrow)
+                .filter(t -> t.getPhaseTapChanger() != null), NetworkDataframes::getT2OrThrow)
                 .stringsIndex("id", TwoWindingsTransformer::getId)
                 .ints("tap", t -> t.getPhaseTapChanger().getTapPosition(), (t, v) -> t.getPhaseTapChanger().setTapPosition(v))
                 .ints("low_tap", t -> t.getPhaseTapChanger().getLowTapPosition())

@@ -237,6 +237,14 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
 
+    def get_non_linear_shunt_compensator_sections(self) -> pd.DataFrame:
+        """ Get shunt compensators sections for non linear model as a ``Pandas`` data frame.
+
+        Returns:
+            a shunt compensators data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
+
     def get_dangling_lines(self) -> pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
 
@@ -589,8 +597,10 @@ def create_ieee300() -> Network:
 def create_eurostag_tutorial_example1_network() -> Network:
     return _create_network('eurostag_tutorial_example1')
 
+
 def create_four_substations_node_breaker_network() -> Network:
     return _create_network('four_substations_node_breaker')
+
 
 def get_import_formats() -> List[str]:
     """ Get list of supported import formats
