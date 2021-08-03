@@ -547,6 +547,10 @@ class Network(object):
         return _pypowsybl.get_variant_ids(self._handle)
 
 
+def _create_network(name, network_id=''):
+    return Network(_pypowsybl.create_network(name, network_id))
+
+
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.
 
@@ -555,48 +559,38 @@ def create_empty(id: str = "Default") -> Network:
     :return: an empty network
     :rtype: Network
     """
-    return Network(_pypowsybl.create_empty_network(id))
+    return _create_network('empty', network_id=id)
 
 
 def create_ieee9() -> Network:
-    return Network(_pypowsybl.create_ieee_network(9))
+    return _create_network('ieee9')
 
 
 def create_ieee14() -> Network:
-    return Network(_pypowsybl.create_ieee_network(14))
+    return _create_network('ieee14')
 
 
 def create_ieee30() -> Network:
-    return Network(_pypowsybl.create_ieee_network(30))
+    return _create_network('ieee30')
 
 
 def create_ieee57() -> Network:
-    return Network(_pypowsybl.create_ieee_network(57))
+    return _create_network('ieee57')
 
 
 def create_ieee118() -> Network:
-    return Network(_pypowsybl.create_ieee_network(118))
+    return _create_network('ieee118')
 
 
 def create_ieee300() -> Network:
-    return Network(_pypowsybl.create_ieee_network(300))
+    return _create_network('ieee300')
 
 
 def create_eurostag_tutorial_example1_network() -> Network:
-    return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
-
-
-def _create_battery_network() -> Network:
-    return Network(_pypowsybl.create_battery_network())
-
-
-def _create_dangling_lines_network() -> Network:
-    return Network(_pypowsybl.create_dangling_line_network())
-
+    return _create_network('eurostag_tutorial_example1')
 
 def create_four_substations_node_breaker_network() -> Network:
-    return Network(_pypowsybl.create_four_substations_node_breaker_network())
-
+    return _create_network('four_substations_node_breaker')
 
 def get_import_formats() -> List[str]:
     """ Get list of supported import formats
