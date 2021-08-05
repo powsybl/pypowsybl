@@ -21,12 +21,12 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class SecurityAnalysisTest {
+class SecurityAnalysisTest {
 
     @Test
     void testStateMonitors() {
@@ -36,15 +36,15 @@ public class SecurityAnalysisTest {
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
-        Network network = EurostagTutorialExample1Factory.create();
+        Network network = NetworkUtil.createEurostagTutorialExample1();
         SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            302.44404914466014, 0.9874027438014933, 456.7689759899915, -300.43389523337316,
-            -137.18849307164064, 488.9927963672735));
+            302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
+            -137.18849307164064, 488.99279636727357));
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            610.5621535433195, 3.3405627152965636, 1008.9287882269936, -600.9961559564283,
-            -285.379146550659, 1047.8257691455567));
+            610.5621535433195, 334.0562715296563, 1008.9287882269937, -600.9961559564283,
+            -285.379146550659, 1047.825769145557));
     }
 
     @Test

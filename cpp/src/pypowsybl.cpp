@@ -228,28 +228,8 @@ std::string getVersionTable() {
     return toString(callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createEmptyNetwork(const std::string& id) {
-    return callJava<JavaHandle>(::createEmptyNetwork, (char*) id.data());
-}
-
-JavaHandle createIeeeNetwork(int busCount) {
-    return callJava<JavaHandle>(::createIeeeNetwork, busCount);
-}
-
-JavaHandle createEurostagTutorialExample1Network() {
-    return callJava<JavaHandle>(::createEurostagTutorialExample1Network);
-}
-
-JavaHandle createFourSubstationsNodeBreakerNetwork() {
-    return callJava<JavaHandle>(::createFourSubstationsNodeBreakerNetwork);
-}
-
-JavaHandle createBatteryNetwork() {
-    return callJava<JavaHandle>(::createBatteryNetwork);
-}
-
-JavaHandle createDanglingLineNetwork() {
-    return callJava<JavaHandle>(::createDanglingLineNetwork);
+JavaHandle createNetwork(const std::string& name, const std::string& id) {
+    return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -266,6 +246,13 @@ std::vector<std::string> getNetworkExportFormats() {
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
+}
+
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) {
+    network_metadata* attributes = callJava<network_metadata*>(::getNetworkMetadata, network);
+    return std::shared_ptr<network_metadata>(attributes, [](network_metadata* ptr){
+        callJava(::freeNetworkMetadata, ptr);
+    });
 }
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters) {

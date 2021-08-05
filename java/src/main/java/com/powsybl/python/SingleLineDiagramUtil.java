@@ -13,7 +13,7 @@ import com.powsybl.sld.SubstationDiagram;
 import com.powsybl.sld.VoltageLevelDiagram;
 import com.powsybl.sld.layout.*;
 import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.library.ResourcesComponentLibrary;
+import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
 import com.powsybl.sld.svg.DefaultSVGWriter;
 import com.powsybl.sld.util.TopologicalStyleProvider;
@@ -52,9 +52,9 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer) {
-        ComponentLibrary componentLibrary = new ResourcesComponentLibrary("/ConvergenceLibrary");
+        ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
         LayoutParameters layoutParameters = new LayoutParameters()
-                .setCssInternal(true)
+                .setCssLocation(LayoutParameters.CssLocation.INSERTED_IN_SVG)
                 .setAdaptCellHeightToContent(true);
         if (network.getVoltageLevel(containerId) != null) {
             VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
