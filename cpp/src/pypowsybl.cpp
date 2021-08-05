@@ -224,6 +224,14 @@ void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
+void setConfigRead(bool configRead) {
+    callJava<>(::setConfigRead, configRead);
+}
+
+bool isConfigRead() {
+    return callJava<bool>(::isConfigRead);
+}
+
 std::string getVersionTable() {
     return toString(callJava<char*>(::getVersionTable));
 }
@@ -343,6 +351,13 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
                                                        notConnectedToSameBusAtBothSides);
     ToStringVector elementsIds(elementsIdsArrayPtr);
     return elementsIds.get();
+}
+
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
+    load_flow_parameters* parameters = callJava<load_flow_parameters*>(::createLoadFlowParameters);
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        callJava(::freeLoadFlowParameters, ptr);
+    });
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
@@ -551,5 +566,4 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
 }
-
 }

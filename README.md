@@ -90,10 +90,10 @@ We can re-run the load flow computation in DC mode:
 results = pp.loadflow.run_dc(n)
 ```
 
-Or with different parameters:
+By default, the application read configs from `${HOME}/.itools/config.yml`
+We can disable this with command :
 ```python
-parameters = pp.loadflow.Parameters(distributed_slack=False)
-results = pp.loadflow.run_ac(n, parameters)
+pp.set_config_read(False)
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:

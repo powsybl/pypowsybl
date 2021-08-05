@@ -148,7 +148,7 @@ class SecurityAnalysis(ContingencyContainer):
     def __init__(self, handle):
         ContingencyContainer.__init__(self, handle)
 
-    def run_ac(self, network: Network, parameters: Parameters = Parameters(),
+    def run_ac(self, network: Network, parameters: Parameters = None,
                provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
@@ -160,7 +160,10 @@ class SecurityAnalysis(ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, parameters, provider))
+        p = parameters
+        if parameters is None:
+            p = Parameters()
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, p, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,
