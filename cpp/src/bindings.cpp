@@ -81,18 +81,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
-          py::arg("id"));
-
-    m.def("create_ieee_network", &pypowsybl::createIeeeNetwork, "Create an IEEE network", py::arg("bus_count"));
-
-    m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
-
-    m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
-
-    m.def("create_battery_network", &pypowsybl::createBatteryNetwork, "Create an example network with batteries");
-
-    m.def("create_dangling_line_network", &pypowsybl::createDanglingLineNetwork, "Create an example network with dangling lines");
+    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
@@ -107,6 +96,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LOAD", element_type::LOAD)
             .value("BATTERY", element_type::BATTERY)
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
+            .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)

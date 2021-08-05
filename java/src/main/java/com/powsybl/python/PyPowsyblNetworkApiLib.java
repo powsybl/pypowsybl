@@ -14,9 +14,7 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.test.BatteryNetworkFactory;
-import com.powsybl.iidm.network.test.DanglingLineNetworkFactory;
-import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
+import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -48,80 +46,65 @@ public final class PyPowsyblNetworkApiLib {
     private PyPowsyblNetworkApiLib() {
     }
 
-    @CEntryPoint(name = "createEmptyNetwork")
-    public static ObjectHandle createEmptyNetwork(IsolateThread thread, CCharPointer id, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String idStr = CTypeUtil.toString(id);
-            Network network = Network.create(idStr, "");
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createIeeeNetwork")
-    public static ObjectHandle createIeeeNetwork(IsolateThread thread, int busCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createNetwork")
+    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        String networkName = CTypeUtil.toString(name);
         return doCatch(exceptionHandlerPtr, () -> {
             Network network;
-            switch (busCount) {
-                case 9:
+            switch (networkName) {
+                case "four_substations_node_breaker":
+                    network = FourSubstationsNodeBreakerFactory.create();
+                    break;
+                case "eurostag_tutorial_example1":
+                    network = NetworkUtil.createEurostagTutorialExample1WithFixedCurrentLimits();
+                    break;
+                case "batteries":
+                    network = BatteryNetworkFactory.create();
+                    break;
+                case "dangling_lines":
+                    network = DanglingLineNetworkFactory.create();
+                    break;
+                case "three_windings_transformer":
+                    network = ThreeWindingsTransformerNetworkFactory.create();
+                    break;
+                case "shunt":
+                    network = ShuntTestCaseFactory.create();
+                    break;
+                case "non_linear_shunt":
+                    network = ShuntTestCaseFactory.createNonLinear();
+                    break;
+                case "ieee9":
                     network = IeeeCdfNetworkFactory.create9();
                     break;
-                case 14:
+                case "ieee14":
                     network = IeeeCdfNetworkFactory.create14();
                     break;
-                case 30:
+                case "ieee30":
                     network = IeeeCdfNetworkFactory.create30();
                     break;
-                case 57:
+                case "ieee57":
                     network = IeeeCdfNetworkFactory.create57();
                     break;
-                case 118:
+                case "ieee118":
                     network = IeeeCdfNetworkFactory.create118();
                     break;
-                case 300:
+                case "ieee300":
                     network = IeeeCdfNetworkFactory.create300();
                     break;
+                case "empty":
+                    String networkId = CTypeUtil.toString(id);
+                    network = Network.create(networkId, "");
+                    break;
                 default:
-                    throw new PowsyblException("IEEE " + busCount + " buses case not found");
+                    throw new PowsyblException("network " + networkName + " not found");
             }
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createEurostagTutorialExample1Network")
-    public static ObjectHandle createEurostagTutorialExample1Network(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = NetworkUtil.createEurostagTutorialExample1WithFixedCurrentLimits();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createFourSubstationsNodeBreakerNetwork")
-    public static ObjectHandle createFourSubstationsNodeBreakerNetwork(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = FourSubstationsNodeBreakerFactory.create();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createBatteryNetwork")
-    public static ObjectHandle createBatteryNetwork(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = BatteryNetworkFactory.create();
-            return ObjectHandles.getGlobal().create(network);
-        });
-    }
-
-    @CEntryPoint(name = "createDanglingLineNetwork")
-    public static ObjectHandle createDanglingLineNetwork(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = DanglingLineNetworkFactory.create();
             return ObjectHandles.getGlobal().create(network);
         });
     }
 
     @CEntryPoint(name = "getNetworkMetadata")
     public static PyPowsyblApiHeader.NetworkMetadataPointer getNetworkMetadata(IsolateThread thread, ObjectHandle networkHandle,
-                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return createNetworkMetadata(network);
@@ -130,7 +113,7 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "freeNetworkMetadata")
     public static void freeNetworkMetadata(IsolateThread thread, PyPowsyblApiHeader.NetworkMetadataPointer ptr,
-                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> freeNetworkMetadata(ptr));
     }
 
@@ -254,10 +237,10 @@ public final class PyPowsyblNetworkApiLib {
             }
             final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
             NetworkReducer.builder()
-                .withNetworkPredicate(orNetworkPredicate)
-                .withReductionOptions(options)
-                .build()
-                .reduce(network);
+                    .withNetworkPredicate(orNetworkPredicate)
+                    .withReductionOptions(options)
+                    .build()
+                    .reduce(network);
         });
     }
 
@@ -337,7 +320,7 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 
@@ -369,7 +352,7 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 
@@ -401,7 +384,7 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
+                    .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
         });
     }
 

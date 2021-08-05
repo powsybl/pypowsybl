@@ -140,19 +140,9 @@ bool isConfigRead();
 
 std::string getVersionTable();
 
-JavaHandle createEmptyNetwork(const std::string& id);
-
-JavaHandle createIeeeNetwork(int busCount);
-
-JavaHandle createEurostagTutorialExample1Network();
-
-JavaHandle createFourSubstationsNodeBreakerNetwork();
+JavaHandle createNetwork(const std::string& name, const std::string& id);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
-
-JavaHandle createBatteryNetwork();
-
-JavaHandle createDanglingLineNetwork();
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
 

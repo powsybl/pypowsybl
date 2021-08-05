@@ -149,6 +149,8 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT:
                 return PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
+                return PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -200,6 +202,8 @@ public final class Util {
                 return DataframeElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT:
                 return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
+                return DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
