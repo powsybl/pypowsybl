@@ -373,12 +373,11 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
     return elementsIds.get();
 }
 
-load_flow_parameters* defaultParameters() {
-    return callJava<load_flow_parameters*>(::defaultParameters);
-}
-
-load_flow_parameters* readParameters() {
-    return callJava<load_flow_parameters*>(::readParameters);
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
+    load_flow_parameters* parameters = callJava<load_flow_parameters*>(::createLoadFlowParameters);
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        callJava(::freeLoadFlowParameters, ptr);
+    });
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,

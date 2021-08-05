@@ -174,9 +174,7 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
 
-load_flow_parameters* defaultParameters();
-
-load_flow_parameters* readParameters();
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters();
 
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters);
 

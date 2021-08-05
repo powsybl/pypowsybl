@@ -149,18 +149,23 @@ public final class PyPowsyblApiLib {
                 .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
     }
 
-    @CEntryPoint(name = "defaultParameters")
-    public static LoadFlowParametersPointer defaultParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createLoadFlowParameters")
+    public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            return convertToLoadFlowParametersPointer(new LoadFlowParameters());
+            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
+            return convertToLoadFlowParametersPointer(parameters);
         });
     }
 
-    @CEntryPoint(name = "readParameters")
-    public static LoadFlowParametersPointer readParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = LoadFlowParameters.load();
-            return convertToLoadFlowParametersPointer(parameters);
+    @CEntryPoint(name = "freeLoadFlowParameters")
+    public static void freeLoadFlowParameters(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < loadFlowParametersPtr.getCountriesToBalanceCount(); i++) {
+                UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance().read(i));
+            }
+            UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
+            UnmanagedMemory.free(loadFlowParametersPtr);
         });
     }
 

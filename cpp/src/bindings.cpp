@@ -29,6 +29,41 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+// Reads parameters from config (if not disabled), then updates it with provided optional values
+std::shared_ptr<load_flow_parameters> initLoadFlowParameters(py::object voltageInitMode, py::object transformerVoltageControlOn, py::object noGeneratorReactiveLimits,
+                             py::object phaseShifterRegulationOn, py::object twtSplitShuntAdmittance, py::object simulShunt, py::object readSlackBus, py::object writeSlackBus,
+                             py::object distributedSlack, py::object balanceType, py::object dcUseTransformerRatio, py::object countriesToBalance,
+                             py::object connectedComponentMode) {
+        load_flow_parameters* parameters = new load_flow_parameters();
+        std::shared_ptr<load_flow_parameters> config_params = pypowsybl::createLoadFlowParameters();
+        parameters->voltage_init_mode = voltageInitMode.is_none() ? config_params->voltage_init_mode : voltageInitMode.cast<pypowsybl::VoltageInitMode>();
+        parameters->transformer_voltage_control_on = transformerVoltageControlOn.is_none() ? config_params->transformer_voltage_control_on : transformerVoltageControlOn.cast<bool>();
+        parameters->no_generator_reactive_limits = noGeneratorReactiveLimits.is_none() ? config_params->no_generator_reactive_limits : noGeneratorReactiveLimits.cast<bool>();
+        parameters->phase_shifter_regulation_on = phaseShifterRegulationOn.is_none() ? config_params->phase_shifter_regulation_on : phaseShifterRegulationOn.cast<bool>();
+        parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance.is_none() ? config_params->twt_split_shunt_admittance : twtSplitShuntAdmittance.cast<bool>();
+        parameters->simul_shunt = simulShunt.is_none() ? config_params->simul_shunt : simulShunt.cast<bool>();
+        parameters->read_slack_bus = readSlackBus.is_none() ? config_params->read_slack_bus : readSlackBus.cast<bool>();
+        parameters->write_slack_bus = writeSlackBus.is_none() ? config_params->write_slack_bus : writeSlackBus.cast<bool>();
+        parameters->distributed_slack = distributedSlack.is_none() ? config_params->distributed_slack : distributedSlack.cast<bool>();
+        parameters->balance_type = balanceType.is_none() ? config_params->balance_type : balanceType.cast<pypowsybl::BalanceType>();
+        parameters->dc_use_transformer_ratio = dcUseTransformerRatio.is_none() ? config_params->dc_use_transformer_ratio : dcUseTransformerRatio.cast<bool>();
+        if (countriesToBalance.is_none()) {
+            //copy from config so that ownership is not transferred
+            std::vector<std::string> configCountries(config_params->countries_to_balance, config_params->countries_to_balance + config_params->countries_to_balance_count);
+            parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(configCountries);
+            parameters->countries_to_balance_count = configCountries.size();
+        } else {
+            std::vector<std::string> countries = countriesToBalance.cast<std::vector<std::string>>();
+            parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries);
+            parameters->countries_to_balance_count = countries.size();
+        }
+        parameters->connected_component_mode = connectedComponentMode.is_none() ? config_params->connected_component_mode : connectedComponentMode.cast<pypowsybl::ConnectedComponentMode>();
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
+        delete ptr;
+    });
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -161,45 +196,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN)
             .export_values();
 
+
+
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
-            .def(py::init([](py::object voltageInitMode, py::object transformerVoltageControlOn, py::object noGeneratorReactiveLimits,
-                             py::object phaseShifterRegulationOn, py::object twtSplitShuntAdmittance, py::object simulShunt, py::object readSlackBus, py::object writeSlackBus,
-                             py::object distributedSlack, py::object balanceType, py::object dcUseTransformerRatio, py::object countriesToBalance,
-                             py::object connectedComponentMode) {
-                 auto parameters = new load_flow_parameters();
-                 load_flow_parameters* config_params = pypowsybl::isConfigRead() ? pypowsybl::readParameters() : pypowsybl::defaultParameters();
-                 parameters->voltage_init_mode = voltageInitMode.is_none() ? config_params->voltage_init_mode : voltageInitMode.cast<pypowsybl::VoltageInitMode>();
-                 parameters->transformer_voltage_control_on = transformerVoltageControlOn.is_none() ? config_params->transformer_voltage_control_on : transformerVoltageControlOn.cast<bool>();
-                 parameters->no_generator_reactive_limits = noGeneratorReactiveLimits.is_none() ? config_params->no_generator_reactive_limits : noGeneratorReactiveLimits.cast<bool>();
-                 parameters->phase_shifter_regulation_on = phaseShifterRegulationOn.is_none() ? config_params->phase_shifter_regulation_on : phaseShifterRegulationOn.cast<bool>();
-                 parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance.is_none() ? config_params->twt_split_shunt_admittance : twtSplitShuntAdmittance.cast<bool>();
-                 parameters->simul_shunt = simulShunt.is_none() ? config_params->simul_shunt : simulShunt.cast<bool>();
-                 parameters->read_slack_bus = readSlackBus.is_none() ? config_params->read_slack_bus : readSlackBus.cast<bool>();
-                 parameters->write_slack_bus = writeSlackBus.is_none() ? config_params->write_slack_bus : writeSlackBus.cast<bool>();
-                 parameters->distributed_slack = distributedSlack.is_none() ? config_params->distributed_slack : distributedSlack.cast<bool>();
-                 parameters->balance_type = balanceType.is_none() ? config_params->balance_type : balanceType.cast<pypowsybl::BalanceType>();
-                 parameters->dc_use_transformer_ratio = dcUseTransformerRatio.is_none() ? config_params->dc_use_transformer_ratio : dcUseTransformerRatio.cast<bool>();
-                 if (countriesToBalance.is_none()) {
-                     parameters->countries_to_balance = config_params->countries_to_balance;
-                     parameters->countries_to_balance_count = config_params->countries_to_balance_count;
-                 } else {
-                     std::vector<std::string> countries = countriesToBalance.cast<std::vector<std::string>>();
-                     parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries);
-                     parameters->countries_to_balance_count = countries.size();
-                 }
-                 parameters->connected_component_mode = connectedComponentMode.is_none() ? config_params->connected_component_mode : connectedComponentMode.cast<pypowsybl::ConnectedComponentMode>();
-                 delete config_params;
-                return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
-                    pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
-                    delete ptr;
-                });
-            }), py::arg("voltage_init_mode") = py::none(), py::arg("transformer_voltage_control_on") = py::none(),
-                 py::arg("no_generator_reactive_limits") = py::none(), py::arg("phase_shifter_regulation_on") = py::none(),
-                 py::arg("twt_split_shunt_admittance") = py::none(), py::arg("simul_shunt") = py::none(),
-                 py::arg("read_slack_bus") = py::none(), py::arg("write_slack_bus") = py::none(),
-                 py::arg("distributed_slack") = py::none(), py::arg("balance_type") = py::none(),
-                 py::arg("dc_use_transformer_ratio") = py::none(), py::arg("countries_to_balance") = py::none(),
-                 py::arg("connected_component_mode") = py::none())
+            .def(py::init(&initLoadFlowParameters),
+                py::arg("voltage_init_mode") = py::none(), py::arg("transformer_voltage_control_on") = py::none(),
+                py::arg("no_generator_reactive_limits") = py::none(), py::arg("phase_shifter_regulation_on") = py::none(),
+                py::arg("twt_split_shunt_admittance") = py::none(), py::arg("simul_shunt") = py::none(),
+                py::arg("read_slack_bus") = py::none(), py::arg("write_slack_bus") = py::none(),
+                py::arg("distributed_slack") = py::none(), py::arg("balance_type") = py::none(),
+                py::arg("dc_use_transformer_ratio") = py::none(), py::arg("countries_to_balance") = py::none(),
+                py::arg("connected_component_mode") = py::none())
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
             }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {
