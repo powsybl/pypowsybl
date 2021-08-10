@@ -218,6 +218,18 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void properties() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").setProperty("prop1", "val1");
+        network.getSubstation("P2").setProperty("prop2", "val2");
+        List<Series> series = createDataFrame(SUBSTATION, network);
+
+        assertThat(series)
+            .extracting(Series::getName)
+            .containsExactly("id", "TSO", "geo_tags", "country", "prop1", "prop2");
+    }
+
+    @Test
     void voltageLevels() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(VOLTAGE_LEVEL, network);
