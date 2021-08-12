@@ -85,6 +85,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
+    m.def("merge", &pypowsybl::merge, "Merge two networks");
+
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")

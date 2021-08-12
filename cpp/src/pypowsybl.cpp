@@ -240,6 +240,10 @@ JavaHandle createNetwork(const std::string& name, const std::string& id) {
     return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
+void merge(JavaHandle network, JavaHandle other) {
+    callJava<>(::merge, network, other);
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);

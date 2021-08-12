@@ -142,6 +142,8 @@ std::string getVersionTable();
 
 JavaHandle createNetwork(const std::string& name, const std::string& id);
 
+void merge(JavaHandle network, JavaHandle other);
+
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);

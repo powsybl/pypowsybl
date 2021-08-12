@@ -190,4 +190,8 @@ public final class NetworkUtil {
         }
         return elementsIds;
     }
+
+    static void merge(Network n, Network other) {
+        n.merge(other);
+    }
 }

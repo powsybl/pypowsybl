@@ -554,6 +554,9 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
+    def merge(self, other):
+        return _pypowsybl.get_variant_ids(self._handle, other._handle)
+
 
 def _create_network(name, network_id=''):
     return Network(_pypowsybl.create_network(name, network_id))

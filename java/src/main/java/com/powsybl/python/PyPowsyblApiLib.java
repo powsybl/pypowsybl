@@ -230,6 +230,16 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "merge")
+    public static void merge(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle otherNetworkHandle,
+                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Network otherNetwork = ObjectHandles.getGlobal().get(otherNetworkHandle);
+            NetworkUtil.merge(network, otherNetwork);
+        });
+    }
+
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
