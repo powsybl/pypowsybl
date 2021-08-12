@@ -524,6 +524,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_ieee118()
         self.assertEqual('ieee118cdf', n.id)
 
+    def test_network_merge(self):
+        n1 = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
+        n2 = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
+        n1.merge(n2)
+        self.assertEqual(2, len(n1.get_substations()))
+
 
 if __name__ == '__main__':
     unittest.main()
