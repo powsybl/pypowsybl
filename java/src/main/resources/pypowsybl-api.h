@@ -117,3 +117,9 @@ typedef struct zone_struct {
     double* injections_shift_keys;
     int length;
 } zone;
+
+typedef struct handle_array_struct {
+    void** ptr;
+    int length;
+    void* (*elementAt)(int i, void** data);
+} handle_array;

@@ -142,7 +142,7 @@ std::string getVersionTable();
 
 JavaHandle createNetwork(const std::string& name, const std::string& id);
 
-void merge(JavaHandle network, JavaHandle other);
+void merge(JavaHandle network, const std::vector<JavaHandle>& others);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
@@ -238,6 +238,10 @@ SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
 SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
+
+void* elementAt(int index, void** data);
+
+void fillHandleArray(const std::vector<JavaHandle>& handles, handle_array* arrayData);
 
 }
 

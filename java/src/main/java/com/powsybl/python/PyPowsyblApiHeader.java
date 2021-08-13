@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
@@ -15,6 +16,9 @@ import org.graalvm.nativeimage.c.struct.*;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.WordPointer;
+import org.graalvm.nativeimage.c.function.CFunctionPointer;
+import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -50,6 +54,36 @@ public final class PyPowsyblApiHeader {
 
         @CField("length")
         void setLength(int length);
+    }
+
+    @CStruct("handle_array")
+    interface HandleArray extends PointerBase {
+
+        @CField("ptr")
+        WordPointer getPtr();
+
+        @CField("ptr")
+        void setPtr(WordPointer ptr);
+
+        @CField("elementAt")
+        GetElementFunctionPointer getElement();
+
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+    }
+
+    /* Import of a C function pointer type. */
+    interface GetElementFunctionPointer extends CFunctionPointer {
+
+        /*
+         * Invocation of the function pointer. A call to the function is replaced with an indirect
+         * call of the function pointer.
+         */
+        @InvokeCFunctionPointer
+        ObjectHandle invoke(int index, WordPointer ptr);
     }
 
     static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {

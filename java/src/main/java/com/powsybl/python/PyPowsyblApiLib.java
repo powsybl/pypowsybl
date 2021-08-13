@@ -231,12 +231,15 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "merge")
-    public static void merge(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle otherNetworkHandle,
+    public static void merge(IsolateThread thread, ObjectHandle networkHandle, HandleArray othersHandle,
                              ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Network otherNetwork = ObjectHandles.getGlobal().get(otherNetworkHandle);
-            NetworkUtil.merge(network, otherNetwork);
+            for (int i = 0; i < othersHandle.getLength(); ++i) {
+                ObjectHandle handleToMerge = othersHandle.getElement().invoke(i, othersHandle.getPtr());
+                Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
+                NetworkUtil.merge(network, otherNetwork);
+            }
         });
     }
 
