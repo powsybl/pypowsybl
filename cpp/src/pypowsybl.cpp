@@ -191,13 +191,6 @@ void* elementAt(int index, void** data) {
   return data[index];
 }
 
-void fillHandleArray(const std::vector<JavaHandle>& handles, handle_array* arrayData) {
-
-  arrayData->length = handles.size();
-  arrayData->ptr = (void**)handles.data();
-  arrayData->elementAt = &elementAt;
-}
-
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -251,9 +244,20 @@ JavaHandle createNetwork(const std::string& name, const std::string& id) {
     return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
-void merge(JavaHandle network, const std::vector<JavaHandle>& others) {
+void merge(JavaHandle network, std::vector<JavaHandle>& others) {
+
     handle_array handles;
-    fillHandleArray(others, &handles);
+
+    //Fill a vector with the void* handles
+    std::vector<void*> othersPtrs;
+    for(int i=0; i < others.size(); ++i) {
+      void* ptr = others[i];
+      othersPtrs.push_back(ptr);
+    }
+    handles.length = othersPtrs.size();
+    handles.ptr = (void**)othersPtrs.data();
+    handles.elementAt = &elementAt;
+
     callJava<>(::merge, network, &handles);
 }
 
