@@ -187,10 +187,6 @@ private:
     array* arrayPtr_;
 };
 
-void* elementAt(int index, void** data) {
-  return data[index];
-}
-
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -246,19 +242,15 @@ JavaHandle createNetwork(const std::string& name, const std::string& id) {
 
 void merge(JavaHandle network, std::vector<JavaHandle>& others) {
 
-    handle_array handles;
-
-    //Fill a vector with the void* handles
     std::vector<void*> othersPtrs;
     for(int i=0; i < others.size(); ++i) {
       void* ptr = others[i];
       othersPtrs.push_back(ptr);
     }
-    handles.length = othersPtrs.size();
-    handles.ptr = (void**)othersPtrs.data();
-    handles.elementAt = &elementAt;
+    int count = othersPtrs.size();
+    void** networksData = (void**)othersPtrs.data();
 
-    callJava<>(::merge, network, &handles);
+    callJava<>(::merge, network, networksData, count);
 }
 
 std::vector<std::string> getNetworkImportFormats() {

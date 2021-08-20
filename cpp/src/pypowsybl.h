@@ -239,8 +239,6 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
 
-void* elementAt(int index, void** data);
-
 }
 
 #endif //PYPOWSYBL_H

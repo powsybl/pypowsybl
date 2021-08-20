@@ -36,6 +36,8 @@ import java.util.*;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.Util.*;
+import static com.powsybl.python.PyPowsyblApiHeader.VoidPointerPointer;
+import static com.powsybl.python.PyPowsyblApiHeader.ExceptionHandlerPointer;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -405,5 +407,18 @@ public final class PyPowsyblNetworkApiLib {
                 return CTypeUtil.toString(valuePtr.read(index));
             }
         };
+    }
+
+    @CEntryPoint(name = "merge")
+    public static void merge(IsolateThread thread, ObjectHandle networkHandle, VoidPointerPointer othersHandle, int othersCount,
+                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            for (int i = 0; i < othersCount; ++i) {
+                ObjectHandle handleToMerge = othersHandle.read(i);
+                Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
+                NetworkUtil.merge(network, otherNetwork);
+            }
+        });
     }
 }

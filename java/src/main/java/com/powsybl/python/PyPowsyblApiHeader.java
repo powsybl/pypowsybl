@@ -17,6 +17,7 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.WordPointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.nativeimage.c.function.CFunctionPointer;
 import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.word.PointerBase;
@@ -48,25 +49,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("ptr")
         void setPtr(T ptr);
-
-        @CField("length")
-        int getLength();
-
-        @CField("length")
-        void setLength(int length);
-    }
-
-    @CStruct("handle_array")
-    interface HandleArray extends PointerBase {
-
-        @CField("ptr")
-        WordPointer getPtr();
-
-        @CField("ptr")
-        void setPtr(WordPointer ptr);
-
-        @CField("elementAt")
-        GetElementFunctionPointer getElement();
 
         @CField("length")
         int getLength();
@@ -460,6 +442,13 @@ public final class PyPowsyblApiHeader {
 
         ZonePointer read(int index);
     }
+
+    @CPointerTo(VoidPointer.class)
+    interface VoidPointerPointer extends PointerBase {
+
+        ObjectHandle read(int index);
+    }
+
 
     @CEnum("contingency_context_type")
     public enum RawContingencyContextType {
