@@ -224,32 +224,20 @@ void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
 
+void setConfigRead(bool configRead) {
+    callJava<>(::setConfigRead, configRead);
+}
+
+bool isConfigRead() {
+    return callJava<bool>(::isConfigRead);
+}
+
 std::string getVersionTable() {
     return toString(callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createEmptyNetwork(const std::string& id) {
-    return callJava<JavaHandle>(::createEmptyNetwork, (char*) id.data());
-}
-
-JavaHandle createIeeeNetwork(int busCount) {
-    return callJava<JavaHandle>(::createIeeeNetwork, busCount);
-}
-
-JavaHandle createEurostagTutorialExample1Network() {
-    return callJava<JavaHandle>(::createEurostagTutorialExample1Network);
-}
-
-JavaHandle createFourSubstationsNodeBreakerNetwork() {
-    return callJava<JavaHandle>(::createFourSubstationsNodeBreakerNetwork);
-}
-
-JavaHandle createBatteryNetwork() {
-    return callJava<JavaHandle>(::createBatteryNetwork);
-}
-
-JavaHandle createDanglingLineNetwork() {
-    return callJava<JavaHandle>(::createDanglingLineNetwork);
+JavaHandle createNetwork(const std::string& name, const std::string& id) {
+    return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -363,6 +351,13 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
                                                        notConnectedToSameBusAtBothSides);
     ToStringVector elementsIds(elementsIdsArrayPtr);
     return elementsIds.get();
+}
+
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
+    load_flow_parameters* parameters = callJava<load_flow_parameters*>(::createLoadFlowParameters);
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        callJava(::freeLoadFlowParameters, ptr);
+    });
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
@@ -570,6 +565,7 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
 }
+
 SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
 }

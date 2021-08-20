@@ -319,6 +319,7 @@ public final class PyPowsyblApiHeader {
         LOAD,
         BATTERY,
         SHUNT_COMPENSATOR,
+        NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,

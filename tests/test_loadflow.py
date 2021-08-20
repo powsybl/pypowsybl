@@ -10,6 +10,9 @@ import pypowsybl as pp
 
 class LoadflowTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_run_lf(self):
         n = pp.network.create_ieee14()
         results = pp.loadflow.run_ac(n)
