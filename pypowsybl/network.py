@@ -12,7 +12,7 @@ from typing import List
 from typing import Set
 
 import pandas as pd
-import networkx as nx
+import networkx as _nx
 import datetime
 
 from pypowsybl.util import create_data_frame_from_series_array
@@ -33,6 +33,51 @@ class SingleLineDiagram:
 
     def _repr_svg_(self):
         return self._svg
+
+
+class NodeBreakerTopology:
+    """ Node-breaker representation of the topology of a voltage level.
+
+    The topology is actually represented as a graph, where
+    vertices are called "nodes" and are identified by a unique number in the voltage level,
+    while edges are switches (breakers and disconnectors), or internal connections (plain "wires").
+    """
+
+    def __init__(self, network_handle, voltage_level_id):
+        self._internal_connections = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_internal_connections(network_handle, voltage_level_id))
+        self._switchs = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_switches(network_handle, voltage_level_id))
+        self._nodes = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_nodes(network_handle, voltage_level_id))
+
+    @property
+    def switches(self) -> pd.DataFrame:
+        """ The list of switches of the voltage level, together with their connection status, as a dataframe.
+        """
+        return self._switchs
+
+    @property
+    def nodes(self) -> pd.DataFrame:
+        """ The list of nodes of the voltage level, together with their corresponding network element (if any),
+        as a dataframe.
+        """
+        return self._nodes
+
+    @property
+    def internal_connections(self) -> pd.DataFrame:
+        """ The list of internal connection of the voltage level, together with the nodes they connect.
+        """
+        return self._internal_connections
+
+    def create_graph(self) -> _nx.Graph:
+        """ Representation of the topology as a networkx graph.
+        """
+        graph = _nx.Graph()
+        graph.add_nodes_from(self._nodes.index.tolist())
+        graph.add_edges_from(self._switchs[['node_1', 'node_2']].values.tolist())
+        graph.add_edges_from(self._internal_connections[['node_1', 'node_2']].values.tolist())
+        return graph
 
 
 class Network(object):
@@ -547,42 +592,16 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_voltage_topology(self, voltage_level):
-        """
+    def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
+        """ Get the node breaker description of the topology of a voltage level.
 
         Args:
-            voltage_level:
+            voltage_level_id: id of the voltage level
 
         Returns:
-
+            The node breaker description of the topology of the voltage level
         """
-        return NetworkTopology(self._handle, voltage_level)
-
-
-class NetworkTopology:
-    def __init__(self, network_ptr, voltage_level):
-        self._internal_connections = create_data_frame_from_series_array(
-            _pypowsybl.get_node_breaker_view_internal_connections(network_ptr, voltage_level))
-        self._switchs = create_data_frame_from_series_array(
-            _pypowsybl.get_node_breaker_view_switches(network_ptr, voltage_level))
-        self._nodes = create_data_frame_from_series_array(
-            _pypowsybl.get_node_breaker_view_nodes(network_ptr, voltage_level))
-
-    def get_switchs(self):
-        return self._switchs
-
-    def get_nodes(self):
-        return self._nodes
-
-    def get_internal_connections(self):
-        return self._internal_connections
-
-    def create_graph(self):
-        graph = nx.Graph()
-        graph.add_nodes_from(self._nodes.index.tolist())
-        graph.add_edges_from(self._switchs[['node_1', 'node_2']].values.tolist())
-        graph.add_edges_from(self._internal_connections[['node_1', 'node_2']].values.tolist())
-        return graph
+        return NodeBreakerTopology(self._handle, voltage_level_id)
 
 
 def create_empty(id: str = "Default") -> Network:

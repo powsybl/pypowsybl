@@ -224,12 +224,12 @@ public final class Dataframes {
     private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewSwitchesMapper() {
         return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeBreakerViewSwitchContext>()
                 .itemsProvider(Dataframes::getNodeBreakerViewSwitches)
-                .stringsIndex("switch_id", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getId())
+                .stringsIndex("id", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getId())
                 .enums("kind", SwitchKind.class, nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getKind())
                 .booleans("open", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().isOpen())
                 .booleans("retained", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().isRetained())
-                .ints("node_1", NodeBreakerViewSwitchContext::getNode1)
-                .ints("node_2", NodeBreakerViewSwitchContext::getNode2)
+                .ints("node1", NodeBreakerViewSwitchContext::getNode1)
+                .ints("node2", NodeBreakerViewSwitchContext::getNode2)
                 .build();
     }
 
@@ -266,8 +266,8 @@ public final class Dataframes {
         return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, InternalConnectionContext>()
                 .itemsProvider(Dataframes::getNodeBreakerViewInternalConnections)
                 .intsIndex("id", InternalConnectionContext::getIndex)
-                .ints("node_1", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode1())
-                .ints("node_2", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode2())
+                .ints("node1", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode1())
+                .ints("node2", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode2())
                 .build();
     }
 }
