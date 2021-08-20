@@ -16,6 +16,15 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 from wheel.bdist_wheel import bdist_wheel
 
+# dirty trick to pass the package name as argument ...
+try:
+    pkgname_index = sys.argv.index('--package-name')
+    sys.argv.pop(pkgname_index)
+    pkgname = sys.argv.pop(pkgname_index)
+    print('pypowsybl will be renamed to ' + pkgname)
+except ValueError:
+    pkgname = 'pypowsybl'
+
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -151,7 +160,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='pypowsybl',
+    name=pkgname,
     author='Geoffroy Jamgotchian',
     author_email="geoffroy.jamgotchian@gmail.com",
     description='A PowSyBl Python API',
