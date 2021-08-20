@@ -444,6 +444,53 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "addBranchFlowFactorMatrix")
+    public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                 CCharPointer matrixIdPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPreContingencyBranchFlowFactorMatrix")
+    public static void addPreContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                 CCharPointer matrixIdPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPreContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPostContingencyBranchFlowFactorMatrix")
+    public static void addPostContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                               CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
+                                                               CCharPointer matrixIdPtr,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPostContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds, contingencies);
+        });
+    }
+
     @CEntryPoint(name = "setBusVoltageFactorMatrix")
     public static void setBusVoltageFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer busVoltageIdPtrPtr, int branchIdCount,
@@ -474,11 +521,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
     public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                  CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createBranchFlowsSensitivityMatrix(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, contingencyId);
         });
     }
 
@@ -492,13 +541,36 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "getPreContingencyBranchFlowsSensitivityMatrix")
+    public static MatrixPointer getPreContingencyBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                                CCharPointer matrixPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            String matrixId = CTypeUtil.toString(matrixPtr);
+            return resultContext.createPreContingencyBranchFlowsSensitivityMatrix(matrixId);
+        });
+    }
+
+    @CEntryPoint(name = "getPostContingencyBranchFlowsSensitivityMatrix")
+    public static MatrixPointer getPostContingencyBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
+                                                                               CCharPointer matrixPtr, CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+            String matrixId = CTypeUtil.toString(matrixPtr);
+            return resultContext.createPostContingencyBranchFlowsSensitivityMatrix(matrixId, contingencyId);
+        });
+    }
+
     @CEntryPoint(name = "getReferenceFlows")
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                    CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createReferenceFlows(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createReferenceFlowsActivePower(matrixId, contingencyId);
         });
     }
 

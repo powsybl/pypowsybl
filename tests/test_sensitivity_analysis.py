@@ -28,10 +28,10 @@ def test_sensitivity_analysis():
     n.update_generators(generators)
     sa = pp.sensitivity.create_dc_analysis()
     sa.add_single_element_contingency('L1-2-1')
-    sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+    sa.add_branch_flow_factor_matrix('m', ['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix()
+    df = r.get_branch_flows_sensitivity_matrix('m')
     assert (3, 2) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.080991, abs=1e-6)
@@ -45,7 +45,7 @@ def test_sensitivity_analysis():
     assert df['L1-5-1']['reference_flows'] == pytest.approx(72.247, abs=1e-3)
     assert df['L2-3-1']['reference_flows'] == pytest.approx(69.831, abs=1e-3)
 
-    df = r.get_branch_flows_sensitivity_matrix('L1-2-1')
+    df = r.get_branch_flows_sensitivity_matrix('m', 'L1-2-1')
     assert df.shape == (3, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.5, abs=1e-6)
@@ -59,7 +59,7 @@ def test_sensitivity_analysis():
     assert df['L1-5-1']['reference_flows'] == pytest.approx(225.7, abs=1e-3)
     assert df['L2-3-1']['reference_flows'] == pytest.approx(43.921, abs=1e-3)
 
-    assert r.get_branch_flows_sensitivity_matrix('aaa') is None
+    assert r.get_branch_flows_sensitivity_matrix('m', 'aaa') is None
 
 
 def test_voltage_sensitivities():
@@ -117,9 +117,9 @@ def test_sensi_zone():
     zone_be = pp.sensitivity.create_country_zone(n, 'BE')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_fr, zone_be])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
+    sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (2, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['FFR2AA1  DDE3AA1  1']['FR'] == pytest.approx(0.370171, abs=1e-6)
@@ -139,10 +139,10 @@ def test_sensi_power_transfer():
     zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
+    sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
                                      ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (4, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['BBE2AA1  FFR3AA1  1']['FR -> DE'] == pytest.approx(-0.256641, abs=1e-6)
@@ -161,9 +161,9 @@ def test_xnode_sensi():
     zone_x.add_injection('NNL2AA1  XXXXXX11 1')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_x])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+    sa.ad_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1'], ['X'])
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (1, 1)
     assert s['BBE2AA1  FFR3AA1  1']['X'] == pytest.approx(0.176618, abs=1e-6)
 
@@ -176,10 +176,10 @@ def test_variant():
                               columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
     n.update_generators(generators)
     sa = pp.sensitivity.create_dc_analysis()
-    sa.set_branch_flow_factor_matrix(['L1-5-1'], ['B1-G'])
+    sa.add_branch_flow_factor_matrix('m', ['L1-5-1'], ['B1-G'])
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix()
+    df = r.get_branch_flows_sensitivity_matrix('m')
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
 

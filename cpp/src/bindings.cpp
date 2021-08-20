@@ -458,6 +458,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("variables_ids"));
 
+    m.def("add_branch_flow_factor_matrix", &pypowsybl::addBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
+              py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"));
+
+    m.def("add_precontingency_branch_flow_factor_matrix", &pypowsybl::addPreContingencyBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
+                  py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"));
+
+    m.def("add_postcontingency_branch_flow_factor_matrix", &pypowsybl::addPostContingencyBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
+                  py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"), py::arg("contingencies_ids"));
+
     m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
 
@@ -475,13 +484,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("get_branch_flows_sensitivity_matrix", &pypowsybl::getBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
-          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+              py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
+
+    m.def("get_precontingency_branch_flows_sensitivity_matrix", &pypowsybl::getPreContingencyBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+                  py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"));
+
+    m.def("get_postcontingency_branch_flows_sensitivity_matrix", &pypowsybl::getPostContingencyBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+                  py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
     m.def("get_bus_voltages_sensitivity_matrix", &pypowsybl::getBusVoltagesSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     m.def("get_reference_flows", &pypowsybl::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
-          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
+          py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
     m.def("get_reference_voltages", &pypowsybl::getReferenceVoltages, "Get sensitivity analysis result reference voltages for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
