@@ -237,6 +237,12 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
 
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
+
 }
 
 #endif //PYPOWSYBL_H

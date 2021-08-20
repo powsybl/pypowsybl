@@ -5,13 +5,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import copy
-import pathlib
 import unittest
 import datetime
 import pandas as pd
+from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 
 import pypowsybl as pp
+import pathlib
+import matplotlib.pyplot as plt
+import networkx as nx
+
 from pypowsybl.network import Network
 
 TEST_DIR = pathlib.Path(__file__).parent
@@ -523,6 +527,34 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('ieee57cdf', n.id)
         n = pp.network.create_ieee118()
         self.assertEqual('ieee118cdf', n.id)
+
+    def test_node_breaker_view(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        topology = n.get_voltage_level_topology('S4VL1')
+        switches = topology.switches
+        nodes = topology.nodes
+        self.assertEqual(6, len(switches))
+        self.assertEqual('DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['kind'])
+        self.assertEqual(False, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['open'])
+        self.assertEqual(0, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1'])
+        self.assertEqual(5, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node2'])
+        self.assertEqual(7, len(nodes))
+        self.assertTrue(topology.internal_connections.empty)
+
+    def test_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_topology('S4VL1')
+        graph = network_topology.create_graph()
+        self.assertEqual(7, len(graph.nodes))
+        self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
+
+    @unittest.skip("plot graph skipping")
+    def test_node_breaker_view_draw_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_topology('S4VL1')
+        graph = network_topology.create_graph()
+        nx.draw_shell(graph, with_labels=True)
+        plt.show()
 
 
 if __name__ == '__main__':
