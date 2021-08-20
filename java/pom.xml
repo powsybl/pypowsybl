@@ -25,17 +25,17 @@
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>20.3.0</graalvm.version>
+        <graalvm.version>21.2.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <powsybl-core.version>4.2.0</powsybl-core.version>
-        <powsybl-rte-core.version>3.2.0</powsybl-rte-core.version>
-        <powsybl-single-line-diagram.version>2.2.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.11.0</powsybl-open-load-flow.version>
+        <powsybl-core.version>4.3.1</powsybl-core.version>
+        <powsybl-rte-core.version>3.3.1</powsybl-rte-core.version>
+        <powsybl-single-line-diagram.version>2.3.0</powsybl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.12.0</powsybl-open-load-flow.version>
         <assertj.version>3.11.0</assertj.version>
     </properties>
 

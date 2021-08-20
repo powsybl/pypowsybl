@@ -64,6 +64,40 @@ public final class PyPowsyblApiHeader {
         UnmanagedMemory.free(arrayPointer);
     }
 
+    @CStruct("network_metadata")
+    interface NetworkMetadataPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("case_date")
+        double getCaseDate();
+
+        @CField("case_date")
+        void setCaseDate(double millis);
+
+        @CField("source_format")
+        CCharPointer getSourceFormat();
+
+        @CField("source_format")
+        void setSourceFormat(CCharPointer sourceFormat);
+
+        @CField("forecast_distance")
+        int getForecastDistance();
+
+        @CField("forecast_distance")
+        void setForecastDistance(int forecastDistance);
+    }
+
     @CStruct("load_flow_component_result")
     interface LoadFlowComponentResultPointer extends PointerBase {
 
@@ -285,6 +319,7 @@ public final class PyPowsyblApiHeader {
         LOAD,
         BATTERY,
         SHUNT_COMPENSATOR,
+        NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
@@ -390,5 +425,19 @@ public final class PyPowsyblApiHeader {
     interface ZonePointerPointer extends PointerBase {
 
         ZonePointer read(int index);
+    }
+
+    @CEnum("contingency_context_type")
+    public enum RawContingencyContextType {
+
+        ALL,
+        NONE,
+        SPECIFIC;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RawContingencyContextType fromCValue(int value);
     }
 }

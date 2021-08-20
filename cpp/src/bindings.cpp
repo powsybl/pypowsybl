@@ -8,7 +8,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 
-#include <limits>
 #include "pypowsybl.h"
 
 namespace py = pybind11;
@@ -30,6 +29,41 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+// Reads parameters from config (if not disabled), then updates it with provided optional values
+std::shared_ptr<load_flow_parameters> initLoadFlowParameters(py::object voltageInitMode, py::object transformerVoltageControlOn, py::object noGeneratorReactiveLimits,
+                             py::object phaseShifterRegulationOn, py::object twtSplitShuntAdmittance, py::object simulShunt, py::object readSlackBus, py::object writeSlackBus,
+                             py::object distributedSlack, py::object balanceType, py::object dcUseTransformerRatio, py::object countriesToBalance,
+                             py::object connectedComponentMode) {
+        load_flow_parameters* parameters = new load_flow_parameters();
+        std::shared_ptr<load_flow_parameters> config_params = pypowsybl::createLoadFlowParameters();
+        parameters->voltage_init_mode = voltageInitMode.is_none() ? config_params->voltage_init_mode : voltageInitMode.cast<pypowsybl::VoltageInitMode>();
+        parameters->transformer_voltage_control_on = transformerVoltageControlOn.is_none() ? config_params->transformer_voltage_control_on : transformerVoltageControlOn.cast<bool>();
+        parameters->no_generator_reactive_limits = noGeneratorReactiveLimits.is_none() ? config_params->no_generator_reactive_limits : noGeneratorReactiveLimits.cast<bool>();
+        parameters->phase_shifter_regulation_on = phaseShifterRegulationOn.is_none() ? config_params->phase_shifter_regulation_on : phaseShifterRegulationOn.cast<bool>();
+        parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance.is_none() ? config_params->twt_split_shunt_admittance : twtSplitShuntAdmittance.cast<bool>();
+        parameters->simul_shunt = simulShunt.is_none() ? config_params->simul_shunt : simulShunt.cast<bool>();
+        parameters->read_slack_bus = readSlackBus.is_none() ? config_params->read_slack_bus : readSlackBus.cast<bool>();
+        parameters->write_slack_bus = writeSlackBus.is_none() ? config_params->write_slack_bus : writeSlackBus.cast<bool>();
+        parameters->distributed_slack = distributedSlack.is_none() ? config_params->distributed_slack : distributedSlack.cast<bool>();
+        parameters->balance_type = balanceType.is_none() ? config_params->balance_type : balanceType.cast<pypowsybl::BalanceType>();
+        parameters->dc_use_transformer_ratio = dcUseTransformerRatio.is_none() ? config_params->dc_use_transformer_ratio : dcUseTransformerRatio.cast<bool>();
+        if (countriesToBalance.is_none()) {
+            //copy from config so that ownership is not transferred
+            std::vector<std::string> configCountries(config_params->countries_to_balance, config_params->countries_to_balance + config_params->countries_to_balance_count);
+            parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(configCountries);
+            parameters->countries_to_balance_count = configCountries.size();
+        } else {
+            std::vector<std::string> countries = countriesToBalance.cast<std::vector<std::string>>();
+            parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries);
+            parameters->countries_to_balance_count = countries.size();
+        }
+        parameters->connected_component_mode = connectedComponentMode.is_none() ? config_params->connected_component_mode : connectedComponentMode.cast<pypowsybl::ConnectedComponentMode>();
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
+        delete ptr;
+    });
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -37,18 +71,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
+    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
+
     m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
+
+    m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
+
+    m.def("is_config_read", &pypowsybl::isConfigRead, "Get config read mode");
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_empty_network", &pypowsybl::createEmptyNetwork, "Create an empty network",
-          py::arg("id"));
-
-    m.def("create_ieee_network", &pypowsybl::createIeeeNetwork, "Create an IEEE network", py::arg("bus_count"));
-
-    m.def("create_eurostag_tutorial_example1_network", &pypowsybl::createEurostagTutorialExample1Network, "Create an Eurostag tutorial example 1 network");
-
-    m.def("create_four_substations_node_breaker_network", &pypowsybl::createFourSubstationsNodeBreakerNetwork, "Create an 4-substation example network");
+    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
@@ -63,6 +96,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LOAD", element_type::LOAD)
             .value("BATTERY", element_type::BATTERY)
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
+            .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
@@ -93,8 +127,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
           py::arg("parameters"));
 
-    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("file"),
-          py::arg("format"), py::arg("parameters"), py::arg("parameters"));
+    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
+          py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
+
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("network"),
+          py::arg("file"),py::arg("format"), py::arg("parameters"));
+
+    m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format",
+          py::arg("network"), py::arg("format"), py::arg("parameters"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
@@ -146,37 +186,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN)
             .export_values();
 
+
+
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
-            .def(py::init([](pypowsybl::VoltageInitMode voltageInitMode, bool transformerVoltageControlOn, bool noGeneratorReactiveLimits,
-                             bool phaseShifterRegulationOn, bool twtSplitShuntAdmittance, bool simulShunt, bool readSlackBus, bool writeSlackBus,
-                             bool distributedSlack, pypowsybl::BalanceType balanceType, bool dcUseTransformerRatio, const std::vector<std::string>& countriesToBalance,
-                             pypowsybl::ConnectedComponentMode connectedComponentMode) {
-                auto parameters = new load_flow_parameters();
-                parameters->voltage_init_mode = voltageInitMode;
-                parameters->transformer_voltage_control_on = transformerVoltageControlOn;
-                parameters->no_generator_reactive_limits = noGeneratorReactiveLimits;
-                parameters->phase_shifter_regulation_on = phaseShifterRegulationOn;
-                parameters->twt_split_shunt_admittance = twtSplitShuntAdmittance;
-                parameters->simul_shunt = simulShunt;
-                parameters->read_slack_bus = readSlackBus;
-                parameters->write_slack_bus = writeSlackBus;
-                parameters->distributed_slack = distributedSlack;
-                parameters->balance_type = balanceType;
-                parameters->dc_use_transformer_ratio = dcUseTransformerRatio;
-                parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
-                parameters->countries_to_balance_count = countriesToBalance.size();
-                parameters->connected_component_mode = connectedComponentMode;
-                return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
-                    pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
-                    delete ptr;
-                });
-            }), py::arg("voltage_init_mode") = pypowsybl::VoltageInitMode::UNIFORM_VALUES, py::arg("transformer_voltage_control_on") = false,
-                 py::arg("no_generator_reactive_limits") = false, py::arg("phase_shifter_regulation_on") = false,
-                 py::arg("twt_split_shunt_admittance") = false, py::arg("simul_shunt") = false,
-                 py::arg("read_slack_bus") = false, py::arg("write_slack_bus") = false,
-                 py::arg("distributed_slack") = true, py::arg("balance_type") = pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
-                 py::arg("dc_use_transformer_ratio") = true, py::arg("countries_to_balance") = std::vector<std::string>(),
-                 py::arg("connected_component_mode") = pypowsybl::ConnectedComponentMode::MAIN)
+            .def(py::init(&initLoadFlowParameters),
+                py::arg("voltage_init_mode") = py::none(), py::arg("transformer_voltage_control_on") = py::none(),
+                py::arg("no_generator_reactive_limits") = py::none(), py::arg("phase_shifter_regulation_on") = py::none(),
+                py::arg("twt_split_shunt_admittance") = py::none(), py::arg("simul_shunt") = py::none(),
+                py::arg("read_slack_bus") = py::none(), py::arg("write_slack_bus") = py::none(),
+                py::arg("distributed_slack") = py::none(), py::arg("balance_type") = py::none(),
+                py::arg("dc_use_transformer_ratio") = py::none(), py::arg("countries_to_balance") = py::none(),
+                py::arg("connected_component_mode") = py::none())
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
                 return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
             }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {
@@ -251,6 +271,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
 
+    m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
+          py::arg("network"), py::arg("container_id"));
+
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
@@ -267,6 +290,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ONE", pypowsybl::Side::ONE)
             .value("TWO", pypowsybl::Side::TWO)
             .export_values();
+
+    py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
+            .def_property_readonly("id", [](const network_metadata& att) {
+                return att.id;
+            })
+            .def_property_readonly("name", [](const network_metadata& att) {
+                return att.name;
+            })
+            .def_property_readonly("source_format", [](const network_metadata& att) {
+                return att.source_format;
+            })
+            .def_property_readonly("forecast_distance", [](const network_metadata& att) {
+                return att.forecast_distance;
+            })
+            .def_property_readonly("case_date", [](const network_metadata& att) {
+                return att.case_date;
+            });
 
     py::class_<limit_violation>(m, "LimitViolation")
             .def_property_readonly("subject_id", [](const limit_violation& v) {
@@ -398,15 +438,31 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
           py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
           py::arg("element_count"));
-
-    m.def("destroy_object_handle", &pypowsybl::destroyObjectHandle, "Destroy Java object handle", py::arg("object_handle"));
-
+    m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
     m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
     m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
 
+    m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
+          py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
+          py::arg("contingency_ids"));
 
+    py::enum_<contingency_context_type>(m, "ContingencyContextType")
+            .value("ALL", contingency_context_type::ALL)
+            .value("NONE", contingency_context_type::NONE)
+            .value("SPECIFIC", contingency_context_type::SPECIFIC)
+            .export_values();
 
+    m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+
+    m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
+
+    m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
+          py::arg("result"));
+    m.def("get_bus_results", &pypowsybl::getBusResults, "create a table with all bus results computed after security analysis",
+          py::arg("result"));
+    m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
+          "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
 }

@@ -9,6 +9,7 @@ package com.powsybl.python;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.openloadflow.sensi.*;
@@ -168,7 +169,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
         Map<String, SensitivityVariableSet> variableSetsById = variableSets.stream().collect(Collectors.toMap(SensitivityVariableSet::getId, e -> e));
 
-        ContingencyContext contingencyContext = ContingencyContext.createAllContingencyContext();
+        ContingencyContext contingencyContext = ContingencyContext.all();
         SensitivityFactorReader factorReader = handler -> {
             for (int column = 0; column < branchFlowMatrixColumnCount; column++) {
                 String branchId = branchFlowBranchesIds.get(column);
