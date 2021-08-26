@@ -287,9 +287,16 @@ class Network(object):
         """ Get shunt compensators sections for non linear model as a ``Pandas`` data frame.
 
         Returns:
-            a shunt compensators data frame
+            a non linear model shunt compensators sections data frame
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
+    def get_linear_shunt_compensator_sections(self) -> _pd.DataFrame:
+        """ Get shunt compensators sections for linear model as a ``Pandas`` data frame.
+
+        Returns:
+           a linear model shunt compensators sections
+        """
+        return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
 
     def get_dangling_lines(self) -> _pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
@@ -553,6 +560,21 @@ class Network(object):
             a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
+
+    def update_linear_shunt_compensator_sections(self, df: _pd.DataFrame):
+        """ Update shunt compensators with a ``Pandas`` data frame.
+
+               Args:
+                  df (DataFrame): the ``Pandas`` data frame
+                      columns that can be updated :
+                          - g per section
+                          - b per section
+                          - max section count
+
+               Returns:
+                   a dataframe updated
+               """
+        return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df)
 
     def get_working_variant_id(self):
         """ The current working variant ID

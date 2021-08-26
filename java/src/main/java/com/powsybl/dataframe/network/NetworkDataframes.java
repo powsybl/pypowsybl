@@ -56,6 +56,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.BATTERY, batteries());
         mappers.put(DataframeElementType.SHUNT_COMPENSATOR, shunts());
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
+        mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -266,6 +267,35 @@ public final class NetworkDataframes {
                 .doubles("g", p -> p.getMiddle().getG())
                 .doubles("b", p -> p.getMiddle().getB())
                 .build();
+    }
+
+    static NetworkDataframeMapper linearShuntsSections() {
+        Function<Network, Stream<Pair<ShuntCompensator, ShuntCompensatorLinearModel>>> linearShunts = network ->
+                network.getShuntCompensatorStream()
+                        .filter(sc -> sc.getModelType() == ShuntCompensatorModelType.LINEAR)
+                        .map(shuntCompensator -> Pair.of(shuntCompensator, (ShuntCompensatorLinearModel) shuntCompensator.getModel()));
+        return NetworkDataframeMapperBuilder.ofStream(linearShunts, (net, s) -> Pair.of(checkShuntNonNull(net, s), checkLinearModel(net, s)))
+                .stringsIndex("id", p -> p.getLeft().getId())
+                .doubles("g_per_section", p -> p.getRight().getGPerSection(), (p, g) -> p.getRight().setGPerSection(g))
+                .doubles("b_per_section", p -> p.getRight().getBPerSection(), (p, b) -> p.getRight().setBPerSection(b))
+                .ints("max_section_count", p -> p.getLeft().getMaximumSectionCount(), (p, s) -> p.getRight().setMaximumSectionCount(s))
+                .build();
+    }
+
+    private static ShuntCompensator checkShuntNonNull(Network network, String id) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(id);
+        if (shuntCompensator == null) {
+            throw new PowsyblException("ShuntCompensator '" + id + "' not found");
+        }
+        return shuntCompensator;
+    }
+
+    private static ShuntCompensatorLinearModel checkLinearModel(Network network, String id) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(id);
+        if (shuntCompensator.getModelType() != ShuntCompensatorModelType.LINEAR) {
+            throw new PowsyblException("ShuntCompensator '" + id + "' is not linear");
+        }
+        return (ShuntCompensatorLinearModel) shuntCompensator.getModel();
     }
 
     static NetworkDataframeMapper lines() {
@@ -571,13 +601,13 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper currentLimits() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getCurrentLimits)
-            .stringsIndex("branch_id", TemporaryLimitContext::getBranchId)
-            .stringsIndex("name", TemporaryLimitContext::getName)
-            .enums("side", Branch.Side.class, TemporaryLimitContext::getSide)
-            .doubles("value", TemporaryLimitContext::getValue)
-            .ints("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
-            .booleans("is_fictitious", TemporaryLimitContext::isFictitious)
-            .build();
+                .stringsIndex("branch_id", TemporaryLimitContext::getBranchId)
+                .stringsIndex("name", TemporaryLimitContext::getName)
+                .enums("side", Branch.Side.class, TemporaryLimitContext::getSide)
+                .doubles("value", TemporaryLimitContext::getValue)
+                .ints("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
+                .booleans("is_fictitious", TemporaryLimitContext::isFictitious)
+                .build();
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
