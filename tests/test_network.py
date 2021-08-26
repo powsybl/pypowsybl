@@ -230,14 +230,19 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         generators = n.get_generators()
         self.assertEqual(607, generators['target_p']['GEN'])
         self.assertTrue(generators['voltage_regulator_on']['GEN'])
-        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
-                                   columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
+        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False, 'LOAD']],
+                                   columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'regulating_terminal'], index=['GEN'])
         n.update_generators(generators2)
         generators = n.get_generators()
         self.assertEqual(608, generators['target_p']['GEN'])
         self.assertEqual(302.0, generators['target_q']['GEN'])
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
+        n.update_generators(pd.DataFrame(data=[['LOAD']],
+                                   columns=['regulating_terminal'], index=['GEN']))
+        generators = n.get_generators()
+        self.assertEqual('LOAD', generators['regulating_terminal']['GEN'])
+
 
     def test_update_switches_data_frame(self):
         n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))

@@ -171,6 +171,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .strings("regulating_terminal", g -> g.getRegulatingTerminal().getConnectable().getId(), NetworkDataframes::setRegulatingTerminal)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -179,6 +180,17 @@ public final class NetworkDataframes {
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
+    }
+
+    private static void setRegulatingTerminal(Generator generator, String injectionId) {
+        Network network = generator.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(injectionId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal != null) {
+                generator.setRegulatingTerminal(terminal);
+            }
+        }
     }
 
     static NetworkDataframeMapper buses() {
