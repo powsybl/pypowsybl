@@ -539,7 +539,15 @@ public final class NetworkDataframes {
                 .doubles("target_v", t -> t.getRatioTapChanger().getTargetV(), (t, v) -> t.getRatioTapChanger().setTargetV(v))
                 .doubles("target_deadband", t -> t.getRatioTapChanger().getTargetDeadband(), (t, v) -> t.getRatioTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
+                .doubles("rho", NetworkDataframes::computeRho)
+                .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .build();
+    }
+
+    private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
+        return twoWindingsTransformer.getRatedU2() / twoWindingsTransformer.getRatedU1()
+                * (twoWindingsTransformer.getRatioTapChanger() != null ? twoWindingsTransformer.getRatioTapChanger().getCurrentStep().getRho() : 1)
+                * (twoWindingsTransformer.getPhaseTapChanger() != null ? twoWindingsTransformer.getPhaseTapChanger().getCurrentStep().getRho() : 1);
     }
 
     private static NetworkDataframeMapper ptcs() {

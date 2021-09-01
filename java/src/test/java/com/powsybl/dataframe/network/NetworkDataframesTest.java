@@ -138,7 +138,7 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on", "" +
-                            "target_v", "target_deadband", "regulating_bus_id",  "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -266,7 +266,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v", "target_deadband", "regulating_bus_id");
+            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v",
+                    "target_deadband", "regulating_bus_id", "rho", "alpha");
     }
 
     @Test
@@ -276,7 +277,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
+            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode",
+                    "regulation_value", "target_deadband", "regulating_bus_id");
     }
 
     @Test

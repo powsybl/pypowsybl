@@ -6,6 +6,7 @@
 #
 import _pypowsybl
 import sys
+
 from _pypowsybl import ElementType
 from _pypowsybl import PyPowsyblError
 from typing import List
