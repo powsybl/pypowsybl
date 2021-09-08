@@ -6,12 +6,14 @@
 #
 import _pypowsybl
 import sys
+
 from _pypowsybl import ElementType
 from _pypowsybl import PyPowsyblError
 from typing import List
 from typing import Set
 
 import pandas as pd
+import networkx as _nx
 import datetime
 
 from pypowsybl.util import create_data_frame_from_series_array
@@ -32,6 +34,51 @@ class SingleLineDiagram:
 
     def _repr_svg_(self):
         return self._svg
+
+
+class NodeBreakerTopology:
+    """ Node-breaker representation of the topology of a voltage level.
+
+    The topology is actually represented as a graph, where
+    vertices are called "nodes" and are identified by a unique number in the voltage level,
+    while edges are switches (breakers and disconnectors), or internal connections (plain "wires").
+    """
+
+    def __init__(self, network_handle, voltage_level_id):
+        self._internal_connections = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_internal_connections(network_handle, voltage_level_id))
+        self._switchs = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_switches(network_handle, voltage_level_id))
+        self._nodes = create_data_frame_from_series_array(
+            _pypowsybl.get_node_breaker_view_nodes(network_handle, voltage_level_id))
+
+    @property
+    def switches(self) -> pd.DataFrame:
+        """ The list of switches of the voltage level, together with their connection status, as a dataframe.
+        """
+        return self._switchs
+
+    @property
+    def nodes(self) -> pd.DataFrame:
+        """ The list of nodes of the voltage level, together with their corresponding network element (if any),
+        as a dataframe.
+        """
+        return self._nodes
+
+    @property
+    def internal_connections(self) -> pd.DataFrame:
+        """ The list of internal connection of the voltage level, together with the nodes they connect.
+        """
+        return self._internal_connections
+
+    def create_graph(self) -> _nx.Graph:
+        """ Representation of the topology as a networkx graph.
+        """
+        graph = _nx.Graph()
+        graph.add_nodes_from(self._nodes.index.tolist())
+        graph.add_edges_from(self._switchs[['node1', 'node2']].values.tolist())
+        graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
+        return graph
 
 
 class Network(object):
@@ -236,6 +283,14 @@ class Network(object):
             a shunt compensators data frame
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
+
+    def get_non_linear_shunt_compensator_sections(self) -> pd.DataFrame:
+        """ Get shunt compensators sections for non linear model as a ``Pandas`` data frame.
+
+        Returns:
+            a shunt compensators data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
 
     def get_dangling_lines(self) -> pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
@@ -554,55 +609,108 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
 
+    def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
+        """ Get the node breaker description of the topology of a voltage level.
+
+        Args:
+            voltage_level_id: id of the voltage level
+
+        Returns:
+            The node breaker description of the topology of the voltage level
+        """
+        return NodeBreakerTopology(self._handle, voltage_level_id)
+
+
+def _create_network(name, network_id=''):
+    return Network(_pypowsybl.create_network(name, network_id))
+
+
 def create_empty(id: str = "Default") -> Network:
     """ Create an empty network.
 
-    :param id: id of the network, defaults to 'Default'
-    :type id: str, optional
-    :return: an empty network
-    :rtype: Network
+    Args:
+        id: id of the network, defaults to 'Default'
+
+    Returns:
+        a new empty network
     """
-    return Network(_pypowsybl.create_empty_network(id))
+    return _create_network('empty', network_id=id)
 
 
 def create_ieee9() -> Network:
-    return Network(_pypowsybl.create_ieee_network(9))
+    """ Create an instance of IEEE 9 bus network
+
+    Returns:
+        a new instance of IEEE 9 bus network
+    """
+    return _create_network('ieee9')
 
 
 def create_ieee14() -> Network:
-    return Network(_pypowsybl.create_ieee_network(14))
+    """ Create an instance of IEEE 14 bus network
+
+    Returns:
+        a new instance of IEEE 14 bus network
+    """
+    return _create_network('ieee14')
 
 
 def create_ieee30() -> Network:
-    return Network(_pypowsybl.create_ieee_network(30))
+    """ Create an instance of IEEE 30 bus network
+
+    Returns:
+        a new instance of IEEE 30 bus network
+    """
+    return _create_network('ieee30')
 
 
 def create_ieee57() -> Network:
-    return Network(_pypowsybl.create_ieee_network(57))
+    """ Create an instance of IEEE 57 bus network
+
+    Returns:
+        a new instance of IEEE 57 bus network
+    """
+    return _create_network('ieee57')
 
 
 def create_ieee118() -> Network:
-    return Network(_pypowsybl.create_ieee_network(118))
+    """ Create an instance of IEEE 118 bus network
+
+    Returns:
+        a new instance of IEEE 118 bus network
+    """
+    return _create_network('ieee118')
 
 
 def create_ieee300() -> Network:
-    return Network(_pypowsybl.create_ieee_network(300))
+    """ Create an instance of IEEE 300 bus network
+
+    Returns:
+        a new instance of IEEE 300 bus network
+    """
+    return _create_network('ieee300')
 
 
 def create_eurostag_tutorial_example1_network() -> Network:
-    return Network(_pypowsybl.create_eurostag_tutorial_example1_network())
+    """ Create an instance of example 1 network of Eurostag tutorial
 
-
-def _create_battery_network() -> Network:
-    return Network(_pypowsybl.create_battery_network())
-
-
-def _create_dangling_lines_network() -> Network:
-    return Network(_pypowsybl.create_dangling_line_network())
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial
+    """
+    return _create_network('eurostag_tutorial_example1')
 
 
 def create_four_substations_node_breaker_network() -> Network:
-    return Network(_pypowsybl.create_four_substations_node_breaker_network())
+    """ Create an instance of powsybl "4 substations" test case.
+
+    It is meant to contain most network element types that can be
+    represented in powsybl networks.
+    The topology is in node-breaker representation.
+
+    Returns:
+        a new instance of powsybl "4 substations" test case
+    """
+    return _create_network('four_substations_node_breaker')
 
 
 def get_import_formats() -> List[str]:

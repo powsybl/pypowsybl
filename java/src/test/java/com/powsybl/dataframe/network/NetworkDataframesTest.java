@@ -137,7 +137,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "model_type", "max_section_count", "section_count", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on", "" +
+                "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -217,6 +218,18 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void properties() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").setProperty("prop1", "val1");
+        network.getSubstation("P2").setProperty("prop2", "val2");
+        List<Series> series = createDataFrame(SUBSTATION, network);
+
+        assertThat(series)
+            .extracting(Series::getName)
+            .containsExactly("id", "TSO", "geo_tags", "country", "prop1", "prop2");
+    }
+
+    @Test
     void voltageLevels() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(VOLTAGE_LEVEL, network);
@@ -253,7 +266,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v", "target_deadband", "regulating_bus_id");
+            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v",
+                    "target_deadband", "regulating_bus_id", "rho", "alpha");
     }
 
     @Test
@@ -263,7 +277,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
+            .containsExactly("id", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode",
+                    "regulation_value", "target_deadband", "regulating_bus_id");
     }
 
     @Test

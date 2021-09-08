@@ -10,7 +10,9 @@ import com.powsybl.dataframe.*;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -27,22 +29,23 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
 
     @Override
     public void createDataframe(Network network, DataframeHandler dataframeHandler) {
-        dataframeHandler.allocate(seriesMappers.size());
         List<T> items = getItems(network);
-        seriesMappers.values().stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
+        List<SeriesMapper<T>> mappers = new ArrayList<>(seriesMappers.values());
         if (addProperties) {
-            addPropertiesSeries(items);
+            mappers.addAll(getPropertiesSeries(items));
         }
+        dataframeHandler.allocate(mappers.size());
+        mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
     }
 
-    private void addPropertiesSeries(List<T> items) {
+    private List<SeriesMapper<T>> getPropertiesSeries(List<T> items) {
         Stream<String> propertyNames = items.stream()
             .map(Identifiable.class::cast)
             .filter(Identifiable::hasProperty)
             .flatMap(e -> e.getPropertyNames().stream())
             .distinct();
-        propertyNames.forEach(property -> {
-            new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property));
-        });
+        return propertyNames
+            .map(property -> new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property)))
+            .collect(Collectors.toList());
     }
 }

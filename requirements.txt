@@ -3,3 +3,5 @@ prettytable==2.0.0
 sphinx==3.5.3
 wheel==0.36.1
 coverage==5.5
+networkx
+matplotlib

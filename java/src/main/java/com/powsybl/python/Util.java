@@ -151,6 +151,8 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case CURRENT_LIMITS:
                 return PyPowsyblApiHeader.ElementType.CURRENT_LIMITS;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
+                return PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -204,6 +206,8 @@ public final class Util {
                 return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case CURRENT_LIMITS:
                 return DataframeElementType.CURRENT_LIMITS;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
+                return DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }

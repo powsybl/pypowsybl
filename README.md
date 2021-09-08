@@ -35,7 +35,7 @@ Requirements:
 - Cmake >= 3.14
 - C++11 compiler
 - Python >= 3.7
-- [GraalVM 20.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-20.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
+- [GraalVM 21.2.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.2.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 To build from sources and install PyPowSyBl package:
 ```bash
@@ -90,10 +90,10 @@ We can re-run the load flow computation in DC mode:
 results = pp.loadflow.run_dc(n)
 ```
 
-Or with different parameters:
+By default, the application read configs from `${HOME}/.itools/config.yml`
+We can disable this with command :
 ```python
-parameters = pp.loadflow.Parameters(distributed_slack=False)
-results = pp.loadflow.run_ac(n, parameters)
+pp.set_config_read(False)
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:

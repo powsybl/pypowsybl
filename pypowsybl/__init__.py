@@ -7,7 +7,7 @@
 import _pypowsybl
 from _pypowsybl import PyPowsyblError
 
-__version__ = '0.9.0'
+__version__ = '0.10.0'
 
 import pypowsybl.network
 import pypowsybl.loadflow
@@ -34,6 +34,19 @@ def set_debug_mode(debug: bool = True) -> None:
     :type debug: bool
     """
     _pypowsybl.set_debug_mode(debug)
+
+
+def set_config_read(read_config: bool = True) -> None:
+    """Set read ~/.itools/config.yml or not
+
+    Args:
+        read_config(bool): defaults to True
+    """
+    _pypowsybl.set_config_read(read_config)
+
+
+def is_config_read() -> bool:
+    return _pypowsybl.is_config_read()
 
 
 def print_version() -> None:
