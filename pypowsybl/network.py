@@ -601,6 +601,14 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
+    def get_current_limits(self):
+        """
+        Get the list of all current limits on the network paired with their branch id.
+        Returns:
+            all current limits on the network
+        """
+        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
+
     def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """ Get the node breaker description of the topology of a voltage level.
 

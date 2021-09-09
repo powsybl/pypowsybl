@@ -333,7 +333,8 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER_STEP,
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
-        REACTIVE_CAPABILITY_CURVE_POINT;
+        REACTIVE_CAPABILITY_CURVE_POINT,
+        CURRENT_LIMITS;
 
         @CEnumValue
         public native int getCValue();

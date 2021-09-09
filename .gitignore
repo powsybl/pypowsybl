@@ -50,6 +50,7 @@ build/*
 .idea/*
 *.iml
 .vscode
+tests/_trial_temp/*
 
 *.orig
 
