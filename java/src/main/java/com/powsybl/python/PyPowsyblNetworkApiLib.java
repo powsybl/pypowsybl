@@ -320,9 +320,10 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                                     PyPowsyblApiHeader.ElementType elementType, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                                                     PyPowsyblApiHeader.ElementType elementType, boolean busBreakerView,
+                                                                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType), busBreakerView);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return Dataframes.createCDataframe(mapper, network);
         });

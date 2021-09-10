@@ -506,7 +506,7 @@ public final class PyPowsyblApiLib {
     public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
+            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType), false)
                 .getSeriesMetadata(seriesName)
                 .getType();
             return convert(type);

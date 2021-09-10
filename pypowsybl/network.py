@@ -213,115 +213,138 @@ class Network(object):
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType) -> _pd.DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get network elements as a ``Pandas`` data frame for a specified element type.
 
         Args:
             element_type (ElementType): the element type
+            bus_breaker_view (boolean): if true gives an aggregated form of the topology made of buses
+ *                  and breakers. A bus is the aggregation of busbar sections and closed switches.
+                            if false gives a less detailed view on which each bus matches
+                    a group of equipments which are all connected together at the same voltage.
         Returns:
             a network elements data frame for the specified element type
         """
-        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
+        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, bus_breaker_view)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self) -> _pd.DataFrame:
-        return self.get_elements(_pypowsybl.ElementType.BUS)
+    def get_buses(self, bus_breaker_view=False) -> _pd.DataFrame:
+        """ Get buses as a ``Pandas`` data frame.
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
+        Returns:
+            a buses data frame
+        """
+        return self.get_elements(_pypowsybl.ElementType.BUS, bus_breaker_view)
 
-    def get_generators(self) -> _pd.DataFrame:
+    def get_generators(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get generators as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a generators data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.GENERATOR)
+        return self.get_elements(_pypowsybl.ElementType.GENERATOR, bus_breaker_view)
 
-    def get_loads(self) -> _pd.DataFrame:
+    def get_loads(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get loads as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a loads data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.LOAD)
+        return self.get_elements(_pypowsybl.ElementType.LOAD, bus_breaker_view)
 
-    def get_batteries(self) -> _pd.DataFrame:
+    def get_batteries(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get batteries as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a batteries data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.BATTERY)
+        return self.get_elements(_pypowsybl.ElementType.BATTERY, bus_breaker_view)
 
-    def get_lines(self) -> _pd.DataFrame:
+    def get_lines(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get lines as a ``Pandas`` data frame.
 
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a lines data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.LINE)
+        return self.get_elements(_pypowsybl.ElementType.LINE, bus_breaker_view)
 
-    def get_2_windings_transformers(self) -> _pd.DataFrame:
+    def get_2_windings_transformers(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get 2 windings transformers as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a 2 windings transformers data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
+        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, bus_breaker_view)
 
-    def get_3_windings_transformers(self) -> _pd.DataFrame:
+    def get_3_windings_transformers(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get 3 windings transformers as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a 3 windings transformers data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
+        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, bus_breaker_view)
 
-    def get_shunt_compensators(self) -> _pd.DataFrame:
+    def get_shunt_compensators(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get shunt compensators as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a shunt compensators data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
+        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, bus_breaker_view)
 
     def get_non_linear_shunt_compensator_sections(self) -> _pd.DataFrame:
         """ Get shunt compensators sections for non linear model as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a shunt compensators data frame
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
 
-    def get_dangling_lines(self) -> _pd.DataFrame:
+    def get_dangling_lines(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a dangling lines data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
+        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, bus_breaker_view)
 
-    def get_lcc_converter_stations(self) -> _pd.DataFrame:
+    def get_lcc_converter_stations(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get LCC converter stations as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a LCC converter stations data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
+        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, bus_breaker_view)
 
-    def get_vsc_converter_stations(self) -> _pd.DataFrame:
+    def get_vsc_converter_stations(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get VSC converter stations as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a VSC converter stations data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
+        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, bus_breaker_view)
 
-    def get_static_var_compensators(self) -> _pd.DataFrame:
+    def get_static_var_compensators(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Get static var compensators as a ``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             a static var compensators data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
+        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, bus_breaker_view)
 
     def get_voltage_levels(self) -> _pd.DataFrame:
         """ Get voltage levels as a ``Pandas`` data frame.
@@ -379,21 +402,23 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
-    def get_ratio_tap_changers(self) -> _pd.DataFrame:
+    def get_ratio_tap_changers(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Create a ratio tap changers``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             the ratio tap changers data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, bus_breaker_view)
 
-    def get_phase_tap_changers(self) -> _pd.DataFrame:
+    def get_phase_tap_changers(self, bus_breaker_view=False) -> _pd.DataFrame:
         """ Create a phase tap changers``Pandas`` data frame.
-
+        Args:
+            bus_breaker_view (boolean): return the bus ids according to the bus_breaker_view
         Returns:
             the phase tap changers data frame
         """
-        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, bus_breaker_view)
 
     def get_reactive_capability_curve_points(self) -> _pd.DataFrame:
         """ Get reactive capability curve points as a ``Pandas`` data frame.

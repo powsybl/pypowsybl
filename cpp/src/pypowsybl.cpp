@@ -494,8 +494,8 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType) {
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, bool busBreakerView) {
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, busBreakerView));
 }
 
 int getSeriesType(element_type elementType, const std::string& seriesName) {

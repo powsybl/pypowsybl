@@ -423,7 +423,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::arg("network"), py::arg("element_type"));
+          py::arg("network"), py::arg("element_type"), py::arg("bus_breaker_view"));
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 

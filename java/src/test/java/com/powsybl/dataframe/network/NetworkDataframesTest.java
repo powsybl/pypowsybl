@@ -85,7 +85,7 @@ class NetworkDataframesTest {
         assertThat(series.get(2).getDoubles())
             .containsExactly(607);
 
-        NetworkDataframes.generators().updateDoubleSeries(network, "target_p", createInput(List.of("GEN"), 500));
+        NetworkDataframes.generators(false).updateDoubleSeries(network, "target_p", createInput(List.of("GEN"), 500));
 
         assertEquals(500, network.getGenerator("GEN").getTargetP());
     }
