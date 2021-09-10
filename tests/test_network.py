@@ -377,6 +377,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
+        sld._repr_svg_()
 
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()

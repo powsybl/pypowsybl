@@ -6,6 +6,17 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.sld.layout.LayoutParameters$CssLocation",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.sld.layout.LayoutParameters$Padding",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.sld.library.AdaptedAnchorPoint",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
