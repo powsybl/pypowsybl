@@ -241,9 +241,9 @@ JavaHandle createNetwork(const std::string& name, const std::string& id) {
 }
 
 void merge(JavaHandle network, std::vector<JavaHandle>& others) {
-
     std::vector<void*> othersPtrs;
-    for(int i=0; i < others.size(); ++i) {
+    othersPtrs.reserve(others.size());
+    for(int i = 0; i < others.size(); ++i) {
       void* ptr = others[i];
       othersPtrs.push_back(ptr);
     }
