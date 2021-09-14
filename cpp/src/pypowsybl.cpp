@@ -547,7 +547,6 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
-
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds) {
@@ -579,4 +578,17 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
 }
+
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewNodes, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
+}
+
 }

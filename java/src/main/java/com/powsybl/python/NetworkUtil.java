@@ -13,6 +13,7 @@ import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -189,6 +190,27 @@ public final class NetworkUtil {
                 throw new PowsyblException("Unsupported element type:" + elementType);
         }
         return elementsIds;
+    }
+
+    public static Stream<TemporaryLimitContext> getCurrentLimits(Network network) {
+        Stream.Builder<TemporaryLimitContext> temporaryLimitContexts = Stream.builder();
+        network.getBranchStream().forEach(branch -> {
+            if (branch.getCurrentLimits1() != null) {
+                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
+                branch.getCurrentLimits1().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
+                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                .forEach(temporaryLimitContexts::add);
+            }
+            if (branch.getCurrentLimits2() != null) {
+                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
+                branch.getCurrentLimits2().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
+                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                        .forEach(temporaryLimitContexts::add);
+            }
+        });
+        return temporaryLimitContexts.build();
     }
 
     static void merge(Network n, Network other) {

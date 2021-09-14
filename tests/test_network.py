@@ -5,13 +5,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import copy
-import pathlib
 import unittest
 import datetime
 import pandas as pd
+from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 
 import pypowsybl as pp
+import pathlib
+import matplotlib.pyplot as plt
+import networkx as nx
+
 from pypowsybl.network import Network
 
 TEST_DIR = pathlib.Path(__file__).parent
@@ -257,14 +261,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2',
                                          'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                          'connected1', 'connected2'],
-                                data=[
-                                    [0.266585, 11.1045, 0, 0, 24, 400, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 'VLGEN',
-                                     'VLHV1',
-                                     'VLGEN_0', 'VLHV1_0', True, True],
-                                    [0.04725, 4.04972, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 'VLHV2',
-                                     'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]
-                                ])
-        pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False)
+                                data=[[0.27, 11.10, 0, 0, 24, 400, NaN, NaN, NaN, NaN, NaN, NaN,
+                                       NaN, 'VLGEN', 'VLHV1', 'VLGEN_0', 'VLHV1_0', True, True],
+                                      [0.05, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                                       'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
+        pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -2)
         n.update_2_windings_transformers(
             pd.DataFrame(index=['NGEN_NHV1'],
                          columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'connected1', 'connected2'],
@@ -273,14 +274,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2',
                                          'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                          'connected1', 'connected2'],
-                                data=[
-                                    [0.3, 11.2, 1, 1, 90, 225, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 'VLGEN',
-                                     'VLHV1',
-                                     '', '', False, False],
-                                    [0.04725, 4.04972, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 'VLHV2',
-                                     'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]
-                                ])
-        pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False)
+                                data=[[0.3, 11.2, 1, 1, 90, 225, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                                       'VLGEN', 'VLHV1', '', '', False, False],
+                                      [0.047, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                                       'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
+        pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -2)
 
     def test_voltage_levels_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -311,24 +309,24 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         except pp.PyPowsyblError as e:
             self.assertEqual("Switch 'aa' not found", str(e))
 
-
     def test_ratio_tap_changers(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        tap_changers = n.get_ratio_tap_changers()
-        self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                          'target_v', 'target_deadband', 'regulating_bus_id'], tap_changers.columns.tolist())
-        self.assertEqual([1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0'], tap_changers.loc['NHV2_NLOAD'].tolist())
-
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
+                                columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                         'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
+                                         'alpha'],
+                                data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, NaN]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
         update = pd.DataFrame(index=['NHV2_NLOAD'],
                               columns=['tap', 'regulating', 'target_v'],
                               data=[[0, False, 180]])
         n.update_ratio_tap_changers(update)
-
-        tap_changers = n.get_ratio_tap_changers()
-        values = tap_changers.loc['NHV2_NLOAD']
-        self.assertFalse(values.regulating)
-        self.assertEqual(0, values.tap)
-        self.assertAlmostEqual(180, values.target_v, 1)
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
+                                columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                         'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
+                                         'alpha'],
+                                data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
 
     def test_phase_tap_changers(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -379,6 +377,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
+
+    def test_current_limits(self):
+        network = pp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual(9, len(network.get_current_limits()))
+        self.assertEqual(5, len(network.get_current_limits().loc['NHV1_NHV2_1']))
+        current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
+                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
+                                columns=['side', 'value', 'acceptable_duration', 'is_fictitious'],
+                                data=[['TWO', 1200.0, 600, False]])
+        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
     def test_deep_copy(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -485,9 +494,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id', 'connected3'],
                                 data=[[132, 17.424, 1.7424, 0.00573921, 0.000573921, 132, NaN, -99999, -99999, NaN, NaN,
                                        NaN, 'VL_132', 'VL_132_0', True, 1.089, 0.1089, 0, 0, 33, NaN, 2, -99999, NaN,
-                                       NaN,
-                                       NaN, 'VL_33', 'VL_33_0', True, 0.121, 0.0121, 0, 0, 11, NaN, 0, -99999, NaN, NaN,
-                                       NaN, 'VL_11', 'VL_11_0', True]])
+                                       NaN, NaN, 'VL_33', 'VL_33_0', True, 0.121, 0.0121, 0, 0, 11, NaN, 0, -99999, NaN,
+                                       NaN, NaN, 'VL_11', 'VL_11_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False)
         # test update
 
@@ -508,7 +516,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_non_linear_shunt(self):
         n = self.create_non_linear_shunt_network()
         expected = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)],
-                                            names=['id', 'section']),
+                                                                names=['id', 'section']),
                                 columns=['g', 'b'],
                                 data=[[0.0, 0.00001],
                                       [0.3, 0.02000]])
@@ -523,6 +531,34 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('ieee57cdf', n.id)
         n = pp.network.create_ieee118()
         self.assertEqual('ieee118cdf', n.id)
+
+    def test_node_breaker_view(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        topology = n.get_voltage_level_topology('S4VL1')
+        switches = topology.switches
+        nodes = topology.nodes
+        self.assertEqual(6, len(switches))
+        self.assertEqual('DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['kind'])
+        self.assertEqual(False, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['open'])
+        self.assertEqual(0, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1'])
+        self.assertEqual(5, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node2'])
+        self.assertEqual(7, len(nodes))
+        self.assertTrue(topology.internal_connections.empty)
+
+    def test_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_topology('S4VL1')
+        graph = network_topology.create_graph()
+        self.assertEqual(7, len(graph.nodes))
+        self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
+
+    @unittest.skip("plot graph skipping")
+    def test_node_breaker_view_draw_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_topology('S4VL1')
+        graph = network_topology.create_graph()
+        nx.draw_shell(graph, with_labels=True)
+        plt.show()
 
     def test_network_merge(self):
         n1 = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
