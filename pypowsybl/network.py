@@ -720,6 +720,24 @@ def create_four_substations_node_breaker_network() -> Network:
     return _create_network('four_substations_node_breaker')
 
 
+def create_micro_grid_be_network() -> Network:
+    """ Create an instance of micro grid BE CGMES test case
+
+    Returns:
+        a new instance of micro grid BE CGMES test case
+    """
+    return _create_network('micro_grid_be')
+
+
+def create_micro_grid_nl_network() -> Network:
+    """ Create an instance of micro grid NL CGMES test case
+
+    Returns:
+        a new instance of micro grid NL CGMES test case
+    """
+    return _create_network('micro_grid_nl')
+
+
 def get_import_formats() -> List[str]:
     """ Get list of supported import formats
 

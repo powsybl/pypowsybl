@@ -561,19 +561,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         plt.show()
 
     def test_network_merge(self):
-        n1 = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
-        n2 = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
-        n1.merge(n2)
-        self.assertEqual(2, len(n1.get_substations()))
-
-    def test_multiple_networks_merge(self):
-        n1 = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
-        n2 = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
-        n3 = self.create_dangling_lines_network()
-        n1.merge(n2, n3)
-        self.assertEqual(3, len(n1.get_substations()))
-
-
+        be = pp.network.create_micro_grid_be_network()
+        self.assertEqual(6, len(be.get_voltage_levels()))
+        nl = pp.network.create_micro_grid_nl_network()
+        self.assertEqual(4, len(nl.get_voltage_levels()))
+        be.merge(nl)
+        self.assertEqual(10, len(be.get_voltage_levels()))
 
 
 if __name__ == '__main__':

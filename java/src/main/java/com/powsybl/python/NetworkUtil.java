@@ -212,8 +212,4 @@ public final class NetworkUtil {
         });
         return temporaryLimitContexts.build();
     }
-
-    static void merge(Network n, Network other) {
-        n.merge(other);
-    }
 }

@@ -1,6 +1,8 @@
 package com.powsybl.python;
 
 import com.google.common.collect.Iterables;
+import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
+import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
@@ -15,6 +17,7 @@ import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
 import org.apache.commons.io.IOUtils;
@@ -36,9 +39,9 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
-import static com.powsybl.python.Util.*;
-import static com.powsybl.python.PyPowsyblApiHeader.VoidPointerPointer;
 import static com.powsybl.python.PyPowsyblApiHeader.ExceptionHandlerPointer;
+import static com.powsybl.python.PyPowsyblApiHeader.VoidPointerPointer;
+import static com.powsybl.python.Util.*;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -47,6 +50,11 @@ import static com.powsybl.python.PyPowsyblApiHeader.ExceptionHandlerPointer;
 public final class PyPowsyblNetworkApiLib {
 
     private PyPowsyblNetworkApiLib() {
+    }
+
+    private static Network importCgmes(TestGridModelResources modelResources) {
+        return Importers.getImporter("CGMES")
+                .importData(modelResources.dataSource(), new NetworkFactoryImpl(), null);
     }
 
     @CEntryPoint(name = "createNetwork")
@@ -97,6 +105,12 @@ public final class PyPowsyblNetworkApiLib {
                 case "empty":
                     String networkId = CTypeUtil.toString(id);
                     network = Network.create(networkId, "");
+                    break;
+                case "micro_grid_be":
+                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE());
+                    break;
+                case "micro_grid_nl":
+                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL());
                     break;
                 default:
                     throw new PowsyblException("network " + networkName + " not found");
@@ -444,11 +458,13 @@ public final class PyPowsyblNetworkApiLib {
                              ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Network[] otherNetworks = new Network[othersCount];
             for (int i = 0; i < othersCount; ++i) {
                 ObjectHandle handleToMerge = othersHandle.read(i);
                 Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
-                NetworkUtil.merge(network, otherNetwork);
+                otherNetworks[i] = otherNetwork;
             }
+            network.merge(otherNetworks);
         });
     }
 }
