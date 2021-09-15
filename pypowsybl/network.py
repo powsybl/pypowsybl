@@ -631,6 +631,13 @@ class Network(object):
         """
         return NodeBreakerTopology(self._handle, voltage_level_id)
 
+    def merge(self, *args):
+        networkList = list(args)
+        handleList = []
+        for n in networkList:
+            handleList.append(n._handle)
+        return _pypowsybl.merge(self._handle, handleList)
+
 
 def _create_network(name, network_id=''):
     return Network(_pypowsybl.create_network(name, network_id))
@@ -722,6 +729,24 @@ def create_four_substations_node_breaker_network() -> Network:
         a new instance of powsybl "4 substations" test case
     """
     return _create_network('four_substations_node_breaker')
+
+
+def create_micro_grid_be_network() -> Network:
+    """ Create an instance of micro grid BE CGMES test case
+
+    Returns:
+        a new instance of micro grid BE CGMES test case
+    """
+    return _create_network('micro_grid_be')
+
+
+def create_micro_grid_nl_network() -> Network:
+    """ Create an instance of micro grid NL CGMES test case
+
+    Returns:
+        a new instance of micro grid NL CGMES test case
+    """
+    return _create_network('micro_grid_nl')
 
 
 def get_import_formats() -> List[str]:

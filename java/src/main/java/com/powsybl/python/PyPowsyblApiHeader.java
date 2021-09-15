@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
@@ -15,6 +16,7 @@ import org.graalvm.nativeimage.c.struct.*;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -427,6 +429,13 @@ public final class PyPowsyblApiHeader {
 
         ZonePointer read(int index);
     }
+
+    @CPointerTo(VoidPointer.class)
+    interface VoidPointerPointer extends PointerBase {
+
+        ObjectHandle read(int index);
+    }
+
 
     @CEnum("contingency_context_type")
     public enum RawContingencyContextType {

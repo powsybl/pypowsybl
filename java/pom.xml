@@ -128,6 +128,18 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-cgmes-conformity</artifactId>
+            <type>test-jar</type>
+            <version>${powsybl-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-cgmes-model</artifactId>
+            <type>test-jar</type>
+            <version>${powsybl-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-config-classic</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
