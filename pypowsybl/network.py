@@ -19,22 +19,11 @@ import datetime
 from pypowsybl.util import create_data_frame_from_series_array
 
 
-def add_size(svg: str):
-    from xml.dom.minidom import parseString
-    doc = parseString(svg)
-    svg = doc.documentElement
-    view_box = svg.getAttribute('viewBox').split()
-    # get width and height from view box and add them to svg attributes to avoid svg scaling
-    svg.setAttribute('width', view_box[2])
-    svg.setAttribute('height', view_box[3])
-    return doc.toxml()
-
-
 class SingleLineDiagram:
     """ This class represents a single line diagram."""
 
     def __init__(self, svg: str):
-        self._svg = add_size(svg)
+        self._svg = svg
 
     @property
     def svg(self):
