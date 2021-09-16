@@ -7,7 +7,6 @@
 import unittest
 import pypowsybl as pp
 
-
 class LoadflowTestCase(unittest.TestCase):
 
     def setUp(self):

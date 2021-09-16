@@ -5,18 +5,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _pypowsybl
-import sys
-
+import sys as _sys
+from _pypowsybl import PyPowsyblError as _PyPowsyblError
+from typing import List as _List
+from typing import Set as _Set
 from _pypowsybl import ElementType
-from _pypowsybl import PyPowsyblError
-from typing import List
-from typing import Set
 
-import pandas as pd
+import pandas as _pd
 import networkx as _nx
-import datetime
+import datetime as _datetime
 
-from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
 class SingleLineDiagram:
@@ -45,28 +44,28 @@ class NodeBreakerTopology:
     """
 
     def __init__(self, network_handle, voltage_level_id):
-        self._internal_connections = create_data_frame_from_series_array(
+        self._internal_connections = _create_data_frame_from_series_array(
             _pypowsybl.get_node_breaker_view_internal_connections(network_handle, voltage_level_id))
-        self._switchs = create_data_frame_from_series_array(
+        self._switchs = _create_data_frame_from_series_array(
             _pypowsybl.get_node_breaker_view_switches(network_handle, voltage_level_id))
-        self._nodes = create_data_frame_from_series_array(
+        self._nodes = _create_data_frame_from_series_array(
             _pypowsybl.get_node_breaker_view_nodes(network_handle, voltage_level_id))
 
     @property
-    def switches(self) -> pd.DataFrame:
+    def switches(self) -> _pd.DataFrame:
         """ The list of switches of the voltage level, together with their connection status, as a dataframe.
         """
         return self._switchs
 
     @property
-    def nodes(self) -> pd.DataFrame:
+    def nodes(self) -> _pd.DataFrame:
         """ The list of nodes of the voltage level, together with their corresponding network element (if any),
         as a dataframe.
         """
         return self._nodes
 
     @property
-    def internal_connections(self) -> pd.DataFrame:
+    def internal_connections(self) -> _pd.DataFrame:
         """ The list of internal connection of the voltage level, together with the nodes they connect.
         """
         return self._internal_connections
@@ -88,8 +87,8 @@ class Network(object):
         self._id = att.id
         self._name = att.name
         self._source_format = att.source_format
-        self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = datetime.datetime.utcfromtimestamp(att.case_date)
+        self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
 
     @property
     def id(self) -> str:
@@ -113,14 +112,14 @@ class Network(object):
         return self._source_format
 
     @property
-    def case_date(self) -> datetime.datetime:
+    def case_date(self) -> _datetime.datetime:
         """
         Date of this network case, in UTC timezone.
         """
         return self._case_date
 
     @property
-    def forecast_distance(self) -> datetime.timedelta:
+    def forecast_distance(self) -> _datetime.timedelta:
         """
         The forecast distance: 0 for a snapshot.
         """
@@ -175,7 +174,7 @@ class Network(object):
         """
         return _pypowsybl.dump_network_to_string(self._handle, format, parameters)
 
-    def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = [],
+    def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = [],
                vl_depths: tuple = (), with_dangling_lines: bool = False):
         vls = []
         depths = []
@@ -204,17 +203,17 @@ class Network(object):
         """
         return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
 
-    def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: Set[float] = None,
-                         countries: Set[str] = None,
+    def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: _Set[float] = None,
+                         countries: _Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
-                         not_connected_to_same_bus_at_both_sides: bool = False) -> List[str]:
+                         not_connected_to_same_bus_at_both_sides: bool = False) -> _List[str]:
         return _pypowsybl.get_network_elements_ids(self._handle, element_type,
                                                    [] if nominal_voltages is None else list(nominal_voltages),
                                                    [] if countries is None else list(countries),
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType) -> pd.DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType) -> _pd.DataFrame:
         """ Get network elements as a ``Pandas`` data frame for a specified element type.
 
         Args:
@@ -223,12 +222,12 @@ class Network(object):
             a network elements data frame for the specified element type
         """
         series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
-        return create_data_frame_from_series_array(series_array)
+        return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self) -> pd.DataFrame:
+    def get_buses(self) -> _pd.DataFrame:
         return self.get_elements(_pypowsybl.ElementType.BUS)
 
-    def get_generators(self) -> pd.DataFrame:
+    def get_generators(self) -> _pd.DataFrame:
         """ Get generators as a ``Pandas`` data frame.
 
         Returns:
@@ -236,7 +235,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.GENERATOR)
 
-    def get_loads(self) -> pd.DataFrame:
+    def get_loads(self) -> _pd.DataFrame:
         """ Get loads as a ``Pandas`` data frame.
 
         Returns:
@@ -244,7 +243,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LOAD)
 
-    def get_batteries(self) -> pd.DataFrame:
+    def get_batteries(self) -> _pd.DataFrame:
         """ Get batteries as a ``Pandas`` data frame.
 
         Returns:
@@ -252,7 +251,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BATTERY)
 
-    def get_lines(self) -> pd.DataFrame:
+    def get_lines(self) -> _pd.DataFrame:
         """ Get lines as a ``Pandas`` data frame.
 
         Returns:
@@ -260,7 +259,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LINE)
 
-    def get_2_windings_transformers(self) -> pd.DataFrame:
+    def get_2_windings_transformers(self) -> _pd.DataFrame:
         """ Get 2 windings transformers as a ``Pandas`` data frame.
 
         Returns:
@@ -268,7 +267,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
 
-    def get_3_windings_transformers(self) -> pd.DataFrame:
+    def get_3_windings_transformers(self) -> _pd.DataFrame:
         """ Get 3 windings transformers as a ``Pandas`` data frame.
 
         Returns:
@@ -276,7 +275,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
 
-    def get_shunt_compensators(self) -> pd.DataFrame:
+    def get_shunt_compensators(self) -> _pd.DataFrame:
         """ Get shunt compensators as a ``Pandas`` data frame.
 
         Returns:
@@ -284,7 +283,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
 
-    def get_non_linear_shunt_compensator_sections(self) -> pd.DataFrame:
+    def get_non_linear_shunt_compensator_sections(self) -> _pd.DataFrame:
         """ Get shunt compensators sections for non linear model as a ``Pandas`` data frame.
 
         Returns:
@@ -292,7 +291,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
 
-    def get_dangling_lines(self) -> pd.DataFrame:
+    def get_dangling_lines(self) -> _pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
 
         Returns:
@@ -300,7 +299,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
 
-    def get_lcc_converter_stations(self) -> pd.DataFrame:
+    def get_lcc_converter_stations(self) -> _pd.DataFrame:
         """ Get LCC converter stations as a ``Pandas`` data frame.
 
         Returns:
@@ -308,7 +307,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
 
-    def get_vsc_converter_stations(self) -> pd.DataFrame:
+    def get_vsc_converter_stations(self) -> _pd.DataFrame:
         """ Get VSC converter stations as a ``Pandas`` data frame.
 
         Returns:
@@ -316,7 +315,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
-    def get_static_var_compensators(self) -> pd.DataFrame:
+    def get_static_var_compensators(self) -> _pd.DataFrame:
         """ Get static var compensators as a ``Pandas`` data frame.
 
         Returns:
@@ -324,7 +323,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
-    def get_voltage_levels(self) -> pd.DataFrame:
+    def get_voltage_levels(self) -> _pd.DataFrame:
         """ Get voltage levels as a ``Pandas`` data frame.
 
         Returns:
@@ -332,7 +331,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL)
 
-    def get_busbar_sections(self) -> pd.DataFrame:
+    def get_busbar_sections(self) -> _pd.DataFrame:
         """ Get busbar sections as a ``Pandas`` data frame.
 
         Returns:
@@ -340,7 +339,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION)
 
-    def get_substations(self) -> pd.DataFrame:
+    def get_substations(self) -> _pd.DataFrame:
         """ Get substations ``Pandas`` data frame.
 
         Returns:
@@ -348,7 +347,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION)
 
-    def get_hvdc_lines(self) -> pd.DataFrame:
+    def get_hvdc_lines(self) -> _pd.DataFrame:
         """ Get HVDC lines as a ``Pandas`` data frame.
 
         Returns:
@@ -356,7 +355,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE)
 
-    def get_switches(self) -> pd.DataFrame:
+    def get_switches(self) -> _pd.DataFrame:
         """ Get switches as a ``Pandas`` data frame.
 
         Returns:
@@ -364,7 +363,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SWITCH)
 
-    def get_ratio_tap_changer_steps(self) -> pd.DataFrame:
+    def get_ratio_tap_changer_steps(self) -> _pd.DataFrame:
         """ Get ratio tap changer steps as a ``Pandas`` data frame.
 
         Returns:
@@ -372,7 +371,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
 
-    def get_phase_tap_changer_steps(self) -> pd.DataFrame:
+    def get_phase_tap_changer_steps(self) -> _pd.DataFrame:
         """ Get phase tap changer steps as a ``Pandas`` data frame.
 
         Returns:
@@ -380,7 +379,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
-    def get_ratio_tap_changers(self) -> pd.DataFrame:
+    def get_ratio_tap_changers(self) -> _pd.DataFrame:
         """ Create a ratio tap changers``Pandas`` data frame.
 
         Returns:
@@ -388,7 +387,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
 
-    def get_phase_tap_changers(self) -> pd.DataFrame:
+    def get_phase_tap_changers(self) -> _pd.DataFrame:
         """ Create a phase tap changers``Pandas`` data frame.
 
         Returns:
@@ -396,7 +395,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
 
-    def get_reactive_capability_curve_points(self) -> pd.DataFrame:
+    def get_reactive_capability_curve_points(self) -> _pd.DataFrame:
         """ Get reactive capability curve points as a ``Pandas`` data frame.
 
         Returns:
@@ -404,7 +403,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def update_elements(self, element_type: _pypowsybl.ElementType, df: pd.DataFrame):
+    def update_elements(self, element_type: _pypowsybl.ElementType, df: _pd.DataFrame):
         """ Update network elements with a ``Pandas`` data frame for a specified element type.
         The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
@@ -429,10 +428,10 @@ class Network(object):
                                                                       df.index.values,
                                                                       series.values, len(series))
             else:
-                raise PyPowsyblError(
+                raise _PyPowsyblError(
                     f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
 
-    def update_buses(self, df: pd.DataFrame):
+    def update_buses(self, df: _pd.DataFrame):
         """ Update buses with a ``Pandas`` data frame.
 
         Args:
@@ -440,7 +439,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df)
 
-    def update_switches(self, df: pd.DataFrame):
+    def update_switches(self, df: _pd.DataFrame):
         """ Update switches with a ``Pandas`` data frame.
 
         Args:
@@ -448,7 +447,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df)
 
-    def update_generators(self, df: pd.DataFrame):
+    def update_generators(self, df: _pd.DataFrame):
         """ Update generators with a ``Pandas`` data frame.
 
         Args:
@@ -456,7 +455,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df)
 
-    def update_loads(self, df: pd.DataFrame):
+    def update_loads(self, df: _pd.DataFrame):
         """ Update loads with a ``Pandas`` data frame.
 
         Args:
@@ -464,7 +463,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df)
 
-    def update_batteries(self, df: pd.DataFrame):
+    def update_batteries(self, df: _pd.DataFrame):
         """ Update batteries with a ``Pandas`` data frame.
 
         Available columns names:
@@ -475,7 +474,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df)
 
-    def update_dangling_lines(self, df: pd.DataFrame):
+    def update_dangling_lines(self, df: _pd.DataFrame):
         """ Update dangling lines with a ``Pandas`` data frame.
 
         Args:
@@ -483,7 +482,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df)
 
-    def update_vsc_converter_stations(self, df: pd.DataFrame):
+    def update_vsc_converter_stations(self, df: _pd.DataFrame):
         """ Update VSC converter stations with a ``Pandas`` data frame.
 
         Args:
@@ -491,7 +490,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
 
-    def update_static_var_compensators(self, df: pd.DataFrame):
+    def update_static_var_compensators(self, df: _pd.DataFrame):
         """ Update static var compensators with a ``Pandas`` data frame.
 
         Args:
@@ -499,7 +498,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
 
-    def update_hvdc_lines(self, df: pd.DataFrame):
+    def update_hvdc_lines(self, df: _pd.DataFrame):
         """ Update HVDC lines with a ``Pandas`` data frame.
 
         Args:
@@ -507,7 +506,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
-    def update_lines(self, df: pd.DataFrame):
+    def update_lines(self, df: _pd.DataFrame):
         """ Update lines with a ``Pandas`` data frame.
 
         Args:
@@ -515,7 +514,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LINE, df)
 
-    def update_2_windings_transformers(self, df: pd.DataFrame):
+    def update_2_windings_transformers(self, df: _pd.DataFrame):
         """ Update 2 windings transformers with a ``Pandas`` data frame.
 
         Args:
@@ -523,7 +522,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
-    def update_ratio_tap_changers(self, df: pd.DataFrame):
+    def update_ratio_tap_changers(self, df: _pd.DataFrame):
         """ Update ratio tap changers with a ``Pandas`` data frame.
 
         Args:
@@ -531,7 +530,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
 
-    def update_phase_tap_changers(self, df: pd.DataFrame):
+    def update_phase_tap_changers(self, df: _pd.DataFrame):
         """ Update phase tap changers with a ``Pandas`` data frame.
 
         Args:
@@ -539,7 +538,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
-    def update_shunt_compensators(self, df: pd.DataFrame):
+    def update_shunt_compensators(self, df: _pd.DataFrame):
         """ Update shunt compensators with a ``Pandas`` data frame.
 
         Args:
@@ -738,7 +737,7 @@ def create_micro_grid_nl_network() -> Network:
     return _create_network('micro_grid_nl')
 
 
-def get_import_formats() -> List[str]:
+def get_import_formats() -> _List[str]:
     """ Get list of supported import formats
 
     :return: the list of supported import formats
@@ -747,7 +746,7 @@ def get_import_formats() -> List[str]:
     return _pypowsybl.get_network_import_formats()
 
 
-def get_export_formats() -> List[str]:
+def get_export_formats() -> _List[str]:
     """ Get list of supported export formats
 
     :return: the list of supported export formats
@@ -756,7 +755,7 @@ def get_export_formats() -> List[str]:
     return _pypowsybl.get_network_export_formats()
 
 
-def get_import_parameters(format: str) -> pd.DataFrame:
+def get_import_parameters(format: str) -> _pd.DataFrame:
     """ Get supported parameters infos for a given format
 
     :param format: the format
@@ -764,7 +763,7 @@ def get_import_parameters(format: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
-    return create_data_frame_from_series_array(series_array)
+    return _create_data_frame_from_series_array(series_array)
 
 
 def load(file: str, parameters: dict = {}) -> Network:
