@@ -85,6 +85,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
+    m.def("merge", &pypowsybl::merge, "Merge several networks");
+
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
@@ -111,6 +113,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
+            .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
             .export_values();
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
