@@ -568,6 +568,23 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         be.merge(nl)
         self.assertEqual(10, len(be.get_voltage_levels()))
 
+    def test_linear_shunt_compensator_sections(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['SHUNT']),
+                                columns=['g_per_section', 'b_per_section', 'max_section_count'],
+                                data=[[NaN, -0.012, 1]])
+        pd.testing.assert_frame_equal(expected, n.get_linear_shunt_compensator_sections(), check_dtype=False)
+        n.update_linear_shunt_compensator_sections(
+            pd.DataFrame(index=['SHUNT'],
+                         columns=['g_per_section', 'b_per_section', 'max_section_count'],
+                         data=[[0.14, -0.01, 4]]))
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['SHUNT']),
+                                columns=['g_per_section', 'b_per_section', 'max_section_count'],
+                                data=[[0.14, -0.01, 4]])
+        pd.testing.assert_frame_equal(expected, n.get_linear_shunt_compensator_sections(), check_dtype=False)
+
 
 if __name__ == '__main__':
     unittest.main()
