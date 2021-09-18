@@ -32,6 +32,7 @@
         <mapdb.version>3.0.8</mapdb.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
+        <powsybl-math-native.version>1.0.3</powsybl-math-native.version>
         <powsybl-core.version>4.3.1</powsybl-core.version>
         <powsybl-rte-core.version>3.3.1</powsybl-rte-core.version>
         <powsybl-single-line-diagram.version>2.3.0</powsybl-single-line-diagram.version>
@@ -153,6 +154,12 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-api</artifactId>
             <version>${powsybl-core.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.powsybl</groupId>
+                    <artifactId>powsybl-math-native</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -227,6 +234,12 @@
             <groupId>com.rte-france.powsybl</groupId>
             <artifactId>powsybl-hades2-integration</artifactId>
             <version>${powsybl-rte-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-math-native</artifactId>
+            <version>${powsybl-math-native.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- test -->

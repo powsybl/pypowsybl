@@ -60,6 +60,13 @@ public final class PyPowsyblApiLib {
     private PyPowsyblApiLib() {
     }
 
+    @CEntryPoint(name = "setJavaLibraryPath")
+    public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
+        });
+    }
+
     @CEntryPoint(name = "setDebugMode")
     public static void setDebugMode(IsolateThread thread, boolean debug, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
