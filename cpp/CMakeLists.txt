@@ -21,6 +21,19 @@ set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/java)
 set(PYPOWSYBL_JAVA_OLD_LIB pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(PYPOWSYBL_JAVA_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(POWSYBL_MATH_NATIVE_LIB math.dll)
+    set(POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR natives/windows_64)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(POWSYBL_MATH_NATIVE_LIB libmath.so)
+    set(POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR natives/linux_64)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set(POWSYBL_MATH_NATIVE_LIB libmath.dylib)
+    set(POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR natives/osx_64)
+else()
+    message(FATAL_ERROR "System not supported: ${CMAKE_SYSTEM_NAME}")
+endif()
+
 # on MacOS, java library is created with an absolute path id, we need to fix it using install_name_tool before
 # linking with our shared library
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -52,15 +65,18 @@ set(SOURCE_DIR "src")
 include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR} ${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources)
 set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp")
 
-link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
+link_directories(${PYPOWSYBL_JAVA_BIN_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR})
 
 add_subdirectory(lib/pybind11)
 pybind11_add_module(_pypowsybl ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
 
-add_dependencies(_pypowsybl native-image)
-target_link_libraries(_pypowsybl PRIVATE ${PYPOWSYBL_JAVA_LIB})
+# extract powsybl math native from jar for current platform
+add_custom_target(math-native ALL COMMAND ${CMAKE_COMMAND} -E tar x ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar ${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB})
+
+add_dependencies(_pypowsybl native-image math-native)
+target_link_libraries(_pypowsybl PRIVATE ${PYPOWSYBL_JAVA_LIB} ${POWSYBL_MATH_NATIVE_LIB})
 
 # copy auxiliary java lib so that it can be installed with module one
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    add_custom_command(TARGET _pypowsybl POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_custom_command(TARGET _pypowsybl POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
