@@ -179,6 +179,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-api</artifactId>
             <version>${powsybl-core.version}</version>
+            <!--
+            We exclude PowSyBl math native jar from maven build because native library will be installed by the wheel
+            for the current platform
+            -->
             <exclusions>
                 <exclusion>
                     <groupId>com.powsybl</groupId>

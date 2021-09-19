@@ -71,9 +71,11 @@ add_subdirectory(lib/pybind11)
 pybind11_add_module(_pypowsybl ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
 
 # extract powsybl math native from jar for current platform
+# powsybl-math-native.jar has been previously copied by maven build
 add_custom_target(math-native ALL COMMAND ${CMAKE_COMMAND} -E tar x ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar ${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB})
 
-add_dependencies(_pypowsybl native-image math-native)
+add_dependencies(_pypowsybl native-image math-native )
+add_dependencies(math-native native-image) # because mvn command also copy math native jar
 target_link_libraries(_pypowsybl PRIVATE ${PYPOWSYBL_JAVA_LIB} ${POWSYBL_MATH_NATIVE_LIB})
 
 # copy auxiliary java lib so that it can be installed with module one
