@@ -44,11 +44,11 @@ def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     p = parameters
     if parameters is None:
         p = Parameters()
-    return _pypowsybl.run_load_flow(network._handle, False, p, provider)
+    return list(_pypowsybl.run_load_flow(network._handle, False, p, provider))
 
 
 def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow'):
     p = parameters
     if parameters is None:
         p = Parameters()
-    return _pypowsybl.run_load_flow(network._handle, True, p, provider)
+    return list(_pypowsybl.run_load_flow(network._handle, True, p, provider))
