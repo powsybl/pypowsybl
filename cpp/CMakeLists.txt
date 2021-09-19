@@ -66,7 +66,7 @@ set(SOURCE_DIR "src")
 include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR} ${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources)
 set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp")
 
-link_directories(${PYPOWSYBL_JAVA_BIN_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR})
+link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
 
 add_subdirectory(lib/pybind11)
 pybind11_add_module(_pypowsybl ${SOURCES} "${SOURCE_DIR}/bindings.cpp")
