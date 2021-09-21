@@ -132,6 +132,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 void init();
 
+void setJavaLibraryPath(const std::string& javaLibraryPath);
+
 void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);

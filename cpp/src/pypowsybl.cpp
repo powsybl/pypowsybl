@@ -220,6 +220,10 @@ std::string toString(char* cstring) {
     return res;
 }
 
+void setJavaLibraryPath(const std::string& javaLibraryPath) {
+    callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
+}
+
 void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
 }
