@@ -8,6 +8,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include "pypowsybl.h"
+#include "pypowsybl-api.h"
+#include "pypowsybl-java.h"
 
 namespace py = pybind11;
 
@@ -494,6 +496,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
           py::arg("is_index"));
 
+<<<<<<< HEAD
+||||||| constructed merge base
+    m.def("update_network_elements_with_string_series", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+=======
+    m.def("update_network_elements", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
+          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
+          py::arg("element_count"));
+    m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
+          py::arg("network"), py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), py::arg("column_size"),
+          py::arg("element_type"));
+
+>>>>>>> manage severals indexes
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));

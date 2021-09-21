@@ -556,7 +556,7 @@ class Network(object):
 
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
         """
-        Get a dataframe of shunt compensators sections for linear model.
+        Get shunt compensators sections for linear model as a ``Pandas`` data frame.
 
         Returns:
            a linear model shunt compensators sections
