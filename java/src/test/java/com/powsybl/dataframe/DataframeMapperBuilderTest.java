@@ -216,4 +216,9 @@ class DataframeMapperBuilderTest {
         assertEquals(Color.RED, container.getElement("el2").getColorValue());
     }
 
+    @Test
+    void updateMultiIndex() {
+
+    }
+
 }

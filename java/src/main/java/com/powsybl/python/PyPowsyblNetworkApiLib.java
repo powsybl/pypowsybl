@@ -328,6 +328,17 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "updateNetworkElementsWithSeries")
+    public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle,
+                                                          PyPowsyblApiHeader.ElementType elementType, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
+                                                          int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            System.out.println("worked");
+            System.out.println(dataframe.getPtr().data());
+        });
+    }
+
     @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
     public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
                                                           PyPowsyblApiHeader.ElementType elementType, CCharPointer seriesNamePtr,

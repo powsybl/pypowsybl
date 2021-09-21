@@ -554,7 +554,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
         """
-        Get a dataframe of shunt compensators sections for linear model.
+        Get shunt compensators sections for linear model as a ``Pandas`` data frame.
 
         Returns:
            a linear model shunt compensators sections
