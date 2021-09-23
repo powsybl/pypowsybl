@@ -117,7 +117,20 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
+            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
+        });
+    }
+
+    @CEntryPoint(name = "createExporterParametersSeriesArray")
+    static ArrayPointer<SeriesPointer> createExporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String format = CTypeUtil.toString(formatPtr);
+            var exporter = Exporters.getExporter(format);
+            if (exporter == null) {
+                throw new PowsyblException("Format '" + format + "' not supported");
+            }
+            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
         });
     }
 

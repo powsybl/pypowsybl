@@ -273,6 +273,10 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
 }
 
+SeriesArray* createExporterParametersSeriesArray(const std::string& format) {
+    return new SeriesArray(callJava<array*>(::createExporterParametersSeriesArray, (char*) format.data()));
+}
+
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) {
     network_metadata* attributes = callJava<network_metadata*>(::getNetworkMetadata, network);
     return std::shared_ptr<network_metadata>(attributes, [](network_metadata* ptr){
@@ -551,6 +555,7 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
+
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds) {

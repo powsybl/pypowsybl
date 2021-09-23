@@ -778,13 +778,28 @@ def get_export_formats() -> _List[str]:
 
 
 def get_import_parameters(format: str) -> _pd.DataFrame:
-    """ Get supported parameters infos for a given format
+    """ Get supported import parameters infos for a given format
 
-    :param format: the format
-    :return: parameters infos
-    :rtype: pd.DataFrame
+    Args:
+       format (str): the format
+
+    Returns:
+        import parameters data frame
     """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
+    return _create_data_frame_from_series_array(series_array)
+
+
+def get_export_parameters(format: str) -> _pd.DataFrame:
+    """ Get supported export parameters infos for a given format
+
+    Args:
+       format (str): the format
+
+    Returns:
+        export parameters data frame
+    """
+    series_array = _pypowsybl.create_exporter_parameters_series_array(format)
     return _create_data_frame_from_series_array(series_array)
 
 
