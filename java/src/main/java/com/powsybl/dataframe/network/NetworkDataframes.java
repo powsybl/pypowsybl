@@ -480,7 +480,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper voltageLevels() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getVoltageLevelStream, getOrThrow(Network::getVoltageLevel, "Voltage level"))
                 .stringsIndex("id", VoltageLevel::getId)
-                .strings("substation_id", vl -> vl.getSubstation().getId())
+                .strings("substation_id", vl -> vl.getSubstation().map(Identifiable::getId).orElse(""))
                 .doubles("nominal_v", VoltageLevel::getNominalV, VoltageLevel::setNominalV)
                 .doubles("high_voltage_limit", VoltageLevel::getHighVoltageLimit, VoltageLevel::setHighVoltageLimit)
                 .doubles("low_voltage_limit", VoltageLevel::getLowVoltageLimit, VoltageLevel::setLowVoltageLimit)
