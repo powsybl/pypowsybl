@@ -114,8 +114,8 @@ public final class NetworkUtil {
             return false;
         }
         if (!(countries.isEmpty()
-                || countries.contains(voltageLevel1.getSubstation().getCountry().map(Country::name).orElse(null))
-                || countries.contains(voltageLevel2.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+                || countries.contains(voltageLevel1.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null))
+                || countries.contains(voltageLevel2.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null)))) {
             return false;
         }
         if (mainCc && !(isInMainCc(terminal1) && isInMainCc(terminal2))) {
@@ -142,7 +142,7 @@ public final class NetworkUtil {
             return false;
         }
         if (!(countries.isEmpty()
-                || countries.contains(voltageLevel.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+                || countries.contains(voltageLevel.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null)))) {
             return false;
         }
         if (mainCc && !isInMainCc(terminal)) {
