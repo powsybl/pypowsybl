@@ -14,6 +14,14 @@ typedef struct array_struct {
     int length;
 } array;
 
+typedef struct network_metadata_struct {
+    char* id;
+    char* name;
+    double case_date; //seconds since epoch
+    char* source_format;
+    int forecast_distance;
+} network_metadata;
+
 typedef struct load_flow_component_result_struct {
     int connected_component_num;
     int synchronous_component_num;
@@ -67,6 +75,8 @@ typedef enum {
     LOAD,
     BATTERY,
     SHUNT_COMPENSATOR,
+    NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
+    LINEAR_SHUNT_COMPENSATOR_SECTION,
     DANGLING_LINE,
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
@@ -81,6 +91,7 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
+    CURRENT_LIMITS,
 } element_type;
 
 typedef enum {

@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
@@ -15,6 +16,7 @@ import org.graalvm.nativeimage.c.struct.*;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -62,6 +64,40 @@ public final class PyPowsyblApiHeader {
     static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
+    }
+
+    @CStruct("network_metadata")
+    interface NetworkMetadataPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("case_date")
+        double getCaseDate();
+
+        @CField("case_date")
+        void setCaseDate(double millis);
+
+        @CField("source_format")
+        CCharPointer getSourceFormat();
+
+        @CField("source_format")
+        void setSourceFormat(CCharPointer sourceFormat);
+
+        @CField("forecast_distance")
+        int getForecastDistance();
+
+        @CField("forecast_distance")
+        void setForecastDistance(int forecastDistance);
     }
 
     @CStruct("load_flow_component_result")
@@ -285,6 +321,8 @@ public final class PyPowsyblApiHeader {
         LOAD,
         BATTERY,
         SHUNT_COMPENSATOR,
+        NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
+        LINEAR_SHUNT_COMPENSATOR_SECTION,
         DANGLING_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
@@ -298,7 +336,8 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER_STEP,
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
-        REACTIVE_CAPABILITY_CURVE_POINT;
+        REACTIVE_CAPABILITY_CURVE_POINT,
+        CURRENT_LIMITS;
 
         @CEnumValue
         public native int getCValue();
@@ -391,6 +430,13 @@ public final class PyPowsyblApiHeader {
 
         ZonePointer read(int index);
     }
+
+    @CPointerTo(VoidPointer.class)
+    interface VoidPointerPointer extends PointerBase {
+
+        ObjectHandle read(int index);
+    }
+
 
     @CEnum("contingency_context_type")
     public enum RawContingencyContextType {

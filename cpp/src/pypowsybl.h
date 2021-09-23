@@ -125,29 +125,28 @@ enum ConnectedComponentMode {
 
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
 void init();
 
+void setJavaLibraryPath(const std::string& javaLibraryPath);
+
 void setDebugMode(bool debug);
+
+void setConfigRead(bool configRead);
+
+bool isConfigRead();
 
 std::string getVersionTable();
 
-JavaHandle createEmptyNetwork(const std::string& id);
+JavaHandle createNetwork(const std::string& name, const std::string& id);
 
-JavaHandle createIeeeNetwork(int busCount);
-
-JavaHandle createEurostagTutorialExample1Network();
-
-JavaHandle createFourSubstationsNodeBreakerNetwork();
+void merge(JavaHandle network, std::vector<JavaHandle>& others);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
-
-JavaHandle createBatteryNetwork();
-
-JavaHandle createDanglingLineNetwork();
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
 
@@ -163,11 +162,15 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
 SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
+
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
+
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters();
 
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters);
 
@@ -239,6 +242,12 @@ SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
 SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
+
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
 }
 
