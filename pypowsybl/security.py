@@ -4,38 +4,38 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import Union, Dict
+from typing import Union as _Union, Dict as _Dict
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
-from typing import List
+from typing import List as _List
 
 import _pypowsybl
-from _pypowsybl import ContingencyResult
-from _pypowsybl import LimitViolation
-from _pypowsybl import ContingencyContextType
-from pypowsybl.network import Network
+from _pypowsybl import ContingencyResult as ContingencyResult
+from _pypowsybl import LimitViolation as LimitViolation
+from _pypowsybl import ContingencyContextType as ContingencyContextType
+from pypowsybl.network import Network as _Network
+from pypowsybl.util import ContingencyContainer as _ContingencyContainer
+from prettytable import PrettyTable as _PrettyTable
+import pandas as _pd
 from pypowsybl.loadflow import Parameters
-from pypowsybl.util import ContingencyContainer
-from prettytable import PrettyTable
-import pandas as pd
 
 ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                          f"contingency_id={self.contingency_id!r}" \
-                                          f", status={self.status.name}" \
-                                          f", limit_violations=[{len(self.limit_violations)}]" \
-                                          f")"
+                                           f"contingency_id={self.contingency_id!r}" \
+                                           f", status={self.status.name}" \
+                                           f", limit_violations=[{len(self.limit_violations)}]" \
+                                           f")"
 
 LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                       f"subject_id={self.subject_id!r}" \
-                                       f", subject_name={self.subject_name!r}" \
-                                       f", limit_type={self.limit_type.name}" \
-                                       f", limit={self.limit!r}" \
-                                       f", limit_name={self.limit_name!r}" \
-                                       f", acceptable_duration={self.acceptable_duration!r}" \
-                                       f", limit_reduction={self.limit_reduction!r}" \
-                                       f", value={self.value!r}" \
-                                       f", side={self.side.name}" \
-                                       f")"
+                                        f"subject_id={self.subject_id!r}" \
+                                        f", subject_name={self.subject_name!r}" \
+                                        f", limit_type={self.limit_type.name}" \
+                                        f", limit={self.limit!r}" \
+                                        f", limit_name={self.limit_name!r}" \
+                                        f", acceptable_duration={self.acceptable_duration!r}" \
+                                        f", limit_reduction={self.limit_reduction!r}" \
+                                        f", value={self.value!r}" \
+                                        f", side={self.side.name}" \
+                                        f")"
 
 
 class SecurityAnalysisResult(object):
@@ -64,7 +64,7 @@ class SecurityAnalysisResult(object):
         return self._pre_contingency_result
 
     @property
-    def post_contingency_results(self) -> Dict[str, ContingencyResult]:
+    def post_contingency_results(self) -> _Dict[str, ContingencyResult]:
         """ Results for the contingencies, as a dictionary contingency ID -> result.
 
         Returns:
@@ -84,7 +84,7 @@ class SecurityAnalysisResult(object):
         return result
 
     def get_table(self):
-        table = PrettyTable()
+        table = _PrettyTable()
         table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
         for contingency_id in self._post_contingency_results:
@@ -104,7 +104,7 @@ class SecurityAnalysisResult(object):
         return table
 
     @property
-    def limit_violations(self) -> pd.DataFrame:
+    def limit_violations(self) -> _pd.DataFrame:
         """ All limit violations in a dataframe representation.
 
         Returns:
@@ -113,7 +113,7 @@ class SecurityAnalysisResult(object):
         return self._limit_violations
 
     @property
-    def branch_results(self) -> pd.DataFrame:
+    def branch_results(self) -> _pd.DataFrame:
         """ Results (P, Q, I) for monitored branches
 
         Returns:
@@ -122,7 +122,7 @@ class SecurityAnalysisResult(object):
         return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
 
     @property
-    def bus_results(self) -> pd.DataFrame:
+    def bus_results(self) -> _pd.DataFrame:
         """ Bus results (voltage angle and magnitude) for monitored voltage levels
 
         Returns:
@@ -131,7 +131,7 @@ class SecurityAnalysisResult(object):
         return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
 
     @property
-    def three_windings_transformer_results(self) -> pd.DataFrame:
+    def three_windings_transformer_results(self) -> _pd.DataFrame:
         """ Results (P, Q, I) for monitored three winding transformers
 
         Returns:
@@ -140,15 +140,15 @@ class SecurityAnalysisResult(object):
         return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
 
 
-class SecurityAnalysis(ContingencyContainer):
+class SecurityAnalysis(_ContingencyContainer):
     """
     Allows to run a security analysis on a network.
     """
 
     def __init__(self, handle):
-        ContingencyContainer.__init__(self, handle)
+        _ContingencyContainer.__init__(self, handle)
 
-    def run_ac(self, network: Network, parameters: Parameters = Parameters(),
+    def run_ac(self, network: _Network, parameters: Parameters = None,
                provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
@@ -160,13 +160,16 @@ class SecurityAnalysis(ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, parameters, provider))
+        p = parameters
+        if parameters is None:
+            p = Parameters()
+        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, p, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
-                               contingency_ids: Union[List[str], str] = None,
-                               branch_ids: List[str] = None,
-                               voltage_level_ids: List[str] = None,
-                               three_windings_transformer_ids: List[str] = None):
+                               contingency_ids: _Union[_List[str], str] = None,
+                               branch_ids: _List[str] = None,
+                               voltage_level_ids: _List[str] = None,
+                               three_windings_transformer_ids: _List[str] = None):
         """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -198,9 +201,9 @@ class SecurityAnalysis(ContingencyContainer):
                                           three_windings_transformer_ids, contingency_ids)
 
     def add_precontingency_monitored_elements(self,
-                                              branch_ids: List[str] = None,
-                                              voltage_level_ids: List[str] = None,
-                                              three_windings_transformer_ids: List[str] = None):
+                                              branch_ids: _List[str] = None,
+                                              voltage_level_ids: _List[str] = None,
+                                              three_windings_transformer_ids: _List[str] = None):
         """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -214,10 +217,10 @@ class SecurityAnalysis(ContingencyContainer):
                                            voltage_level_ids=voltage_level_ids,
                                            three_windings_transformer_ids=three_windings_transformer_ids)
 
-    def add_postcontingency_monitored_elements(self, contingency_ids: Union[List[str], str],
-                                               branch_ids: List[str] = None,
-                                               voltage_level_ids: List[str] = None,
-                                               three_windings_transformer_ids: List[str] = None):
+    def add_postcontingency_monitored_elements(self, contingency_ids: _Union[_List[str], str],
+                                               branch_ids: _List[str] = None,
+                                               voltage_level_ids: _List[str] = None,
+                                               three_windings_transformer_ids: _List[str] = None):
         """ Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 

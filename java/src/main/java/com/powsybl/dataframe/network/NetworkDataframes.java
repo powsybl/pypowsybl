@@ -11,6 +11,8 @@ import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.iidm.network.*;
+import com.powsybl.python.NetworkUtil;
+import com.powsybl.python.TemporaryLimitContext;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -54,6 +56,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.BATTERY, batteries());
         mappers.put(DataframeElementType.SHUNT_COMPENSATOR, shunts());
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
+        mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -67,6 +70,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER_STEP, ptcSteps());
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
+        mappers.put(DataframeElementType.CURRENT_LIMITS, currentLimits());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         return Collections.unmodifiableMap(mappers);
     }
@@ -263,6 +267,35 @@ public final class NetworkDataframes {
                 .doubles("g", p -> p.getMiddle().getG())
                 .doubles("b", p -> p.getMiddle().getB())
                 .build();
+    }
+
+    static NetworkDataframeMapper linearShuntsSections() {
+        Function<Network, Stream<Pair<ShuntCompensator, ShuntCompensatorLinearModel>>> linearShunts = network ->
+                network.getShuntCompensatorStream()
+                        .filter(sc -> sc.getModelType() == ShuntCompensatorModelType.LINEAR)
+                        .map(shuntCompensator -> Pair.of(shuntCompensator, (ShuntCompensatorLinearModel) shuntCompensator.getModel()));
+        return NetworkDataframeMapperBuilder.ofStream(linearShunts, (net, s) -> Pair.of(checkShuntNonNull(net, s), checkLinearModel(net, s)))
+                .stringsIndex("id", p -> p.getLeft().getId())
+                .doubles("g_per_section", p -> p.getRight().getGPerSection(), (p, g) -> p.getRight().setGPerSection(g))
+                .doubles("b_per_section", p -> p.getRight().getBPerSection(), (p, b) -> p.getRight().setBPerSection(b))
+                .ints("max_section_count", p -> p.getLeft().getMaximumSectionCount(), (p, s) -> p.getRight().setMaximumSectionCount(s))
+                .build();
+    }
+
+    private static ShuntCompensator checkShuntNonNull(Network network, String id) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(id);
+        if (shuntCompensator == null) {
+            throw new PowsyblException("ShuntCompensator '" + id + "' not found");
+        }
+        return shuntCompensator;
+    }
+
+    private static ShuntCompensatorLinearModel checkLinearModel(Network network, String id) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(id);
+        if (shuntCompensator.getModelType() != ShuntCompensatorModelType.LINEAR) {
+            throw new PowsyblException("ShuntCompensator '" + id + "' is not linear");
+        }
+        return (ShuntCompensatorLinearModel) shuntCompensator.getModel();
     }
 
     static NetworkDataframeMapper lines() {
@@ -539,7 +572,15 @@ public final class NetworkDataframes {
                 .doubles("target_v", t -> t.getRatioTapChanger().getTargetV(), (t, v) -> t.getRatioTapChanger().setTargetV(v))
                 .doubles("target_deadband", t -> t.getRatioTapChanger().getTargetDeadband(), (t, v) -> t.getRatioTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
+                .doubles("rho", NetworkDataframes::computeRho)
+                .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .build();
+    }
+
+    private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
+        return twoWindingsTransformer.getRatedU2() / twoWindingsTransformer.getRatedU1()
+                * (twoWindingsTransformer.getRatioTapChanger() != null ? twoWindingsTransformer.getRatioTapChanger().getCurrentStep().getRho() : 1)
+                * (twoWindingsTransformer.getPhaseTapChanger() != null ? twoWindingsTransformer.getPhaseTapChanger().getCurrentStep().getRho() : 1);
     }
 
     private static NetworkDataframeMapper ptcs() {
@@ -555,6 +596,17 @@ public final class NetworkDataframes {
                 .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
+                .build();
+    }
+
+    private static NetworkDataframeMapper currentLimits() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getCurrentLimits)
+                .stringsIndex("branch_id", TemporaryLimitContext::getBranchId)
+                .stringsIndex("name", TemporaryLimitContext::getName)
+                .enums("side", Branch.Side.class, TemporaryLimitContext::getSide)
+                .doubles("value", TemporaryLimitContext::getValue)
+                .ints("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
+                .booleans("is_fictitious", TemporaryLimitContext::isFictitious)
                 .build();
     }
 
