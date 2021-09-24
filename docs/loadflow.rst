@@ -17,7 +17,7 @@ The most important part before running a load flow is, after importing a network
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> import pypowsybl.loadflow
     >>> pp.loadflow.Parameters()
-    LoadFlowParameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False,  no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_LOAD, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
+    LoadFlowParameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_LOAD, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
 
 
 All parameters are fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
