@@ -52,7 +52,7 @@ AC Load Flow
 
     >>> network = pp.network.create_four_substations_node_breaker_network()
     >>> import pypowsybl.loadflow
-    >>> parameters = pp.loadflow.Parameters(balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
+    >>> parameters = pp.loadflow.Parameters(balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX, distributed_slack=True)
     >>> results = pp.loadflow.run_ac(network, parameters)
     >>> network.get_buses().v_mag
     id
@@ -77,23 +77,23 @@ DC Load Flow
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> import pypowsybl.loadflow
-    >>> parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False)
+    >>> parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False, distributed_slack=True, balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
     >>> results = pp.loadflow.run_dc(network, parameters)
     >>> network.get_lines().p1
     id
-    NHV1_NHV2_1    607.0
-    NHV1_NHV2_2    607.0
+    NHV1_NHV2_1    300.0
+    NHV1_NHV2_2    300.0
     Name: p1, dtype: float64
     >>> network.get_lines().p2
     id
-    NHV1_NHV2_1   -607.0
-    NHV1_NHV2_2   -607.0
+    NHV1_NHV2_1   -300.0
+    NHV1_NHV2_2   -300.0
     Name: p2, dtype: float64
     >>> network.get_buses().v_angle
     id
-    VLGEN_0      5.349003
+    VLGEN_0      2.643659
     VLHV1_0      0.000000
-    VLHV2_0     -7.948004
-    VLLOAD_0   -20.467426
+    VLHV2_0     -3.928173
+    VLLOAD_0   -10.115696
     Name: v_angle, dtype: float64
 
