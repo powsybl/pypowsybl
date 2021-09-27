@@ -23,16 +23,16 @@ The most important part before running a load flow is, after importing a network
 All parameters are fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
 
 - *voltage_init_mode* represents the starting point mode: use ``pp.loadflow.VoltageInitMode.`` and then UNIFORM_VALUES for a flat start, and DC_VALUES for a DC load flow based starting point.
-- The *transformer_voltage_control_on* attribute sets to FALSE means that two or three windings transformers with ratio tap changers are not controlling voltage. The initial tap position is used for the resolution.
+- The *transformer_voltage_control_on* attribute set to FALSE means that two or three windings transformers with ratio tap changers are not controlling voltage. The initial tap position is used for the resolution.
 - *twt_split_shunt_admittance* refers to the modelling of transformer legs. If you want to split the conductance and the susceptance in two, one at each side of the serie impedance, use TRUE.
-- The *simul_shunt* attribute sets to FALSE means that shunt compensator are not controlling voltage. Note that OpenLoadFlow does not support this feature yet.
-- The *read_slack_bus* parameter sets to TRUE means that the slack bus is read in the network through an dedicate extension. Prefer FALSE if you want to use the most meshed one. The slack bus selector is configured in the OpenLoadFlow specific parameters.
-- The *write_slack_bus* parameter sets to FALSE means that the slack bus found and used by the load flow engine is not written as an extension inside the network.
-- *distributed_slack* sets to TRUE means that the active power slack is distributed, on loads or on generators.
+- The *simul_shunt* attribute set to FALSE means that shunt compensator are not controlling voltage. Note that OpenLoadFlow does not support this feature yet.
+- The *read_slack_bus* parameter set to TRUE means that the slack bus is read in the network through an dedicate extension. Prefer FALSE if you want to use the most meshed one. The slack bus selector is configured in the OpenLoadFlow specific parameters.
+- The *write_slack_bus* parameter set to FALSE means that the slack bus found and used by the load flow engine is not written as an extension inside the network.
+- *distributed_slack* set to TRUE means that the active power slack is distributed, on loads or on generators.
 - *balance_type* is an enum used in case of distributed slack. Use ``pp.loadflow.BalanceType.`` followed by PROPORTIONAL_TO_LOAD to distribute slack on loads,  PROPORTIONAL_TO_GENERATION_P_MAX or PROPORTIONAL_TO_GENERATION_P to distribute on generators.
 - The *dc_use_transformer_ratio* parameter is used only for DC load flows to include ratios in the equation system.
 - *countries_to_balance* allows to model slack distribution on some countries, use [] if the slack is distributed on the whole network.
-- And then, the *connected_component_mode* parameter sets to ``pp.loadflow.ConnectedComponentMode.`` followed by MAIN computes flows only on the main connected component. Prefer ALL for a run on all connected component.
+- And then, the *connected_component_mode* parameter set to ``pp.loadflow.ConnectedComponentMode.`` followed by MAIN computes flows only on the main connected component. Prefer ALL for a run on all connected component.
 
 AC Load Flow
 ************

@@ -61,7 +61,7 @@ make doctest
 And then, to build the documentation:
 ```bash
 make html
-firefox 
+firefox _build/html/index.html
 ```
 Web pages are generated in repository _build/html/ for preview before openning a pull request.
 
