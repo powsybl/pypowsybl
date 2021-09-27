@@ -50,6 +50,21 @@ To run unit tests:
 python3 -m unittest discover --start-directory tests
 ```
 
+## Contribute to documentation
+
+To run the tests included in the documentation:
+```bash
+cd docs/
+make doctest
+```
+
+And then, to build the documentation:
+```bash
+make html
+firefox 
+```
+Web pages are generated in repository _build/html/ for preview before openning a pull request.
+
 ## Usage
 
 First, we have to import pypowsybl:
