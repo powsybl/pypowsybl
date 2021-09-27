@@ -30,7 +30,9 @@ author = 'Geoffroy Jamgotchian'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.doctest',
-              'sphinx.ext.napoleon']
+              'sphinx.ext.napoleon',
+              'sphinx.ext.todo',
+              'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,3 +66,24 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     # to avoid an error if pypowsybl has not been installed
     autodoc_mock_imports = ["_pypowsybl"]
+
+
+# Autodoc options
+add_module_names = False
+autodoc_default_options = {
+    'member-order': 'groupwise',
+    'undoc-members': True
+}
+
+autodoc_type_aliases = {
+    '_DataFrame': 'pandas.DataFrame'
+}
+
+autodoc_typehints = 'description'
+
+todo_include_todos = True
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
+}

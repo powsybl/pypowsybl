@@ -17,6 +17,8 @@ It is a python binding for the `powsybl <https://www.powsybl.org/>`_ java framew
    loadflow
    sensitivity
    security
+   reference/index.rst
+
 
 Indices and tables
 ==================

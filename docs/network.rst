@@ -197,3 +197,11 @@ In order to achieve that, you can use variants management:
    607.0
    >>> network.remove_variant('Variant')
 
+
+Detailed Documentation by class
+-------------------------------
+.. automodule:: pypowsybl.network
+    :members:
+    :private-members:
+    :special-members:
+    :autosummary:
