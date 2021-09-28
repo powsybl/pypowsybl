@@ -56,6 +56,7 @@ html_static_path = ['_static']
 doctest_global_setup = '''
 try:
     import pypowsybl as pp
+    pp.set_config_read(False)
 except ImportError:
     pp = None
 '''
