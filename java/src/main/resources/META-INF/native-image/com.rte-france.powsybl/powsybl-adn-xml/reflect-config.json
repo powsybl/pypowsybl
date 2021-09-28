@@ -20,6 +20,14 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.rte_france.powsybl.adn.Adapter4",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.rte_france.powsybl.adn.Adapter5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"com.rte_france.powsybl.adn.CSPR",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
