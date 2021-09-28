@@ -4,7 +4,7 @@ API reference
 This is the reference documentation for pypowsybl API.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    network
    loadflow
