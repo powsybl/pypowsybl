@@ -6,11 +6,12 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.IndexedSeries;
-import com.powsybl.dataframe.IntIndexedSeries;
+import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -20,6 +21,10 @@ import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
+import com.powsybl.python.update.DoubleSeries;
+import com.powsybl.python.update.IntSeries;
+import com.powsybl.python.update.StringSeries;
+import com.powsybl.python.update.CUpdatingDataframe;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -38,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.powsybl.python.CDataframeHandler.*;
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.ExceptionHandlerPointer;
 import static com.powsybl.python.PyPowsyblApiHeader.VoidPointerPointer;
@@ -329,91 +335,44 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithSeries")
-    public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                          PyPowsyblApiHeader.ElementType elementType, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
-                                                          int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ElementType elementType,
+                                                       PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            System.out.println("worked");
-            System.out.println(dataframe.getPtr().data());
+            UpdatingDataframe updatingDataframe = createDataframe(dataframe);
+            NetworkDataframes.getDataframeMapper(convert(elementType)).updateSeries(network, updatingDataframe);
         });
     }
 
-    @CEntryPoint(name = "updateNetworkElementsWithIntSeries")
-    public static void updateNetworkElementsWithIntSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                          PyPowsyblApiHeader.ElementType elementType, CCharPointer seriesNamePtr,
-                                                          CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr,
-                                                          int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .updateIntSeries(network, seriesName, createIntSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
-    }
-
-    private static IntIndexedSeries createIntSeries(CCharPointerPointer elementIdPtrPtr, CIntPointer valuePtr, int elementCount) {
-        return new IntIndexedSeries() {
-            @Override
-            public int getSize() {
-                return elementCount;
+    public static UpdatingDataframe createDataframe(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe) {
+        int elementCount = dataframe.getPtr().addressOf(0).data().getLength();
+        int columnsNumber = dataframe.getLength();
+        CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
+        for (int i = 0; i < columnsNumber; i++) {
+            PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getPtr().addressOf(i);
+            String name = CTypeUtil.toString(seriesPointer.getName());
+            switch (seriesPointer.getType()) {
+                case STRING_SERIES_TYPE:
+                    updatingDataframe.addSeries(new StringSeries(name, elementCount,
+                                    (CCharPointerPointer) seriesPointer.data().getPtr()),
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING));
+                    break;
+                case DOUBLE_SERIES_TYPE:
+                    updatingDataframe.addSeries(new DoubleSeries(name, elementCount,
+                                    (CDoublePointer) seriesPointer.data().getPtr()),
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE));
+                    break;
+                case INT_SERIES_TYPE:
+                case BOOLEAN_SERIES_TYPE:
+                    updatingDataframe.addSeries(new IntSeries(name, elementCount,
+                                    (CIntPointer) seriesPointer.data().getPtr()),
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT));
+                    break;
             }
 
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public int getValue(int index) {
-                return valuePtr.read(index);
-            }
-        };
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithDoubleSeries")
-    public static void updateNetworkElementsWithDoubleSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                             PyPowsyblApiHeader.ElementType elementType, CCharPointer seriesNamePtr,
-                                                             CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr,
-                                                             int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .updateDoubleSeries(network, seriesName, createDoubleSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
-    }
-
-    private static DoubleIndexedSeries createDoubleSeries(CCharPointerPointer elementIdPtrPtr, CDoublePointer valuePtr, int elementCount) {
-        return new DoubleIndexedSeries() {
-            @Override
-            public int getSize() {
-                return elementCount;
-            }
-
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public double getValue(int index) {
-                return valuePtr.read(index);
-            }
-        };
-    }
-
-    @CEntryPoint(name = "updateNetworkElementsWithStringSeries")
-    public static void updateNetworkElementsWithStringSeries(IsolateThread thread, ObjectHandle networkHandle,
-                                                             PyPowsyblApiHeader.ElementType elementType, CCharPointer seriesNamePtr,
-                                                             CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr,
-                                                             int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .updateStringSeries(network, seriesName, createStringSeries(elementIdPtrPtr, valuePtr, elementCount));
-        });
+        }
+        return updatingDataframe;
     }
 
     @CEntryPoint(name = "getNodeBreakerViewSwitches")

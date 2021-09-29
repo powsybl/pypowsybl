@@ -202,6 +202,18 @@ char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
     return charPtrPtr;
 }
 
+int* copyVectorInt(const std::vector<int>& ints) {
+    int* intPtr = new int[ints.size()];
+    std::copy(ints.begin(), ints.end(), intPtr);
+    return intPtr;
+}
+
+double* copyVectorDouble(const std::vector<double>& doubles) {
+    double* doublePtr = new double[doubles.size()];
+    std::copy(doubles.begin(), doubles.end(), doublePtr);
+    return doublePtr;
+}
+
 void deleteCharPtrPtr(char** charPtrPtr, int length) {
     for (int i = 0; i < length; i++) {
         delete charPtrPtr[i];
@@ -510,28 +522,8 @@ int getSeriesType(element_type elementType, const std::string& seriesName) {
     return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
 }
 
-void updateNetworkElementsWithIntSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                        const std::vector<int>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToIntPtr valuePtr(values);
-    callJava(::updateNetworkElementsWithIntSeries, network, elementType, (char *) seriesName.c_str(),
-                    idPtr.get(), valuePtr.get(), elementCount);
-}
-
-void updateNetworkElementsWithDoubleSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<double>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToDoublePtr valuePtr(values);
-    callJava(::updateNetworkElementsWithDoubleSeries, network, elementType, (char *) seriesName.c_str(),
-                    idPtr.get(), valuePtr.get(), elementCount);
-}
-
-void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<std::string>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToCharPtrPtr valuePtr(values);
-    callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
-                idPtr.get(), valuePtr.get(), elementCount);
+int getIndexType(element_type elementType, const std::string& seriesName, int index) {
+    return callJava<int>(::getIndexType, elementType, (char *) seriesName.c_str(), index);
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
@@ -598,6 +590,10 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& vol
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
+}
+
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
 }

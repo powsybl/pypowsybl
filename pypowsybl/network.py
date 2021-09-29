@@ -8,7 +8,6 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 import _pypowsybl
 import sys as _sys
-from _pypowsybl import PyPowsyblError as _PyPowsyblError
 from typing import List as _List
 from typing import Set as _Set
 from _pypowsybl import ElementType
@@ -16,6 +15,7 @@ from _pypowsybl import ElementType
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import datetime as _datetime
+import pandas as _pd
 
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
@@ -552,9 +552,10 @@ class Network(object):
             A dataframe of non linear model shunt compensators sections.
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
+
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
         """
-        Get shunt compensators sections for linear model as a ``Pandas`` data frame.
+        Get a dataframe of shunt compensators sections for linear model.
 
         Returns:
            a linear model shunt compensators sections
@@ -1072,24 +1073,32 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
+        index_bool = []
+        columns_names = []
+        columns_values = []
+        columns_types = []
+        index_count = 0
+        is_multi_index = len(df.index.names) > 1
+        for index_name in df.index.names:
+            if index_name is None:
+                index_name = ''
+            if is_multi_index:
+                columns_values.append(df.index.get_level_values(index_name))
+            else:
+                columns_values.append(df.index.values)
+            columns_names.append(index_name)
+            columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+            index_count += 1
+            index_bool.append(True)
+        columns_names.extend(df.columns.values)
         for series_name in df.columns.values:
             series = df[series_name]
             series_type = _pypowsybl.get_series_type(element_type, series_name)
-            if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self._handle, element_type, series_name,
-                                                                   df.index.values,
-                                                                   series.values, len(series))
-            elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self._handle, element_type, series_name,
-                                                                      df.index.values,
-                                                                      series.values, len(series))
-            elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self._handle, element_type, series_name,
-                                                                      df.index.values,
-                                                                      series.values, len(series))
-            else:
-                raise _PyPowsyblError(
-                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
+            columns_types.append(series_type)
+            columns_values.append(series.values)
+            index_bool.append(False)
+        _pypowsybl.update_network_elements_with_series(self._handle, columns_values, columns_names, columns_types,
+                                                       index_bool, element_type)
 
     def update_buses(self, df: _DataFrame):
         """
@@ -1386,6 +1395,20 @@ class Network(object):
                 - max section count
         """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df)
+
+    def update_non_linear_shunt_sections(self, df: _pd.DataFrame):
+        """ Update non linear shunt compensators sections with a ``Pandas`` data frame.
+
+                      Args:
+                         df (DataFrame): the ``Pandas`` data frame
+                             columns that can be updated :
+                                 - g per section
+                                 - b per section
+
+                      Returns:
+                          a dataframe updated
+                      """
+        return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df)
 
     def get_working_variant_id(self):
         """

@@ -7,10 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-
 #include "pypowsybl.h"
-#include "pypowsybl-api.h"
-#include "pypowsybl-java.h"
 
 namespace py = pybind11;
 
@@ -25,27 +22,56 @@ void bindArray(py::module_& m, const std::string& className) {
             }, py::keep_alive<0, 1>());
 }
 
-void updateNetworkElementsWithSeries(JavaHandle network, py::list columnsValues, py::list columnsNames, py::list columnsTypes, int columnSize, element_type elementType) {
-    array<series> dataframe = createArray(py::list columnsValues, py::list columnsNames, py::list columnsTypes, columnSize);
-    callJava(::updateNetworkElementsWithSeries, network, elementType, dataframe, columnSize);
-
+std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& indexBool) {
+    array* rawDataframe = new array();
+    int columnsNumber = columnsNames.size();
+    std::shared_ptr<array> dataframe = std::shared_ptr<array>(rawDataframe, [](array* dataframeToDestroy){
+        for (int indice = 0 ; indice < dataframeToDestroy->length; indice ++) {
+            series* column = ((series*) dataframeToDestroy->ptr) + indice;
+            if (column->type == 0) {
+                pypowsybl::deleteCharPtrPtr((char**) column->data.ptr, column->data.length);
+            } else if (column->type == 1) {
+                delete (double*) column->data.ptr;
+            } else if (column->type == 2 || column->type == 3) {
+                delete (int*) column->data.ptr;
+            }
+            delete column->name;
+        }
+        delete (series*) dataframeToDestroy->ptr;
+        delete dataframeToDestroy;
+    });
+    rawDataframe->ptr = new series[columnsNumber];
+    series* columns = new series[columnsNumber];
+    for (int indice = 0 ; indice < columnsNumber ; indice ++ ) {
+        series* column = columns + indice;
+        py::str name = (py::str) columnsNames[indice];
+        column->name = strdup(((std::string) name).c_str());
+        column->index = int(indexBool[indice]);
+        int type = columnsTypes[indice];
+        column->type = type;
+        py::array data = (py::array) columnsValues[indice];
+        if (type == 0) {
+            std::vector<std::string> values = py::cast<std::vector<std::string>>(columnsValues[indice]);
+            column->data.length = values.size();
+            column->data.ptr = pypowsybl::copyVectorStringToCharPtrPtr(values);
+        } else if (type == 1) {
+            std::vector<double> values = py::cast<std::vector<double>>(columnsValues[indice]);
+            column->data.length = values.size();
+            column->data.ptr = pypowsybl::copyVectorDouble(values);
+        } else if (type == 2 || type == 3) {
+            std::vector<int> values = py::cast<std::vector<int>>(columnsValues[indice]);
+            column->data.length = values.size();
+            column->data.ptr = pypowsybl::copyVectorInt(values);
+        }
+    }
+    dataframe->length = columnsNumber;
+    dataframe->ptr = columns;
+    return dataframe;
 }
 
-array<series> createArray(py::list columnsValues, py::list columnsNames, py::list columnsTypes, int columnSize) {
-    array<series> dataframe;
-    int numberOfColumns = (int) columnsValues.size();
-    dataframe.ptr = new series[numberOfColumns]
-    for (int indice = 0 ; indice <= numberOfColumns ; indice ++ ) {
-        series* column;
-        column = new series();
-        column.name = columnsNames[indice];
-        column.index = 0;
-        column.type = columnsTypes[indice];
-        column.data = columnsValues[indice];
-        
-        dataframe.ptr[indice] = column;
-    }
-    return dataframe;
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& indexBool, element_type elementType) {
+    std::shared_ptr<array>  dataframe = createArray(columnsValues, columnsNames, columnsTypes, indexBool);
+    pypowsybl::updateNetworkElementsWithSeries(network, (array*) dataframe.get(), elementType);
 }
 
 template<typename T>
@@ -461,20 +487,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
             py::arg("element_type"), py::arg("series_name"));
 
-    m.def("update_network_elements_with_int_series", &pypowsybl::updateNetworkElementsWithIntSeries, "Update network elements for a given element type with an integer series",
-          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
-          py::arg("element_count"));
-
-    m.def("update_network_elements_with_double_series", &pypowsybl::updateNetworkElementsWithDoubleSeries, "Update network elements for a given element type with a double series",
-          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
-          py::arg("element_count"));
-
-    m.def("update_network_elements", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
-          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
-          py::arg("element_count"));
+    m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
+            py::arg("element_type"), py::arg("series_name"), py::arg("index"));
+    
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::arg("network"), py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), py::arg("column_size"),
-          py::arg("element_type"));
+          py::arg("network"), py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
+          py::arg("index_bool"), py::arg("element_type"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));

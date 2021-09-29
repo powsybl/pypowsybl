@@ -423,7 +423,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.options.display.expand_frame_repr = False
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
-
         lines_update = pd.DataFrame(index=['LINE_S2S3'],
                                     columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],
                                     data=[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]])
@@ -434,7 +433,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'connected2'],
                                 data=[['', 1, 2, 3, 4, 5, 6, 7, 8, 15.011282, 9, 10, 19.418634,
                                        'S2VL1', 'S3VL1', 'S2VL1_0', 'S3VL1_0', True, True],
-                                      ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415, 346.429584,
+                                      ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415,
+                                       346.429584,
                                        'S3VL1', 'S4VL1', 'S3VL1_0', 'S4VL1_0', True, True]])
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
@@ -531,6 +531,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 data=[[0.0, 0.00001],
                                       [0.3, 0.02000]])
         pd.testing.assert_frame_equal(expected, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+        update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)], names=['id', 'section']),
+                              columns=['g', 'b'],
+                              data=[[0.1, 0.00002],
+                                    [0.4, 0.03]])
+        n.update_non_linear_shunt_sections(update)
+        pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
 
     def test_create_network(self):
         n = pp.network.create_ieee9()

@@ -7,6 +7,7 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
 
     public AbstractDataframeMapper(List<SeriesMapper<U>> seriesMappers) {
         this.seriesMappers = seriesMappers.stream()
-            .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
+                .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
     }
 
     @Override
@@ -49,31 +50,32 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     @Override
-    public void updateDoubleSeries(T object, String seriesName, DoubleIndexedSeries values) {
-        SeriesMapper<U> series = seriesMappers.get(seriesName);
-        for (int i = 0; i < values.getSize(); i++) {
-            series.updateDouble(getItem(object, values.getId(i)), values.getValue(i));
-        }
-    }
-
-    @Override
-    public void updateIntSeries(T object, String seriesName, IntIndexedSeries values) {
-        SeriesMapper<U> series = seriesMappers.get(seriesName);
-        for (int i = 0; i < values.getSize(); i++) {
-            series.updateInt(getItem(object, values.getId(i)), values.getValue(i));
-        }
-    }
-
-    @Override
-    public void updateStringSeries(T object, String seriesName, IndexedSeries<String> values) {
-        SeriesMapper<U> series = seriesMappers.get(seriesName);
-        for (int i = 0; i < values.getSize(); i++) {
-            series.updateString(getItem(object, values.getId(i)), values.getValue(i));
+    public void updateSeries(T object, UpdatingDataframe updatingDataframe) {
+        for (int i = 0; i < updatingDataframe.getLineCount(); i++) {
+            for (SeriesMetadata column : updatingDataframe.getSeriesMetadata()) {
+                if (!column.isIndex()) {
+                    String seriesName = column.getName();
+                    SeriesMapper<U> series = seriesMappers.get(seriesName);
+                    switch (column.getType()) {
+                        case STRING:
+                            series.updateString(getItem(object, updatingDataframe, i),
+                                    updatingDataframe.getStringValue(seriesName, i));
+                            break;
+                        case DOUBLE:
+                            series.updateDouble(getItem(object, updatingDataframe, i),
+                                    updatingDataframe.getDoubleValue(seriesName, i));
+                            break;
+                        case INT:
+                            series.updateInt(getItem(object, updatingDataframe, i),
+                                    updatingDataframe.getIntValue(seriesName, i));
+                            break;
+                    }
+                }
+            }
         }
     }
 
     protected abstract List<U> getItems(T object);
 
-    protected abstract U getItem(T object, String id);
-
+    protected abstract U getItem(T object, UpdatingDataframe dataframe, int index);
 }

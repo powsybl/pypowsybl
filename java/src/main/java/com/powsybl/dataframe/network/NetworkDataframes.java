@@ -10,6 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
 import com.powsybl.python.TemporaryLimitContext;
@@ -266,12 +267,23 @@ public final class NetworkDataframes {
                             ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
                             return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator.getId(), section, model.getAllSections().indexOf(section)));
                         });
-        return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts)
+        return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts, NetworkDataframes::getShuntSectionNonlinear)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("section", Triple::getRight)
-                .doubles("g", p -> p.getMiddle().getG())
-                .doubles("b", p -> p.getMiddle().getB())
+                .doubles("g", p -> p.getMiddle().getG(), (p, g) -> p.getMiddle().setG(g))
+                .doubles("b", p -> p.getMiddle().getB(), (p, b) -> p.getMiddle().setB(b))
                 .build();
+    }
+
+    static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index));
+        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
+            throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
+        } else {
+            ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
+            int section = dataframe.getIntValue("section", 1, index);
+            return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
+        }
     }
 
     static NetworkDataframeMapper linearShuntsSections() {

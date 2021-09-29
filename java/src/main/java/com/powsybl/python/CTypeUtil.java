@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-final class CTypeUtil {
+public final class CTypeUtil {
 
     private CTypeUtil() {
     }
@@ -38,12 +38,12 @@ final class CTypeUtil {
         return charPtr;
     }
 
-    static String toString(CCharPointer charPtr) {
+    public static String toString(CCharPointer charPtr) {
         // pybind11 convert std::string and char* to python utf-8 string
         return CTypeConversion.toJavaString(charPtr, SubstrateUtil.strlen(charPtr), StandardCharsets.UTF_8);
     }
 
-    static List<String> toStringList(CCharPointerPointer charPtrPtr, int length) {
+    public static List<String> toStringList(CCharPointerPointer charPtrPtr, int length) {
         List<String> stringList = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             CCharPointer charPtr = charPtrPtr.read(i);
@@ -53,7 +53,7 @@ final class CTypeUtil {
         return stringList;
     }
 
-    static List<Double> toDoubleList(CDoublePointer doublePtr, int length) {
+    public static List<Double> toDoubleList(CDoublePointer doublePtr, int length) {
         List<Double> doubleList = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             double d = doublePtr.read(i);
@@ -62,7 +62,7 @@ final class CTypeUtil {
         return doubleList;
     }
 
-    static List<Integer> toIntegerList(CIntPointer intPointer, int length) {
+    public static List<Integer> toIntegerList(CIntPointer intPointer, int length) {
         List<Integer> ints = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             int j = intPointer.read(i);
