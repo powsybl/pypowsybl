@@ -556,7 +556,7 @@ class Network(object):
 
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
         """
-        Get shunt compensators sections for linear model as a ``Pandas`` data frame.
+        Get a dataframe of shunt compensators sections for linear model.
 
         Returns:
            a linear model shunt compensators sections
@@ -1492,6 +1492,20 @@ class Network(object):
                 In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
+
+    def update_non_linear_shunt_sections(self, df: _pd.DataFrame):
+        """ Update non linear shunt compensators sections with a ``Pandas`` data frame.
+
+                      Args:
+                         df (DataFrame): the ``Pandas`` data frame
+                             columns that can be updated :
+                                 - g per section
+                                 - b per section
+
+                      Returns:
+                          a dataframe updated
+                      """
+        return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df)
 
     def get_working_variant_id(self):
         """
