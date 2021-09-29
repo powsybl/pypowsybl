@@ -6,6 +6,8 @@
 PyPowSyBl's user documentation
 ==============================
 
+.. module:: pypowsybl
+
 PyPowSyBl is a python library for power grid modelling and simulation.
 It is a python binding for the `powsybl <https://www.powsybl.org/>`_ java framework.
 
@@ -13,11 +15,8 @@ It is a python binding for the `powsybl <https://www.powsybl.org/>`_ java framew
    :maxdepth: 2
    :caption: Contents:
 
-   network
-   loadflow
-   sensitivity
-   security
-   reference/index.rst
+   user_guide/index
+   reference/index
 
 
 Indices and tables

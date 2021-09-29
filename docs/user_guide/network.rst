@@ -1,7 +1,6 @@
 Network
 =======
 
-
 .. testsetup:: *
 
     import pandas as pd
