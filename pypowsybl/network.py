@@ -1091,6 +1091,7 @@ class Network(object):
             index_count += 1
             index_bool.append(True)
         columns_names.extend(df.columns.values)
+
         for series_name in df.columns.values:
             series = df[series_name]
             series_type = _pypowsybl.get_series_type(element_type, series_name)
