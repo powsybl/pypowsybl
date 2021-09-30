@@ -146,6 +146,9 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
 
     def test_xnode_sensi(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu-xnode.uct')))
+        # assert there is one dangling line (corresponding to the UCTE xnode)
+        dangling_lines = n.get_dangling_lines()
+        self.assertEqual(1, len(dangling_lines))
         # create a new zone with only one xnode, this is the dangling line id that has to be configured (corresponding
         # to the line connecting the xnode in the UCTE file)
         zone_x = pp.sensitivity.create_empty_zone("X")
