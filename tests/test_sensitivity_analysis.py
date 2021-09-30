@@ -145,7 +145,6 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.103426, s['BBE2AA1  FFR3AA1  1']['NL'], places=6)
 
     def test_xnode_sensi(self):
-        pp.set_debug_mode(True)
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu-xnode.uct')))
         # create a new zone with only one xnode, this is the dangling line id that has to be configured (corresponding
         # to the line connecting the xnode in the UCTE file)
