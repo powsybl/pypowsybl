@@ -144,6 +144,21 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.256641, s['BBE2AA1  FFR3AA1  1']['DE -> FR'], places=6)
         self.assertAlmostEqual(0.103426, s['BBE2AA1  FFR3AA1  1']['NL'], places=6)
 
+    def test_xnode_sensi(self):
+        pp.set_debug_mode(True)
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu-xnode.uct')))
+        # create a new zone with only one xnode, this is the dangling line id that has to be configured (corresponding
+        # to the line connecting the xnode in the UCTE file)
+        zone_x = pp.sensitivity.create_empty_zone("X")
+        zone_x.add_injection('NNL2AA1  XXXXXX11 1')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_x])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((1, 1), s.shape)
+        self.assertAlmostEqual(0.176618, s['BBE2AA1  FFR3AA1  1']['X'], places=6)
+
 
 if __name__ == '__main__':
     unittest.main()
