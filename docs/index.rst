@@ -11,17 +11,36 @@ PyPowSyBl's user documentation
 PyPowSyBl is a python library for power grid modelling and simulation.
 It is a python binding for the `powsybl <https://www.powsybl.org/>`_ java framework.
 
+
+Getting started
+---------------
+
+Install pypowsybl and start using it:
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   getting_started
+
+
+User guide
+----------
+
+Check out our topical user guides:
+
+.. toctree::
+   :maxdepth: 2
 
    user_guide/index
+
+
+API reference
+-------------
+
+For detailed description of pypowsybl classes and methods,
+please check out the API reference documentation :
+
+.. toctree::
+   :maxdepth: 2
+
    reference/index
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
