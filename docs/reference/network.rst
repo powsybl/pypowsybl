@@ -12,10 +12,14 @@ methods to access and modify underlying network elements data.
 Network creation
 ----------------
 
+Following methods may be used to create a new network instance:
+
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
+   load
+   load_from_string
    create_empty
    create_ieee9
    create_ieee14
@@ -27,14 +31,13 @@ Network creation
    create_four_substations_node_breaker_network
    create_micro_grid_be_network
    create_micro_grid_nl_network
-   load
-   load_from_string
+
 
 Network properties
 ------------------
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    Network.id
@@ -57,7 +60,7 @@ All network elements are accessible as dataframes, using the following getters.
    need to call again the corresponding getter.
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    Network.get_2_windings_transformers
@@ -94,7 +97,7 @@ Network elements  update
 Network elements can be modified using dataframes:
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    Network.update_2_windings_transformers
@@ -121,7 +124,7 @@ Network variants management
 Network variants may be used to manage multiple states of the network efficiently.
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    Network.get_working_variant_id
@@ -135,7 +138,7 @@ Miscellaneous network functions
 -------------------------------
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    Network.reduce
@@ -151,7 +154,7 @@ I/O
 ---
 
 .. autosummary::
-   :toctree:
+   :toctree: api/
    :nosignatures:
 
    load

@@ -94,18 +94,21 @@ autodoc_default_options = {
     'undoc-members': True
 }
 
+# So that dataframes appear as pandas.DataFrame and link to pandas site
 autodoc_type_aliases = {
     '_DataFrame': 'pandas.DataFrame'
 }
 
+# No type hints in methods signature
 autodoc_typehints = 'description'
 
 todo_include_todos = True
 
+# Links to external documentations : python 3 and pandas
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
 }
 
-
+# Generate one file per method
 autosummary_generate = True
