@@ -49,7 +49,7 @@ ExternalProject_Add(mvn
     INSTALL_COMMAND ""
 )
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug") 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1 ")
 endif()
 
