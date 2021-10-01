@@ -18,8 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'pypowsybl'
-copyright = '2021, Geoffroy Jamgotchian'
-author = 'Geoffroy Jamgotchian'
+copyright = '2021, RTE (http://www.rte-france.com)'
 
 
 # -- General configuration ---------------------------------------------------
@@ -28,9 +27,12 @@ author = 'Geoffroy Jamgotchian'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
               'sphinx.ext.viewcode',
               'sphinx.ext.doctest',
-              'sphinx.ext.napoleon']
+              'sphinx.ext.napoleon',
+              'sphinx.ext.todo',
+              'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,7 +48,24 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "pydata_sphinx_theme"
+
+html_title = 'pypowsybl'
+html_short_title = 'pypowsybl'
+
+html_logo = '_static/logos/powsybl_logo.svg'
+html_favicon = "_static/favicon.ico"
+
+html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/powsybl/pypowsybl",
+            "icon": "fab fa-github-square",
+        }
+    ],
+    "navbar_start": ["navbar-brand-pypowsybl"],
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -65,3 +84,30 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     # to avoid an error if pypowsybl has not been installed
     autodoc_mock_imports = ["_pypowsybl"]
+
+
+# Autodoc options
+add_module_names = False
+autodoc_default_options = {
+    'member-order': 'groupwise',
+    'undoc-members': True
+}
+
+# So that dataframes appear as pandas.DataFrame and link to pandas site
+autodoc_type_aliases = {
+    '_DataFrame': 'pandas.DataFrame'
+}
+
+# No type hints in methods signature
+autodoc_typehints = 'description'
+
+todo_include_todos = True
+
+# Links to external documentations : python 3 and pandas
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
+}
+
+# Generate one file per method
+autosummary_generate = True
