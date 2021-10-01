@@ -18,8 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'pypowsybl'
-copyright = '2021, Geoffroy Jamgotchian'
-author = 'Geoffroy Jamgotchian'
+copyright = '2021, RTE (http://www.rte-france.com)'
 
 
 # -- General configuration ---------------------------------------------------
