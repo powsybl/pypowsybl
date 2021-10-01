@@ -50,6 +50,16 @@ To run unit tests:
 python3 -m unittest discover --start-directory tests
 ```
 
+While developing, you may find it convenient to use the develop (or editable)
+mode of installation:
+```bash
+pip install -e .
+# or to build the C extension with debug symbols:
+python setup.py build --debug develop --user
+```
+
+Please refer to pip and setuptools documentations for more information.
+
 ## Contribute to documentation
 
 To run the tests included in the documentation:
