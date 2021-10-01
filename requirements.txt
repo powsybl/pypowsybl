@@ -5,3 +5,4 @@ wheel==0.36.1
 coverage==5.5
 networkx
 matplotlib
+pydata-sphinx-theme
