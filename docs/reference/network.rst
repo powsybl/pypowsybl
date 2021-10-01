@@ -2,7 +2,7 @@
 Network
 =======
 
-.. currentmodule:: pypowsybl.network
+.. module:: pypowsybl.network
 
 The Network class is the representation of a power network in pypowsybl, it provides
 methods to access and modify underlying network elements data.
