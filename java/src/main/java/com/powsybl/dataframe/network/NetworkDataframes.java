@@ -423,6 +423,7 @@ public final class NetworkDataframes {
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
+                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
                 .addProperties()
                 .build();
     }

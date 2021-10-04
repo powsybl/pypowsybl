@@ -15,7 +15,6 @@ The most important part before running a load flow is, after importing a network
 .. doctest::
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> import pypowsybl.loadflow
     >>> pp.loadflow.Parameters()
     LoadFlowParameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=False, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
 
@@ -40,7 +39,6 @@ AC Load Flow
 .. doctest::
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> import pypowsybl.loadflow
     >>> parameters = pp.loadflow.Parameters(distributed_slack=False)
     >>> results = pp.loadflow.run_ac(network, parameters)
     >>> results
@@ -51,7 +49,6 @@ AC Load Flow
 .. doctest::
 
     >>> network = pp.network.create_four_substations_node_breaker_network()
-    >>> import pypowsybl.loadflow
     >>> parameters = pp.loadflow.Parameters(balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX, distributed_slack=True)
     >>> results = pp.loadflow.run_ac(network, parameters)
     >>> network.get_buses().v_mag
@@ -65,7 +62,7 @@ AC Load Flow
 
 If you want more logs:
 
-.. doctest::
+.. code-block:: python
 
     >>> pp.set_debug_mode(True)
 
@@ -76,7 +73,6 @@ DC Load Flow
 .. doctest::
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> import pypowsybl.loadflow
     >>> parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False, distributed_slack=True, balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
     >>> results = pp.loadflow.run_dc(network, parameters)
     >>> network.get_lines().p1

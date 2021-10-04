@@ -443,17 +443,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = self.create_dangling_lines_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                                 columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                         'connected'],
-                                data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True]])
+                                         'connected', 'ucte-x-node-code'],
+                                data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True, '']])
         pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
         n.update_dangling_lines(
             pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                          data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
-        udpdated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                                columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                         'connected'],
-                                data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False]])
-        pd.testing.assert_frame_equal(udpdated, n.get_dangling_lines(), check_dtype=False)
+        updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+                               columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                        'connected', 'ucte-x-node-code'],
+                               data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '']])
+        pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
 
     def test_batteries(self):
         n = self.create_battery_network()
