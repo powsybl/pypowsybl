@@ -1,7 +1,6 @@
 Network
 =======
 
-
 .. testsetup:: *
 
     import pandas as pd
@@ -120,6 +119,7 @@ Example:
    id
    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
+
 Ratio and phase tap changer steps data frames have a multi-index based on the transformer ID and the step position to
 be able to easily get steps related to just one transformer:
 
@@ -196,4 +196,3 @@ In order to achieve that, you can use variants management:
    >>> network.get_generators()['target_p']['GEN']  # We still have our initial value, 600 MW
    607.0
    >>> network.remove_variant('Variant')
-
