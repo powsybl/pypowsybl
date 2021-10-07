@@ -16,7 +16,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
-set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java)
+if(NOT DEFINED PYPOWSYBL_JAVA_SRC_DIR)
+    set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../java)
+endif()
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/java)
 set(PYPOWSYBL_JAVA_OLD_LIB pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(PYPOWSYBL_JAVA_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -53,13 +55,14 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1 ")
 endif()
 
+
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
 ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} --no-fallback --allow-incomplete-classpath --shared -H:Name=pypowsybl-java -H:CLibraryPath=${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} --no-fallback --allow-incomplete-classpath --shared -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}/src
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
@@ -67,7 +70,7 @@ ExternalProject_Add(native-image
 
 set(SOURCE_DIR "src")
 
-include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR} ${PYPOWSYBL_JAVA_SRC_DIR}/src/main/resources)
+include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
 set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp")
 
 link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
