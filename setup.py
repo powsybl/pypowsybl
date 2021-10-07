@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2021, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,12 +11,9 @@ import platform
 import subprocess
 
 from setuptools import setup, find_packages, Extension
-from setuptools.command.install import install
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-
-extra_jars = ''
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -86,12 +83,8 @@ class PyPowsyblBuild(build_ext):
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
-        global extra_jars
-        if extra_jars:
-            extra_jars = ':' + extra_jars
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DEXTRA_JARS=' + extra_jars]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -120,25 +113,6 @@ class PyPowsyblBuild(build_ext):
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-
-class InstallCommand(install):
-    user_options = install.user_options + [
-        ('jars=', None, 'absolute path to jar would be included, separated by colon.'),
-    ]
-
-    def initialize_options(self):
-        install.initialize_options(self)
-        self.jars = ''
-
-    def finalize_options(self):
-        install.finalize_options(self)
-
-    def run(self):
-        global extra_jars
-        extra_jars = self.jars
-        install.run(self)
-
-
 setup(
     name='pypowsybl',
     author='Geoffroy Jamgotchian',
@@ -149,7 +123,7 @@ setup(
     url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
     ext_modules=[PyPowsyblExtension()],
-    cmdclass=dict(install=InstallCommand, build_ext=PyPowsyblBuild),
+    cmdclass=dict(build_ext=PyPowsyblBuild),
     zip_safe=False,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
