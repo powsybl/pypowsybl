@@ -9,10 +9,8 @@ from pypowsybl.util import create_data_frame_from_series_array as _create_data_f
 
 from typing import List as _List
 
-import _pypowsybl
-from _pypowsybl import ContingencyResult as ContingencyResult
-from _pypowsybl import LimitViolation as LimitViolation
-from _pypowsybl import ContingencyContextType as ContingencyContextType
+import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from prettytable import PrettyTable as _PrettyTable

@@ -4,13 +4,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import _pypowsybl
-from _pypowsybl import LoadFlowParameters as Parameters
-from _pypowsybl import LoadFlowComponentResult as ComponentResult
-from _pypowsybl import LoadFlowComponentStatus as ComponentStatus
-from _pypowsybl import ConnectedComponentMode
-from _pypowsybl import BalanceType
-from _pypowsybl import VoltageInitMode
+import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl._pypowsybl import (
+    LoadFlowParameters as Parameters,
+    LoadFlowComponentResult as ComponentResult,
+    LoadFlowComponentStatus as ComponentStatus,
+    ConnectedComponentMode,
+    BalanceType,
+    VoltageInitMode
+)
 from pypowsybl.network import Network as _Network
 
 

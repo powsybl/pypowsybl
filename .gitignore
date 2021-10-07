@@ -51,6 +51,7 @@ build/*
 *.iml
 .vscode
 tests/_trial_temp/*
+_skbuild
 
 *.orig
 

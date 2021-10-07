@@ -87,6 +87,10 @@ add_dependencies(math-native native-image) # because mvn command also copy math 
 target_link_libraries(_pypowsybl PRIVATE ${PYPOWSYBL_JAVA_LIB})
 
 # copy auxiliary java lib so that it can be installed with module one
-if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    add_custom_command(TARGET _pypowsybl POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+install(TARGETS _pypowsybl
+        LIBRARY
+            DESTINATION pypowsybl)
+
+install(FILES ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB}
+              ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB}
+        DESTINATION pypowsybl)
