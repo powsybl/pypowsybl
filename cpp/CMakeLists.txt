@@ -55,7 +55,6 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1 ")
 endif()
 
-set(SOURCE_DIR "src")
 
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
@@ -68,6 +67,8 @@ ExternalProject_Add(native-image
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
 )
+
+set(SOURCE_DIR "src")
 
 include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
 set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp")
