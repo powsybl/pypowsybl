@@ -258,7 +258,7 @@ class Network(object):
 
             .. code-block:: python
 
-                net = pypo.network.create_four_substations_node_breaker_network()
+                net = pp.network.create_four_substations_node_breaker_network()
                 net.get_buses()
 
             It outputs something like:
@@ -307,7 +307,7 @@ class Network(object):
 
             .. code-block:: python
 
-                net = pypo.network.create_ieee14()
+                net = pp.network.create_ieee14()
                 net.get_generators()
 
             will output something like:
@@ -361,7 +361,7 @@ class Network(object):
 
             .. code-block:: python
 
-                net = pypo.network.create_ieee14()
+                net = pp.network.create_ieee14()
                 net.get_loads()
 
             will output something like:
@@ -430,7 +430,7 @@ class Network(object):
 
             .. code-block:: python
 
-                net = pypo.network.create_ieee14()
+                net = pp.network.create_ieee14()
                 net.get_lines()
 
             will output something like:
