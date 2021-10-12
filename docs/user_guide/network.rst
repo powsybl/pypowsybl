@@ -1,5 +1,3 @@
-.. currentmodule:: pypowsybl.network
-
 Network
 =======
 
