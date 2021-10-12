@@ -1086,9 +1086,6 @@ class Network(object):
             columns that can be updated :
                 - "v_mag"
                 - "v_angle"
-
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df)
 
@@ -1101,9 +1098,6 @@ class Network(object):
             columns that can be updated :
                 - "open"
                 - "retained"
-
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df)
 
@@ -1123,9 +1117,6 @@ class Network(object):
                 - "p"
                 - "q"
                 - "connected"
-
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df)
 
@@ -1139,8 +1130,6 @@ class Network(object):
                 - "p0"
                 - "q0"
                 - "connected"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df)
 
@@ -1154,9 +1143,6 @@ class Network(object):
                 - "p0"
                 - "q0"
                 - "connected"
-
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df)
 
@@ -1176,8 +1162,6 @@ class Network(object):
                 - "p"
                 - "q"
                 - "connected"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df)
 
@@ -1194,8 +1178,6 @@ class Network(object):
                 - "p"
                 - "q"
                 - "connected"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
 
@@ -1212,8 +1194,6 @@ class Network(object):
                 - "p"
                 - "q"
                 - "connected"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
 
@@ -1231,8 +1211,6 @@ class Network(object):
                 - "r"
                 - "connected1"
                 - "connected2"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
@@ -1255,8 +1233,6 @@ class Network(object):
                 - "q2"
                 - "connected1"
                 - "connected2"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.LINE, df)
 
@@ -1280,8 +1256,6 @@ class Network(object):
                 - "q2"
                 - "connected1"
                 - "connected2"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
@@ -1297,8 +1271,6 @@ class Network(object):
                 - "regulating"
                 - "target_v"
                 - "target_deadband"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
 
@@ -1314,8 +1286,6 @@ class Network(object):
                 - "regulation_mode"
                 - "regulation_value"
                 - "target_deadband"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
@@ -1330,8 +1300,6 @@ class Network(object):
                - "p"
                - "q"
                - "connected"
-        Returns:
-            a dataframe updated
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
 
@@ -1344,9 +1312,6 @@ class Network(object):
                           - g per section
                           - b per section
                           - max section count
-
-               Returns:
-                   a dataframe updated
                """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df)
 
@@ -1355,7 +1320,6 @@ class Network(object):
 
         Returns:
             the id of the currently selected variant
-
         """
         return _pypowsybl.get_working_variant_id(self._handle)
 
