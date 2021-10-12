@@ -172,7 +172,6 @@ We can also update network elements with a data frame:
     - ratio_tap_position (int), phase_tap_position (int)
 
 
-
 Working with multiple variants of a network
 -------------------------------------------
 
@@ -196,3 +195,4 @@ In order to achieve that, you can use variants management:
    >>> network.get_generators()['target_p']['GEN']  # We still have our initial value, 600 MW
    607.0
    >>> network.remove_variant('Variant')
+
