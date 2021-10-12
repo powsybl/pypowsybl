@@ -21,7 +21,8 @@ from pypowsybl.util import create_data_frame_from_series_array as _create_data_f
 
 
 class SingleLineDiagram:
-    """ This class represents a single line diagram."""
+    """
+    This class represents a single line diagram."""
 
     def __init__(self, svg: str):
         self._svg = svg
@@ -38,7 +39,8 @@ class SingleLineDiagram:
 
 
 class NodeBreakerTopology:
-    """ Node-breaker representation of the topology of a voltage level.
+    """
+    Node-breaker representation of the topology of a voltage level.
 
     The topology is actually represented as a graph, where
     vertices are called "nodes" and are identified by a unique number in the voltage level,
@@ -55,25 +57,29 @@ class NodeBreakerTopology:
 
     @property
     def switches(self) -> _DataFrame:
-        """ The list of switches of the voltage level, together with their connection status, as a dataframe.
+        """
+        The list of switches of the voltage level, together with their connection status, as a dataframe.
         """
         return self._switchs
 
     @property
     def nodes(self) -> _DataFrame:
-        """ The list of nodes of the voltage level, together with their corresponding network element (if any),
+        """
+        The list of nodes of the voltage level, together with their corresponding network element (if any),
         as a dataframe.
         """
         return self._nodes
 
     @property
     def internal_connections(self) -> _DataFrame:
-        """ The list of internal connection of the voltage level, together with the nodes they connect.
+        """
+        The list of internal connection of the voltage level, together with the nodes they connect.
         """
         return self._internal_connections
 
     def create_graph(self) -> _nx.Graph:
-        """ Representation of the topology as a networkx graph.
+        """
+        Representation of the topology as a networkx graph.
         """
         graph = _nx.Graph()
         graph.add_nodes_from(self._nodes.index.tolist())
@@ -156,7 +162,8 @@ class Network(object):
         return _pypowsybl.update_connectable_status(self._handle, id, False)
 
     def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
-        """Save a network to a file using a specified format.
+        """
+        Save a network to a file using a specified format.
 
         Args:
             file (str): a file
@@ -166,7 +173,8 @@ class Network(object):
         _pypowsybl.dump_network(self._handle, file, format, parameters)
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
-        """Save a network to a string using a specified format.
+        """
+        Save a network to a string using a specified format.
 
         Args:
             format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
@@ -187,7 +195,8 @@ class Network(object):
         _pypowsybl.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: str):
-        """ Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
+        """
+        Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
         Args:
             container_id: a voltage level id or a substation id
@@ -196,7 +205,8 @@ class Network(object):
         _pypowsybl.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
     def get_single_line_diagram(self, container_id: str):
-        """ Create a single line diagram from a voltage level or a substation.
+        """
+        Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
@@ -217,7 +227,8 @@ class Network(object):
                                                    not_connected_to_same_bus_at_both_sides)
 
     def get_elements(self, element_type: _pypowsybl.ElementType) -> _DataFrame:
-        """ Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
+        """
+        Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
         Args:
             element_type (ElementType): the element type
@@ -229,7 +240,8 @@ class Network(object):
         return _create_data_frame_from_series_array(series_array)
 
     def get_buses(self) -> _DataFrame:
-        """ Get buses as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of buses.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -240,7 +252,7 @@ class Network(object):
               - **synchronous_component**: the number of synchronous components that the bus is part of
               - **voltage_level_id**: at which substation the bus is connected
 
-            This dataframe is index by the name of the LCC converter
+            This dataframe is indexed by the id of the LCC converter
 
         Examples:
 
@@ -263,12 +275,13 @@ class Network(object):
             ======= ======== ======= =================== ===================== ================
 
         Returns:
-            a buses data frame
+            A dataframe of buses.
         """
         return self.get_elements(_pypowsybl.ElementType.BUS)
 
     def get_generators(self) -> _DataFrame:
-        """  Get generators as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of generators.
 
         Returns:
             the generator data frame.
@@ -283,12 +296,12 @@ class Network(object):
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**:
-              - **p**: the actual active production of the generator (Nan if no powerflow has been computed)
-              - **q**: the actual reactive production of the generator (Nan if no powerflow has been computed)
+              - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
+              - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **voltage_level_id**: at which substation this generator is connected
               - **bus_id**: at which bus this generator is computed
 
-            This dataframe is index by the name of the generators
+            This dataframe is indexed by the id of the generators
 
         Examples:
 
@@ -297,7 +310,7 @@ class Network(object):
                 net = pypo.network.create_ieee14()
                 net.get_generators()
 
-            It outputs something like:
+            will output something like:
 
             ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
             \    energy_source target_p  max_p   min_p target_v target_q voltage_regulator_on   p   q voltage_level_id bus_id
@@ -324,7 +337,8 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.GENERATOR)
 
     def get_loads(self) -> _DataFrame:
-        """ Get loads as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of loads.
 
         Returns:
             the load data frame
@@ -335,13 +349,13 @@ class Network(object):
               - **type**: type of load
               - **p0**: the active load consumption setpoint (MW)
               - **q0**: the reactive load consumption setpoint  (MVAr)
-              - **p**: the result active load consumption, it is Nan is not powerflow has been computed (MW)
-              - **q**: the result reactive load consumption, it is Nan is not powerflow has been computed (MVAr)
-              - **i**: the current on the load, Nan if no powerlow are computed (in A)
+              - **p**: the result active load consumption, it is ``NaN`` is not loadflow has been computed (MW)
+              - **q**: the result reactive load consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
+              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this load is connected
               - **bus_id**: at which bus this load is connected
 
-            This dataframe is index by the name of the loads.
+            This dataframe is indexed by the id of the loads.
 
         Examples:
 
@@ -350,7 +364,7 @@ class Network(object):
                 net = pypo.network.create_ieee14()
                 net.get_loads()
 
-            It outputs something like:
+            will output something like:
 
             ===== ========== ===== ===== === === ================ ======= =========
             \           type    p0    q0   p   q voltage_level_id  bus_id connected
@@ -373,19 +387,20 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LOAD)
 
     def get_batteries(self) -> _DataFrame:
-        """ Get batteries as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of batteries.
 
         Returns:
-            a batteries data frame
+            A dataframe of batteries.
         """
         return self.get_elements(_pypowsybl.ElementType.BATTERY)
 
     def get_lines(self) -> _DataFrame:
         """
-        Get lines data as a :class:`~pandas.DataFrame`.
+        Get a dataframe of lines data.
 
         Returns:
-            DataFrame of lines
+            A dataframe of lines data.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -396,20 +411,20 @@ class Network(object):
             - **b1**: the susceptance of line at its "1" side (in Siemens)
             - **g2**: the  conductance of line at its "2" side (in Siemens)
             - **b2**: the susceptance of line at its "2" side (in Siemens)
-            - **p1**: the active flow on the line at its "1" side, Nan if no powerlow are computed (in MW)
-            - **q1**: the reactive flow on the line at its "1" side, Nan if no powerlow are computed  (in MVAr)
-            - **i1**: the current on the line at its "1" side, Nan if no powerlow are computed (in A)
-            - **p2**: the active flow on the line at its "2" side, Nan if no powerlow are computed  (in MW)
-            - **q2**: the reactive flow on the line at its "2" side, Nan if no powerlow are computed  (in MVAr)
-            - **i2**: the current on the line at its "2" side, Nan if no powerlow are computed (in A)
+            - **p1**: the active flow on the line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+            - **q1**: the reactive flow on the line at its "1" side, ``NaN`` if no loadflow has been computed (in MVAr)
+            - **i1**: the current on the line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+            - **p2**: the active flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
+            - **q2**: the reactive flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
+            - **i2**: the current on the line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
             - **voltage_level1_id**: at which substation the "1" side of the powerline is connected
             - **voltage_level2_id**: at which substation the "2" side of the powerline is connected
             - **bus1_id**: at which bus the "1" side of the powerline is connected
             - **bus2_id**: at which bus the "2" side of the powerline is connected
-            - **connected1**: indicate if the side "1" of the line is connected to a bus
-            - **connected2**: indicate if the side "2" of the line is connected to a bus
+            - **connected1**: ``True`` if the side "1" of the line is connected to a bus
+            - **connected2**: ``True`` if the side "2" of the line is connected to a bus
 
-            This dataframe is index by the name of the powerlines
+            This dataframe is indexed by the id of the lines.
 
         Examples:
 
@@ -418,7 +433,7 @@ class Network(object):
                 net = pypo.network.create_ieee14()
                 net.get_lines()
 
-            It outputs something like:
+            will output something like:
 
             ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
             \                r         x   g1    b1   g2    b2  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
@@ -431,10 +446,11 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LINE)
 
     def get_2_windings_transformers(self) -> _DataFrame:
-        """ Get 2 windings transformers as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of 2 windings transformers.
 
         Returns:
-            a 2 windings transformers data frame
+            A dataframe of 2 windings transformers.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -446,18 +462,18 @@ class Network(object):
               - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
               - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
               - **rated_s**:
-              - **p1**: the active flow on the transformer at its "1" side, Nan if no powerlow are computed (in MW)
-              - **q1**: the reactive flow on the transformer at its "1" side, Nan if no powerlow are computed  (in MVAr)
-              - **i1**: the current on the transformer at its "1" side, Nan if no powerlow are computed (in A)
-              - **p2**: the active flow on the transformer at its "2" side, Nan if no powerlow are computed  (in MW)
-              - **q2**: the reactive flow on the transformer at its "2" side, Nan if no powerlow are computed  (in MVAr)
-              - **i2**: the current on the transformer at its "2" side, Nan if no powerlow are computed (in A)
+              - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+              - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
+              - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level1_id**: at which substation the "1" side of the transformer is connected
               - **voltage_level2_id**: at which substation the "2" side of the transformer is connected
-              - **connected1**: indicate if the side "1" of the transformer is connected to a bus
-              - **connected2**: indicate if the side "2" of the transformer is connected to a bus
+              - **connected1**: ``True`` ifthe side "1" of the transformer is connected to a bus
+              - **connected2**: ``True`` ifthe side "2" of the transformer is connected to a bus
 
-            This dataframe is index by the name of the two windings transformers
+            This dataframe is indexed by the id of the two windings transformers
 
         Examples:
 
@@ -466,7 +482,7 @@ class Network(object):
                 net = pp.network.create_ieee14()
                 net.get_2_windings_transformers()
 
-            It outputs something like:
+            will output something like:
 
             ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
             \         r        x   g   b rated_u1 rated_u2 rated_s  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
@@ -480,18 +496,20 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
 
     def get_3_windings_transformers(self) -> _DataFrame:
-        """ Get 3 windings transformers as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of 3 windings transformers.
 
         Returns:
-            a 3 windings transformers data frame
+            A dataframe of 3 windings transformers.
         """
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
 
     def get_shunt_compensators(self) -> _DataFrame:
-        """ Get shunt compensators as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of shunt compensators.
 
         Returns:
-            a shunt compensators data frame
+            A dataframe of shunt compensators.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -499,14 +517,14 @@ class Network(object):
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
               - **section_count**: The current number of section that may be switched on
-              - **p**: the active flow on the shunt, Nan if no powerlow are computed (in MW)
-              - **q**: the reactive flow on the shunt, Nan if no powerlow are computed  (in MVAr)
-              - **i**: the current in the shunt, Nan if no powerlow are computed  (in A)
+              - **p**: the active flow on the shunt, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
               - **voltage_level_id**: at which substation the shunt is connected
               - **bus_id**: indicate at which bus the shunt is connected
-              - **connected**: indicate if the shunt is connected to a bus
+              - **connected**: ``True`` ifthe shunt is connected to a bus
 
-            This dataframe is index by the name of the shunt compensators
+            This dataframe is indexed by the id of the shunt compensators
 
         Examples:
 
@@ -515,7 +533,7 @@ class Network(object):
                 net = pp.network.create_ieee14()
                 net.get_shunt_compensators()
 
-            It outputs something like:
+            will output something like:
 
             ===== ========== ================= ============= === === === ================ ====== =========
             \     model_type max_section_count section_count   p   q   i voltage_level_id bus_id connected
@@ -527,14 +545,16 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
 
     def get_non_linear_shunt_compensator_sections(self) -> _DataFrame:
-        """ Get shunt compensators sections for non linear model as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of shunt compensators sections for non linear model.
 
         Returns:
-            a non linear model shunt compensators sections data frame
+            A dataframe of non linear model shunt compensators sections.
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
-        """ Get shunt compensators sections for linear model as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of shunt compensators sections for linear model.
 
         Returns:
            a linear model shunt compensators sections
@@ -542,10 +562,11 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
 
     def get_dangling_lines(self) -> _DataFrame:
-        """ Get dangling lines as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of dangling lines.
 
         Returns:
-            a dangling lines data frame
+            A dataframe of dangling lines.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -556,14 +577,14 @@ class Network(object):
               - **b**: the susceptance of dangling line (in Siemens)
               - **p0**: The active power setpoint
               - **q0**: The reactive power setpoint
-              - **p**: active flow on the dangling line, Nan if no powerlow are computed (in MW)
-              - **q**: the reactive flow on the dangling line, Nan if no powerlow are computed  (in MVAr)
-              - **i**: The current on the dangling line, Nan if no powerlow are computed (in A)
+              - **p**: active flow on the dangling line, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the dangling line is connected
               - **bus_id**: at which bus the dangling line is connected
-              - **connected**: indicate if the dangling line is connected to a bus
+              - **connected**: ``True`` ifthe dangling line is connected to a bus
 
-            This dataframe is index by the name of the dangling lines
+            This dataframe is indexed by the id of the dangling lines
 
         Examples:
 
@@ -572,7 +593,7 @@ class Network(object):
                 net = pp.network._create_dangling_lines_network()
                 net.get_dangling_lines()
 
-            It outputs something like:
+            will output something like:
 
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
             \     r   x      g       b   p0   q0   p   q   i voltage_level_id bus_id connected
@@ -584,21 +605,25 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
 
     def get_lcc_converter_stations(self) -> _DataFrame:
-        """ Get LCC converter stations as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of LCC converter stations.
+
+        Returns:
+            A dataframe of LCC converter stations.
 
         Notes:
             The resulting dataframe will have the following columns:
 
               - **power_factor**: the power factor
               - **loss_factor**: the loss factor
-              - **p**: active flow on the LCC converter station, Nan if no powerlow are computed (in MW)
-              - **q**: the reactive flow on the LCC converter station, Nan if no powerlow are computed  (in MVAr)
-              - **i**: The current on the LCC converter station, Nan if no powerlow are computed (in A)
+              - **p**: active flow on the LCC converter station, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the LCC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: The current on the LCC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the LCC converter station is connected
               - **bus_id**: at which bus the LCC converter station is connected
-              - **connected**: indicate if the LCC converter station is connected to a bus
+              - **connected**: ``True`` ifthe LCC converter station is connected to a bus
 
-            This dataframe is index by the name of the LCC converter
+            This dataframe is indexed by the id of the LCC converter
 
         Examples:
 
@@ -607,7 +632,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_lcc_converter_stations()
 
-            It outputs something like:
+            will output something like:
 
             ======== ============ ===========  ====== === === ================ ======= =========
                 .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
@@ -616,14 +641,15 @@ class Network(object):
                 LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
                 LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
             ======== ============ ===========  ====== === === ================ ======= =========
-
-        Returns:
-            a LCC converter stations data frame
         """
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
 
     def get_vsc_converter_stations(self) -> _DataFrame:
-        """ Get VSC converter stations as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of VSC converter stations.
+
+        Returns:
+            A dataframe of VCS converter stations.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -631,14 +657,14 @@ class Network(object):
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
-              - **p**: active flow on the VSC  converter station, Nan if no powerlow are computed (in MW)
-              - **q**: the reactive flow on the VSC converter station, Nan if no powerlow are computed  (in MVAr)
-              - **i**: The current on the VSC converter station, Nan if no powerlow are computed (in A)
+              - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the VSC converter station is connected
               - **bus_id**: at which bus the VSC converter station is connected
-              - **connected**: indicate if the VSC converter station is connected to a bus
+              - **connected**: ``True`` ifthe VSC converter station is connected to a bus
 
-            This dataframe is index by the name of the VSC converter
+            This dataframe is indexed by the id of the VSC converter
 
         Examples:
 
@@ -649,7 +675,7 @@ class Network(object):
 
 
 
-            It outputs something like:
+            will output something like:
 
             ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
             \        voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
@@ -658,29 +684,30 @@ class Network(object):
                 VSC1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
                 VSC2              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
             ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-
-        Returns:
-            a VCS converter stations data frame
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
     def get_static_var_compensators(self) -> _DataFrame:
-        """ Get static var compensators as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of static var compensators.
 
-         Notes:
+        Returns:
+            A dataframe of static var compensators.
+
+        Notes:
             The resulting dataframe will have the following columns:
 
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
-              - **p**: active flow on the var compensator, Nan if no powerlow are computed (in MW)
-              - **q**: the reactive flow on the var compensator, Nan if no powerlow are computed  (in MVAr)
-              - **i**: The current on the var compensator, Nan if no powerlow are computed (in A)
+              - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the var compensator is connected
               - **bus_id**: at which bus the var compensator is connected
-              - **connected**: indicate if the var compensator is connected to a bus
+              - **connected**: ``True`` ifthe var compensator is connected to a bus
 
-            This dataframe is index by the name of the var compensator
+            This dataframe is indexed by the id of the var compensator
 
         Examples:
 
@@ -689,7 +716,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_static_var_compensators()
 
-            It outputs something like:
+            will output something like:
 
             ======== ================ ======================= =============== === ======== === ================ ======= =========
             \        voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
@@ -697,14 +724,16 @@ class Network(object):
             id
                  SVC            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
             ======== ================ ======================= =============== === ======== === ================ ======= =========
-
-        Returns:
-            a static var compensators data frame
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
     def get_voltage_levels(self) -> _DataFrame:
-        """ Get voltage levels as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of voltage levels.
+
+        Returns:
+            A dataframe of voltage levels.
+
         Notes:
             The resulting dataframe will have the following columns:
 
@@ -713,7 +742,7 @@ class Network(object):
               - **high_voltage_limit**: the high voltage limit
               - **low_voltage_limit**: the low voltage limit
 
-            This dataframe is index by the name of the voltage levels
+            This dataframe is indexed by the id of the voltage levels
 
         Examples:
 
@@ -722,7 +751,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_voltage_levels()
 
-            It outputs something like:
+            will output something like:
 
             ========= ============= ========= ================== =================
             \         substation_id nominal_v high_voltage_limit low_voltage_limit
@@ -734,28 +763,26 @@ class Network(object):
                 S3VL1            S3     400.0              440.0             390.0
                 S4VL1            S4     400.0              440.0             390.0
             ========= ============= ========= ================== =================
-
-        Returns:
-            a voltage levels data frame
-            Args:
-                df (DataFrame): the :class:`~pandas.DataFrame`
-
-            """
+        """
         return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL)
 
     def get_busbar_sections(self) -> _DataFrame:
-        """ Get busbar sections as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of busbar sections.
+
+        Returns:
+            A dataframe of busbar sections.
 
         Notes:
             The resulting dataframe will have the following columns:
 
-              - **fictitious**: indicate if the busbar section is part of the model and not of the actual network
+              - **fictitious**: ``True`` ifthe busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
               - **angle**: the voltage angle of the busbar section (in radian)
               - **voltage_level_id**: at which substation the busbar section is connected
-              - **connected**: indicate if the busbar section is connected to a bus
+              - **connected**: ``True`` ifthe busbar section is connected to a bus
 
-            This dataframe is index by the name of the busbar sections
+            This dataframe is indexed by the id of the busbar sections
 
         Examples:
 
@@ -764,7 +791,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_busbar_sections()
 
-            It outputs something like:
+            will output something like:
 
             ========== ========== ======== ======== ================ =========
             \          fictitious        v    angle voltage_level_id connected
@@ -777,22 +804,24 @@ class Network(object):
              S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
              S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
             ========== ========== ======== ======== ================ =========
-
-        Returns:
-            a busbar sections data frame
         """
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION)
 
     def get_substations(self) -> _DataFrame:
-        """ Get substations :class:`~pandas.DataFrame`.
+        """
+        Get substations :class:`~pandas.DataFrame`.
 
         Returns:
-            a substations data frame
+            A dataframe of substations.
         """
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION)
 
     def get_hvdc_lines(self) -> _DataFrame:
-        """ Get HVDC lines as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of HVDC lines.
+
+        Returns:
+            A dataframe of HVDC lines.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -804,10 +833,10 @@ class Network(object):
               - **r**: the resistance of the hvdc line (in Ohm)
               - **converter_station1_id**: at which converter station the hvdc line is connected on side "1"
               - **converter_station2_id**: at which converter station the hvdc line is connected on side "2"
-              - **connected1**: indicate if the busbar section on side "1" is connected to a bus
-              - **connected2**: indicate if the busbar section on side "2" is connected to a bus
+              - **connected1**: ``True`` ifthe busbar section on side "1" is connected to a bus
+              - **connected2**: ``True`` ifthe busbar section on side "2" is connected to a bus
 
-            This dataframe is index by the name of the hvdc lines
+            This dataframe is indexed by the id of the hvdc lines
 
         Examples:
 
@@ -816,7 +845,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_hvdc_lines()
 
-            It outputs something like:
+            will output something like:
 
             ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
             \                      converters_mode active_power_setpoint max_p nominal_v    r converter_station1_id converter_station2_id connected1 connected2
@@ -825,14 +854,15 @@ class Network(object):
             HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0 300.0     400.0  1.0                  VSC1                  VSC2       True       True
             HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0 300.0     400.0  1.0                  LCC1                  LCC2       True       True
             ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
-
-        Returns:
-            a HVDC lines data frame
         """
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE)
 
     def get_switches(self) -> _DataFrame:
-        """ Get switches as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of switches.
+
+        Returns:
+            A dataframe of HVDC lines.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -842,7 +872,7 @@ class Network(object):
               - **retained**: the retain status of the switch
               - **voltage_level_id**: at which substation the switch is connected
 
-            This dataframe is index by the name of the switches
+            This dataframe is indexed by the id of the switches
 
         Examples:
             .. code-block:: python
@@ -850,7 +880,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_switches()
 
-            It outputs something like:
+            will output something like:
 
             ============================ ============ ====== ======== ================
             \                                    kind   open retained voltage_level_id
@@ -866,14 +896,15 @@ class Network(object):
             S1VL2_BBS1_VSC1_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
                                      ...          ...    ...      ...              ...
             ============================ ============ ====== ======== ================
-
-        Returns:
-            a switches data frame
         """
         return self.get_elements(_pypowsybl.ElementType.SWITCH)
 
     def get_ratio_tap_changer_steps(self) -> _DataFrame:
-        """ Get ratio tap changer steps as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of ratio tap changer steps.
+
+        Returns:
+            A dataframe of HVDC lines.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -892,7 +923,7 @@ class Network(object):
                 net = pp.network.create_eurostag_tutorial_example1_network()
                 net.get_ratio_tap_changer_steps()
 
-            It outputs something like:
+            will output something like:
 
             ========== ======== ======== === === === ===
             \                        rho   r   x   g   b
@@ -902,14 +933,15 @@ class Network(object):
             \                 1 1.000667 0.0 0.0 0.0 0.0
             \                 2 1.150767 0.0 0.0 0.0 0.0
             ========== ======== ======== === === === ===
-
-        Returns:
-            a ratio tap changer steps data frame
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
 
     def get_phase_tap_changer_steps(self) -> _DataFrame:
-        """ Get phase tap changer steps as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of phase tap changer steps.
+
+        Returns:
+            A dataframe of phase tap changer steps.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -929,7 +961,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_phase_tap_changer_steps()
 
-            It outputs something like:
+            will output something like:
 
             === ======== ==== ====== ========= ========= === ===
             \             rho  alpha         r         x   g   b
@@ -940,14 +972,15 @@ class Network(object):
             \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
             ...      ...  ...    ...       ...       ... ... ...
             === ======== ==== ====== ========= ========= === ===
-
-        Returns:
-            a phase tap changer steps data frame
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
 
     def get_ratio_tap_changers(self) -> _DataFrame:
-        """ Create a ratio tap changers:class:`~pandas.DataFrame`.
+        """
+        Create a ratio tap changers:class:`~pandas.DataFrame`.
+
+        Returns:
+            the ratio tap changers data frame
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -962,7 +995,7 @@ class Network(object):
               - **target_deadband**:
               - **regulationg_bus_id**:
 
-            This dataframe is index by the name of the transformer
+            This dataframe is indexed by the id of the transformer
 
         Examples:
             .. code-block:: python
@@ -970,7 +1003,7 @@ class Network(object):
                 net = pp.network.create_eurostag_tutorial_example1_network()
                 net.get_ratio_tap_changers()
 
-            It outputs something like:
+            will output something like:
 
             ========== === ======= ======== ========== ======= ========== ======== =============== =================
             \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
@@ -978,14 +1011,15 @@ class Network(object):
             id
             NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
             ========== === ======= ======== ========== ======= ========== ======== =============== =================
-
-        Returns:
-            the ratio tap changers data frame
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
 
     def get_phase_tap_changers(self) -> _DataFrame:
-        """ Create a phase tap changers:class:`~pandas.DataFrame`.
+        """
+        Create a phase tap changers:class:`~pandas.DataFrame`.
+
+        Returns:
+            the phase tap changers data frame
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -999,7 +1033,7 @@ class Network(object):
               - **target_deadband**:
               - **regulationg_bus_id**:
 
-            This dataframe is index by the name of the transformer
+            This dataframe is indexed by the id of the transformer
 
         Examples:
             .. code-block:: python
@@ -1007,7 +1041,7 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_phase_tap_changers()
 
-            It outputs something like:
+            will output something like:
 
             === === ======= ======== ========== ========== =============== ================ =============== =================
             \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
@@ -1015,28 +1049,28 @@ class Network(object):
             id
             TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
             === === ======= ======== ========== ========== =============== ================ =============== =================
-
-        Returns:
-            the phase tap changers data frame
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
 
     def get_reactive_capability_curve_points(self) -> _DataFrame:
-        """ Get reactive capability curve points as a :class:`~pandas.DataFrame`.
+        """
+        Get a dataframe of reactive capability curve points.
 
         Returns:
-            a reactive capability curve points data frame
+            A dataframe of reactive capability curve points.
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
     def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame):
-        """ Update network elements with a :class:`~pandas.DataFrame` for a specified element type.
+        """
+        Update network elements with a :class:`~pandas.DataFrame` for a specified element type.
+
         The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
 
         Args:
             element_type (ElementType): the element type
-            df (DataFrame): the :class:`~pandas.DataFrame`
+            df: the data to be updated
         """
         for series_name in df.columns.values:
             series = df[series_name]
@@ -1058,140 +1092,175 @@ class Network(object):
                     f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
 
     def update_buses(self, df: _DataFrame):
-        """ Update buses with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_buses()`
+        """
+        Update buses with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_buses`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "v_mag"
-                - "v_angle"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `v_mag`
+                - `v_angle`
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df)
 
     def update_switches(self, df: _DataFrame):
-        """ Update switches with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_switches()`
+        """
+        Update switches with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_switches`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "open"
-                - "retained"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `open`
+                - `retained`
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df)
 
     def update_generators(self, df: _DataFrame):
-        """ Update generators with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_generators()`
+        """
+        Update generators with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_generators`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-              - "target_p"
-              - "max_p"
-              - "min_p"
-              - "target_v"
-              - "target_q"
-              - "voltage_regulator_on"
-              - "p"
-              - "q"
-              - "connected"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `target_p`
+                - `max_p`
+                - `min_p`
+                - `target_v`
+                - `target_q`
+                - `voltage_regulator_on`
+                - `p`
+                - `q`
+                - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df)
 
     def update_loads(self, df: _DataFrame):
-        """ Update loads with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_loads()`
+        """
+        Update loads with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_loads`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "p0"
-                - "q0"
-                - "connected"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `p0`
+                - `q0`
+                - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df)
 
     def update_batteries(self, df: _DataFrame):
-        """ Update batteries with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_batteries()`
+        """
+        Update batteries with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_batteries`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "p0"
-                - "q0"
-                - "connected"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `p0`
+                - `q0`
+                - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df)
 
     def update_dangling_lines(self, df: _DataFrame):
-        """ Update dangling lines with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_dangling_lines()`
+        """
+        Update dangling lines with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_dangling_lines`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-              - "r"
-              - "x"
-              - "g"
-              - "b"
-              - "p0"
-              - "q0"
-              - "p"
-              - "q"
-              - "connected"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `r`
+                - `x`
+                - `g`
+                - `b`
+                - `p0`
+                - `q0`
+                - `p`
+                - `q`
+                - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df)
 
     def update_vsc_converter_stations(self, df: _DataFrame):
-        """ Update VSC converter stations with a :class:`~pandas.DataFrame`.
+        """
+        Update VSC converter stations with a :class:`~pandas.DataFrame`.
 
-        This method updates element of :func:`~pypowsybl.network.get_vsc_converter_stations()`
+        See Also:
+            :meth:`get_vsc_converter_stations`
 
         Args:
-          df (DataFrame): the :class:`~pandas.DataFrame`
-          columns that can be updated :
-          - "voltage_setpoint"
-          - "reactive_power_setpoint"
-          - "voltage_regulator_on"
-          - "p"
-          - "q"
-          - "connected"
+          df: the data to be updated.
+              Columns that can be updated :
+
+              - `voltage_setpoint`
+              - `reactive_power_setpoint`
+              - `voltage_regulator_on`
+              - `p`
+              - `q`
+              - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
 
     def update_static_var_compensators(self, df: _DataFrame):
-        """ Update static var compensators with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_static_var_compensators()`
+        """
+        Update static var compensators with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_static_var_compensators`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-              - "voltage_setpoint"
-              - "reactive_power_setpoint"
-              - "regulation_mode"
-              - "p"
-              - "q"
-              - "connected"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `voltage_setpoint`
+                - `reactive_power_setpoint`
+                - `regulation_mode`
+                - `p`
+                - `q`
+                - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
 
     def update_hvdc_lines(self, df: _DataFrame):
-        """ Update HVDC lines with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_hvdc_lines()`
+        """
+        Update HVDC lines with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_hvdc_lines`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-              - "converters_mode"
-              - "active_power_setpoint"
-              - "max_p"
-              - "nominal_v"
-              - "r"
-              - "connected1"
-              - "connected2"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `converters_mode`
+                - `active_power_setpoint`
+                - `max_p`
+                - `nominal_v`
+                - `r`
+                - `connected1`
+                - `connected2`
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
 
@@ -1199,101 +1268,119 @@ class Network(object):
         """
         Update lines data with a :class:`~pandas.DataFrame`.
 
-        This method updates elements of :func:`~pypowsybl.network.Network.get_lines()`
+        See Also:
+            :meth:`get_lines`
 
         Args:
-            df (pandas.DataFrame): lines data to be updated.
-
+            df: lines data to be updated.
                 Columns that can be updated are:
 
-                - "r"
-                - "x"
-                - "g1"
-                - "b1"
-                - "g2"
-                - "b2"
-                - "p1"
-                - "q1"
-                - "p2"
-                - "q2"
-                - "connected1"
-                - "connected2"
+                - `r`
+                - `x`
+                - `g1`
+                - `b1`
+                - `g2`
+                - `b2`
+                - `p1`
+                - `q1`
+                - `p2`
+                - `q2`
+                - `connected1`
+                - `connected2`
         """
         return self.update_elements(_pypowsybl.ElementType.LINE, df)
 
     def update_2_windings_transformers(self, df: _DataFrame):
-        """ Update 2 windings transformers with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_2_windings_transformers()`
+        """
+        Update 2 windings transformers with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_2_windings_transformers`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-              - "r"
-              - "x"
-              - "g"
-              - "b"
-              - "rated_u1"
-              - "rated_u2"
-              - "rated_s"
-              - "p1"
-              - "q1"
-              - "p2"
-              - "q2"
-              - "connected1"
-              - "connected2"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `r`
+                - `x`
+                - `g`
+                - `b`
+                - `rated_u1`
+                - `rated_u2`
+                - `rated_s`
+                - `p1`
+                - `q1`
+                - `p2`
+                - `q2`
+                - `connected1`
+                - `connected2`
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
 
     def update_ratio_tap_changers(self, df: _DataFrame):
-        """ Update ratio tap changers with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_ratio_tap_changers()`
+        """
+        Update ratio tap changers with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_ratio_tap_changers`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "tap"
-                - "on_load"
-                - "regulating"
-                - "target_v"
-                - "target_deadband"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `tap`
+                - `on_load`
+                - `regulating`
+                - `target_v`
+                - `target_deadband`
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
 
     def update_phase_tap_changers(self, df: _DataFrame):
-        """ Update phase tap changers with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_phase_tap_changers()`
+        """
+        Update phase tap changers with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_phase_tap_changers`
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-            columns that can be updated :
-                - "tap"
-                - "regulating"
-                - "regulation_mode"
-                - "regulation_value"
-                - "target_deadband"
+            df: the data to be updated.
+                Columns that can be updated :
+
+                - `tap`
+                - `regulating`
+                - `regulation_mode`
+                - `regulation_value`
+                - `target_deadband`
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
 
     def update_shunt_compensators(self, df: _DataFrame):
-        """ Update shunt compensators with a :class:`~pandas.DataFrame`.
-            This method updates element of :func:`~pypowsybl.network.get_shunt_compensators()`
+        """
+        Update shunt compensators with a :class:`~pandas.DataFrame`.
+
+        See Also:
+            :meth:`get_shunt_compensators`
 
         Args:
-           df (DataFrame): the :class:`~pandas.DataFrame`
-           columns that can be updated :
-               - "section_count"
-               - "p"
-               - "q"
-               - "connected"
+           df: the data to be updated.
+               Columns that can be updated :
+
+               - `section_count`
+               - `p`
+               - `q`
+               - `connected`
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
 
     def update_linear_shunt_compensator_sections(self, df: _DataFrame):
-        """ Update shunt compensators with a :class:`~pandas.DataFrame`.
+        """
+        Update shunt compensators with a :class:`~pandas.DataFrame`.
 
         Args:
-            df (DataFrame): the :class:`~pandas.DataFrame`
-                columns that can be updated :
+            df: the data to be updated.
+                Columns that can be updated :
+
                 - g per section
                 - b per section
                 - max section count
@@ -1301,15 +1388,17 @@ class Network(object):
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df)
 
     def get_working_variant_id(self):
-        """ The current working variant ID
+        """
+        The current working variant ID.
 
         Returns:
-            the id of the currently selected variant
+            the id of the currently selected variant.
         """
         return _pypowsybl.get_working_variant_id(self._handle)
 
     def clone_variant(self, src: str, target: str, may_overwrite=True):
-        """ Creates a copy of the source variant
+        """
+        Creates a copy of the source variant
 
         Args:
             src: variant to copy
@@ -1319,7 +1408,8 @@ class Network(object):
         _pypowsybl.clone_variant(self._handle, src, target, may_overwrite)
 
     def set_working_variant(self, variant: str):
-        """ Changes the working variant. The provided variant ID must correspond
+        """
+        Changes the working variant. The provided variant ID must correspond
         to an existing variant, for example created by a call to `clone_variant`.
 
         Args:
@@ -1348,13 +1438,15 @@ class Network(object):
     def get_current_limits(self):
         """
         Get the list of all current limits on the network paired with their branch id.
+
         Returns:
             all current limits on the network
         """
         return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
 
     def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
-        """ Get the node breaker description of the topology of a voltage level.
+        """
+        Get the node breaker description of the topology of a voltage level.
 
         Args:
             voltage_level_id: id of the voltage level
@@ -1377,7 +1469,8 @@ def _create_network(name, network_id=''):
 
 
 def create_empty(id: str = "Default") -> Network:
-    """ Create an empty network.
+    """
+    Create an empty network.
 
     Args:
         id: id of the network, defaults to 'Default'
@@ -1389,7 +1482,8 @@ def create_empty(id: str = "Default") -> Network:
 
 
 def create_ieee9() -> Network:
-    """ Create an instance of IEEE 9 bus network
+    """
+    Create an instance of IEEE 9 bus network
 
     Returns:
         a new instance of IEEE 9 bus network
@@ -1398,7 +1492,8 @@ def create_ieee9() -> Network:
 
 
 def create_ieee14() -> Network:
-    """ Create an instance of IEEE 14 bus network
+    """
+    Create an instance of IEEE 14 bus network
 
     Returns:
         a new instance of IEEE 14 bus network
@@ -1407,7 +1502,8 @@ def create_ieee14() -> Network:
 
 
 def create_ieee30() -> Network:
-    """ Create an instance of IEEE 30 bus network
+    """
+    Create an instance of IEEE 30 bus network
 
     Returns:
         a new instance of IEEE 30 bus network
@@ -1416,7 +1512,8 @@ def create_ieee30() -> Network:
 
 
 def create_ieee57() -> Network:
-    """ Create an instance of IEEE 57 bus network
+    """
+    Create an instance of IEEE 57 bus network
 
     Returns:
         a new instance of IEEE 57 bus network
@@ -1425,7 +1522,8 @@ def create_ieee57() -> Network:
 
 
 def create_ieee118() -> Network:
-    """ Create an instance of IEEE 118 bus network
+    """
+    Create an instance of IEEE 118 bus network
 
     Returns:
         a new instance of IEEE 118 bus network
@@ -1434,7 +1532,8 @@ def create_ieee118() -> Network:
 
 
 def create_ieee300() -> Network:
-    """ Create an instance of IEEE 300 bus network
+    """
+    Create an instance of IEEE 300 bus network
 
     Returns:
         a new instance of IEEE 300 bus network
@@ -1443,7 +1542,8 @@ def create_ieee300() -> Network:
 
 
 def create_eurostag_tutorial_example1_network() -> Network:
-    """ Create an instance of example 1 network of Eurostag tutorial
+    """
+    Create an instance of example 1 network of Eurostag tutorial
 
     Returns:
         a new instance of example 1 network of Eurostag tutorial
@@ -1452,7 +1552,8 @@ def create_eurostag_tutorial_example1_network() -> Network:
 
 
 def create_four_substations_node_breaker_network() -> Network:
-    """ Create an instance of powsybl "4 substations" test case.
+    """
+    Create an instance of powsybl "4 substations" test case.
 
     It is meant to contain most network element types that can be
     represented in powsybl networks.
@@ -1465,7 +1566,8 @@ def create_four_substations_node_breaker_network() -> Network:
 
 
 def create_micro_grid_be_network() -> Network:
-    """ Create an instance of micro grid BE CGMES test case
+    """
+    Create an instance of micro grid BE CGMES test case
 
     Returns:
         a new instance of micro grid BE CGMES test case
@@ -1474,7 +1576,8 @@ def create_micro_grid_be_network() -> Network:
 
 
 def create_micro_grid_nl_network() -> Network:
-    """ Create an instance of micro grid NL CGMES test case
+    """
+    Create an instance of micro grid NL CGMES test case
 
     Returns:
         a new instance of micro grid NL CGMES test case
@@ -1483,7 +1586,8 @@ def create_micro_grid_nl_network() -> Network:
 
 
 def get_import_formats() -> _List[str]:
-    """ Get list of supported import formats
+    """
+    Get list of supported import formats
 
     :return: the list of supported import formats
     :rtype: List[str]
@@ -1492,7 +1596,8 @@ def get_import_formats() -> _List[str]:
 
 
 def get_export_formats() -> _List[str]:
-    """ Get list of supported export formats
+    """
+    Get list of supported export formats
 
     :return: the list of supported export formats
     :rtype: List[str]
@@ -1501,7 +1606,8 @@ def get_export_formats() -> _List[str]:
 
 
 def get_import_parameters(format: str) -> _DataFrame:
-    """ Get supported import parameters infos for a given format
+    """
+    Get supported import parameters infos for a given format
 
     Args:
        format (str): the format
@@ -1514,7 +1620,8 @@ def get_import_parameters(format: str) -> _DataFrame:
 
 
 def get_export_parameters(format: str) -> _DataFrame:
-    """ Get supported export parameters infos for a given format
+    """
+    Get supported export parameters infos for a given format
 
     Args:
        format (str): the format
@@ -1527,7 +1634,8 @@ def get_export_parameters(format: str) -> _DataFrame:
 
 
 def load(file: str, parameters: dict = {}) -> Network:
-    """ Load a network from a file. File should be in a supported format.
+    """
+    Load a network from a file. File should be in a supported format.
 
     Args:
        file (str): a file
@@ -1540,7 +1648,8 @@ def load(file: str, parameters: dict = {}) -> Network:
 
 
 def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
-    """ Load a network from a string. File content should be in a supported format.
+    """
+    Load a network from a string. File content should be in a supported format.
 
     Args:
        file_name (str): file name
