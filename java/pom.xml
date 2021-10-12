@@ -33,7 +33,7 @@
     <scm>
         <connection>scm:git:https://github.com/powsybl/pypowsybl.git</connection>
         <developerConnection>scm:git:https://github.com/powsybl/pypowsybl.git</developerConnection>
-        <url>https://github.com/powsybl/pypowsybl/tree/master/</url>
+        <url>https://github.com/powsybl/pypowsybl/tree/main/</url>
     </scm>
 
     <developers>
