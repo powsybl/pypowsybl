@@ -4,6 +4,5 @@ sphinx==4.2.0
 pydata-sphinx-theme==0.6.3
 wheel==0.36.1
 coverage==5.5
-autodocsumm>=0.1.13
 networkx
 matplotlib
