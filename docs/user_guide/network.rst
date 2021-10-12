@@ -74,7 +74,7 @@ Example:
    :skipif: pp is None
 
    >>> pp.network.get_export_formats()
-   ['CGMES', 'PSS/E', 'UCTE', 'XIIDM', 'ADN']
+   ['CGMES', 'PSS/E', 'UCTE', 'XIIDM']
 
 .. autofunction:: pypowsybl.network.Network.dump
    :noindex:
