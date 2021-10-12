@@ -55,7 +55,8 @@ public final class SingleLineDiagramUtil {
         ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
         LayoutParameters layoutParameters = new LayoutParameters()
                 .setCssLocation(LayoutParameters.CssLocation.INSERTED_IN_SVG)
-                .setAdaptCellHeightToContent(true);
+                .setAdaptCellHeightToContent(true)
+                .setSvgWidthAndHeightAdded(true);
         if (network.getVoltageLevel(containerId) != null) {
             VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
             VoltageLevelDiagram voltageLevelDiagram = VoltageLevelDiagram.build(new NetworkGraphBuilder(network), containerId, voltageLevelLayoutFactory, false);

@@ -11,6 +11,9 @@ import pandas as pd
 
 class SecurityAnalysisTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_security_analysis(self):
         pd.set_option('display.max_columns', None)
         n = pp.network.create_eurostag_tutorial_example1_network()

@@ -7,14 +7,16 @@
 import unittest
 import pypowsybl as pp
 
-
 class LoadflowTestCase(unittest.TestCase):
+
+    def setUp(self):
+        pp.set_config_read(False)
 
     def test_run_lf(self):
         n = pp.network.create_ieee14()
         results = pp.loadflow.run_ac(n)
         self.assertEqual(1, len(results))
-        self.assertEqual(pp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
+        self.assertEqual(pp.loadflow.ComponentStatus.CONVERGED, results[0].status)
         parameters = pp.loadflow.Parameters(distributed_slack=False)
         results = pp.loadflow.run_dc(n, parameters)
         self.assertEqual(1, len(results))

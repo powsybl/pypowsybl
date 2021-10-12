@@ -16,6 +16,9 @@ DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class SensitivityAnalysisTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_sensitivity_analysis(self):
         n = pp.network.create_ieee14()
         # fix max_p to be less than olf max_p plausible value
@@ -140,6 +143,23 @@ class SensitivityAnalysisTestCase(unittest.TestCase):
         self.assertAlmostEqual(-0.256641, s['BBE2AA1  FFR3AA1  1']['FR -> DE'], places=6)
         self.assertAlmostEqual(0.256641, s['BBE2AA1  FFR3AA1  1']['DE -> FR'], places=6)
         self.assertAlmostEqual(0.103426, s['BBE2AA1  FFR3AA1  1']['NL'], places=6)
+
+    def test_xnode_sensi(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu-xnode.uct')))
+        # assert there is one dangling line (corresponding to the UCTE xnode)
+        dangling_lines = n.get_dangling_lines()
+        self.assertEqual(1, len(dangling_lines))
+        # create a new zone with only one xnode, this is the dangling line id that has to be configured (corresponding
+        # to the line connecting the xnode in the UCTE file)
+        zone_x = pp.sensitivity.create_empty_zone("X")
+        zone_x.add_injection('NNL2AA1  XXXXXX11 1')
+        sa = pp.sensitivity.create_dc_analysis()
+        sa.set_zones([zone_x])
+        sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+        result = sa.run(n)
+        s = result.get_branch_flows_sensitivity_matrix()
+        self.assertEqual((1, 1), s.shape)
+        self.assertAlmostEqual(0.176618, s['BBE2AA1  FFR3AA1  1']['X'], places=6)
 
 
 if __name__ == '__main__':

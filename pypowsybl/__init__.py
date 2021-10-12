@@ -5,9 +5,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import _pypowsybl
+import os as _os
+import inspect as _inspect
 from _pypowsybl import PyPowsyblError
 
-__version__ = '0.9.0'
+__version__ = '0.11.0'
+
+# set JVM java.library.path to pypowsybl module installation directory to be able to load math library
+_pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
 
 import pypowsybl.network
 import pypowsybl.loadflow
@@ -34,6 +39,19 @@ def set_debug_mode(debug: bool = True) -> None:
     :type debug: bool
     """
     _pypowsybl.set_debug_mode(debug)
+
+
+def set_config_read(read_config: bool = True) -> None:
+    """Set read ~/.itools/config.yml or not
+
+    Args:
+        read_config(bool): defaults to True
+    """
+    _pypowsybl.set_config_read(read_config)
+
+
+def is_config_read() -> bool:
+    return _pypowsybl.is_config_read()
 
 
 def print_version() -> None:

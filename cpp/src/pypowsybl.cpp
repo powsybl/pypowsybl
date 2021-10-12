@@ -220,8 +220,20 @@ std::string toString(char* cstring) {
     return res;
 }
 
+void setJavaLibraryPath(const std::string& javaLibraryPath) {
+    callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
+}
+
 void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
+}
+
+void setConfigRead(bool configRead) {
+    callJava<>(::setConfigRead, configRead);
+}
+
+bool isConfigRead() {
+    return callJava<bool>(::isConfigRead);
 }
 
 std::string getVersionTable() {
@@ -230,6 +242,19 @@ std::string getVersionTable() {
 
 JavaHandle createNetwork(const std::string& name, const std::string& id) {
     return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
+}
+
+void merge(JavaHandle network, std::vector<JavaHandle>& others) {
+    std::vector<void*> othersPtrs;
+    othersPtrs.reserve(others.size());
+    for(int i = 0; i < others.size(); ++i) {
+      void* ptr = others[i];
+      othersPtrs.push_back(ptr);
+    }
+    int count = othersPtrs.size();
+    void** networksData = (void**)othersPtrs.data();
+
+    callJava<>(::merge, network, networksData, count);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -246,6 +271,10 @@ std::vector<std::string> getNetworkExportFormats() {
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
+}
+
+SeriesArray* createExporterParametersSeriesArray(const std::string& format) {
+    return new SeriesArray(callJava<array*>(::createExporterParametersSeriesArray, (char*) format.data()));
 }
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) {
@@ -343,6 +372,13 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
                                                        notConnectedToSameBusAtBothSides);
     ToStringVector elementsIds(elementsIdsArrayPtr);
     return elementsIds.get();
+}
+
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
+    load_flow_parameters* parameters = callJava<load_flow_parameters*>(::createLoadFlowParameters);
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        callJava(::freeLoadFlowParameters, ptr);
+    });
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
@@ -550,6 +586,18 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
+}
+
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewNodes, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
 }
 
 }

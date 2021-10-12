@@ -94,6 +94,33 @@ Let's obtain that directly. In the following example, we create four zones based
      DE -> FR             0.256641            -0.743359
      NL                  -0.225206            -0.225206
 
+Sensitivity to a X-Node
+^^^^^^^^^^^^^^^^^^^^^^^^
+X-Nodes when imported from a UCTE or CGMES file are represented by a so called "dangling line" in the PowSyBl network model.
+The dangling line ID is taken from the line ID connecting the X-Node. So to calculate a X-Node sensitivity, we just have to
+use the dangling line ID as the injection in the zone definition.
+
+.. code-block:: python
+
+        >>> n = pp.network.load('simple-eu-xnode.uct')
+        >>> n.get_dangling_lines()
+                            name    r     x    g    b   p0   q0   p   q   i voltage_level_id     bus_id  connected ucte-x-node-code isCoupler status_XNode geographicalName
+        id
+        NNL2AA1  XXXXXX11 1       0.0  10.0  0.0  0.0  0.0  0.0 NaN NaN NaN          NNL2AA1  NNL2AA1_0       True         XXXXXX11     false   EQUIVALENT         >>> zone_x = pp.sensitivity.create_empty_zone("X")
+
+We can see that the dangling line 'NNL2AA1  XXXXXX11 1' correspond to the X-Node XXXXXX11 (see column ucte-x-node-code of dangling line data frame).
+To calculate to sensitivity of X-Node XXXXXX11 on tie line 'BBE2AA1  FFR3AA1  1':
+
+.. code-block:: python
+
+        >>> zone_x.add_injection('NNL2AA1  XXXXXX11 1')
+        >>> sa = pp.sensitivity.create_dc_analysis()
+        >>> sa.set_zones([zone_x])
+        >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+        >>> result = sa.run(n)
+        >>> result.get_branch_flows_sensitivity_matrix()
+           BBE2AA1  FFR3AA1  1
+        X             0.176618
 
 Shift keys modification
 ^^^^^^^^^^^^^^^^^^^^^^^

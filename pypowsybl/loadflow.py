@@ -6,12 +6,12 @@
 #
 import _pypowsybl
 from _pypowsybl import LoadFlowParameters as Parameters
-from _pypowsybl import LoadFlowComponentStatus as ComponentStatus
 from _pypowsybl import LoadFlowComponentResult as ComponentResult
-from _pypowsybl import VoltageInitMode
-from _pypowsybl import BalanceType
+from _pypowsybl import LoadFlowComponentStatus as ComponentStatus
 from _pypowsybl import ConnectedComponentMode
-from pypowsybl.network import Network
+from _pypowsybl import BalanceType
+from _pypowsybl import VoltageInitMode
+from pypowsybl.network import Network as _Network
 
 
 Parameters.__repr__ = lambda self: f"{self.__class__.__name__}("\
@@ -40,9 +40,15 @@ ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
                                         f")"
 
 
-def run_ac(network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow'):
-    return _pypowsybl.run_load_flow(network._handle, False, parameters, provider)
+def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow'):
+    p = parameters
+    if parameters is None:
+        p = Parameters()
+    return list(_pypowsybl.run_load_flow(network._handle, False, p, provider))
 
 
-def run_dc(network: Network, parameters: Parameters = Parameters(), provider = 'OpenLoadFlow'):
-    return _pypowsybl.run_load_flow(network._handle, True, parameters, provider)
+def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow'):
+    p = parameters
+    if parameters is None:
+        p = Parameters()
+    return list(_pypowsybl.run_load_flow(network._handle, True, p, provider))

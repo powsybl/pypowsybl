@@ -13,6 +13,9 @@ TEST_DIR = pathlib.Path(__file__).parent
 
 class NetworkReductionTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_reduce_by_voltage(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)

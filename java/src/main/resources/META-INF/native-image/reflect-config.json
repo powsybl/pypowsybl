@@ -215,6 +215,10 @@
   "methods":[{"name":"factoryClass","parameterTypes":[] }]
 },
 {
+  "name":"javax.xml.bind.annotation.adapters.CollapsedStringAdapter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
   "methods":[
     {"name":"type","parameterTypes":[] }, 

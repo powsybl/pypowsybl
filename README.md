@@ -50,6 +50,31 @@ To run unit tests:
 python3 -m unittest discover --start-directory tests
 ```
 
+While developing, you may find it convenient to use the develop (or editable)
+mode of installation:
+```bash
+pip install -e .
+# or to build the C extension with debug symbols:
+python setup.py build --debug develop --user
+```
+
+Please refer to pip and setuptools documentations for more information.
+
+## Contribute to documentation
+
+To run the tests included in the documentation:
+```bash
+cd docs/
+make doctest
+```
+
+And then, to build the documentation:
+```bash
+make html
+firefox _build/html/index.html
+```
+Web pages are generated in repository _build/html/ for preview before openning a pull request.
+
 ## Usage
 
 First, we have to import pypowsybl:
@@ -90,10 +115,10 @@ We can re-run the load flow computation in DC mode:
 results = pp.loadflow.run_dc(n)
 ```
 
-Or with different parameters:
+By default, the application read configs from `${HOME}/.itools/config.yml`
+We can disable this with command :
 ```python
-parameters = pp.loadflow.Parameters(distributed_slack=False)
-results = pp.loadflow.run_ac(n, parameters)
+pp.set_config_read(False)
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
