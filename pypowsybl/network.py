@@ -1607,13 +1607,26 @@ def get_export_formats() -> _List[str]:
 
 def get_import_parameters(format: str) -> _DataFrame:
     """
-    Get supported import parameters infos for a given format
+    Supported import parameters for a given format.
 
     Args:
        format (str): the format
 
     Returns:
         import parameters data frame
+
+    Examples:
+       .. doctest::
+
+           >>> parameters = pp.network.get_import_parameters('PSS/E')
+           >>> parameters.index.tolist()
+           ['psse.import.ignore-base-voltage']
+           >>> parameters['description']['psse.import.ignore-base-voltage']
+           'Ignore base voltage specified in the file'
+           >>> parameters['type']['psse.import.ignore-base-voltage']
+           'BOOLEAN'
+           >>> parameters['default']['psse.import.ignore-base-voltage']
+           'false'
     """
     series_array = _pypowsybl.create_importer_parameters_series_array(format)
     return _create_data_frame_from_series_array(series_array)

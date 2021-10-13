@@ -1,5 +1,7 @@
-Network
-=======
+The network model
+=================
+
+.. currentmodule:: pypowsybl.network
 
 .. testsetup:: *
 
@@ -8,191 +10,234 @@ Network
     pd.set_option('display.expand_frame_repr', False)
 
 
-Create an empty network
------------------------
+The :class:`Network` object is the main data structure of pypowsybl.
+It contains all the data of a power network : substations, generators, lines,
+transformers, ...
 
-.. autofunction:: pypowsybl.network.create_empty
-   :noindex:
+pypowsybl provides methods to create networks, and to access and modify their data.
 
-Example:
 
-.. doctest::
-   :skipif: pp is None
+Create a network
+----------------
 
-   >>> n = pp.network.create_empty()
-
-Load a network from a file
---------------------------
-
-.. autofunction:: pypowsybl.network.get_import_formats
-   :noindex:
-
-Example:
+pypowsybl provides several factory methods to create well known network models.
+For example, you can create the IEEE 9-bus network case :
 
 .. doctest::
-   :skipif: pp is None
+
+    >>> network = pp.network.create_ieee9()
+
+Another common way of creating a network is to load it from a file :
+
+.. code-block:: python
+
+    >>> network = pp.network.load('my-network.xiidm')
+
+The supported formats are the following:
+
+.. doctest::
 
    >>> pp.network.get_import_formats()
    ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM']
 
-.. autofunction:: pypowsybl.network.get_import_parameters
-   :noindex:
+.. Note::
 
-Example:
+    Import formats may support specific parameters,
+    which you can find by using :func:`get_import_parameters`.
 
-.. doctest::
-   :skipif: pp is None
+    .. code-block:: python
 
-   >>> parameters = pp.network.get_import_parameters('PSS/E')
-   >>> parameters.index.tolist()
-   ['psse.import.ignore-base-voltage']
-   >>> parameters['description']['psse.import.ignore-base-voltage']
-   'Ignore base voltage specified in the file'
-   >>> parameters['type']['psse.import.ignore-base-voltage']
-   'BOOLEAN'
-   >>> parameters['default']['psse.import.ignore-base-voltage']
-   'false'
+       network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
 
-.. autofunction:: pypowsybl.network.load
-   :noindex:
 
-Example:
+Save a network
+--------------
+
+Networks can be written to the filesystem, using one of the available export formats:
 
 .. code-block:: python
 
-   >>> pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
+   network.dump('network.xiidm', format='XIIDM')
 
-Save a network to a file
-------------------------
+You can also serialize networks to a string:
 
-.. autofunction:: pypowsybl.network.get_export_formats
-   :noindex:
+.. code-block:: python
 
-Example:
+   xiidm_str = network.dump_to_string('XIIDM')
+
+The supported formats are:
 
 .. doctest::
-   :skipif: pp is None
 
    >>> pp.network.get_export_formats()
    ['CGMES', 'PSS/E', 'UCTE', 'XIIDM']
 
-.. autofunction:: pypowsybl.network.Network.dump
-   :noindex:
+.. Note::
 
-Example:
+    Export formats may support specific parameters,
+    which you can find by using :func:`get_export_parameters`.
 
-.. code-block:: python
+Reading network elements data
+-----------------------------
 
-   >>> n = pp.network.create_ieee14()
-   >>> n.dump('ieee14.xiidm')
+All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
+Supported elements are:
+ - buses
+ - lines
+ - 2 windings transformers
+ - 3 windings transformers
+ - generators
+ - loads
+ - shunt compensators
+ - dangling lines
+ - LCC and VSC converters stations
+ - static var compensators
+ - switches
+ - voltage levels
+ - substations
+ - busbar sections
+ - HVDC lines
+ - ratio and phase tap changer steps associated to a 2 windings transformers
 
+Each element of the network is mapped to one row of the dataframe, an each element attribute
+is mapped to one column of the dataframe (a :class:`~pandas.Series`).
 
-Create and update network elements with a ``Pandas`` data frame
----------------------------------------------------------------
-
-To get network elements data, we can create a ``Pandas`` data frame for a given type of element. Supported elements are
-buses, lines, 2 windings transformers, 3 windings transformers, generators, loads, shunt compensators, dangling lines,
-LCC and VSC converters stations, static var compensators, switches, voltage levels, substations, busbar sections,
-HVDC lines, ratio and phase tap changer steps associated to a 2 windings transformers. Each element attribute is
-mapped to a ``Pandas`` series (so a data frame column) and there is as many values in the series as there is elements
-in the network.
-
-This generic method can be called with the element type to get a data frame:
-
-.. autofunction:: pypowsybl.network.Network.get_elements
-   :noindex:
-
-Or for each element type, there is also a dedicated method, like for generators:
-
-.. autofunction:: pypowsybl.network.Network.get_generators
-   :noindex:
-
-Example:
-
-.. doctest::
-   :skipif: pp is None
-
-   >>> n = pp.network.create_eurostag_tutorial_example1_network()
-   >>> generators = n.get_generators()
-   >>> print(generators) # doctest: +NORMALIZE_WHITESPACE
-        name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on   p   q   i voltage_level_id   bus_id  connected
-   id
-   GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
-   GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
-
-Ratio and phase tap changer steps data frames have a multi-index based on the transformer ID and the step position to
-be able to easily get steps related to just one transformer:
+For example, you can retrieve generators data as follows:
 
 .. doctest::
-   :skipif: pp is None
 
-   >>> n = pp.network.create_eurostag_tutorial_example1_network()
-   >>> steps = n.get_ratio_tap_changer_steps()
-   >>> print(steps) # doctest: +NORMALIZE_WHITESPACE
-                             rho    r    x    g    b
-   id         position
-   NHV2_NLOAD 0         0.850567  0.0  0.0  0.0  0.0
-              1         1.000667  0.0  0.0  0.0  0.0
-              2         1.150767  0.0  0.0  0.0  0.0
-   >>> transformer_step = steps.loc['NHV2_NLOAD']
-   >>> print(transformer_step) # doctest: +NORMALIZE_WHITESPACE
-                  rho    r    x    g    b
-   position
-   0         0.850567  0.0  0.0  0.0  0.0
-   1         1.000667  0.0  0.0  0.0  0.0
-   2         1.150767  0.0  0.0  0.0  0.0
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> network.get_generators() # doctest: +NORMALIZE_WHITESPACE
+         name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on   p   q   i voltage_level_id   bus_id  connected
+    id
+    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
+
+Most dataframes are indexed on the ID of the elements.
+However, some more complex dataframes have a multi-index : for example,
+ratio and phase tap changer steps are indexed on their transformer ID together with
+the step position:
+
+.. doctest::
+
+    >>> network.get_ratio_tap_changer_steps() # doctest: +NORMALIZE_WHITESPACE
+                              rho    r    x    g    b
+    id         position
+    NHV2_NLOAD 0         0.850567  0.0  0.0  0.0  0.0
+               1         1.000667  0.0  0.0  0.0  0.0
+               2         1.150767  0.0  0.0  0.0  0.0
+
+This allows to easily get steps related to just one transformer:
+
+.. doctest::
+
+    >>> network.get_ratio_tap_changer_steps().loc['NHV2_NLOAD'] # doctest: +NORMALIZE_WHITESPACE
+                   rho    r    x    g    b
+    position
+    0         0.850567  0.0  0.0  0.0  0.0
+    1         1.000667  0.0  0.0  0.0  0.0
+    2         1.150767  0.0  0.0  0.0  0.0
+
+For a detailed description of each dataframe, please refer
+to the reference API :doc:`documentation </reference/network>`.
+
+Updating network elements
+-------------------------
+
+Network elements can also be updated using :class:`DataFrames <pandas.DataFrame>`.
+Not all attributes are candidates for update, for example element IDs cannot be
+updated. For a detailed description of what attributes can be updated please refer
+to the reference API :doc:`documentation </reference/network>`.
+
+For example, to set the active power and reactive power of the load *LOAD* :
+
+.. doctest::
+
+    >>> df = pd.DataFrame(index=['LOAD'], columns=['p0','q0'], data=[[500, 300]])
+    >>> network.update_loads(df)
+
+You can check that the load data has indeed been updated:
+
+.. doctest::
+
+    >>> network.get_loads()[['p0','q0']] # doctest: +NORMALIZE_WHITESPACE
+             p0     q0
+    id
+    LOAD  500.0  300.0
 
 
-We can also update network elements with a data frame:
+Basic topology changes
+----------------------
 
-.. code-block:: python
+Most elements dataframes contain information about "is this element connected?" and "where is it connected?".
+That information appears as the ``connected`` and ``bus_id`` columns :
 
-   >>> df = pd.DataFrame(data=[[500, 300]], columns=['p0','q0'], index=['LOAD']
-   >>> n.update_loads(df)
+.. doctest::
 
-.. list-table:: Available equipment types and attributes
-  :widths: auto
-  :header-rows: 1
+    >>> network.get_generators()[['connected','bus_id']] # doctest: +NORMALIZE_WHITESPACE
+          connected   bus_id
+    id
+    GEN        True  VLGEN_0
+    GEN2       True  VLGEN_0
 
-  * - Equipment type
-    - Attributes (columns)
-  * - Load, Dangling line, Battery
-    - p0 (double), q0 (double)
-  * - Generator
-    - voltage_regulator_on (bool), target_p (double), target_q (double), target_v (double)
-  * - Switch
-    - open (bool), retained (bool)
-  * - VSC converter station
-    - voltage_setpoint (double), reactive_power_setpoint (double),  voltage_regulator_on (bool)
-  * - Static var compensator
-    - voltage_setpoint (double), reactive_power_setpoint (double), regulation_mode (str)
-  * - HVDC line
-    - converters_mode (str), active_power_setpoint (double)
-  * - Two windings transformer
-    - ratio_tap_position (int), phase_tap_position (int)
+You can disconnect or connect an element exactly the same way you update other attributes:
 
+.. doctest::
 
-Working with multiple variants of a network
--------------------------------------------
+    >>> network.update_generators(pd.DataFrame(index=['GEN'], columns=['connected'], data=[[False]]))
+    >>> network.get_generators()[['connected','bus_id']] # doctest: +NORMALIZE_WHITESPACE
+          connected   bus_id
+    id
+    GEN       False
+    GEN2       True  VLGEN_0
+
+You can see that the generator *GEN* has been disconnected from its bus.
+
+Working with multiple variants
+------------------------------
 
 You may want to change the state of the network while keeping in memory its initial state.
 In order to achieve that, you can use variants management:
 
+After creation, a network has only one variant, called 'InitialState':
+
 .. doctest::
-   :skipif: pp is None
 
    >>> network = pp.network.create_eurostag_tutorial_example1_network()
-   >>> network.get_variant_ids()  # all networks initially have only one variant
+   >>> network.get_variant_ids()
    ['InitialState']
-   >>> network.clone_variant('InitialState', 'Variant')  # creates a variant by cloning the initial one
-   >>> network.get_variant_ids()  # all networks initially have only one variant
+
+You can then add more variants by cloning an existing variant:
+
+.. doctest::
+
+   >>> network.clone_variant('InitialState', 'Variant')
+   >>> network.get_variant_ids()
    ['InitialState', 'Variant']
-   >>> network.set_working_variant('Variant')  # set our new variant as the working variant
+
+You can then switch you "working" variant to the one you just created,
+and perform some operations on it, for example changing the target power
+of a generator to 700 MW:
+
+.. doctest::
+
+   >>> network.set_working_variant('Variant')
    >>> network.update_generators(pd.DataFrame(index=['GEN'], columns=['target_p'], data=[[700]]))
-   >>> network.get_generators()['target_p']['GEN']  # Our generator now produces 700 MW on this variant
+   >>> network.get_generators()['target_p']['GEN']
    700.0
-   >>> network.set_working_variant('InitialState')  # let's go back to our initial variant
-   >>> network.get_generators()['target_p']['GEN']  # We still have our initial value, 600 MW
+
+If you switch back to the initial variant, you will see that
+its state has not changed, our generator still produces 607 MW:
+
+.. doctest::
+
+   >>> network.set_working_variant('InitialState')
+   >>> network.get_generators()['target_p']['GEN']
    607.0
+
+Once you're done working with your variant, you can remove it:
+
+.. doctest::
+
    >>> network.remove_variant('Variant')
 
