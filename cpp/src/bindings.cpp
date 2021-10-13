@@ -487,6 +487,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
             py::arg("element_type"), py::arg("series_name"));
 
+    m.def("is_index", &pypowsybl::isIndex, "indicate if a column is a index for a given element type and series_name", 
+            py::arg("element_type"), py::arg("series_name"));
+
     m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
             py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
