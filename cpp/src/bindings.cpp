@@ -467,7 +467,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
     m.def("get_node_breaker_view_internal_connections", &pypowsybl::getNodeBreakerViewInternalConnections,
     "get all internal connections for a voltage level", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_node_breaker_view_switches", &pypowsybl::getNodeBreakerViewSwitches, "get all switches for a voltage level", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_node_breaker_view_switches", &pypowsybl::getNodeBreakerViewSwitches, "get all switches for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_bus_breaker_view_elements", &pypowsybl::getBusBreakerViewElements, "get all elements for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_bus_breaker_view_buses", &pypowsybl::getBusBreakerViewBuses,
+    "get all buses for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_bus_breaker_view_switches", &pypowsybl::getBusBreakerViewSwitches, "get all switches for a voltage level", py::arg("network"), py::arg("voltage_level"));
     m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
 
     m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",

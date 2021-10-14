@@ -600,4 +600,16 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, st
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
 }
 
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewBuses, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
+}
+
 }

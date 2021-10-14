@@ -77,8 +77,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(4, len(parameters))
         name = 'iidm.export.cgmes.using-only-network'
         self.assertEqual(name, parameters.index.tolist()[0])
-        self.assertEqual('Export to CGMES using only information present in IIDM Network (including extensions and aliases)',
-                         parameters['description'][name])
+        self.assertEqual(
+            'Export to CGMES using only information present in IIDM Network (including extensions and aliases)',
+            parameters['description'][name])
         self.assertEqual('BOOLEAN', parameters['type'][name])
         self.assertEqual('false', parameters['default'][name])
 
@@ -264,11 +265,13 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_create_and_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.get_2_windings_transformers()
-        self.assertEqual(['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
-                          'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'],
-                         df.columns.tolist())
+        self.assertEqual(
+            ['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
+             'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'],
+            df.columns.tolist())
         expected = pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NHV2_NLOAD']),
-                                columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2',
+                                columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1',
+                                         'i1', 'p2',
                                          'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                          'connected1', 'connected2'],
                                 data=[['', 0.27, 11.10, 0, 0, 24, 400, NaN, NaN, NaN, NaN, NaN, NaN,
@@ -281,7 +284,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                          columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'connected1', 'connected2'],
                          data=[[0.3, 11.2, 1, 1, 90, 225, False, False]]))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NHV2_NLOAD']),
-                                columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2',
+                                columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1',
+                                         'i1', 'p2',
                                          'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                          'connected1', 'connected2'],
                                 data=[['', 0.3, 11.2, 1, 1, 90, 225, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
@@ -411,13 +415,14 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['name', 'r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
                                          'voltage_level1_id',
                                          'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'],
-                                data=[['', 0.01, 19.1, 0, 0, 0, 0, 109.889, 190.023, 309.979, -109.886, -184.517, 309.978,
-                                       'S2VL1',
-                                       'S3VL1',
-                                       'S2VL1_0', 'S3VL1_0', True, True],
-                                      ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.43, -240, 2.5415, 346.43, 'S3VL1',
-                                       'S4VL1',
-                                       'S3VL1_0', 'S4VL1_0', True, True]])
+                                data=[
+                                    ['', 0.01, 19.1, 0, 0, 0, 0, 109.889, 190.023, 309.979, -109.886, -184.517, 309.978,
+                                     'S2VL1',
+                                     'S3VL1',
+                                     'S2VL1_0', 'S3VL1_0', True, True],
+                                    ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.43, -240, 2.5415, 346.43, 'S3VL1',
+                                     'S4VL1',
+                                     'S3VL1_0', 'S4VL1_0', True, True]])
 
         pd.options.display.max_columns = None
         pd.options.display.expand_frame_repr = False
@@ -434,7 +439,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'connected2'],
                                 data=[['', 1, 2, 3, 4, 5, 6, 7, 8, 15.011282, 9, 10, 19.418634,
                                        'S2VL1', 'S3VL1', 'S2VL1_0', 'S3VL1_0', True, True],
-                                      ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415, 346.429584,
+                                      ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415,
+                                       346.429584,
                                        'S3VL1', 'S4VL1', 'S3VL1_0', 'S4VL1_0', True, True]])
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
@@ -442,15 +448,18 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_dangling_lines(self):
         n = self.create_dangling_lines_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                                columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id',
                                          'connected', 'ucte-x-node-code'],
-                                data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True, '']])
+                                data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
+                                       '']])
         pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
         n.update_dangling_lines(
             pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                          data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
         updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
-                               columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                               columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
+                                        'bus_id',
                                         'connected', 'ucte-x-node-code'],
                                data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '']])
         pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
@@ -458,9 +467,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_batteries(self):
         n = self.create_battery_network()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                                columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id',
                                          'connected'],
-                                data=[['', 9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True],
+                                data=[['', 9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
+                                       True],
                                       ['', 200, -200, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
 
@@ -502,7 +513,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'q2', 'i2', 'voltage_level2_id', 'bus2_id', 'connected2', 'r3', 'x3', 'g3',
                                          'b3', 'rated_u3', 'rated_s3', 'ratio_tap_position3', 'phase_tap_position3',
                                          'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id', 'connected3'],
-                                data=[['', 132, 17.424, 1.7424, 0.00573921, 0.000573921, 132, NaN, -99999, -99999, NaN, NaN,
+                                data=[['', 132, 17.424, 1.7424, 0.00573921, 0.000573921, 132, NaN, -99999, -99999, NaN,
+                                       NaN,
                                        NaN, 'VL_132', 'VL_132_0', True, 1.089, 0.1089, 0, 0, 33, NaN, 2, -99999, NaN,
                                        NaN, NaN, 'VL_33', 'VL_33_0', True, 0.121, 0.0121, 0, 0, 11, NaN, 0, -99999, NaN,
                                        NaN, NaN, 'VL_11', 'VL_11_0', True]])
@@ -544,7 +556,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_node_breaker_view(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        topology = n.get_voltage_level_topology('S4VL1')
+        topology = n.get_voltage_level_node_breaker_topology('S4VL1')
         switches = topology.switches
         nodes = topology.nodes
         self.assertEqual(6, len(switches))
@@ -557,7 +569,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_topology('S4VL1')
+        network_topology = n.get_voltage_level_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         self.assertEqual(7, len(graph.nodes))
         self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
@@ -565,7 +577,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     @unittest.skip("plot graph skipping")
     def test_node_breaker_view_draw_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_topology('S4VL1')
+        network_topology = n.get_voltage_level_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         nx.draw_shell(graph, with_labels=True)
         plt.show()
@@ -594,6 +606,74 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['g_per_section', 'b_per_section', 'max_section_count'],
                                 data=[[0.14, -0.01, 4]])
         pd.testing.assert_frame_equal(expected, n.get_linear_shunt_compensator_sections(), check_dtype=False)
+
+    def test_bus_breaker_view(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        n.update_switches(pd.DataFrame(index=['S1VL2_COUPLER'], data={'open': [True]}))
+        topology = n.get_voltage_level_bus_breaker_topology('S1VL2')
+        switches = topology.switches
+        buses = topology.buses
+        elements = topology.elements
+        expected_switches = pd.DataFrame(index=pd.Series(name='id',
+                                                         data=['S1VL2_TWT_BREAKER', 'S1VL2_VSC1_BREAKER',
+                                                               'S1VL2_GH1_BREAKER', 'S1VL2_GH2_BREAKER',
+                                                               'S1VL2_GH3_BREAKER', 'S1VL2_LD2_BREAKER',
+                                                               'S1VL2_LD3_BREAKER', 'S1VL2_LD4_BREAKER',
+                                                               'S1VL2_SHUNT_BREAKER', 'S1VL2_LCC1_BREAKER',
+                                                               'S1VL2_COUPLER']),
+                                         columns=['kind', 'open', 'retained', 'bus1_id', 'bus2_id'],
+                                         data=[['BREAKER', False, True, 'S1VL2_0', 'S1VL2_3'],
+                                               ['BREAKER', False, True, 'S1VL2_1', 'S1VL2_5'],
+                                               ['BREAKER', False, True, 'S1VL2_0', 'S1VL2_7'],
+                                               ['BREAKER', False, True, 'S1VL2_0', 'S1VL2_9'],
+                                               ['BREAKER', False, True, 'S1VL2_0', 'S1VL2_11'],
+                                               ['BREAKER', False, True, 'S1VL2_1', 'S1VL2_13'],
+                                               ['BREAKER', False, True, 'S1VL2_1', 'S1VL2_15'],
+                                               ['BREAKER', False, True, 'S1VL2_1', 'S1VL2_17'],
+                                               ['BREAKER', False, True, 'S1VL2_0', 'S1VL2_19'],
+                                               ['BREAKER', False, True, 'S1VL2_1', 'S1VL2_21'],
+                                               ['BREAKER', True, True, 'S1VL2_0', 'S1VL2_1']])
+        expected_buses = pd.DataFrame(index=pd.Series(name='id',
+                                                      data=['S1VL2_0', 'S1VL2_1', 'S1VL2_3', 'S1VL2_5', 'S1VL2_7',
+                                                            'S1VL2_9', 'S1VL2_11', 'S1VL2_13', 'S1VL2_15', 'S1VL2_17',
+                                                            'S1VL2_19', 'S1VL2_21']),
+                                      columns=['name', 'busViewId'],
+                                      data=[['', 'S1VL2_0'], ['', 'S1VL2_1'], ['', 'S1VL2_0'], ['', 'S1VL2_1'],
+                                            ['', 'S1VL2_0'], ['', 'S1VL2_0'], ['', 'S1VL2_0'], ['', 'S1VL2_1'],
+                                            ['', 'S1VL2_1'], ['', 'S1VL2_1'], ['', 'S1VL2_0'], ['', 'S1VL2_1']])
+
+        expected_elements = pd.DataFrame(index=pd.Series(name='id',
+                                                         data=['S1VL2_BBS1', 'S1VL2_BBS2', 'TWT', 'TWT', 'VSC1', 'GH1',
+                                                               'GH2', 'GH3', 'LD2', 'LD3', 'LD4', 'SHUNT', 'LCC1']),
+                                         columns=['type', 'connected_bus', 'side'],
+                                         data=[['BUSBAR_SECTION', 'S1VL2_0', ''],
+                                               ['BUSBAR_SECTION', 'S1VL2_1', ''],
+                                               ['TWO_WINDINGS_TRANSFORMER', 'S1VL1_4', 'ONE'],
+                                               ['TWO_WINDINGS_TRANSFORMER', 'S1VL2_3', 'TWO'],
+                                               ['HVDC_CONVERTER_STATION', 'S1VL2_5', ''], ['GENERATOR', 'S1VL2_7', ''],
+                                               ['GENERATOR', 'S1VL2_9', ''], ['GENERATOR', 'S1VL2_11', ''],
+                                               ['LOAD', 'S1VL2_13', ''], ['LOAD', 'S1VL2_15', ''],
+                                               ['LOAD', 'S1VL2_17', ''], ['SHUNT_COMPENSATOR', 'S1VL2_19', ''],
+                                               ['HVDC_CONVERTER_STATION', 'S1VL2_21', ''],
+                                               ])
+        pd.testing.assert_frame_equal(expected_switches, switches, check_dtype=False)
+        pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
+        pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
+
+    def test_graph_busbreakerview(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_bus_breaker_topology('S4VL1')
+        graph = network_topology.create_graph()
+        self.assertEqual(4, len(graph.nodes))
+        self.assertEqual([('S4VL1_0', 'S4VL1_6'), ('S4VL1_0', 'S4VL1_2'), ('S4VL1_0', 'S4VL1_4')], list(graph.edges))
+
+    @unittest.skip("plot graph skipping")
+    def test_bus_breaker_view_draw_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_voltage_level_bus_breaker_topology('S1VL2')
+        graph = network_topology.create_graph()
+        nx.draw_shell(graph, with_labels=True)
+        plt.show()
 
 
 if __name__ == '__main__':

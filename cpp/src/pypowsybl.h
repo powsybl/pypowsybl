@@ -249,6 +249,12 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& volt
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
 }
 
 #endif //PYPOWSYBL_H
