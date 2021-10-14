@@ -139,14 +139,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
 
-    py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus")
-            .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED)
-            .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED)
-            .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED)
-            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED)
+    py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus", "Loadflow status for one connected component.")
+            .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")
+            .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
+            .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
+            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
             .export_values();
 
-    py::class_<load_flow_component_result>(m, "LoadFlowComponentResult")
+    py::class_<load_flow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const load_flow_component_result& r) {
                 return r.connected_component_num;
             })
@@ -168,24 +168,27 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     bindArray<pypowsybl::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
 
-    py::enum_<pypowsybl::VoltageInitMode>(m, "VoltageInitMode")
-            .value("UNIFORM_VALUES", pypowsybl::VoltageInitMode::UNIFORM_VALUES)
-            .value("PREVIOUS_VALUES", pypowsybl::VoltageInitMode::PREVIOUS_VALUES)
-            .value("DC_VALUES", pypowsybl::VoltageInitMode::DC_VALUES)
+    py::enum_<pypowsybl::VoltageInitMode>(m, "VoltageInitMode", "Define the computation starting point.")
+            .value("UNIFORM_VALUES", pypowsybl::VoltageInitMode::UNIFORM_VALUES, "Initialize voltages to uniform values based on nominale voltage.")
+            .value("PREVIOUS_VALUES", pypowsybl::VoltageInitMode::PREVIOUS_VALUES, "Use previously computed voltage values as as starting point.")
+            .value("DC_VALUES", pypowsybl::VoltageInitMode::DC_VALUES, "Use values computed by a DC loadflow as a starting point.")
             .export_values();
 
-    py::enum_<pypowsybl::BalanceType>(m, "BalanceType")
-            .value("PROPORTIONAL_TO_GENERATION_P", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P)
-            .value("PROPORTIONAL_TO_GENERATION_P_MAX", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX)
-            .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD)
-            .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD)
+    py::enum_<pypowsybl::BalanceType>(m, "BalanceType", "Define how to distribute slack bus imbalance.")
+            .value("PROPORTIONAL_TO_GENERATION_P", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P,
+                   "Distribute slack on generators, in proportion of target P")
+            .value("PROPORTIONAL_TO_GENERATION_P_MAX", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
+                   "Distribute slack on generators, in proportion of max P")
+            .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD,
+                   "Distribute slack on loads, in proportion of load")
+            .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD
+                   "Distribute slack on loads, in proportion of conform load")
             .export_values();
 
-    py::enum_<pypowsybl::ConnectedComponentMode>(m, "ConnectedComponentMode")
-            .value("ALL", pypowsybl::ConnectedComponentMode::ALL)
-            .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN)
+    py::enum_<pypowsybl::ConnectedComponentMode>(m, "ConnectedComponentMode", "Define which connected components to run on.")
+            .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
+            .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component")
             .export_values();
-
 
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init(&initLoadFlowParameters))

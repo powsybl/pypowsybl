@@ -18,9 +18,22 @@ from typing import (
     Sequence as _Sequence
 )
 
-ComponentResult.__doc__ = """
-Loadflow results for one connected component of the network.
-"""
+# enforcing some class metadata on classes imported from C extension,
+# in particular for sphinx documentation to work correctly
+ComponentResult.__name__ = 'ComponentResult'
+ComponentResult.__module__ = __name__
+ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                                        f"connected_component_num={self.connected_component_num!r}"\
+                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
+                                        f", status={self.status.name}"\
+                                        f", iteration_count={self.iteration_count!r}"\
+                                        f", slack_bus_id={self.slack_bus_id!r}"\
+                                        f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
+                                        f")"
+
+ComponentStatus.__name__ = 'ComponentStatus'
+ComponentStatus.__module__ = __name__
+
 
 class Parameters(_pypowsybl.LoadFlowParameters):
     """
@@ -79,7 +92,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                  countries_to_balance: _Sequence[str] = None,
                  connected_component_mode: ConnectedComponentMode = None):
 
-        super(Parameters, self).__init__()
+        super().__init__()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
         if transformer_voltage_control_on is not None:
@@ -123,17 +136,6 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                f", countries_to_balance={self.countries_to_balance}"\
                f", connected_component_mode={self.connected_component_mode!r}"\
                f")"
-
-_pypowsybl.LoadFlowParameters.countries_to_balance.__doc__ = "toto"
-
-ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
-                                        f"connected_component_num={self.connected_component_num!r}"\
-                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
-                                        f", status={self.status.name}"\
-                                        f", iteration_count={self.iteration_count!r}"\
-                                        f", slack_bus_id={self.slack_bus_id!r}"\
-                                        f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
-                                        f")"
 
 
 def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow') -> _List[ComponentResult]:

@@ -13,8 +13,8 @@ Running a loadflow
    :toctree: api/
    :nosignatures:
 
-   run_ac
-   run_dc
+    run_ac
+    run_dc
 
 Parameters
 ----------
@@ -25,7 +25,10 @@ The execution of the loadflow can be customized using loadflow parameters.
    :toctree: api/
    :nosignatures:
 
-   Parameters
+    Parameters
+    VoltageInitMode
+    ConnectedComponentMode
+    BalanceType
 
 Results
 -------
@@ -33,7 +36,12 @@ Results
 The loadflow result is actually a list of results, one for each component of the network:
 
 .. autosummary::
-   :toctree: api/
    :nosignatures:
 
     ComponentResult
+    ComponentStatus
+
+.. toctree::
+   :hidden:
+
+   componentresult.rst
