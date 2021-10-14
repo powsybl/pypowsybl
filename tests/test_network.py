@@ -84,7 +84,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
-        self.assertEqual(['CGMES', 'PSS/E', 'UCTE', 'XIIDM', 'ADN'], formats)
+        self.assertEqual(['CGMES', 'PSS/E', 'UCTE', 'XIIDM'], formats)
 
     def test_load_network(self):
         n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
