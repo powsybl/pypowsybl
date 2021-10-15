@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 from networkx.classes.reportviews import EdgeView
 from numpy import NaN
+import numpy as np
 
 import pypowsybl as pp
 import pathlib
@@ -22,6 +23,8 @@ TEST_DIR = pathlib.Path(__file__).parent
 
 
 class NetworkTestCase(unittest.TestCase):
+
+    np.empty()
 
     def create_battery_network(self) -> Network:
         return pp.network._create_network('batteries')

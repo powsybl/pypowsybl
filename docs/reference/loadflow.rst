@@ -6,7 +6,7 @@ Loadflow
 
 The loadflow module allows to run AC and DC loadflows.
 
-Running a loadflow
+Run a loadflow
 ------------------
 
 .. autosummary::
@@ -22,10 +22,22 @@ Parameters
 The execution of the loadflow can be customized using loadflow parameters.
 
 .. autosummary::
-   :toctree: api/
    :nosignatures:
 
     Parameters
+
+.. include it in the toctree
+.. toctree::
+   :hidden:
+
+   loadflow/parameters
+
+Some enum classes are used in parameters:
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_members.rst
+
     VoltageInitMode
     ConnectedComponentMode
     BalanceType
@@ -39,9 +51,17 @@ The loadflow result is actually a list of results, one for each component of the
    :nosignatures:
 
     ComponentResult
-    ComponentStatus
 
+.. include it in the toctree
 .. toctree::
    :hidden:
 
-   componentresult.rst
+   loadflow/componentresult
+
+Some enum classes are used in results:
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_members.rst
+
+    ComponentStatus

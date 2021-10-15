@@ -18,22 +18,6 @@ from typing import (
     Sequence as _Sequence
 )
 
-# enforcing some class metadata on classes imported from C extension,
-# in particular for sphinx documentation to work correctly
-ComponentResult.__name__ = 'ComponentResult'
-ComponentResult.__module__ = __name__
-ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
-                                        f"connected_component_num={self.connected_component_num!r}"\
-                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
-                                        f", status={self.status.name}"\
-                                        f", iteration_count={self.iteration_count!r}"\
-                                        f", slack_bus_id={self.slack_bus_id!r}"\
-                                        f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
-                                        f")"
-
-ComponentStatus.__name__ = 'ComponentStatus'
-ComponentStatus.__module__ = __name__
-
 
 class Parameters(_pypowsybl.LoadFlowParameters):
     """
@@ -47,9 +31,12 @@ class Parameters(_pypowsybl.LoadFlowParameters):
     The exact behaviour of some parameters may also depend on your loadflow provider.
     Please check the documentation of your provider for that information.
 
+    .. currentmodule:: pypowsybl.loadflow
+
     Args:
         voltage_init_mode: The resolution starting point.
-            Use :py:obj:`VoltageInitMode.UNIFORM_VALUES` for a flat start, and DC_VALUES for a DC load flow based starting point.
+            Use ``UNIFORM_VALUES`` for a flat start,
+            and ``DC_VALUES`` for a DC load flow based starting point.
         transformer_voltage_control_on: Simulate transformer voltage control.
             The initial tap position is used as starting point for the resolution.
         no_generator_reactive_limits: Ignore generators reactive limits.
@@ -66,15 +53,15 @@ class Parameters(_pypowsybl.LoadFlowParameters):
         distributed_slack: Distribute active power slack on the network.
             ``True`` means that the active power slack is distributed, on loads or on generators according to ``balance_type``.
         balance_type: How to distributed active power slack.
-            Use :py:obj:`BalanceType.PROPORTIONAL_TO_LOAD` to distribute slack on loads,
-            :py:obj:`PROPORTIONAL_TO_GENERATION_P_MAX` or :py:obj:`PROPORTIONAL_TO_GENERATION_P` to distribute on generators.
+            Use ``PROPORTIONAL_TO_LOAD`` to distribute slack on loads,
+            ``PROPORTIONAL_TO_GENERATION_P_MAX`` or ``PROPORTIONAL_TO_GENERATION_P`` to distribute on generators.
         dc_use_transformer_ratio: In DC mode, take into account transformer ratio.
             Used only for DC load flows, to include ratios in the equation system.
         countries_to_balance: List of countries participating to slack distribution.
             Used only if distributed_slack is ``True``.
         connected_component_mode: Define which connected components should be computed.
-            Use :py:obj:`ConnectedComponentMode.MAIN` to computes flows only on the main connected component,
-            or prefer :py:obj:`ConnectedComponentMode.ALL` for a run on all connected component.
+            Use ``MAIN`` to computes flows only on the main connected component,
+            or prefer ``ALL`` for a run on all connected component.
     """
 
     def __init__(self,
@@ -172,3 +159,34 @@ def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     if parameters is None:
         p = Parameters()
     return list(_pypowsybl.run_load_flow(network._handle, True, p, provider))
+
+
+
+# enforcing some class metadata on classes imported from C extension,
+# in particular for sphinx documentation to work correctly,
+# and add some documentation
+
+VoltageInitMode.__module__ = 'pypowsybl.loadflow'
+BalanceType.__module__ = 'pypowsybl.loadflow'
+ConnectedComponentMode.__module__ = 'pypowsybl.loadflow'
+
+ComponentResult.__name__ = 'ComponentResult'
+ComponentResult.__module__ = __name__
+ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
+                                        f"connected_component_num={self.connected_component_num!r}"\
+                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
+                                        f", status={self.status.name}"\
+                                        f", iteration_count={self.iteration_count!r}"\
+                                        f", slack_bus_id={self.slack_bus_id!r}"\
+                                        f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
+                                        f")"
+
+ComponentResult.status.__doc__ = """Status of the loadflow for this component."""
+ComponentResult.connected_component_num.__doc__ = """Number of the connected component."""
+ComponentResult.synchronous_component_num.__doc__ = """Number of the synchronous component."""
+ComponentResult.iteration_count.__doc__ = """The number of iterations performed by the loadflow."""
+ComponentResult.slack_bus_id.__doc__ = """ID of the slack bus used for this component."""
+ComponentResult.slack_bus_active_power_mismatch.__doc__ = """Remaining active power slack at the end of the loadflow"""
+
+ComponentStatus.__name__ = 'ComponentStatus'
+ComponentStatus.__module__ = __name__
