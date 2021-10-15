@@ -88,7 +88,7 @@ If you want more logs you can set the global debug mode:
 DC Load Flow
 ------------
 
-In order to run an AC loadflow, simply use the :func:`run_dc` method:
+In order to run an AC loadflow, simply use the :func:`run_dc` method.
 
 For that example, we will use a distributed slack, with imbalance distributed on generators,
 proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:
@@ -98,13 +98,14 @@ proportional to their maximum power. We also choose to ignore transformer ratios
     >>> parameters = lf.Parameters(dc_use_transformer_ratio=False, distributed_slack=True,
     ...                            balance_type=lf.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
 
+Then let's create our test network and run the DC load flow:
 
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
     >>> results = lf.run_dc(network, parameters)
 
-We can then retrieve the computed flows on lines:
+We can finally retrieve the computed flows on lines:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE

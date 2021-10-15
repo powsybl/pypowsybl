@@ -199,7 +199,7 @@ def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadF
 
 def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow') -> _List[ComponentResult]:
     """
-    Run an DC loadflow on a network.
+    Run a DC loadflow on a network.
 
     Args:
         network:    a network
