@@ -1,5 +1,5 @@
-Security analysis
-====================
+Running a security analysis
+===========================
 
 .. testsetup:: *
 
@@ -8,11 +8,14 @@ Security analysis
     pd.options.display.max_columns = None
     pd.options.display.expand_frame_repr = False
 
-You can use the module ``pypowsybl.security`` in order to perform security analysis on a network.
+You can use the module :mod:`pypowsybl.security` in order to perform a security analysis on a network.
+Please check out the examples below.
+
+For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.security>`.
 
 
 AC security analysis
------------------------
+--------------------
 
 To perform a security analysis, you need at least a network and a contingency on this network.
 In the result there are violations detected with the initial loadflow on the network.
@@ -43,7 +46,7 @@ the violations created by the contingency, they are collected by contingency in 
 
 
 
-Add monitored Elements
+Adding monitored Elements
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This feature is used to get information on different element of the network after the loadflow's computations.
