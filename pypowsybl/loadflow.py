@@ -135,8 +135,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                  dc_use_transformer_ratio: bool = None,
                  countries_to_balance: _Sequence[str] = None,
                  connected_component_mode: ConnectedComponentMode = None):
-
-        super().__init__()
+        super().__init__()  # loads from platform config
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
         if transformer_voltage_control_on is not None:
@@ -161,7 +160,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
             self.dc_use_transformer_ratio = dc_use_transformer_ratio
         if countries_to_balance is not None:
             self.countries_to_balance = countries_to_balance
-        if dc_use_transformer_ratio is not None:
+        if connected_component_mode is not None:
             self.connected_component_mode = connected_component_mode
 
     def __repr__(self):
@@ -194,10 +193,8 @@ def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     Returns:
         A list of component results, one for each component of the network.
     """
-    p = parameters
-    if parameters is None:
-        p = Parameters()
-    return list(_pypowsybl.run_load_flow(network._handle, False, p, provider))
+    p = parameters if parameters is not None else Parameters()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
 
 
 def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow') -> _List[ComponentResult]:
@@ -212,9 +209,5 @@ def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     Returns:
         A list of component results, one for each component of the network.
     """
-    p = parameters
-    if parameters is None:
-        p = Parameters()
-    return list(_pypowsybl.run_load_flow(network._handle, True, p, provider))
-
-
+    p = parameters if parameters is not None else Parameters()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider)]
