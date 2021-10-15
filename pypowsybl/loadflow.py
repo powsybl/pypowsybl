@@ -6,7 +6,6 @@
 #
 import _pypowsybl
 from _pypowsybl import (
-    LoadFlowComponentResult as ComponentResult,
     LoadFlowComponentStatus as ComponentStatus,
     ConnectedComponentMode,
     BalanceType,
@@ -17,6 +16,64 @@ from typing import (
     List as _List,
     Sequence as _Sequence
 )
+
+# enforcing some class metadata on classes imported from C extension,
+# in particular for sphinx documentation to work correctly,
+# and add some documentation
+VoltageInitMode.__module__ = 'pypowsybl.loadflow'
+BalanceType.__module__ = 'pypowsybl.loadflow'
+ConnectedComponentMode.__module__ = 'pypowsybl.loadflow'
+ComponentStatus.__name__ = 'ComponentStatus'
+ComponentStatus.__module__ = __name__
+
+# Pure python wrapper for C ext object
+# although it adds some boiler plate code, it integrates better with tools such as sphinx
+class ComponentResult(object):
+    """
+    Loadflow result for one connected component of the network.
+    """
+    def __init__(self, res: _pypowsybl.LoadFlowComponentResult):
+        self._res = res
+
+    @property
+    def status(self):
+        """Status of the loadflow for this component."""
+        return self._res.status
+
+    @property
+    def connected_component_num(self):
+        """Number of the connected component."""
+        return self._res.connected_component_num
+
+    @property
+    def synchronous_component_num(self):
+        """Number of the synchronous component."""
+        return self._res.synchronous_component_num
+
+    @property
+    def iteration_count(self):
+        """The number of iterations performed by the loadflow."""
+        return self._res.iteration_count
+
+    @property
+    def slack_bus_id(self):
+        """ID of the slack bus used for this component."""
+        return self._res.slack_bus_id
+
+    @property
+    def slack_bus_active_power_mismatch(self):
+        """Remaining active power slack at the end of the loadflow"""
+        return self._res.slack_bus_active_power_mismatch
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}("\
+               f"connected_component_num={self.connected_component_num!r}"\
+               f", synchronous_component_num={self.synchronous_component_num!r}"\
+               f", status={self.status.name}"\
+               f", iteration_count={self.iteration_count!r}"\
+               f", slack_bus_id={self.slack_bus_id!r}"\
+               f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
+               f")"
 
 
 class Parameters(_pypowsybl.LoadFlowParameters):
@@ -161,32 +218,3 @@ def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     return list(_pypowsybl.run_load_flow(network._handle, True, p, provider))
 
 
-
-# enforcing some class metadata on classes imported from C extension,
-# in particular for sphinx documentation to work correctly,
-# and add some documentation
-
-VoltageInitMode.__module__ = 'pypowsybl.loadflow'
-BalanceType.__module__ = 'pypowsybl.loadflow'
-ConnectedComponentMode.__module__ = 'pypowsybl.loadflow'
-
-ComponentResult.__name__ = 'ComponentResult'
-ComponentResult.__module__ = __name__
-ComponentResult.__repr__ = lambda self: f"{self.__class__.__name__}("\
-                                        f"connected_component_num={self.connected_component_num!r}"\
-                                        f", synchronous_component_num={self.synchronous_component_num!r}"\
-                                        f", status={self.status.name}"\
-                                        f", iteration_count={self.iteration_count!r}"\
-                                        f", slack_bus_id={self.slack_bus_id!r}"\
-                                        f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
-                                        f")"
-
-ComponentResult.status.__doc__ = """Status of the loadflow for this component."""
-ComponentResult.connected_component_num.__doc__ = """Number of the connected component."""
-ComponentResult.synchronous_component_num.__doc__ = """Number of the synchronous component."""
-ComponentResult.iteration_count.__doc__ = """The number of iterations performed by the loadflow."""
-ComponentResult.slack_bus_id.__doc__ = """ID of the slack bus used for this component."""
-ComponentResult.slack_bus_active_power_mismatch.__doc__ = """Remaining active power slack at the end of the loadflow"""
-
-ComponentStatus.__name__ = 'ComponentStatus'
-ComponentStatus.__module__ = __name__

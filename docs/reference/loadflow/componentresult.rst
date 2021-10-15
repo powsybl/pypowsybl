@@ -6,3 +6,4 @@ pypowsybl.loadflow.ComponentResult
 .. autoclass:: ComponentResult
    :members:
    :member-order: bysource
+   :class-doc-from: class

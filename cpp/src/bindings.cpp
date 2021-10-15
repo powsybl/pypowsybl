@@ -181,7 +181,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                    "Distribute slack on generators, in proportion of max P")
             .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD,
                    "Distribute slack on loads, in proportion of load")
-            .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD
+            .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD,
                    "Distribute slack on loads, in proportion of conform load")
             .export_values();
 
