@@ -20,9 +20,9 @@ from typing import (
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
 # and add some documentation
-VoltageInitMode.__module__ = 'pypowsybl.loadflow'
-BalanceType.__module__ = 'pypowsybl.loadflow'
-ConnectedComponentMode.__module__ = 'pypowsybl.loadflow'
+VoltageInitMode.__module__ = __name__
+BalanceType.__module__ = __name__
+ConnectedComponentMode.__module__ = __name__
 ComponentStatus.__name__ = 'ComponentStatus'
 ComponentStatus.__module__ = __name__
 
@@ -32,6 +32,7 @@ class ComponentResult(object):
     """
     Loadflow result for one connected component of the network.
     """
+
     def __init__(self, res: _pypowsybl.LoadFlowComponentResult):
         self._res = res
 
@@ -141,7 +142,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
         if transformer_voltage_control_on is not None:
             self.transformer_voltage_control_on = transformer_voltage_control_on
         if no_generator_reactive_limits is not None:
-            self.no_generator_reactiv_limits = no_generator_reactive_limits
+            self.no_generator_reactive_limits = no_generator_reactive_limits
         if phase_shifter_regulation_on is not None:
             self.phase_shifter_regulation_on = phase_shifter_regulation_on
         if twt_split_shunt_admittance is not None:
