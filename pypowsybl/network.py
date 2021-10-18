@@ -1398,7 +1398,7 @@ class Network(object):
 
     def update_non_linear_shunt_sections(self, df: _pd.DataFrame):
         """
-        Update non linear shunt compensators sections with a ``Pandas`` data frame.
+        Update non linear shunt compensators sections with a :class:`~pandas.DataFrame`
 
         Args:
             df: the data to be updated.
