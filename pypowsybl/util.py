@@ -15,12 +15,36 @@ class ContingencyContainer(object):
         self._handle = handle
 
     def add_single_element_contingency(self, element_id: str, contingency_id: str = None):
+        """
+        Add one N-1 contingency.
+
+        Args:
+            element_id: The ID of the lost network element.
+            contingency_id: The ID of the contingency.
+                If ``None``, element_id will be used.
+        """
         _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
 
     def add_multiple_elements_contingency(self, elements_ids: _List[str], contingency_id: str):
+        """
+        Add one N-K contingency.
+
+        Args:
+            elements_ids: The ID of the lost network elements.
+            contingency_id: The ID of the contingency.
+        """
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
     def add_single_element_contingencies(self, elements_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None):
+        """
+        Add multiple N-1 contingencies.
+
+        Args:
+            elements_ids: A list of network elements.
+                One N- 1 contingency will be added for each element of the list.
+            contingency_id_provider: A callable which maps elements IDs to a contingency ID.
+                If ``None``, the element ID will be used as the contingency ID for each N-1 contingency.
+        """
         for element_id in elements_ids:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])

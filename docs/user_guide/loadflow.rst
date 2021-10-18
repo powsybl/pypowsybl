@@ -1,66 +1,84 @@
-Load Flow
-=========
+Running a load flow
+===================
+
+.. currentmodule:: pypowsybl.loadflow
 
 .. testsetup:: *
 
     import pypowsybl as pp
+    import pypowsybl.loadflow as lf
+    import pypowsybl.network as pn
 
-You can use the module ``pypowsybl.loadflow`` in order to run load flows on networks. By default, load flows are based on the OpenLoadFlow implementation, fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_. OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
+You can use the module :mod:`pypowsybl.loadflow` in order to run load flows on networks.
+By default, load flows are based on the OpenLoadFlow implementation,
+fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
+
+Start by importing the module:
+
+.. code-block:: python
+
+   import pypowsybl.network as pn
+   import pypowsybl.loadflow as lf
 
 Parameters
-**********
+----------
 
-The most important part before running a load flow is, after importing a network, knowing the parameters and change it if needed. Let's have a look at the default ones:
+The most important part before running a load flow is knowing the parameters and change them if needed.
+Let's have a look at the default ones:
 
 .. doctest::
 
-    >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> pp.loadflow.Parameters()
-    LoadFlowParameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=False, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
+    >>> lf.Parameters()
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=False, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
 
+For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
-
-- *voltage_init_mode* represents the starting point mode: use ``pp.loadflow.VoltageInitMode.`` and then UNIFORM_VALUES for a flat start, and DC_VALUES for a DC load flow based starting point.
-- The *transformer_voltage_control_on* attribute set to FALSE means that two or three windings transformers with ratio tap changers are not controlling voltage. The initial tap position is used for the resolution.
-- *twt_split_shunt_admittance* refers to the modelling of transformer legs. If you want to split the conductance and the susceptance in two, one at each side of the serie impedance, use TRUE.
-- The *simul_shunt* attribute set to FALSE means that shunt compensator are not controlling voltage. Note that OpenLoadFlow does not support this feature yet.
-- The *read_slack_bus* parameter set to TRUE means that the slack bus is read in the network through an dedicate extension. Prefer FALSE if you want to use the most meshed one. The slack bus selector is configured in the OpenLoadFlow specific parameters.
-- The *write_slack_bus* parameter set to FALSE means that the slack bus found and used by the load flow engine is not written as an extension inside the network.
-- *distributed_slack* set to TRUE means that the active power slack is distributed, on loads or on generators.
-- *balance_type* is an enum used in case of distributed slack. Use ``pp.loadflow.BalanceType.`` followed by PROPORTIONAL_TO_LOAD to distribute slack on loads,  PROPORTIONAL_TO_GENERATION_P_MAX or PROPORTIONAL_TO_GENERATION_P to distribute on generators.
-- The *dc_use_transformer_ratio* parameter is used only for DC load flows to include ratios in the equation system.
-- *countries_to_balance* allows to model slack distribution on some countries, use [] if the slack is distributed on the whole network.
-- And then, the *connected_component_mode* parameter set to ``pp.loadflow.ConnectedComponentMode.`` followed by MAIN computes flows only on the main connected component. Prefer ALL for a run on all connected component.
+All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
 
 AC Load Flow
-************
+------------
+
+In order to run an AC loadflow, simply use the :func:`run_ac` method:
 
 .. doctest::
 
-    >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> parameters = pp.loadflow.Parameters(distributed_slack=False)
-    >>> results = pp.loadflow.run_ac(network, parameters)
+    >>> network = pn.create_eurostag_tutorial_example1_network()
+    >>> results = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
+
+The result is composed of a list of component results, one for each connected component of the network
+included in the computation:
+
+.. doctest::
+
     >>> results
-    [LoadFlowComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763)]
+
+Component results provides general information about the loadflow: was it successful ? how many iterations did
+it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance
+on the main component of the network:
+
+.. doctest::
+
     >>> results[0].slack_bus_active_power_mismatch
     -606.5596837558763
 
+Then, the main output of the loadflow is actually the updated data in the network itself:
+all voltages and flows are now updated with the computed values. For example you can have a look at
+the voltage magnitudes (rounded to 2 digits here):
+
 .. doctest::
 
-    >>> network = pp.network.create_four_substations_node_breaker_network()
-    >>> parameters = pp.loadflow.Parameters(balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX, distributed_slack=True)
-    >>> results = pp.loadflow.run_ac(network, parameters)
-    >>> network.get_buses().v_mag
+    >>> network.get_buses().v_mag.round(2)
     id
-    S1VL1_0    224.764350
-    S1VL2_0    400.000000
-    S2VL1_0    408.846146
-    S3VL1_0    400.000000
-    S4VL1_0    400.000000
+    VLGEN_0      24.50
+    VLHV1_0     400.62
+    VLHV2_0     388.33
+    VLLOAD_0    146.90
     Name: v_mag, dtype: float64
 
-If you want more logs:
+
+If you want more logs you can set the global debug mode:
 
 .. code-block:: python
 
@@ -68,28 +86,33 @@ If you want more logs:
 
 
 DC Load Flow
-************
+------------
+
+In order to run an AC loadflow, simply use the :func:`run_dc` method.
+
+For that example, we will use a distributed slack, with imbalance distributed on generators,
+proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:
 
 .. doctest::
 
-    >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False, distributed_slack=True, balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
-    >>> results = pp.loadflow.run_dc(network, parameters)
-    >>> network.get_lines().p1
+    >>> parameters = lf.Parameters(dc_use_transformer_ratio=False, distributed_slack=True,
+    ...                            balance_type=lf.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
+
+Then let's create our test network and run the DC load flow:
+
+.. doctest::
+
+    >>> network = pn.create_eurostag_tutorial_example1_network()
+    >>> results = lf.run_dc(network, parameters)
+
+We can finally retrieve the computed flows on lines:
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network.get_lines()[['p1', 'p2']]
+                    p1     p2
     id
-    NHV1_NHV2_1    300.0
-    NHV1_NHV2_2    300.0
-    Name: p1, dtype: float64
-    >>> network.get_lines().p2
-    id
-    NHV1_NHV2_1   -300.0
-    NHV1_NHV2_2   -300.0
-    Name: p2, dtype: float64
-    >>> network.get_buses().v_angle
-    id
-    VLGEN_0      2.643659
-    VLHV1_0      0.000000
-    VLHV2_0     -3.928173
-    VLLOAD_0   -10.115696
-    Name: v_angle, dtype: float64
+    NHV1_NHV2_1  300.0 -300.0
+    NHV1_NHV2_2  300.0 -300.0
 

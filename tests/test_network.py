@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 from networkx.classes.reportviews import EdgeView
 from numpy import NaN
+import numpy as np
 
 import pypowsybl as pp
 import pathlib
@@ -249,6 +250,20 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(302.0, generators['target_q']['GEN'])
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
+
+    def test_update_unknown_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('No series named unknown', str(context.exception.args))
+
+    def test_update_non_modifiable_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('Series \'voltage_level_id\' is not modifiable.', str(context.exception.args))
 
     def test_update_switches_data_frame(self):
         n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
@@ -548,7 +563,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                     [0.4, 0.03]])
         n.update_non_linear_shunt_sections(update)
         pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
-        n.update_non_linear_shunt_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
+
+    def test_update_with_keywords(self):
+        n = self.create_non_linear_shunt_network()
+        n.update_non_linear_shunt_sections(df=None, id='SHUNT', section=0, g=0.2, b=0.000001)
         self.assertEqual(0.2, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g'])
         self.assertEqual(0.000001, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b'])
 

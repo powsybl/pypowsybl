@@ -358,6 +358,7 @@ class DataframeMapperBuilderTest {
         dataframe.addSeries(new TestStringSeries(List.of("el1", "el2"), "id"));
         dataframe.addSeries(new TestDoubleSeries(List.of(1.2, 2.2), "double"));
         return dataframe;
+
     }
 
     @Test
