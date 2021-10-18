@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 from networkx.classes.reportviews import EdgeView
 from numpy import NaN
+import numpy as np
 
 import pypowsybl as pp
 import pathlib

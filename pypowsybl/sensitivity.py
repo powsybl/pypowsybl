@@ -219,8 +219,11 @@ class SensitivityAnalysis(_ContingencyContainer):
         _pypowsybl.set_zones(self._handle, _zones)
 
     def set_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List):
-        """ Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
+        """
+        Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
+
         A variable could be:
+
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
