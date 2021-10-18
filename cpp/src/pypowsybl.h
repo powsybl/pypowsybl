@@ -125,6 +125,8 @@ enum ConnectedComponentMode {
 
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+int* copyVectorInt(const std::vector<int>& ints);
+double* copyVectorDouble(const std::vector<double>& doubles);
 
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
@@ -210,14 +212,7 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 int getSeriesType(element_type elementType, const std::string& seriesName);
 
-void updateNetworkElementsWithIntSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                        const std::vector<int>& values, int elementCount);
-
-void updateNetworkElementsWithDoubleSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<double>& values, int elementCount);
-
-void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<std::string>& values, int elementCount);
+int getIndexType(element_type elementType, const std::string& seriesName, int index);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 
@@ -248,6 +243,8 @@ SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& v
 SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
+
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
 }
 

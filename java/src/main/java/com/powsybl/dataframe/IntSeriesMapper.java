@@ -58,6 +58,9 @@ public class IntSeriesMapper<T> implements SeriesMapper<T> {
 
     @Override
     public void updateInt(T object, int value) {
+        if (updater == null) {
+            throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
+        }
         updater.update(object, value);
     }
 }
