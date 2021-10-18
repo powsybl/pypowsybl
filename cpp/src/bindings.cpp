@@ -462,11 +462,26 @@ PYBIND11_MODULE(_pypowsybl, m) {
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
             });
+    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
+
+    py::class_<series_metadata>(m, "SeriesMetadata", "Metadata about one series")
+            .def_property_readonly("name", [](const series_metadata& s) {
+                return s.name;
+            })
+            .def_property_readonly("type", [](const series_metadata& s) {
+                return s.type;
+            })
+            .def_property_readonly("is_index", [](const series_metadata& s) {
+                return (bool) s.is_index;
+            })
+            .def_property_readonly("is_modifiable", [](const series_metadata& s) {
+                return (bool) s.is_modifiable;
+            });
+    bindArray<pypowsybl::SeriesMetadataArray>(m, "SeriesMetadataArray");
+    m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::arg("network"), py::arg("element_type"));
-
-    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
             py::arg("element_type"), py::arg("series_name"));

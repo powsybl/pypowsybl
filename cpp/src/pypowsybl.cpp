@@ -105,6 +105,11 @@ Array<series>::~Array() {
     callJava<>(::freeSeriesArray, delegate_);
 }
 
+template<>
+Array<series_metadata>::~Array() {
+    callJava<>(::freeSeriesMetadataArray, delegate_);
+}
+
 template<typename T>
 class ToPtr {
 public:
@@ -598,6 +603,10 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, st
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+}
+
+SeriesMetadataArray* getSeriesMetadata(element_type elementType) {
+    return new SeriesMetadataArray(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
 }
 
 }

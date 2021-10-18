@@ -88,6 +88,13 @@ class NodeBreakerTopology:
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
         return graph
 
+class SeriesMetadata:
+
+    def __init__(self, metadata):
+        self._name = metadata.name
+        self._type = metadata.type
+        self._name = metadata.name
+        self._name = metadata.name
 
 class Network(object):
 
@@ -1074,6 +1081,7 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
+        series_metadata = {s.name : s for s in _pypowsybl.get_series_metadata(element_type) }
         is_index = []
         columns_names = []
         columns_values = []

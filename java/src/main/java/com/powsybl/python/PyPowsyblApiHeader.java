@@ -395,6 +395,36 @@ public final class PyPowsyblApiHeader {
         SeriesPointer addressOf(int index);
     }
 
+    @CStruct("series_metadata")
+    interface SeriesMetadataPointer extends PointerBase {
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("type")
+        int getType();
+
+        @CField("type")
+        void setType(int type);
+
+        @CField("is_index")
+        boolean isIndex();
+
+        @CField("is_index")
+        void setIndex(boolean index);
+
+        @CField("is_modifiable")
+        boolean isModifiable();
+
+        @CField("is_modifiable")
+        void setModifiable(boolean index);
+
+        SeriesMetadataPointer addressOf(int index);
+    }
+
     @CStruct("zone")
     interface ZonePointer extends PointerBase {
 

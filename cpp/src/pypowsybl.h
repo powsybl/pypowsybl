@@ -71,6 +71,8 @@ typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
 typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
+typedef Array<series_metadata> SeriesMetadataArray;
+
 
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
@@ -247,6 +249,8 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& volt
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+
+SeriesMetadataArray* getSeriesMetadata(element_type elementType);
 
 }
 

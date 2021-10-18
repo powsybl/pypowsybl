@@ -21,6 +21,9 @@ import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
+import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.PyPowsyblApiHeader.ElementType;
+import com.powsybl.python.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.update.CUpdatingDataframe;
 import com.powsybl.python.update.DoubleSeries;
 import com.powsybl.python.update.IntSeries;
@@ -279,7 +282,7 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getNetworkElementsIds")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ElementType elementType,
+    public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
                                                                                              CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
                                                                                              CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
                                                                                              boolean notConnectedToSameBusAtBothSides, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -317,7 +320,7 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getVariantsIds")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
@@ -325,8 +328,8 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                                     PyPowsyblApiHeader.ElementType elementType, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                                                                     ElementType elementType, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -335,8 +338,8 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "updateNetworkElementsWithSeries")
-    public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ElementType elementType,
-                                                       PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
+    public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
+                                                       ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -345,7 +348,7 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    public static UpdatingDataframe createDataframe(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe) {
+    public static UpdatingDataframe createDataframe(ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe) {
         int elementCount = dataframe.getPtr().addressOf(0).data().getLength();
         int columnsNumber = dataframe.getLength();
         CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
@@ -376,7 +379,7 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getNodeBreakerViewSwitches")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
@@ -385,7 +388,7 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getNodeBreakerViewNodes")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
@@ -396,7 +399,7 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getNodeBreakerViewInternalConnections")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
@@ -437,4 +440,38 @@ public final class PyPowsyblNetworkApiLib {
             network.merge(otherNetworks);
         });
     }
+
+    @CEntryPoint(name = "getSeriesMetadata")
+    public static ArrayPointer<SeriesMetadataPointer> getSeriesMetadata(IsolateThread thread, ElementType elementType,
+                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(convert(elementType)).getSeriesMetadata();
+            SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(seriesMetadata.size() * SizeOf.get(SeriesMetadataPointer.class));
+            for (int i = 0; i < seriesMetadata.size(); i++) {
+                SeriesMetadata metadata = seriesMetadata.get(i);
+                SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
+                metadataPtr.setName(CTypeUtil.toCharPtr(metadata.getName()));
+                metadataPtr.setType(convert(metadata.getType()));
+                metadataPtr.setIndex(metadata.isIndex());
+                metadataPtr.setModifiable(metadata.isModifiable());
+            }
+            ArrayPointer<SeriesMetadataPointer> res = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+            res.setLength(seriesMetadata.size());
+            res.setPtr(seriesMetadataPtr);
+            return res;
+        });
+    }
+
+    @CEntryPoint(name = "freeSeriesMetadataArray")
+    public static void freeSeriesMetadataArray(IsolateThread thread, ArrayPointer<SeriesMetadataPointer> arrayPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < arrayPtr.getLength(); i++) {
+                SeriesMetadataPointer metadata = arrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(metadata.getName());
+            }
+            UnmanagedMemory.free(arrayPtr.getPtr());
+            UnmanagedMemory.free(arrayPtr);
+        });
+    }
+
 }
