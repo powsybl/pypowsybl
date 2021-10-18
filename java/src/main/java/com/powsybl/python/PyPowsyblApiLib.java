@@ -553,6 +553,16 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "isIndex")
+    public static boolean isIndex(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            return NetworkDataframes.getDataframeMapper(convert(elementType))
+                    .getSeriesMetadata(seriesName)
+                    .isIndex();
+        });
+    }
+
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));

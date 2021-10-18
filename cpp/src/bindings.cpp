@@ -471,12 +471,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
             py::arg("element_type"), py::arg("series_name"));
 
+    m.def("is_index", &pypowsybl::isIndex, "indicate if a column is a index for a given element type and series_name", 
+            py::arg("element_type"), py::arg("series_name"));
+
     m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
             py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::arg("network"), py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
-          py::arg("index_bool"), py::arg("element_type"));
+          py::arg("is_index"), py::arg("element_type"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));

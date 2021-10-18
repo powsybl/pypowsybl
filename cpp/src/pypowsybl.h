@@ -212,6 +212,8 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 int getSeriesType(element_type elementType, const std::string& seriesName);
 
+bool isIndex(element_type elementType, const std::string& seriesName);
+
 int getIndexType(element_type elementType, const std::string& seriesName, int index);
 
 std::string getWorkingVariantId(const JavaHandle& network);
