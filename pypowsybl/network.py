@@ -1080,11 +1080,22 @@ class Network(object):
         columns_types = []
         index_count = 0
         if df is None:
+            expected_size = None
             for key, value in kwargs.items():
                 columns_names.append(key)
                 is_index.append(_pypowsybl.is_index(element_type, key))
                 columns_types.append(_pypowsybl.get_series_type(element_type, key))
-                columns_values.append(_np.array(value, ndmin=1, copy=False))
+                values_array = _np.array(value, ndmin=1, copy=False)
+                if values_array.ndim != 1:
+                    raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
+                                       'as keyword argument, got {} dimensions'.format(values_array.ndim))
+                size = values_array.shape[0]
+                if expected_size is None:
+                    expected_size = size
+                elif size != expected_size:
+                    raise RuntimeError('Network elements update: all arguments must have the same size, '
+                                       'got size {} for series {}, expected {}'.format(size, key, expected_size))
+                columns_values.append(values_array)
                 index_count += 1
         else:
             if kwargs:
@@ -1108,6 +1119,7 @@ class Network(object):
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)
+
         _pypowsybl.update_network_elements_with_series(self._handle, columns_values, columns_names, columns_types,
                                                        is_index, element_type)
 

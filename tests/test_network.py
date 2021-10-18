@@ -570,6 +570,27 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(0.2, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g'])
         self.assertEqual(0.000001, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b'])
 
+    def test_update_generators_with_keywords(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        n.update_generators(id=['GTH1', 'GTH2'], target_p=[200, 300])
+        self.assertEqual([200, 300], n.get_generators().loc[['GTH1', 'GTH2'], 'target_p'].to_list())
+
+    def test_invalid_update_kwargs(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(df=pd.DataFrame(index=['GTH1'], columns=['target_p'], data=[300]),
+                                id='GTH1', target_p=300)
+        self.assertIn('only one form', str(context.exception))
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(id=['GTH1', 'GTH2'], target_p=100)
+        self.assertIn('same size', str(context.exception))
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(id=np.array(0, ndmin=3))
+        self.assertIn('dimensions', str(context.exception))
+
     def test_create_network(self):
         n = pp.network.create_ieee9()
         self.assertEqual('ieee9cdf', n.id)
