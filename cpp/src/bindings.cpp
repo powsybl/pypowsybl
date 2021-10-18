@@ -22,10 +22,9 @@ void bindArray(py::module_& m, const std::string& className) {
             }, py::keep_alive<0, 1>());
 }
 
-std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& indexBool) {
-    array* rawDataframe = new array();
+std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex) {
     int columnsNumber = columnsNames.size();
-    std::shared_ptr<array> dataframe = std::shared_ptr<array>(rawDataframe, [](array* dataframeToDestroy){
+    std::shared_ptr<array> dataframe(new array(), [](array* dataframeToDestroy){
         for (int indice = 0 ; indice < dataframeToDestroy->length; indice ++) {
             series* column = ((series*) dataframeToDestroy->ptr) + indice;
             if (column->type == 0) {
@@ -40,16 +39,15 @@ std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std
         delete (series*) dataframeToDestroy->ptr;
         delete dataframeToDestroy;
     });
-    rawDataframe->ptr = new series[columnsNumber];
+    dataframe->ptr = new series[columnsNumber];
     series* columns = new series[columnsNumber];
     for (int indice = 0 ; indice < columnsNumber ; indice ++ ) {
         series* column = columns + indice;
         py::str name = (py::str) columnsNames[indice];
         column->name = strdup(((std::string) name).c_str());
-        column->index = int(indexBool[indice]);
+        column->index = int(isIndex[indice]);
         int type = columnsTypes[indice];
         column->type = type;
-        py::array data = (py::array) columnsValues[indice];
         if (type == 0) {
             std::vector<std::string> values = py::cast<std::vector<std::string>>(columnsValues[indice]);
             column->data.length = values.size();
@@ -69,9 +67,9 @@ std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std
     return dataframe;
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& indexBool, element_type elementType) {
-    std::shared_ptr<array>  dataframe = createArray(columnsValues, columnsNames, columnsTypes, indexBool);
-    pypowsybl::updateNetworkElementsWithSeries(network, (array*) dataframe.get(), elementType);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex, element_type elementType) {
+    std::shared_ptr<array>  dataframe = createArray(columnsValues, columnsNames, columnsTypes, isIndex);
+    pypowsybl::updateNetworkElementsWithSeries(network, dataframe.get(), elementType);
 }
 
 template<typename T>

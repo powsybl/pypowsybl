@@ -49,6 +49,9 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
 
     @Override
     public void updateDouble(T object, double value) {
+        if (updater == null) {
+            throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
+        }
         updater.update(object, value);
     }
 }

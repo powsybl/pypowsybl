@@ -54,6 +54,9 @@ public class StringSeriesMapper<T> implements SeriesMapper<T> {
 
     @Override
     public void updateString(T object, String value) {
+        if (updater == null) {
+            throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
+        }
         updater.accept(object, value);
     }
 }

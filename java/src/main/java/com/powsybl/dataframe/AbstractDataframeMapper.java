@@ -69,6 +69,8 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
                             series.updateInt(getItem(object, updatingDataframe, i),
                                     updatingDataframe.getIntValue(seriesName, i));
                             break;
+                        default:
+                            throw new IllegalStateException("Unexpected series type for update: " + column.getType());
                     }
                 }
             }
