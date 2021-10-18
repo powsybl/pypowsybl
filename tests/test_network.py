@@ -250,6 +250,20 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
 
+    def test_update_unknown_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('No series named unknown', str(context.exception.args))
+
+    def test_update_non_modifiable_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('Series ''voltage_level_id'' is not modifiable.', str(context.exception.args))
+
     def test_update_switches_data_frame(self):
         n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
         switches = n.get_switches()
