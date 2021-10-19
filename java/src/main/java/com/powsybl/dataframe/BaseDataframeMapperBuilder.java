@@ -6,6 +6,7 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
 
     public B itemGetter(BiFunction<T, String, U> itemGetter) {
         this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber) -> {
-            String id = updatingDataframe.getStringValue("id", 0, lineNumber);
+            String id = updatingDataframe.getStringValue("id", 0, lineNumber)
+                    .orElseThrow(() -> new PowsyblException("id is missing"));
             return itemGetter.apply(network, id);
         };
         return (B) this;

@@ -22,6 +22,7 @@ import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.update.CUpdatingDataframe;
+import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.python.update.DoubleSeries;
 import com.powsybl.python.update.IntSeries;
 import com.powsybl.python.update.StringSeries;
@@ -334,6 +335,21 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "createElement")
+    public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
+                                     PyPowsyblApiHeader.ElementType elementType,
+                                     PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer>> cDataframes,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<UpdatingDataframe> dataframes = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getLength(); i++) {
+                dataframes.add(createDataframe(cDataframes.getPtr().addressOf(i)));
+            }
+            CreateEquipmentHelper.createElement(elementType, network, dataframes);
+        });
+    }
+
     @CEntryPoint(name = "updateNetworkElementsWithSeries")
     public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ElementType elementType,
                                                        PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
@@ -436,5 +452,13 @@ public final class PyPowsyblNetworkApiLib {
             }
             network.merge(otherNetworks);
         });
+    }
+
+    private static <T> Map<String, T> mergeIntoMap(List<String> keys, List<T> vals) {
+        Map<String, T> map = new HashMap<>();
+        for (int i = 0; i < keys.size(); i++) {
+            map.put(keys.get(i), vals.get(i));
+        }
+        return map;
     }
 }

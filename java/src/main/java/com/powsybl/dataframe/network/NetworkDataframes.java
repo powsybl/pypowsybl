@@ -276,12 +276,14 @@ public final class NetworkDataframes {
     }
 
     static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
-        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index));
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index)
+                .orElseThrow(() -> new PowsyblException("id is missing")));
         if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
             throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
         } else {
             ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
-            int section = dataframe.getIntValue("section", 1, index);
+            int section = dataframe.getIntValue("section", 1, index)
+                    .orElseThrow(() -> new PowsyblException("section is missing"));
             return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
         }
     }

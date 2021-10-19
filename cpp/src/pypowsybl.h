@@ -248,6 +248,8 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
+void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType);
+
 }
 
 #endif //PYPOWSYBL_H

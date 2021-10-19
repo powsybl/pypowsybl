@@ -71,6 +71,26 @@ void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataf
     pypowsybl::updateNetworkElementsWithSeries(network, dataframe, elementType);
 }
 
+std::shared_ptr<array> createDataframeArray(std::vector<array*> dataframes) {
+    std::shared_ptr<array> dataframeArray(new array(), [](array* dataframeToDestroy){
+        delete[] (array*) dataframeToDestroy->ptr;
+        delete dataframeToDestroy;
+    });
+    dataframeArray->ptr = new array[dataframes.size()];
+    array* dataframesFinal = new array[dataframes.size()];
+    for (int indice = 0 ; indice < dataframes.size() ; indice ++) {
+        dataframesFinal[indice] = *dataframes[indice];
+    }
+    dataframeArray->ptr = dataframesFinal;
+    dataframeArray->length = dataframes.size();
+    return dataframeArray;
+}
+
+void createElement(pypowsybl::JavaHandle network, std::vector<array*> dataframes, element_type elementType) {
+    std::shared_ptr<array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::createElement(network, dataframeArray.get(), elementType);
+}
+
 template<typename T>
 py::array seriesAsNumpyArray(const series& series) {
 	//Last argument is to bind lifetime of series to the returned array
@@ -494,9 +514,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
           py::arg("is_index"));
 
-    m.def("update_network_elements", &pypowsybl::updateNetworkElementsWithStringSeries, "Update network elements for a given element type with a string series",
-          py::arg("network"), py::arg("element_type"), py::arg("series_name"), py::arg("ids"), py::arg("values"),
-          py::arg("element_count"));
     m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
             py::arg("element_type"), py::arg("series_name"), py::arg("index"));
 
@@ -529,4 +546,5 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"));
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
+    m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
 }

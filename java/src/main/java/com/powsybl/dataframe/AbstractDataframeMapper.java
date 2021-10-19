@@ -58,16 +58,22 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
                     SeriesMapper<U> series = seriesMappers.get(seriesName);
                     switch (column.getType()) {
                         case STRING:
-                            series.updateString(getItem(object, updatingDataframe, i),
-                                    updatingDataframe.getStringValue(seriesName, i));
+                            if (updatingDataframe.getStringValue(seriesName, i).isPresent()) {
+                                series.updateString(getItem(object, updatingDataframe, i),
+                                        updatingDataframe.getStringValue(seriesName, i).get());
+                            }
                             break;
                         case DOUBLE:
-                            series.updateDouble(getItem(object, updatingDataframe, i),
-                                    updatingDataframe.getDoubleValue(seriesName, i));
+                            if (updatingDataframe.getDoubleValue(seriesName, i).isPresent()) {
+                                series.updateDouble(getItem(object, updatingDataframe, i),
+                                        updatingDataframe.getDoubleValue(seriesName, i).getAsDouble());
+                            }
                             break;
                         case INT:
-                            series.updateInt(getItem(object, updatingDataframe, i),
-                                    updatingDataframe.getIntValue(seriesName, i));
+                            if (updatingDataframe.getIntValue(seriesName, i).isPresent()) {
+                                series.updateInt(getItem(object, updatingDataframe, i),
+                                        updatingDataframe.getIntValue(seriesName, i).getAsInt());
+                            }
                             break;
                         default:
                             throw new IllegalStateException("Unexpected series type for update: " + column.getType());
@@ -75,6 +81,11 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
                 }
             }
         }
+    }
+
+    @Override
+    public boolean isSeriesMetaDataExists(String seriesName) {
+        return seriesMappers.containsKey(seriesName);
     }
 
     protected abstract List<U> getItems(T object);

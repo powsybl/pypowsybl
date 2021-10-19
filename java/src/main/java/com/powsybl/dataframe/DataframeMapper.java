@@ -36,4 +36,6 @@ public interface DataframeMapper<T> {
      * Updates object data with the provided series.
      */
     void updateSeries(T object, UpdatingDataframe updatingDataframe);
+
+    boolean isSeriesMetaDataExists(String seriesName);
 }

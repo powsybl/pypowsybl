@@ -1063,7 +1063,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
+    def _update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
@@ -1140,7 +1140,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.BUS, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.BUS, df, **kwargs)
 
     def update_switches(self, df: _DataFrame = None, **kwargs):
         """
@@ -1160,7 +1160,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.SWITCH, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.SWITCH, df, **kwargs)
 
     def update_generators(self, df: _DataFrame = None, **kwargs):
         """
@@ -1187,7 +1187,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.GENERATOR, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.GENERATOR, df, **kwargs)
 
     def update_loads(self, df: _DataFrame = None, **kwargs):
         """
@@ -1208,7 +1208,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.LOAD, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.LOAD, df, **kwargs)
 
     def update_batteries(self, df: _DataFrame = None, **kwargs):
         """
@@ -1229,7 +1229,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.BATTERY, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.BATTERY, df, **kwargs)
 
     def update_dangling_lines(self, df: _DataFrame = None, **kwargs):
         """
@@ -1256,7 +1256,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.DANGLING_LINE, df, **kwargs)
 
     def update_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
         """
@@ -1280,7 +1280,7 @@ class Network(object):
               Arguments can be single values or any type of sequence.
               In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
     def update_static_var_compensators(self, df: _DataFrame = None, **kwargs):
         """
@@ -1304,7 +1304,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
     def update_hvdc_lines(self, df: _DataFrame = None, **kwargs):
         """
@@ -1329,7 +1329,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.HVDC_LINE, df, **kwargs)
 
     def update_lines(self, df: _DataFrame = None, **kwargs):
         """
@@ -1356,7 +1356,7 @@ class Network(object):
                 - `connected1`
                 - `connected2`
         """
-        return self.update_elements(_pypowsybl.ElementType.LINE, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.LINE, df, **kwargs)
 
     def update_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
         """
@@ -1387,7 +1387,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
     def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
@@ -1410,7 +1410,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
     def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
@@ -1433,7 +1433,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
     def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """
@@ -1455,7 +1455,7 @@ class Network(object):
                Arguments can be single values or any type of sequence.
                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
     def update_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
@@ -1474,7 +1474,7 @@ class Network(object):
                 In the case of sequences, all arguments must have the same length.
 
         """
-        return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_non_linear_shunt_sections(self, df: _DataFrame = None, **kwargs):
         """
@@ -1491,21 +1491,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
-
-    def update_non_linear_shunt_sections(self, df: _pd.DataFrame):
-        """ Update non linear shunt compensators sections with a ``Pandas`` data frame.
-
-                      Args:
-                         df (DataFrame): the ``Pandas`` data frame
-                             columns that can be updated :
-                                 - g per section
-                                 - b per section
-
-                      Returns:
-                          a dataframe updated
-                      """
-        return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df)
+        return self._update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def get_working_variant_id(self):
         """
@@ -1582,6 +1568,171 @@ class Network(object):
         for n in networkList:
             handleList.append(n._handle)
         return _pypowsybl.merge(self._handle, handleList)
+
+    def _create_element(self, element_type: ElementType, dfs: list):
+        array_list = []
+        for df in dfs:
+            is_index = []
+            columns_names = []
+            columns_values = []
+            columns_types = []
+            index_count = 0
+            is_multi_index = len(df.index.names) > 1
+            for index_name in df.index.names:
+                if index_name is None:
+                    index_name = 'id'
+                if is_multi_index:
+                    columns_values.append(df.index.get_level_values(index_name))
+                else:
+                    columns_values.append(df.index.values)
+                columns_names.append(index_name)
+                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+                index_count += 1
+                is_index.append(True)
+            columns_names.extend(df.columns.values)
+            for series_name in df.columns.values:
+                series = df[series_name]
+                series_type = _pypowsybl.get_series_type(element_type, series_name)
+                columns_types.append(series_type)
+                columns_values.append(series.values)
+                is_index.append(False)
+            array_list.append(_pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index))
+        _pypowsybl.create_element(self._handle, array_list, element_type)
+
+    def create_generators(self, df: _DataFrame = None):
+        """
+        create generators on a network
+
+        Args:
+            df: dataframe of the generators creation data
+        """
+        self._create_element(ElementType.GENERATOR, [df])
+
+    def create_busbar(self, df: _DataFrame = None, **kwargs):
+        """
+        create busbar sections on a network
+
+        Args:
+            df: dataframe of the busbar sections creation data
+        """
+        self._create_element(ElementType.BUSBAR_SECTION, [df])
+
+    def create_buses(self, df: _DataFrame = None, **kwargs):
+        """
+        create buses on a network
+
+        Args:
+           df: dataframe of the buses sections creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.BUS, [df])
+
+    def create_loads(self, df: _DataFrame = None, **kwargs):
+        """
+        create loads on a network
+
+        Args:
+            df: dataframe of the loads creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.LOAD, [df])
+
+    def create_batteries(self, df: _DataFrame = None, **kwargs):
+        """
+        create batteries on a network
+
+        Args:
+            df: dataframe of the batteries creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.BATTERY, [df])
+
+    def create_dangling_lines(self, df: _DataFrame = None, **kwargs):
+        """
+        create dangling lines on a network
+
+        Args:
+            df: dataframe of the dangling lines creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.DANGLING_LINE, [df])
+
+    def create_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
+        """
+        create vsc converter stations on a network
+
+        Args:
+            df: dataframe of the vsc converter stations creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.VSC_CONVERTER_STATION, [df])
+
+    def create_static_var_compensators(self, df: _DataFrame = None, **kwargs):
+        """
+        create var compensators on a network
+
+        Args:
+            df: dataframe of the var compensators creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, [df])
+
+    def create_lines(self, df: _DataFrame = None, **kwargs):
+        """
+        create lines on a network
+
+        Args:
+            df: dataframe of the lines creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.LINE, [df])
+
+    def create_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
+        """
+        create 2 windings transformers on a network
+
+        Args:
+            df: dataframe of the 2 windings transformers creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, [df])
+
+    def create_shunt_compensators(self, shuntDataframe: _DataFrame, sectionDataframe: _DataFrame = None, **kwargs):
+        """
+        create shunt compensators on a network
+
+        Args:
+            df: dataframe of the shunt compensators creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.SHUNT_COMPENSATOR, [shuntDataframe, sectionDataframe])
+
+    def create_switches(self, df: _DataFrame = None, **kwargs):
+        """
+        create switches on a network
+
+        Args:
+            df: dataframe of the switches creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.SWITCH, [df])
+
+    def create_voltage_levels(self, df: _DataFrame = None, **kwargs):
+        """
+        create voltage levels on a network
+
+        Args:
+            df: dataframe of the votage levels creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.VOLTAGE_LEVEL, [df])
+
+    def create_ratio_tap_changers(self, ratiosDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs):
+        """
+        create ratio tap changers on a network
+
+        Args:
+            df: dataframe of the ratio tap changers creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.RATIO_TAP_CHANGER, [ratiosDataframe, stepsDataframe])
+
+    def create_phase_tap_changers(self, phasesDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs):
+        """
+        create phase tap changers on a network
+
+        Args:
+            df: dataframe of the phase tap changers creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.PHASE_TAP_CHANGER, [phasesDataframe, stepsDataframe])
 
 
 def _create_network(name, network_id=''):

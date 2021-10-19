@@ -52,6 +52,9 @@ public final class PyPowsyblApiHeader {
 
         @CField("length")
         void setLength(int length);
+
+        ArrayPointer addressOf(int index);
+
     }
 
     static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {

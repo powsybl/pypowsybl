@@ -600,4 +600,8 @@ void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataf
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
+void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType) {
+    pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
+}
+
 }

@@ -30,6 +30,16 @@ public class CUpdatingDataframe implements UpdatingDataframe {
         return new ArrayList<>(seriesMetadata.values());
     }
 
+    public int getIndex(String column, String value) {
+        StringSeries serie = (StringSeries) seriesMap.get(column);
+        for (int i = 0; i < serie.getSize(); i++) {
+            if (CTypeUtil.toString(serie.getValues().read(i)).equals(value)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void addSeries(Series series, SeriesMetadata seriesMetadata) {
         this.seriesMetadata.put(seriesMetadata.getName(), seriesMetadata);
         this.seriesMap.put(series.getName(), series);
@@ -40,7 +50,7 @@ public class CUpdatingDataframe implements UpdatingDataframe {
     }
 
     @Override
-    public String getStringValue(String columnName, int columnNumber, int index) {
+    public Optional<String> getStringValue(String columnName, int columnNumber, int index) {
         if (containsColumnName(columnName, SeriesDataType.STRING)) {
             return getStringValue(columnName, index);
         } else {
@@ -49,17 +59,21 @@ public class CUpdatingDataframe implements UpdatingDataframe {
     }
 
     @Override
-    public String getStringValue(String column, int index) {
-        return CTypeUtil.toString(((StringSeries) seriesMap.get(column)).getValues().read(index));
+    public Optional<String> getStringValue(String column, int index) {
+        if (seriesMap.get(column) == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(CTypeUtil.toString(((StringSeries) seriesMap.get(column)).getValues().read(index)));
+        }
     }
 
     @Override
-    public String getStringValue(int columnNumber, int index) {
-        return CTypeUtil.toString(((StringSeries) getSeries(columnNumber)).getValues().read(index));
+    public Optional<String> getStringValue(int columnNumber, int index) {
+        return Optional.of(CTypeUtil.toString(((StringSeries) getSeries(columnNumber)).getValues().read(index)));
     }
 
     @Override
-    public int getIntValue(String columnName, int columnNumber, int index) {
+    public OptionalInt getIntValue(String columnName, int columnNumber, int index) {
         if (containsColumnName(columnName, SeriesDataType.INT)) {
             return getIntValue(columnName, index);
         } else {
@@ -68,17 +82,25 @@ public class CUpdatingDataframe implements UpdatingDataframe {
     }
 
     @Override
-    public int getIntValue(String columnNumber, int index) {
-        return ((IntSeries) seriesMap.get(columnNumber)).getValues().read(index);
+    public OptionalInt getIntValue(String columnNumber, int index) {
+        if (seriesMap.get(columnNumber) == null) {
+            return OptionalInt.empty();
+        } else {
+            return OptionalInt.of(((IntSeries) seriesMap.get(columnNumber)).getValues().read(index));
+        }
     }
 
     @Override
-    public int getIntValue(int columnNumber, int index) {
-        return ((IntSeries) getSeries(columnNumber)).getValues().read(index);
+    public OptionalInt getIntValue(int columnNumber, int index) {
+        if (getSeries(columnNumber) == null) {
+            return OptionalInt.empty();
+        } else {
+            return OptionalInt.of(((IntSeries) getSeries(columnNumber)).getValues().read(index));
+        }
     }
 
     @Override
-    public double getDoubleValue(String columnName, int columnNumber, int index) {
+    public OptionalDouble getDoubleValue(String columnName, int columnNumber, int index) {
         if (containsColumnName(columnName, SeriesDataType.DOUBLE)) {
             return getDoubleValue(columnName, index);
         } else {
@@ -87,13 +109,21 @@ public class CUpdatingDataframe implements UpdatingDataframe {
     }
 
     @Override
-    public double getDoubleValue(String column, int index) {
-        return ((DoubleSeries) seriesMap.get(column)).getValues().read(index);
+    public OptionalDouble getDoubleValue(String column, int index) {
+        if (seriesMap.get(column) == null) {
+            return OptionalDouble.empty();
+        } else {
+            return OptionalDouble.of(((DoubleSeries) seriesMap.get(column)).getValues().read(index));
+        }
     }
 
     @Override
-    public double getDoubleValue(int columnNumber, int index) {
-        return ((DoubleSeries) getSeries(columnNumber)).getValues().read(index);
+    public OptionalDouble getDoubleValue(int columnNumber, int index) {
+        if (getSeries(columnNumber) == null) {
+            return OptionalDouble.empty();
+        } else {
+            return OptionalDouble.of(((DoubleSeries) getSeries(columnNumber)).getValues().read(index));
+        }
     }
 
     @Override
@@ -101,7 +131,8 @@ public class CUpdatingDataframe implements UpdatingDataframe {
         return lineCount;
     }
 
-    private boolean containsColumnName(String columnName, SeriesDataType type) {
+    @Override
+    public boolean containsColumnName(String columnName, SeriesDataType type) {
         return seriesMetadata.containsKey(columnName) && seriesMetadata.get(columnName).getType().equals(type);
     }
 }

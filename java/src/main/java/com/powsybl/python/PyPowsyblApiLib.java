@@ -10,6 +10,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
@@ -22,6 +23,7 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
+import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.SecurityAnalysisResult;
@@ -527,10 +529,15 @@ public final class PyPowsyblApiLib {
     public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .getType();
-            return convert(type);
+            DataframeMapper dataframeMapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            if (dataframeMapper.isSeriesMetaDataExists(seriesName)) {
+                return CDataframeHandler.convert(dataframeMapper
+                        .getSeriesMetadata(seriesName)
+                        .getType());
+            } else {
+                // adder
+                return CreateEquipmentHelper.getAdderSeriesType(elementType, seriesName);
+            }
         });
     }
 
