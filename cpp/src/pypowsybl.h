@@ -125,6 +125,28 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -251,6 +273,8 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
 SeriesMetadataArray* getSeriesMetadata(element_type elementType);
+
+std::vector<SeriesMetadata> getSeriesMetadataList(element_type elementType);
 
 }
 

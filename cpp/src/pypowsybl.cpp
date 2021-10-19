@@ -609,4 +609,14 @@ SeriesMetadataArray* getSeriesMetadata(element_type elementType) {
     return new SeriesMetadataArray(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
 }
 
+std::vector<SeriesMetadata> getSeriesMetadataList(element_type elementType) {
+
+    std::vector<SeriesMetadata> res;
+    SeriesMetadataArray array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
+
+
+    return new SeriesMetadataArray(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
+}
+
+
 }
