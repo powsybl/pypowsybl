@@ -464,20 +464,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
-    py::class_<series_metadata>(m, "SeriesMetadata", "Metadata about one series")
-            .def_property_readonly("name", [](const series_metadata& s) {
-                return s.name;
-            })
-            .def_property_readonly("type", [](const series_metadata& s) {
-                return s.type;
-            })
-            .def_property_readonly("is_index", [](const series_metadata& s) {
-                return (bool) s.is_index;
-            })
-            .def_property_readonly("is_modifiable", [](const series_metadata& s) {
-                return (bool) s.is_modifiable;
-            });
-    bindArray<pypowsybl::SeriesMetadataArray>(m, "SeriesMetadataArray");
+    py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
+            .def(py::init<const std::string&, int, bool, bool>())
+            .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
+            .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
+            .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
+            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable
+            .def("__hash__", std::hash<pypowsybl::SeriesMetadata>());
+
     m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",

@@ -605,18 +605,14 @@ void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataf
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
-SeriesMetadataArray* getSeriesMetadata(element_type elementType) {
-    return new SeriesMetadataArray(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
-}
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
 
-std::vector<SeriesMetadata> getSeriesMetadataList(element_type elementType) {
-
+    Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
     std::vector<SeriesMetadata> res;
-    SeriesMetadataArray array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
-
-
-    return new SeriesMetadataArray(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
+    for (const series_metadata& series: array) {
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+    }
+    return res;
 }
-
 
 }

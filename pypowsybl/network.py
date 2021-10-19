@@ -21,6 +21,14 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
+_pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
+                                               f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
+
+_SERIES_METADATA = {elt_type: _pypowsybl.get_series_metadata(elt_type) for elt_type in ElementType.__members__.values() }
+_SERIES_METADATA_BY_NAME = {elt_type: {s.name: s for s in _SERIES_METADATA[elt_type]}
+                            for elt_type in ElementType.__members__.values()}
+
+
 class SingleLineDiagram:
     """
     This class represents a single line diagram."""
@@ -88,13 +96,6 @@ class NodeBreakerTopology:
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
         return graph
 
-class SeriesMetadata:
-
-    def __init__(self, metadata):
-        self._name = metadata.name
-        self._type = metadata.type
-        self._name = metadata.name
-        self._name = metadata.name
 
 class Network(object):
 
