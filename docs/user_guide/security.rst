@@ -26,7 +26,7 @@ the violations created by the contingency, they are collected by contingency in 
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> network.update_loads(pd.DataFrame(columns=['p0'], data=[800], index=['LOAD']))
+    >>> network.update_loads(id='LOAD', p0=800)
     >>> security_analysis = pp.security.create_analysis()
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     >>> result = security_analysis.run_ac(network)
