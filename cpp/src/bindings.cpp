@@ -30,13 +30,13 @@ std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std
             if (column->type == 0) {
                 pypowsybl::deleteCharPtrPtr((char**) column->data.ptr, column->data.length);
             } else if (column->type == 1) {
-                delete (double*) column->data.ptr;
+                delete[] (double*) column->data.ptr;
             } else if (column->type == 2 || column->type == 3) {
-                delete (int*) column->data.ptr;
+                delete[] (int*) column->data.ptr;
             }
-            delete column->name;
+            delete[] column->name;
         }
-        delete (series*) dataframeToDestroy->ptr;
+        delete[] (series*) dataframeToDestroy->ptr;
         delete dataframeToDestroy;
     });
     dataframe->ptr = new series[columnsNumber];
