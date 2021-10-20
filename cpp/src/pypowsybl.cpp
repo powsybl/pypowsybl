@@ -197,7 +197,7 @@ char* copyStringToCharPtr(const std::string& str) {
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
     char** charPtrPtr = new char*[strings.size()];
     for (int i = 0; i < strings.size(); i++) {
-        charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
+        charPtrPtr[i] = copyStringToCharPtr(strings[i]);
     }
     return charPtrPtr;
 }
@@ -216,9 +216,9 @@ double* copyVectorDouble(const std::vector<double>& doubles) {
 
 void deleteCharPtrPtr(char** charPtrPtr, int length) {
     for (int i = 0; i < length; i++) {
-        delete charPtrPtr[i];
+        delete[] charPtrPtr[i];
     }
-    delete charPtrPtr;
+    delete[] charPtrPtr;
 }
 
 void freeCString(char* str) {
