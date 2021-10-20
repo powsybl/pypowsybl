@@ -78,7 +78,17 @@ Flow values are now available in the lines dataframe:
     L5-4-0 -40.68  40.94 -38.69  22.89
     L6-4-0 -30.54  30.70 -16.54   1.03
 
+You can also generate a single line diagram of one of the substations
+or voltage level, if you want to visualize the result:
 
+.. doctest:: python
+
+    >>> network.get_single_line_diagram('S1')
+
+This will produce the following SVG image, which will just display if you run
+inside a notebook:
+
+.. image:: _static/images/getting-started-sld.svg
 
 
 Going further
