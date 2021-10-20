@@ -81,7 +81,7 @@ Flow values are now available in the lines dataframe:
 You can also generate a single line diagram of one of the substations
 or voltage level, if you want to visualize the result:
 
-.. doctest:: python
+.. code-block::
 
     >>> network.get_single_line_diagram('S1')
 
