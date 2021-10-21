@@ -476,4 +476,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"));
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
+
+    m.def("create_glsk_importer", &pypowsybl::createGLSKimporter, "Create a glsk importer.", py::arg("filename"));
+
+    m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("importer"), py::arg("country"), py::arg("instant"));
+
+    m.def("get_glsk_countries", &pypowsybl::getGLSKcountries, "Get glsk countries", py::arg("importer"));
+
+    m.def("get_glsk_factors", &pypowsybl::getGLSKInjectionFactors, "Get glsk factors", py::arg("importer"), py::arg("country"), py::arg("instant"));
+
+    m.def("get_glsk_factors_start_timestamp", &pypowsybl::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
+
+    m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
+
 }

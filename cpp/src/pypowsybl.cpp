@@ -428,6 +428,11 @@ JavaHandle createSensitivityAnalysis() {
     return z;
 }
 
+::zone* createZone(const std::string& id, const JavaHandle& glskImporterHandle) {
+    auto z = new ::zone;
+    return z;
+}
+
 void deleteZone(::zone* z) {
     delete[] z->id;
     for (int i = 0; i < z->length; i++) {
@@ -599,5 +604,36 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& vol
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
 }
+
+JavaHandle createGLSKimporter(std::string& filename) {
+    return callJava<JavaHandle>(::createGLSKimporter, (char*) filename.c_str());
+}
+
+std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, double instant) {
+    auto keysArrayPtr = callJava<array*>(::getGLSKinjectionkeys, importer, (char*) country.c_str(), instant);
+    ToStringVector keys(keysArrayPtr);
+    return keys.get();
+}
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer) {
+    auto countriesArrayPtr = callJava<array*>(::getGLSKcountries, importer);
+    ToStringVector countries(countriesArrayPtr);
+    return countries.get();
+}
+
+std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, double instant) {
+    auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, importer, (char*) country.c_str(), instant);
+    std::vector<double> values = toVector<double>(countriesArrayPtr);
+    return values;
+}
+
+double getInjectionFactorStartTimestamp(const JavaHandle& importer) {
+    return callJava<double>(::getInjectionFactorStartTimestamp, importer);
+}
+
+double getInjectionFactorEndTimestamp(const JavaHandle& importer) {
+    return callJava<double>(::getInjectionFactorEndTimestamp, importer);
+}
+
 
 }

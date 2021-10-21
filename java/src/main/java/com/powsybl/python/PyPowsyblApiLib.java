@@ -36,9 +36,11 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -595,5 +597,56 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "freeString")
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
+    }
+
+    @CEntryPoint(name = "createGLSKimporter")
+    public static ObjectHandle createGLSKimporter(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = new GLSKimportContext();
+            String filename = CTypeUtil.toString(fileNamePtr);
+            importer.load(filename);
+            return ObjectHandles.getGlobal().create(importer);
+        });
+    }
+
+    @CEntryPoint(name = "getGLSKinjectionkeys")
+    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, double instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        String country = CTypeUtil.toString(countryPtr);
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(country, Instant.ofEpochSecond((long) instant)))));
+    }
+
+    @CEntryPoint(name = "getGLSKcountries")
+    public static ArrayPointer<CCharPointerPointer> getGLSKcountries(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return createCharPtrArray(new ArrayList<>(importer.getCountries()));
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactor")
+    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, double instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            String country = CTypeUtil.toString(countryPtr);
+            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(country, Instant.ofEpochSecond((long) instant));
+            return createDoubleArray(values);
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactorStartTimestamp")
+    public static double getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return importer.getInjectionFactorStartTS().getEpochSecond();
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactorEndTimestamp")
+    public static double getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return importer.getInjectionFactorEndTS().getEpochSecond();
+        });
     }
 }

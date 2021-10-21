@@ -25,7 +25,6 @@ class ContingencyContainer(object):
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
-
 def create_data_frame_from_series_array(series_array):
     series_dict = {}
     index_data = []

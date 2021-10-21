@@ -18,6 +18,7 @@ import pypowsybl.network
 import pypowsybl.loadflow
 import pypowsybl.security
 import pypowsybl.sensitivity
+import pypowsybl.glsk
 
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
@@ -28,7 +29,8 @@ __all__ = [
     "network",
     "loadflow",
     "security",
-    "sensitivity"
+    "sensitivity",
+    "glsk"
 ]
 
 

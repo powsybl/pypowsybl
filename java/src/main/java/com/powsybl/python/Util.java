@@ -7,6 +7,7 @@ import com.powsybl.dataframe.SeriesDataType;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.DoubleSupplier;
 
 import static com.powsybl.python.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -55,6 +57,16 @@ public final class Util {
         }
     }
 
+    public static double doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, DoubleSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsDouble();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return 0.0;
+        }
+    }
+
     public static int doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, IntSupplier supplier) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
@@ -86,6 +98,14 @@ public final class Util {
             stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
         }
         return allocArrayPointer(stringListPtr, stringList.size());
+    }
+
+    static PyPowsyblApiHeader.ArrayPointer<CDoublePointer> createDoubleArray(List<Double> doubleList) {
+        CDoublePointer doubleListPtr = UnmanagedMemory.calloc(doubleList.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < doubleList.size(); i++) {
+            doubleListPtr.write(i, doubleList.get(i));
+        }
+        return allocArrayPointer(doubleListPtr, doubleList.size());
     }
 
     public static int convert(SeriesDataType type) {

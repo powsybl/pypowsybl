@@ -71,6 +71,7 @@
         <powsybl-single-line-diagram.version>2.4.0</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.13.0</powsybl-open-load-flow.version>
         <assertj.version>3.11.0</assertj.version>
+        <farao-distribution.version>3.3.0</farao-distribution.version>
     </properties>
 
     <build>
@@ -339,6 +340,13 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>farao-distribution</artifactId>
+            <version>${farao-distribution.version}</version>
+            <type>pom</type>
+        </dependency>
+
     </dependencies>
 
 </project>

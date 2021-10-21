@@ -130,6 +130,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
+::zone* createZone(const std::string& id, const JavaHandle& glskImportHandle);
+
 void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
@@ -248,6 +250,18 @@ SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& v
 SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
+
+JavaHandle createGLSKimporter(std::string& filename);
+
+std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, double instant);
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
+
+std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, double instant);
+
+double getInjectionFactorStartTimestamp(const JavaHandle& importer);
+
+double getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
 }
 
