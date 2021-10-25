@@ -237,10 +237,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component")
             .export_values();
-    
-
-    // py::class_<series_struct, std::shared_ptr<series_struct>>(m, "SeriesStruct")
-    //        .def(py::init());
 
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
