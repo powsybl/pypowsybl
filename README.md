@@ -13,6 +13,10 @@
 The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
 
+## Notebooks
+
+Notebooks demonstrating PyPowSyBl features can be found in this [repository](https://github.com/powsybl/pypowsybl-notebooks).
+
 ## Installation
 
 PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/).
