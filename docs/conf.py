@@ -88,7 +88,8 @@ if on_rtd:
 add_module_names = False
 autodoc_default_options = {
     'member-order': 'groupwise',
-    'undoc-members': True
+    'undoc-members': True,
+    'inherited-members': False
 }
 
 # So that dataframes appear as pandas.DataFrame and link to pandas site

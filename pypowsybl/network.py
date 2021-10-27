@@ -8,18 +8,15 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 import pypowsybl._pypowsybl as _pypowsybl
 import sys as _sys
-from pypowsybl._pypowsybl import (
-    PyPowsyblError as _PyPowsyblError,
-    ElementType
-)
-from typing import (
-    List as _List,
-    Set as _Set
-)
+from typing import List as _List
+from typing import Set as _Set
+from pypowsybl._pypowsybl import ElementType
 
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import datetime as _datetime
+import pandas as _pd
+import numpy as _np
 
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
@@ -556,6 +553,7 @@ class Network(object):
             A dataframe of non linear model shunt compensators sections.
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
+
     def get_linear_shunt_compensator_sections(self) -> _DataFrame:
         """
         Get a dataframe of shunt compensators sections for linear model.
@@ -1065,9 +1063,9 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame):
+    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
         """
-        Update network elements with a :class:`~pandas.DataFrame` for a specified element type.
+        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
         The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
@@ -1076,209 +1074,275 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
-        for series_name in df.columns.values:
-            series = df[series_name]
-            series_type = _pypowsybl.get_series_type(element_type, series_name)
-            if series_type == 2 or series_type == 3:
-                _pypowsybl.update_network_elements_with_int_series(self._handle, element_type, series_name,
-                                                                   df.index.values,
-                                                                   series.values, len(series))
-            elif series_type == 1:
-                _pypowsybl.update_network_elements_with_double_series(self._handle, element_type, series_name,
-                                                                      df.index.values,
-                                                                      series.values, len(series))
-            elif series_type == 0:
-                _pypowsybl.update_network_elements_with_string_series(self._handle, element_type, series_name,
-                                                                      df.index.values,
-                                                                      series.values, len(series))
-            else:
-                raise _PyPowsyblError(
-                    f'Unsupported series type {series_type}, element type: {element_type}, series_name: {series_name}')
+        is_index = []
+        columns_names = []
+        columns_values = []
+        columns_types = []
+        index_count = 0
+        if df is None:
+            expected_size = None
+            for key, value in kwargs.items():
+                columns_names.append(key)
+                is_index.append(_pypowsybl.is_index(element_type, key))
+                columns_types.append(_pypowsybl.get_series_type(element_type, key))
+                values_array = _np.array(value, ndmin=1, copy=False)
+                if values_array.ndim != 1:
+                    raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
+                                       'as keyword argument, got {} dimensions'.format(values_array.ndim))
+                size = values_array.shape[0]
+                if expected_size is None:
+                    expected_size = size
+                elif size != expected_size:
+                    raise RuntimeError('Network elements update: all arguments must have the same size, '
+                                       'got size {} for series {}, expected {}'.format(size, key, expected_size))
+                columns_values.append(values_array)
+                index_count += 1
+        else:
+            if kwargs:
+                raise RuntimeError('You must provided data in only one form: dataframe or named arguments')
+            is_multi_index = len(df.index.names) > 1
+            for index_name in df.index.names:
+                if index_name is None:
+                    index_name = ''
+                if is_multi_index:
+                    columns_values.append(df.index.get_level_values(index_name))
+                else:
+                    columns_values.append(df.index.values)
+                columns_names.append(index_name)
+                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+                index_count += 1
+                is_index.append(True)
+            columns_names.extend(df.columns.values)
+            for series_name in df.columns.values:
+                series = df[series_name]
+                series_type = _pypowsybl.get_series_type(element_type, series_name)
+                columns_types.append(series_type)
+                columns_values.append(series.values)
+                is_index.append(False)
+        array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+        _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
-    def update_buses(self, df: _DataFrame):
+    def update_buses(self, df: _DataFrame = None, **kwargs):
         """
-        Update buses with a :class:`~pandas.DataFrame`.
+        Update buses with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `v_mag`
+        - `v_angle`
 
         See Also:
             :meth:`get_buses`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `v_mag`
-                - `v_angle`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.BUS, df)
+        return self.update_elements(_pypowsybl.ElementType.BUS, df, **kwargs)
 
-    def update_switches(self, df: _DataFrame):
+    def update_switches(self, df: _DataFrame = None, **kwargs):
         """
-        Update switches with a :class:`~pandas.DataFrame`.
+        Update switches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+            - `open`
+            - `retained`
 
         See Also:
             :meth:`get_switches`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `open`
-                - `retained`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.SWITCH, df)
+        return self.update_elements(_pypowsybl.ElementType.SWITCH, df, **kwargs)
 
-    def update_generators(self, df: _DataFrame):
+    def update_generators(self, df: _DataFrame = None, **kwargs):
         """
-        Update generators with a :class:`~pandas.DataFrame`.
+        Update generators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `target_p`
+        - `max_p`
+        - `min_p`
+        - `target_v`
+        - `target_q`
+        - `voltage_regulator_on`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_generators`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `target_p`
-                - `max_p`
-                - `min_p`
-                - `target_v`
-                - `target_q`
-                - `voltage_regulator_on`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.GENERATOR, df)
+        return self.update_elements(_pypowsybl.ElementType.GENERATOR, df, **kwargs)
 
-    def update_loads(self, df: _DataFrame):
+    def update_loads(self, df: _DataFrame = None, **kwargs):
         """
-        Update loads with a :class:`~pandas.DataFrame`.
+        Update loads with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `p0`
+        - `q0`
+        - `connected`
 
         See Also:
             :meth:`get_loads`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `p0`
-                - `q0`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.LOAD, df)
+        return self.update_elements(_pypowsybl.ElementType.LOAD, df, **kwargs)
 
-    def update_batteries(self, df: _DataFrame):
+    def update_batteries(self, df: _DataFrame = None, **kwargs):
         """
-        Update batteries with a :class:`~pandas.DataFrame`.
+        Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `p0`
+        - `q0`
+        - `connected`
 
         See Also:
             :meth:`get_batteries`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `p0`
-                - `q0`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.BATTERY, df)
+        return self.update_elements(_pypowsybl.ElementType.BATTERY, df, **kwargs)
 
-    def update_dangling_lines(self, df: _DataFrame):
+    def update_dangling_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update dangling lines with a :class:`~pandas.DataFrame`.
+        Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+        - `p0`
+        - `q0`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_dangling_lines`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `r`
-                - `x`
-                - `g`
-                - `b`
-                - `p0`
-                - `q0`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df)
+        return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df, **kwargs)
 
-    def update_vsc_converter_stations(self, df: _DataFrame):
+    def update_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
         """
-        Update VSC converter stations with a :class:`~pandas.DataFrame`.
+        Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `voltage_setpoint`
+        - `reactive_power_setpoint`
+        - `voltage_regulator_on`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
         Args:
-          df: the data to be updated.
-              Columns that can be updated :
-
-              - `voltage_setpoint`
-              - `reactive_power_setpoint`
-              - `voltage_regulator_on`
-              - `p`
-              - `q`
-              - `connected`
+          df: the data to be updated, as a data frame.
+          **kwargs: the data to be updated, as named arguments.
+              Arguments can be single values or any type of sequence.
+              In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df)
+        return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
-    def update_static_var_compensators(self, df: _DataFrame):
+    def update_static_var_compensators(self, df: _DataFrame = None, **kwargs):
         """
-        Update static var compensators with a :class:`~pandas.DataFrame`.
+        Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `voltage_setpoint`
+        - `reactive_power_setpoint`
+        - `regulation_mode`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_static_var_compensators`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `voltage_setpoint`
-                - `reactive_power_setpoint`
-                - `regulation_mode`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df)
+        return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
-    def update_hvdc_lines(self, df: _DataFrame):
+    def update_hvdc_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update HVDC lines with a :class:`~pandas.DataFrame`.
+        Update HVDC lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `converters_mode`
+        - `active_power_setpoint`
+        - `max_p`
+        - `nominal_v`
+        - `r`
+        - `connected1`
+        - `connected2`
 
         See Also:
             :meth:`get_hvdc_lines`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `converters_mode`
-                - `active_power_setpoint`
-                - `max_p`
-                - `nominal_v`
-                - `r`
-                - `connected1`
-                - `connected2`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df)
+        return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df, **kwargs)
 
-    def update_lines(self, df: _DataFrame):
+    def update_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update lines data with a :class:`~pandas.DataFrame`.
+        Update lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         See Also:
             :meth:`get_lines`
 
         Args:
             df: lines data to be updated.
-                Columns that can be updated are:
-
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
                 - `r`
                 - `x`
                 - `g1`
@@ -1292,104 +1356,142 @@ class Network(object):
                 - `connected1`
                 - `connected2`
         """
-        return self.update_elements(_pypowsybl.ElementType.LINE, df)
+        return self.update_elements(_pypowsybl.ElementType.LINE, df, **kwargs)
 
-    def update_2_windings_transformers(self, df: _DataFrame):
+    def update_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
         """
-        Update 2 windings transformers with a :class:`~pandas.DataFrame`.
+        Update 2 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+        - `rated_u1`
+        - `rated_u2`
+        - `rated_s`
+        - `p1`
+        - `q1`
+        - `p2`
+        - `q2`
+        - `connected1`
+        - `connected2`
 
         See Also:
             :meth:`get_2_windings_transformers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `r`
-                - `x`
-                - `g`
-                - `b`
-                - `rated_u1`
-                - `rated_u2`
-                - `rated_s`
-                - `p1`
-                - `q1`
-                - `p2`
-                - `q2`
-                - `connected1`
-                - `connected2`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df)
+        return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
-    def update_ratio_tap_changers(self, df: _DataFrame):
+    def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
-        Update ratio tap changers with a :class:`~pandas.DataFrame`.
+        Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `tap`
+        - `on_load`
+        - `regulating`
+        - `target_v`
+        - `target_deadband`
 
         See Also:
             :meth:`get_ratio_tap_changers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `tap`
-                - `on_load`
-                - `regulating`
-                - `target_v`
-                - `target_deadband`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df)
+        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
-    def update_phase_tap_changers(self, df: _DataFrame):
+    def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
-        Update phase tap changers with a :class:`~pandas.DataFrame`.
+        Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated :
+
+        - `tap`
+        - `regulating`
+        - `regulation_mode`
+        - `regulation_value`
+        - `target_deadband`
 
         See Also:
             :meth:`get_phase_tap_changers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `tap`
-                - `regulating`
-                - `regulation_mode`
-                - `regulation_value`
-                - `target_deadband`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df)
+        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
-    def update_shunt_compensators(self, df: _DataFrame):
+    def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """
-        Update shunt compensators with a :class:`~pandas.DataFrame`.
+        Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `section_count`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_shunt_compensators`
 
         Args:
-           df: the data to be updated.
-               Columns that can be updated :
-
-               - `section_count`
-               - `p`
-               - `q`
-               - `connected`
+           df: the data to be updated, as a data frame.
+           **kwargs: the data to be updated, as named arguments.
+               Arguments can be single values or any type of sequence.
+               In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df)
+        return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
-    def update_linear_shunt_compensator_sections(self, df: _DataFrame):
+    def update_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
-        Update shunt compensators with a :class:`~pandas.DataFrame`.
+        Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - g per section
+        - b per section
+        - max section count
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
 
-                - g per section
-                - b per section
-                - max section count
         """
-        return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df)
+        return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
+
+    def update_non_linear_shunt_sections(self, df: _DataFrame = None, **kwargs):
+        """
+        Update non linear shunt compensators sections with a ``Pandas`` data frame.
+
+        Attributes that can be updated are :
+
+        - g per section
+        - b per section
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def get_working_variant_id(self):
         """

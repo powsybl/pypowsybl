@@ -82,6 +82,7 @@ Reading network elements data
 
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
+
  - buses
  - lines
  - 2 windings transformers
@@ -144,12 +145,29 @@ to the reference API :doc:`documentation </reference/network>`.
 Updating network elements
 -------------------------
 
-Network elements can also be updated using :class:`DataFrames <pandas.DataFrame>`.
+Network elements can also be updated, using either simple values or list arguments,
+or :class:`DataFrames <pandas.DataFrame>` for more advanced cases.
 Not all attributes are candidates for update, for example element IDs cannot be
 updated. For a detailed description of what attributes can be updated please refer
 to the reference API :doc:`documentation </reference/network>`.
 
-For example, to set the active power and reactive power of the load *LOAD* :
+For example, to set the active power and reactive power of the load *LOAD*,
+the 3 following forms are equivalent:
+
+- simple values as named arguments:
+
+.. code-block:: python
+
+    >>> network.update_loads(id='LOAD', p0=500, q0=300)
+
+- lists or any sequence type as named arguments. Obviously this will be more useful if you need to update
+  multiple elements at once. You must provide sequences with the same length (here 1):
+
+.. code-block:: python
+
+    >>> network.update_loads(id=['LOAD'], p0=[500], q0=[300])
+
+- a full dataframe. This may be useful if you want to use data manipulation features offered by pandas library:
 
 .. doctest::
 
@@ -184,7 +202,7 @@ You can disconnect or connect an element exactly the same way you update other a
 
 .. doctest::
 
-    >>> network.update_generators(pd.DataFrame(index=['GEN'], columns=['connected'], data=[[False]]))
+    >>> network.update_generators(id='GEN', connected=False)
     >>> network.get_generators()[['connected','bus_id']] # doctest: +NORMALIZE_WHITESPACE
           connected   bus_id
     id
@@ -222,7 +240,7 @@ of a generator to 700 MW:
 .. doctest::
 
    >>> network.set_working_variant('Variant')
-   >>> network.update_generators(pd.DataFrame(index=['GEN'], columns=['target_p'], data=[[700]]))
+   >>> network.update_generators(id='GEN', target_p=700)
    >>> network.get_generators()['target_p']['GEN']
    700.0
 

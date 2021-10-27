@@ -514,6 +514,7 @@ public final class PyPowsyblApiLib {
 
     /**
      * Frees C strings memory
+     *
      * @param array
      */
     private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
@@ -527,9 +528,38 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             String seriesName = CTypeUtil.toString(seriesNamePtr);
             SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                .getSeriesMetadata(seriesName)
-                .getType();
+                    .getSeriesMetadata(seriesName)
+                    .getType();
             return convert(type);
+        });
+    }
+
+    @CEntryPoint(name = "getIndexType")
+    public static int getIndexType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, int index, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            SeriesDataType type;
+            if (seriesName.equals("")) {
+                type = NetworkDataframes.getDataframeMapper(convert(elementType))
+                        .getSeriesMetadata()
+                        .get(index)
+                        .getType();
+            } else {
+                type = NetworkDataframes.getDataframeMapper(convert(elementType))
+                        .getSeriesMetadata(seriesName)
+                        .getType();
+            }
+            return convert(type);
+        });
+    }
+
+    @CEntryPoint(name = "isIndex")
+    public static boolean isIndex(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String seriesName = CTypeUtil.toString(seriesNamePtr);
+            return NetworkDataframes.getDataframeMapper(convert(elementType))
+                    .getSeriesMetadata(seriesName)
+                    .isIndex();
         });
     }
 
@@ -562,8 +592,8 @@ public final class PyPowsyblApiLib {
                     contingency = null;
                 }
                 analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency, convert(contingencyContextType)),
-                    Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
-                    Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
+                        Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
+                        Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
             });
         });
     }
