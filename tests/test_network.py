@@ -607,6 +607,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         switches = topology.switches
         nodes = topology.nodes
         self.assertEqual(6, len(switches))
+        self.assertEqual('S4VL1_BBS_LINES3S4_DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['name'])
         self.assertEqual('DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['kind'])
         self.assertEqual(False, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['open'])
         self.assertEqual(0, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1'])
