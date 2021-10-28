@@ -656,6 +656,7 @@ class Network(object):
         Notes:
             The resulting dataframe will have the following columns:
 
+              -**loss_factor**: correspond to the loss of power due to ac dc conversion
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
@@ -679,13 +680,13 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
@@ -698,7 +699,8 @@ class Network(object):
 
         Notes:
             The resulting dataframe will have the following columns:
-
+              - **b_min**: the minimum susceptance
+              - **b_max**: the maximum susceptance
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
@@ -720,12 +722,12 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
             id
-                 SVC            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
@@ -1287,7 +1289,8 @@ class Network(object):
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Attributes that can be updated are:
-
+        - `b_min`
+        - `b_max`
         - `voltage_setpoint`
         - `reactive_power_setpoint`
         - `regulation_mode`

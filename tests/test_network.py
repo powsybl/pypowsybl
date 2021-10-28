@@ -189,6 +189,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(400.0, stations['reactive_power_setpoint']['VSC1'])
         self.assertEqual(1.0, stations['voltage_setpoint']['VSC2'])
         self.assertEqual(2.0, stations['reactive_power_setpoint']['VSC2'])
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC1'], delta=0.001)
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC2'], delta=0.001)
 
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -204,13 +206,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         svcs = n.get_static_var_compensators()
         self.assertEqual(400.0, svcs['voltage_setpoint']['SVC'])
         self.assertEqual('VOLTAGE', svcs['regulation_mode']['SVC'])
-        svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
-                             columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
+        self.assertEqual(-0.05, svcs['b_min']['SVC'])
+        self.assertEqual(0.05, svcs['b_max']['SVC'])
+        svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off', -0.01, 0.01]],
+                             columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode', 'b_min', 'b_max'], index=['SVC'])
         n.update_static_var_compensators(svcs2)
         svcs = n.get_static_var_compensators()
         self.assertEqual(300.0, svcs['voltage_setpoint']['SVC'])
         self.assertEqual(400.0, svcs['reactive_power_setpoint']['SVC'])
         self.assertEqual('OFF', svcs['regulation_mode']['SVC'])
+        self.assertEqual(-0.01, svcs['b_min']['SVC'])
+        self.assertEqual(0.01, svcs['b_max']['SVC'])
 
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
