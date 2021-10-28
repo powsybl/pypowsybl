@@ -218,6 +218,18 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('OTHER', generators['energy_source']['GEN'])
         self.assertEqual(607, generators['target_p']['GEN'])
 
+    def test_generator_maxq_minq_reactive_limits(self):
+        n = pp.network.create_micro_grid_be_network()
+        generators = n.get_generators()
+        gen1 = '_3a3b27be-b18b-4385-b557-6735d733baf0'
+        self.assertEqual('CURVE', generators['reactive_limits_kind'][gen1])
+        self.assertEqual(-210.0, generators['min_q'][gen1])
+        self.assertEqual(210.0, generators['max_q'][gen1])
+        gen2 = '_550ebe0d-f2b2-48c1-991f-cebea43a21aa'
+        self.assertEqual('MIN_MAX', generators['reactive_limits_kind'][gen2])
+        self.assertEqual(-200.0, generators['min_q'][gen2])
+        self.assertEqual(200.0, generators['max_q'][gen2])
+
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         steps = n.get_ratio_tap_changer_steps()
