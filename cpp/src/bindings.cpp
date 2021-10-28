@@ -67,9 +67,8 @@ std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std
     return dataframe;
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex, element_type elementType) {
-    std::shared_ptr<array>  dataframe = createArray(columnsValues, columnsNames, columnsTypes, isIndex);
-    pypowsybl::updateNetworkElementsWithSeries(network, dataframe.get(), elementType);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+    pypowsybl::updateNetworkElementsWithSeries(network, dataframe, elementType);
 }
 
 template<typename T>
@@ -238,6 +237,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component")
             .export_values();
+
+    py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
+            .def(py::init());
+
 
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init(&initLoadFlowParameters))
@@ -478,8 +481,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::arg("network"), py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
-          py::arg("is_index"), py::arg("element_type"));
+          py::arg("network"), py::arg("array"), py::arg("element_type"));
+
+    m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
+          py::arg("is_index"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
