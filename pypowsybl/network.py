@@ -1412,6 +1412,29 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
+    def update_ratio_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `rho`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_ratio_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
+
     def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
         Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -1434,6 +1457,30 @@ class Network(object):
                 In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
+
+    def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated :
+
+        - `rho`
+        - `alpha`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_phase_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
     def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """

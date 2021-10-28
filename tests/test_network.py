@@ -231,11 +231,57 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   [1.00067, 0, 0, 0, 0],
                   [1.15077, 0, 0, 0, 0]])
         pd.testing.assert_frame_equal(expected, steps, check_dtype=False)
+        n.update_ratio_tap_changer_steps(pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1)],
+                                            names=['id', 'position']), columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 1]]))
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
+                                            names=['id', 'position']),
+            columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 1],
+                  [1.15077, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
+        n.update_ratio_tap_changer_steps(id=['NHV2_NLOAD'], position=[0], rho=[2], r=[3], x=[4], g=[5], b=[6])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
+                                            names=['id', 'position']),
+            columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[2, 3, 4, 5, 6],
+                  [1, 1, 1, 1, 1],
+                  [1.15077, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
 
     def test_phase_tap_changer_steps_data_frame(self):
         n = pp.network.create_ieee300()
         steps = n.get_phase_tap_changer_steps()
         self.assertEqual(11.4, steps.loc[('T196-2040-1', 0), 'alpha'])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[1, 11.4, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+        n.update_phase_tap_changer_steps(pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']), columns=['alpha', 'rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1, 1]]))
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1, 1]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+        n.update_phase_tap_changer_steps(id=['T196-2040-1'], position=[0], rho=[2], alpha=[7], r=[3], x=[4], g=[5],
+                                         b=[6])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[2, 7, 3, 4, 5, 6]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
 
     def test_update_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
