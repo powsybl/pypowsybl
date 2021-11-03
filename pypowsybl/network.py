@@ -1119,9 +1119,8 @@ class Network(object):
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)
-
-        _pypowsybl.update_network_elements_with_series(self._handle, columns_values, columns_names, columns_types,
-                                                       is_index, element_type)
+        array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+        _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs):
         """
