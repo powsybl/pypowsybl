@@ -289,7 +289,9 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             SvgParameters svgParameters = new SvgParameters()
-                    .setSvgWidthAndHeightAdded(true);
+                    .setSvgWidthAndHeightAdded(true)
+                    .setFixedWidth(800)
+                    .setFixedHeight(600);
             String svg = new NetworkAreaDiagram(network).drawToString(svgParameters);
             return CTypeUtil.toCharPtr(svg);
         });
