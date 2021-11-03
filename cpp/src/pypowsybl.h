@@ -184,6 +184,8 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network);
+
 JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);

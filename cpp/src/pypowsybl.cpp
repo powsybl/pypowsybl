@@ -407,6 +407,10 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network) {
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network));
+}
+
 JavaHandle createSecurityAnalysis() {
     return callJava<JavaHandle>(::createSecurityAnalysis);
 }
