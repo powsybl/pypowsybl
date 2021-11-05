@@ -6,6 +6,7 @@
  */
 package com.powsybl.dataframe.network;
 
+import com.google.common.base.Suppliers;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
@@ -22,6 +23,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
@@ -36,6 +38,8 @@ import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
 public final class NetworkDataframes {
+
+    private static final Map<DataframeElementType, List<NetworkExtensionSeriesProvider>> EXTENSIONS_PROVIDERS = createExtensionsProviders();
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
 
@@ -165,7 +169,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper generators() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
+        NetworkDataframeMapperBuilder builder = NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
                 .stringsIndex("id", Generator::getId)
                 .strings("name", g -> g.getOptionalName().orElse(""))
                 .enums("energy_source", EnergySource.class, Generator::getEnergySource)
@@ -182,8 +186,11 @@ public final class NetworkDataframes {
                 .doubles("i", g -> g.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
-                .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
-                .addProperties()
+                .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection());
+
+        addExtensionSeries(DataframeElementType.GENERATOR, builder);
+
+        return  builder.addProperties()
                 .build();
     }
 
@@ -540,7 +547,8 @@ public final class NetworkDataframes {
     }
 
     private static NetworkDataframeMapper hvdcs() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getHvdcLineStream, getOrThrow(Network::getHvdcLine, "HVDC line"))
+
+        NetworkDataframeMapperBuilder builder = NetworkDataframeMapperBuilder.ofStream(Network::getHvdcLineStream, getOrThrow(Network::getHvdcLine, "HVDC line"))
                 .stringsIndex("id", HvdcLine::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
                 .enums("converters_mode", HvdcLine.ConvertersMode.class, HvdcLine::getConvertersMode, HvdcLine::setConvertersMode)
@@ -551,9 +559,12 @@ public final class NetworkDataframes {
                 .strings("converter_station1_id", l -> l.getConverterStation1().getId())
                 .strings("converter_station2_id", l -> l.getConverterStation2().getId())
                 .booleans("connected1", l -> l.getConverterStation1().getTerminal().isConnected(), connectHvdcStation1())
-                .booleans("connected2", l -> l.getConverterStation2().getTerminal().isConnected(), connectHvdcStation2())
-                .addProperties()
+                .booleans("connected2", l -> l.getConverterStation2().getTerminal().isConnected(), connectHvdcStation2());
+        addExtensionSeries(DataframeElementType.HVDC_LINE, builder);
+
+        return  builder.addProperties()
                 .build();
+
     }
 
     private static NetworkDataframeMapper rtcSteps() {
@@ -714,6 +725,22 @@ public final class NetworkDataframes {
             throw new PowsyblException("Two windings transformer '" + id + "' not found");
         }
         return twt;
+    }
+
+    private static Map<DataframeElementType, List<NetworkExtensionSeriesProvider>> createExtensionsProviders() {
+        return  Suppliers.memoize(() -> ServiceLoader.load(NetworkExtensionSeriesProvider.class)
+                        .stream().map(ServiceLoader.Provider::get).collect(Collectors.toList()))
+                .get().stream()
+                .collect(Collectors.groupingBy(i -> i.getElementType(),
+                        Collectors.mapping(Function.identity(), Collectors.toList())));
+    }
+
+    private static void addExtensionSeries(DataframeElementType extensionType, NetworkDataframeMapperBuilder builder) {
+        EXTENSIONS_PROVIDERS.get(extensionType).stream()
+                .sorted(Comparator.comparing(NetworkExtensionSeriesProvider::getExtensionName))
+                .forEach(extProvider -> {
+                    extProvider.addSeries(builder);
+                });
     }
 }
 

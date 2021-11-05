@@ -1,4 +1,4 @@
-/**
+    /**
  * Copyright (c) 2021, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,11 +7,17 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.dataframe.DoubleIndexedSeries;
+import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
+import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
+import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -78,11 +84,31 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
+            .contains("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
                 "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
 
         assertThat(series.get(3).getDoubles())
             .containsExactly(607);
+    }
+
+    @Test
+    void generatorsExtension() {
+        Network network = EurostagTutorialExample1Factory.create();
+        //Network network = FourSubstationsNodeBreakerFactory.create();
+        Generator gen = network.getGenerator("GEN");
+        //Generator gen = network.getGenerator("GH1");
+        ActivePowerControlImpl foo = new ActivePowerControlImpl(gen, true, 1.1f);
+        gen.addExtension(ActivePowerControlImpl.class, foo);
+
+        List<Series> series = createDataFrame(GENERATOR, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .contains("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
+                        "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "generator_droop", "generator_participate");
+
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(607);
     }
 
     @Test
@@ -188,8 +214,23 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "converters_mode", "active_power_setpoint", "max_p", "nominal_v", "r",
+            .contains("id", "name", "converters_mode", "active_power_setpoint", "max_p", "nominal_v", "r",
                 "converter_station1_id", "converter_station2_id", "connected1", "connected2");
+    }
+
+    @Test
+    void hvdcsExtensions() {
+        Network network = HvdcTestNetwork.createLcc();
+
+        HvdcLine hvdcLine = network.getHvdcLine("L");
+        hvdcLine.newExtension(HvdcAngleDroopActivePowerControlAdder.class).withEnabled(true).withDroop(0.1f).withP0(200).add();
+        hvdcLine.newExtension(HvdcOperatorActivePowerRangeAdder.class).withOprFromCS1toCS2(1.0f).withOprFromCS2toCS1(2.0f).add();
+
+        List<Series> series = createDataFrame(HVDC_LINE, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .contains("hvdc_droop", "hvdc_P0", "hvdc_isEnabled", "hvdc_OprFromCS1toCS2", "hvdc_OprFromCS2toCS1");
     }
 
     @Test
