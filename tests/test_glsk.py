@@ -14,7 +14,7 @@ class GLSKImportTestCases(unittest.TestCase):
         pp.set_config_read(False)
 
     def test_import_glsk(self):
-        importer = pp.glsk.GLSKImporter("C:/Users/brix/Documents/glsk-sample.xml")
+        importer = pp.glsk.GLSKImporter("data/glsk-sample.xml")
         countries = importer.get_countries()
         t = dateutil.parser.isoparse('2020-10-06T22:00:00Z')
         print("GLSK start timestamp : ")
@@ -23,10 +23,30 @@ class GLSKImportTestCases(unittest.TestCase):
         print(importer.get_gsk_time_interval_end())
         print("Keys for country : ")
         print(countries)
-        points = importer.get_points_for_country(countries[1], t.timestamp())
+        points = importer.get_points_for_country(countries[2], t.timestamp())
         print("Points keys : ")
         print(points)
-        factors = importer.get_glsk_factors(countries[1], t.timestamp())
+        factors = importer.get_glsk_factors(countries[2], t.timestamp())
         print("Factors for country : ")
         print(factors)
+
+    def test_network(self):
+        n = pp.network.load('data/simple-eu.uct')
+        t = dateutil.parser.isoparse('2020-10-06T22:00:00Z')
+        importer = pp.glsk.GLSKImporter("data/glsk-sample.xml")
+        de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t.timestamp())
+        de_shift_keys = importer.get_glsk_factors('10YCB-GERMANY--8', t.timestamp())
+
+        #Rename some of the generator to names from simple-eu.uct
+        de_generators[0] = 'DDE1AA1'
+        de_generators[1] = 'DDE2AA1'
+        de_generators[2] = 'DDE3AA1'
+
+        print("Germany generators : ")
+        print(de_generators)
+        print("Germany factors : ")
+        print(de_shift_keys)
+
+        zone_de = pp.sensitivity.create_country_zone_generator(n, 'DE', de_generators, de_shift_keys)
+        print(zone_de.shift_keys_by_injections_ids)
 
