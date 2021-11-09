@@ -13,6 +13,7 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.ActivePowerControl;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
 import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
@@ -94,11 +95,9 @@ class NetworkDataframesTest {
     @Test
     void generatorsExtension() {
         Network network = EurostagTutorialExample1Factory.create();
-        //Network network = FourSubstationsNodeBreakerFactory.create();
         Generator gen = network.getGenerator("GEN");
-        //Generator gen = network.getGenerator("GH1");
         ActivePowerControlImpl foo = new ActivePowerControlImpl(gen, true, 1.1f);
-        gen.addExtension(ActivePowerControlImpl.class, foo);
+        gen.addExtension(ActivePowerControl.class, foo);
 
         List<Series> series = createDataFrame(GENERATOR, network);
 
@@ -107,8 +106,11 @@ class NetworkDataframesTest {
                 .contains("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
                         "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "generator_droop", "generator_participate");
 
-        assertThat(series.get(3).getDoubles())
-                .containsExactly(607);
+        assertThat(series.get(17).getDoubles())
+                .containsExactly(1.1f);
+        assertThat(series.get(18).getBooleans())
+                .containsExactly(true);
+
     }
 
     @Test
@@ -231,6 +233,18 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .contains("hvdc_droop", "hvdc_P0", "hvdc_isEnabled", "hvdc_OprFromCS1toCS2", "hvdc_OprFromCS2toCS1");
+
+        assertThat(series.get(11).getDoubles())
+                .containsExactly(0.1f);
+        assertThat(series.get(12).getDoubles())
+                .containsExactly(200);
+        assertThat(series.get(13).getBooleans())
+                .containsExactly(true);
+
+        assertThat(series.get(14).getDoubles())
+                .containsExactly(1.0f);
+        assertThat(series.get(15).getDoubles())
+                .containsExactly(2.0f);
     }
 
     @Test
