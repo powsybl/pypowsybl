@@ -16,9 +16,13 @@ import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
  */
 @AutoService(NetworkExtensionSeriesProvider.class)
 public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtensionSeriesProvider {
+
+    public static final String EXTENSION_NAME = "hvdcOperatorActivePowerRange";
+    public static final String EXTENSION_SEPARATOR = "_";
+
     @Override
     public String getExtensionName() {
-        return "hvdcOperatorActivePowerRange";
+        return EXTENSION_NAME;
     }
 
     @Override
@@ -29,12 +33,14 @@ public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtens
     @Override
     public void addSeries(NetworkDataframeMapperBuilder builder) {
         NetworkDataframeMapperBuilder<HvdcLine> sBuilder = builder;
-        sBuilder.doubles("hvdc_OprFromCS1toCS2", l -> {
-            HvdcOperatorActivePowerRange acpExt = l.getExtension(HvdcOperatorActivePowerRange.class);
-            return acpExt != null ? acpExt.getOprFromCS1toCS2() : Double.NaN;
-        }).doubles("hvdc_OprFromCS2toCS1", l -> {
-            HvdcOperatorActivePowerRange acpExt = l.getExtension(HvdcOperatorActivePowerRange.class);
-            return acpExt != null ? acpExt.getOprFromCS2toCS1() : Double.NaN;
+        sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
+            item.getExtension(HvdcOperatorActivePowerRange.class) != null
+        ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "OprFromCS1toCS2", item -> {
+            HvdcOperatorActivePowerRange itemExtension = item.getExtension(HvdcOperatorActivePowerRange.class);
+            return itemExtension != null ? itemExtension.getOprFromCS1toCS2() : Double.NaN;
+        }).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "OprFromCS2toCS1", item -> {
+            HvdcOperatorActivePowerRange itemExtension = item.getExtension(HvdcOperatorActivePowerRange.class);
+            return itemExtension != null ? itemExtension.getOprFromCS2toCS1() : Double.NaN;
         });
     }
 }

@@ -103,12 +103,13 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .contains("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
-                        "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "generator_droop", "generator_participate");
+                .contains("ActivePowerControl_available", "ActivePowerControl_droop", "ActivePowerControl_participate");
 
-        assertThat(series.get(17).getDoubles())
+        assertThat(series.get(17).getBooleans())
+                .containsExactly(true);
+        assertThat(series.get(18).getDoubles())
                 .containsExactly(1.1f);
-        assertThat(series.get(18).getBooleans())
+        assertThat(series.get(19).getBooleans())
                 .containsExactly(true);
 
     }
@@ -232,18 +233,25 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .contains("hvdc_droop", "hvdc_P0", "hvdc_isEnabled", "hvdc_OprFromCS1toCS2", "hvdc_OprFromCS2toCS1");
+                .contains("HvdcAngleDroopActivePowerControl_available", "HvdcAngleDroopActivePowerControl_droop",
+                        "HvdcAngleDroopActivePowerControl_P0", "HvdcAngleDroopActivePowerControl_isEnabled",
+                        "hvdcOperatorActivePowerRange_available", "hvdcOperatorActivePowerRange_OprFromCS1toCS2",
+                        "hvdcOperatorActivePowerRange_OprFromCS2toCS1");
 
-        assertThat(series.get(11).getDoubles())
-                .containsExactly(0.1f);
+        assertThat(series.get(11).getBooleans())
+                .containsExactly(true);
         assertThat(series.get(12).getDoubles())
+                .containsExactly(0.1f);
+        assertThat(series.get(13).getDoubles())
                 .containsExactly(200);
-        assertThat(series.get(13).getBooleans())
+        assertThat(series.get(14).getBooleans())
                 .containsExactly(true);
 
-        assertThat(series.get(14).getDoubles())
+        assertThat(series.get(15).getBooleans())
+                .containsExactly(true);
+        assertThat(series.get(16).getDoubles())
                 .containsExactly(1.0f);
-        assertThat(series.get(15).getDoubles())
+        assertThat(series.get(17).getDoubles())
                 .containsExactly(2.0f);
     }
 

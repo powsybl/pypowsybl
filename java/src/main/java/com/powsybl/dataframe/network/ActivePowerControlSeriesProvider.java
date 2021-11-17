@@ -16,9 +16,13 @@ import com.powsybl.iidm.network.extensions.ActivePowerControl;
  */
 @AutoService(NetworkExtensionSeriesProvider.class)
 public class ActivePowerControlSeriesProvider implements NetworkExtensionSeriesProvider  {
+
+    public static final String EXTENSION_NAME = "ActivePowerControl";
+    public static final String EXTENSION_SEPARATOR = "_";
+
     @Override
     public String getExtensionName() {
-        return "ActivePowerControl";
+        return EXTENSION_NAME;
     }
 
     @Override
@@ -28,13 +32,15 @@ public class ActivePowerControlSeriesProvider implements NetworkExtensionSeriesP
 
     @Override
     public void addSeries(NetworkDataframeMapperBuilder builder) {
-        NetworkDataframeMapperBuilder<Generator> genBuilder = builder;
-        genBuilder.doubles("generator_droop", g -> {
-            ActivePowerControl acpExt = g.getExtension(ActivePowerControl.class);
-            return acpExt != null ? acpExt.getDroop() : Double.NaN;
-        }).booleans("generator_participate", g -> {
-            ActivePowerControl acpExt = g.getExtension(ActivePowerControl.class);
-            return acpExt != null ? acpExt.isParticipate() : Boolean.FALSE;
+        NetworkDataframeMapperBuilder<Generator> sBuilder = builder;
+        sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
+            item.getExtension(ActivePowerControl.class) != null
+        ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "droop", item -> {
+            ActivePowerControl itemExtension = item.getExtension(ActivePowerControl.class);
+            return itemExtension != null ? itemExtension.getDroop() : Double.NaN;
+        }).booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "participate", item -> {
+            ActivePowerControl itemExtension = item.getExtension(ActivePowerControl.class);
+            return itemExtension != null ? itemExtension.isParticipate() : Boolean.FALSE;
         });
     }
 }
