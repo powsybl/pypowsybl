@@ -10,7 +10,6 @@ import com.google.auto.service.AutoService;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
@@ -35,7 +34,7 @@ public class HvdcAngleDroopActivePowerControlSeriesProvider implements NetworkEx
     public void addSeries(NetworkDataframeMapperBuilder builder) {
         NetworkDataframeMapperBuilder<HvdcLine> sBuilder = builder;
         sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
-            item.getExtension(HvdcOperatorActivePowerRange.class) != null
+            item.getExtension(HvdcAngleDroopActivePowerControl.class) != null
         ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "droop", item -> {
             HvdcAngleDroopActivePowerControl itemExtension = item.getExtension(HvdcAngleDroopActivePowerControl.class);
             return itemExtension != null ? itemExtension.getDroop() : Double.NaN;
