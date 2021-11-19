@@ -66,9 +66,9 @@
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
         <powsybl-math-native.version>1.0.4</powsybl-math-native.version>
-        <powsybl-core.version>4.4.0</powsybl-core.version>
-        <powsybl-single-line-diagram.version>2.4.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.13.0</powsybl-open-load-flow.version>
+        <powsybl-core.version>4.5.1</powsybl-core.version>
+        <powsybl-single-line-diagram.version>2.5.1</powsybl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.14.0</powsybl-open-load-flow.version>
         <assertj.version>3.11.0</assertj.version>
     </properties>
 
@@ -321,6 +321,13 @@
         </dependency>
 
         <!-- test -->
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-commons</artifactId>
+            <version>${powsybl-core.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
