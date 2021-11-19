@@ -67,7 +67,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <powsybl-math-native.version>1.0.4</powsybl-math-native.version>
         <powsybl-core.version>4.5.1</powsybl-core.version>
-        <powsybl-single-line-diagram.version>2.5.0</powsybl-single-line-diagram.version>
+        <powsybl-single-line-diagram.version>2.5.1</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.14.0</powsybl-open-load-flow.version>
         <assertj.version>3.11.0</assertj.version>
     </properties>
