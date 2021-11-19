@@ -1,9 +1,9 @@
 package com.powsybl.python;
 
-import com.farao_community.farao.data.glsk.api.AbstractGlskRegisteredResource;
-import com.farao_community.farao.data.glsk.ucte.UcteGlskDocument;
-import com.farao_community.farao.data.glsk.ucte.UcteGlskDocumentImporter;
-import com.farao_community.farao.data.glsk.ucte.UcteGlskPoint;
+import com.powsybl.glsk.api.AbstractGlskRegisteredResource;
+import com.powsybl.glsk.ucte.UcteGlskDocument;
+import com.powsybl.glsk.ucte.UcteGlskDocumentImporter;
+import com.powsybl.glsk.ucte.UcteGlskPoint;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

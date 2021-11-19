@@ -70,6 +70,7 @@
         <powsybl-rte-core.version>3.4.0</powsybl-rte-core.version>
         <powsybl-single-line-diagram.version>2.4.0</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.13.0</powsybl-open-load-flow.version>
+        <powsybl-entsoe.version>1.2.0-SNAPSHOT</powsybl-entsoe.version>
         <assertj.version>3.11.0</assertj.version>
         <farao-distribution.version>3.3.0</farao-distribution.version>
     </properties>
@@ -307,6 +308,11 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-glsk-document-ucte</artifactId>
+            <version>${powsybl-entsoe.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-reducer</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
@@ -339,12 +345,6 @@
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-distribution</artifactId>
-            <version>${farao-distribution.version}</version>
-            <type>pom</type>
         </dependency>
 
     </dependencies>
