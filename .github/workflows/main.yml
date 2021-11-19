@@ -11,28 +11,32 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/${{ matrix.python.container }}
     strategy:
       matrix:
         python:
           - {
             name: cp37,
             abi: cp37m,
+            container: manylinux2014_x86_64
             version: '3.7',
           }
           - {
             name: cp38,
             abi: cp38,
+            container: manylinux2014_x86_64
             version: '3.8',
           }
           - {
             name: cp39,
             abi: cp39,
+            container: manylinux2014_x86_64
             version: '3.9',
           }
           - {
             name: cp310,
             abi: cp310,
+            container: manylinux_2_24_x86_64
             version: '3.10',
           }
 
