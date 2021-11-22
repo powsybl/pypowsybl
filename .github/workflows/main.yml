@@ -41,8 +41,15 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages
+      - name: Install Linux packages (${{ matrix.python.container }})
+        if: matrix.python.container == 'manylinux2014_x86_64'
         run: yum install -y rh-maven33-maven zlib-devel.x86_64
+
+      - name: Install Linux packages (${{ matrix.python.container }})
+        if: matrix.python.container == 'manylinux_2_24_x86_64'
+        run: |
+          apt-get update
+          apt install maven zlib1g-dev
 
       - name: Setup GraalVM
         uses: ayltai/setup-graalvm@v1
@@ -71,9 +78,16 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Build wheel
+      - name: Build wheel (${{ matrix.python.container }})
+        if: matrix.python.container == 'manylinux2014_x86_64'
         run: |
           scl enable rh-maven33 'python3 setup.py bdist_wheel'
+          auditwheel repair dist/*.whl
+
+      - name: Build wheel (${{ matrix.python.container }})
+        if: matrix.python.container == 'manylinux_2_24_x86_64'
+        run: |
+          python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel
