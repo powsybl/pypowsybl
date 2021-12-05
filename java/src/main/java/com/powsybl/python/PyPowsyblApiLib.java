@@ -20,8 +20,6 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.nad.NetworkAreaDiagram;
-import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
@@ -288,11 +286,7 @@ public final class PyPowsyblApiLib {
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SvgParameters svgParameters = new SvgParameters()
-                    .setSvgWidthAndHeightAdded(true)
-                    .setFixedWidth(800)
-                    .setFixedHeight(600);
-            String svg = new NetworkAreaDiagram(network).drawToString(svgParameters);
+            String svg = NetworkAreaDiagramUtil.getSvg(network);
             return CTypeUtil.toCharPtr(svg);
         });
     }
