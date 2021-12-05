@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg height="504.0" viewBox="0 0 180.0 504.0" width="180.0" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        <![CDATA[
+.sld-out .sld-arrow-in {visibility: hidden}
+.sld-in .sld-arrow-out {visibility: hidden}
+.sld-closed .sld-sw-open {visibility: hidden}
+.sld-open .sld-sw-closed {visibility: hidden}
+.sld-hidden-node {visibility: hidden}
+polyline {fill: none}
+.sld-top-feeder .sld-label {dominant-baseline: auto}
+.sld-bottom-feeder .sld-label {dominant-baseline: hanging}
+.sld-arrow-p .sld-label {dominant-baseline: middle}
+.sld-arrow-q .sld-label {dominant-baseline: middle}
+.sld-constant-color {stroke: lightgrey}
+.sld-disconnected {stroke: #808080}
+.sld-vl300to500-0 {stroke: #FF0000}
+.sld-vl300to500-1 {stroke: #7F6C00}
+.sld-vl300to500-2 {stroke: #F6B2FF}
+.sld-vl300to500-3 {stroke: #996700}
+.sld-vl300to500-4 {stroke: #FF85EB}
+.sld-vl300to500-5 {stroke: #B25B00}
+.sld-vl300to500-6 {stroke: #FF59B5}
+.sld-vl300to500-7 {stroke: #CC4400}
+.sld-vl300to500-8 {stroke: #FF2C67}
+.sld-vl300to500-9 {stroke: #E52600}
+.sld-vl180to300-0 {stroke: #218B21}
+.sld-vl180to300-1 {stroke: #0D4940}
+.sld-vl180to300-2 {stroke: #DFDAB9}
+.sld-vl180to300-3 {stroke: #105640}
+.sld-vl180to300-4 {stroke: #C2CB92}
+.sld-vl180to300-5 {stroke: #14643C}
+.sld-vl180to300-6 {stroke: #95B66B}
+.sld-vl180to300-7 {stroke: #187036}
+.sld-vl180to300-8 {stroke: #5FA046}
+.sld-vl180to300-9 {stroke: #1C7E2D}
+.sld-vl120to180-0 {stroke: #00AFAE}
+.sld-vl120to180-1 {stroke: #000D58}
+.sld-vl120to180-2 {stroke: #B8E7B2}
+.sld-vl120to180-3 {stroke: #002169}
+.sld-vl120to180-4 {stroke: #85D993}
+.sld-vl120to180-5 {stroke: #003C7B}
+.sld-vl120to180-6 {stroke: #59CB8B}
+.sld-vl120to180-7 {stroke: #005C8C}
+.sld-vl120to180-8 {stroke: #2CBD94}
+.sld-vl120to180-9 {stroke: #00839E}
+.sld-vl70to120-0 {stroke: #CC5500}
+.sld-vl70to120-1 {stroke: #4A6600}
+.sld-vl70to120-2 {stroke: #EFB2DD}
+.sld-vl70to120-3 {stroke: #6E7A00}
+.sld-vl70to120-4 {stroke: #E685AE}
+.sld-vl70to120-5 {stroke: #8E8400}
+.sld-vl70to120-6 {stroke: #DD596B}
+.sld-vl70to120-7 {stroke: #A37B00}
+.sld-vl70to120-8 {stroke: #D4432C}
+.sld-vl70to120-9 {stroke: #B76B00}
+.sld-vl50to70-0 {stroke: #A020EF}
+.sld-vl50to70-1 {stroke: #7F0848}
+.sld-vl50to70-2 {stroke: #B7DBFE}
+.sld-vl50to70-3 {stroke: #960C6D}
+.sld-vl50to70-4 {stroke: #8DA6FE}
+.sld-vl50to70-5 {stroke: #AD109A}
+.sld-vl50to70-6 {stroke: #6F66FB}
+.sld-vl50to70-7 {stroke: #BC14C4}
+.sld-vl50to70-8 {stroke: #7F42F6}
+.sld-vl50to70-9 {stroke: #B11AD9}
+.sld-vl30to50-0 {stroke: #FF8290}
+.sld-vl30to50-1 {stroke: #7F6F41}
+.sld-vl30to50-2 {stroke: #F6D9FF}
+.sld-vl30to50-3 {stroke: #99784E}
+.sld-vl30to50-4 {stroke: #FFC3FB}
+.sld-vl30to50-5 {stroke: #B27D5B}
+.sld-vl30to50-6 {stroke: #FFADE3}
+.sld-vl30to50-7 {stroke: #CC7E68}
+.sld-vl30to50-8 {stroke: #FF97BF}
+.sld-vl30to50-9 {stroke: #E57B75}
+.sld-vl0to30-0 {stroke: #AAAE27}
+.sld-vl0to30-1 {stroke: #195B0F}
+.sld-vl0to30-2 {stroke: #EABABE}
+.sld-vl0to30-3 {stroke: #2D6C13}
+.sld-vl0to30-4 {stroke: #DDA193}
+.sld-vl0to30-5 {stroke: #477D17}
+.sld-vl0to30-6 {stroke: #CE9A6E}
+.sld-vl0to30-7 {stroke: #648D1C}
+.sld-vl0to30-8 {stroke: #BEA04A}
+.sld-vl0to30-9 {stroke: #869D22}
+.sld-feeder-disconnected {stroke: black}
+.sld-feeder-connected-disconnected {stroke-dasharray: 3,3}
+.sld-feeder-disconnected-connected {stroke: black; stroke-dasharray: 3,3}
+.sld-constant-color {fill: none}
+.sld-node.sld-constant-color {stroke: none; fill: black}
+.sld-breaker.sld-constant-color {stroke: blue; fill: white}
+.sld-disconnector.sld-constant-color {stroke: black}
+.sld-label {fill: black; stroke: none;}
+.sld-frame {fill: lightgrey}
+.sld-busbar-section {stroke-width: 3}
+.sld-breaker {stroke-width: 2; fill:white}
+.sld-disconnector {stroke-width: 3}
+.sld-bus-connection {stroke-width: 4}
+.sld-vsc {font-size: 7.43px}
+.sld-grid {stroke: #003700; stroke-dasharray: 1,10}
+.sld-arrow-p {fill:black}
+.sld-arrow-q {fill:blue}
+.sld-label {font: 8px "Verdana"}
+.sld-graph-label {font: 12px "Verdana"}
+.sld-flash {stroke: none; fill: black}
+.sld-lock {stroke: none; fill: black}
+
+]]>
+    </style>
+    <rect class="sld-frame" height="100%" width="100%"/>
+    <g>
+        <g class="sld-busbar-section sld-constant-color sld-vl180to300-0" id="idS1VL1_95_BBS" transform="translate(52.5,252.0)">
+            <line x1="0" x2="75.0" y1="0" y2="0"/>
+            <text class="sld-label" id="S1VL1_BBS_S1VL1_BBS_NW_LABEL" x="-5.0" y="-5.0">S1VL1_BBS</text>
+        </g>
+        <g class="cell idEXTERN_32_0" id="idEXTERN_32_0">
+            <g class="sld-node sld-constant-color sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,218.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-node sld-constant-color sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-load sld-top-feeder sld-constant-color sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
+                <rect height="9" width="16"/>
+                <line x1="0" x2="16" y1="0" y2="9"/>
+                <line x1="16" x2="0" y1="0" y2="9"/>
+                <text class="sld-label" id="LD1_LD1_N_LABEL" x="-5.0" y="-5.0">LD1</text>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR">
+                <polyline points="65.0,252.0,65.0,252.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR">
+                <polyline points="65.0,252.0,65.0,222.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR">
+                <polyline points="65.0,192.0,65.0,222.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER_95_INTERNAL_95_S1VL1_95_LD1">
+                <polyline points="65.0,172.0,65.0,142.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_INTERNAL_95_S1VL1_95_LD1_95_LD1">
+                <polyline points="65.0,142.0,65.0,84.5"/>
+            </g>
+            <g class="sld-arrow-p sld-out" id="idLD1_ARROW_ACTIVE" transform="translate(60.0,98.25)">
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
+                <polygon class="sld-arrow-out" points="5,0 10,10 0,10"/>
+                <text class="sld-label" x="15.0" y="5.0">80</text>
+            </g>
+            <g class="sld-arrow-q sld-out" id="idLD1_ARROW_REACTIVE" transform="translate(60.0,118.25)">
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
+                <polygon class="sld-arrow-out" points="5,0 10,10 0,10"/>
+                <text class="sld-label" x="15.0" y="5.0">10</text>
+            </g>
+            <g class="sld-disconnector sld-constant-color sld-closed sld-vl180to300-0" id="idS1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,248.0)">
+                <path class="sld-sw-closed" d="M0,0 8,8 M8,0 0,8"/>
+                <path class="sld-sw-open" d="M8,0 0,8"/>
+            </g>
+            <g class="sld-breaker sld-constant-color sld-closed sld-vl180to300-0" id="idS1VL1_95_LD1_95_BREAKER" transform="translate(55.0,172.0)">
+                <path class="sld-sw-closed" d="M1,1 V19 H19 V1z M10,5 V15"/>
+                <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
+            </g>
+        </g>
+        <g class="cell idEXTERN_32_1" id="idEXTERN_32_1">
+            <g class="sld-node sld-constant-color sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,278.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-node sld-constant-color sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-pst sld-bottom-feeder sld-constant-color" id="idTWT_95_ONE" transform="translate(108.0,415.5)">
+                <circle class="sld-vl180to300-0" cx="7" cy="12" r="5" transform="rotate(180.0,7.0,8.5)"/>
+                <g class="sld-vl300to500-0" transform="rotate(180.0,7.0,8.5)">
+                            
+                    <circle cx="7" cy="7" r="5"/>
+                            
+                    <line x1="14" x2="0" y1="0" y2="14"/>
+                            
+                    <line x1="14" x2="11" y1="0" y2="0"/>
+                            
+                    <line x1="14" x2="14" y1="0" y2="3"/>
+                        
+                </g>
+                <text class="sld-label" id="TWT_ONE_TWT_ONE_S_LABEL" x="-5.0" y="22.0">TWT</text>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR">
+                <polyline points="115.0,252.0,115.0,252.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR">
+                <polyline points="115.0,252.0,115.0,282.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR">
+                <polyline points="115.0,312.0,115.0,282.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER_95_INTERNAL_95_S1VL1_95_TWT_95_ONE">
+                <polyline points="115.0,332.0,115.0,362.0"/>
+            </g>
+            <g class="sld-wire sld-constant-color sld-vl180to300-0" id="_95_S1VL1_95_INTERNAL_95_S1VL1_95_TWT_95_ONE_95_TWT_95_ONE">
+                <polyline points="115.0,362.0,115.0,415.0"/>
+            </g>
+            <g class="sld-arrow-q sld-in" id="idTWT_95_ONE_ARROW_REACTIVE" transform="translate(110.0,393.5)">
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
+                <polygon class="sld-arrow-out" points="5,0 10,10 0,10" transform="rotate(180.0,5.0,5.0)"/>
+                <text class="sld-label" x="15.0" y="5.0">-10</text>
+            </g>
+            <g class="sld-arrow-p sld-in" id="idTWT_95_ONE_ARROW_ACTIVE" transform="translate(110.0,373.5)">
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
+                <polygon class="sld-arrow-out" points="5,0 10,10 0,10" transform="rotate(180.0,5.0,5.0)"/>
+                <text class="sld-label" x="15.0" y="5.0">-80</text>
+            </g>
+            <g class="sld-disconnector sld-constant-color sld-closed sld-vl180to300-0" id="idS1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,248.0)">
+                <path class="sld-sw-closed" d="M0,0 8,8 M8,0 0,8"/>
+                <path class="sld-sw-open" d="M8,0 0,8"/>
+            </g>
+            <g class="sld-breaker sld-constant-color sld-closed sld-vl180to300-0" id="idS1VL1_95_TWT_95_BREAKER" transform="translate(105.0,312.0)">
+                <path class="sld-sw-closed" d="M1,1 V19 H19 V1z M10,5 V15"/>
+                <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
+            </g>
+        </g>
+    </g>
+</svg>
