@@ -73,7 +73,7 @@ class PerUnitNetwork(_net.Network):
         lines['q1'] /= self.sn
         lines['q2'] /= self.sn
         lines = _pd.merge(lines, self.get_voltage_levels()['nominal_v'],
-                          left_on='voltage_level1_id', right_index=True)
+                          left_on='voltage_level2_id', right_index=True)
         lines['i1'] /= self.sn * 10 ** 3 / (self.sqrt3 * lines['nominal_v'])
         lines['i2'] /= self.sn * 10 ** 3 / (self.sqrt3 * lines['nominal_v'])
         lines['r'] /= lines['nominal_v'] ** 2 / self.sn
@@ -141,27 +141,28 @@ class PerUnitNetwork(_net.Network):
                 self.sqrt3 * three_windings_transformers['nominal_v2'])
         three_windings_transformers['i3'] /= self.sn * 10 ** 3 / (
                 self.sqrt3 * three_windings_transformers['nominal_v3'])
-        three_windings_transformers['r1'] /= three_windings_transformers['nominal_v1'] ** 2 / self.sn
-        three_windings_transformers['x1'] /= three_windings_transformers['nominal_v1'] ** 2 / self.sn
+        three_windings_transformers['r1'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
+        three_windings_transformers['x1'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
         three_windings_transformers['g1'] /= self.sn / three_windings_transformers[
-            'nominal_v1'] ** 2
+            'rated_u0'] ** 2
         three_windings_transformers['b1'] /= self.sn / three_windings_transformers[
-            'nominal_v1'] ** 2
-        three_windings_transformers['r2'] /= three_windings_transformers['nominal_v2'] ** 2 / self.sn
-        three_windings_transformers['x2'] /= three_windings_transformers['nominal_v2'] ** 2 / self.sn
+            'rated_u0'] ** 2
+        three_windings_transformers['r2'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
+        three_windings_transformers['x2'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
         three_windings_transformers['g2'] /= self.sn / three_windings_transformers[
-            'nominal_v2'] ** 2
+            'rated_u0'] ** 2
         three_windings_transformers['b2'] /= self.sn / three_windings_transformers[
-            'nominal_v2'] ** 2
-        three_windings_transformers['r3'] /= three_windings_transformers['nominal_v3'] ** 2 / self.sn
-        three_windings_transformers['x3'] /= three_windings_transformers['nominal_v3'] ** 2 / self.sn
+            'rated_u0'] ** 2
+        three_windings_transformers['r3'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
+        three_windings_transformers['x3'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
         three_windings_transformers['g3'] /= self.sn / three_windings_transformers[
-            'nominal_v3'] ** 2
+            'rated_u0'] ** 2
         three_windings_transformers['b3'] /= self.sn / three_windings_transformers[
-            'nominal_v3'] ** 2
+            'rated_u0'] ** 2
         three_windings_transformers['rated_u1'] /= three_windings_transformers['nominal_v1']
         three_windings_transformers['rated_u2'] /= three_windings_transformers['nominal_v2']
         three_windings_transformers['rated_u3'] /= three_windings_transformers['nominal_v3']
+        three_windings_transformers['rated_u0'] = 1
         return three_windings_transformers.drop(['nominal_v1', 'nominal_v2', 'nominal_v3'],
                                                 axis=1)
 
@@ -197,8 +198,8 @@ class PerUnitNetwork(_net.Network):
                 self.sqrt3 * dangling_lines['nominal_v'])
         dangling_lines['r'] /= dangling_lines['nominal_v'] ** 2 / self.sn
         dangling_lines['x'] /= dangling_lines['nominal_v'] ** 2 / self.sn
-        dangling_lines['g'] /= dangling_lines['nominal_v'] ** 2 / self.sn
-        dangling_lines['b'] /= dangling_lines['nominal_v'] ** 2 / self.sn
+        dangling_lines['g'] /= self.sn / dangling_lines['nominal_v'] ** 2
+        dangling_lines['b'] /= self.sn / dangling_lines['nominal_v'] ** 2
         return dangling_lines.drop('nominal_v', axis=1)
 
     def get_lcc_converter_stations(self) -> _pd.DataFrame:
@@ -326,7 +327,7 @@ class PerUnitNetwork(_net.Network):
         ratio_tap_changers['rho'] *= ratio_tap_changers['nominal_v1'] / ratio_tap_changers['nominal_v2']
         return ratio_tap_changers.drop(['nominal_v1', 'nominal_v2', 'voltage_level1_id', 'voltage_level2_id'], axis=1)
 
-    def update_buses(self, df: _pd.DataFrame):
+    def update_buses(self, df: _pd.DataFrame = None, **kwargs):
         """ Update buses with a ``Pandas`` data frame.
 
         Args:
@@ -343,7 +344,7 @@ class PerUnitNetwork(_net.Network):
         to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.BUS, to_update)
 
-    def update_generators(self, df: _pd.DataFrame):
+    def update_generators(self, df: _pd.DataFrame = None, **kwargs):
         """ Update generators with a ``Pandas`` data frame.
 
         Args:
@@ -364,7 +365,7 @@ class PerUnitNetwork(_net.Network):
         to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.GENERATOR, to_update)
 
-    def update_loads(self, df: _pd.DataFrame):
+    def update_loads(self, df: _pd.DataFrame = None, **kwargs):
         """ Update loads with a ``Pandas`` data frame.
 
         Args:
@@ -378,7 +379,7 @@ class PerUnitNetwork(_net.Network):
             to_update['q0'] *= self.sn
         self.update_elements(_pypowsybl.ElementType.LOAD, to_update)
 
-    def update_batteries(self, df: _pd.DataFrame):
+    def update_batteries(self, df: _pd.DataFrame = None, **kwargs):
         """ Update batteries with a ``Pandas`` data frame.
 
         Available columns names:
@@ -403,7 +404,7 @@ class PerUnitNetwork(_net.Network):
             to_update['min_p'] *= self.sn
         self.update_elements(_pypowsybl.ElementType.BATTERY, to_update)
 
-    def update_dangling_lines(self, df: _pd.DataFrame):
+    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update dangling lines with a ``Pandas`` data frame.
 
         Args:
@@ -415,9 +416,23 @@ class PerUnitNetwork(_net.Network):
             to_update['p0'] *= self.sn
         if 'q0' in keys:
             to_update['q0'] *= self.sn
+        to_update = _pd.merge(to_update, self.get_dangling_lines()['voltage_level_id'],
+                                  left_index=True, right_index=True)
+        to_update = _pd.merge(to_update, self.get_voltage_levels()['nominal_v'],
+                              left_on='voltage_level_id', right_index=True)
+        constant = self.sn / to_update['nominal_v'] ** 2
+        if 'r' in keys:
+            to_update['r'] *= 1 / constant
+        if 'x' in keys:
+            to_update['x'] *= 1 / constant
+        if 'g' in keys:
+            to_update['g'] *= constant
+        if 'b' in keys:
+            to_update['b'] *= constant
+        to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, to_update)
 
-    def update_vsc_converter_stations(self, df: _pd.DataFrame):
+    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs):
         """ Update VSC converter stations with a ``Pandas`` data frame.
 
         Args:
@@ -436,7 +451,7 @@ class PerUnitNetwork(_net.Network):
         to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, to_update)
 
-    def update_static_var_compensators(self, df: _pd.DataFrame):
+    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs):
         """ Update static var compensators with a ``Pandas`` data frame.
 
         Args:
@@ -455,7 +470,7 @@ class PerUnitNetwork(_net.Network):
         to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, to_update)
 
-    def update_hvdc_lines(self, df: _pd.DataFrame):
+    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update HVDC lines with a ``Pandas`` data frame.
 
         Args:
@@ -465,9 +480,16 @@ class PerUnitNetwork(_net.Network):
         to_update = df.copy()
         if 'active_power_setpoint' in keys:
             to_update['active_power_setpoint'] *= self.sn
+        if 'r' in keys:
+            to_update = _pd.merge(to_update, self.get_static_var_compensators()['voltage_level_id'],
+                                  left_index=True, right_index=True)
+            to_update = _pd.merge(to_update, self.get_voltage_levels()['nominal_v'], left_on='voltage_level_id',
+                                  right_index=True)
+            to_update['r'] /= self.sn / to_update['nominal_v'] ** 2
+            to_update = to_update.drop(['nominal_v', 'voltage_level_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.HVDC_LINE, to_update)
 
-    def update_lines(self, df: _pd.DataFrame):
+    def update_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update lines with a ``Pandas`` data frame.
 
         Args:
@@ -503,7 +525,7 @@ class PerUnitNetwork(_net.Network):
         to_update = to_update.drop(['nominal_v', 'voltage_level1_id'], axis=1)
         self.update_elements(_pypowsybl.ElementType.LINE, to_update)
 
-    def update_2_windings_transformers(self, df: _pd.DataFrame):
+    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs):
         """Update 2 windings transformers with a ``Pandas`` data frame.
 
         Args:
@@ -552,8 +574,8 @@ class PerUnitNetwork(_net.Network):
         keys = df.columns
         to_update = df.copy()
         to_update = _pd.merge(to_update,
-                              self.get_3_windings_transformers()[
-                                  ['voltage_level1_id', 'voltage_level2_id', 'voltage_level3_id']],
+                              super().get_3_windings_transformers()[
+                                  ['voltage_level1_id', 'voltage_level2_id', 'voltage_level3_id', 'rated_u0']],
                               left_index=True, right_index=True)
         if 'p1' in keys:
             to_update['p1'] *= self.sn
@@ -577,29 +599,29 @@ class PerUnitNetwork(_net.Network):
                               left_on='voltage_level3_id', right_index=True)
         to_update.rename(columns={'nominal_v': 'nominal_v3'}, inplace=True)
         if 'r1' in keys:
-            to_update['r1'] *= to_update['nominal_v1'] ** 2 / self.sn
+            to_update['r1'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'x1' in keys:
-            to_update['x1'] *= to_update['nominal_v1'] ** 2 / self.sn
+            to_update['x1'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'g1' in keys:
-            to_update['g1'] *= self.sn / to_update['nominal_v1'] ** 2
+            to_update['g1'] *= self.sn / to_update['rated_u0'] ** 2
         if 'b1' in keys:
-            to_update['b1'] *= self.sn / to_update['nominal_v1'] ** 2
+            to_update['b1'] *= self.sn / to_update['rated_u0'] ** 2
         if 'r2' in keys:
-            to_update['r2'] *= to_update['nominal_v2'] ** 2 / self.sn
+            to_update['r2'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'x2' in keys:
-            to_update['x2'] *= to_update['nominal_v2'] ** 2 / self.sn
+            to_update['x2'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'g2' in keys:
-            to_update['g2'] *= self.sn / to_update['nominal_v2'] ** 2
+            to_update['g2'] *= self.sn / to_update['rated_u0'] ** 2
         if 'b2' in keys:
-            to_update['b2'] *= self.sn / to_update['nominal_v2'] ** 2
+            to_update['b2'] *= self.sn / to_update['rated_u0'] ** 2
         if 'r3' in keys:
-            to_update['r3'] *= to_update['nominal_v3'] ** 2 / self.sn
+            to_update['r3'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'x3' in keys:
-            to_update['x3'] *= to_update['nominal_v3'] ** 2 / self.sn
+            to_update['x3'] *= to_update['rated_u0'] ** 2 / self.sn
         if 'g3' in keys:
-            to_update['g3'] *= self.sn / to_update['nominal_v3'] ** 2
+            to_update['g3'] *= self.sn / to_update['rated_u0'] ** 2
         if 'b3' in keys:
-            to_update['b3'] *= self.sn / to_update['nominal_v3'] ** 2
+            to_update['b3'] *= self.sn / to_update['rated_u0'] ** 2
         if 'rated_u1' in keys:
             to_update['rated_u1'] *= to_update['nominal_v1']
         if 'rated_u2' in keys:
@@ -607,7 +629,7 @@ class PerUnitNetwork(_net.Network):
         if 'rated_u3' in keys:
             to_update['rated_u3'] *= to_update['nominal_v3']
         to_update = to_update.drop(['nominal_v1', 'nominal_v2', 'nominal_v3',
-                                    'voltage_level1_id', 'voltage_level2_id', 'voltage_level3_id'],
+                                    'voltage_level1_id', 'voltage_level2_id', 'voltage_level3_id', 'rated_u0'],
                                    axis=1)
         self.update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 

@@ -194,7 +194,7 @@ class NetworkTestCase(unittest.TestCase):
                                 columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                          'bus_id',
                                          'connected', 'ucte-x-node-code', 'v', 'angle'],
-                                data=[['', 0.1, 0.01, 0, 0, 0.50, 0.3, 0.548154, 0.3029, 0.6263, 'VL', 'VL_0',
+                                data=[['', 0.1, 0.01, 0.01, 0.001, 0.5, 0.3, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                        True, '', 94.2979, 1.5138]])
         dangling_lines = n.get_dangling_lines()
         dangling_lines['v'] = float(dangling_lines['v'])
@@ -205,7 +205,7 @@ class NetworkTestCase(unittest.TestCase):
                                 columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                          'bus_id',
                                          'connected', 'ucte-x-node-code', 'v', 'angle'],
-                                data=[['', 0.1, 0.01, 0, 0, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
+                                data=[['', 0.1, 0.01, 0.01, 0.001, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                        True, '', 94.2979, 1.5138]])
         dangling_lines = n.get_dangling_lines()
         dangling_lines['v'] = float(dangling_lines['v'])
@@ -306,12 +306,12 @@ class NetworkTestCase(unittest.TestCase):
                      'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                      'connected3'],
             data=[
-                ['', 132, 0.1, 0.01, 1.0, 0.1, 1, NaN, -99999, -99999, NaN, NaN, NaN, 'VL_132', 'VL_132_0', True, 0.1, 0.01,
+                ['', 1, 0.1, 0.01, 1, 0.1, 1, NaN, -99999, -99999, NaN, NaN, NaN, 'VL_132', 'VL_132_0', True, 0.00625, 0.000625,
                  0, 0,
-                 1, NaN, 2, -99999, NaN, NaN, NaN, 'VL_33', 'VL_33_0', True, 0.1, 0.01, 0, 0, 1, NaN, 0, -99999, NaN,
+                 1, NaN, 2, -99999, NaN, NaN, NaN, 'VL_33', 'VL_33_0', True, 0.001, 6.94444e-05, 0, 0, 1, NaN, 0, -99999, NaN,
                  NaN, NaN, 'VL_11', 'VL_11_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,
-                                      atol=10 ** -4)
+                                      atol=10 ** -2)
         n.update_3_windings_transformers(pd.DataFrame(data=[
             [99, 9, 0, 0, 1, 100, 1, 2, 0.5, 0.1, 99, 9, 0, 0, 1, 100, 1, 2, 0.5, 0.1, 99, 9, 0, 0, 1, 100, 1, 2, 0.5,
              0.1]],
@@ -331,7 +331,7 @@ class NetworkTestCase(unittest.TestCase):
                      'voltage_level2_id', 'bus2_id', 'connected2', 'r3', 'x3', 'g3', 'b3', 'rated_u3', 'rated_s3',
                      'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                      'connected3'],
-            data=[['', 132, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
+            data=[['', 1, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
                    1, 100, 1, -99999, 0.5, 0.1, 0.48, 'VL_33', 'VL_33_0', True, 99, 9, 0, 0, 1, 100, 1, -99999, 0.5,
                    0.1, 0.48, 'VL_11', 'VL_11_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,
