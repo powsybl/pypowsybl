@@ -407,12 +407,12 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile) {
-    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data());
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth) {
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) voltageLevelId.data(), depth);
 }
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network) {
-    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network));
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth) {
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, (char*) voltageLevelId.data(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {

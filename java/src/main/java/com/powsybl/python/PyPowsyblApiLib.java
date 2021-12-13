@@ -284,19 +284,22 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
-                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  CCharPointer voltageLevelId, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
             String svgFileStr = CTypeUtil.toString(svgFile);
-            NetworkAreaDiagramUtil.writeSvg(network, svgFileStr);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIdStr, depth, svgFileStr);
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramSvg")
-    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelId,
+                                                        int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String svg = NetworkAreaDiagramUtil.getSvg(network);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIdStr, depth);
             return CTypeUtil.toCharPtr(svg);
         });
     }

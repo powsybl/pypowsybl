@@ -217,23 +217,29 @@ class Network(object):
         """
         return Svg(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: str):
+    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_id: str = None, depth: int = 0):
         """
-        Create a network area diagram in SVG format for the full network and write to a file.
+        Create a network area diagram in SVG format and write it to a file.
 
         Args:
             svg_file: a svg file path
+            voltage_level_id: the voltage level ID, center of the diagram. None for the full diagram.
+            depth: the diagram depth around the voltage level
         """
-        _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file)
+        _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_id if voltage_level_id else '', depth)
 
-    def get_network_area_diagram(self):
+    def get_network_area_diagram(self, voltage_level_id: str = None, depth: int = 0):
         """
         Create a network area diagram.
+
+        Args:
+            voltage_level_id: the voltage level ID, center of the diagram. None for the full diagram.
+            depth: the diagram depth around the voltage level
 
         Returns:
             the network area diagram
         """
-        return Svg(_pypowsybl.get_network_area_diagram_svg(self._handle))
+        return Svg(_pypowsybl.get_network_area_diagram_svg(self._handle, voltage_level_id if voltage_level_id else '', depth))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,

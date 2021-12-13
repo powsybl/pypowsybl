@@ -36,3 +36,13 @@ Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
     >>> network.get_network_area_diagram_svg()
 
 .. image:: ../_static/images/ieee14.svg
+
+To render only a part of the network, we can specify a voltage level ID as the center of the sub network and a depth
+to control the size of the sub network:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee14()
+    >>> network.write_network_area_diagram_svg('ieee14.svg', 'VL4', 1)
+
+.. image:: ../_static/images/ieee14_subnetwork_vl4.svg
