@@ -14,9 +14,11 @@ import com.powsybl.nad.svg.DefaultStyleProvider;
 import com.powsybl.nad.svg.StyleProvider;
 import com.powsybl.nad.svg.SvgParameters;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UncheckedIOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -26,17 +28,30 @@ public final class NetworkAreaDiagramUtil {
     private NetworkAreaDiagramUtil() {
     }
 
-    static String getSvg(Network network) {
+    static void writeSvg(Network network, Writer writer) {
         SvgParameters svgParameters = new SvgParameters()
                 .setSvgWidthAndHeightAdded(true)
                 .setFixedWidth(800)
                 .setFixedHeight(600);
         LayoutParameters layoutParameters = new LayoutParameters();
-        StyleProvider styleProvider = new DefaultStyleProvider(BaseVoltagesConfig.fromInputStream(PyPowsyblApiLib.class.getResourceAsStream("/nad-base-voltages.yml")));
+        InputStream is = Objects.requireNonNull(PyPowsyblApiLib.class.getResourceAsStream("/nad-base-voltages.yml"));
+        StyleProvider styleProvider = new DefaultStyleProvider(BaseVoltagesConfig.fromInputStream(is));
+        new NetworkAreaDiagram(network)
+                .draw(writer, svgParameters, layoutParameters, styleProvider);
+    }
+
+    static String getSvg(Network network) {
         try (StringWriter writer = new StringWriter()) {
-            new NetworkAreaDiagram(network)
-                    .draw(writer, svgParameters, layoutParameters, styleProvider);
+            writeSvg(network, writer);
             return writer.toString();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    static void writeSvg(Network network, String svgFile) {
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
+            writeSvg(network, writer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

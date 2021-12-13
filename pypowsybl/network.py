@@ -217,6 +217,15 @@ class Network(object):
         """
         return Svg(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
 
+    def write_network_area_diagram_svg(self, svg_file: str):
+        """
+        Create a network area diagram in SVG format for the full network and write to a file.
+
+        Args:
+            svg_file: a svg file path
+        """
+        _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file)
+
     def get_network_area_diagram(self):
         """
         Create a network area diagram.

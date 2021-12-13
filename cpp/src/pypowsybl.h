@@ -184,6 +184,8 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile);
+
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network);
 
 JavaHandle createSecurityAnalysis();

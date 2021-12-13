@@ -407,6 +407,10 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile) {
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data());
+}
+
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network) {
     return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network));
 }
