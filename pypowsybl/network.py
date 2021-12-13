@@ -223,7 +223,7 @@ class Network(object):
 
         Args:
             svg_file: a svg file path
-            voltage_level_id: the voltage level ID, center of the diagram. None for the full diagram.
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
         _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_id if voltage_level_id else '', depth)
@@ -233,7 +233,7 @@ class Network(object):
         Create a network area diagram.
 
         Args:
-            voltage_level_id: the voltage level ID, center of the diagram. None for the full diagram.
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
 
         Returns:
