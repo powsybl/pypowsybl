@@ -1,0 +1,7 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QdefaultStyle.css\\E"},
+    {"pattern":"\\Qnad-base-voltages.yml\\E"}
+  ]}
+}

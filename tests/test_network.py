@@ -407,6 +407,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
 
+    def test_sld_nad(self):
+        n = pp.network.create_ieee14()
+        sld = n.get_network_area_diagram()
+        self.assertRegex(sld.svg, '.*<svg.*')
+
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(9, len(network.get_current_limits()))

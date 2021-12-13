@@ -321,6 +321,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
+    m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
+          py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_id"), py::arg("depth"));
+
+    m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
+          py::arg("network"), py::arg("voltage_level_id"), py::arg("depth"));
+
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",

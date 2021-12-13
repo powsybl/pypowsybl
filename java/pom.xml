@@ -69,6 +69,7 @@
         <powsybl-core.version>4.5.1</powsybl-core.version>
         <powsybl-single-line-diagram.version>2.5.1</powsybl-single-line-diagram.version>
         <powsybl-open-load-flow.version>0.14.0</powsybl-open-load-flow.version>
+        <powsybl-network-area-diagram.version>0.1.0</powsybl-network-area-diagram.version>
         <assertj.version>3.11.0</assertj.version>
     </properties>
 
@@ -273,6 +274,11 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
             <version>${powsybl-single-line-diagram.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-network-area-diagram</artifactId>
+            <version>${powsybl-network-area-diagram.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
