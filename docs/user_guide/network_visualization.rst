@@ -11,7 +11,7 @@ To create a single line diagram in SVG format from a substation or a voltage lev
     >>> network = pp.network.create_ieee14()
     >>> network.write_single_line_diagram_svg('VL4', 'vl4.svg')
 
-Or in a Jupyter notebook environment, the SVG can be directly rendered in the notebook:
+Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
 
 .. code-block:: python
 
@@ -29,7 +29,7 @@ To create a network area diagram in SVG format for the full network:
     >>> network = pp.network.create_ieee14()
     >>> network.write_network_area_diagram_svg('ieee14.svg')
 
-Or in a Jupyter notebook environment, the SVG can be directly rendered in the notebook:
+Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
 
 .. code-block:: python
 
