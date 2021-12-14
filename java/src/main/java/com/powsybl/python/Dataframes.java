@@ -6,6 +6,7 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
@@ -66,8 +67,12 @@ public final class Dataframes {
      * Maps an object to a C struct using the provided mapper.
      */
     public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
+        return createCDataframe(mapper, object, new DataframeFilter());
+    }
+
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter) {
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler);
+        mapper.createDataframe(object, handler, dataframeFilter);
         return handler.getDataframePtr();
     }
 
@@ -76,7 +81,7 @@ public final class Dataframes {
      */
     public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object) {
         List<Series> series = new ArrayList<>();
-        mapper.createDataframe(object, new DefaultDataframeHandler(series::add));
+        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return List.copyOf(series);
     }
 

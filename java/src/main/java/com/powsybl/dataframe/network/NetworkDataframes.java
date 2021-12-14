@@ -195,7 +195,7 @@ public final class NetworkDataframes {
                 .doubles("v_mag", Bus::getV, Bus::setV)
                 .doubles("v_angle", Bus::getAngle, Bus::setAngle)
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
-                .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
+                .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum), false)
                 .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
                 .addProperties()
                 .build();

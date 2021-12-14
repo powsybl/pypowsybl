@@ -158,6 +158,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
             .export_values();
 
+    py::enum_<filter_attributes_type>(m, "FilterAttributesType")
+            .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
+            .value("DEFAULT_ATTRIBUTES", filter_attributes_type::DEFAULT_ATTRIBUTES)
+            .value("SELECTION_ATTRIBUTES", filter_attributes_type::SELECTION_ATTRIBUTES)
+            .export_values();
+
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
@@ -467,7 +473,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::arg("network"), py::arg("element_type"));
+          py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"));
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 

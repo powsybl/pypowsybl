@@ -451,4 +451,17 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native RawContingencyContextType fromCValue(int value);
     }
+
+    @CEnum("filter_attributes_type")
+    public enum FilterAttributesType {
+        ALL_ATTRIBUTES,
+        DEFAULT_ATTRIBUTES,
+        SELECTION_ATTRIBUTES;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native FilterAttributesType fromCValue(int value);
+    }
 }

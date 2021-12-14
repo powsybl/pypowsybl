@@ -7,6 +7,7 @@
 package com.powsybl.dataframe;
 
 import com.google.common.base.Functions;
+import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.python.update.Series;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -176,7 +177,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add));
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -276,7 +277,7 @@ class DataframeMapperBuilderTest {
         }
 
         public void addColumnName(String name, SeriesDataType type, boolean index) {
-            columns.put(name, new SeriesMetadata(index, name, false, type));
+            columns.put(name, new SeriesMetadata(index, name, false, type, true));
         }
 
         @Override
@@ -420,5 +421,55 @@ class DataframeMapperBuilderTest {
         assertEquals("val1", container.getElement("el1", 0).getStrValue());
         assertEquals("val3", container.getElement("el1", 1).getStrValue());
         assertEquals("val4", container.getElement("el2", 0).getStrValue());
+    }
+
+    @Test
+    void testDefaults() {
+        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
+                .itemsProvider(Container::getElements)
+                .stringsIndex("id", Element::getId)
+                .strings("str", Element::getStrValue, false)
+                .ints("int", Element::getIntValue)
+                .doubles("double", Element::getDoubleValue, false)
+                .enums("color", Color.class, Element::getColorValue)
+                .build();
+
+        Container container = new Container(
+                new Element("el1", "val1", 1, 10, Color.RED),
+                new Element("el2", "val2", 2, 20, Color.BLUE)
+        );
+
+        List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+
+        assertThat(series)
+                .extracting(com.powsybl.dataframe.impl.Series::getName)
+                .containsExactly("id", "int", "color");
+
+    }
+
+    @Test
+    void testFilterAttributes() {
+        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
+                .itemsProvider(Container::getElements)
+                .stringsIndex("id", Element::getId)
+                .strings("str", Element::getStrValue, false)
+                .ints("int", Element::getIntValue)
+                .doubles("double", Element::getDoubleValue, false)
+                .enums("color", Color.class, Element::getColorValue)
+                .build();
+
+        Container container = new Container(
+                new Element("el1", "val1", 1, 10, Color.RED),
+                new Element("el2", "val2", 2, 20, Color.BLUE)
+        );
+
+        List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")));
+
+        assertThat(series)
+                .extracting(com.powsybl.dataframe.impl.Series::getName)
+                .containsExactly("id", "str", "color");
+
     }
 }

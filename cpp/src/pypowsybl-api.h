@@ -119,3 +119,10 @@ typedef struct zone_struct {
     double* injections_shift_keys;
     int length;
 } zone;
+
+typedef enum {
+    ALL_ATTRIBUTES = 0,
+    DEFAULT_ATTRIBUTES,
+    SELECTION_ATTRIBUTES
+} filter_attributes_type;
+

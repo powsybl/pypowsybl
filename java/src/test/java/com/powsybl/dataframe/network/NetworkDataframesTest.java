@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.DoubleIndexedSeries;
@@ -30,7 +31,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add));
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
     }
 
@@ -60,14 +61,15 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component", "voltage_level_id");
+            //.containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component", "voltage_level_id");
+            .contains("id", "name", "v_mag", "v_angle", "connected_component", "voltage_level_id");
         assertThat(series.get(2).getDoubles())
             .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
             .containsExactly(0, 0, 0, 0);
         assertThat(series.get(4).getInts())
             .containsExactly(0, 0, 0, 0);
-        assertThat(series.get(6).getStrings())
+        assertThat(series.get(5).getStrings())
             .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
     }
 

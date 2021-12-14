@@ -134,24 +134,39 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_buses(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         buses = n.get_buses()
+#        expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+#                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+#                                         'voltage_level_id'],
+#                                data=[['', NaN, NaN, 0, 0, 'VLGEN'],
+#                                      ['', 380, NaN, 0, 0, 'VLHV1'],
+#                                      ['', 380, NaN, 0, 0, 'VLHV2'],
+#                                      ['', NaN, NaN, 0, 0, 'VLLOAD']])
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 
                                          'voltage_level_id'],
-                                data=[['', NaN, NaN, 0, 0, 'VLGEN'],
-                                      ['', 380, NaN, 0, 0, 'VLHV1'],
-                                      ['', 380, NaN, 0, 0, 'VLHV2'],
-                                      ['', NaN, NaN, 0, 0, 'VLLOAD']])
+                                data=[['', NaN, NaN, 0, 'VLGEN'],
+                                      ['', 380, NaN, 0, 'VLHV1'],
+                                      ['', 380, NaN, 0, 'VLHV2'],
+                                      ['', NaN, NaN, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
         n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[400, 0]]))
         buses = n.get_buses()
+#        expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+#                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+#                                         'voltage_level_id'],
+#                                data=[['', 400, 0, 0, 0, 'VLGEN'],
+#                                      ['', 380, NaN, 0, 0, 'VLHV1'],
+#                                      ['', 380, NaN, 0, 0, 'VLHV2'],
+#                                      ['', NaN, NaN, 0, 0, 'VLLOAD']])
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 
                                          'voltage_level_id'],
-                                data=[['', 400, 0, 0, 0, 'VLGEN'],
-                                      ['', 380, NaN, 0, 0, 'VLHV1'],
-                                      ['', 380, NaN, 0, 0, 'VLHV2'],
-                                      ['', NaN, NaN, 0, 0, 'VLLOAD']])
+                                data=[['', 400, 0, 0, 'VLGEN'],
+                                      ['', 380, NaN, 0, 'VLHV1'],
+                                      ['', 380, NaN, 0, 'VLHV2'],
+                                      ['', NaN, NaN, 0, 'VLLOAD']])
+
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
     def test_loads_data_frame(self):

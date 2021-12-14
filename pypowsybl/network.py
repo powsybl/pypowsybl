@@ -227,7 +227,7 @@ class Network(object):
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType) -> _DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool =  False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -237,10 +237,19 @@ class Network(object):
         Returns:
             a network elements data frame for the specified element type
         """
-        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
+
+        filter_attributes = _pypowsybl.FilterAttributesType.DEFAULT_ATTRIBUTES
+        if all_attributes and len(attributes) > 0:
+            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
+        elif all_attributes:
+            filter_attributes = _pypowsybl.FilterAttributesType.ALL_ATTRIBUTES
+        elif len(attributes) > 0:
+            filter_attributes = _pypowsybl.FilterAttributesType.SELECTION_ATTRIBUTES
+
+        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self) -> _DataFrame:
+    def get_buses(self,  all_attributes: bool =  False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of buses.
 
@@ -278,7 +287,7 @@ class Network(object):
         Returns:
             A dataframe of buses.
         """
-        return self.get_elements(_pypowsybl.ElementType.BUS)
+        return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes)
 
     def get_generators(self) -> _DataFrame:
         """

@@ -28,9 +28,9 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
     }
 
     @Override
-    public void createDataframe(Network network, DataframeHandler dataframeHandler) {
+    public void createDataframe(Network network, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
         List<T> items = getItems(network);
-        List<SeriesMapper<T>> mappers = new ArrayList<>(seriesMappers.values());
+        List<SeriesMapper<T>> mappers = new ArrayList<>(getSeriesMappers(dataframeFilter));
         if (addProperties) {
             mappers.addAll(getPropertiesSeries(items));
         }

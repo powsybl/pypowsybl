@@ -20,19 +20,23 @@ public class StringSeriesMapper<T> implements SeriesMapper<T> {
     private final Function<T, String> value;
 
     public StringSeriesMapper(String name, Function<T, String> value) {
-        this(name, false, value);
+        this(name, false, value, null, true);
     }
 
     public StringSeriesMapper(String name, boolean index, Function<T, String> value) {
-        this(name, index, value, null);
+        this(name, index, value, null, true);
     }
 
     public StringSeriesMapper(String name, Function<T, String> value, BiConsumer<T, String> updater) {
-        this(name, false, value, updater);
+        this(name, false, value, updater, true);
     }
 
-    public StringSeriesMapper(String name, boolean index, Function<T, String> value, BiConsumer<T, String> updater) {
-        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING);
+    public StringSeriesMapper(String name, Function<T, String> value, BiConsumer<T, String> updater, boolean defaultAttribute) {
+        this(name, false, value, updater, defaultAttribute);
+    }
+
+    public StringSeriesMapper(String name, boolean index, Function<T, String> value, BiConsumer<T, String> updater, boolean defaultAttribute) {
+        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING, defaultAttribute);
         this.updater = updater;
         this.value = value;
     }

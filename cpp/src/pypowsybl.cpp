@@ -514,8 +514,9 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType) {
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes) {
+	ToCharPtrPtr attributesPtr(attributes);
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size()));
 }
 
 int getSeriesType(element_type elementType, const std::string& seriesName) {

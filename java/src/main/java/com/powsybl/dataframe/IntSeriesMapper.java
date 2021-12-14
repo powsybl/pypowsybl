@@ -24,19 +24,23 @@ public class IntSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     public IntSeriesMapper(String name, ToIntFunction<T> value) {
-        this(name, false, value, null);
+        this(name, false, value, null, true);
     }
 
     public IntSeriesMapper(String name, boolean index, ToIntFunction<T> value) {
-        this(name, index, value, null);
+        this(name, index, value, null, true);
     }
 
     public IntSeriesMapper(String name, ToIntFunction<T> value, IntUpdater<T> updater) {
-        this(name, false, value, updater);
+        this(name, false, value, updater, true);
     }
 
-    public IntSeriesMapper(String name, boolean index, ToIntFunction<T> value, IntUpdater<T> updater) {
-        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.INT);
+    public IntSeriesMapper(String name, ToIntFunction<T> value, IntUpdater<T> updater, boolean defaultAttribute) {
+        this(name, false, value, updater, defaultAttribute);
+    }
+
+    public IntSeriesMapper(String name, boolean index, ToIntFunction<T> value, IntUpdater<T> updater, boolean defaultAttribute) {
+        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.INT, defaultAttribute);
         this.updater = updater;
         this.value = value;
     }
