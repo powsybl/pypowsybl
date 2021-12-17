@@ -13,6 +13,9 @@
 #include <memory>
 #include <stdexcept>
 #include "pypowsybl-api.h"
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 namespace pypowsybl {
 
@@ -291,6 +294,32 @@ std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType
 std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
+
+void setupLogger(py::object logger);
+
+class CppToPythonLogger
+{
+  public:
+    static CppToPythonLogger* get() {
+    if (!mSingleton)
+      mSingleton = new CppToPythonLogger();
+      return mSingleton;
+    }
+
+    static void logFromJava(int level, char* pArg);
+
+    void setLogger(py::object pPythonLogger) {
+      this->mlogger = pPythonLogger;
+    }
+
+    py::object getLogger() {
+      return this->mlogger;
+    }
+
+  private:
+    static CppToPythonLogger* mSingleton;
+    py::object mlogger;
+};
 
 }
 

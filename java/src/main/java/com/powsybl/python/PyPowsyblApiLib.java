@@ -32,6 +32,8 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.function.CFunctionPointer;
+import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -53,6 +55,10 @@ import static com.powsybl.python.Util.*;
  */
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
+
+    static boolean readConfig = true;
+
+    public static CFunctionPointer loggerCallback;
 
     private PyPowsyblApiLib() {
     }
@@ -610,5 +616,17 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "freeString")
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
+    }
+
+    interface Callback extends CFunctionPointer {
+        @InvokeCFunctionPointer
+        void invoke(int level, CCharPointer string);
+    }
+
+    @CEntryPoint(name = "setupCallback")
+    public static void setupCallback(IsolateThread thread, Callback fpointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            loggerCallback = fpointer;
+        });
     }
 }

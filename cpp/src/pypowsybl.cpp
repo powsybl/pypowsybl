@@ -647,4 +647,19 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
 }
 
+void CppToPythonLogger::logFromJava(int level, char* pArg) {
+  //py::module_ logging = py::module_::import("logging");
+  //logging.attr("warning")(pArg);
+  CppToPythonLogger::get()->getLogger().attr("log")(level, pArg);
+}
+
+//typedef void (*logFromJava)(char* pArg);
+
+void setupLogger(py::object logger) {
+  std::cout <<" SETUP LOGGER FROM C++ : " << std::endl;
+  CppToPythonLogger::get()->setLogger(logger);
+  logger.attr("warning")("My warning log from parameter module");
+  pypowsybl::callJava<>(::setupCallback, &CppToPythonLogger::logFromJava);
+}
+
 }

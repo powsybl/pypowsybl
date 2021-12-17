@@ -14,6 +14,7 @@ from pypowsybl import (
     security,
     sensitivity
 )
+import logging
 
 __version__ = '0.13.0'
 
@@ -30,6 +31,12 @@ __all__ = [
     "security",
     "sensitivity"
 ]
+
+_pypowsybl.setup_logger(logging.getLogger())
+
+# Manipulate default logger after that will impact java logs
+#logging.getLogger().setLevel(level=logging.WARNING)
+#logging.getLogger().disabled = True
 
 
 def set_debug_mode(debug: bool = True) -> None:
