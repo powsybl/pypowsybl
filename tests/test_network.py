@@ -202,15 +202,26 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_svc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         svcs = n.get_static_var_compensators()
-        self.assertEqual(400.0, svcs['voltage_setpoint']['SVC'])
-        self.assertEqual('VOLTAGE', svcs['regulation_mode']['SVC'])
-        svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
-                             columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
-        n.update_static_var_compensators(svcs2)
+        expected = pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                             'connected'],
+            data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
+        n.update_static_var_compensators(pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q'],
+            data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13]]))
         svcs = n.get_static_var_compensators()
-        self.assertEqual(300.0, svcs['voltage_setpoint']['SVC'])
-        self.assertEqual(400.0, svcs['reactive_power_setpoint']['SVC'])
-        self.assertEqual('OFF', svcs['regulation_mode']['SVC'])
+        expected = pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                             'connected'],
+            data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
 
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
