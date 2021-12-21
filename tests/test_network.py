@@ -680,5 +680,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         buses_default_attributes2 = n.get_buses(attributes=[])
         pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes2, check_dtype=False)
 
+        buses_all_attributes = n.get_buses(all_attributes=True)
+        expected_all_attributes = expected_default_attributes
+        pd.testing.assert_frame_equal(expected_all_attributes, buses_all_attributes, check_dtype=False)
+
+        try:
+            buses_all_attributes_conflicting_params = n.get_buses(all_attributes=True, attributes=['v_mag', 'voltage_level_id'])
+            self.fail()
+        except RuntimeError as e:
+            self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
+
+
+
 if __name__ == '__main__':
     unittest.main()
