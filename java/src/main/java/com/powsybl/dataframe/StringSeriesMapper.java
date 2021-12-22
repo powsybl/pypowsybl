@@ -23,6 +23,10 @@ public class StringSeriesMapper<T> implements SeriesMapper<T> {
         this(name, false, value, null, true);
     }
 
+    public StringSeriesMapper(String name, Function<T, String> value, boolean defaultAttribute) {
+        this(name, false, value, null, defaultAttribute);
+    }
+
     public StringSeriesMapper(String name, boolean index, Function<T, String> value) {
         this(name, index, value, null, true);
     }

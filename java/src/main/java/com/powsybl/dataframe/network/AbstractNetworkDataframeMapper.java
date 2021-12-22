@@ -32,20 +32,21 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
         List<T> items = getItems(network);
         List<SeriesMapper<T>> mappers = new ArrayList<>(getSeriesMappers(dataframeFilter));
         if (addProperties) {
-            mappers.addAll(getPropertiesSeries(items));
+            mappers.addAll(getPropertiesSeries(items, dataframeFilter));
         }
         dataframeHandler.allocate(mappers.size());
         mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
     }
 
-    private List<SeriesMapper<T>> getPropertiesSeries(List<T> items) {
+    private List<SeriesMapper<T>> getPropertiesSeries(List<T> items, DataframeFilter dataframeFilter) {
         Stream<String> propertyNames = items.stream()
             .map(Identifiable.class::cast)
             .filter(Identifiable::hasProperty)
             .flatMap(e -> e.getPropertyNames().stream())
             .distinct();
         return propertyNames
-            .map(property -> new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property)))
+            .map(property -> new StringSeriesMapper<T>(property, t -> ((Identifiable) t).getProperty(property), false))
+            .filter(mapper -> filterMapper(mapper, dataframeFilter))
             .collect(Collectors.toList());
     }
 }
