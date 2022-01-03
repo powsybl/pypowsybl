@@ -659,7 +659,8 @@ void setupLogger(py::object logger) {
   std::cout <<" SETUP LOGGER FROM C++ : " << std::endl;
   CppToPythonLogger::get()->setLogger(logger);
   logger.attr("warning")("My warning log from parameter module");
-  pypowsybl::callJava<>(::setupCallback, &CppToPythonLogger::logFromJava);
+  auto fptr = &CppToPythonLogger::logFromJava;
+  pypowsybl::callJava<>(::setupCallback, reinterpret_cast<void *&>(fptr));
 }
 
 }
