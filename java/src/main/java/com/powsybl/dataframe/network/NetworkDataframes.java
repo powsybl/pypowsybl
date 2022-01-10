@@ -477,6 +477,8 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getStaticVarCompensatorStream, getOrThrow(Network::getStaticVarCompensator, "Static var compensator"))
                 .stringsIndex("id", StaticVarCompensator::getId)
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
+                .doubles("b_min", StaticVarCompensator::getBmin, StaticVarCompensator::setBmin)
+                .doubles("b_max", StaticVarCompensator::getBmax, StaticVarCompensator::setBmax)
                 .doubles("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
                 .doubles("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
