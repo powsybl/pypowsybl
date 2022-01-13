@@ -55,8 +55,6 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = true;
-
     private PyPowsyblApiLib() {
     }
 
@@ -78,13 +76,13 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            readConfig = read;
+            PyPowsyblConfiguration.setReadConfig(read);
         });
     }
 
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> readConfig);
+        return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -172,7 +170,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
+            LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
             return convertToLoadFlowParametersPointer(parameters);
         });
     }

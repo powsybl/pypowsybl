@@ -19,19 +19,19 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
-class PyPowsyblLoadFlowApiLibTest {
+class PyPowsyblLoadFlowValidationApiLibTest {
 
     @Test
     void test() {
         final Network network = IeeeCdfNetworkFactory.create9();
         LoadFlow.Runner runner = LoadFlow.find("OpenLoadFlow");
         runner.run(network, new LoadFlowParameters());
-        InMemoryValidationWriter busWriter = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
+        InMemoryValidationWriter busWriter = PyPowsyblLoadFlowValidationApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
         Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData()))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");
 
-        InMemoryValidationWriter genWriter = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
+        InMemoryValidationWriter genWriter = PyPowsyblLoadFlowValidationApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
         Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData()))
                 .extracting(Series::getName)
                 .contains("id", "p");

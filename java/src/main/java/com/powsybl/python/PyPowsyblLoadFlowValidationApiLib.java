@@ -7,8 +7,10 @@
 package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.loadflow.validation.*;
+import com.powsybl.dataframe.loadflow.validation.InMemoryValidationWriter;
+import com.powsybl.dataframe.loadflow.validation.Validations;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.loadflow.validation.ValidationType;
 import org.graalvm.nativeimage.IsolateThread;
@@ -21,12 +23,14 @@ import static com.powsybl.python.PyPowsyblApiHeader.*;
 import static com.powsybl.python.Util.doCatch;
 
 /**
+ * Defines C interface for loadflow validation.
+ *
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 @CContext(Directives.class)
-public final class PyPowsyblLoadFlowApiLib {
+public final class PyPowsyblLoadFlowValidationApiLib {
 
-    private PyPowsyblLoadFlowApiLib() {
+    private PyPowsyblLoadFlowValidationApiLib() {
     }
 
     @CEntryPoint(name = "runLoadFlowValidation")
@@ -43,9 +47,17 @@ public final class PyPowsyblLoadFlowApiLib {
         return createCDataFrame(writer, validationType);
     }
 
+    private static ValidationConfig defaultValidationConfig() {
+        return new ValidationConfig(ValidationConfig.THRESHOLD_DEFAULT, ValidationConfig.VERBOSE_DEFAULT, null,
+                ValidationConfig.TABLE_FORMATTER_FACTORY_DEFAULT, ValidationConfig.EPSILON_X_DEFAULT, ValidationConfig.APPLY_REACTANCE_CORRECTION_DEFAULT,
+                ValidationConfig.VALIDATION_OUTPUT_WRITER_DEFAULT, new LoadFlowParameters(), ValidationConfig.OK_MISSING_VALUES_DEFAULT,
+                ValidationConfig.NO_REQUIREMENT_IF_REACTIVE_BOUND_INVERSION_DEFAULT, ValidationConfig.COMPARE_RESULTS_DEFAULT,
+                ValidationConfig.CHECK_MAIN_COMPONENT_ONLY_DEFAULT, ValidationConfig.NO_REQUIREMENT_IF_SETPOINT_OUTSIDE_POWERS_BOUNDS);
+    }
+
     // package scope for unit testing
     static InMemoryValidationWriter createLoadFlowValidationWriter(Network network, PyPowsyblApiHeader.ValidationType validationType) {
-        ValidationConfig validationConfig = ValidationConfig.load();
+        ValidationConfig validationConfig = PyPowsyblConfiguration.isReadConfig() ? ValidationConfig.load() : defaultValidationConfig();
         InMemoryValidationWriter writer = new InMemoryValidationWriter();
         switch (validationType) {
             case FLOWS:
