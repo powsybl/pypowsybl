@@ -84,6 +84,18 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
         self.assertTrue(validation.valid)
 
+    def test_validation_all(self):
+        n = pp.network.create_ieee14()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n)
+        self.assertIsNotNone(validation.buses)
+        self.assertIsNotNone(validation.generators)
+        self.assertIsNotNone(validation.branch_flows)
+        self.assertIsNotNone(validation.svcs)
+        self.assertIsNotNone(validation.shunts)
+        self.assertIsNotNone(validation.twt3ws)
+        self.assertIsNotNone(validation.twts)
+
 
 if __name__ == '__main__':
     unittest.main()

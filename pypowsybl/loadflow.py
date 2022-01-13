@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import pandas as pd
+from pandas import DataFrame as _DataFrame
 import _pypowsybl
 from _pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
@@ -216,106 +218,113 @@ def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider)]
 
 
-def run_validation(network: _Network, validation_types=[]):
-    result = ValidationResult()
-    for validation_type in validation_types:
-        series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type)
-        value = _create_data_frame_from_series_array(series_array)
-        if validation_type == ValidationType.BUSES:
-            result.buses = value
-        elif validation_type == ValidationType.GENERATORS:
-            result.generators = value
-        elif validation_type == ValidationType.FLOWS:
-            result.branch_flows = value
-        elif validation_type == ValidationType.SVCS:
-            result.svcs = value
-        elif validation_type == ValidationType.SHUNTS:
-            result.shunts = value
-        elif validation_type == ValidationType.TWTS:
-            result.twts = value
-        elif validation_type == ValidationType.TWTS3W:
-            result.twt3ws = value
-        else:
-            raise Exception(validation_type + " not support")
-    return result
+ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,
+                      ValidationType.SVCS, ValidationType.TWTS, ValidationType.TWTS3W]
 
 
 class ValidationResult:
+    """
+    The result of a loadflow validation.
+    """
 
-    def __init__(self):
-        self._branch_flows = None
-        self._buses = None
-        self._generators = None
-        self._svcs = None
-        self._shunts = None
-        self._twts = None
-        self._twt3ws = None
-        self._valid = True
+    def __init__(self, branch_flows, buses, generators, svcs, shunts, twts, twt3ws):
+        self._branch_flows = branch_flows
+        self._buses = buses
+        self._generators = generators
+        self._svcs = svcs
+        self._shunts = shunts
+        self._twts = twts
+        self._twt3ws = twt3ws
+        self._valid = self._is_valid_or_unchecked(self.branch_flows) and self._is_valid_or_unchecked(self.buses) \
+                      and self._is_valid_or_unchecked(self.generators) and self._is_valid_or_unchecked(self.svcs) \
+                      and self._is_valid_or_unchecked(self.shunts) and self._is_valid_or_unchecked(self.twts) \
+                      and self._is_valid_or_unchecked(self.twt3ws)
+
+    @staticmethod
+    def _is_valid_or_unchecked(df: _DataFrame) -> bool:
+        return df is None or df['validated'].all()
 
     @property
-    def branch_flows(self):
+    def branch_flows(self) -> _DataFrame:
+        """
+        Validation results for branch flows.
+        """
         return self._branch_flows
 
-    @branch_flows.setter
-    def branch_flows(self, value):
-        self._branch_flows = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def buses(self):
+    def buses(self) -> _DataFrame:
+        """
+        Validation results for buses.
+        """
         return self._buses
 
-    @buses.setter
-    def buses(self, value):
-        self._buses = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def generators(self):
+    def generators(self) -> _DataFrame:
+        """
+        Validation results for generators.
+        """
         return self._generators
 
-    @generators.setter
-    def generators(self, value):
-        self._generators = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def svcs(self):
+    def svcs(self) -> _DataFrame:
+        """
+        Validation results for SVCs.
+        """
         return self._svcs
 
-    @svcs.setter
-    def svcs(self, value):
-        self._svcs = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def shunts(self):
+    def shunts(self) -> _DataFrame:
+        """
+        Validation results for shunts.
+        """
         return self._shunts
 
-    @shunts.setter
-    def shunts(self, value):
-        self._shunts = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def twts(self):
+    def twts(self) -> _DataFrame:
+        """
+        Validation results for two winding transformers.
+        """
         return self._twts
 
-    @twts.setter
-    def twts(self, value):
-        self._twts = value
-        self._valid &= all(value["validated"].tolist())
-
     @property
-    def twt3ws(self):
+    def twt3ws(self) -> _DataFrame:
+        """
+        Validation results for three winding transformers.
+        """
         return self._twt3ws
-
-    @twt3ws.setter
-    def twt3ws(self, value):
-        self._twt3ws = value
-        self._valid &= all(value["validated"].tolist())
 
     @property
     def valid(self):
+        """
+        True if all checked data is valid.
+        """
         return self._valid
+
+
+def run_validation(network: _Network, validation_types: _List[ValidationType] = None) -> ValidationResult:
+    """
+    Checks that the network data are consistent with AC loadflow equations.
+
+    Args:
+        network: The network to be checked.
+        validation_types: The types of data to be checked. If None, all types will be checked.
+
+    Returns:
+        The validation result.
+    """
+    if validation_types is None:
+        validation_types = ValidationType.ALL
+    res_by_type = {}
+    for validation_type in validation_types:
+        series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type)
+        res_by_type[validation_type] = _create_data_frame_from_series_array(series_array)
+
+    return ValidationResult(buses=res_by_type.get(ValidationType.BUSES, None),
+                            branch_flows=res_by_type.get(ValidationType.FLOWS, None),
+                            generators=res_by_type.get(ValidationType.GENERATORS, None),
+                            svcs=res_by_type.get(ValidationType.SVCS, None),
+                            shunts=res_by_type.get(ValidationType.SHUNTS, None),
+                            twts=res_by_type.get(ValidationType.TWTS, None),
+                            twt3ws=res_by_type.get(ValidationType.TWTS3W, None))
+
 
