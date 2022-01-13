@@ -227,18 +227,18 @@ class ValidationResult:
     The result of a loadflow validation.
     """
 
-    def __init__(self, branch_flows, buses, generators, svcs, shunts, twts, twt3ws):
+    def __init__(self, branch_flows, buses, generators, svcs, shunts, twts, t3wts):
         self._branch_flows = branch_flows
         self._buses = buses
         self._generators = generators
         self._svcs = svcs
         self._shunts = shunts
         self._twts = twts
-        self._twt3ws = twt3ws
+        self._t3wts = t3wts
         self._valid = self._is_valid_or_unchecked(self.branch_flows) and self._is_valid_or_unchecked(self.buses) \
                       and self._is_valid_or_unchecked(self.generators) and self._is_valid_or_unchecked(self.svcs) \
                       and self._is_valid_or_unchecked(self.shunts) and self._is_valid_or_unchecked(self.twts) \
-                      and self._is_valid_or_unchecked(self.twt3ws)
+                      and self._is_valid_or_unchecked(self.t3wts)
 
     @staticmethod
     def _is_valid_or_unchecked(df: _DataFrame) -> bool:
@@ -287,11 +287,11 @@ class ValidationResult:
         return self._twts
 
     @property
-    def twt3ws(self) -> _DataFrame:
+    def t3wts(self) -> _DataFrame:
         """
         Validation results for three winding transformers.
         """
-        return self._twt3ws
+        return self._t3wts
 
     @property
     def valid(self):
@@ -325,6 +325,6 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
                             svcs=res_by_type.get(ValidationType.SVCS, None),
                             shunts=res_by_type.get(ValidationType.SHUNTS, None),
                             twts=res_by_type.get(ValidationType.TWTS, None),
-                            twt3ws=res_by_type.get(ValidationType.TWTS3W, None))
+                            t3wts=res_by_type.get(ValidationType.TWTS3W, None))
 
 

@@ -93,7 +93,7 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertIsNotNone(validation.branch_flows)
         self.assertIsNotNone(validation.svcs)
         self.assertIsNotNone(validation.shunts)
-        self.assertIsNotNone(validation.twt3ws)
+        self.assertIsNotNone(validation.t3wts)
         self.assertIsNotNone(validation.twts)
 
 
