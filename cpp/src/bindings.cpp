@@ -132,7 +132,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
-            .value("BRANCH", element_type::BRANCH)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)

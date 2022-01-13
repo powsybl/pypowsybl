@@ -7,9 +7,8 @@
 package com.powsybl.python;
 
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.dataframe.loadflow.BusValidationWriter;
-import com.powsybl.dataframe.loadflow.GeneratorValidationWriter;
-import com.powsybl.dataframe.loadflow.Validations;
+import com.powsybl.dataframe.loadflow.validation.InMemoryValidationWriter;
+import com.powsybl.dataframe.loadflow.validation.Validations;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -27,13 +26,13 @@ class PyPowsyblLoadFlowApiLibTest {
         final Network network = IeeeCdfNetworkFactory.create9();
         LoadFlow.Runner runner = LoadFlow.find("OpenLoadFlow");
         runner.run(network, new LoadFlowParameters());
-        BusValidationWriter buses = (BusValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
-        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), buses))
+        InMemoryValidationWriter busWriter = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
+        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData()))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");
 
-        GeneratorValidationWriter gens = (GeneratorValidationWriter) PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
-        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), gens))
+        InMemoryValidationWriter genWriter = PyPowsyblLoadFlowApiLib.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
+        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData()))
                 .extracting(Series::getName)
                 .contains("id", "p");
     }
