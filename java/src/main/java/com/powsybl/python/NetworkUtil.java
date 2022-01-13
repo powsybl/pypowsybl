@@ -8,10 +8,12 @@ package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -19,6 +21,30 @@ import java.util.stream.Collectors;
 public final class NetworkUtil {
 
     private NetworkUtil() {
+    }
+
+    public static Network createEurostagTutorialExample1() {
+        Network network = EurostagTutorialExample1Factory.create();
+        fix(network);
+        return network;
+    }
+
+    public static Network createEurostagTutorialExample1WithFixedCurrentLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        fix(network);
+        return network;
+    }
+
+    private static Network fix(Network network) {
+        Generator gen = network.getGenerator("GEN");
+        if (gen != null) {
+            gen.setMaxP(4999);
+        }
+        Generator gen2 = network.getGenerator("GEN2");
+        if (gen2 != null) {
+            gen2.setMaxP(4999);
+        }
+        return network;
     }
 
     static boolean updateSwitchPosition(Network network, String switchId, boolean open) {
@@ -88,8 +114,8 @@ public final class NetworkUtil {
             return false;
         }
         if (!(countries.isEmpty()
-                || countries.contains(voltageLevel1.getSubstation().getCountry().map(Country::name).orElse(null))
-                || countries.contains(voltageLevel2.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+                || countries.contains(voltageLevel1.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null))
+                || countries.contains(voltageLevel2.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null)))) {
             return false;
         }
         if (mainCc && !(isInMainCc(terminal1) && isInMainCc(terminal2))) {
@@ -116,7 +142,7 @@ public final class NetworkUtil {
             return false;
         }
         if (!(countries.isEmpty()
-                || countries.contains(voltageLevel.getSubstation().getCountry().map(Country::name).orElse(null)))) {
+                || countries.contains(voltageLevel.getSubstation().flatMap(Substation::getCountry).map(Country::name).orElse(null)))) {
             return false;
         }
         if (mainCc && !isInMainCc(terminal)) {
@@ -164,5 +190,26 @@ public final class NetworkUtil {
                 throw new PowsyblException("Unsupported element type:" + elementType);
         }
         return elementsIds;
+    }
+
+    public static Stream<TemporaryLimitContext> getCurrentLimits(Network network) {
+        Stream.Builder<TemporaryLimitContext> temporaryLimitContexts = Stream.builder();
+        network.getBranchStream().forEach(branch -> {
+            if (branch.getCurrentLimits1() != null) {
+                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
+                branch.getCurrentLimits1().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
+                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                .forEach(temporaryLimitContexts::add);
+            }
+            if (branch.getCurrentLimits2() != null) {
+                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
+                branch.getCurrentLimits2().getTemporaryLimits().stream()
+                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
+                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                        .forEach(temporaryLimitContexts::add);
+            }
+        });
+        return temporaryLimitContexts.build();
     }
 }

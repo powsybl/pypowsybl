@@ -5,12 +5,63 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import unittest
-from _pypowsybl import ValidationType
 
 import pypowsybl as pp
+import pypowsybl.loadflow as lf
+from pypowsybl.loadflow import ValidationType
 
 
 class LoadflowTestCase(unittest.TestCase):
+
+    def setUp(self):
+        pp.set_config_read(False)
+
+    def test_run_lf(self):
+        n = pp.network.create_ieee14()
+        results = lf.run_ac(n)
+        self.assertEqual(1, len(results))
+        self.assertEqual(lf.ComponentStatus.CONVERGED, results[0].status)
+        self.assertEqual(0, results[0].connected_component_num)
+        self.assertEqual(0, results[0].synchronous_component_num)
+        self.assertEqual('VL4_0', results[0].slack_bus_id)
+        self.assertAlmostEqual(0.0, results[0].slack_bus_active_power_mismatch, 1)
+        self.assertEqual(3, results[0].iteration_count)
+
+        parameters = lf.Parameters(distributed_slack=False)
+        results = lf.run_dc(n, parameters)
+        self.assertEqual(1, len(results))
+
+    def test_lf_parameters(self):
+        parameters = lf.Parameters()
+        self.assertTrue(parameters.dc_use_transformer_ratio)
+        self.assertEqual(0, len(parameters.countries_to_balance))
+        self.assertEqual(lf.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+
+        # Testing setting independently every attributes
+        attributes = {
+            'voltage_init_mode': [lf.VoltageInitMode.DC_VALUES, lf.VoltageInitMode.UNIFORM_VALUES],
+            'transformer_voltage_control_on': [True, False],
+            'no_generator_reactive_limits': [True, False],
+            'phase_shifter_regulation_on': [True, False],
+            'twt_split_shunt_admittance': [True, False],
+            'simul_shunt': [True, False],
+            'read_slack_bus': [True, False],
+            'write_slack_bus': [True, False],
+            'distributed_slack': [True, False],
+            'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
+            'dc_use_transformer_ratio': [True, False],
+            'countries_to_balance': [['FR'], ['BE']],
+            'connected_component_mode': [lf.ConnectedComponentMode.MAIN, lf.ConnectedComponentMode.ALL]
+        }
+
+        for attribute, values in attributes.items():
+            for value in values:
+                parameters = lf.Parameters(**dict([(attribute, value)]))
+                self.assertEqual(value, getattr(parameters, attribute))
+
+                parameters = lf.Parameters()
+                setattr(parameters, attribute, value)
+                self.assertEqual(value, getattr(parameters, attribute))
 
     def test_validation(self):
         n = pp.network.create_ieee14()
@@ -32,36 +83,6 @@ class LoadflowTestCase(unittest.TestCase):
         validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
         self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
         self.assertTrue(validation.valid)
-
-    def test_run_lf(self):
-        n = pp.network.create_ieee14()
-        results = pp.loadflow.run_ac(n)
-        self.assertEqual(1, len(results))
-        self.assertEqual(pp.loadflow.ComponentStatus.CONVERGED, list(results)[0].status)
-        parameters = pp.loadflow.Parameters(distributed_slack=False)
-        results = pp.loadflow.run_dc(n, parameters)
-        self.assertEqual(1, len(results))
-
-    def test_lf_parameters(self):
-        parameters = pp.loadflow.Parameters()
-        self.assertTrue(parameters.dc_use_transformer_ratio)
-        self.assertEqual(0, len(parameters.countries_to_balance))
-        self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
-
-        parameters = pp.loadflow.Parameters(dc_use_transformer_ratio=False)
-        self.assertFalse(parameters.dc_use_transformer_ratio)
-        parameters.dc_use_transformer_ratio = True
-        self.assertTrue(parameters.dc_use_transformer_ratio)
-
-        parameters = pp.loadflow.Parameters(countries_to_balance=['FR'])
-        self.assertEqual(['FR'], parameters.countries_to_balance)
-        parameters.countries_to_balance = ['BE']
-        self.assertEqual(['BE'], parameters.countries_to_balance)
-
-        parameters = pp.loadflow.Parameters(connected_component_mode=pp.loadflow.ConnectedComponentMode.ALL)
-        self.assertEqual(pp.loadflow.ConnectedComponentMode.ALL, parameters.connected_component_mode)
-        parameters.connected_component_mode = pp.loadflow.ConnectedComponentMode.MAIN
-        self.assertEqual(pp.loadflow.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
 
 
 if __name__ == '__main__':

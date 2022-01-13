@@ -39,14 +39,14 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 20.3.0
+          graalvm-version: 21.3.0
           native-image: true
 
 #      - name: Checkout olf sources
 #        uses: actions/checkout@v1
 #        with:
 #          repository: powsybl/powsybl-open-loadflow
-#          ref: master
+#          ref: main
 #
 #      - name: Build and install olf artifact
 #        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
@@ -103,11 +103,11 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-latest,
+            os: macos-10.15,
           }
           - {
             name: windows,
-            os: windows-latest,
+            os: windows-2019,
           }
         python:
           - {
@@ -128,14 +128,14 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 20.3.0
+          graalvm-version: 21.3.0
           native-image: true
 
 #      - name: Checkout olf sources
 #        uses: actions/checkout@v1
 #        with:
 #          repository: powsybl/powsybl-open-loadflow
-#          ref: master
+#          ref: main
 #
 #      - name: Build and install olf artifact
 #        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install

@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.BaseDataframeMapperBuilder;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
 import java.util.List;
@@ -28,10 +29,16 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
         this.addProperties = false;
     }
 
+    public static <U> NetworkDataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> itemProvider, ItemGetter<Network, U> itemGetter) {
+        return new NetworkDataframeMapperBuilder<U>()
+                .itemsStreamProvider(itemProvider)
+                .itemMultiIndexGetter(itemGetter);
+    }
+
     public static <U> NetworkDataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> itemProvider, BiFunction<Network, String, U> itemGetter) {
         return new NetworkDataframeMapperBuilder<U>()
-            .itemsStreamProvider(itemProvider)
-            .itemGetter(itemGetter);
+                .itemsStreamProvider(itemProvider)
+                .itemGetter(itemGetter);
     }
 
     public static <U> NetworkDataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider) {
@@ -55,8 +62,8 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
             }
 
             @Override
-            protected T getItem(Network network, String id) {
-                return itemGetter.apply(network, id);
+            protected T getItem(Network network, UpdatingDataframe dataframe, int index) {
+                return itemMultiIndexGetter.getItem(network, dataframe, index);
             }
         };
     }

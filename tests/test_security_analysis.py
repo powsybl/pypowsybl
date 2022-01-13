@@ -11,6 +11,9 @@ import pandas as pd
 
 class SecurityAnalysisTestCase(unittest.TestCase):
 
+    def setUp(self):
+        pp.set_config_read(False)
+
     def test_security_analysis(self):
         pd.set_option('display.max_columns', None)
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -27,7 +30,7 @@ class SecurityAnalysisTestCase(unittest.TestCase):
                                          'limit_reduction', 'value', 'side'],
                                 data=[
                                     ['', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
-                                    ['', 'LOW_VOLTAGE', '', 500, 2147483647, 1, 398.264725, ''],
+                                    ['', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
                                 ])
         pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
 

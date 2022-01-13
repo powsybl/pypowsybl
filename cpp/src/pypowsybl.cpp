@@ -197,16 +197,28 @@ char* copyStringToCharPtr(const std::string& str) {
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
     char** charPtrPtr = new char*[strings.size()];
     for (int i = 0; i < strings.size(); i++) {
-        charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
+        charPtrPtr[i] = copyStringToCharPtr(strings[i]);
     }
     return charPtrPtr;
 }
 
+int* copyVectorInt(const std::vector<int>& ints) {
+    int* intPtr = new int[ints.size()];
+    std::copy(ints.begin(), ints.end(), intPtr);
+    return intPtr;
+}
+
+double* copyVectorDouble(const std::vector<double>& doubles) {
+    double* doublePtr = new double[doubles.size()];
+    std::copy(doubles.begin(), doubles.end(), doublePtr);
+    return doublePtr;
+}
+
 void deleteCharPtrPtr(char** charPtrPtr, int length) {
     for (int i = 0; i < length; i++) {
-        delete charPtrPtr[i];
+        delete[] charPtrPtr[i];
     }
-    delete charPtrPtr;
+    delete[] charPtrPtr;
 }
 
 void freeCString(char* str) {
@@ -220,36 +232,41 @@ std::string toString(char* cstring) {
     return res;
 }
 
+void setJavaLibraryPath(const std::string& javaLibraryPath) {
+    callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
+}
+
 void setDebugMode(bool debug) {
     callJava<>(::setDebugMode, debug);
+}
+
+void setConfigRead(bool configRead) {
+    callJava<>(::setConfigRead, configRead);
+}
+
+bool isConfigRead() {
+    return callJava<bool>(::isConfigRead);
 }
 
 std::string getVersionTable() {
     return toString(callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createEmptyNetwork(const std::string& id) {
-    return callJava<JavaHandle>(::createEmptyNetwork, (char*) id.data());
+JavaHandle createNetwork(const std::string& name, const std::string& id) {
+    return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
-JavaHandle createIeeeNetwork(int busCount) {
-    return callJava<JavaHandle>(::createIeeeNetwork, busCount);
-}
+void merge(JavaHandle network, std::vector<JavaHandle>& others) {
+    std::vector<void*> othersPtrs;
+    othersPtrs.reserve(others.size());
+    for(int i = 0; i < others.size(); ++i) {
+      void* ptr = others[i];
+      othersPtrs.push_back(ptr);
+    }
+    int count = othersPtrs.size();
+    void** networksData = (void**)othersPtrs.data();
 
-JavaHandle createEurostagTutorialExample1Network() {
-    return callJava<JavaHandle>(::createEurostagTutorialExample1Network);
-}
-
-JavaHandle createFourSubstationsNodeBreakerNetwork() {
-    return callJava<JavaHandle>(::createFourSubstationsNodeBreakerNetwork);
-}
-
-JavaHandle createBatteryNetwork() {
-    return callJava<JavaHandle>(::createBatteryNetwork);
-}
-
-JavaHandle createDanglingLineNetwork() {
-    return callJava<JavaHandle>(::createDanglingLineNetwork);
+    callJava<>(::merge, network, networksData, count);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -266,6 +283,10 @@ std::vector<std::string> getNetworkExportFormats() {
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
+}
+
+SeriesArray* createExporterParametersSeriesArray(const std::string& format) {
+    return new SeriesArray(callJava<array*>(::createExporterParametersSeriesArray, (char*) format.data()));
 }
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) {
@@ -365,6 +386,13 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
     return elementsIds.get();
 }
 
+std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
+    load_flow_parameters* parameters = callJava<load_flow_parameters*>(::createLoadFlowParameters);
+    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
+        callJava(::freeLoadFlowParameters, ptr);
+    });
+}
+
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
                                           const std::string& provider) {
     return new LoadFlowComponentResultArray(
@@ -381,6 +409,14 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth) {
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) voltageLevelId.data(), depth);
+}
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth) {
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, (char*) voltageLevelId.data(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -498,28 +534,12 @@ int getSeriesType(element_type elementType, const std::string& seriesName) {
     return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
 }
 
-void updateNetworkElementsWithIntSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                        const std::vector<int>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToIntPtr valuePtr(values);
-    callJava(::updateNetworkElementsWithIntSeries, network, elementType, (char *) seriesName.c_str(),
-                    idPtr.get(), valuePtr.get(), elementCount);
+bool isIndex(element_type elementType, const std::string& seriesName) {
+    return callJava<bool>(::isIndex, elementType, (char *) seriesName.c_str());
 }
 
-void updateNetworkElementsWithDoubleSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<double>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToDoublePtr valuePtr(values);
-    callJava(::updateNetworkElementsWithDoubleSeries, network, elementType, (char *) seriesName.c_str(),
-                    idPtr.get(), valuePtr.get(), elementCount);
-}
-
-void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<std::string>& values, int elementCount) {
-    ToCharPtrPtr idPtr(ids);
-    ToCharPtrPtr valuePtr(values);
-    callJava<>(::updateNetworkElementsWithStringSeries, network, elementType, (char *) seriesName.c_str(),
-                idPtr.get(), valuePtr.get(), elementCount);
+int getIndexType(element_type elementType, const std::string& seriesName, int index) {
+    return callJava<int>(::getIndexType, elementType, (char *) seriesName.c_str(), index);
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
@@ -574,6 +594,22 @@ SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult) {
 
 SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getThreeWindingsTransformerResults, securityAnalysisResult));
+}
+
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewNodes, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
+}
+
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
 }
