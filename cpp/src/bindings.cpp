@@ -172,19 +172,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_exporter_parameters_series_array", &pypowsybl::createExporterParametersSeriesArray, "Create a parameters series array for a given export format",
           py::arg("format"));
 
-    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::arg("file"),
-          py::arg("parameters"));
+    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
+          py::arg("file"), py::arg("parameters"));
 
-    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string",
+    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
 
-    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::arg("network"),
-          py::arg("file"),py::arg("format"), py::arg("parameters"));
+    m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"));
 
-    m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format",
+    m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"));
 
-    m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::arg("network"), py::arg("v_min"), py::arg("v_max"),
+    m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
 
     py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus", "Loadflow status for one connected component.")
@@ -312,8 +313,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 p.connected_component_mode = connectedComponentMode;
             });
 
-    m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
-          py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+    m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
@@ -405,11 +406,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     bindArray<pypowsybl::ContingencyResultArray>(m, "ContingencyResultArray");
 
-    m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis",
+    m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
           py::arg("provider"));
 
-    m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create a sensitivity analysis");
+    m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
     py::class_<::zone>(m, "Zone")
             .def(py::init([](const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
@@ -425,7 +426,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
 
-    m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis",
+    m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
@@ -473,7 +474,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::arg("network"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));
 
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
@@ -487,7 +488,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::arg("network"), py::arg("array"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("array"), py::arg("element_type"));
 
     m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
           py::arg("is_index"));
