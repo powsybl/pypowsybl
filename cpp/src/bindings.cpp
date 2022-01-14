@@ -158,6 +158,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
             .export_values();
 
+    py::enum_<validation_type>(m, "ValidationType")
+            .value("FLOWS", validation_type::FLOWS)
+            .value("GENERATORS", validation_type::GENERATORS)
+            .value("BUSES", validation_type::BUSES)
+            .value("SVCS", validation_type::SVCS)
+            .value("SHUNTS", validation_type::SHUNTS)
+            .value("TWTS", validation_type::TWTS)
+            .value("TWTS3W", validation_type::TWTS3W)
+            .export_values();
+
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
@@ -314,6 +324,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::arg("network"),
           py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+
+    m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("validation_type"));
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"));
