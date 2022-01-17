@@ -346,6 +346,23 @@ public final class PyPowsyblApiHeader {
         public static native ElementType fromCValue(int value);
     }
 
+    @CEnum("validation_type")
+    public enum ValidationType {
+        FLOWS,
+        GENERATORS,
+        BUSES,
+        SVCS,
+        SHUNTS,
+        TWTS,
+        TWTS3W;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ValidationType fromCValue(int value);
+    }
+
     @CStruct("matrix")
     interface MatrixPointer extends PointerBase {
 

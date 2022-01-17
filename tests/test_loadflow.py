@@ -5,8 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import unittest
+
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
+from pypowsybl.loadflow import ValidationType
+
 
 class LoadflowTestCase(unittest.TestCase):
 
@@ -59,6 +62,39 @@ class LoadflowTestCase(unittest.TestCase):
                 parameters = lf.Parameters()
                 setattr(parameters, attribute, value)
                 self.assertEqual(value, getattr(parameters, attribute))
+
+    def test_validation(self):
+        n = pp.network.create_ieee14()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n, [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
+        self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.00001)
+        self.assertAlmostEqual(-47.80608, validation.buses['incoming_p']['VL4_0'], delta=0.00001)
+        self.assertAlmostEqual(156.887407, validation.branch_flows['p1']['L1-2-1'], delta=0.00001)
+        self.assertFalse(validation.valid)
+        n2 = pp.network.create_four_substations_node_breaker_network()
+        pp.loadflow.run_ac(n)
+        validation2 = pp.loadflow.run_validation(n2, [ValidationType.SVCS])
+        self.assertEqual(1, len(validation2.svcs))
+        self.assertTrue(validation2.svcs['validated']['SVC'])
+
+    def test_twt_validation(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
+        self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
+        self.assertTrue(validation.valid)
+
+    def test_validation_all(self):
+        n = pp.network.create_ieee14()
+        pp.loadflow.run_ac(n)
+        validation = pp.loadflow.run_validation(n)
+        self.assertIsNotNone(validation.buses)
+        self.assertIsNotNone(validation.generators)
+        self.assertIsNotNone(validation.branch_flows)
+        self.assertIsNotNone(validation.svcs)
+        self.assertIsNotNone(validation.shunts)
+        self.assertIsNotNone(validation.t3wts)
+        self.assertIsNotNone(validation.twts)
 
 
 if __name__ == '__main__':
