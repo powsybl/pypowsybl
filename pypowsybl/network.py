@@ -2264,14 +2264,18 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_current_limits(self):
+    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = []):
         """
         Get the list of all current limits on the network paired with their branch id.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             all current limits on the network
         """
-        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
+        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS, all_attributes, attributes)
 
     def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
