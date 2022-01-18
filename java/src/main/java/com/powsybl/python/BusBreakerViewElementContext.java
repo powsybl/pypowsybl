@@ -1,32 +1,32 @@
 package com.powsybl.python;
 
-import com.powsybl.iidm.network.ConnectableType;
+import com.powsybl.iidm.network.IdentifiableType;
 
 import java.util.Optional;
 
 public class BusBreakerViewElementContext {
     private final String elementId;
     private final String busId;
-    private final ConnectableType type;
-    private final Optional<SideEnum> side;
+    private final IdentifiableType type;
+    private final SideEnum side;
 
-    public BusBreakerViewElementContext(ConnectableType type, String busId, String elementId) {
-        this(type, busId, elementId, Optional.empty());
+    public BusBreakerViewElementContext(IdentifiableType type, String busId, String elementId) {
+        this(type, busId, elementId, null);
     }
 
-    public BusBreakerViewElementContext(ConnectableType type, String busId, String elementId, Optional<SideEnum> side) {
+    public BusBreakerViewElementContext(IdentifiableType type, String busId, String elementId, SideEnum side) {
         this.type = type;
         this.busId = busId;
         this.elementId = elementId;
         this.side = side;
     }
 
-    public ConnectableType getType() {
+    public IdentifiableType getType() {
         return type;
     }
 
     public Optional<SideEnum> getSide() {
-        return side;
+        return Optional.ofNullable(side);
     }
 
     public String getBusId() {

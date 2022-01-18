@@ -311,7 +311,6 @@ public final class Dataframes {
                 .stringsIndex("id", context -> context.getSwitchContext().getId())
                 .enums("kind", SwitchKind.class, context -> context.getSwitchContext().getKind())
                 .booleans("open", context -> context.getSwitchContext().isOpen())
-                .booleans("retained", context -> context.getSwitchContext().isRetained())
                 .strings("bus1_id", BusBreakerViewSwitchContext::getBusId1)
                 .strings("bus2_id", BusBreakerViewSwitchContext::getBusId2)
                 .build();
@@ -332,7 +331,7 @@ public final class Dataframes {
                 .stringsIndex("id", busContext -> busContext.getBusBreakerViewBus().getId())
                 .strings("name", busContext -> busContext.getBusBreakerViewBus()
                         .getOptionalName().orElse(""))
-                .strings("busViewId", busContext -> busContext.getBusViewBus().getId())
+                .strings("bus_id", busContext -> busContext.getBusViewBus().getId())
                 .build();
     }
 
@@ -340,20 +339,33 @@ public final class Dataframes {
         List<BusBreakerViewElementContext> result = new ArrayList<>();
         voltageLevel.getConnectableStream().forEach(connectable -> {
             if (connectable instanceof Injection) {
+                Injection<?> inj = (Injection<?>) connectable;
                 result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((Injection) connectable).getTerminal().getBusBreakerView().getBus().getId(), connectable.getId()));
+                        inj.getTerminal().getBusBreakerView().getBus().getId(), connectable.getId()));
             } else if (connectable instanceof Branch) {
-                result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((Branch) connectable).getTerminal1().getBusBreakerView().getBus().getId(), connectable.getId(), Optional.of(SideEnum.ONE)));
-                result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((Branch) connectable).getTerminal2().getBusBreakerView().getBus().getId(), connectable.getId(), Optional.of(SideEnum.TWO)));
+                Branch<?> branch = (Branch<?>) connectable;
+                if (branch.getTerminal1().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            branch.getTerminal1().getBusBreakerView().getBus().getId(), connectable.getId(), SideEnum.ONE));
+                }
+                if (branch.getTerminal2().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            branch.getTerminal2().getBusBreakerView().getBus().getId(), connectable.getId(), SideEnum.TWO));
+                }
             } else if (connectable instanceof ThreeWindingsTransformer) {
-                result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((ThreeWindingsTransformer) connectable).getLeg1().getTerminal().getBusBreakerView().getBus().getId(), connectable.getId(), Optional.of(SideEnum.ONE)));
-                result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((ThreeWindingsTransformer) connectable).getLeg2().getTerminal().getBusBreakerView().getBus().getId(), connectable.getId(), Optional.of(SideEnum.TWO)));
-                result.add(new BusBreakerViewElementContext(connectable.getType(),
-                        ((ThreeWindingsTransformer) connectable).getLeg3().getTerminal().getBusBreakerView().getBus().getId(), connectable.getId(), Optional.of(SideEnum.THREE)));
+                ThreeWindingsTransformer transfo = (ThreeWindingsTransformer) connectable;
+                if (transfo.getLeg1().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg1().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.ONE));
+                }
+                if (transfo.getLeg2().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg2().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.TWO));
+                }
+                if (transfo.getLeg3().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg3().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.THREE));
+                }
             }
         });
         return result;
@@ -364,7 +376,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getBusBreakerViewElements)
                 .stringsIndex("id", BusBreakerViewElementContext::getElementId)
                 .strings("type", elementContext -> elementContext.getType().toString())
-                .strings("connected_bus", BusBreakerViewElementContext::getBusId)
+                .strings("bus_id", BusBreakerViewElementContext::getBusId)
                 .strings("side", elementContext -> elementContext.getSide().isPresent() ? elementContext.getSide().get().toString() : "")
                 .build();
     }
