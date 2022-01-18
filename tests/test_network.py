@@ -623,12 +623,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                               columns=['g', 'b'],
                               data=[[0.1, 0.00002],
                                     [0.4, 0.03]])
-        n.update_non_linear_shunt_sections(update)
+        n.update_non_linear_shunt_compensator_sections(update)
         pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
 
     def test_update_with_keywords(self):
         n = self.create_non_linear_shunt_network()
-        n.update_non_linear_shunt_sections(df=None, id='SHUNT', section=0, g=0.2, b=0.000001)
+        n.update_non_linear_shunt_compensator_sections(df=None, id='SHUNT', section=0, g=0.2, b=0.000001)
         self.assertEqual(0.2, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g'])
         self.assertEqual(0.000001, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b'])
 

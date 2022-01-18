@@ -573,6 +573,14 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for non linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g**: the accumulated conductance in S if the section and all the previous ones are activated.
+              - **b**: the accumulated susceptance in S if the section and all the previous ones are activated
+
+            This dataframe is multi-indexed, by the tuple (id of shunt, section number).
+
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
@@ -582,8 +590,17 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g_per_section**: the conductance per section in S
+              - **b_per_section**: the susceptance per section in S
+              - **max_section_count**: the maximum number of sections
+
+            This dataframe is indexed by the shunt compensator ID.
+
         Returns:
-           a linear model shunt compensators sections
+           A dataframe of linear models of shunt compensators.
         """
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
 
@@ -1534,9 +1551,12 @@ class Network(object):
 
         Attributes that can be updated are:
 
-        - g per section
-        - b per section
-        - max section count
+        - `g_per_section`
+        - `b_per_section`
+        - `max_section_count`
+
+        See Also:
+            :meth:`get_linear_shunt_compensator_sections`
 
         Args:
             df: the data to be updated, as a data frame.
@@ -1547,14 +1567,17 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
-    def update_non_linear_shunt_sections(self, df: _DataFrame = None, **kwargs):
+    def update_non_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
-        Update non linear shunt compensators sections with a ``Pandas`` data frame.
+        Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Attributes that can be updated are :
 
-        - g per section
-        - b per section
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_non_linear_shunt_compensator_sections`
 
         Args:
             df: the data to be updated, as a data frame.
