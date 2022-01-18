@@ -110,6 +110,7 @@ Network elements can be modified using dataframes:
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
+   Network.update_non_linear_shunt_compensator_sections
    Network.update_phase_tap_changers
    Network.update_ratio_tap_changers
    Network.update_shunt_compensators

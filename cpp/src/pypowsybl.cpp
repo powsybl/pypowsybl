@@ -399,12 +399,24 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {
+    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
+}
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth) {
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) voltageLevelId.data(), depth);
+}
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth) {
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, (char*) voltageLevelId.data(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {

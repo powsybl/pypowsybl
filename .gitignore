@@ -54,8 +54,5 @@ tests/_trial_temp/*
 
 *.orig
 
-# notebooks
-notebooks/.ipynb_checkpoints
-
 # Documentation generated files (autosummary)
 docs/reference/api/
