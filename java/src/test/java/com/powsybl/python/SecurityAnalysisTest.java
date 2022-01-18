@@ -43,8 +43,8 @@ class SecurityAnalysisTest {
             -137.18849307164064, 488.99279636727357));
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
-            610.5621535433195, 334.0562715296563, 1008.9287882269937, -600.9961559564283,
-            -285.379146550659, 1047.825769145557));
+            610.5621535433198, 334.0562715296571, 1008.9287882269945, -600.9961559564284,
+            -285.3791465506596, 1047.8257691455574));
     }
 
     @Test

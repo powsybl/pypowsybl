@@ -6,21 +6,19 @@
  */
 package com.powsybl.python;
 
-import com.powsybl.commons.config.BaseVoltagesConfig;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
-import com.powsybl.nad.layout.LayoutParameters;
-import com.powsybl.nad.svg.DefaultStyleProvider;
-import com.powsybl.nad.svg.StyleProvider;
 import com.powsybl.nad.svg.SvgParameters;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -36,14 +34,11 @@ public final class NetworkAreaDiagramUtil {
                 .setSvgWidthAndHeightAdded(true)
                 .setFixedWidth(800)
                 .setFixedHeight(600);
-        LayoutParameters layoutParameters = new LayoutParameters();
-        InputStream is = Objects.requireNonNull(PyPowsyblApiLib.class.getResourceAsStream("/nad-base-voltages.yml"));
-        StyleProvider styleProvider = new DefaultStyleProvider(BaseVoltagesConfig.fromInputStream(is));
         Predicate<VoltageLevel> filter = voltageLevelId != null && voltageLevelId.length() > 0
                 ? VoltageLevelFilter.createVoltageLevelDepthFilter(network, voltageLevelId, depth)
                 : VoltageLevelFilter.NO_FILTER;
         new NetworkAreaDiagram(network, filter)
-                .draw(writer, svgParameters, layoutParameters, styleProvider);
+                .draw(writer, svgParameters);
     }
 
     static String getSvg(Network network, String voltageLevelId, int depth) {
