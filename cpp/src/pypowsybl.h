@@ -216,6 +216,8 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType);
 
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+
 int getSeriesType(element_type elementType, const std::string& seriesName);
 
 bool isIndex(element_type elementType, const std::string& seriesName);
@@ -252,7 +254,11 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& volt
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
 }
 

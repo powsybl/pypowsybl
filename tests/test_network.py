@@ -668,7 +668,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_node_breaker_view(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        topology = n.get_voltage_level_topology('S4VL1')
+        topology = n.get_node_breaker_topology('S4VL1')
         switches = topology.switches
         nodes = topology.nodes
         self.assertEqual(6, len(switches))
@@ -682,7 +682,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_topology('S4VL1')
+        network_topology = n.get_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         self.assertEqual(7, len(graph.nodes))
         self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
@@ -690,7 +690,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     @unittest.skip("plot graph skipping")
     def test_node_breaker_view_draw_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_topology('S4VL1')
+        network_topology = n.get_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         nx.draw_shell(graph, with_labels=True)
         plt.show()
@@ -722,6 +722,75 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_linear_shunt_compensator_sections(id='SHUNT', g_per_section=0.15, b_per_section=-0.02)
         self.assertEqual(0.15, n.get_linear_shunt_compensator_sections().loc['SHUNT']['g_per_section'])
         self.assertEqual(-0.02, n.get_linear_shunt_compensator_sections().loc['SHUNT']['b_per_section'])
+
+    def test_bus_breaker_view(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        n.update_switches(pd.DataFrame(index=['S1VL2_COUPLER'], data={'open': [True]}))
+        topology = n.get_bus_breaker_topology('S1VL2')
+        switches = topology.switches
+        buses = topology.buses
+        elements = topology.elements
+        expected_switches = pd.DataFrame(index=pd.Series(name='id',
+                                                         data=['S1VL2_TWT_BREAKER', 'S1VL2_VSC1_BREAKER',
+                                                               'S1VL2_GH1_BREAKER', 'S1VL2_GH2_BREAKER',
+                                                               'S1VL2_GH3_BREAKER', 'S1VL2_LD2_BREAKER',
+                                                               'S1VL2_LD3_BREAKER', 'S1VL2_LD4_BREAKER',
+                                                               'S1VL2_SHUNT_BREAKER', 'S1VL2_LCC1_BREAKER',
+                                                               'S1VL2_COUPLER']),
+                                         columns=['kind', 'open', 'bus1_id', 'bus2_id'],
+                                         data=[['BREAKER', False, 'S1VL2_0', 'S1VL2_3'],
+                                               ['BREAKER', False, 'S1VL2_1', 'S1VL2_5'],
+                                               ['BREAKER', False, 'S1VL2_0', 'S1VL2_7'],
+                                               ['BREAKER', False, 'S1VL2_0', 'S1VL2_9'],
+                                               ['BREAKER', False, 'S1VL2_0', 'S1VL2_11'],
+                                               ['BREAKER', False, 'S1VL2_1', 'S1VL2_13'],
+                                               ['BREAKER', False, 'S1VL2_1', 'S1VL2_15'],
+                                               ['BREAKER', False, 'S1VL2_1', 'S1VL2_17'],
+                                               ['BREAKER', False, 'S1VL2_0', 'S1VL2_19'],
+                                               ['BREAKER', False, 'S1VL2_1', 'S1VL2_21'],
+                                               ['BREAKER', True, 'S1VL2_0', 'S1VL2_1']])
+        expected_buses = pd.DataFrame(index=pd.Series(name='id',
+                                                      data=['S1VL2_0', 'S1VL2_1', 'S1VL2_3', 'S1VL2_5', 'S1VL2_7',
+                                                            'S1VL2_9', 'S1VL2_11', 'S1VL2_13', 'S1VL2_15', 'S1VL2_17',
+                                                            'S1VL2_19', 'S1VL2_21']),
+                                      columns=['name', 'bus_id'],
+                                      data=[['', 'S1VL2_0'], ['', 'S1VL2_1'], ['', 'S1VL2_0'], ['', 'S1VL2_1'],
+                                            ['', 'S1VL2_0'], ['', 'S1VL2_0'], ['', 'S1VL2_0'], ['', 'S1VL2_1'],
+                                            ['', 'S1VL2_1'], ['', 'S1VL2_1'], ['', 'S1VL2_0'], ['', 'S1VL2_1']])
+
+        expected_elements = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'bus_id', 'side'],
+                                                      data=[
+                                                          ('S1VL2_BBS1', 'BUSBAR_SECTION', 'S1VL2_0', ''),
+                                                          ('S1VL2_BBS2', 'BUSBAR_SECTION', 'S1VL2_1', ''),
+                                                          ('TWT', 'TWO_WINDINGS_TRANSFORMER', 'S1VL2_3', 'TWO'),
+                                                          ('VSC1', 'HVDC_CONVERTER_STATION', 'S1VL2_5', ''),
+                                                          ('GH1', 'GENERATOR', 'S1VL2_7', ''),
+                                                          ('GH2', 'GENERATOR', 'S1VL2_9', ''),
+                                                          ('GH3', 'GENERATOR', 'S1VL2_11', ''),
+                                                          ('LD2', 'LOAD', 'S1VL2_13', ''),
+                                                          ('LD3', 'LOAD', 'S1VL2_15', ''),
+                                                          ('LD4', 'LOAD', 'S1VL2_17', ''),
+                                                          ('SHUNT', 'SHUNT_COMPENSATOR', 'S1VL2_19', ''),
+                                                          ('LCC1', 'HVDC_CONVERTER_STATION', 'S1VL2_21', ''),
+                                                      ])
+        pd.testing.assert_frame_equal(expected_switches, switches, check_dtype=False)
+        pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
+        pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
+
+    def test_graph_busbreakerview(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_bus_breaker_topology('S4VL1')
+        graph = network_topology.create_graph()
+        self.assertEqual(4, len(graph.nodes))
+        self.assertEqual([('S4VL1_0', 'S4VL1_6'), ('S4VL1_0', 'S4VL1_2'), ('S4VL1_0', 'S4VL1_4')], list(graph.edges))
+
+    @unittest.skip("plot graph skipping")
+    def test_bus_breaker_view_draw_graph(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        network_topology = n.get_bus_breaker_topology('S1VL2')
+        graph = network_topology.create_graph()
+        nx.draw_shell(graph, with_labels=True)
+        plt.show()
 
 
 if __name__ == '__main__':
