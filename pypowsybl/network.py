@@ -1697,7 +1697,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
 
-    def get_voltage_level_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
+    def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
 
@@ -1709,7 +1709,7 @@ class Network(object):
         """
         return NodeBreakerTopology(self._handle, voltage_level_id)
 
-    def get_voltage_level_bus_breaker_topology(self, voltage_level_id: str) -> BusBreakerTopology:
+    def get_bus_breaker_topology(self, voltage_level_id: str) -> BusBreakerTopology:
         """
         Get the bus breaker description of the topology of a voltage level.
 

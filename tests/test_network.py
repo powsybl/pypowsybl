@@ -668,7 +668,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_node_breaker_view(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        topology = n.get_voltage_level_node_breaker_topology('S4VL1')
+        topology = n.get_node_breaker_topology('S4VL1')
         switches = topology.switches
         nodes = topology.nodes
         self.assertEqual(6, len(switches))
@@ -682,7 +682,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_node_breaker_topology('S4VL1')
+        network_topology = n.get_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         self.assertEqual(7, len(graph.nodes))
         self.assertEqual([(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)], list(graph.edges))
@@ -690,7 +690,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     @unittest.skip("plot graph skipping")
     def test_node_breaker_view_draw_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_node_breaker_topology('S4VL1')
+        network_topology = n.get_node_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         nx.draw_shell(graph, with_labels=True)
         plt.show()
@@ -726,7 +726,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_bus_breaker_view(self):
         n = pp.network.create_four_substations_node_breaker_network()
         n.update_switches(pd.DataFrame(index=['S1VL2_COUPLER'], data={'open': [True]}))
-        topology = n.get_voltage_level_bus_breaker_topology('S1VL2')
+        topology = n.get_bus_breaker_topology('S1VL2')
         switches = topology.switches
         buses = topology.buses
         elements = topology.elements
@@ -779,7 +779,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_bus_breaker_topology('S4VL1')
+        network_topology = n.get_bus_breaker_topology('S4VL1')
         graph = network_topology.create_graph()
         self.assertEqual(4, len(graph.nodes))
         self.assertEqual([('S4VL1_0', 'S4VL1_6'), ('S4VL1_0', 'S4VL1_2'), ('S4VL1_0', 'S4VL1_4')], list(graph.edges))
@@ -787,7 +787,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     @unittest.skip("plot graph skipping")
     def test_bus_breaker_view_draw_graph(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        network_topology = n.get_voltage_level_bus_breaker_topology('S1VL2')
+        network_topology = n.get_bus_breaker_topology('S1VL2')
         graph = network_topology.create_graph()
         nx.draw_shell(graph, with_labels=True)
         plt.show()
