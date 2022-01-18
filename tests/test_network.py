@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 from networkx.classes.reportviews import EdgeView
 from numpy import NaN
+import numpy as np
 
 import pypowsybl as pp
 import pathlib
@@ -188,6 +189,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(400.0, stations['reactive_power_setpoint']['VSC1'])
         self.assertEqual(1.0, stations['voltage_setpoint']['VSC2'])
         self.assertEqual(2.0, stations['reactive_power_setpoint']['VSC2'])
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC1'], delta=0.001)
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC2'], delta=0.001)
 
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -201,15 +204,27 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_svc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         svcs = n.get_static_var_compensators()
-        self.assertEqual(400.0, svcs['voltage_setpoint']['SVC'])
-        self.assertEqual('VOLTAGE', svcs['regulation_mode']['SVC'])
-        svcs2 = pd.DataFrame(data=[[300.0, 400.0, 'off']],
-                             columns=['voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode'], index=['SVC'])
-        n.update_static_var_compensators(svcs2)
+        expected = pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                             'connected'],
+            data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
+        n.update_static_var_compensators(pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q'],
+            data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13]]))
+
         svcs = n.get_static_var_compensators()
-        self.assertEqual(300.0, svcs['voltage_setpoint']['SVC'])
-        self.assertEqual(400.0, svcs['reactive_power_setpoint']['SVC'])
-        self.assertEqual('OFF', svcs['regulation_mode']['SVC'])
+        expected = pd.DataFrame(
+            index=pd.Series(name='id', data=['SVC']),
+            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+                                             'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                             'connected'],
+            data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
 
     def test_create_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -230,11 +245,57 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   [1.00067, 0, 0, 0, 0],
                   [1.15077, 0, 0, 0, 0]])
         pd.testing.assert_frame_equal(expected, steps, check_dtype=False)
+        n.update_ratio_tap_changer_steps(pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1)],
+                                            names=['id', 'position']), columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 1]]))
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
+                                            names=['id', 'position']),
+            columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1],
+                  [1, 1, 1, 1, 1],
+                  [1.15077, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
+        n.update_ratio_tap_changer_steps(id=['NHV2_NLOAD'], position=[0], rho=[2], r=[3], x=[4], g=[5], b=[6])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
+                                            names=['id', 'position']),
+            columns=['rho', 'r', 'x', 'g', 'b'],
+            data=[[2, 3, 4, 5, 6],
+                  [1, 1, 1, 1, 1],
+                  [1.15077, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
 
     def test_phase_tap_changer_steps_data_frame(self):
         n = pp.network.create_ieee300()
         steps = n.get_phase_tap_changer_steps()
         self.assertEqual(11.4, steps.loc[('T196-2040-1', 0), 'alpha'])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[1, 11.4, 0, 0, 0, 0]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+        n.update_phase_tap_changer_steps(pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']), columns=['alpha', 'rho', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1, 1]]))
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[1, 1, 1, 1, 1, 1]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+        n.update_phase_tap_changer_steps(id=['T196-2040-1'], position=[0], rho=[2], alpha=[7], r=[3], x=[4], g=[5],
+                                         b=[6])
+        expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
+                                            names=['id', 'position']),
+            columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
+            data=[[2, 7, 3, 4, 5, 6]])
+        pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
 
     def test_update_generators_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -249,6 +310,20 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(302.0, generators['target_q']['GEN'])
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
+
+    def test_update_unknown_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('No series named unknown', str(context.exception.args))
+
+    def test_update_non_modifiable_data(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
+        with self.assertRaises(pp.PyPowsyblError) as context:
+            n.update_generators(update)
+        self.assertIn('Series \'voltage_level_id\' is not modifiable.', str(context.exception.args))
 
     def test_update_switches_data_frame(self):
         n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
@@ -392,6 +467,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         sld = n.get_single_line_diagram('S1VL1')
         self.assertRegex(sld.svg, '.*<svg.*')
 
+    def test_sld_nad(self):
+        n = pp.network.create_ieee14()
+        sld = n.get_network_area_diagram()
+        self.assertRegex(sld.svg, '.*<svg.*')
+
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(9, len(network.get_current_limits()))
@@ -428,7 +508,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.options.display.expand_frame_repr = False
         lines = n.get_lines()
         pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
-
         lines_update = pd.DataFrame(index=['LINE_S2S3'],
                                     columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],
                                     data=[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]])
@@ -543,6 +622,39 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 data=[[0.0, 0.00001],
                                       [0.3, 0.02000]])
         pd.testing.assert_frame_equal(expected, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+        update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)], names=['id', 'section']),
+                              columns=['g', 'b'],
+                              data=[[0.1, 0.00002],
+                                    [0.4, 0.03]])
+        n.update_non_linear_shunt_compensator_sections(update)
+        pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+
+    def test_update_with_keywords(self):
+        n = self.create_non_linear_shunt_network()
+        n.update_non_linear_shunt_compensator_sections(df=None, id='SHUNT', section=0, g=0.2, b=0.000001)
+        self.assertEqual(0.2, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g'])
+        self.assertEqual(0.000001, n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b'])
+
+    def test_update_generators_with_keywords(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        n.update_generators(id=['GTH1', 'GTH2'], target_p=[200, 300])
+        self.assertEqual([200, 300], n.get_generators().loc[['GTH1', 'GTH2'], 'target_p'].to_list())
+
+    def test_invalid_update_kwargs(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(df=pd.DataFrame(index=['GTH1'], columns=['target_p'], data=[300]),
+                                id='GTH1', target_p=300)
+        self.assertIn('only one form', str(context.exception))
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(id=['GTH1', 'GTH2'], target_p=100)
+        self.assertIn('same size', str(context.exception))
+
+        with self.assertRaises(RuntimeError) as context:
+            n.update_generators(id=np.array(0, ndmin=3))
+        self.assertIn('dimensions', str(context.exception))
 
     def test_create_network(self):
         n = pp.network.create_ieee9()
@@ -560,6 +672,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         switches = topology.switches
         nodes = topology.nodes
         self.assertEqual(6, len(switches))
+        self.assertEqual('S4VL1_BBS_LINES3S4_DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['name'])
         self.assertEqual('DISCONNECTOR', switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['kind'])
         self.assertEqual(False, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['open'])
         self.assertEqual(0, switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1'])
@@ -606,6 +719,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 columns=['g_per_section', 'b_per_section', 'max_section_count'],
                                 data=[[0.14, -0.01, 4]])
         pd.testing.assert_frame_equal(expected, n.get_linear_shunt_compensator_sections(), check_dtype=False)
+        n.update_linear_shunt_compensator_sections(id='SHUNT', g_per_section=0.15, b_per_section=-0.02)
+        self.assertEqual(0.15, n.get_linear_shunt_compensator_sections().loc['SHUNT']['g_per_section'])
+        self.assertEqual(-0.02, n.get_linear_shunt_compensator_sections().loc['SHUNT']['b_per_section'])
 
     def test_bus_breaker_view(self):
         n = pp.network.create_four_substations_node_breaker_network()

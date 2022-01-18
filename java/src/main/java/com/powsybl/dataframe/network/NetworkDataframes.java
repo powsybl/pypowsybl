@@ -10,6 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
 import com.powsybl.python.TemporaryLimitContext;
@@ -266,12 +267,23 @@ public final class NetworkDataframes {
                             ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
                             return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator.getId(), section, model.getAllSections().indexOf(section)));
                         });
-        return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts)
+        return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts, NetworkDataframes::getShuntSectionNonlinear)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("section", Triple::getRight)
-                .doubles("g", p -> p.getMiddle().getG())
-                .doubles("b", p -> p.getMiddle().getB())
+                .doubles("g", p -> p.getMiddle().getG(), (p, g) -> p.getMiddle().setG(g))
+                .doubles("b", p -> p.getMiddle().getB(), (p, b) -> p.getMiddle().setB(b))
                 .build();
+    }
+
+    static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index));
+        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
+            throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
+        } else {
+            ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
+            int section = dataframe.getIntValue("section", 1, index);
+            return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
+        }
     }
 
     static NetworkDataframeMapper linearShuntsSections() {
@@ -448,6 +460,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getVscConverterStationStream, getOrThrow(Network::getVscConverterStation, "VSC converter station"))
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
+                .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("voltage_setpoint", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
@@ -465,6 +478,8 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getStaticVarCompensatorStream, getOrThrow(Network::getStaticVarCompensator, "Static var compensator"))
                 .stringsIndex("id", StaticVarCompensator::getId)
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
+                .doubles("b_min", StaticVarCompensator::getBmin, StaticVarCompensator::setBmin)
+                .doubles("b_max", StaticVarCompensator::getBmax, StaticVarCompensator::setBmax)
                 .doubles("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
                 .doubles("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
@@ -549,15 +564,21 @@ public final class NetworkDataframes {
                 network.getTwoWindingsTransformerStream()
                         .filter(twt -> twt.getRatioTapChanger() != null)
                         .flatMap(twt -> twt.getRatioTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getRatioTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps)
+        return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps, NetworkDataframes::getRatioTapChangers)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
-                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR())
-                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX())
-                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG())
-                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho(), (p, rho) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR(), (p, r) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX(), (p, x) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG(), (p, g) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB(), (p, b) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
+    }
+
+    static Triple<String, RatioTapChanger, Integer> getRatioTapChangers(Network network, UpdatingDataframe dataframe, int index) {
+        return Triple.of(dataframe.getStringValue("id", 0, index),
+                network.getTwoWindingsTransformer(dataframe.getStringValue("id", 0, index)).getRatioTapChanger(),
+                dataframe.getIntValue("position", 1, index));
     }
 
     private static NetworkDataframeMapper ptcSteps() {
@@ -565,16 +586,22 @@ public final class NetworkDataframes {
                 network.getTwoWindingsTransformerStream()
                         .filter(twt -> twt.getPhaseTapChanger() != null)
                         .flatMap(twt -> twt.getPhaseTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getPhaseTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps)
+        return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps, NetworkDataframes::getPhaseTapChangers)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
-                .doubles("alpha", p -> p.getMiddle().getStep(p.getRight()).getAlpha())
-                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR())
-                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX())
-                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG())
-                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho(), (p, rho) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                .doubles("alpha", p -> p.getMiddle().getStep(p.getRight()).getAlpha(), (p, alpha) -> p.getMiddle().getStep(p.getRight()).setAlpha(alpha))
+                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR(), (p, r) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX(), (p, x) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG(), (p, g) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB(), (p, b) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
+    }
+
+    static Triple<String, PhaseTapChanger, Integer> getPhaseTapChangers(Network network, UpdatingDataframe dataframe, int index) {
+        return Triple.of(dataframe.getStringValue("id", 0, index),
+                network.getTwoWindingsTransformer(dataframe.getStringValue("id", 0, index)).getPhaseTapChanger(),
+                dataframe.getIntValue("position", 1, index));
     }
 
     private static NetworkDataframeMapper rtcs() {

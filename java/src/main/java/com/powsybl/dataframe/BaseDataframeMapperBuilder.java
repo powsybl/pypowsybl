@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.update.UpdatingDataframe;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.*;
@@ -20,8 +22,13 @@ import java.util.stream.Stream;
  */
 public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuilder<T, U, B>> {
 
+    @FunctionalInterface
+    public interface ItemGetter<T, I> {
+        I getItem(T network, UpdatingDataframe updatingDataframe, int lineNumber);
+    }
+
     protected Function<T, List<U>> itemsProvider;
-    protected BiFunction<T, String, U> itemGetter;
+    protected ItemGetter<T, U> itemMultiIndexGetter;
 
     protected final List<SeriesMapper<U>> series;
 
@@ -39,7 +46,15 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public B itemGetter(BiFunction<T, String, U> itemGetter) {
-        this.itemGetter = itemGetter;
+        this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber) -> {
+            String id = updatingDataframe.getStringValue("id", 0, lineNumber);
+            return itemGetter.apply(network, id);
+        };
+        return (B) this;
+    }
+
+    public B itemMultiIndexGetter(ItemGetter<T, U> itemMultiIndexGetter) {
+        this.itemMultiIndexGetter = itemMultiIndexGetter;
         return (B) this;
     }
 
@@ -106,8 +121,8 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
             }
 
             @Override
-            protected U getItem(T object, String id) {
-                return itemGetter.apply(object, id);
+            protected U getItem(T object, UpdatingDataframe dataframe, int index) {
+                return itemMultiIndexGetter.getItem(object, dataframe, index);
             }
         };
     }

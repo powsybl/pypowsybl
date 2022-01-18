@@ -1,7 +1,7 @@
 Sensitivity analysis
 ====================
 
-You can use the module ``pypowsybl.sensitivity`` in order to perform sensitivity analysis on a network.
+You can use the module :mod:`pypowsybl.sensitivity` in order to perform sensitivity analysis on a network.
 
 DC sensitivity analysis
 -----------------------

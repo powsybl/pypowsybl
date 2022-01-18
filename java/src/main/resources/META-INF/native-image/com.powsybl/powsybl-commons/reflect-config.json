@@ -1,0 +1,25 @@
+[
+  {
+    "name":"com.powsybl.commons.config.BaseVoltageConfig",
+    "allDeclaredFields":true,
+    "queryAllPublicMethods":true,
+    "methods":[
+      {"name":"<init>","parameterTypes":[] },
+      {"name":"setMaxValue","parameterTypes":["double"] },
+      {"name":"setMinValue","parameterTypes":["double"] },
+      {"name":"setName","parameterTypes":["java.lang.String"] },
+      {"name":"setProfile","parameterTypes":["java.lang.String"] }
+    ]
+  }
+  ,
+  {
+    "name":"com.powsybl.commons.config.BaseVoltagesConfig",
+    "allDeclaredFields":true,
+    "queryAllPublicMethods":true,
+    "methods":[
+      {"name":"<init>","parameterTypes":[] },
+      {"name":"setBaseVoltages","parameterTypes":["java.util.List"] },
+      {"name":"setDefaultProfile","parameterTypes":["java.lang.String"] }
+    ]
+  }
+]

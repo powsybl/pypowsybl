@@ -19,7 +19,6 @@ import java.util.List;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
@@ -84,10 +83,6 @@ class NetworkDataframesTest {
 
         assertThat(series.get(3).getDoubles())
             .containsExactly(607);
-
-        NetworkDataframes.generators().updateDoubleSeries(network, "target_p", createInput(List.of("GEN"), 500));
-
-        assertEquals(500, network.getGenerator("GEN").getTargetP());
     }
 
     @Test
@@ -158,7 +153,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "voltage_setpoint", "reactive_power_setpoint", "voltage_regulator_on",
+            .containsExactly("id", "name", "loss_factor", "voltage_setpoint", "reactive_power_setpoint", "voltage_regulator_on",
                 "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
@@ -204,7 +199,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "b_min", "b_max", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test

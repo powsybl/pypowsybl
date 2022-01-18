@@ -67,18 +67,6 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.styles.BaseVoltageConfig",
-    "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.styles.BaseVoltagesConfig",
-    "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
     "name":"com.powsybl.sld.svg.GraphMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,

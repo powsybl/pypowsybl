@@ -47,6 +47,9 @@ public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
 
     @Override
     public void updateString(T object, String stringValue) {
+        if (updater == null) {
+            throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
+        }
         E enumValue = Enum.valueOf(enumClass, stringValue.toUpperCase());
         updater.accept(object, enumValue);
     }

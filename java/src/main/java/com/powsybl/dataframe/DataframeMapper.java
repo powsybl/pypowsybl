@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.update.UpdatingDataframe;
+
 import java.util.List;
 
 /**
@@ -33,15 +35,5 @@ public interface DataframeMapper<T> {
     /**
      * Updates object data with the provided series.
      */
-    void updateDoubleSeries(T object, String seriesName, DoubleIndexedSeries values);
-
-    /**
-     * Updates object data with the provided series.
-     */
-    void updateIntSeries(T object, String seriesName, IntIndexedSeries values);
-
-    /**
-     * Updates object data with the provided series.
-     */
-    void updateStringSeries(T object, String seriesName, IndexedSeries<String> values);
+    void updateSeries(T object, UpdatingDataframe updatingDataframe);
 }
