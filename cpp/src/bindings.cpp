@@ -491,8 +491,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
-            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable
-            .def("__hash__", std::hash<pypowsybl::SeriesMetadata>());
+            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable);
 
     m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 

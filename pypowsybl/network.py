@@ -24,10 +24,6 @@ from pypowsybl.util import create_data_frame_from_series_array as _create_data_f
 _pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
                                                f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
 
-_SERIES_METADATA = {elt_type: _pypowsybl.get_series_metadata(elt_type) for elt_type in ElementType.__members__.values() }
-_SERIES_METADATA_BY_NAME = {elt_type: {s.name: s for s in _SERIES_METADATA[elt_type]}
-                            for elt_type in ElementType.__members__.values()}
-
 
 class Svg:
     """
@@ -1175,7 +1171,9 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
-        series_metadata = {s.name : s for s in _pypowsybl.get_series_metadata(element_type) }
+        series_metadata = _pypowsybl.get_series_metadata(element_type)
+        metadata_by_name = {s.name: s for s in series_metadata}
+
         is_index = []
         columns_names = []
         columns_values = []
@@ -1185,8 +1183,9 @@ class Network(object):
             expected_size = None
             for key, value in kwargs.items():
                 columns_names.append(key)
-                is_index.append(_pypowsybl.is_index(element_type, key))
-                columns_types.append(_pypowsybl.get_series_type(element_type, key))
+                metadata = metadata_by_name[key]
+                is_index.append(metadata.is_index)
+                columns_types.append(metadata.type)
                 values_array = _np.array(value, ndmin=1, copy=False)
                 if values_array.ndim != 1:
                     raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
@@ -1203,15 +1202,15 @@ class Network(object):
             if kwargs:
                 raise RuntimeError('You must provided data in only one form: dataframe or named arguments')
             is_multi_index = len(df.index.names) > 1
-            for index_name in df.index.names:
+            for idx, index_name in enumerate(df.index.names):
                 if index_name is None:
-                    index_name = ''
+                    index_name = series_metadata[idx].name
                 if is_multi_index:
                     columns_values.append(df.index.get_level_values(index_name))
                 else:
                     columns_values.append(df.index.values)
                 columns_names.append(index_name)
-                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+                columns_types.append(metadata_by_name[index_name].type)
                 index_count += 1
                 is_index.append(True)
             columns_names.extend(df.columns.values)
