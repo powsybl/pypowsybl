@@ -258,14 +258,15 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   [1, 1, 1, 1, 1],
                   [1.15077, 0, 0, 0, 0]])
         pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
-        n.update_ratio_tap_changer_steps(id=['NHV2_NLOAD'], position=[0], rho=[2], r=[3], x=[4], g=[5], b=[6])
-        expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
-                                            names=['id', 'position']),
-            columns=['rho', 'r', 'x', 'g', 'b'],
-            data=[[2, 3, 4, 5, 6],
-                  [1, 1, 1, 1, 1],
-                  [1.15077, 0, 0, 0, 0]])
+        n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, rho=2, r=3, x=4, g=5, b=6)
+
+        expected = pd.DataFrame.from_records(
+            index=['id', 'position'],
+            columns=['id', 'position', 'rho', 'r', 'x', 'g', 'b'],
+            data=[('NHV2_NLOAD', 0, 2, 3, 4, 5, 6),
+                  ('NHV2_NLOAD', 1, 1, 1, 1, 1, 1),
+                  ('NHV2_NLOAD', 2, 1.15077, 0, 0, 0, 0)])
+
         pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
 
     def test_phase_tap_changer_steps_data_frame(self):
@@ -314,9 +315,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_update_unknown_data(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
-        with self.assertRaises(pp.PyPowsyblError) as context:
+        with self.assertRaises(ValueError) as context:
             n.update_generators(update)
-        self.assertIn('No series named unknown', str(context.exception.args))
+        self.assertIn('No column named unknown', str(context.exception.args))
 
     def test_update_non_modifiable_data(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -648,11 +649,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 id='GTH1', target_p=300)
         self.assertIn('only one form', str(context.exception))
 
-        with self.assertRaises(RuntimeError) as context:
+        with self.assertRaises(ValueError) as context:
             n.update_generators(id=['GTH1', 'GTH2'], target_p=100)
         self.assertIn('same size', str(context.exception))
 
-        with self.assertRaises(RuntimeError) as context:
+        with self.assertRaises(ValueError) as context:
             n.update_generators(id=np.array(0, ndmin=3))
         self.assertIn('dimensions', str(context.exception))
 

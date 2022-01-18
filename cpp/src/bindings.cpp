@@ -497,15 +497,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));
-
-    m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
-            py::arg("element_type"), py::arg("series_name"));
-
-    m.def("is_index", &pypowsybl::isIndex, "indicate if a column is a index for a given element type and series_name", 
-            py::arg("element_type"), py::arg("series_name"));
-
-    m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
-            py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("array"), py::arg("element_type"));

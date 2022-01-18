@@ -535,18 +535,6 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
 }
 
-int getSeriesType(element_type elementType, const std::string& seriesName) {
-    return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
-}
-
-bool isIndex(element_type elementType, const std::string& seriesName) {
-    return callJava<bool>(::isIndex, elementType, (char *) seriesName.c_str());
-}
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index) {
-    return callJava<int>(::getIndexType, elementType, (char *) seriesName.c_str(), index);
-}
-
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }

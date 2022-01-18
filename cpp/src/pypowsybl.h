@@ -241,12 +241,6 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
-int getSeriesType(element_type elementType, const std::string& seriesName);
-
-bool isIndex(element_type elementType, const std::string& seriesName);
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index);
-
 std::string getWorkingVariantId(const JavaHandle& network);
 
 void setWorkingVariant(const JavaHandle& network, std::string& variant);

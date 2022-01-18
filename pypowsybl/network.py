@@ -1179,29 +1179,33 @@ class Network(object):
         columns_values = []
         columns_types = []
         index_count = 0
+        col_list = []
         if df is None:
             expected_size = None
             for key, value in kwargs.items():
+                if not key in metadata_by_name:
+                    raise ValueError('No column named {}'.format(key))
                 columns_names.append(key)
                 metadata = metadata_by_name[key]
                 is_index.append(metadata.is_index)
                 columns_types.append(metadata.type)
                 values_array = _np.array(value, ndmin=1, copy=False)
                 if values_array.ndim != 1:
-                    raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
-                                       'as keyword argument, got {} dimensions'.format(values_array.ndim))
+                    raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
+                                     'as keyword argument, got {} dimensions'.format(values_array.ndim))
                 size = values_array.shape[0]
                 if expected_size is None:
                     expected_size = size
                 elif size != expected_size:
-                    raise RuntimeError('Network elements update: all arguments must have the same size, '
-                                       'got size {} for series {}, expected {}'.format(size, key, expected_size))
+                    raise ValueError('Network elements update: all arguments must have the same size, '
+                                     'got size {} for series {}, expected {}'.format(size, key, expected_size))
                 columns_values.append(values_array)
                 index_count += 1
         else:
             if kwargs:
-                raise RuntimeError('You must provided data in only one form: dataframe or named arguments')
+                raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
             is_multi_index = len(df.index.names) > 1
+
             for idx, index_name in enumerate(df.index.names):
                 if index_name is None:
                     index_name = series_metadata[idx].name
@@ -1215,8 +1219,10 @@ class Network(object):
                 is_index.append(True)
             columns_names.extend(df.columns.values)
             for series_name in df.columns.values:
+                if not series_name in metadata_by_name:
+                    raise ValueError('No column named {}'.format(series_name))
                 series = df[series_name]
-                series_type = _pypowsybl.get_series_type(element_type, series_name)
+                series_type = metadata_by_name[series_name].type
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)
