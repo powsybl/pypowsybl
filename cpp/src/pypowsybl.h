@@ -180,9 +180,15 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth);
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth);
 
 JavaHandle createSecurityAnalysis();
 

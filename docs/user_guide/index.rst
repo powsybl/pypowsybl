@@ -9,6 +9,7 @@ relying as much as possible on practical examples.
     :maxdepth: 2
 
    network
+   network_visualization
    loadflow
    security
    sensitivity
