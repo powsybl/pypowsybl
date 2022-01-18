@@ -460,6 +460,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getVscConverterStationStream, getOrThrow(Network::getVscConverterStation, "VSC converter station"))
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
+                .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("voltage_setpoint", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)

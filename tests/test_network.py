@@ -189,6 +189,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(400.0, stations['reactive_power_setpoint']['VSC1'])
         self.assertEqual(1.0, stations['voltage_setpoint']['VSC2'])
         self.assertEqual(2.0, stations['reactive_power_setpoint']['VSC2'])
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC1'], delta=0.001)
+        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC2'], delta=0.001)
 
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -214,6 +216,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             columns=['b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
                                              'regulation_mode', 'p', 'q'],
             data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13]]))
+
         svcs = n.get_static_var_compensators()
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
