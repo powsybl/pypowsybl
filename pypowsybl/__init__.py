@@ -9,7 +9,7 @@ import os as _os
 import inspect as _inspect
 from _pypowsybl import PyPowsyblError
 
-__version__ = '0.11.0'
+__version__ = '0.12.0'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))

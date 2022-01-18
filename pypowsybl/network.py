@@ -29,22 +29,22 @@ _SERIES_METADATA_BY_NAME = {elt_type: {s.name: s for s in _SERIES_METADATA[elt_t
                             for elt_type in ElementType.__members__.values()}
 
 
-class SingleLineDiagram:
+class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, svg: str):
-        self._svg = svg
+    def __init__(self, content: str):
+        self._content = content
 
     @property
     def svg(self):
-        return self._svg
+        return self._content
 
     def __str__(self):
-        return self._svg
+        return self._content
 
     def _repr_svg_(self):
-        return self._svg
+        return self._content
 
 
 class NodeBreakerTopology:
@@ -94,6 +94,56 @@ class NodeBreakerTopology:
         graph.add_nodes_from(self._nodes.index.tolist())
         graph.add_edges_from(self._switchs[['node1', 'node2']].values.tolist())
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
+        return graph
+
+
+class BusBreakerTopology:
+    """
+    Bus-breaker representation of the topology of a voltage level.
+
+    The topology is actually represented as a graph, where
+    vertices are buses while edges are switches (breakers and disconnectors).
+
+    For each element of the voltage level, we also provide the bus breaker bus where it is connected.
+    """
+
+    def __init__(self, network_handle, voltage_level_id):
+        self._elements = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_elements(network_handle, voltage_level_id))
+        self._switchs = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_switches(network_handle, voltage_level_id))
+        self._buses = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_buses(network_handle, voltage_level_id))
+
+    @property
+    def switches(self) -> _DataFrame:
+        """
+        The list of switches of the bus breaker view, together with their connection status, as a dataframe.
+        """
+        return self._switchs
+
+    @property
+    def buses(self) -> _DataFrame:
+        """
+        The list of buses of the  bus breaker view, as a dataframe.
+        """
+        return self._buses
+
+    @property
+    def elements(self) -> _DataFrame:
+        """
+        The list of elements (lines, generators...) of this voltage level, together with the bus
+        of the bus breaker view where they are connected.
+        """
+        return self._elements
+
+    def create_graph(self) -> _nx.Graph:
+        """
+        Representation of the topology as a networkx graph.
+        """
+        graph = _nx.Graph()
+        graph.add_nodes_from(self._buses.index.tolist())
+        graph.add_edges_from(self._switchs[['bus1_id', 'bus2_id']].values.tolist())
         return graph
 
 
@@ -223,7 +273,31 @@ class Network(object):
         Returns:
             the single line diagram
         """
-        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
+        return Svg(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
+
+    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_id: str = None, depth: int = 0):
+        """
+        Create a network area diagram in SVG format and write it to a file.
+
+        Args:
+            svg_file: a svg file path
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+        """
+        _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_id if voltage_level_id else '', depth)
+
+    def get_network_area_diagram(self, voltage_level_id: str = None, depth: int = 0):
+        """
+        Create a network area diagram.
+
+        Args:
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+
+        Returns:
+            the network area diagram
+        """
+        return Svg(_pypowsybl.get_network_area_diagram_svg(self._handle, voltage_level_id if voltage_level_id else '', depth))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,
@@ -557,6 +631,14 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for non linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g**: the accumulated conductance in S if the section and all the previous ones are activated.
+              - **b**: the accumulated susceptance in S if the section and all the previous ones are activated
+
+            This dataframe is multi-indexed, by the tuple (id of shunt, section number).
+
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
@@ -566,8 +648,17 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g_per_section**: the conductance per section in S
+              - **b_per_section**: the susceptance per section in S
+              - **max_section_count**: the maximum number of sections
+
+            This dataframe is indexed by the shunt compensator ID.
+
         Returns:
-           a linear model shunt compensators sections
+           A dataframe of linear models of shunt compensators.
         """
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
 
@@ -664,6 +755,7 @@ class Network(object):
         Notes:
             The resulting dataframe will have the following columns:
 
+              - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
@@ -687,13 +779,13 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
@@ -706,7 +798,8 @@ class Network(object):
 
         Notes:
             The resulting dataframe will have the following columns:
-
+              - **b_min**: the minimum susceptance
+              - **b_max**: the maximum susceptance
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
@@ -728,12 +821,12 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
             id
-                 SVC            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
@@ -1073,7 +1166,7 @@ class Network(object):
 
     def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
         """
-        Update network elements with a :class:`~pandas.DataFrame` for a specified element type.
+        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
         The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
@@ -1128,194 +1221,231 @@ class Network(object):
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)
-
-        _pypowsybl.update_network_elements_with_series(self._handle, columns_values, columns_names, columns_types,
-                                                       is_index, element_type)
+        array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+        _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs):
         """
-        Update buses with a :class:`~pandas.DataFrame`.
+        Update buses with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `v_mag`
+        - `v_angle`
 
         See Also:
             :meth:`get_buses`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `v_mag`
-                - `v_angle`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df, **kwargs)
 
     def update_switches(self, df: _DataFrame = None, **kwargs):
         """
-        Update switches with a :class:`~pandas.DataFrame`.
+        Update switches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+            - `open`
+            - `retained`
 
         See Also:
             :meth:`get_switches`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `open`
-                - `retained`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df, **kwargs)
 
     def update_generators(self, df: _DataFrame = None, **kwargs):
         """
-        Update generators with a :class:`~pandas.DataFrame`.
+        Update generators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `target_p`
+        - `max_p`
+        - `min_p`
+        - `target_v`
+        - `target_q`
+        - `voltage_regulator_on`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_generators`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `target_p`
-                - `max_p`
-                - `min_p`
-                - `target_v`
-                - `target_q`
-                - `voltage_regulator_on`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df, **kwargs)
 
     def update_loads(self, df: _DataFrame = None, **kwargs):
         """
-        Update loads with a :class:`~pandas.DataFrame`.
+        Update loads with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `p0`
+        - `q0`
+        - `connected`
 
         See Also:
             :meth:`get_loads`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `p0`
-                - `q0`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df, **kwargs)
 
     def update_batteries(self, df: _DataFrame = None, **kwargs):
         """
-        Update batteries with a :class:`~pandas.DataFrame`.
+        Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `p0`
+        - `q0`
+        - `connected`
 
         See Also:
             :meth:`get_batteries`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `p0`
-                - `q0`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df, **kwargs)
 
     def update_dangling_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update dangling lines with a :class:`~pandas.DataFrame`.
+        Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+        - `p0`
+        - `q0`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_dangling_lines`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `r`
-                - `x`
-                - `g`
-                - `b`
-                - `p0`
-                - `q0`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df, **kwargs)
 
     def update_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
         """
-        Update VSC converter stations with a :class:`~pandas.DataFrame`.
+        Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `voltage_setpoint`
+        - `reactive_power_setpoint`
+        - `voltage_regulator_on`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
         Args:
-          df: the data to be updated.
-              Columns that can be updated :
-
-              - `voltage_setpoint`
-              - `reactive_power_setpoint`
-              - `voltage_regulator_on`
-              - `p`
-              - `q`
-              - `connected`
+          df: the data to be updated, as a data frame.
+          **kwargs: the data to be updated, as named arguments.
+              Arguments can be single values or any type of sequence.
+              In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
     def update_static_var_compensators(self, df: _DataFrame = None, **kwargs):
         """
-        Update static var compensators with a :class:`~pandas.DataFrame`.
+        Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+        - `b_min`
+        - `b_max`
+        - `voltage_setpoint`
+        - `reactive_power_setpoint`
+        - `regulation_mode`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_static_var_compensators`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `voltage_setpoint`
-                - `reactive_power_setpoint`
-                - `regulation_mode`
-                - `p`
-                - `q`
-                - `connected`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
     def update_hvdc_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update HVDC lines with a :class:`~pandas.DataFrame`.
+        Update HVDC lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `converters_mode`
+        - `active_power_setpoint`
+        - `max_p`
+        - `nominal_v`
+        - `r`
+        - `connected1`
+        - `connected2`
 
         See Also:
             :meth:`get_hvdc_lines`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `converters_mode`
-                - `active_power_setpoint`
-                - `max_p`
-                - `nominal_v`
-                - `r`
-                - `connected1`
-                - `connected2`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df, **kwargs)
 
     def update_lines(self, df: _DataFrame = None, **kwargs):
         """
-        Update lines data with a :class:`~pandas.DataFrame`.
+        Update lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         See Also:
             :meth:`get_lines`
 
         Args:
             df: lines data to be updated.
-                Columns that can be updated are:
-
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
                 - `r`
                 - `x`
                 - `g1`
@@ -1333,111 +1463,189 @@ class Network(object):
 
     def update_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
         """
-        Update 2 windings transformers with a :class:`~pandas.DataFrame`.
+        Update 2 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+        - `rated_u1`
+        - `rated_u2`
+        - `rated_s`
+        - `p1`
+        - `q1`
+        - `p2`
+        - `q2`
+        - `connected1`
+        - `connected2`
 
         See Also:
             :meth:`get_2_windings_transformers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `r`
-                - `x`
-                - `g`
-                - `b`
-                - `rated_u1`
-                - `rated_u2`
-                - `rated_s`
-                - `p1`
-                - `q1`
-                - `p2`
-                - `q2`
-                - `connected1`
-                - `connected2`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
     def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
-        Update ratio tap changers with a :class:`~pandas.DataFrame`.
+        Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `tap`
+        - `on_load`
+        - `regulating`
+        - `target_v`
+        - `target_deadband`
 
         See Also:
             :meth:`get_ratio_tap_changers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `tap`
-                - `on_load`
-                - `regulating`
-                - `target_v`
-                - `target_deadband`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
+    def update_ratio_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `rho`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_ratio_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
+
     def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
-        Update phase tap changers with a :class:`~pandas.DataFrame`.
+        Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated :
+
+        - `tap`
+        - `regulating`
+        - `regulation_mode`
+        - `regulation_value`
+        - `target_deadband`
 
         See Also:
             :meth:`get_phase_tap_changers`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
-
-                - `tap`
-                - `regulating`
-                - `regulation_mode`
-                - `regulation_value`
-                - `target_deadband`
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
+    def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated :
+
+        - `rho`
+        - `alpha`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_phase_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
+
     def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """
-        Update shunt compensators with a :class:`~pandas.DataFrame`.
+        Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `section_count`
+        - `p`
+        - `q`
+        - `connected`
 
         See Also:
             :meth:`get_shunt_compensators`
 
         Args:
-           df: the data to be updated.
-               Columns that can be updated :
-
-               - `section_count`
-               - `p`
-               - `q`
-               - `connected`
+           df: the data to be updated, as a data frame.
+           **kwargs: the data to be updated, as named arguments.
+               Arguments can be single values or any type of sequence.
+               In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
     def update_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
-        Update shunt compensators with a :class:`~pandas.DataFrame`.
+        Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `g_per_section`
+        - `b_per_section`
+        - `max_section_count`
+
+        See Also:
+            :meth:`get_linear_shunt_compensator_sections`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated :
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
 
-                - g per section
-                - b per section
-                - max section count
         """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
-    def update_non_linear_shunt_sections(self, df: _DataFrame = None, **kwargs):
+    def update_non_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
-        Update non linear shunt compensators sections with a ``Pandas`` data frame.
+        Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are :
+
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_non_linear_shunt_compensator_sections`
 
         Args:
-            df: the data to be updated.
-                Columns that can be updated are :
-
-                - g per section
-                - b per section
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
@@ -1498,7 +1706,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
 
-    def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
+    def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
 
@@ -1509,6 +1717,18 @@ class Network(object):
             The node breaker description of the topology of the voltage level
         """
         return NodeBreakerTopology(self._handle, voltage_level_id)
+
+    def get_bus_breaker_topology(self, voltage_level_id: str) -> BusBreakerTopology:
+        """
+        Get the bus breaker description of the topology of a voltage level.
+
+        Args:
+            voltage_level_id: id of the voltage level
+
+        Returns:
+            The bus breaker description of the topology of the voltage level
+        """
+        return BusBreakerTopology(self._handle, voltage_level_id)
 
     def merge(self, *args):
         networkList = list(args)

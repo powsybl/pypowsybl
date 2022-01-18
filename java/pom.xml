@@ -52,12 +52,12 @@
     </developers>
 
     <packaging>jar</packaging>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.12.0-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>21.2.0</graalvm.version>
+        <graalvm.version>21.3.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
@@ -65,10 +65,11 @@
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <powsybl-math-native.version>1.0.4</powsybl-math-native.version>
-        <powsybl-core.version>4.4.0</powsybl-core.version>
-        <powsybl-single-line-diagram.version>2.4.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.13.0</powsybl-open-load-flow.version>
+        <powsybl-math-native.version>1.1.0</powsybl-math-native.version>
+        <powsybl-core.version>4.6.0</powsybl-core.version>
+        <powsybl-single-line-diagram.version>2.7.0</powsybl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.15.0</powsybl-open-load-flow.version>
+        <powsybl-network-area-diagram.version>0.2.0</powsybl-network-area-diagram.version>
         <assertj.version>3.11.0</assertj.version>
     </properties>
 
@@ -276,6 +277,11 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-network-area-diagram</artifactId>
+            <version>${powsybl-network-area-diagram.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
@@ -321,6 +327,13 @@
         </dependency>
 
         <!-- test -->
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-commons</artifactId>
+            <version>${powsybl-core.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>

@@ -55,8 +55,6 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = true;
-
     private PyPowsyblApiLib() {
     }
 
@@ -78,13 +76,13 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            readConfig = read;
+            PyPowsyblConfiguration.setReadConfig(read);
         });
     }
 
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> readConfig);
+        return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -172,7 +170,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
+            LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
             return convertToLoadFlowParametersPointer(parameters);
         });
     }
@@ -278,6 +276,28 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+                                                  CCharPointer voltageLevelId, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIdStr, depth, svgFileStr);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramSvg")
+    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelId,
+                                                        int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIdStr, depth);
             return CTypeUtil.toCharPtr(svg);
         });
     }

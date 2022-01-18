@@ -39,7 +39,7 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.2.0
+          graalvm-version: 21.3.0
           native-image: true
 
 #      - name: Checkout olf sources
@@ -103,11 +103,11 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-latest,
+            os: macos-10.15,
           }
           - {
             name: windows,
-            os: windows-latest,
+            os: windows-2019,
           }
         python:
           - {
@@ -128,7 +128,7 @@ jobs:
         uses: ayltai/setup-graalvm@v1
         with:
           java-version: 11
-          graalvm-version: 21.2.0
+          graalvm-version: 21.3.0
           native-image: true
 
 #      - name: Checkout olf sources

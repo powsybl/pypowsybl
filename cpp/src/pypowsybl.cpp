@@ -202,7 +202,7 @@ char* copyStringToCharPtr(const std::string& str) {
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings) {
     char** charPtrPtr = new char*[strings.size()];
     for (int i = 0; i < strings.size(); i++) {
-        charPtrPtr[i] = copyStringToCharPtr((char*) strings[i].c_str());
+        charPtrPtr[i] = copyStringToCharPtr(strings[i]);
     }
     return charPtrPtr;
 }
@@ -221,9 +221,9 @@ double* copyVectorDouble(const std::vector<double>& doubles) {
 
 void deleteCharPtrPtr(char** charPtrPtr, int length) {
     for (int i = 0; i < length; i++) {
-        delete charPtrPtr[i];
+        delete[] charPtrPtr[i];
     }
-    delete charPtrPtr;
+    delete[] charPtrPtr;
 }
 
 void freeCString(char* str) {
@@ -404,12 +404,24 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {
+    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
+}
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth) {
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) voltageLevelId.data(), depth);
+}
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth) {
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, (char*) voltageLevelId.data(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -599,6 +611,18 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& vol
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel) {
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewBuses, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
