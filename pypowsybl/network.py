@@ -697,7 +697,7 @@ class Network(object):
         Notes:
             The resulting dataframe will have the following columns:
 
-              -**loss_factor**: correspond to the loss of power due to ac dc conversion
+              - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
