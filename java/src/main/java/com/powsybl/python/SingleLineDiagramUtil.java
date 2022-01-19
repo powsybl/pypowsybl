@@ -6,17 +6,9 @@
  */
 package com.powsybl.python;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.sld.NetworkGraphBuilder;
-import com.powsybl.sld.SubstationDiagram;
-import com.powsybl.sld.VoltageLevelDiagram;
-import com.powsybl.sld.layout.*;
-import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.library.ConvergenceComponentLibrary;
-import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
-import com.powsybl.sld.svg.DefaultSVGWriter;
-import com.powsybl.sld.util.TopologicalStyleProvider;
+import com.powsybl.sld.SingleLineDiagram;
+import com.powsybl.sld.layout.LayoutParameters;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -52,30 +44,8 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer) {
-        ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
         LayoutParameters layoutParameters = new LayoutParameters()
-                .setCssLocation(LayoutParameters.CssLocation.INSERTED_IN_SVG)
-                .setAdaptCellHeightToContent(true)
                 .setSvgWidthAndHeightAdded(true);
-        if (network.getVoltageLevel(containerId) != null) {
-            VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
-            VoltageLevelDiagram voltageLevelDiagram = VoltageLevelDiagram.build(new NetworkGraphBuilder(network), containerId, voltageLevelLayoutFactory, false);
-            voltageLevelDiagram.writeSvg("",
-                    new DefaultSVGWriter(componentLibrary, layoutParameters),
-                    new DefaultDiagramLabelProvider(network, componentLibrary, layoutParameters),
-                    new TopologicalStyleProvider(network),
-                    writer, new StringWriter());
-        } else if (network.getSubstation(containerId) != null) {
-            SubstationLayoutFactory substationLayoutFactory = new HorizontalSubstationLayoutFactory();
-            VoltageLevelLayoutFactory voltageLevelLayoutFactory = new SmartVoltageLevelLayoutFactory(network);
-            SubstationDiagram substationDiagram = SubstationDiagram.build(new NetworkGraphBuilder(network), containerId, substationLayoutFactory, voltageLevelLayoutFactory, false);
-            substationDiagram.writeSvg("",
-                    new DefaultSVGWriter(componentLibrary, layoutParameters),
-                    new DefaultDiagramLabelProvider(network, componentLibrary, layoutParameters),
-                    new TopologicalStyleProvider(network),
-                    writer, new StringWriter());
-        } else {
-            throw new PowsyblException("Container '" + containerId + "' not found");
-        }
+        SingleLineDiagram.draw(network, containerId, writer, new StringWriter(), layoutParameters);
     }
 }

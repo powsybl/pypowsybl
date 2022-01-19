@@ -23,10 +23,7 @@ import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
 import org.apache.commons.collections4.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +56,9 @@ public final class Dataframes {
     private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_SWITCHES_MAPPER = createNodeBreakerViewSwitchesMapper();
     private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_NODES_MAPPER = createNodeBreakerViewNodes();
     private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_INTERNAL_CONNECTION_MAPPER = createNodeBreakerViewInternalConnections();
+    private static final DataframeMapper<VoltageLevel.BusBreakerView> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
+    private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
+    private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
 
     private Dataframes() {
     }
@@ -122,6 +122,18 @@ public final class Dataframes {
 
     public static DataframeMapper<VoltageLevel.NodeBreakerView> nodeBreakerViewInternalConnection() {
         return NODE_BREAKER_VIEW_INTERNAL_CONNECTION_MAPPER;
+    }
+
+    public static DataframeMapper<VoltageLevel.BusBreakerView> busBreakerViewSwitches() {
+        return BUS_BREAKER_VIEW_SWITCHES_MAPPER;
+    }
+
+    public static DataframeMapper<VoltageLevel> busBreakerViewBuses() {
+        return BUS_BREAKER_VIEW_BUSES_MAPPER;
+    }
+
+    public static DataframeMapper<VoltageLevel> busBreakerViewElements() {
+        return BUS_BREAKER_VIEW_ELEMENTS_MAPPER;
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
@@ -233,7 +245,7 @@ public final class Dataframes {
 
     private static List<NodeBreakerViewSwitchContext> getNodeBreakerViewSwitches(VoltageLevel.NodeBreakerView nodeBreakerView) {
         return IteratorUtils.toList(nodeBreakerView.getSwitches().iterator()).stream().map(switchContext ->
-                new     NodeBreakerViewSwitchContext(switchContext,
+                new NodeBreakerViewSwitchContext(switchContext,
                         nodeBreakerView.getNode1(switchContext.getId()),
                         nodeBreakerView.getNode2(switchContext.getId())))
                 .collect(Collectors.toList());
@@ -287,6 +299,90 @@ public final class Dataframes {
                 .intsIndex("id", InternalConnectionContext::getIndex)
                 .ints("node1", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode1())
                 .ints("node2", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode2())
+                .build();
+    }
+
+    private static List<BusBreakerViewSwitchContext> getBusBreakerViewSwitches(VoltageLevel.BusBreakerView busBreakerView) {
+        return IteratorUtils.toList(busBreakerView.getSwitches().iterator()).
+                stream()
+                .map(switchDevice -> new BusBreakerViewSwitchContext(switchDevice,
+                        busBreakerView.getBus1(switchDevice.getId()).getId(), busBreakerView.getBus2(switchDevice.getId()).getId()))
+                .collect(Collectors.toList());
+    }
+
+    private static DataframeMapper<VoltageLevel.BusBreakerView> createBusBreakerViewSwitchesMapper() {
+        return new DataframeMapperBuilder<VoltageLevel.BusBreakerView, BusBreakerViewSwitchContext>()
+                .itemsProvider(Dataframes::getBusBreakerViewSwitches)
+                .stringsIndex("id", context -> context.getSwitchContext().getId())
+                .enums("kind", SwitchKind.class, context -> context.getSwitchContext().getKind())
+                .booleans("open", context -> context.getSwitchContext().isOpen())
+                .strings("bus1_id", BusBreakerViewSwitchContext::getBusId1)
+                .strings("bus2_id", BusBreakerViewSwitchContext::getBusId2)
+                .build();
+    }
+
+    private static List<BusBreakerViewBusContext> getBusBreakerViewBuses(VoltageLevel voltageLevel) {
+        return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
+            Terminal terminal = bus.getConnectedTerminalStream().collect(Collectors.toList()).get(0);
+            Bus busViewBus = terminal.getBusView().getBus();
+            return new BusBreakerViewBusContext(bus, busViewBus);
+        }).collect(Collectors.toList());
+
+    }
+
+    private static DataframeMapper<VoltageLevel> createBusBreakerViewBuses() {
+        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewBusContext>()
+                .itemsProvider(Dataframes::getBusBreakerViewBuses)
+                .stringsIndex("id", busContext -> busContext.getBusBreakerViewBus().getId())
+                .strings("name", busContext -> busContext.getBusBreakerViewBus()
+                        .getOptionalName().orElse(""))
+                .strings("bus_id", busContext -> busContext.getBusViewBus().getId())
+                .build();
+    }
+
+    private static List<BusBreakerViewElementContext> getBusBreakerViewElements(VoltageLevel voltageLevel) {
+        List<BusBreakerViewElementContext> result = new ArrayList<>();
+        voltageLevel.getConnectableStream().forEach(connectable -> {
+            if (connectable instanceof Injection) {
+                Injection<?> inj = (Injection<?>) connectable;
+                result.add(new BusBreakerViewElementContext(connectable.getType(),
+                        inj.getTerminal().getBusBreakerView().getBus().getId(), connectable.getId()));
+            } else if (connectable instanceof Branch) {
+                Branch<?> branch = (Branch<?>) connectable;
+                if (branch.getTerminal1().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            branch.getTerminal1().getBusBreakerView().getBus().getId(), connectable.getId(), SideEnum.ONE));
+                }
+                if (branch.getTerminal2().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            branch.getTerminal2().getBusBreakerView().getBus().getId(), connectable.getId(), SideEnum.TWO));
+                }
+            } else if (connectable instanceof ThreeWindingsTransformer) {
+                ThreeWindingsTransformer transfo = (ThreeWindingsTransformer) connectable;
+                if (transfo.getLeg1().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg1().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.ONE));
+                }
+                if (transfo.getLeg2().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg2().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.TWO));
+                }
+                if (transfo.getLeg3().getTerminal().getVoltageLevel() == voltageLevel) {
+                    result.add(new BusBreakerViewElementContext(connectable.getType(),
+                            transfo.getLeg3().getTerminal().getBusBreakerView().getBus().getId(), transfo.getId(), SideEnum.THREE));
+                }
+            }
+        });
+        return result;
+    }
+
+    private static DataframeMapper<VoltageLevel> createBusBreakerViewElements() {
+        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewElementContext>()
+                .itemsProvider(Dataframes::getBusBreakerViewElements)
+                .stringsIndex("id", BusBreakerViewElementContext::getElementId)
+                .strings("type", elementContext -> elementContext.getType().toString())
+                .strings("bus_id", BusBreakerViewElementContext::getBusId)
+                .strings("side", elementContext -> elementContext.getSide().isPresent() ? elementContext.getSide().get().toString() : "")
                 .build();
     }
 }

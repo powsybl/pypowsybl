@@ -123,6 +123,13 @@ typedef struct series_struct {
     array data;
 } series;
 
+typedef struct series_metadata_struct {
+    char* name;
+    int type;
+    unsigned char  is_index;
+    unsigned char  is_modifiable;
+} series_metadata;
+
 typedef struct zone_struct {
     char* id;
     char** injections_ids;

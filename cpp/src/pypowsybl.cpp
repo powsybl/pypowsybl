@@ -105,6 +105,11 @@ Array<series>::~Array() {
     callJava<>(::freeSeriesArray, delegate_);
 }
 
+template<>
+Array<series_metadata>::~Array() {
+    callJava<>(::freeSeriesMetadataArray, delegate_);
+}
+
 template<typename T>
 class ToPtr {
 public:
@@ -531,18 +536,6 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size()));
 }
 
-int getSeriesType(element_type elementType, const std::string& seriesName) {
-    return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
-}
-
-bool isIndex(element_type elementType, const std::string& seriesName) {
-    return callJava<bool>(::isIndex, elementType, (char *) seriesName.c_str());
-}
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index) {
-    return callJava<int>(::getIndexType, elementType, (char *) seriesName.c_str(), index);
-}
-
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }
@@ -609,8 +602,30 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, st
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
 }
 
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewBuses, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
+}
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+}
+
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
+
+    Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
+    std::vector<SeriesMetadata> res;
+    for (const series_metadata& series: array) {
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+    }
+    return res;
 }
 
 }
