@@ -58,7 +58,7 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Build wheel
-        run: python setup.py bdist_wheel -G "Visual Studio 16 2019"
+        run: python setup.py bdist_wheel -- -- -j1
 
       - name: Build source archive
         if: matrix.config.name == 'darwin' && matrix.python.name == 'cp39'
