@@ -66,6 +66,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_2_windings_transformers
    Network.get_3_windings_transformers
    Network.get_batteries
+   Network.get_bus_breaker_topology
    Network.get_busbar_sections
    Network.get_buses
    Network.get_current_limits
@@ -76,6 +77,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_lines
    Network.get_loads
    Network.get_linear_shunt_compensator_sections
+   Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
@@ -86,7 +88,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_static_var_compensators
    Network.get_substations
    Network.get_switches
-   Network.get_voltage_level_topology
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
 
@@ -110,6 +111,7 @@ Network elements can be modified using dataframes:
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
+   Network.update_non_linear_shunt_compensator_sections
    Network.update_phase_tap_changers
    Network.update_ratio_tap_changers
    Network.update_shunt_compensators

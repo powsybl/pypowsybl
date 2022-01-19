@@ -21,22 +21,26 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
-class SingleLineDiagram:
+_pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
+                                               f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
+
+
+class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, svg: str):
-        self._svg = svg
+    def __init__(self, content: str):
+        self._content = content
 
     @property
     def svg(self):
-        return self._svg
+        return self._content
 
     def __str__(self):
-        return self._svg
+        return self._content
 
     def _repr_svg_(self):
-        return self._svg
+        return self._content
 
 
 class NodeBreakerTopology:
@@ -86,6 +90,56 @@ class NodeBreakerTopology:
         graph.add_nodes_from(self._nodes.index.tolist())
         graph.add_edges_from(self._switchs[['node1', 'node2']].values.tolist())
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
+        return graph
+
+
+class BusBreakerTopology:
+    """
+    Bus-breaker representation of the topology of a voltage level.
+
+    The topology is actually represented as a graph, where
+    vertices are buses while edges are switches (breakers and disconnectors).
+
+    For each element of the voltage level, we also provide the bus breaker bus where it is connected.
+    """
+
+    def __init__(self, network_handle, voltage_level_id):
+        self._elements = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_elements(network_handle, voltage_level_id))
+        self._switchs = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_switches(network_handle, voltage_level_id))
+        self._buses = _create_data_frame_from_series_array(
+            _pypowsybl.get_bus_breaker_view_buses(network_handle, voltage_level_id))
+
+    @property
+    def switches(self) -> _DataFrame:
+        """
+        The list of switches of the bus breaker view, together with their connection status, as a dataframe.
+        """
+        return self._switchs
+
+    @property
+    def buses(self) -> _DataFrame:
+        """
+        The list of buses of the  bus breaker view, as a dataframe.
+        """
+        return self._buses
+
+    @property
+    def elements(self) -> _DataFrame:
+        """
+        The list of elements (lines, generators...) of this voltage level, together with the bus
+        of the bus breaker view where they are connected.
+        """
+        return self._elements
+
+    def create_graph(self) -> _nx.Graph:
+        """
+        Representation of the topology as a networkx graph.
+        """
+        graph = _nx.Graph()
+        graph.add_nodes_from(self._buses.index.tolist())
+        graph.add_edges_from(self._switchs[['bus1_id', 'bus2_id']].values.tolist())
         return graph
 
 
@@ -215,7 +269,31 @@ class Network(object):
         Returns:
             the single line diagram
         """
-        return SingleLineDiagram(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
+        return Svg(_pypowsybl.get_single_line_diagram_svg(self._handle, container_id))
+
+    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_id: str = None, depth: int = 0):
+        """
+        Create a network area diagram in SVG format and write it to a file.
+
+        Args:
+            svg_file: a svg file path
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+        """
+        _pypowsybl.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_id if voltage_level_id else '', depth)
+
+    def get_network_area_diagram(self, voltage_level_id: str = None, depth: int = 0):
+        """
+        Create a network area diagram.
+
+        Args:
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+
+        Returns:
+            the network area diagram
+        """
+        return Svg(_pypowsybl.get_network_area_diagram_svg(self._handle, voltage_level_id if voltage_level_id else '', depth))
 
     def get_elements_ids(self, element_type: _pypowsybl.ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,
@@ -549,6 +627,14 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for non linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g**: the accumulated conductance in S if the section and all the previous ones are activated.
+              - **b**: the accumulated susceptance in S if the section and all the previous ones are activated
+
+            This dataframe is multi-indexed, by the tuple (id of shunt, section number).
+
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
@@ -558,8 +644,17 @@ class Network(object):
         """
         Get a dataframe of shunt compensators sections for linear model.
 
+        Notes:
+            The resulting dataframe will have the following columns:
+
+              - **g_per_section**: the conductance per section in S
+              - **b_per_section**: the susceptance per section in S
+              - **max_section_count**: the maximum number of sections
+
+            This dataframe is indexed by the shunt compensator ID.
+
         Returns:
-           a linear model shunt compensators sections
+           A dataframe of linear models of shunt compensators.
         """
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
 
@@ -656,6 +751,7 @@ class Network(object):
         Notes:
             The resulting dataframe will have the following columns:
 
+              - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
@@ -679,13 +775,13 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
@@ -698,7 +794,8 @@ class Network(object):
 
         Notes:
             The resulting dataframe will have the following columns:
-
+              - **b_min**: the minimum susceptance
+              - **b_max**: the maximum susceptance
               - **voltage_setpoint**: The voltage setpoint
               - **reactive_power_setpoint**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
@@ -720,12 +817,12 @@ class Network(object):
 
             will output something like:
 
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
-            \        voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
             id
-                 SVC            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
 
@@ -1074,48 +1171,58 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
+        series_metadata = _pypowsybl.get_series_metadata(element_type)
+        metadata_by_name = {s.name: s for s in series_metadata}
+
         is_index = []
         columns_names = []
         columns_values = []
         columns_types = []
         index_count = 0
+        col_list = []
         if df is None:
             expected_size = None
             for key, value in kwargs.items():
+                if not key in metadata_by_name:
+                    raise ValueError('No column named {}'.format(key))
                 columns_names.append(key)
-                is_index.append(_pypowsybl.is_index(element_type, key))
-                columns_types.append(_pypowsybl.get_series_type(element_type, key))
+                metadata = metadata_by_name[key]
+                is_index.append(metadata.is_index)
+                columns_types.append(metadata.type)
                 values_array = _np.array(value, ndmin=1, copy=False)
                 if values_array.ndim != 1:
-                    raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
-                                       'as keyword argument, got {} dimensions'.format(values_array.ndim))
+                    raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
+                                     'as keyword argument, got {} dimensions'.format(values_array.ndim))
                 size = values_array.shape[0]
                 if expected_size is None:
                     expected_size = size
                 elif size != expected_size:
-                    raise RuntimeError('Network elements update: all arguments must have the same size, '
-                                       'got size {} for series {}, expected {}'.format(size, key, expected_size))
+                    raise ValueError('Network elements update: all arguments must have the same size, '
+                                     'got size {} for series {}, expected {}'.format(size, key, expected_size))
                 columns_values.append(values_array)
                 index_count += 1
         else:
             if kwargs:
-                raise RuntimeError('You must provided data in only one form: dataframe or named arguments')
+                raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
             is_multi_index = len(df.index.names) > 1
-            for index_name in df.index.names:
+
+            for idx, index_name in enumerate(df.index.names):
                 if index_name is None:
-                    index_name = ''
+                    index_name = series_metadata[idx].name
                 if is_multi_index:
                     columns_values.append(df.index.get_level_values(index_name))
                 else:
                     columns_values.append(df.index.values)
                 columns_names.append(index_name)
-                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+                columns_types.append(metadata_by_name[index_name].type)
                 index_count += 1
                 is_index.append(True)
             columns_names.extend(df.columns.values)
             for series_name in df.columns.values:
+                if not series_name in metadata_by_name:
+                    raise ValueError('No column named {}'.format(series_name))
                 series = df[series_name]
-                series_type = _pypowsybl.get_series_type(element_type, series_name)
+                series_type = metadata_by_name[series_name].type
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)
@@ -1287,7 +1394,8 @@ class Network(object):
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Attributes that can be updated are:
-
+        - `b_min`
+        - `b_max`
         - `voltage_setpoint`
         - `reactive_power_setpoint`
         - `regulation_mode`
@@ -1412,6 +1520,29 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
+    def update_ratio_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `rho`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_ratio_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
+
     def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
         Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -1434,6 +1565,30 @@ class Network(object):
                 In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
+
+    def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs):
+        """
+        Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated :
+
+        - `rho`
+        - `alpha`
+        - `r`
+        - `x`
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_phase_tap_changer_steps`
+
+        Args:
+            df: the data to be updated, as a data frame.
+            **kwargs: the data to be updated, as named arguments.
+                Arguments can be single values or any type of sequence.
+                In the case of sequences, all arguments must have the same length.
+        """
+        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
     def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """
@@ -1463,9 +1618,12 @@ class Network(object):
 
         Attributes that can be updated are:
 
-        - g per section
-        - b per section
-        - max section count
+        - `g_per_section`
+        - `b_per_section`
+        - `max_section_count`
+
+        See Also:
+            :meth:`get_linear_shunt_compensator_sections`
 
         Args:
             df: the data to be updated, as a data frame.
@@ -1476,14 +1634,17 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
-    def update_non_linear_shunt_sections(self, df: _DataFrame = None, **kwargs):
+    def update_non_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs):
         """
-        Update non linear shunt compensators sections with a ``Pandas`` data frame.
+        Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Attributes that can be updated are :
 
-        - g per section
-        - b per section
+        - `g`
+        - `b`
+
+        See Also:
+            :meth:`get_non_linear_shunt_compensator_sections`
 
         Args:
             df: the data to be updated, as a data frame.
@@ -1550,7 +1711,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
 
-    def get_voltage_level_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
+    def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
 
@@ -1561,6 +1722,18 @@ class Network(object):
             The node breaker description of the topology of the voltage level
         """
         return NodeBreakerTopology(self._handle, voltage_level_id)
+
+    def get_bus_breaker_topology(self, voltage_level_id: str) -> BusBreakerTopology:
+        """
+        Get the bus breaker description of the topology of a voltage level.
+
+        Args:
+            voltage_level_id: id of the voltage level
+
+        Returns:
+            The bus breaker description of the topology of the voltage level
+        """
+        return BusBreakerTopology(self._handle, voltage_level_id)
 
     def merge(self, *args):
         networkList = list(args)
