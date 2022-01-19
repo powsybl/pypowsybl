@@ -21,6 +21,10 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
+_pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
+                                               f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
+
+
 class Svg:
     """
     This class represents a single line diagram."""
@@ -1167,48 +1171,58 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
+        series_metadata = _pypowsybl.get_series_metadata(element_type)
+        metadata_by_name = {s.name: s for s in series_metadata}
+
         is_index = []
         columns_names = []
         columns_values = []
         columns_types = []
         index_count = 0
+        col_list = []
         if df is None:
             expected_size = None
             for key, value in kwargs.items():
+                if not key in metadata_by_name:
+                    raise ValueError('No column named {}'.format(key))
                 columns_names.append(key)
-                is_index.append(_pypowsybl.is_index(element_type, key))
-                columns_types.append(_pypowsybl.get_series_type(element_type, key))
+                metadata = metadata_by_name[key]
+                is_index.append(metadata.is_index)
+                columns_types.append(metadata.type)
                 values_array = _np.array(value, ndmin=1, copy=False)
                 if values_array.ndim != 1:
-                    raise RuntimeError('Network elements update: expecting only scalar or 1 dimension array '
-                                       'as keyword argument, got {} dimensions'.format(values_array.ndim))
+                    raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
+                                     'as keyword argument, got {} dimensions'.format(values_array.ndim))
                 size = values_array.shape[0]
                 if expected_size is None:
                     expected_size = size
                 elif size != expected_size:
-                    raise RuntimeError('Network elements update: all arguments must have the same size, '
-                                       'got size {} for series {}, expected {}'.format(size, key, expected_size))
+                    raise ValueError('Network elements update: all arguments must have the same size, '
+                                     'got size {} for series {}, expected {}'.format(size, key, expected_size))
                 columns_values.append(values_array)
                 index_count += 1
         else:
             if kwargs:
-                raise RuntimeError('You must provided data in only one form: dataframe or named arguments')
+                raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
             is_multi_index = len(df.index.names) > 1
-            for index_name in df.index.names:
+
+            for idx, index_name in enumerate(df.index.names):
                 if index_name is None:
-                    index_name = ''
+                    index_name = series_metadata[idx].name
                 if is_multi_index:
                     columns_values.append(df.index.get_level_values(index_name))
                 else:
                     columns_values.append(df.index.values)
                 columns_names.append(index_name)
-                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
+                columns_types.append(metadata_by_name[index_name].type)
                 index_count += 1
                 is_index.append(True)
             columns_names.extend(df.columns.values)
             for series_name in df.columns.values:
+                if not series_name in metadata_by_name:
+                    raise ValueError('No column named {}'.format(series_name))
                 series = df[series_name]
-                series_type = _pypowsybl.get_series_type(element_type, series_name)
+                series_type = metadata_by_name[series_name].type
                 columns_types.append(series_type)
                 columns_values.append(series.values)
                 is_index.append(False)

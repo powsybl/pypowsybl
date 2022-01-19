@@ -72,6 +72,7 @@ typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
     std::vector<T> values;
@@ -121,6 +122,28 @@ enum BalanceType {
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
+};
+
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -218,12 +241,6 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
-int getSeriesType(element_type elementType, const std::string& seriesName);
-
-bool isIndex(element_type elementType, const std::string& seriesName);
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index);
-
 std::string getWorkingVariantId(const JavaHandle& network);
 
 void setWorkingVariant(const JavaHandle& network, std::string& variant);
@@ -259,6 +276,8 @@ SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& vo
 SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
 
 }
 

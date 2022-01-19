@@ -10,8 +10,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
@@ -541,46 +539,6 @@ public final class PyPowsyblApiLib {
         for (int i = 0; i < array.getLength(); i++) {
             UnmanagedMemory.free(array.getPtr().read(i));
         }
-    }
-
-    @CEntryPoint(name = "getSeriesType")
-    public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .getType();
-            return convert(type);
-        });
-    }
-
-    @CEntryPoint(name = "getIndexType")
-    public static int getIndexType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, int index, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type;
-            if (seriesName.equals("")) {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata()
-                        .get(index)
-                        .getType();
-            } else {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata(seriesName)
-                        .getType();
-            }
-            return convert(type);
-        });
-    }
-
-    @CEntryPoint(name = "isIndex")
-    public static boolean isIndex(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            return NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .isIndex();
-        });
     }
 
     @CEntryPoint(name = "destroyObjectHandle")

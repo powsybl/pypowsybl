@@ -484,20 +484,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
             });
+    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
+
+    py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
+            .def(py::init<const std::string&, int, bool, bool>())
+            .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
+            .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
+            .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
+            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable);
+
+    m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));
-
-    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
-
-    m.def("get_series_type", &pypowsybl::getSeriesType, "Get series type integer for a given element type and series_name",
-            py::arg("element_type"), py::arg("series_name"));
-
-    m.def("is_index", &pypowsybl::isIndex, "indicate if a column is a index for a given element type and series_name", 
-            py::arg("element_type"), py::arg("series_name"));
-
-    m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
-            py::arg("element_type"), py::arg("series_name"), py::arg("index"));
     
     m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("array"), py::arg("element_type"));
