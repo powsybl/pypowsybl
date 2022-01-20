@@ -13,16 +13,43 @@ import pandas as _pd
 
 
 class PerUnitNetwork(_net.Network):
+
     def __init__(self, sn, handle):
         super().__init__(handle)
         self.sn = sn
         self.sqrt3 = _math.sqrt(3)
 
+    def _get_nominal_v(self) -> _pd.Series:
+        return super().get_voltage_levels()['nominal_v']
+
+    def _get_indexed_nominal_v(self, df: _pd.DataFrame, vl_attr: str = 'voltage_level_id') -> _pd.Series:
+        return _pd.merge(df, self._get_nominal_v(),
+                         left_on=vl_attr, right_index=True)['nominal_v']
+
+    def _per_unit_p(self, df: _pd.DataFrame, columns):
+        df[columns] /= self.sn
+
+    def _per_unit_v(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        for col in columns:
+            df[col] /= nominal_v
+
+    def _per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        for col in columns:
+            df[col] /= nominal_v ** 2 / self.sn
+
+    def _per_unit_g(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        for col in columns:
+            df[col] *= nominal_v ** 2 / self.sn
+
+    def _per_unit_i(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        for col in columns:
+            df[col] /= self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
+
     def get_buses(self) -> _pd.DataFrame:
-        join = _pd.merge(self.get_elements(_pypowsybl.ElementType.BUS), self.get_voltage_levels()['nominal_v'],
-                         left_on='voltage_level_id', right_index=True)
-        join['v_mag'] = join['v_mag'] / join['nominal_v']
-        return join.drop('nominal_v', axis=1)
+        buses = super().get_buses()
+        nominal_v = self._get_indexed_nominal_v(buses)
+        self._per_unit_v(buses, ['v_mag'], nominal_v)
+        return buses
 
     def get_generators(self) -> _pd.DataFrame:
         """ Get generators as a ``Pandas`` data frame.
@@ -30,20 +57,12 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a generators data frame
         """
-        generators = self.get_elements(_pypowsybl.ElementType.GENERATOR)
-        generators['target_p'] /= self.sn
-        generators['target_q'] /= self.sn
-        generators['min_p'] /= self.sn
-        generators['min_q'] /= self.sn
-        generators['max_p'] /= self.sn
-        generators['max_q'] /= self.sn
-        generators['p'] /= self.sn
-        generators['q'] /= self.sn
-        join = _pd.merge(generators, self.get_voltage_levels()['nominal_v'],
-                         left_on='voltage_level_id', right_index=True)
-        join['target_v'] = join['target_v'] / join['nominal_v']
-        join['i'] /= self.sn * 10 ** 3 / (self.sqrt3 * join['nominal_v'])
-        return join.drop('nominal_v', axis=1)
+        generators = super().get_generators()
+        nominal_v = self._get_indexed_nominal_v(generators)
+        self._per_unit_p(generators, ['target_p', 'target_q', 'min_p', 'min_q', 'max_p', 'max_q', 'p', 'q'])
+        self._per_unit_v(generators, ['target_v'], nominal_v)
+        self._per_unit_i(generators, ['i'], nominal_v)
+        return generators
 
     def get_loads(self) -> _pd.DataFrame:
         """ Get loads as a ``Pandas`` data frame.
@@ -51,15 +70,12 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a loads data frame
         """
-        loads = self.get_elements(_pypowsybl.ElementType.LOAD)
-        loads['p0'] /= self.sn
-        loads['q0'] /= self.sn
-        loads['p'] /= self.sn
-        loads['q'] /= self.sn
-        join = _pd.merge(loads, self.get_voltage_levels()['nominal_v'],
-                         left_on='voltage_level_id', right_index=True)
-        join['i'] /= self.sn * 10 ** 3 / (self.sqrt3 * join['nominal_v'])
-        return join.drop('nominal_v', axis=1)
+        loads = super().get_loads()
+        self._per_unit_p(loads, ['p0', 'q0', 'p', 'q'])
+        nominal_v = _pd.merge(loads, self._get_nominal_v(),
+                              left_on='voltage_level_id', right_index=True)['nominal_v']
+        self._per_unit_i(loads, 'i', nominal_v)
+        return loads
 
     def get_lines(self) -> _pd.DataFrame:
         """ Get lines as a ``Pandas`` data frame.
@@ -67,22 +83,14 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a lines data frame
         """
-        lines = self.get_elements(_pypowsybl.ElementType.LINE)
-        lines['p1'] /= self.sn
-        lines['p2'] /= self.sn
-        lines['q1'] /= self.sn
-        lines['q2'] /= self.sn
-        lines = _pd.merge(lines, self.get_voltage_levels()['nominal_v'],
-                          left_on='voltage_level2_id', right_index=True)
-        lines['i1'] /= self.sn * 10 ** 3 / (self.sqrt3 * lines['nominal_v'])
-        lines['i2'] /= self.sn * 10 ** 3 / (self.sqrt3 * lines['nominal_v'])
-        lines['r'] /= lines['nominal_v'] ** 2 / self.sn
-        lines['x'] /= lines['nominal_v'] ** 2 / self.sn
-        lines['g1'] /= self.sn / lines['nominal_v'] ** 2
-        lines['g2'] /= self.sn / lines['nominal_v'] ** 2
-        lines['b1'] /= self.sn / lines['nominal_v'] ** 2
-        lines['b2'] /= self.sn / lines['nominal_v'] ** 2
-        return lines.drop('nominal_v', axis=1)
+        lines = super().get_lines()
+        nominal_v = _pd.merge(lines, self._get_nominal_v(),
+                              left_on='voltage_level2_id', right_index=True)['nominal_v']
+        self._per_unit_p(lines, ['p1', 'p2', 'q1', 'q2'])
+        self._per_unit_i(lines, ['i1', 'i2'], nominal_v)
+        self._per_unit_r(lines, ['r', 'x'], nominal_v)
+        self._per_unit_g(lines, ['g1', 'g2', 'b1', 'b2'], nominal_v)
+        return lines
 
     def get_2_windings_transformers(self) -> _pd.DataFrame:
         """ Get 2 windings transformers as a ``Pandas`` data frame.
@@ -90,28 +98,17 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a 2 windings transformers data frame
         """
-        two_windings_transformers = self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
-        two_windings_transformers['p1'] /= self.sn
-        two_windings_transformers['q1'] /= self.sn
-        two_windings_transformers['p2'] /= self.sn
-        two_windings_transformers['q2'] /= self.sn
-        two_windings_transformers = _pd.merge(two_windings_transformers, self.get_voltage_levels()['nominal_v'],
-                                              left_on='voltage_level1_id', right_index=True)
-        two_windings_transformers.rename(columns={'nominal_v': 'nominal_v1'}, inplace=True)
-        two_windings_transformers = _pd.merge(two_windings_transformers, self.get_voltage_levels()['nominal_v'],
-                                              left_on='voltage_level2_id', right_index=True)
-        two_windings_transformers.rename(columns={'nominal_v': 'nominal_v2'}, inplace=True)
-        two_windings_transformers['i1'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * two_windings_transformers['nominal_v1'])
-        two_windings_transformers['i2'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * two_windings_transformers['nominal_v2'])
-        two_windings_transformers['r'] /= two_windings_transformers['nominal_v2'] ** 2 / self.sn
-        two_windings_transformers['x'] /= two_windings_transformers['nominal_v2'] ** 2 / self.sn
-        two_windings_transformers['g'] /= self.sn / two_windings_transformers['nominal_v2'] ** 2
-        two_windings_transformers['b'] /= self.sn / two_windings_transformers['nominal_v2'] ** 2
-        two_windings_transformers['rated_u1'] /= two_windings_transformers['nominal_v1']
-        two_windings_transformers['rated_u2'] /= two_windings_transformers['nominal_v2']
-        return two_windings_transformers.drop(['nominal_v1', 'nominal_v2'], axis=1)
+        two_windings_transformers = super().get_2_windings_transformers()
+        self._per_unit_p(two_windings_transformers, ['p1', 'q1', 'p2', 'q2'])
+        nominal_v1 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level1_id')
+        nominal_v2 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level2_id')
+        self._per_unit_i(two_windings_transformers, ['i1'], nominal_v1)
+        self._per_unit_i(two_windings_transformers, ['i2'], nominal_v2)
+        self._per_unit_r(two_windings_transformers, ['r', 'x'], nominal_v2)
+        self._per_unit_g(two_windings_transformers, ['g', 'b'], nominal_v2)
+        two_windings_transformers['rated_u1'] /= nominal_v1
+        two_windings_transformers['rated_u2'] /= nominal_v2
+        return two_windings_transformers
 
     def get_3_windings_transformers(self) -> _pd.DataFrame:
         """ Get 3 windings transformers as a ``Pandas`` data frame.
@@ -119,52 +116,22 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a 3 windings transformers data frame
         """
-        three_windings_transformers = self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
-        three_windings_transformers['p1'] /= self.sn
-        three_windings_transformers['q1'] /= self.sn
-        three_windings_transformers['p2'] /= self.sn
-        three_windings_transformers['q2'] /= self.sn
-        three_windings_transformers['p3'] /= self.sn
-        three_windings_transformers['q3'] /= self.sn
-        three_windings_transformers = _pd.merge(three_windings_transformers, self.get_voltage_levels()['nominal_v'],
-                                                left_on='voltage_level1_id', right_index=True)
-        three_windings_transformers.rename(columns={'nominal_v': 'nominal_v1'}, inplace=True)
-        three_windings_transformers = _pd.merge(three_windings_transformers, self.get_voltage_levels()['nominal_v'],
-                                                left_on='voltage_level2_id', right_index=True)
-        three_windings_transformers.rename(columns={'nominal_v': 'nominal_v2'}, inplace=True)
-        three_windings_transformers = _pd.merge(three_windings_transformers, self.get_voltage_levels()['nominal_v'],
-                                                left_on='voltage_level3_id', right_index=True)
-        three_windings_transformers.rename(columns={'nominal_v': 'nominal_v3'}, inplace=True)
-        three_windings_transformers['i1'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * three_windings_transformers['nominal_v1'])
-        three_windings_transformers['i2'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * three_windings_transformers['nominal_v2'])
-        three_windings_transformers['i3'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * three_windings_transformers['nominal_v3'])
-        three_windings_transformers['r1'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['x1'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['g1'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['b1'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['r2'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['x2'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['g2'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['b2'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['r3'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['x3'] /= three_windings_transformers['rated_u0'] ** 2 / self.sn
-        three_windings_transformers['g3'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['b3'] /= self.sn / three_windings_transformers[
-            'rated_u0'] ** 2
-        three_windings_transformers['rated_u1'] /= three_windings_transformers['nominal_v1']
-        three_windings_transformers['rated_u2'] /= three_windings_transformers['nominal_v2']
-        three_windings_transformers['rated_u3'] /= three_windings_transformers['nominal_v3']
+        three_windings_transformers = super().get_3_windings_transformers()
+        self._per_unit_p(three_windings_transformers, ['p1', 'q1', 'p2', 'q2', 'p3', 'q3'])
+        nominal_v1 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level1_id')
+        nominal_v2 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level2_id')
+        nominal_v3 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level3_id')
+        nominal_v0 = three_windings_transformers['rated_u0']
+        self._per_unit_i(three_windings_transformers, ['i1'], nominal_v1)
+        self._per_unit_i(three_windings_transformers, ['i2'], nominal_v2)
+        self._per_unit_i(three_windings_transformers, ['i3'], nominal_v3)
+        self._per_unit_r(three_windings_transformers, ['r1', 'x1', 'r2', 'x2', 'r3', 'x3'], nominal_v0)
+        self._per_unit_g(three_windings_transformers, ['g1', 'b1', 'g2', 'b2', 'g3', 'b3'], nominal_v0)
+        three_windings_transformers['rated_u1'] /= nominal_v1
+        three_windings_transformers['rated_u2'] /= nominal_v2
+        three_windings_transformers['rated_u3'] /= nominal_v3
         three_windings_transformers['rated_u0'] = 1
-        return three_windings_transformers.drop(['nominal_v1', 'nominal_v2', 'nominal_v3'],
-                                                axis=1)
+        return three_windings_transformers
 
     def get_shunt_compensators(self) -> _pd.DataFrame:
         """ Get shunt compensators as a ``Pandas`` data frame.
@@ -172,14 +139,12 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a shunt compensators data frame
         """
-        shunt_compensators = self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
-        shunt_compensators = _pd.merge(shunt_compensators, self.get_voltage_levels()['nominal_v'],
-                                       left_on='voltage_level_id', right_index=True)
-        shunt_compensators['p'] /= self.sn
-        shunt_compensators['q'] /= self.sn
-        shunt_compensators['g'] /= self.sn / shunt_compensators['nominal_v'] ** 2
-        shunt_compensators['b'] /= self.sn / shunt_compensators['nominal_v'] ** 2
-        return shunt_compensators.drop('nominal_v', axis=1)
+        shunt_compensators = super().get_shunt_compensators()
+        nominal_v = self._get_indexed_nominal_v(shunt_compensators)
+        self._per_unit_p(shunt_compensators, ['p', 'q'])
+        self._per_unit_g(shunt_compensators, ['g', 'b'], nominal_v)
+        self._per_unit_i(shunt_compensators, ['i'], nominal_v)
+        return shunt_compensators
 
     def get_dangling_lines(self) -> _pd.DataFrame:
         """ Get dangling lines as a ``Pandas`` data frame.
@@ -187,20 +152,13 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a dangling lines data frame
         """
-        dangling_lines = self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
-        dangling_lines['p'] /= self.sn
-        dangling_lines['q'] /= self.sn
-        dangling_lines['p0'] /= self.sn
-        dangling_lines['q0'] /= self.sn
-        dangling_lines = _pd.merge(dangling_lines, self.get_voltage_levels()['nominal_v'],
-                                   left_on='voltage_level_id', right_index=True)
-        dangling_lines['i'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * dangling_lines['nominal_v'])
-        dangling_lines['r'] /= dangling_lines['nominal_v'] ** 2 / self.sn
-        dangling_lines['x'] /= dangling_lines['nominal_v'] ** 2 / self.sn
-        dangling_lines['g'] /= self.sn / dangling_lines['nominal_v'] ** 2
-        dangling_lines['b'] /= self.sn / dangling_lines['nominal_v'] ** 2
-        return dangling_lines.drop('nominal_v', axis=1)
+        dangling_lines = super().get_dangling_lines()
+        nominal_v = self._get_indexed_nominal_v(dangling_lines)
+        self._per_unit_p(dangling_lines, ['p', 'q', 'q0', 'p0'])
+        self._per_unit_i(dangling_lines, ['i'], nominal_v)
+        self._per_unit_r(dangling_lines, ['r', 'x'], nominal_v)
+        self._per_unit_g(dangling_lines, ['g', 'b'], nominal_v)
+        return dangling_lines
 
     def get_lcc_converter_stations(self) -> _pd.DataFrame:
         """ Get LCC converter stations as a ``Pandas`` data frame.
@@ -208,14 +166,11 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a LCC converter stations data frame
         """
-        lcc_converter_stations = self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
-        lcc_converter_stations['p'] /= self.sn
-        lcc_converter_stations['q'] /= self.sn
-        lcc_converter_stations = _pd.merge(lcc_converter_stations, self.get_voltage_levels()['nominal_v'],
-                                           left_on='voltage_level_id', right_index=True)
-        lcc_converter_stations['i'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * lcc_converter_stations['nominal_v'])
-        return lcc_converter_stations.drop('nominal_v', axis=1)
+        lcc_converter_stations = super().get_lcc_converter_stations()
+        nominal_v = self._get_indexed_nominal_v(lcc_converter_stations)
+        self._per_unit_p(lcc_converter_stations, ['p', 'q'])
+        self._per_unit_i(lcc_converter_stations, ['i'], nominal_v)
+        return lcc_converter_stations
 
     def get_vsc_converter_stations(self) -> _pd.DataFrame:
         """ Get VSC converter stations as a ``Pandas`` data frame.
@@ -223,16 +178,12 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a VSC converter stations data frame
         """
-        vsc_converter_stations = self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
-        vsc_converter_stations['p'] /= self.sn
-        vsc_converter_stations['q'] /= self.sn
-        vsc_converter_stations['reactive_power_setpoint'] /= self.sn
-        vsc_converter_stations = _pd.merge(vsc_converter_stations, self.get_voltage_levels()['nominal_v'],
-                                           left_on='voltage_level_id', right_index=True)
-        vsc_converter_stations['i'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * vsc_converter_stations['nominal_v'])
-        vsc_converter_stations['voltage_setpoint'] /= vsc_converter_stations['nominal_v']
-        return vsc_converter_stations.drop('nominal_v', axis=1)
+        vsc_converter_stations = super().get_vsc_converter_stations()
+        nominal_v = self._get_indexed_nominal_v(vsc_converter_stations)
+        self._per_unit_p(vsc_converter_stations, ['p', 'q', 'reactive_power_setpoint'])
+        self._per_unit_i(vsc_converter_stations, ['i'], nominal_v)
+        self._per_unit_v(vsc_converter_stations, ['voltage_setpoint'], nominal_v)
+        return vsc_converter_stations
 
     def get_static_var_compensators(self) -> _pd.DataFrame:
         """ Get static var compensators as a ``Pandas`` data frame.
@@ -240,16 +191,12 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a static var compensators data frame
         """
-        static_var_compensators = self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
-        static_var_compensators['p'] /= self.sn
-        static_var_compensators['q'] /= self.sn
-        static_var_compensators['reactive_power_setpoint'] /= self.sn
-        static_var_compensators = _pd.merge(static_var_compensators, self.get_voltage_levels()['nominal_v'],
-                                            left_on='voltage_level_id', right_index=True)
-        static_var_compensators['i'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * static_var_compensators['nominal_v'])
-        static_var_compensators['voltage_setpoint'] /= static_var_compensators['nominal_v']
-        return static_var_compensators.drop('nominal_v', axis=1)
+        static_var_compensators = super().get_static_var_compensators()
+        nominal_v = self._get_indexed_nominal_v(static_var_compensators)
+        self._per_unit_p(static_var_compensators, ['p', 'q', 'reactive_power_setpoint'])
+        self._per_unit_i(static_var_compensators, ['i'], nominal_v)
+        self._per_unit_v(static_var_compensators, ['voltage_setpoint'], nominal_v)
+        return static_var_compensators
 
     def get_voltage_levels(self) -> _pd.DataFrame:
         """ Get voltage levels as a ``Pandas`` data frame.
@@ -257,9 +204,8 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a voltage levels data frame
         """
-        voltage_levels = self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL)
-        voltage_levels['high_voltage_limit'] /= voltage_levels['nominal_v']
-        voltage_levels['low_voltage_limit'] /= voltage_levels['nominal_v']
+        voltage_levels = super().get_voltage_levels()
+        self._per_unit_v(voltage_levels, ['low_voltage_limit', 'high_voltage_limit'], voltage_levels['nominal_v'])
         return voltage_levels
 
     def get_busbar_sections(self) -> _pd.DataFrame:
@@ -268,11 +214,10 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a busbar sections data frame
         """
-        busbar_sections = self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION)
-        join = _pd.merge(busbar_sections, self.get_voltage_levels()['nominal_v'],
-                         left_on='voltage_level_id', right_index=True)
-        join['v'] /= join['nominal_v']
-        return join.drop('nominal_v', axis=1)
+        busbar_sections = super().get_busbar_sections()
+        nominal_v = self._get_indexed_nominal_v(busbar_sections)
+        self._per_unit_v(busbar_sections, ['v'], nominal_v)
+        return busbar_sections
 
     def get_hvdc_lines(self) -> _pd.DataFrame:
         """ Get HVDC lines as a ``Pandas`` data frame.
@@ -280,11 +225,9 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a HVDC lines data frame
         """
-        hvdc_lines = self.get_elements(_pypowsybl.ElementType.HVDC_LINE)
-
-        hvdc_lines['max_p'] /= self.sn
-        hvdc_lines['active_power_setpoint'] /= self.sn
-        hvdc_lines['r'] /= hvdc_lines['nominal_v'] ** 2 / self.sn
+        hvdc_lines = super().get_hvdc_lines()
+        self._per_unit_p(hvdc_lines, ['max_p', 'active_power_setpoint'])
+        self._per_unit_r(hvdc_lines, ['r'], hvdc_lines['nominal_v'])
         return hvdc_lines
 
     def get_reactive_capability_curve_points(self) -> _pd.DataFrame:
@@ -293,39 +236,26 @@ class PerUnitNetwork(_net.Network):
         Returns:
             a reactive capability curve points data frame
         """
-        reactive_capability_curve_points = self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
-        reactive_capability_curve_points['p'] /= self.sn
-        reactive_capability_curve_points['min_q'] /= self.sn
-        reactive_capability_curve_points['max_q'] /= self.sn
+        reactive_capability_curve_points = super().get_reactive_capability_curve_points()
+        self._per_unit_p(reactive_capability_curve_points, ['p', 'min_q', 'max_q'])
         return reactive_capability_curve_points
 
     def get_batteries(self) -> _pd.DataFrame:
-        batteries = self.get_elements(_pypowsybl.ElementType.BATTERY)
-        batteries['p0'] /= self.sn
-        batteries['q0'] /= self.sn
-        batteries['p'] /= self.sn
-        batteries['q'] /= self.sn
-        batteries['min_p'] /= self.sn
-        batteries['max_p'] /= self.sn
-        batteries = _pd.merge(batteries, self.get_voltage_levels()['nominal_v'],
-                              left_on='voltage_level_id', right_index=True)
-        batteries['i'] /= self.sn * 10 ** 3 / (
-                self.sqrt3 * batteries['nominal_v'])
-        return batteries.drop(['nominal_v'], axis=1)
+        batteries = super().get_batteries()
+        nominal_v = self._get_indexed_nominal_v(batteries)
+        self._per_unit_p(batteries, ['p0', 'q0', 'p', 'q', 'min_p', 'max_p'])
+        self._per_unit_i(batteries, ['i'], nominal_v)
+        return batteries
 
     def get_ratio_tap_changers(self) -> _pd.DataFrame:
-        ratio_tap_changers = self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
-        ratio_tap_changers = ratio_tap_changers.merge(
+        ratio_tap_changers = super().get_ratio_tap_changers()
+        voltage_levels = ratio_tap_changers[[]].merge(
             self.get_2_windings_transformers()[['voltage_level1_id', 'voltage_level2_id']],
             left_index=True, right_index=True)
-        ratio_tap_changers = ratio_tap_changers.merge(self.get_voltage_levels()['nominal_v'],
-                                                      left_on='voltage_level1_id', right_index=True)
-        ratio_tap_changers.rename(columns={'nominal_v': 'nominal_v1'}, inplace=True)
-        ratio_tap_changers = ratio_tap_changers.merge(self.get_voltage_levels()['nominal_v'],
-                                                      left_on='voltage_level2_id', right_index=True)
-        ratio_tap_changers.rename(columns={'nominal_v': 'nominal_v2'}, inplace=True)
-        ratio_tap_changers['rho'] *= ratio_tap_changers['nominal_v1'] / ratio_tap_changers['nominal_v2']
-        return ratio_tap_changers.drop(['nominal_v1', 'nominal_v2', 'voltage_level1_id', 'voltage_level2_id'], axis=1)
+        nominal_v1 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level1_id')
+        nominal_v2 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level2_id')
+        ratio_tap_changers['rho'] *= nominal_v1 / nominal_v2
+        return ratio_tap_changers
 
     def update_buses(self, df: _pd.DataFrame = None, **kwargs):
         """ Update buses with a ``Pandas`` data frame.
