@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from pandas import DataFrame as _DataFrame
-import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
     ConnectedComponentMode,

@@ -4,9 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import pypowsybl._pypowsybl as _pypowsybl
 import os as _os
 import inspect as _inspect
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 
 __version__ = '0.13.0'

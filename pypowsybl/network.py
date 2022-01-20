@@ -6,10 +6,10 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
-import pypowsybl._pypowsybl as _pypowsybl
 import sys as _sys
 from typing import List as _List
 from typing import Set as _Set
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
 
 from pandas import DataFrame as _DataFrame

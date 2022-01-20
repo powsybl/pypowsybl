@@ -6,8 +6,7 @@
 #
 from __future__ import annotations
 
-import pypowsybl._pypowsybl as _pypowsybl
-
+from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
