@@ -44,16 +44,19 @@ class PerUnitView:
             df[col] /= nominal_v
 
     def _per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = nominal_v ** 2 / self.sn
         for col in columns:
-            df[col] /= nominal_v ** 2 / self.sn
+            df[col] /= factor
 
     def _per_unit_g(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = nominal_v ** 2 / self.sn
         for col in columns:
-            df[col] *= nominal_v ** 2 / self.sn
+            df[col] *= factor
 
     def _per_unit_i(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
-            df[col] /= self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
+            df[col] /= factor
 
     def _un_per_unit_p(self, df: _pd.DataFrame, columns):
         for col in columns:
@@ -66,19 +69,22 @@ class PerUnitView:
                 df[col] *= nominal_v
 
     def _un_per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
-                df[col] *= nominal_v ** 2 / self.sn
+                df[col] *= factor
 
     def _un_per_unit_g(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
-                df[col] /= nominal_v ** 2 / self.sn
+                df[col] /= factor
 
     def _un_per_unit_i(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+        factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
             if col in df.columns:
-                df[col] *= self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
+                df[col] *= factor
 
     def get_buses(self) -> _pd.DataFrame:
         buses = self._network.get_buses()
