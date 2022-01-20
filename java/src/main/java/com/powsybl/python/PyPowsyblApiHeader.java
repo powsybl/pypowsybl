@@ -346,6 +346,23 @@ public final class PyPowsyblApiHeader {
         public static native ElementType fromCValue(int value);
     }
 
+    @CEnum("validation_type")
+    public enum ValidationType {
+        FLOWS,
+        GENERATORS,
+        BUSES,
+        SVCS,
+        SHUNTS,
+        TWTS,
+        TWTS3W;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ValidationType fromCValue(int value);
+    }
+
     @CStruct("matrix")
     interface MatrixPointer extends PointerBase {
 
@@ -393,6 +410,36 @@ public final class PyPowsyblApiHeader {
         <T extends PointerBase> ArrayPointer<T> data();
 
         SeriesPointer addressOf(int index);
+    }
+
+    @CStruct("series_metadata")
+    interface SeriesMetadataPointer extends PointerBase {
+
+        @CField("name")
+        CCharPointer getName();
+
+        @CField("name")
+        void setName(CCharPointer name);
+
+        @CField("type")
+        int getType();
+
+        @CField("type")
+        void setType(int type);
+
+        @CField("is_index")
+        boolean isIndex();
+
+        @CField("is_index")
+        void setIndex(boolean index);
+
+        @CField("is_modifiable")
+        boolean isModifiable();
+
+        @CField("is_modifiable")
+        void setModifiable(boolean index);
+
+        SeriesMetadataPointer addressOf(int index);
     }
 
     @CStruct("zone")

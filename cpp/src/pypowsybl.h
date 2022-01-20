@@ -72,6 +72,7 @@ typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
     std::vector<T> values;
@@ -121,6 +122,28 @@ enum BalanceType {
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
+};
+
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -180,9 +203,15 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth);
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth);
 
 JavaHandle createSecurityAnalysis();
 
@@ -210,11 +239,7 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType);
 
-int getSeriesType(element_type elementType, const std::string& seriesName);
-
-bool isIndex(element_type elementType, const std::string& seriesName);
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 
@@ -246,7 +271,13 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& volt
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
 
 }
 
