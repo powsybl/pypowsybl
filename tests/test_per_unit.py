@@ -28,7 +28,7 @@ class NetworkTestCase(unittest.TestCase):
                                       ['', 1.03, -3.51, 0, 0, 'VLHV2'],
                                       ['', 0.98, -9.61, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False, atol=10 ** -2)
-        n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[1, 0]]))
+        n.update_buses(id='VLGEN_0', v_mag=1, v_angle=0)
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',

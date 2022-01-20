@@ -9,6 +9,9 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 import sys as _sys
 from typing import List as _List
 from typing import Set as _Set
+
+import pandas as pd
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
 
@@ -140,6 +143,59 @@ class BusBreakerTopology:
         graph.add_nodes_from(self._buses.index.tolist())
         graph.add_edges_from(self._switchs[['bus1_id', 'bus2_id']].values.tolist())
         return graph
+
+
+def _to_array(value):
+    """
+    Converts a scalar or array to an array
+    """
+    as_array = _np.array(value, ndmin=1, copy=False)
+    if as_array.ndim != 1:
+        raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
+                         'as keyword argument, got {} dimensions'.format(as_array.ndim))
+    return as_array
+
+
+def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
+    """
+    Converts named arguments to a dataframe.
+    Element type is required to know which attributes must be part of the index.
+    """
+
+    metadata = _pypowsybl.get_series_metadata(element_type)
+    index_columns = [col.name for col in metadata if col.is_index]
+
+    columns = {}
+    expected_size = None
+    for key, value in kwargs.items():
+        col = _to_array(value)
+        size = col.shape[0]
+        if expected_size is None:
+            expected_size = size
+        elif size != expected_size:
+            raise ValueError('Network elements update: all arguments must have the same size, '
+                             'got size {} for series {}, expected {}'.format(size, key, expected_size))
+        columns[key] = col
+
+    index = None
+    if len(index_columns) == 1:
+        index_name = index_columns[0]
+        index = pd.Index(name=index_name, data=columns[index_name])
+    elif len(index_columns) > 1:
+        index = pd.MultiIndex.from_arrays(names=index_columns, arrays=[columns[name] for name in index_columns])
+    data = dict((k, v) for k, v in columns.items() if k not in index_columns)
+    return pd.DataFrame(index=index, data=data)
+
+
+def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> _DataFrame:
+    """
+    Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
+    """
+    if df is None:
+        return _adapt_kwargs(element_type, **kwargs)
+    elif kwargs:
+        raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
+    return df
 
 
 class Network(object):
@@ -1173,61 +1229,35 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
+        df = _adapt_df_or_kwargs(element_type, df, **kwargs)
+
         series_metadata = _pypowsybl.get_series_metadata(element_type)
         metadata_by_name = {s.name: s for s in series_metadata}
-
         is_index = []
         columns_names = []
         columns_values = []
         columns_types = []
-        index_count = 0
-        col_list = []
-        if df is None:
-            expected_size = None
-            for key, value in kwargs.items():
-                if not key in metadata_by_name:
-                    raise ValueError('No column named {}'.format(key))
-                columns_names.append(key)
-                metadata = metadata_by_name[key]
-                is_index.append(metadata.is_index)
-                columns_types.append(metadata.type)
-                values_array = _np.array(value, ndmin=1, copy=False)
-                if values_array.ndim != 1:
-                    raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
-                                     'as keyword argument, got {} dimensions'.format(values_array.ndim))
-                size = values_array.shape[0]
-                if expected_size is None:
-                    expected_size = size
-                elif size != expected_size:
-                    raise ValueError('Network elements update: all arguments must have the same size, '
-                                     'got size {} for series {}, expected {}'.format(size, key, expected_size))
-                columns_values.append(values_array)
-                index_count += 1
-        else:
-            if kwargs:
-                raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
-            is_multi_index = len(df.index.names) > 1
+        is_multi_index = len(df.index.names) > 1
 
-            for idx, index_name in enumerate(df.index.names):
-                if index_name is None:
-                    index_name = series_metadata[idx].name
-                if is_multi_index:
-                    columns_values.append(df.index.get_level_values(index_name))
-                else:
-                    columns_values.append(df.index.values)
-                columns_names.append(index_name)
-                columns_types.append(metadata_by_name[index_name].type)
-                index_count += 1
-                is_index.append(True)
-            columns_names.extend(df.columns.values)
-            for series_name in df.columns.values:
-                if not series_name in metadata_by_name:
-                    raise ValueError('No column named {}'.format(series_name))
-                series = df[series_name]
-                series_type = metadata_by_name[series_name].type
-                columns_types.append(series_type)
-                columns_values.append(series.values)
-                is_index.append(False)
+        for idx, index_name in enumerate(df.index.names):
+            if index_name is None:
+                index_name = series_metadata[idx].name
+            if is_multi_index:
+                columns_values.append(df.index.get_level_values(index_name))
+            else:
+                columns_values.append(df.index.values)
+            columns_names.append(index_name)
+            columns_types.append(metadata_by_name[index_name].type)
+            is_index.append(True)
+        columns_names.extend(df.columns.values)
+        for series_name in df.columns.values:
+            if not series_name in metadata_by_name:
+                raise ValueError('No column named {}'.format(series_name))
+            series = df[series_name]
+            series_type = metadata_by_name[series_name].type
+            columns_types.append(series_type)
+            columns_values.append(series.values)
+            is_index.append(False)
         array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
         _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
