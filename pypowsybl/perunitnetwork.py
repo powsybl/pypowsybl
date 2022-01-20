@@ -6,7 +6,7 @@
 #
 import math as _math
 
-import _pypowsybl
+from pypowsybl import _pypowsybl
 
 import pypowsybl.network as _net
 import pandas as _pd

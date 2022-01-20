@@ -235,39 +235,43 @@ class NetworkTestCase(unittest.TestCase):
     def test_vsc_converter_stations_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
         n = n.per_unit_network(100)
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                                columns=['name', 'voltage_setpoint', 'reactive_power_setpoint', 'voltage_regulator_on', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['VSC1', 1, 5, True, 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-                                      ['VSC2', 0, 1.2, False, -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'loss_factor', 'voltage_setpoint', 'reactive_power_setpoint', 'voltage_regulator_on',
+                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+            data=[['VSC1', 'VSC1', 1.1, 1, 5, True, 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+                  ['VSC2', 'VSC2', 1.1, 0, 1.2, False, -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=10 ** -2)
         n.update_vsc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                      columns=['voltage_setpoint', 'reactive_power_setpoint'],
                                                      index=['VSC1', 'VSC2']))
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                                columns=['name', 'voltage_setpoint', 'reactive_power_setpoint', 'voltage_regulator_on', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['VSC1', 3, 4, True, 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-                                      ['VSC2', 1, 2, False, -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'loss_factor', 'voltage_setpoint', 'reactive_power_setpoint', 'voltage_regulator_on',
+                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+            data=[['VSC1', 'VSC1', 1.1, 3, 4, True, 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+                  ['VSC2', 'VSC2', 1.1, 1, 2, False, -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=10 ** -2)
 
     def test_get_static_var_compensators_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
         pp.loadflow.run_ac(n)
         n = n.per_unit_network(100)
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['SVC']),
-                                columns=['name', 'voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['', 1.0, NaN, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode',
+                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+            data=[['SVC', '', -0.05, 0.05, 1.0, NaN, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=10 ** -2)
 
         n.update_static_var_compensators(pd.DataFrame(data=[[3.0, 4.0]],
                                                       columns=['voltage_setpoint', 'reactive_power_setpoint'],
                                                       index=['SVC']))
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['SVC']),
-                                columns=['name', 'voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['', 3.0, 4.0, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode',
+                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+            data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=10 ** -2)
 
     def test_voltage_level_per_unit(self):
