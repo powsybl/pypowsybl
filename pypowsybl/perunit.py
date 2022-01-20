@@ -12,7 +12,7 @@ import pypowsybl.network as _net
 import pandas as _pd
 
 
-class PerUnitNetwork(_net.Network):
+class PerUnitView(_net.Network):
 
     def __init__(self, sn, handle):
         super().__init__(handle)

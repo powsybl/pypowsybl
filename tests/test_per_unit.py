@@ -17,7 +17,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_bus_per_unit(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
@@ -41,7 +41,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_generator_per_unit(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
                                 columns=['name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q',
                                          'target_v',
@@ -72,7 +72,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_loads_per_unit(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LOAD']),
                                 columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                          'connected'],
@@ -88,7 +88,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_busbar_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id',
                                                 data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                       'S4VL1_BBS']),
@@ -103,7 +103,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_hvdc_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['HVDC1', 'HVDC2']),
                                 columns=['name', 'converters_mode', 'active_power_setpoint', 'max_p', 'nominal_v', 'r',
                                          'converter_station1_id', 'converter_station2_id', 'connected1', 'connected2'],
@@ -124,7 +124,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_lines_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         lines = n.get_lines()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
                                 columns=['name', 'r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
@@ -150,7 +150,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_two_windings_transformers_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['TWT']),
                                 columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2',
                                          'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
@@ -175,7 +175,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_shunt_compensators_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                                 columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
                                          'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
@@ -188,7 +188,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_dangling_lines_per_unit(self):
         n = util.create_dangling_lines_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
 
         expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                                 columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
@@ -215,7 +215,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_lcc_converter_stations_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                                 columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                          'connected'],
@@ -234,7 +234,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_vsc_converter_stations_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame.from_records(
             index='id',
             columns=['id', 'name', 'loss_factor', 'voltage_setpoint', 'reactive_power_setpoint', 'voltage_regulator_on',
@@ -256,7 +256,7 @@ class NetworkTestCase(unittest.TestCase):
     def test_get_static_var_compensators_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
         pp.loadflow.run_ac(n)
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame.from_records(
             index='id',
             columns=['id', 'name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint', 'regulation_mode',
@@ -276,7 +276,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_voltage_level_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['S1VL1', 'S1VL2', 'S2VL1', 'S3VL1', 'S4VL1']),
                                 columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit', 'low_voltage_limit'],
                                 data=[['', 'S1', 225, 1.07, 0.98], ['', 'S1', 400, 1.1, 0.98], ['', 'S2', 400, 1.1, 0.98],
@@ -285,7 +285,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_reactive_capability_curve_points_per_unit(self):
         n = pp.network.create_four_substations_node_breaker_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(
             index=pd.MultiIndex.from_tuples([('GH1', 0), ('GH1', 1), ('GH2', 0), ('GH2', 1), ('GH3', 0),
                                              ('GH3', 1), ('GTH1', 0), ('GTH1', 1), ('GTH2', 0), ('GTH2', 1),
@@ -300,7 +300,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_three_windings_transformer_per_unit(self):
         n = util.create_three_windings_transformer_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['3WT']),
             columns=['name', 'rated_u0', 'r1', 'x1', 'g1', 'b1', 'rated_u1', 'rated_s1', 'ratio_tap_position1',
@@ -343,7 +343,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_batteries(self):
         n = util.create_battery_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                                 columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                          'bus_id',
@@ -364,7 +364,7 @@ class NetworkTestCase(unittest.TestCase):
 
     def test_ratio_tap_changers_per_unit(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        n = n.per_unit_network(100)
+        n = n.per_unit_view(100)
         expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                                 columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                          'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
