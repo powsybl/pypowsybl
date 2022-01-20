@@ -6,4 +6,3 @@ wheel==0.36.1
 coverage==5.5
 networkx
 matplotlib
-scikit-build>=0.12.0
