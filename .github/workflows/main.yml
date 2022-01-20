@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux_2_24_x86_64
     strategy:
       matrix:
         python:
@@ -30,10 +30,17 @@ jobs:
             abi: cp39,
             version: '3.9',
           }
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
+          }
 
     steps:
       - name: Install Linux packages
-        run: yum install -y rh-maven33-maven zlib-devel.x86_64
+        run: |
+          apt-get update
+          apt install -y maven zlib1g-dev
 
       - name: Setup GraalVM
         uses: ayltai/setup-graalvm@v1
@@ -41,15 +48,6 @@ jobs:
           java-version: 11
           graalvm-version: 21.3.0
           native-image: true
-
-#      - name: Checkout olf sources
-#        uses: actions/checkout@v1
-#        with:
-#          repository: powsybl/powsybl-open-loadflow
-#          ref: main
-#
-#      - name: Build and install olf artifact
-#        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -64,7 +62,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          scl enable rh-maven33 'python3 setup.py bdist_wheel'
+          python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel
@@ -122,6 +120,10 @@ jobs:
             name: cp39,
             version: '3.9',
           }
+          - {
+            name: cp310,
+            version: '3.10.1',
+          }
 
     steps:
       - name: Setup GraalVM
@@ -131,22 +133,13 @@ jobs:
           graalvm-version: 21.3.0
           native-image: true
 
-#      - name: Checkout olf sources
-#        uses: actions/checkout@v1
-#        with:
-#          repository: powsybl/powsybl-open-loadflow
-#          ref: main
-#
-#      - name: Build and install olf artifact
-#        run: mvn --batch-mode -DskipTests=true --file ../powsybl-open-loadflow/pom.xml install
-
       - name: Checkout sources
         uses: actions/checkout@v1
         with:
           submodules: true
 
       - name: Setup Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python.version }}
 
