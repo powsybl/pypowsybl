@@ -43,11 +43,11 @@ jobs:
           apt install -y maven zlib1g-dev
 
       - name: Setup GraalVM
-        uses: ayltai/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1
         with:
-          java-version: 11
-          graalvm-version: 21.3.0
-          native-image: true
+          version: '21.3.0'
+          java-version: '11'
+          components: 'native-image'
 
       - name: Checkout sources
         uses: actions/checkout@v1
@@ -128,11 +128,11 @@ jobs:
 
     steps:
       - name: Setup GraalVM
-        uses: ayltai/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1
         with:
-          java-version: 11
-          graalvm-version: 21.3.0
-          native-image: true
+          version: '21.3.0'
+          java-version: '11'
+          components: 'native-image'
 
       - name: Checkout sources
         uses: actions/checkout@v1
