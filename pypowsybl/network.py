@@ -203,19 +203,6 @@ class Network(object):
         n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
         self._handle = n
 
-    def per_unit_view(self, sn=100):
-        """
-        Get a per-unit view of this network, using SN as base power.
-
-        Args:
-            sn: base power, in MW, default is 100 MW
-
-        Returns:
-            a per-unit view of this network, using SN as base power.
-        """
-        import pypowsybl.perunit as pu
-        return pu.PerUnitView(sn, self._handle)
-
     def open_switch(self, id: str):
         return _pypowsybl.update_switch_position(self._handle, id, True)
 

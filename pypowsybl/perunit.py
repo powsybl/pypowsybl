@@ -12,15 +12,25 @@ import pypowsybl.network as _net
 import pandas as _pd
 
 
-class PerUnitView(_net.Network):
+class PerUnitView:
+    """
+    A per-unit view of a network, providing getters and update methods.
+    """
 
-    def __init__(self, sn, handle):
-        super().__init__(handle)
+    def __init__(self, network: _net.Network, sn: float = 100):
+        """
+        Creates a per unit view of the provided network, using SN as base power.
+
+        Args:
+            network: the underlying network
+            sn:      the base power, in MW
+        """
+        self._network = network
         self.sn = sn
         self.sqrt3 = _math.sqrt(3)
 
     def _get_nominal_v(self) -> _pd.Series:
-        return super().get_voltage_levels()['nominal_v']
+        return self._network.get_voltage_levels()['nominal_v']
 
     def _get_indexed_nominal_v(self, df: _pd.DataFrame, vl_attr: str = 'voltage_level_id') -> _pd.Series:
         return _pd.merge(df, self._get_nominal_v(),
@@ -71,7 +81,7 @@ class PerUnitView(_net.Network):
                 df[col] *= self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
 
     def get_buses(self) -> _pd.DataFrame:
-        buses = super().get_buses()
+        buses = self._network.get_buses()
         nominal_v = self._get_indexed_nominal_v(buses)
         self._per_unit_v(buses, ['v_mag'], nominal_v)
         return buses
@@ -82,7 +92,7 @@ class PerUnitView(_net.Network):
         Returns:
             a generators data frame
         """
-        generators = super().get_generators()
+        generators = self._network.get_generators()
         nominal_v = self._get_indexed_nominal_v(generators)
         self._per_unit_p(generators, ['target_p', 'target_q', 'min_p', 'min_q', 'max_p', 'max_q', 'p', 'q'])
         self._per_unit_v(generators, ['target_v'], nominal_v)
@@ -95,7 +105,7 @@ class PerUnitView(_net.Network):
         Returns:
             a loads data frame
         """
-        loads = super().get_loads()
+        loads = self._network.get_loads()
         self._per_unit_p(loads, ['p0', 'q0', 'p', 'q'])
         nominal_v = _pd.merge(loads, self._get_nominal_v(),
                               left_on='voltage_level_id', right_index=True)['nominal_v']
@@ -108,7 +118,7 @@ class PerUnitView(_net.Network):
         Returns:
             a lines data frame
         """
-        lines = super().get_lines()
+        lines = self._network.get_lines()
         nominal_v = self._get_indexed_nominal_v(lines, 'voltage_level2_id')
         self._per_unit_p(lines, ['p1', 'p2', 'q1', 'q2'])
         self._per_unit_i(lines, ['i1', 'i2'], nominal_v)
@@ -122,7 +132,7 @@ class PerUnitView(_net.Network):
         Returns:
             a 2 windings transformers data frame
         """
-        two_windings_transformers = super().get_2_windings_transformers()
+        two_windings_transformers = self._network.get_2_windings_transformers()
         self._per_unit_p(two_windings_transformers, ['p1', 'q1', 'p2', 'q2'])
         nominal_v1 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level2_id')
@@ -140,7 +150,7 @@ class PerUnitView(_net.Network):
         Returns:
             a 3 windings transformers data frame
         """
-        three_windings_transformers = super().get_3_windings_transformers()
+        three_windings_transformers = self._network.get_3_windings_transformers()
         self._per_unit_p(three_windings_transformers, ['p1', 'q1', 'p2', 'q2', 'p3', 'q3'])
         nominal_v1 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level2_id')
@@ -163,7 +173,7 @@ class PerUnitView(_net.Network):
         Returns:
             a shunt compensators data frame
         """
-        shunt_compensators = super().get_shunt_compensators()
+        shunt_compensators = self._network.get_shunt_compensators()
         nominal_v = self._get_indexed_nominal_v(shunt_compensators)
         self._per_unit_p(shunt_compensators, ['p', 'q'])
         self._per_unit_g(shunt_compensators, ['g', 'b'], nominal_v)
@@ -176,7 +186,7 @@ class PerUnitView(_net.Network):
         Returns:
             a dangling lines data frame
         """
-        dangling_lines = super().get_dangling_lines()
+        dangling_lines = self._network.get_dangling_lines()
         nominal_v = self._get_indexed_nominal_v(dangling_lines)
         self._per_unit_p(dangling_lines, ['p', 'q', 'q0', 'p0'])
         self._per_unit_i(dangling_lines, ['i'], nominal_v)
@@ -190,7 +200,7 @@ class PerUnitView(_net.Network):
         Returns:
             a LCC converter stations data frame
         """
-        lcc_converter_stations = super().get_lcc_converter_stations()
+        lcc_converter_stations = self._network.get_lcc_converter_stations()
         nominal_v = self._get_indexed_nominal_v(lcc_converter_stations)
         self._per_unit_p(lcc_converter_stations, ['p', 'q'])
         self._per_unit_i(lcc_converter_stations, ['i'], nominal_v)
@@ -202,7 +212,7 @@ class PerUnitView(_net.Network):
         Returns:
             a VSC converter stations data frame
         """
-        vsc_converter_stations = super().get_vsc_converter_stations()
+        vsc_converter_stations = self._network.get_vsc_converter_stations()
         nominal_v = self._get_indexed_nominal_v(vsc_converter_stations)
         self._per_unit_p(vsc_converter_stations, ['p', 'q', 'reactive_power_setpoint'])
         self._per_unit_i(vsc_converter_stations, ['i'], nominal_v)
@@ -215,7 +225,7 @@ class PerUnitView(_net.Network):
         Returns:
             a static var compensators data frame
         """
-        static_var_compensators = super().get_static_var_compensators()
+        static_var_compensators = self._network.get_static_var_compensators()
         nominal_v = self._get_indexed_nominal_v(static_var_compensators)
         self._per_unit_p(static_var_compensators, ['p', 'q', 'reactive_power_setpoint'])
         self._per_unit_i(static_var_compensators, ['i'], nominal_v)
@@ -228,7 +238,7 @@ class PerUnitView(_net.Network):
         Returns:
             a voltage levels data frame
         """
-        voltage_levels = super().get_voltage_levels()
+        voltage_levels = self._network.get_voltage_levels()
         self._per_unit_v(voltage_levels, ['low_voltage_limit', 'high_voltage_limit'], voltage_levels['nominal_v'])
         return voltage_levels
 
@@ -238,7 +248,7 @@ class PerUnitView(_net.Network):
         Returns:
             a busbar sections data frame
         """
-        busbar_sections = super().get_busbar_sections()
+        busbar_sections = self._network.get_busbar_sections()
         nominal_v = self._get_indexed_nominal_v(busbar_sections)
         self._per_unit_v(busbar_sections, ['v'], nominal_v)
         return busbar_sections
@@ -249,7 +259,7 @@ class PerUnitView(_net.Network):
         Returns:
             a HVDC lines data frame
         """
-        hvdc_lines = super().get_hvdc_lines()
+        hvdc_lines = self._network.get_hvdc_lines()
         self._per_unit_p(hvdc_lines, ['max_p', 'active_power_setpoint'])
         self._per_unit_r(hvdc_lines, ['r'], hvdc_lines['nominal_v'])
         return hvdc_lines
@@ -260,19 +270,19 @@ class PerUnitView(_net.Network):
         Returns:
             a reactive capability curve points data frame
         """
-        reactive_capability_curve_points = super().get_reactive_capability_curve_points()
+        reactive_capability_curve_points = self._network.get_reactive_capability_curve_points()
         self._per_unit_p(reactive_capability_curve_points, ['p', 'min_q', 'max_q'])
         return reactive_capability_curve_points
 
     def get_batteries(self) -> _pd.DataFrame:
-        batteries = super().get_batteries()
+        batteries = self._network.get_batteries()
         nominal_v = self._get_indexed_nominal_v(batteries)
         self._per_unit_p(batteries, ['p0', 'q0', 'p', 'q', 'min_p', 'max_p'])
         self._per_unit_i(batteries, ['i'], nominal_v)
         return batteries
 
     def get_ratio_tap_changers(self) -> _pd.DataFrame:
-        ratio_tap_changers = super().get_ratio_tap_changers()
+        ratio_tap_changers = self._network.get_ratio_tap_changers()
         voltage_levels = ratio_tap_changers[[]].merge(
             self.get_2_windings_transformers()[['voltage_level1_id', 'voltage_level2_id']],
             left_index=True, right_index=True)
@@ -288,9 +298,9 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_buses())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_buses())
         self._un_per_unit_v(to_update, ['v_mag'], nominal_v)
-        super().update_buses(to_update)
+        self._network.update_buses(to_update)
 
     def update_generators(self, df: _pd.DataFrame = None, **kwargs):
         """ Update generators with a ``Pandas`` data frame.
@@ -299,11 +309,11 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_generators())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_generators())
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._un_per_unit_p(to_update, ['target_p', 'target_q', 'p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        super().update_generators(to_update)
+        self._network.update_generators(to_update)
 
     def update_loads(self, df: _pd.DataFrame = None, **kwargs):
         """ Update loads with a ``Pandas`` data frame.
@@ -312,10 +322,10 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_loads())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_loads())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        super().update_loads(to_update)
+        self._network.update_loads(to_update)
 
     def update_batteries(self, df: _pd.DataFrame = None, **kwargs):
         """ Update batteries with a ``Pandas`` data frame.
@@ -327,10 +337,10 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_batteries())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_batteries())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q', 'max_p', 'min_p'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        super().update_batteries(to_update)
+        self._network.update_batteries(to_update)
 
     def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update dangling lines with a ``Pandas`` data frame.
@@ -339,12 +349,12 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_dangling_lines())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_dangling_lines())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._un_per_unit_r(to_update, ['r', 'x'], nominal_v)
         self._un_per_unit_g(to_update, ['g', 'b'], nominal_v)
-        super().update_dangling_lines(to_update)
+        self._network.update_dangling_lines(to_update)
 
     def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs):
         """ Update VSC converter stations with a ``Pandas`` data frame.
@@ -353,11 +363,11 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_vsc_converter_stations())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_vsc_converter_stations())
         self._un_per_unit_p(to_update, ['p', 'q', 'reactive_power_setpoint'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._un_per_unit_v(to_update, ['voltage_setpoint'], nominal_v)
-        super().update_vsc_converter_stations(to_update)
+        self._network.update_vsc_converter_stations(to_update)
 
     def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs):
         """ Update static var compensators with a ``Pandas`` data frame.
@@ -366,11 +376,11 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_static_var_compensators())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_static_var_compensators())
         self._un_per_unit_p(to_update, ['p', 'q', 'reactive_power_setpoint'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._un_per_unit_v(to_update, ['voltage_setpoint'], nominal_v)
-        self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, to_update)
+        self._network.update_static_var_compensators(to_update)
 
     def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update HVDC lines with a ``Pandas`` data frame.
@@ -379,10 +389,10 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = super().get_hvdc_lines()['nominal_v']
+        nominal_v = self._network.get_hvdc_lines()['nominal_v']
         self._un_per_unit_p(to_update, ['active_power_setpoint'])
         self._un_per_unit_r(to_update, ['r'], nominal_v)
-        super().update_hvdc_lines(to_update)
+        self._network.update_hvdc_lines(to_update)
 
     def update_lines(self, df: _pd.DataFrame = None, **kwargs):
         """ Update lines with a ``Pandas`` data frame.
@@ -391,11 +401,11 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_lines(), 'voltage_level1_id')
+        nominal_v = self._get_indexed_nominal_v(self._network.get_lines(), 'voltage_level1_id')
         self._un_per_unit_p(to_update, ['p1', 'p2', 'q1', 'q2'])
         self._un_per_unit_r(to_update, ['r', 'x'], nominal_v)
         self._un_per_unit_g(to_update, ['g1', 'g2', 'b1', 'b2'], nominal_v)
-        super().update_lines(to_update)
+        self._network.update_lines(to_update)
 
     def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs):
         """Update 2 windings transformers with a ``Pandas`` data frame.
@@ -404,7 +414,7 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        ref = super().get_2_windings_transformers()
+        ref = self._network.get_2_windings_transformers()
         nominal_v1 = self._get_indexed_nominal_v(ref, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(ref, 'voltage_level2_id')
         self._un_per_unit_p(to_update, ['p1', 'p2', 'q1', 'q2'])
@@ -412,7 +422,7 @@ class PerUnitView(_net.Network):
         self._un_per_unit_g(to_update, ['g', 'b'], nominal_v2)
         self._un_per_unit_v(to_update, ['rated_u1'], nominal_v1)
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
-        super().update_2_windings_transformers(to_update)
+        self._network.update_2_windings_transformers(to_update)
 
     def update_3_windings_transformers(self, df: _pd.DataFrame):
         """Update 3 windings transformers with a ``Pandas`` data frame.
@@ -421,7 +431,7 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        ref = super().get_3_windings_transformers()
+        ref = self._network.get_3_windings_transformers()
         nominal_v1 = self._get_indexed_nominal_v(ref, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(ref, 'voltage_level2_id')
         nominal_v3 = self._get_indexed_nominal_v(ref, 'voltage_level3_id')
@@ -432,7 +442,7 @@ class PerUnitView(_net.Network):
         self._un_per_unit_v(to_update, ['rated_u1'], nominal_v1)
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
         self._un_per_unit_v(to_update, ['rated_u3'], nominal_v3)
-        super().update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
+        self._network.update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 
     def update_lcc_converter_station(self, df: _pd.DataFrame):
         """Update lcc converter stations with a ``Pandas`` data frame.
@@ -441,7 +451,7 @@ class PerUnitView(_net.Network):
             df (DataFrame): the ``Pandas`` data frame
         """
         to_update = df.copy()
-        nominal_v = self._get_indexed_nominal_v(super().get_lcc_converter_stations())
+        nominal_v = self._get_indexed_nominal_v(self._network.get_lcc_converter_stations())
         self._un_per_unit_p(to_update, ['p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        super().update_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, to_update)
+        self._network.update_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, to_update)
