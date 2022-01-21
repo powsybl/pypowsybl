@@ -177,6 +177,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -185,6 +186,31 @@ public final class NetworkDataframes {
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
+    }
+
+    private static String getRegulatedElementId(Generator generator) {
+        Terminal terminal = generator.getRegulatingTerminal();
+        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+            //Not supported for the moment
+            return null;
+        }
+        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private static void setRegulatedElement(Generator generator, String elementId) {
+        Network network = generator.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            generator.setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+        } else {
+            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                    ": the regulated element may only be a busbar section or an injection.");
+        }
     }
 
     static NetworkDataframeMapper buses() {

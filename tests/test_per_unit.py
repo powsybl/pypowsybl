@@ -43,31 +43,29 @@ class NetworkTestCase(unittest.TestCase):
         n = pp.network.create_eurostag_tutorial_example1_network()
         pp.loadflow.run_ac(n)
         n = per_unit_view(n, 100)
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
-                                columns=['name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q',
-                                         'target_v',
-                                         'target_q', 'voltage_regulator_on', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['', 'OTHER', 6.07, -100, 49.99, -100, 100, 1.02, 3.01, True,
-                                       -3.03, -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
-                                      ['', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 1.02, 3.01,
-                                       True,
-                                       -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'target_v',
+                     'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
+                     'bus_id', 'connected'],
+            data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, 1.02, 3.01, True, '', -3.03, -1.12641, 3.16461,
+                   'VLGEN', 'VLGEN_0', True],
+                  ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 1.02, 3.01, True, '', -3.03,
+                   -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=10 ** -2)
         generators2 = pd.DataFrame(data=[[6.080, 3.02, 1.1, False, False]],
                                    columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'connected'],
                                    index=['GEN'])
         n.update_generators(generators2)
-        expected = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
-                                columns=['name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q',
-                                         'target_v',
-                                         'target_q', 'voltage_regulator_on', 'p',
-                                         'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                                data=[['', 'OTHER', 6.08, -100, 49.99, -100, 100, 1.1, 3.02, False,
-                                       -3.02781, -1.12641, NaN, 'VLGEN', '', False],
-                                      ['', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306,
-                                       1.02, 3.01, True, -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0',
-                                       True]])
+        expected = pd.DataFrame.from_records(
+            index='id',
+            columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'target_v',
+                     'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
+                     'bus_id', 'connected'],
+            data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, 1.1, 3.02, False, '', -3.03, -1.12641, NaN,
+                   'VLGEN', '', False],
+                  ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 1.02, 3.01, True, '', -3.03,
+                   -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=10 ** -2)
 
     def test_loads_per_unit(self):
