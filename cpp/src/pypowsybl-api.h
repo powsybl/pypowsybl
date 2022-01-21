@@ -95,6 +95,16 @@ typedef enum {
 } element_type;
 
 typedef enum {
+    FLOWS = 0,
+    GENERATORS,
+    BUSES,
+    SVCS,
+    SHUNTS,
+    TWTS,
+    TWTS3W,
+} validation_type;
+
+typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,
@@ -112,6 +122,13 @@ typedef struct series_struct {
     int type;
     array data;
 } series;
+
+typedef struct series_metadata_struct {
+    char* name;
+    int type;
+    unsigned char  is_index;
+    unsigned char  is_modifiable;
+} series_metadata;
 
 typedef struct zone_struct {
     char* id;
