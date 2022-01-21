@@ -5,15 +5,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import math as _math
-
-import numpy as np
-
-from pypowsybl import _pypowsybl
-
-import pypowsybl.network as _net
-from pypowsybl.network import _adapt_df_or_kwargs, ElementType
 import pandas as _pd
 import numpy as _np
+from pypowsybl import _pypowsybl
+import pypowsybl.network as _net
+from pypowsybl.network import _adapt_df_or_kwargs, ElementType
+
 
 
 class PerUnitView:
@@ -97,7 +94,7 @@ class PerUnitView:
     def _un_per_unit_angle(self, df: _pd.DataFrame, columns):
         for col in columns:
             if col in df.columns:
-                df[col] = np.rad2deg(df[col])
+                df[col] = _np.rad2deg(df[col])
 
     def _un_per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
         factor = nominal_v ** 2 / self.sn

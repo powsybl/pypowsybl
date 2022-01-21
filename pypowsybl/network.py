@@ -10,11 +10,10 @@ import sys as _sys
 from typing import List as _List
 from typing import Set as _Set
 
-import pandas as pd
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
 
+import pandas as _pd
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import datetime as _datetime
@@ -180,11 +179,11 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     index = None
     if len(index_columns) == 1:
         index_name = index_columns[0]
-        index = pd.Index(name=index_name, data=columns[index_name])
+        index = _pd.Index(name=index_name, data=columns[index_name])
     elif len(index_columns) > 1:
-        index = pd.MultiIndex.from_arrays(names=index_columns, arrays=[columns[name] for name in index_columns])
+        index = _pd.MultiIndex.from_arrays(names=index_columns, arrays=[columns[name] for name in index_columns])
     data = dict((k, v) for k, v in columns.items() if k not in index_columns)
-    return pd.DataFrame(index=index, data=data)
+    return _DataFrame(index=index, data=data)
 
 
 def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> _DataFrame:
