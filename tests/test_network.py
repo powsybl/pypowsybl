@@ -166,50 +166,48 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_vsc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         stations = n.get_vsc_converter_stations()
-        self.assertEqual(400.0, stations['voltage_setpoint']['VSC1'])
-        self.assertEqual(500.0, stations['reactive_power_setpoint']['VSC1'])
+        self.assertEqual(400.0, stations['target_v']['VSC1'])
+        self.assertEqual(500.0, stations['target_q']['VSC1'])
         stations2 = pd.DataFrame(data=[[300.0, 400.0], [1.0, 2.0]],
-                                 columns=['voltage_setpoint', 'reactive_power_setpoint'], index=['VSC1', 'VSC2'])
+                                 columns=['target_v', 'target_q'], index=['VSC1', 'VSC2'])
         n.update_vsc_converter_stations(stations2)
         stations = n.get_vsc_converter_stations()
-        self.assertEqual(300.0, stations['voltage_setpoint']['VSC1'])
-        self.assertEqual(400.0, stations['reactive_power_setpoint']['VSC1'])
-        self.assertEqual(1.0, stations['voltage_setpoint']['VSC2'])
-        self.assertEqual(2.0, stations['reactive_power_setpoint']['VSC2'])
+        self.assertEqual(300.0, stations['target_v']['VSC1'])
+        self.assertEqual(400.0, stations['target_q']['VSC1'])
+        self.assertEqual(1.0, stations['target_v']['VSC2'])
+        self.assertEqual(2.0, stations['target_q']['VSC2'])
         self.assertAlmostEqual(1.1, stations['loss_factor']['VSC1'], delta=0.001)
         self.assertAlmostEqual(1.1, stations['loss_factor']['VSC2'], delta=0.001)
 
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         lines = n.get_hvdc_lines()
-        self.assertEqual(10, lines['active_power_setpoint']['HVDC1'])
-        lines2 = pd.DataFrame(data=[11], columns=['active_power_setpoint'], index=['HVDC1'])
+        self.assertEqual(10, lines['target_p']['HVDC1'])
+        lines2 = pd.DataFrame(data=[11], columns=['target_p'], index=['HVDC1'])
         n.update_hvdc_lines(lines2)
         lines = n.get_hvdc_lines()
-        self.assertEqual(11, lines['active_power_setpoint']['HVDC1'])
+        self.assertEqual(11, lines['target_p']['HVDC1'])
 
     def test_svc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         svcs = n.get_static_var_compensators()
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
-            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
+            columns=['name', 'b_min', 'b_max', 'target_v', 'target_q',
                                              'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                              'connected'],
             data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
         n.update_static_var_compensators(pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
-            columns=['b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
-                                             'regulation_mode', 'p', 'q'],
+            columns=['b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q'],
             data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13]]))
 
         svcs = n.get_static_var_compensators()
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
-            columns=['name', 'b_min', 'b_max', 'voltage_setpoint', 'reactive_power_setpoint',
-                                             'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                             'connected'],
+            columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q', 'i',
+                     'voltage_level_id', 'bus_id', 'connected'],
             data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10**-2)
 

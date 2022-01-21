@@ -257,9 +257,9 @@ class PerUnitView:
         """
         vsc_converter_stations = self._network.get_vsc_converter_stations()
         nominal_v = self._get_indexed_nominal_v(vsc_converter_stations)
-        self._per_unit_p(vsc_converter_stations, ['p', 'q', 'reactive_power_setpoint'])
+        self._per_unit_p(vsc_converter_stations, ['p', 'q', 'target_q'])
         self._per_unit_i(vsc_converter_stations, ['i'], nominal_v)
-        self._per_unit_v(vsc_converter_stations, ['voltage_setpoint'], nominal_v)
+        self._per_unit_v(vsc_converter_stations, ['target_v'], nominal_v)
         return vsc_converter_stations
 
     def get_static_var_compensators(self) -> _pd.DataFrame:
@@ -271,9 +271,9 @@ class PerUnitView:
         """
         static_var_compensators = self._network.get_static_var_compensators()
         nominal_v = self._get_indexed_nominal_v(static_var_compensators)
-        self._per_unit_p(static_var_compensators, ['p', 'q', 'reactive_power_setpoint'])
+        self._per_unit_p(static_var_compensators, ['p', 'q', 'target_q'])
         self._per_unit_i(static_var_compensators, ['i'], nominal_v)
-        self._per_unit_v(static_var_compensators, ['voltage_setpoint'], nominal_v)
+        self._per_unit_v(static_var_compensators, ['target_v'], nominal_v)
         return static_var_compensators
 
     def get_voltage_levels(self) -> _pd.DataFrame:
@@ -308,7 +308,7 @@ class PerUnitView:
             a per-united dataframe of HVDC lines.
         """
         hvdc_lines = self._network.get_hvdc_lines()
-        self._per_unit_p(hvdc_lines, ['max_p', 'active_power_setpoint'])
+        self._per_unit_p(hvdc_lines, ['max_p', 'target_p'])
         self._per_unit_r(hvdc_lines, ['r'], hvdc_lines['nominal_v'])
         return hvdc_lines
 
@@ -412,9 +412,9 @@ class PerUnitView:
         """
         to_update = _adapt_df_or_kwargs(ElementType.VSC_CONVERTER_STATION, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_vsc_converter_stations())
-        self._un_per_unit_p(to_update, ['p', 'q', 'reactive_power_setpoint'])
+        self._un_per_unit_p(to_update, ['p', 'q', 'target_q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        self._un_per_unit_v(to_update, ['voltage_setpoint'], nominal_v)
+        self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_vsc_converter_stations(to_update)
 
     def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs):
@@ -423,9 +423,9 @@ class PerUnitView:
         """
         to_update = _adapt_df_or_kwargs(ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_static_var_compensators())
-        self._un_per_unit_p(to_update, ['p', 'q', 'reactive_power_setpoint'])
+        self._un_per_unit_p(to_update, ['p', 'q', 'target_q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        self._un_per_unit_v(to_update, ['voltage_setpoint'], nominal_v)
+        self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_static_var_compensators(to_update)
 
     def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs):
@@ -434,7 +434,7 @@ class PerUnitView:
         """
         to_update = _adapt_df_or_kwargs(ElementType.HVDC_LINE, df, **kwargs).copy()
         nominal_v = self._network.get_hvdc_lines()['nominal_v']
-        self._un_per_unit_p(to_update, ['active_power_setpoint'])
+        self._un_per_unit_p(to_update, ['target_p'])
         self._un_per_unit_r(to_update, ['r'], nominal_v)
         self._network.update_hvdc_lines(to_update)
 
