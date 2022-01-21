@@ -16,7 +16,7 @@ import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
-import tests.util as util
+import util
 
 TEST_DIR = pathlib.Path(__file__).parent
 
