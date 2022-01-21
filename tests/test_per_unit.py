@@ -9,7 +9,7 @@ import unittest
 import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
-import tests.util as util
+import util
 from pypowsybl.perunit import per_unit_view
 
 
