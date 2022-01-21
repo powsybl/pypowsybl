@@ -288,19 +288,38 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         generators = n.get_generators()
         self.assertEqual(607, generators['target_p']['GEN'])
         self.assertTrue(generators['voltage_regulator_on']['GEN'])
-        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False, 'LOAD']],
-                                   columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'regulating_terminal'], index=['GEN'])
+        self.assertEqual('', generators['regulated_element_id']['GEN'])
+        generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
+                                   columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
         n.update_generators(generators2)
         generators = n.get_generators()
         self.assertEqual(608, generators['target_p']['GEN'])
         self.assertEqual(302.0, generators['target_q']['GEN'])
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
-        n.update_generators(pd.DataFrame(data=[['LOAD']],
-                                   columns=['regulating_terminal'], index=['GEN']))
-        generators = n.get_generators()
-        self.assertEqual('LOAD', generators['regulating_terminal']['GEN'])
 
+    def test_regulated_terminal_node_breaker(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        gens = n.get_generators()
+        print(n.get_lines())
+        self.assertEqual('GH1', gens['regulated_element_id']['GH1'])
+
+        n.update_generators(id='GH1', regulated_element_id='S1VL1_BBS')
+        updated_gens = n.get_generators()
+        self.assertEqual('S1VL1_BBS', updated_gens['regulated_element_id']['GH1'])
+
+        with self.assertRaises(pp.PyPowsyblError):
+            n.update_generators(id='GH1', regulated_element_id='LINE_S2S3')
+
+    def test_regulated_terminal_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        generators = n.get_generators()
+        self.assertEqual('', generators['regulated_element_id']['GEN'])
+
+        with self.assertRaises(pp.PyPowsyblError):
+            n.update_generators(id='GEN', regulated_element_id='NHV1')
+        with self.assertRaises(pp.PyPowsyblError):
+            n.update_generators(id='GEN', regulated_element_id='LOAD')
 
     def test_update_unknown_data(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
