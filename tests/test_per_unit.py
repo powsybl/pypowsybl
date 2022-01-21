@@ -23,20 +23,20 @@ class NetworkTestCase(unittest.TestCase):
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                                          'voltage_level_id'],
-                                data=[['', 1.02, 2.33, 0, 0, 'VLGEN'],
+                                data=[['', 1.02, 0.04059612739187691, 0, 0, 'VLGEN'],
                                       ['', 1.06, 0.0, 0, 0, 'VLHV1'],
-                                      ['', 1.03, -3.51, 0, 0, 'VLHV2'],
-                                      ['', 0.98, -9.61, 0, 0, 'VLLOAD']])
+                                      ['', 1.03, -0.06119749366730875, 0, 0, 'VLHV2'],
+                                      ['', 0.98, -0.16780443393265765, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False, atol=10 ** -2)
-        n.update_buses(id='VLGEN_0', v_mag=1, v_angle=0)
+        n.update_buses(id='VLGEN_0', v_mag=1, v_angle=0.1)
         buses = n.get_buses()
         expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                                 columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                                          'voltage_level_id'],
-                                data=[['', 1, 0, 0, 0, 'VLGEN'],
+                                data=[['', 1, 0.1, 0, 0, 'VLGEN'],
                                       ['', 1.06, 0, 0, 0, 'VLHV1'],
-                                      ['', 1.03, -3.51, 0, 0, 'VLHV2'],
-                                      ['', 0.98, -9.61, 0, 0, 'VLLOAD']])
+                                      ['', 1.03, -0.06119749366730875, 0, 0, 'VLHV2'],
+                                      ['', 0.98, -0.16780443393265765, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected, buses, check_dtype=False, atol=10 ** -2)
 
     def test_generator_per_unit(self):

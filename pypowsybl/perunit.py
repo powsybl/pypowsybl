@@ -6,11 +6,14 @@
 #
 import math as _math
 
+import numpy as np
+
 from pypowsybl import _pypowsybl
 
 import pypowsybl.network as _net
 from pypowsybl.network import _adapt_df_or_kwargs, ElementType
 import pandas as _pd
+import numpy as _np
 
 
 class PerUnitView:
@@ -27,15 +30,32 @@ class PerUnitView:
             sn:      the base power, in MW
         """
         self._network = network
-        self.sn = sn
+        self._sn = sn
         self.sqrt3 = _math.sqrt(3)
 
+    @property
+    def network(self):
+        """
+        The underlying network
+        """
+        return self._network
+
+    @property
+    def sn(self):
+        """
+        The base power, in MW, used for per-uniting
+        """
+        return self._sn
+
     def _get_nominal_v(self) -> _pd.Series:
+        """ A series of nominal voltages for all voltage levels
+        """
         return self._network.get_voltage_levels()['nominal_v']
 
     def _get_indexed_nominal_v(self, df: _pd.DataFrame, vl_attr: str = 'voltage_level_id') -> _pd.Series:
-        return _pd.merge(df, self._get_nominal_v(),
-                         left_on=vl_attr, right_index=True)['nominal_v']
+        """ A series of nominal voltages indexed on the provided dataframe index.
+        """
+        return _pd.merge(df, self._get_nominal_v(), left_on=vl_attr, right_index=True)['nominal_v']
 
     def _per_unit_p(self, df: _pd.DataFrame, columns):
         df[columns] /= self.sn
@@ -43,6 +63,10 @@ class PerUnitView:
     def _per_unit_v(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
         for col in columns:
             df[col] /= nominal_v
+
+    def _per_unit_angle(self, df: _pd.DataFrame, columns):
+        for col in columns:
+            df[col] = _np.deg2rad(df[col])
 
     def _per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
         factor = nominal_v ** 2 / self.sn
@@ -69,6 +93,11 @@ class PerUnitView:
             if col in df.columns:
                 df[col] *= nominal_v
 
+    def _un_per_unit_angle(self, df: _pd.DataFrame, columns):
+        for col in columns:
+            if col in df.columns:
+                df[col] = np.rad2deg(df[col])
+
     def _un_per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
         factor = nominal_v ** 2 / self.sn
         for col in columns:
@@ -91,6 +120,7 @@ class PerUnitView:
         buses = self._network.get_buses()
         nominal_v = self._get_indexed_nominal_v(buses)
         self._per_unit_v(buses, ['v_mag'], nominal_v)
+        self._per_unit_angle(buses, ['v_angle'])
         return buses
 
     def get_generators(self) -> _pd.DataFrame:
@@ -296,6 +326,7 @@ class PerUnitView:
         nominal_v1 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level2_id')
         ratio_tap_changers['rho'] *= nominal_v1 / nominal_v2
+        self._per_unit_angle(ratio_tap_changers, ['alpha'])
         return ratio_tap_changers
 
     def update_buses(self, df: _pd.DataFrame = None, **kwargs):
@@ -308,6 +339,7 @@ class PerUnitView:
         to_update = _adapt_df_or_kwargs(ElementType.BUS, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_buses())
         self._un_per_unit_v(to_update, ['v_mag'], nominal_v)
+        self._un_per_unit_angle(to_update, ['v_angle'])
         self._network.update_buses(to_update)
 
     def update_generators(self, df: _pd.DataFrame = None, **kwargs):
