@@ -806,8 +806,8 @@ class Network(object):
             The resulting dataframe will have the following columns:
 
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
-              - **voltage_setpoint**: The voltage setpoint
-              - **reactive_power_setpoint**: The reactive power setpoint
+              - **target_v**: The voltage setpoint
+              - **target_q**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
@@ -830,7 +830,7 @@ class Network(object):
             will output something like:
 
             ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            \        loss_factor         target_v                target_q voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
             ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
             id
                 VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
@@ -850,8 +850,8 @@ class Network(object):
             The resulting dataframe will have the following columns:
               - **b_min**: the minimum susceptance
               - **b_max**: the maximum susceptance
-              - **voltage_setpoint**: The voltage setpoint
-              - **reactive_power_setpoint**: The reactive power setpoint
+              - **target_v**: The voltage setpoint
+              - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
@@ -872,7 +872,7 @@ class Network(object):
             will output something like:
 
             ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            \        b_min b_max         target_v                target_q regulation_mode  p        q   i  voltage_level_id  bus_id connected
             ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
             id
                  SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
@@ -980,7 +980,7 @@ class Network(object):
             The resulting dataframe will have the following columns:
 
               - **converters_mode**:
-              - **active_power_setpoint**: (in MW)
+              - **target_p**: (in MW)
               - **max_p**: the maximum of active power that can pass through the hvdc line (in MW)
               - **nominal_v**: nominal voltage (in kV)
               - **r**: the resistance of the hvdc line (in Ohm)
@@ -1001,7 +1001,7 @@ class Network(object):
             will output something like:
 
             ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
-            \                      converters_mode active_power_setpoint max_p nominal_v    r converter_station1_id converter_station2_id connected1 connected2
+            \                      converters_mode              target_p max_p nominal_v    r converter_station1_id converter_station2_id connected1 connected2
             ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
             id
             HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0 300.0     400.0  1.0                  VSC1                  VSC2       True       True
@@ -1402,8 +1402,8 @@ class Network(object):
 
         Attributes that can be updated are:
 
-        - `voltage_setpoint`
-        - `reactive_power_setpoint`
+        - `target_v`
+        - `target_q`
         - `voltage_regulator_on`
         - `p`
         - `q`
@@ -1427,8 +1427,8 @@ class Network(object):
         Attributes that can be updated are:
         - `b_min`
         - `b_max`
-        - `voltage_setpoint`
-        - `reactive_power_setpoint`
+        - `target_v`
+        - `target_q`
         - `regulation_mode`
         - `p`
         - `q`
@@ -1452,7 +1452,7 @@ class Network(object):
         Attributes that can be updated are:
 
         - `converters_mode`
-        - `active_power_setpoint`
+        - `target_p`
         - `max_p`
         - `nominal_v`
         - `r`
