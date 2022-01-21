@@ -71,7 +71,7 @@ jobs:
       - name: Run tests
         working-directory: ./tests
         run: |
-          coverage run -m unittest
+          coverage run -m pytest
           coverage xml
 
       - name: Sonar analysis
@@ -158,7 +158,7 @@ jobs:
 
       - name: Run tests
         working-directory: ./tests
-        run: python3 -m unittest
+        run: python3 -m pytest
 
       - name: Run doc examples
         working-directory: ./docs

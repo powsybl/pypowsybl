@@ -6,3 +6,4 @@ wheel==0.37.1
 coverage==5.5
 networkx
 matplotlib
+pytest>=6.2.5
