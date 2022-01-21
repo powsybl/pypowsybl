@@ -75,7 +75,6 @@ jobs:
           coverage xml
 
       - name: Sonar analysis
-        working-directory: ./tests
         if: matrix.python.name == 'cp39'
         uses: sonarsource/sonarcloud-github-action@v1.6
         env:
@@ -83,7 +82,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.coverage.reportPaths=tests/coverage.xml
 
       - name: Run doc examples
         working-directory: ./docs
