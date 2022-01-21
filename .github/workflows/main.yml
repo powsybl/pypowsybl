@@ -75,6 +75,7 @@ jobs:
           coverage xml
 
       - name: Sonar analysis
+        working-directory: ./tests
         if: matrix.python.name == 'cp39'
         uses: sonarsource/sonarcloud-github-action@v1.6
         env:
