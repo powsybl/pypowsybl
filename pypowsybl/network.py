@@ -428,7 +428,8 @@ class Network(object):
               - **min_p**: the minimum active value for the generator  (MW)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
-              - **voltage_regulator_on**:
+              - **voltage_regulator_on**: ``True`` if the generator regulates voltage
+              - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **voltage_level_id**: at which substation this generator is connected
@@ -1312,6 +1313,8 @@ class Network(object):
         - `target_v`
         - `target_q`
         - `voltage_regulator_on`
+        - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
+           Only supported in node breaker voltage levels.
         - `p`
         - `q`
         - `connected`
