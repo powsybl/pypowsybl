@@ -19,7 +19,6 @@ import java.util.List;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
@@ -61,14 +60,14 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "v_mag", "v_angle", "connected_component", "synchronous_component", "voltage_level_id");
-        assertThat(series.get(1).getDoubles())
+            .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component", "voltage_level_id");
+        assertThat(series.get(2).getDoubles())
             .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
-        assertThat(series.get(3).getInts())
+        assertThat(series.get(4).getInts())
             .containsExactly(0, 0, 0, 0);
         assertThat(series.get(4).getInts())
             .containsExactly(0, 0, 0, 0);
-        assertThat(series.get(5).getStrings())
+        assertThat(series.get(6).getStrings())
             .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
     }
 
@@ -79,15 +78,11 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
-                "target_q", "voltage_regulator_on", "regulating_terminal", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
+                "target_q", "voltage_regulator_on", "regulating_terminal",  "p", "q", "i", "voltage_level_id", "bus_id", "connected");
 
-        assertThat(series.get(2).getDoubles())
+        assertThat(series.get(3).getDoubles())
             .containsExactly(607);
-
-        NetworkDataframes.generators().updateDoubleSeries(network, "target_p", createInput(List.of("GEN"), 500));
-
-        assertEquals(500, network.getGenerator("GEN").getTargetP());
     }
 
     @Test
@@ -96,7 +91,7 @@ class NetworkDataframesTest {
         List<Series> series = createDataFrame(BATTERY, network);
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "max_p", "min_p", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "max_p", "min_p", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -106,7 +101,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "type", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "type", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -116,7 +111,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g", "b", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "ucte-x-node-code");
     }
 
     @Test
@@ -126,7 +121,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "i1", "p2", "q2", "i2",
+            .containsExactly("id", "name", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "i1", "p2", "q2", "i2",
                 "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id", "connected1", "connected2");
     }
 
@@ -137,7 +132,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on", "" +
+            .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on", "" +
                 "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
@@ -148,7 +143,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -158,7 +153,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "voltage_regulator_on",
+            .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on",
                 "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
@@ -169,7 +164,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
+            .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
                 "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus2_id", "connected1", "connected2");
     }
 
@@ -180,7 +175,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "rated_u0",
+            .containsExactly("id", "name", "rated_u0",
                 "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "connected1",
                 "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "connected2",
                 "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "connected3");
@@ -193,7 +188,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "converters_mode", "active_power_setpoint", "max_p", "nominal_v", "r",
+            .containsExactly("id", "name", "converters_mode", "target_p", "max_p", "nominal_v", "r",
                 "converter_station1_id", "converter_station2_id", "connected1", "connected2");
     }
 
@@ -204,7 +199,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -214,7 +209,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "TSO", "geo_tags", "country");
+            .containsExactly("id", "name", "TSO", "geo_tags", "country");
     }
 
     @Test
@@ -226,7 +221,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "TSO", "geo_tags", "country", "prop1", "prop2");
+            .containsExactly("id", "name", "TSO", "geo_tags", "country", "prop1", "prop2");
     }
 
     @Test
@@ -236,7 +231,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "substation_id", "nominal_v", "high_voltage_limit", "low_voltage_limit");
+            .containsExactly("id", "name", "substation_id", "nominal_v", "high_voltage_limit", "low_voltage_limit");
     }
 
     @Test

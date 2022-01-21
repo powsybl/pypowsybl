@@ -4,10 +4,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import _pypowsybl
-from _pypowsybl import PyPowsyblError
+import os as _os
+import inspect as _inspect
+from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import PyPowsyblError
 
-__version__ = '0.10.0'
+__version__ = '0.13.0'
+
+# set JVM java.library.path to pypowsybl module installation directory to be able to load math library
+_pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
 
 import pypowsybl.network
 import pypowsybl.loadflow

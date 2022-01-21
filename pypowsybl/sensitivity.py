@@ -6,12 +6,11 @@
 #
 from __future__ import annotations
 
-import _pypowsybl
-
+from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
-from _pypowsybl import PyPowsyblError as _PyPowsyblError
+from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
 from typing import List as _List, Optional as _Optional, Dict as _Dict, Tuple as _Tuple
 from enum import Enum as _Enum
 import numpy as _np
@@ -219,8 +218,11 @@ class SensitivityAnalysis(_ContingencyContainer):
         _pypowsybl.set_zones(self._handle, _zones)
 
     def set_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List):
-        """ Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
+        """
+        Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
+
         A variable could be:
+
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones

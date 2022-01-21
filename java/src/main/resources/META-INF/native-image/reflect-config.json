@@ -16,42 +16,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.sun.xml.bind.v2.ContextFactory",
-  "methods":[{"name":"createContext","parameterTypes":["java.lang.Class[]","java.util.Map"] }]
-},
-{
-  "name":"com.sun.xml.bind.v2.model.nav.ReflectionNavigator",
-  "methods":[{"name":"getInstance","parameterTypes":[] }]
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayElementLeafProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayElementNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.ArrayReferenceNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleElementLeafProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleElementNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleMapNodeProperty",
-  "allPublicConstructors":true
-},
-{
-  "name":"com.sun.xml.bind.v2.runtime.property.SingleReferenceNodeProperty",
-  "allPublicConstructors":true
-},
-{
   "name":"com.sun.xml.internal.stream.XMLInputFactoryImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -74,7 +38,7 @@
 {
   "name":"java.beans.PropertyDescriptor",
   "methods":[
-    {"name":"getReadMethod","parameterTypes":[] }, 
+    {"name":"getReadMethod","parameterTypes":[] },
     {"name":"getWriteMethod","parameterTypes":[] }
   ]
 },
@@ -215,9 +179,13 @@
   "methods":[{"name":"factoryClass","parameterTypes":[] }]
 },
 {
+  "name":"javax.xml.bind.annotation.adapters.CollapsedStringAdapter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
   "methods":[
-    {"name":"type","parameterTypes":[] }, 
+    {"name":"type","parameterTypes":[] },
     {"name":"value","parameterTypes":[] }
   ]
 },

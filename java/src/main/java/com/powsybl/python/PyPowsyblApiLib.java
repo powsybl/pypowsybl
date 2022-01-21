@@ -10,8 +10,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
@@ -55,9 +53,14 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = true;
-
     private PyPowsyblApiLib() {
+    }
+
+    @CEntryPoint(name = "setJavaLibraryPath")
+    public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
+        });
     }
 
     @CEntryPoint(name = "setDebugMode")
@@ -71,13 +74,13 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            readConfig = read;
+            PyPowsyblConfiguration.setReadConfig(read);
         });
     }
 
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> readConfig);
+        return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -110,7 +113,20 @@ public final class PyPowsyblApiLib {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return Dataframes.createCDataframe(Dataframes.parametersMapper(), importer);
+            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
+        });
+    }
+
+    @CEntryPoint(name = "createExporterParametersSeriesArray")
+    static ArrayPointer<SeriesPointer> createExporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String format = CTypeUtil.toString(formatPtr);
+            var exporter = Exporters.getExporter(format);
+            if (exporter == null) {
+                throw new PowsyblException("Format '" + format + "' not supported");
+            }
+            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
         });
     }
 
@@ -152,7 +168,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
+            LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
             return convertToLoadFlowParametersPointer(parameters);
         });
     }
@@ -258,6 +274,28 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+                                                  CCharPointer voltageLevelId, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIdStr, depth, svgFileStr);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramSvg")
+    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelId,
+                                                        int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIdStr, depth);
             return CTypeUtil.toCharPtr(svg);
         });
     }
@@ -494,23 +532,13 @@ public final class PyPowsyblApiLib {
 
     /**
      * Frees C strings memory
+     *
      * @param array
      */
     private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
         for (int i = 0; i < array.getLength(); i++) {
             UnmanagedMemory.free(array.getPtr().read(i));
         }
-    }
-
-    @CEntryPoint(name = "getSeriesType")
-    public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                .getSeriesMetadata(seriesName)
-                .getType();
-            return convert(type);
-        });
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
@@ -542,8 +570,8 @@ public final class PyPowsyblApiLib {
                     contingency = null;
                 }
                 analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency, convert(contingencyContextType)),
-                    Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
-                    Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
+                        Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
+                        Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
             });
         });
     }

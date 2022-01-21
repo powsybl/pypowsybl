@@ -72,6 +72,7 @@ typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
     std::vector<T> values;
@@ -123,14 +124,40 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+int* copyVectorInt(const std::vector<int>& ints);
+double* copyVectorDouble(const std::vector<double>& doubles);
 
 void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
 void init();
+
+void setJavaLibraryPath(const std::string& javaLibraryPath);
 
 void setDebugMode(bool debug);
 
@@ -158,6 +185,8 @@ std::vector<std::string> getNetworkExportFormats();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
+SeriesArray* createExporterParametersSeriesArray(const std::string& format);
+
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
@@ -174,9 +203,15 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth);
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth);
 
 JavaHandle createSecurityAnalysis();
 
@@ -204,16 +239,7 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType);
 
-int getSeriesType(element_type elementType, const std::string& seriesName);
-
-void updateNetworkElementsWithIntSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                        const std::vector<int>& values, int elementCount);
-
-void updateNetworkElementsWithDoubleSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<double>& values, int elementCount);
-
-void updateNetworkElementsWithStringSeries(const JavaHandle& network, element_type elementType, const std::string& seriesName, const std::vector<std::string>& ids,
-                                           const std::vector<std::string>& values, int elementCount);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 
@@ -244,6 +270,14 @@ SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& v
 SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
 
 }
 

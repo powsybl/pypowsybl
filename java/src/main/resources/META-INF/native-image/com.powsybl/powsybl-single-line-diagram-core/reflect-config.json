@@ -6,48 +6,26 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.AdaptedAnchorPoint",
+    "name":"com.powsybl.sld.layout.LayoutParameters$CssLocation",
     "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "allDeclaredMethods":true
   },
   {
-    "name":"com.powsybl.sld.library.AdaptedComponentMetadata",
+    "name":"com.powsybl.sld.layout.LayoutParameters$Padding",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.library.AdaptedComponentSize",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.library.AdaptedSubComponent",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "allDeclaredConstructors":true
   },
   {
     "name":"com.powsybl.sld.library.AnchorOrientation",
     "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "fields":[
-      {"name":"HORIZONTAL"},
-      {"name":"NONE"},
-      {"name":"VERTICAL"}
-    ]
+    "allDeclaredMethods":true
   },
   {
     "name":"com.powsybl.sld.library.AnchorPoint",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.library.AnchorPointAdapter",
-    "methods":[{"name":"<init>","parameterTypes":[] }]
   },
   {
     "name":"com.powsybl.sld.library.AnchorPointProvider",
@@ -57,17 +35,7 @@
     "name":"com.powsybl.sld.library.Component",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.library.ComponentMetadata",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
     "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.library.ComponentMetadataAdapter",
-    "methods":[{"name":"<init>","parameterTypes":[] }]
   },
   {
     "name":"com.powsybl.sld.library.ComponentSize",
@@ -76,18 +44,16 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.ComponentSizeAdapter",
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
     "name":"com.powsybl.sld.library.Components",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.SubComponentAdapter",
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "name":"com.powsybl.sld.library.SubComponent",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
   },
   {
     "name":"com.powsybl.sld.model.BusCell$Direction",
@@ -95,16 +61,10 @@
     "allDeclaredMethods":true
   },
   {
-    "name":"com.powsybl.sld.styles.BaseVoltageConfig",
+    "name":"com.powsybl.sld.model.Point",
     "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.styles.BaseVoltagesConfig",
-    "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
   },
   {
     "name":"com.powsybl.sld.svg.GraphMetadata",

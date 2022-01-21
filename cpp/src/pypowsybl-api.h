@@ -76,6 +76,7 @@ typedef enum {
     BATTERY,
     SHUNT_COMPENSATOR,
     NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
+    LINEAR_SHUNT_COMPENSATOR_SECTION,
     DANGLING_LINE,
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
@@ -92,6 +93,16 @@ typedef enum {
     REACTIVE_CAPABILITY_CURVE_POINT,
     CURRENT_LIMITS,
 } element_type;
+
+typedef enum {
+    FLOWS = 0,
+    GENERATORS,
+    BUSES,
+    SVCS,
+    SHUNTS,
+    TWTS,
+    TWTS3W,
+} validation_type;
 
 typedef enum {
     ALL = 0,
@@ -111,6 +122,13 @@ typedef struct series_struct {
     int type;
     array data;
 } series;
+
+typedef struct series_metadata_struct {
+    char* name;
+    int type;
+    unsigned char  is_index;
+    unsigned char  is_modifiable;
+} series_metadata;
 
 typedef struct zone_struct {
     char* id;
