@@ -9,8 +9,8 @@ package com.powsybl.dataframe;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
-import com.powsybl.python.CDataframeHandler;
 import com.powsybl.python.PyPowsyblApiHeader;
+import com.powsybl.python.Util;
 
 import java.util.List;
 import java.util.Map;
@@ -515,7 +515,7 @@ public final class CreateEquipmentHelper {
         if (seriesDataType == null) {
             throw new RuntimeException("Field '" + fieldName + "' not found for " + type + ".");
         }
-        return CDataframeHandler.convert(seriesDataType);
+        return Util.convert(seriesDataType);
     }
 
     private CreateEquipmentHelper() {

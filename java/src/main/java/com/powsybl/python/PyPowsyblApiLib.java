@@ -10,9 +10,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.DataframeMapper;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
@@ -23,7 +20,6 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
 import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
 import com.powsybl.security.SecurityAnalysisResult;
@@ -57,8 +53,6 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = true;
-
     private PyPowsyblApiLib() {
     }
 
@@ -80,13 +74,13 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            readConfig = read;
+            PyPowsyblConfiguration.setReadConfig(read);
         });
     }
 
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> readConfig);
+        return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -174,7 +168,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
+            LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
             return convertToLoadFlowParametersPointer(parameters);
         });
     }
@@ -280,6 +274,28 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+                                                  CCharPointer voltageLevelId, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIdStr, depth, svgFileStr);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramSvg")
+    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelId,
+                                                        int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIdStr, depth);
             return CTypeUtil.toCharPtr(svg);
         });
     }
@@ -525,51 +541,6 @@ public final class PyPowsyblApiLib {
         }
     }
 
-    @CEntryPoint(name = "getSeriesType")
-    public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            DataframeMapper dataframeMapper = NetworkDataframes.getDataframeMapper(convert(elementType));
-            if (dataframeMapper.isSeriesMetaDataExists(seriesName)) {
-                return CDataframeHandler.convert(dataframeMapper
-                        .getSeriesMetadata(seriesName)
-                        .getType());
-            } else {
-                // adder
-                return CreateEquipmentHelper.getAdderSeriesType(elementType, seriesName);
-            }
-        });
-    }
-
-    @CEntryPoint(name = "getIndexType")
-    public static int getIndexType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, int index, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type;
-            if (seriesName.equals("")) {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata()
-                        .get(index)
-                        .getType();
-            } else {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata(seriesName)
-                        .getType();
-            }
-            return convert(type);
-        });
-    }
-
-    @CEntryPoint(name = "isIndex")
-    public static boolean isIndex(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            return NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .isIndex();
-        });
-    }
-
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
@@ -581,7 +552,6 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return CTypeUtil.toCharPtr(network.getVariantManager().getWorkingVariantId());
         });
-
     }
 
     @CEntryPoint(name = "addMonitoredElements")

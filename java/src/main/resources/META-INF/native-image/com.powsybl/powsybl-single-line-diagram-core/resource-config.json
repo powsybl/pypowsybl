@@ -4,7 +4,6 @@
     {"pattern":"ConvergenceLibrary/.*"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.sld.layout.VoltageLevelLayoutFactorySmartSelector\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.sld.postprocessor.GraphBuildPostProcessor\\E"},
-    {"pattern":"\\Qbase-voltages.yml\\E"},
     {"pattern":"\\QbaseVoltageConstantColors.css\\E"},
     {"pattern":"\\QhighlightLineStates.css\\E"},
     {"pattern":"\\Qtautologies.css\\E"},

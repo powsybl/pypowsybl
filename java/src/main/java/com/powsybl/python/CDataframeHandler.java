@@ -7,7 +7,6 @@
 package com.powsybl.python;
 
 import com.powsybl.dataframe.DataframeHandler;
-import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesPointer;
 import org.graalvm.nativeimage.UnmanagedMemory;
@@ -107,20 +106,5 @@ public class CDataframeHandler implements DataframeHandler {
         seriesPtrI.data().setLength(count);
         seriesPtrI.data().setPtr(dataPtr);
         currentIndex++;
-    }
-
-    public static int convert(SeriesDataType type) {
-        switch (type) {
-            case STRING:
-                return CDataframeHandler.STRING_SERIES_TYPE;
-            case DOUBLE:
-                return CDataframeHandler.DOUBLE_SERIES_TYPE;
-            case INT:
-                return CDataframeHandler.INT_SERIES_TYPE;
-            case BOOLEAN:
-                return CDataframeHandler.BOOLEAN_SERIES_TYPE;
-            default:
-                throw new IllegalStateException("Unexpected series type: " + type);
-        }
     }
 }
