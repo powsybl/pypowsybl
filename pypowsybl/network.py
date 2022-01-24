@@ -1791,6 +1791,15 @@ class Network(object):
         c_dfs = [self._create_c_dataframe(element_type, df, True) for df in dfs]
         _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
+    def create_substations(self, df: _DataFrame = None, **kwargs):
+        """
+        Create substations.
+
+        Args:
+            df: dataframe of the substations creation data
+        """
+        return self._create_element(_pypowsybl.ElementType.SUBSTATION, [df])
+
     def create_generators(self, df: _DataFrame = None):
         """
         create generators on a network

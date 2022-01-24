@@ -12,6 +12,16 @@ def this_dir():
     return pathlib.Path(__file__).parent
 
 
+def test_substation_creation():
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_substations(pd.DataFrame.from_records(index='id', data=[{
+        'id': 'S3',
+        'country': 'DE'
+    }]))
+    s3 = n.get_substations().loc['S3']
+    assert s3.country == 'DE'
+
+
 def test_generators_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(pd.DataFrame.from_records(
