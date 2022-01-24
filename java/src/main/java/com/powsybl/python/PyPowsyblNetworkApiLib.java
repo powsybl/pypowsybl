@@ -6,11 +6,10 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.IndexedSeries;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
@@ -25,7 +24,6 @@ import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.ElementType;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.update.CUpdatingDataframe;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.python.update.DoubleSeries;
 import com.powsybl.python.update.IntSeries;
 import com.powsybl.python.update.StringSeries;
@@ -345,11 +343,12 @@ public final class PyPowsyblNetworkApiLib {
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            DataframeElementType type = convert(elementType);
             List<UpdatingDataframe> dataframes = new ArrayList<>();
             for (int i = 0; i < cDataframes.getLength(); i++) {
                 dataframes.add(createDataframe(cDataframes.getPtr().addressOf(i)));
             }
-            CreateEquipmentHelper.createElement(elementType, network, dataframes);
+            NetworkElementAdders.addElements(type, network, dataframes);
         });
     }
 
@@ -494,9 +493,13 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "getSeriesMetadata")
     public static ArrayPointer<SeriesMetadataPointer> getSeriesMetadata(IsolateThread thread, ElementType elementType,
+                                                                        boolean creation,
                                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(convert(elementType)).getSeriesMetadata();
+            DataframeElementType type = convert(elementType);
+            List<SeriesMetadata> seriesMetadata = creation ?
+                    NetworkElementAdders.getAdder(type).getSeriesMetadata() :
+                    NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
             SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(seriesMetadata.size() * SizeOf.get(SeriesMetadataPointer.class));
             for (int i = 0; i < seriesMetadata.size(); i++) {
                 SeriesMetadata metadata = seriesMetadata.get(i);

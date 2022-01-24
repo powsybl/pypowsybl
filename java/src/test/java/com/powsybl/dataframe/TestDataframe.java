@@ -5,7 +5,7 @@ import com.powsybl.python.update.Series;
 
 import java.util.*;
 
-class TestDataframe implements UpdatingDataframe {
+public class TestDataframe implements UpdatingDataframe {
 
     private final int size;
     private final Map<String, SeriesMetadata> columns = new LinkedHashMap<>();

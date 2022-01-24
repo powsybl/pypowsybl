@@ -161,7 +161,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     Element type is required to know which attributes must be part of the index.
     """
 
-    metadata = _pypowsybl.get_series_metadata(element_type)
+    metadata = _pypowsybl.get_series_metadata(element_type, False)
     index_columns = [col.name for col in metadata if col.is_index]
 
     columns = {}
@@ -1218,8 +1218,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def _create_c_dataframe(self, element_type: ElementType, df: _DataFrame):
-        series_metadata = _pypowsybl.get_series_metadata(element_type)
+    def _create_c_dataframe(self, element_type: ElementType, df: _DataFrame, creation: bool = False):
+        series_metadata = _pypowsybl.get_series_metadata(element_type, creation)
         metadata_by_name = {s.name: s for s in series_metadata}
         is_index = []
         columns_names = []
@@ -1577,7 +1577,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
 
     def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs):
         """
@@ -1624,7 +1624,7 @@ class Network(object):
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
-        return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
+        return self._update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
     def update_shunt_compensators(self, df: _DataFrame = None, **kwargs):
         """
@@ -1697,7 +1697,7 @@ class Network(object):
             df (DataFrame): the ``Pandas`` data frame
 
         """
-        return self.update_elements(_pypowsybl.ElementType.BUSBAR_SECTION, df)
+        return self._update_elements(_pypowsybl.ElementType.BUSBAR_SECTION, df)
 
     def get_working_variant_id(self):
         """
@@ -1788,34 +1788,8 @@ class Network(object):
         return _pypowsybl.merge(self._handle, handleList)
 
     def _create_element(self, element_type: ElementType, dfs: list):
-        array_list = []
-        for df in dfs:
-            is_index = []
-            columns_names = []
-            columns_values = []
-            columns_types = []
-            index_count = 0
-            is_multi_index = len(df.index.names) > 1
-            for index_name in df.index.names:
-                if index_name is None:
-                    index_name = 'id'
-                if is_multi_index:
-                    columns_values.append(df.index.get_level_values(index_name))
-                else:
-                    columns_values.append(df.index.values)
-                columns_names.append(index_name)
-                columns_types.append(_pypowsybl.get_index_type(element_type, index_name, index_count))
-                index_count += 1
-                is_index.append(True)
-            columns_names.extend(df.columns.values)
-            for series_name in df.columns.values:
-                series = df[series_name]
-                series_type = _pypowsybl.get_series_type(element_type, series_name)
-                columns_types.append(series_type)
-                columns_values.append(series.values)
-                is_index.append(False)
-            array_list.append(_pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index))
-        _pypowsybl.create_element(self._handle, array_list, element_type)
+        c_dfs = [self._create_c_dataframe(element_type, df, True) for df in dfs]
+        _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
     def create_generators(self, df: _DataFrame = None):
         """

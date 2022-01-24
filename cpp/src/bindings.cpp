@@ -517,7 +517,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
             .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable);
 
-    m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
+    m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type",
+          py::arg("element_type"), py::arg("creation"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));

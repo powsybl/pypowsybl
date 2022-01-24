@@ -277,7 +277,7 @@ SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& volta
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType, bool creation);
 
 void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType);
 

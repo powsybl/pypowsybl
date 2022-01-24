@@ -7,6 +7,8 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.adders.BusDataframeAdder;
+import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.PyPowsyblApiHeader;
@@ -20,6 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 public final class CreateEquipmentHelper {
+
+    private static final Map<DataframeElementType, NetworkElementAdder> ADDERS = Map.of(
+            DataframeElementType.BUS, new BusDataframeAdder()
+    );
 
     private static final String BUS_ID = "bus_id";
     private static final String BUS1_ID = "bus1_id";
@@ -289,7 +295,7 @@ public final class CreateEquipmentHelper {
         lineAdder.add();
     }
 
-    private static void createBranch(BranchAdder adder, UpdatingDataframe dataframe, int indexElement) {
+    public static void createBranch(BranchAdder adder, UpdatingDataframe dataframe, int indexElement) {
         createIdentifiable(adder, dataframe, indexElement);
         dataframe.getStringValue(BUS1_ID, indexElement).ifPresent(adder::setBus1);
         dataframe.getStringValue(BUS2_ID, indexElement).ifPresent(adder::setBus2);
@@ -310,7 +316,7 @@ public final class CreateEquipmentHelper {
         adder.add();
     }
 
-    private static void createHvdc(HvdcConverterStationAdder adder, UpdatingDataframe dataframe, int indexElement) {
+    public static void createHvdc(HvdcConverterStationAdder adder, UpdatingDataframe dataframe, int indexElement) {
         createInjection(adder, dataframe, indexElement);
         dataframe.getDoubleValue("loss_factor", indexElement).ifPresent(lf -> adder.setLossFactor((float) lf));
     }
@@ -455,12 +461,12 @@ public final class CreateEquipmentHelper {
         adder.add();
     }
 
-    private static void createIdentifiable(IdentifiableAdder adder, UpdatingDataframe dataframe, int indexElement) {
+    public static void createIdentifiable(IdentifiableAdder adder, UpdatingDataframe dataframe, int indexElement) {
         dataframe.getStringValue("id", indexElement).ifPresent(adder::setId);
         dataframe.getStringValue("name", indexElement).ifPresent(adder::setName);
     }
 
-    private static void createInjection(InjectionAdder adder, UpdatingDataframe dataframe, int indexElement) {
+    public static void createInjection(InjectionAdder adder, UpdatingDataframe dataframe, int indexElement) {
         createIdentifiable(adder, dataframe, indexElement);
         dataframe.getStringValue(CONNECTABLE_BUS_ID, indexElement).ifPresent(adder::setConnectableBus);
         dataframe.getStringValue(BUS_ID, indexElement).ifPresent(adder::setBus);

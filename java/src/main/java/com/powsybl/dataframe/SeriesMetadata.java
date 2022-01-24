@@ -38,4 +38,20 @@ public class SeriesMetadata {
     public SeriesDataType getType() {
         return type;
     }
+
+    public static SeriesMetadata strings(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING);
+    }
+
+    public static SeriesMetadata ints(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.INT);
+    }
+
+    public static SeriesMetadata booleans(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN);
+    }
+
+    public static SeriesMetadata doubles(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE);
+    }
 }
