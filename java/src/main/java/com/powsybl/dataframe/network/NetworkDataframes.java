@@ -177,6 +177,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -185,6 +186,31 @@ public final class NetworkDataframes {
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
+    }
+
+    private static String getRegulatedElementId(Generator generator) {
+        Terminal terminal = generator.getRegulatingTerminal();
+        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+            //Not supported for the moment
+            return null;
+        }
+        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private static void setRegulatedElement(Generator generator, String elementId) {
+        Network network = generator.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            generator.setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+        } else {
+            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                    ": the regulated element may only be a busbar section or an injection.");
+        }
     }
 
     static NetworkDataframeMapper buses() {
@@ -461,8 +487,8 @@ public final class NetworkDataframes {
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
                 .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
-                .doubles("voltage_setpoint", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
-                .doubles("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
+                .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
+                .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
@@ -480,8 +506,8 @@ public final class NetworkDataframes {
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
                 .doubles("b_min", StaticVarCompensator::getBmin, StaticVarCompensator::setBmin)
                 .doubles("b_max", StaticVarCompensator::getBmax, StaticVarCompensator::setBmax)
-                .doubles("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
-                .doubles("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
+                .doubles("target_v", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
+                .doubles("target_q", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
                 .doubles("p", getP(), setP())
@@ -547,7 +573,7 @@ public final class NetworkDataframes {
                 .stringsIndex("id", HvdcLine::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
                 .enums("converters_mode", HvdcLine.ConvertersMode.class, HvdcLine::getConvertersMode, HvdcLine::setConvertersMode)
-                .doubles("active_power_setpoint", HvdcLine::getActivePowerSetpoint, HvdcLine::setActivePowerSetpoint)
+                .doubles("target_p", HvdcLine::getActivePowerSetpoint, HvdcLine::setActivePowerSetpoint)
                 .doubles("max_p", HvdcLine::getMaxP, HvdcLine::setMaxP)
                 .doubles("nominal_v", HvdcLine::getNominalV, HvdcLine::setNominalV)
                 .doubles("r", HvdcLine::getR, HvdcLine::setR)
