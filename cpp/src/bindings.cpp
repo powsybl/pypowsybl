@@ -277,10 +277,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def(py::init());
 
 
-    py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
-            .def(py::init());
-
-
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init(&initLoadFlowParameters))
             .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
@@ -531,9 +527,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
           py::arg("is_index"));
-
-    m.def("get_index_type", &pypowsybl::getIndexType, "Get index type integer for a given element type, index_name or index in the dataframe",
-            py::arg("element_type"), py::arg("series_name"), py::arg("index"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));

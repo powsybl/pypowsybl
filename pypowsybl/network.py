@@ -1218,19 +1218,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def _update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
-        """
-        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
-
-        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
-        index.
-
-        Args:
-            element_type (ElementType): the element type
-            df: the data to be updated
-        """
-        df = _adapt_df_or_kwargs(element_type, df, **kwargs)
-
+    def _create_c_dataframe(self, element_type: ElementType, df: _DataFrame):
         series_metadata = _pypowsybl.get_series_metadata(element_type)
         metadata_by_name = {s.name: s for s in series_metadata}
         is_index = []
@@ -1258,8 +1246,22 @@ class Network(object):
             columns_types.append(series_type)
             columns_values.append(series.values)
             is_index.append(False)
-        array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
-        _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
+        return _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+
+    def _update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
+        """
+        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
+
+        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
+        index.
+
+        Args:
+            element_type (ElementType): the element type
+            df: the data to be updated
+        """
+        df = _adapt_df_or_kwargs(element_type, df, **kwargs)
+        c_df = self._create_c_dataframe(element_type, df)
+        _pypowsybl.update_network_elements_with_series(self._handle, c_df, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs):
         """
