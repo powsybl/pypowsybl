@@ -359,25 +359,43 @@ class Network(object):
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType) -> _DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
         Args:
             element_type (ElementType): the element type
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             a network elements data frame for the specified element type
         """
-        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type)
+
+        filter_attributes = _pypowsybl.FilterAttributesType.DEFAULT_ATTRIBUTES
+        if all_attributes and len(attributes) > 0:
+            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
+        elif all_attributes:
+            filter_attributes = _pypowsybl.FilterAttributesType.ALL_ATTRIBUTES
+        elif len(attributes) > 0:
+            filter_attributes = _pypowsybl.FilterAttributesType.SELECTION_ATTRIBUTES
+
+        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self) -> _DataFrame:
+    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of buses.
 
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of buses.
+
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
@@ -407,20 +425,57 @@ class Network(object):
             S4VL1_0 400.0000 -1.1259                   0                     0            S4VL1
             ======= ======== ======= =================== ===================== ================
 
-        Returns:
-            A dataframe of buses.
-        """
-        return self.get_elements(_pypowsybl.ElementType.BUS)
+            .. code-block:: python
 
-    def get_generators(self) -> _DataFrame:
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_buses(all_attributes=True)
+
+            It outputs something like:
+
+            ======= ======== ======= =================== ===================== ================
+            \          v_mag v_angle connected_component synchronous_component voltage_level_id
+            ======= ======== ======= =================== ===================== ================
+            id
+            S1VL1_0 224.6139  2.2822                   0                     1            S1VL1
+            S1VL2_0 400.0000  0.0000                   0                     1            S1VL2
+            S2VL1_0 408.8470  0.7347                   0                     0            S2VL1
+            S3VL1_0 400.0000  0.0000                   0                     0            S3VL1
+            S4VL1_0 400.0000 -1.1259                   0                     0            S4VL1
+            ======= ======== ======= =================== ===================== ================
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_buses(attributes=['v_mag','v_angle','voltage_level_id'])
+
+            It outputs something like:
+
+            ======= ======== ======= ================
+            \          v_mag v_angle voltage_level_id
+            ======= ======== ======= ================
+            id
+            S1VL1_0 224.6139  2.2822            S1VL1
+            S1VL2_0 400.0000  0.0000            S1VL2
+            S2VL1_0 408.8470  0.7347            S2VL1
+            S3VL1_0 400.0000  0.0000            S3VL1
+            S4VL1_0 400.0000 -1.1259            S4VL1
+            ======= ======== ======= ================
+        """
+        return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes)
+
+    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of generators.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             the generator data frame.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **energy_source**: the energy source used to fuel the generator
               - **target_p**: the target active value for the generator (in MW)
@@ -457,6 +512,41 @@ class Network(object):
             B8-G         OTHER      0.0 9999.0 -9999.0    1.090     17.4                 True NaN NaN              VL8  VL8_0
             ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
 
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_generators(all_attributes=True)
+
+            will output something like:
+
+            ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
+            \    energy_source target_p  max_p   min_p target_v target_q voltage_regulator_on   p   q voltage_level_id bus_id
+            ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
+            id
+            B1-G         OTHER    232.4 9999.0 -9999.0    1.060    -16.9                 True NaN NaN              VL1  VL1_0
+            B2-G         OTHER     40.0 9999.0 -9999.0    1.045     42.4                 True NaN NaN              VL2  VL2_0
+            B3-G         OTHER      0.0 9999.0 -9999.0    1.010     23.4                 True NaN NaN              VL3  VL3_0
+            B6-G         OTHER      0.0 9999.0 -9999.0    1.070     12.2                 True NaN NaN              VL6  VL6_0
+            B8-G         OTHER      0.0 9999.0 -9999.0    1.090     17.4                 True NaN NaN              VL8  VL8_0
+            ==== ============= ======== ====== ======= ======== ======== ==================== === === ================ ======
+
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_generators(attributes=['energy_source','target_p','max_p','min_p','p','voltage_level_id','bus_id'])
+
+            will output something like:
+
+            ==== ============= ======== ====== ======= === ================ ======
+            \    energy_source target_p  max_p   min_p   p voltage_level_id bus_id
+            ==== ============= ======== ====== ======= === ================ ======
+            id
+            B1-G         OTHER    232.4 9999.0 -9999.0 NaN              VL1  VL1_0
+            B2-G         OTHER     40.0 9999.0 -9999.0 NaN              VL2  VL2_0
+            B3-G         OTHER      0.0 9999.0 -9999.0 NaN              VL3  VL3_0
+            B6-G         OTHER      0.0 9999.0 -9999.0 NaN              VL6  VL6_0
+            B8-G         OTHER      0.0 9999.0 -9999.0 NaN              VL8  VL8_0
+            ==== ============= ======== ====== ======= === ================ ======
 
         .. warning::
 
@@ -468,17 +558,21 @@ class Network(object):
             `p` can be lower than `min_p`. Actually, the relation: :math:`\\text{min_p} <= -p <= \\text{max_p}`
             should hold.
         """
-        return self.get_elements(_pypowsybl.ElementType.GENERATOR)
+        return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes)
 
-    def get_loads(self) -> _DataFrame:
+    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of loads.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             the load data frame
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **type**: type of load
               - **p0**: the active load consumption setpoint (MW)
@@ -517,27 +611,82 @@ class Network(object):
             B14-L  UNDEFINED  14.9   5.0 NaN NaN             VL14  VL14_0      True
             ===== ========== ===== ===== === === ================ ======= =========
 
-        """
-        return self.get_elements(_pypowsybl.ElementType.LOAD)
+            .. code-block:: python
 
-    def get_batteries(self) -> _DataFrame:
+                net = pp.network.create_ieee14()
+                net.get_loads(all_attributes=True)
+
+            will output something like:
+
+            ===== ========== ===== ===== === === ================ ======= =========
+            \           type    p0    q0   p   q voltage_level_id  bus_id connected
+            ===== ========== ===== ===== === === ================ ======= =========
+            id
+            B2-L   UNDEFINED  21.7  12.7 NaN NaN              VL2   VL2_0      True
+            B3-L   UNDEFINED  94.2  19.0 NaN NaN              VL3   VL3_0      True
+            B4-L   UNDEFINED  47.8  -3.9 NaN NaN              VL4   VL4_0      True
+            B5-L   UNDEFINED   7.6   1.6 NaN NaN              VL5   VL5_0      True
+            B6-L   UNDEFINED  11.2   7.5 NaN NaN              VL6   VL6_0      True
+            B9-L   UNDEFINED  29.5  16.6 NaN NaN              VL9   VL9_0      True
+            B10-L  UNDEFINED   9.0   5.8 NaN NaN             VL10  VL10_0      True
+            B11-L  UNDEFINED   3.5   1.8 NaN NaN             VL11  VL11_0      True
+            B12-L  UNDEFINED   6.1   1.6 NaN NaN             VL12  VL12_0      True
+            B13-L  UNDEFINED  13.5   5.8 NaN NaN             VL13  VL13_0      True
+            B14-L  UNDEFINED  14.9   5.0 NaN NaN             VL14  VL14_0      True
+            ===== ========== ===== ===== === === ================ ======= =========
+
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_loads(attributes=['type','p','q','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            ===== ========== === === ================ ======= =========
+            \           type   p   q voltage_level_id  bus_id connected
+            ===== ========== === === ================ ======= =========
+            id
+            B2-L   UNDEFINED NaN NaN              VL2   VL2_0      True
+            B3-L   UNDEFINED NaN NaN              VL3   VL3_0      True
+            B4-L   UNDEFINED NaN NaN              VL4   VL4_0      True
+            B5-L   UNDEFINED NaN NaN              VL5   VL5_0      True
+            B6-L   UNDEFINED NaN NaN              VL6   VL6_0      True
+            B9-L   UNDEFINED NaN NaN              VL9   VL9_0      True
+            B10-L  UNDEFINED NaN NaN             VL10  VL10_0      True
+            B11-L  UNDEFINED NaN NaN             VL11  VL11_0      True
+            B12-L  UNDEFINED NaN NaN             VL12  VL12_0      True
+            B13-L  UNDEFINED NaN NaN             VL13  VL13_0      True
+            B14-L  UNDEFINED NaN NaN             VL14  VL14_0      True
+            ===== ========== === === ================ ======= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes)
+
+    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of batteries.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of batteries.
         """
-        return self.get_elements(_pypowsybl.ElementType.BATTERY)
+        return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes)
 
-    def get_lines(self) -> _DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of lines data.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of lines data.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
             - **r**: the resistance of the line (in Ohm)
             - **x**: the reactance of the line (in Ohm)
@@ -576,18 +725,52 @@ class Network(object):
             L1-2-1    0.000194  0.000592  0.0  2.64  0.0  2.64 NaN NaN NaN NaN NaN NaN               VL1               VL2   VL1_0   VL2_0       True       True
             L1-5-1    0.000540  0.002230  0.0  2.46  0.0  2.46 NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
             ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
-        """
-        return self.get_elements(_pypowsybl.ElementType.LINE)
 
-    def get_2_windings_transformers(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_lines(all_attributes=True)
+
+            will output something like:
+
+            ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+            \                r         x   g1    b1   g2    b2  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+            ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+            id
+            L1-2-1    0.000194  0.000592  0.0  2.64  0.0  2.64 NaN NaN NaN NaN NaN NaN               VL1               VL2   VL1_0   VL2_0       True       True
+            L1-5-1    0.000540  0.002230  0.0  2.46  0.0  2.46 NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
+            ========  ========  ========  ===  ====  ===  ==== === === === === === === ================= ================= ======= ======= ========== ==========
+
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_lines(attributes=['p1','q1','i1','p2','q2','i2','voltage_level1_id','voltage_level2_id','bus1_id','bus2_id','connected1','connected2'])
+
+            will output something like:
+
+            ======== === === === === === === ================= ================= ======= ======= ========== ==========
+            \         p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+            ======== === === === === === === ================= ================= ======= ======= ========== ==========
+            id
+            L1-2-1   NaN NaN NaN NaN NaN NaN               VL1               VL2   VL1_0   VL2_0       True       True
+            L1-5-1   NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
+            ======== === === === === === === ================= ================= ======= ======= ========== ==========
+        """
+        return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes)
+
+    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of 2 windings transformers.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of 2 windings transformers.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **r**: the resistance of the transformer at its "2" side  (in Ohm)
               - **x**: the reactance of the transformer at its "2" side (in Ohm)
@@ -604,8 +787,8 @@ class Network(object):
               - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level1_id**: at which substation the "1" side of the transformer is connected
               - **voltage_level2_id**: at which substation the "2" side of the transformer is connected
-              - **connected1**: ``True`` ifthe side "1" of the transformer is connected to a bus
-              - **connected2**: ``True`` ifthe side "2" of the transformer is connected to a bus
+              - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
+              - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -626,27 +809,67 @@ class Network(object):
             T4-9-1  0.0 0.800899 0.0 0.0  130.815     12.0     NaN NaN NaN NaN NaN NaN NaN               VL4               VL9   VL4_0   VL9_0       True       True
             T5-6-1  0.0 0.362909 0.0 0.0  125.820     12.0     NaN NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
             ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
-        """
-        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER)
 
-    def get_3_windings_transformers(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_2_windings_transformers(all_attributes=True)
+
+            will output something like:
+
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+            \         r        x   g   b rated_u1 rated_u2 rated_s  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+            id
+            T4-7-1  0.0 0.409875 0.0 0.0  132.030     14.0     NaN NaN NaN NaN NaN NaN NaN               VL4               VL7   VL4_0   VL7_0       True       True
+            T4-9-1  0.0 0.800899 0.0 0.0  130.815     12.0     NaN NaN NaN NaN NaN NaN NaN               VL4               VL9   VL4_0   VL9_0       True       True
+            T5-6-1  0.0 0.362909 0.0 0.0  125.820     12.0     NaN NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
+            ====== ==== ======== === === ======== ======== ======= === === === === === === ================= ================= ======= ======= ========== ==========
+
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_2_windings_transformers(attributes=['p1','q1','i1','p2','q2','i2','voltage_level1_id','voltage_level2_id','bus1_id','bus2_id','connected1','connected2'])
+
+            will output something like:
+
+            ====== === === === === === === ================= ================= ======= ======= ========== ==========
+            \       p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id connected1 connected2
+            ====== === === === === === === ================= ================= ======= ======= ========== ==========
+            id
+            T4-7-1 NaN NaN NaN NaN NaN NaN               VL4               VL7   VL4_0   VL7_0       True       True
+            T4-9-1 NaN NaN NaN NaN NaN NaN               VL4               VL9   VL4_0   VL9_0       True       True
+            T5-6-1 NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
+            ====== === === === === === === ================= ================= ======= ======= ========== ==========
+        """
+        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes)
+
+    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of 3 windings transformers.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of 3 windings transformers.
         """
-        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER)
+        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes)
 
-    def get_shunt_compensators(self) -> _DataFrame:
+    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of shunt compensators.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of shunt compensators.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
@@ -656,7 +879,7 @@ class Network(object):
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
               - **voltage_level_id**: at which substation the shunt is connected
               - **bus_id**: indicate at which bus the shunt is connected
-              - **connected**: ``True`` ifthe shunt is connected to a bus
+              - **connected**: ``True`` if the shunt is connected to a bus
 
             This dataframe is indexed by the id of the shunt compensators
 
@@ -675,12 +898,44 @@ class Network(object):
             id
             B9-SH     LINEAR                 1             1 NaN NaN NaN              VL9  VL9_0      True
             ===== ========== ================= ============= === === === ================ ====== =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR)
 
-    def get_non_linear_shunt_compensator_sections(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_shunt_compensators(all_attributes=True)
+
+            will output something like:
+
+            ===== ========== ================= ============= === === === ================ ====== =========
+            \     model_type max_section_count section_count   p   q   i voltage_level_id bus_id connected
+            ===== ========== ================= ============= === === === ================ ====== =========
+            id
+            B9-SH     LINEAR                 1             1 NaN NaN NaN              VL9  VL9_0      True
+            ===== ========== ================= ============= === === === ================ ====== =========
+
+            .. code-block:: python
+
+                net = pp.network.create_ieee14()
+                net.get_shunt_compensators(attributes=['model_type','p','q','i','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            ===== ========== === === === ================ ====== =========
+            \     model_type   p   q   i voltage_level_id bus_id connected
+            ===== ========== === === === ================ ====== =========
+            id
+            B9-SH     LINEAR NaN NaN NaN              VL9  VL9_0      True
+            ===== ========== === === === ================ ====== =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes)
+
+    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of shunt compensators sections for non linear model.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -693,14 +948,18 @@ class Network(object):
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
-        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
+        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
-    def get_linear_shunt_compensator_sections(self) -> _DataFrame:
+    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of shunt compensators sections for linear model.
 
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **g_per_section**: the conductance per section in S
               - **b_per_section**: the susceptance per section in S
@@ -711,17 +970,21 @@ class Network(object):
         Returns:
            A dataframe of linear models of shunt compensators.
         """
-        return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION)
+        return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
-    def get_dangling_lines(self) -> _DataFrame:
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of dangling lines.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of dangling lines.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **r**: The resistance of the dangling line (Ohm)
               - **x**: The reactance of the dangling line (Ohm)
@@ -734,7 +997,7 @@ class Network(object):
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the dangling line is connected
               - **bus_id**: at which bus the dangling line is connected
-              - **connected**: ``True`` ifthe dangling line is connected to a bus
+              - **connected**: ``True`` if the dangling line is connected to a bus
 
             This dataframe is indexed by the id of the dangling lines
 
@@ -753,18 +1016,50 @@ class Network(object):
             id
             DL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE)
 
-    def get_lcc_converter_stations(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network._create_dangling_lines_network()
+                net.get_dangling_lines(all_attributes=True)
+
+            will output something like:
+
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
+            \     r   x      g       b   p0   q0   p   q   i voltage_level_id bus_id connected
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
+            id
+            DL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
+            == ==== === ====== ======= ==== ==== === === === ================ ====== =========
+
+            .. code-block:: python
+
+                net = pp.network._create_dangling_lines_network()
+                net.get_dangling_lines(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            == === === === ================ ====== =========
+            \    p   q   i voltage_level_id bus_id connected
+            == === === === ================ ====== =========
+            id
+            DL NaN NaN NaN               VL   VL_0      True
+            == === === === ================ ====== =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes)
+
+    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of LCC converter stations.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of LCC converter stations.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **power_factor**: the power factor
               - **loss_factor**: the loss factor
@@ -773,7 +1068,7 @@ class Network(object):
               - **i**: The current on the LCC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the LCC converter station is connected
               - **bus_id**: at which bus the LCC converter station is connected
-              - **connected**: ``True`` ifthe LCC converter station is connected to a bus
+              - **connected**: ``True`` if the LCC converter station is connected to a bus
 
             This dataframe is indexed by the id of the LCC converter
 
@@ -793,18 +1088,52 @@ class Network(object):
                 LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
                 LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
             ======== ============ ===========  ====== === === ================ ======= =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION)
 
-    def get_vsc_converter_stations(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_lcc_converter_stations(all_attributes=True)
+
+            will output something like:
+
+            ======== ============ ===========  ====== === === ================ ======= =========
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
+            ======== ============ ===========  ====== === === ================ ======= =========
+            id
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
+            ======== ============ ===========  ====== === === ================ ======= =========
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_lcc_converter_stations(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            ======== ====== === === ================ ======= =========
+                .         p   q   i voltage_level_id  bus_id connected
+            ======== ====== === === ================ ======= =========
+            id
+                LCC1  80.88 NaN NaN            S1VL2 S1VL2_0      True
+                LCC2 -79.12 NaN NaN            S3VL1 S3VL1_0      True
+            ======== ====== === === ================ ======= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes)
+
+    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of VSC converter stations.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of VCS converter stations.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
@@ -815,7 +1144,7 @@ class Network(object):
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the VSC converter station is connected
               - **bus_id**: at which bus the VSC converter station is connected
-              - **connected**: ``True`` ifthe VSC converter station is connected to a bus
+              - **connected**: ``True`` if the VSC converter station is connected to a bus
 
             This dataframe is indexed by the id of the VSC converter
 
@@ -826,7 +1155,20 @@ class Network(object):
                 net = pp.network.create_four_substations_node_breaker_network()
                 net.get_vsc_converter_stations()
 
+            will output something like:
 
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            id
+                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_vsc_converter_stations(all_attributes=True)
 
             will output something like:
 
@@ -837,18 +1179,38 @@ class Network(object):
                 VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
                 VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
             ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION)
 
-    def get_static_var_compensators(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_vsc_converter_stations(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            ======== ====== ========= ========== ================ ======= =========
+            \             p         q          i voltage_level_id  bus_id connected
+            ======== ====== ========= ========== ================ ======= =========
+            id
+                VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== ====== ========= ========== ================ ======= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes)
+
+    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of static var compensators.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of static var compensators.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
+
               - **b_min**: the minimum susceptance
               - **b_max**: the maximum susceptance
               - **target_v**: The voltage setpoint
@@ -859,7 +1221,7 @@ class Network(object):
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the var compensator is connected
               - **bus_id**: at which bus the var compensator is connected
-              - **connected**: ``True`` ifthe var compensator is connected to a bus
+              - **connected**: ``True`` if the var compensator is connected to a bus
 
             This dataframe is indexed by the id of the var compensator
 
@@ -878,18 +1240,49 @@ class Network(object):
             id
                  SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
             ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR)
+            .. code-block:: python
 
-    def get_voltage_levels(self) -> _DataFrame:
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_static_var_compensators(all_attributes=True)
+
+            will output something like:
+
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            id
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_static_var_compensators(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
+
+            will output something like:
+
+            ======== === ======== === ================ ======= =========
+            \         p        q   i  voltage_level_id  bus_id connected
+            ======== === ======== === ================ ======= =========
+            id
+                 SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== === ======== === ================ ======= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes)
+
+    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of voltage levels.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of voltage levels.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **substation_id**: at which substation the voltage level belongs
               - **nominal_v**: The nominal voltage
@@ -917,24 +1310,64 @@ class Network(object):
                 S3VL1            S3     400.0              440.0             390.0
                 S4VL1            S4     400.0              440.0             390.0
             ========= ============= ========= ================== =================
-        """
-        return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL)
 
-    def get_busbar_sections(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_voltage_levels(all_attributes=True)
+
+            will output something like:
+
+            ========= ============= ========= ================== =================
+            \         substation_id nominal_v high_voltage_limit low_voltage_limit
+            ========= ============= ========= ================== =================
+            id
+                S1VL1            S1     225.0              240.0             220.0
+                S1VL2            S1     400.0              440.0             390.0
+                S2VL1            S2     400.0              440.0             390.0
+                S3VL1            S3     400.0              440.0             390.0
+                S4VL1            S4     400.0              440.0             390.0
+            ========= ============= ========= ================== =================
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_voltage_levels(attributes=['substation_id','nominal_v'])
+
+            will output something like:
+
+            ========= ============= =========
+            \         substation_id nominal_v
+            ========= ============= =========
+            id
+                S1VL1            S1     225.0
+                S1VL2            S1     400.0
+                S2VL1            S2     400.0
+                S3VL1            S3     400.0
+                S4VL1            S4     400.0
+            ========= ============= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes)
+
+    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of busbar sections.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of busbar sections.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
-              - **fictitious**: ``True`` ifthe busbar section is part of the model and not of the actual network
+              - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
               - **angle**: the voltage angle of the busbar section (in radian)
               - **voltage_level_id**: at which substation the busbar section is connected
-              - **connected**: ``True`` ifthe busbar section is connected to a bus
+              - **connected**: ``True`` if the busbar section is connected to a bus
 
             This dataframe is indexed by the id of the busbar sections
 
@@ -958,27 +1391,73 @@ class Network(object):
              S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
              S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
             ========== ========== ======== ======== ================ =========
-        """
-        return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION)
 
-    def get_substations(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_busbar_sections(all_attributes=True)
+
+            will output something like:
+
+            ========== ========== ======== ======== ================ =========
+            \          fictitious        v    angle voltage_level_id connected
+            ========== ========== ======== ======== ================ =========
+            id
+             S1VL1_BBS      False 224.6139   2.2822            S1VL1      True
+            S1VL2_BBS1      False 400.0000   0.0000            S1VL2      True
+            S1VL2_BBS2      False 400.0000   0.0000            S1VL2      True
+             S2VL1_BBS      False 408.8470   0.7347            S2VL1      True
+             S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
+             S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
+            ========== ========== ======== ======== ================ =========
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_busbar_sections(attributes=['v','angle','voltage_level_id','connected'])
+
+            will output something like:
+
+            ========== ======== ======== ================ =========
+            \                 v    angle voltage_level_id connected
+            ========== ======== ======== ================ =========
+            id
+             S1VL1_BBS 224.6139   2.2822            S1VL1      True
+            S1VL2_BBS1 400.0000   0.0000            S1VL2      True
+            S1VL2_BBS2 400.0000   0.0000            S1VL2      True
+             S2VL1_BBS 408.8470   0.7347            S2VL1      True
+             S3VL1_BBS 400.0000   0.0000            S3VL1      True
+             S4VL1_BBS 400.0000  -1.1259            S4VL1      True
+            ========== ======== ======== ================ =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes)
+
+    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get substations :class:`~pandas.DataFrame`.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of substations.
         """
-        return self.get_elements(_pypowsybl.ElementType.SUBSTATION)
+        return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes)
 
-    def get_hvdc_lines(self) -> _DataFrame:
+    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of HVDC lines.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of HVDC lines.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **converters_mode**:
               - **target_p**: (in MW)
@@ -987,8 +1466,8 @@ class Network(object):
               - **r**: the resistance of the hvdc line (in Ohm)
               - **converter_station1_id**: at which converter station the hvdc line is connected on side "1"
               - **converter_station2_id**: at which converter station the hvdc line is connected on side "2"
-              - **connected1**: ``True`` ifthe busbar section on side "1" is connected to a bus
-              - **connected2**: ``True`` ifthe busbar section on side "2" is connected to a bus
+              - **connected1**: ``True`` if the busbar section on side "1" is connected to a bus
+              - **connected2**: ``True`` if the busbar section on side "2" is connected to a bus
 
             This dataframe is indexed by the id of the hvdc lines
 
@@ -1008,18 +1487,52 @@ class Network(object):
             HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0 300.0     400.0  1.0                  VSC1                  VSC2       True       True
             HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0 300.0     400.0  1.0                  LCC1                  LCC2       True       True
             ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
-        """
-        return self.get_elements(_pypowsybl.ElementType.HVDC_LINE)
 
-    def get_switches(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_hvdc_lines(all_attributes=True)
+
+            will output something like:
+
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
+            \                      converters_mode active_power_setpoint max_p nominal_v    r converter_station1_id converter_station2_id connected1 connected2
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
+            id
+            HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0 300.0     400.0  1.0                  VSC1                  VSC2       True       True
+            HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0 300.0     400.0  1.0                  LCC1                  LCC2       True       True
+            ===== ================================ ===================== ===== ========= ==== ===================== ===================== ========== ==========
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_hvdc_lines(attributes=['converters_mode','active_power_setpoint','nominal_v','converter_station1_id','converter_station2_id','connected1','connected2'])
+
+            will output something like:
+
+            ===== ================================ ===================== ========= ===================== ===================== ========== ==========
+            \                      converters_mode active_power_setpoint nominal_v converter_station1_id converter_station2_id connected1 connected2
+            ===== ================================ ===================== ========= ===================== ===================== ========== ==========
+            id
+            HVDC1 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  10.0     400.0                  VSC1                  VSC2       True       True
+            HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0     400.0                  LCC1                  LCC2       True       True
+            ===== ================================ ===================== ========= ===================== ===================== ========== ==========
+        """
+        return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes)
+
+    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of switches.
 
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
         Returns:
-            A dataframe of HVDC lines.
+            A dataframe of switches.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **kind**: the kind of switch
               - **open**: the open status of the switch
@@ -1050,18 +1563,66 @@ class Network(object):
             S1VL2_BBS1_VSC1_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
                                      ...          ...    ...      ...              ...
             ============================ ============ ====== ======== ================
-        """
-        return self.get_elements(_pypowsybl.ElementType.SWITCH)
 
-    def get_ratio_tap_changer_steps(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_switches(all_attributes=True)
+
+            will output something like:
+
+            ============================ ============ ====== ======== ================
+            \                                    kind   open retained voltage_level_id
+            ============================ ============ ====== ======== ================
+            id
+              S1VL1_BBS_LD1_DISCONNECTOR DISCONNECTOR  False    False            S1VL1
+                       S1VL1_LD1_BREAKER      BREAKER  False     True            S1VL1
+              S1VL1_BBS_TWT_DISCONNECTOR DISCONNECTOR  False    False            S1VL1
+                       S1VL1_TWT_BREAKER      BREAKER  False     True            S1VL1
+             S1VL2_BBS1_TWT_DISCONNECTOR DISCONNECTOR  False    False            S1VL2
+             S1VL2_BBS2_TWT_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
+                       S1VL2_TWT_BREAKER      BREAKER  False     True            S1VL2
+            S1VL2_BBS1_VSC1_DISCONNECTOR DISCONNECTOR   True    False            S1VL2
+                                     ...          ...    ...      ...              ...
+            ============================ ============ ====== ======== ================
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_switches(attributes=['kind','open','nominal_v','voltage_level_id'])
+
+            will output something like:
+
+            ============================ ============ ====== ================
+            \                                    kind   open voltage_level_id
+            ============================ ============ ====== ================
+            id
+              S1VL1_BBS_LD1_DISCONNECTOR DISCONNECTOR  False            S1VL1
+                       S1VL1_LD1_BREAKER      BREAKER  False            S1VL1
+              S1VL1_BBS_TWT_DISCONNECTOR DISCONNECTOR  False            S1VL1
+                       S1VL1_TWT_BREAKER      BREAKER  False            S1VL1
+             S1VL2_BBS1_TWT_DISCONNECTOR DISCONNECTOR  False            S1VL2
+             S1VL2_BBS2_TWT_DISCONNECTOR DISCONNECTOR   True            S1VL2
+                       S1VL2_TWT_BREAKER      BREAKER  False            S1VL2
+            S1VL2_BBS1_VSC1_DISCONNECTOR DISCONNECTOR   True            S1VL2
+                                     ...          ...    ...              ...
+            ============================ ============ ====== ================
+        """
+        return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes)
+
+    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of ratio tap changer steps.
 
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
         Returns:
-            A dataframe of HVDC lines.
+            A dataframe of ratio tap changer steps.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **rho**:
               - **r**: the resistance of the ratio tap changer step (in Ohm)
@@ -1087,19 +1648,54 @@ class Network(object):
             \                 1 1.000667 0.0 0.0 0.0 0.0
             \                 2 1.150767 0.0 0.0 0.0 0.0
             ========== ======== ======== === === === ===
-        """
-        ratio_tap_changer_steps = self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP)
-        return ratio_tap_changer_steps
 
-    def get_phase_tap_changer_steps(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changer_steps(all_attributes=True)
+
+            will output something like:
+
+            ========== ======== ======== === === === ===
+            \                        rho   r   x   g   b
+            ========== ======== ======== === === === ===
+            id         position
+            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
+            \                 1 1.000667 0.0 0.0 0.0 0.0
+            \                 2 1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ======== === === === ===
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changer_steps(attributes=['rho','r','x'])
+
+            will output something like:
+
+            ========== ======== ======== === ===
+            \                        rho   r   x
+            ========== ======== ======== === ===
+            id         position
+            NHV2_NLOAD        0 0.850567 0.0 0.0
+            \                 1 1.000667 0.0 0.0
+            \                 2 1.150767 0.0 0.0
+            ========== ======== ======== === ===
+        """
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes)
+
+    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of phase tap changer steps.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of phase tap changer steps.
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **rho**: the voltage ratio (in per unit)
               - **alpha**: the angle difference (in degree)
@@ -1127,19 +1723,56 @@ class Network(object):
             \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
             ...      ...  ...    ...       ...       ... ... ...
             === ======== ==== ====== ========= ========= === ===
-        """
-        phase_tap_changer_steps = self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP)
-        return phase_tap_changer_steps
 
-    def get_ratio_tap_changers(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changer_steps(all_attributes=True)
+
+            will output something like:
+
+            === ======== ==== ====== ========= ========= === ===
+            \             rho  alpha         r         x   g   b
+            === ======== ==== ====== ========= ========= === ===
+            id  position
+            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
+            \          1  1.0 -40.18 31.720245 21.720242 0.0 0.0
+            \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
+            ...      ...  ...    ...       ...       ... ... ...
+            === ======== ==== ====== ========= ========= === ===
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changer_steps(attributes=['rho','r','x'])
+
+            will output something like:
+
+            === ======== ==== ========= =========
+            \             rho         r         x
+            === ======== ==== ========= =========
+            id  position
+            TWT        0  1.0 39.784730 29.784725
+            \          1  1.0 31.720245 21.720242
+            \          2  1.0 23.655737 13.655735
+            ...      ...  ...       ...       ...
+            === ======== ==== ========= =========
+        """
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes)
+
+    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Create a ratio tap changers:class:`~pandas.DataFrame`.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             the ratio tap changers data frame
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **tap**:
               - **low_tap**:
@@ -1167,19 +1800,50 @@ class Network(object):
             id
             NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
             ========== === ======= ======== ========== ======= ========== ======== =============== =================
-        """
-        ratio_tap_changers = self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER)
-        return ratio_tap_changers
 
-    def get_phase_tap_changers(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changers(all_attributes=True)
+
+            will output something like:
+
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            id
+            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_network()
+                net.get_ratio_tap_changers(attributes=['tap','low_tap','high_tap','step_count','target_v','regulating_bus_id'])
+
+            will output something like:
+
+            ========== === ======= ======== ========== ======== =================
+            \          tap low_tap high_tap step_count target_v regulating_bus_id
+            ========== === ======= ======== ========== ======== =================
+            id
+            NHV2_NLOAD   1       0        2          3    158.0          VLLOAD_0
+            ========== === ======= ======== ========== ======== =================
+        """
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes)
+
+    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Create a phase tap changers:class:`~pandas.DataFrame`.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             the phase tap changers data frame
 
         Notes:
-            The resulting dataframe will have the following columns:
+            The resulting dataframe, depending on the parameters, could have the following columns:
 
               - **tap**:
               - **low_tap**:
@@ -1206,17 +1870,49 @@ class Network(object):
             id
             TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
             === === ======= ======== ========== ========== =============== ================ =============== =================
-        """
-        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER)
 
-    def get_reactive_capability_curve_points(self) -> _DataFrame:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changers(all_attributes=True)
+
+            will output something like:
+
+            === === ======= ======== ========== ========== =============== ================ =============== =================
+            \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === === ======= ======== ========== ========== =============== ================ =============== =================
+            id
+            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === === ======= ======== ========== ========== =============== ================ =============== =================
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_phase_tap_changers(attributes=['tap','low_tap','high_tap','step_count','regulating_bus_id'])
+
+            will output something like:
+
+            === === ======= ======== ========== =================
+            \   tap low_tap high_tap step_count regulating_bus_id
+            === === ======= ======== ========== =================
+            id
+            TWT  15       0       32         33           S1VL1_0
+            === === ======= ======== ========== =================
+        """
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, all_attributes, attributes)
+
+    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
         """
         Get a dataframe of reactive capability curve points.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of reactive capability curve points.
         """
-        return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
+        return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
     def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
         """
@@ -1745,14 +2441,18 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_current_limits(self):
+    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = []):
         """
         Get the list of all current limits on the network paired with their branch id.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             all current limits on the network
         """
-        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS)
+        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """

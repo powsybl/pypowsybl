@@ -6,6 +6,8 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.IndexedSeries;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -329,11 +331,27 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                                     ElementType elementType, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                                                     ElementType elementType,
+                                                                                                                     PyPowsyblApiHeader.FilterAttributesType filterAttributesType,
+                                                                                                                     CCharPointerPointer attributesPtrPtr, int attributesCount,
+                                                                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return Dataframes.createCDataframe(mapper, network);
+            List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
+            AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
+            switch (filterAttributesType) {
+                case ALL_ATTRIBUTES:
+                    filterType = AttributeFilterType.ALL_ATTRIBUTES;
+                    break;
+                case SELECTION_ATTRIBUTES:
+                    filterType = AttributeFilterType.INPUT_ATTRIBUTES;
+                    break;
+                case DEFAULT_ATTRIBUTES:
+                    filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
+                    break;
+            }
+            return Dataframes.createCDataframe(mapper, network, new DataframeFilter(filterType, attributes));
         });
     }
 
@@ -359,18 +377,18 @@ public final class PyPowsyblNetworkApiLib {
                 case STRING_SERIES_TYPE:
                     updatingDataframe.addSeries(new StringSeries(name, elementCount,
                                     (CCharPointerPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING));
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING, true));
                     break;
                 case DOUBLE_SERIES_TYPE:
                     updatingDataframe.addSeries(new DoubleSeries(name, elementCount,
                                     (CDoublePointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE));
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE, true));
                     break;
                 case INT_SERIES_TYPE:
                 case BOOLEAN_SERIES_TYPE:
                     updatingDataframe.addSeries(new IntSeries(name, elementCount,
                                     (CIntPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT));
+                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT, true));
                     break;
             }
 

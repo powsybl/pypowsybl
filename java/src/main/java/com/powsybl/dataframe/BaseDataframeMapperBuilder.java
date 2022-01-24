@@ -59,21 +59,37 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater) {
-        series.add(new DoubleSeriesMapper<>(name, value, updater));
+        return doubles(name, value, updater, true);
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
 
     public B doubles(String name, ToDoubleFunction<U> value) {
-        return doubles(name, value, null);
+        return doubles(name, value, null, true);
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, boolean defaultAttribute) {
+        return doubles(name, value, null, defaultAttribute);
     }
 
     public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {
-        series.add(new IntSeriesMapper<>(name, value, updater));
+        return ints(name, value, updater, true);
+    }
+
+    public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new IntSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
 
     public B ints(String name, ToIntFunction<U> value) {
-        return ints(name, value, null);
+        return ints(name, value, null, true);
+    }
+
+    public B ints(String name, ToIntFunction<U> value, boolean defaultAttribute) {
+        return ints(name, value, null, defaultAttribute);
     }
 
     public B intsIndex(String name, ToIntFunction<U> value) {
@@ -82,21 +98,37 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public B booleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater) {
-        series.add(new BooleanSeriesMapper<>(name, value, updater));
+        return booleans(name, value, updater, true);
+    }
+
+    public B booleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new BooleanSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
 
     public B booleans(String name, Predicate<U> value) {
-        return booleans(name, value, null);
+        return booleans(name, value, null, true);
+    }
+
+    public B booleans(String name, Predicate<U> value, boolean defaultAttribute) {
+        return booleans(name, value, null, defaultAttribute);
     }
 
     public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater) {
-        series.add(new StringSeriesMapper<>(name, value, updater));
+        return strings(name, value, updater, true);
+    }
+
+    public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
+        series.add(new StringSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
 
     public B strings(String name, Function<U, String> value) {
-        return strings(name, value, null);
+        return strings(name, value, null, true);
+    }
+
+    public B strings(String name, Function<U, String> value, boolean defaultAttribute) {
+        return strings(name, value, null, defaultAttribute);
     }
 
     public B stringsIndex(String name, Function<U, String> value) {
@@ -105,12 +137,20 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater) {
-        series.add(new EnumSeriesMapper<>(name, enumClass, value, updater));
+        return enums(name, enumClass, value, updater, true);
+    }
+
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater, boolean defaultAttribute) {
+        series.add(new EnumSeriesMapper<>(name, enumClass, value, updater, defaultAttribute));
         return (B) this;
     }
 
     public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value) {
-        return enums(name, enumClass, value, null);
+        return enums(name, enumClass, value, null, true);
+    }
+
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, boolean defaultAttribute) {
+        return enums(name, enumClass, value, null, defaultAttribute);
     }
 
     public DataframeMapper<T> build() {
