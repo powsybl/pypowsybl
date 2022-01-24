@@ -69,9 +69,8 @@ jobs:
         run: pip3 install wheelhouse/*.whl --user
 
       - name: Run tests
-        working-directory: ./tests
         run: |
-          coverage run -m pytest
+          pytest --cov=pypowsybl tests
           coverage xml
 
       - name: Sonar analysis
@@ -82,7 +81,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: |
-            -Dsonar.python.coverage.reportPaths=tests/coverage.xml
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: Run doc examples
         working-directory: ./docs
@@ -157,8 +156,7 @@ jobs:
         run: python -m pip install dist/*.whl --user
 
       - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
+        run: pytest tests
 
       - name: Run doc examples
         working-directory: ./docs
