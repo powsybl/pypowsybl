@@ -23,7 +23,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.strings("max_p"),
+            SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("p0"),
             SeriesMetadata.doubles("q0")

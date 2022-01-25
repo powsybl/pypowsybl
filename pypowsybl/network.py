@@ -1787,7 +1787,7 @@ class Network(object):
             handleList.append(n._handle)
         return _pypowsybl.merge(self._handle, handleList)
 
-    def _create_element(self, element_type: ElementType, dfs: list):
+    def _create_element(self, element_type: ElementType, dfs: _List[_DataFrame]):
         c_dfs = [self._create_c_dataframe(element_type, df, True) for df in dfs]
         _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
@@ -1934,6 +1934,15 @@ class Network(object):
             df: dataframe of the phase tap changers creation data
         """
         return self._create_element(_pypowsybl.ElementType.PHASE_TAP_CHANGER, [phasesDataframe, stepsDataframe])
+
+    def create_hvdc_lines(self, df: _DataFrame, **kwargs):
+        """
+        Create HVDC lines
+
+        Args:
+            df: HVDC lines data
+        """
+        return self._create_element(_pypowsybl.ElementType.HVDC_LINE, [df])
 
 
 def _create_network(name, network_id=''):

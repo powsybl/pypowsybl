@@ -75,18 +75,16 @@ def test_loads_creation():
 def test_batteries_creation():
     n = util.create_battery_network()
     df = pd.DataFrame.from_records(
-        data=[('BAT3', 'VLBAT', 'NBAT', 9999, -9999, 100, -150)],
         columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'p0', 'q0'],
+        data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 20)],
         index='id')
     n.create_batteries(df)
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['BAT', 'BAT2', 'BAT3']),
-        columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i',
-                 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['', 9999.99, -9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True],
-              ['', 200, -200, 101, 201, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True],
-              ['', 9999, -9999, 100, -150, NaN, NaN, NaN, 'VLBAT', 'VLBAT_0', True]])
-    pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
+    bat3 = n.get_batteries().loc['BAT3']
+    assert bat3.voltage_level_id == 'VLBAT'
+    assert bat3.max_p == 100
+    assert bat3.min_p == 10
+    assert bat3.p0 == 90
+    assert bat3.q0 == 20
 
 
 def test_vsc_data_frame():
@@ -136,19 +134,20 @@ def test_svc_creation():
 
 def test_switches_creation(this_dir):
     n = pn.load(str(this_dir.joinpath('node-breaker.xiidm')))
-    n.create_switches(pd.DataFrame(index=['TEST_BREAKER', 'TEST_DISCONNECTOR'],
-                                   columns=['name', 'kind', 'node1', 'node2', 'open', 'retained',
-                                            'voltage_level_id'],
-                                   data=[['TEST_BREAKER', 'BREAKER', 1, 2, True, True, 'VLGEN'],
-                                         ['TEST_DISCONNECTOR', 'DISCONNECTOR', 3, 4, True, True, 'VLGEN']]))
+    n.create_switches(pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'kind', 'node1', 'node2', 'open', 'retained',
+                 'voltage_level_id'],
+        data=[['TEST_BREAKER', '', 'BREAKER', 1, 2, True, True, 'VLGEN'],
+              ['TEST_DISCONNECTOR', '', 'DISCONNECTOR', 3, 4, True, True, 'VLGEN']]))
     switches = n.get_switches()
     breaker = switches.loc['TEST_BREAKER']
     disconnector = switches.loc['TEST_DISCONNECTOR']
     assert breaker['kind'] == 'BREAKER'
-    assert breaker['open'] is True
+    assert breaker['open'] == True
     assert breaker['voltage_level_id'] == 'VLGEN'
     assert disconnector['kind'] == 'DISCONNECTOR'
-    assert disconnector['open'] is True
+    assert disconnector['open'] == True
     assert disconnector['voltage_level_id'] == 'VLGEN'
 
 
@@ -330,3 +329,26 @@ def test_busbar_sections():
                                   ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True],
                                   ['S_TEST', False, NaN, NaN, 'S1VL1', True]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
+
+
+def test_hvdc_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VSC_TEST',
+        'converter_station1_id': 'VSC1',
+        'converter_station2_id': 'VSC2',
+        'r': 0.1,
+        'nominal_v': 320,
+        'target_p': 100,
+        'max_p': 200,
+        'converters_mode': 'SIDE_1_RECTIFIER_SIDE_2_INVERTER'
+    }])
+    n.create_hvdc_lines(df)
+    hvdc = n.get_hvdc_lines().loc['VSC_TEST']
+    assert hvdc.converter_station1_id == 'VSC1'
+    assert hvdc.converter_station2_id == 'VSC2'
+    assert hvdc.r == 0.1
+    assert hvdc.nominal_v == 320
+    assert hvdc.target_p == 100
+    assert hvdc.max_p == 200
+    assert hvdc.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER'

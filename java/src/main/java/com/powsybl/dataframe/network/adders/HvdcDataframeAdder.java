@@ -19,10 +19,10 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.strings("station1_id"),
-            SeriesMetadata.strings("station2_id"),
+            SeriesMetadata.strings("converter_station1_id"),
+            SeriesMetadata.strings("converter_station2_id"),
             SeriesMetadata.doubles("max_p"),
-            SeriesMetadata.strings("mode"),
+            SeriesMetadata.strings("converters_mode"),
             SeriesMetadata.doubles("target_p"),
             SeriesMetadata.doubles("r"),
             SeriesMetadata.doubles("nominal_v")
@@ -37,10 +37,10 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         HvdcLineAdder adder = network.newHvdcLine();
         CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
-        dataframe.getStringValue("station1_id", indexElement).ifPresent(adder::setConverterStationId1);
-        dataframe.getStringValue("station2_id", indexElement).ifPresent(adder::setConverterStationId2);
+        dataframe.getStringValue("converter_station1_id", indexElement).ifPresent(adder::setConverterStationId1);
+        dataframe.getStringValue("converter_station2_id", indexElement).ifPresent(adder::setConverterStationId2);
         dataframe.getDoubleValue("max_p", indexElement).ifPresent(adder::setMaxP);
-        dataframe.getStringValue("mode", indexElement).map(HvdcLine.ConvertersMode::valueOf).ifPresent(adder::setConvertersMode);
+        dataframe.getStringValue("converters_mode", indexElement).map(HvdcLine.ConvertersMode::valueOf).ifPresent(adder::setConvertersMode);
         dataframe.getDoubleValue("target_p", indexElement).ifPresent(adder::setActivePowerSetpoint);
         dataframe.getDoubleValue("r", indexElement).ifPresent(adder::setR);
         dataframe.getDoubleValue("nominal_v", indexElement).ifPresent(adder::setNominalV);
