@@ -8,6 +8,7 @@ import com.powsybl.iidm.network.LoadAdder;
 import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,8 +31,8 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

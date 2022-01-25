@@ -8,6 +8,7 @@ import com.powsybl.iidm.network.PhaseTapChanger;
 import com.powsybl.iidm.network.PhaseTapChangerAdder;
 import com.powsybl.iidm.network.TwoWindingsTransformer;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,8 +27,8 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

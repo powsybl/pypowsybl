@@ -20,9 +20,7 @@ import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
-import com.powsybl.python.PyPowsyblApiHeader.ElementType;
-import com.powsybl.python.PyPowsyblApiHeader.SeriesMetadataPointer;
+import com.powsybl.python.PyPowsyblApiHeader.*;
 import com.powsybl.python.update.CUpdatingDataframe;
 import com.powsybl.python.update.DoubleSeries;
 import com.powsybl.python.update.IntSeries;
@@ -34,11 +32,10 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.struct.CPointerTo;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.*;
+import org.graalvm.word.PointerBase;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -449,25 +446,6 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    private static IndexedSeries<String> createStringSeries(CCharPointerPointer elementIdPtrPtr, CCharPointerPointer valuePtr, int elementCount) {
-        return new IndexedSeries<>() {
-            @Override
-            public int getSize() {
-                return elementCount;
-            }
-
-            @Override
-            public String getId(int index) {
-                return CTypeUtil.toString(elementIdPtrPtr.read(index));
-            }
-
-            @Override
-            public String getValue(int index) {
-                return CTypeUtil.toString(valuePtr.read(index));
-            }
-        };
-    }
-
     @CEntryPoint(name = "merge")
     public static void merge(IsolateThread thread, ObjectHandle networkHandle, VoidPointerPointer othersHandle, int othersCount,
                              ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -483,36 +461,13 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    private static <T> Map<String, T> mergeIntoMap(List<String> keys, List<T> vals) {
-        Map<String, T> map = new HashMap<>();
-        for (int i = 0; i < keys.size(); i++) {
-            map.put(keys.get(i), vals.get(i));
-        }
-        return map;
-    }
-
     @CEntryPoint(name = "getSeriesMetadata")
     public static ArrayPointer<SeriesMetadataPointer> getSeriesMetadata(IsolateThread thread, ElementType elementType,
-                                                                        boolean creation,
                                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
-            List<SeriesMetadata> seriesMetadata = creation ?
-                    NetworkElementAdders.getAdder(type).getSeriesMetadata() :
-                    NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
-            SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(seriesMetadata.size() * SizeOf.get(SeriesMetadataPointer.class));
-            for (int i = 0; i < seriesMetadata.size(); i++) {
-                SeriesMetadata metadata = seriesMetadata.get(i);
-                SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
-                metadataPtr.setName(CTypeUtil.toCharPtr(metadata.getName()));
-                metadataPtr.setType(convert(metadata.getType()));
-                metadataPtr.setIndex(metadata.isIndex());
-                metadataPtr.setModifiable(metadata.isModifiable());
-            }
-            ArrayPointer<SeriesMetadataPointer> res = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
-            res.setLength(seriesMetadata.size());
-            res.setPtr(seriesMetadataPtr);
-            return res;
+            List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
+            return createSeriesMetadata(seriesMetadata);
         });
     }
 
@@ -527,4 +482,51 @@ public final class PyPowsyblNetworkApiLib {
             UnmanagedMemory.free(arrayPtr);
         });
     }
+
+    // pointer to an array struct
+    @CPointerTo(ArrayPointer.class)
+    interface ArrayPtr extends PointerBase {
+
+        ArrayPointer read(int index);
+
+        void write(int index, ArrayPointer ptr);
+    }
+
+    @CEntryPoint(name = "getCreationMetadata")
+    public static ArrayPointer<ArrayPtr> getCreationMetadata(IsolateThread thread,
+                                                             ElementType elementType,
+                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DataframeElementType type = convert(elementType);
+            List<List<SeriesMetadata>> metadata = NetworkElementAdders.getAdder(type).getMetadata();
+            ArrayPtr pointers = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(ArrayPtr.class));
+            int i = 0;
+            for (List<SeriesMetadata> tableMetadata : metadata) {
+                pointers.write(i, createSeriesMetadata(tableMetadata));
+                i++;
+            }
+            // Allocated the array of pointers
+            ArrayPointer<ArrayPtr> res =  UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+            res.setLength(metadata.size());
+            res.setPtr(pointers);
+            return res;
+        });
+    }
+
+    static ArrayPointer<SeriesMetadataPointer> createSeriesMetadata(List<SeriesMetadata> metadata) {
+        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
+        for (int i = 0; i < metadata.size(); i++) {
+            SeriesMetadata colMetadata = metadata.get(i);
+            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
+            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
+            metadataPtr.setType(convert(colMetadata.getType()));
+            metadataPtr.setIndex(colMetadata.isIndex());
+            metadataPtr.setModifiable(colMetadata.isModifiable());
+        }
+        ArrayPointer<SeriesMetadataPointer> res = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
+        res.setLength(metadata.size());
+        res.setPtr(seriesMetadataPtr);
+        return res;
+    }
+
 }

@@ -110,6 +110,11 @@ Array<series_metadata>::~Array() {
     callJava<>(::freeSeriesMetadataArray, delegate_);
 }
 
+template<>
+Array<array*>::~Array() {
+    //TODO
+}
+
 template<typename T>
 class ToPtr {
 public:
@@ -617,15 +622,35 @@ void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataf
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType, bool creation) {
+std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
 
-    Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType, creation));
+    Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
     std::vector<SeriesMetadata> res;
     for (const series_metadata& series: array) {
         res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
     }
     return res;
 }
+
+std::vector<SeriesMetadata> convertTableMetadata(array* tableMetadata) {
+    Array<series_metadata> array(tableMetadata);
+    std::vector<SeriesMetadata> res;
+    for (const series_metadata& series: array) {
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+    }
+    return res;
+}
+
+std::vector<std::vector<SeriesMetadata>> getCreationMetadata(element_type elementType) {
+
+    Array<array*> allTablesMetadata(pypowsybl::callJava<array*>(::getCreationMetadata, elementType));
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (array* tableMetadata: allTablesMetadata) {
+        res.push_back(convertTableMetadata(tableMetadata));
+    }
+    return res;
+}
+
 
 void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType) {
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);

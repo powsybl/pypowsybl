@@ -7,6 +7,7 @@ import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.HvdcLineAdder;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,8 +30,8 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.powsybl.iidm.network.BusAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,8 +25,8 @@ public class BusDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,8 +31,8 @@ public class SwitchDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

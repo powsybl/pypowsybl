@@ -7,6 +7,7 @@ import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.SubstationAdder;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,8 +25,8 @@ public class SubstationDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

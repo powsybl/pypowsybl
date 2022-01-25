@@ -1219,7 +1219,9 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
     def _create_c_dataframe(self, element_type: ElementType, df: _DataFrame, creation: bool = False):
-        series_metadata = _pypowsybl.get_series_metadata(element_type, creation)
+        series_metadata = _pypowsybl.get_series_metadata(element_type) if not creation \
+            else _pypowsybl.get_creation_metadata(element_type)[0]
+
         metadata_by_name = {s.name: s for s in series_metadata}
         is_index = []
         columns_names = []

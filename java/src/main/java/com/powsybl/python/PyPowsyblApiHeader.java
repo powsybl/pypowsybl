@@ -38,6 +38,9 @@ public final class PyPowsyblApiHeader {
         void setMessage(CCharPointer message);
     }
 
+    /**
+     * Structure containing a pointer to a C array + its length.
+     */
     @CStruct("array")
     interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
@@ -486,7 +489,6 @@ public final class PyPowsyblApiHeader {
 
         ObjectHandle read(int index);
     }
-
 
     @CEnum("contingency_context_type")
     public enum RawContingencyContextType {

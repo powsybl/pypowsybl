@@ -7,6 +7,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.DanglingLineAdder;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,8 +33,8 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
     );
 
     @Override
-    public List<SeriesMetadata> getSeriesMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override
