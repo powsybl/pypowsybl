@@ -13,7 +13,7 @@ import util
 from pypowsybl.perunit import per_unit_view
 
 
-class NetworkTestCase(unittest.TestCase):
+class PerUnitTestCase(unittest.TestCase):
 
     def test_bus_per_unit(self):
         n = pp.network.create_eurostag_tutorial_example1_network()

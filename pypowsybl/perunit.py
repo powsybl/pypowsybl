@@ -480,7 +480,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['rated_u1'], nominal_v1)
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
         self._un_per_unit_v(to_update, ['rated_u3'], nominal_v3)
-        self._network.update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
+        self._network._update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 
     def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs):
         """
@@ -490,7 +490,7 @@ class PerUnitView:
         nominal_v = self._get_indexed_nominal_v(self._network.get_lcc_converter_stations())
         self._un_per_unit_p(to_update, ['p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
-        self._network.update_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, to_update)
+        self._network._update_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, to_update)
 
 
 def per_unit_view(network: _net.Network, sn: float = 100) -> PerUnitView:
