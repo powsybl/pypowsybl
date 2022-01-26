@@ -39,7 +39,7 @@ Requirements:
 - Cmake >= 3.14
 - C++11 compiler
 - Python >= 3.7
-- [GraalVM 21.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
+- [GraalVM 22.0.0.2](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-22.0.0.2) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 To build from sources and install PyPowSyBl package:
 ```bash

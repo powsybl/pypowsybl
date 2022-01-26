@@ -57,7 +57,7 @@
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>21.3.0</graalvm.version>
+        <graalvm.version>22.0.0.2</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
