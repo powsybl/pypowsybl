@@ -35,6 +35,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.word.PointerBase;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -509,6 +510,13 @@ public final class PyPowsyblApiLib {
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             return resultContext.createReferenceVoltages(contingencyId);
         });
+    }
+
+    @CEntryPoint(name = "freeArray")
+    public static <T extends PointerBase> void freeArray(IsolateThread thread, ArrayPointer<T> arrayPointer,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        UnmanagedMemory.free(arrayPointer.getPtr());
+        UnmanagedMemory.free(arrayPointer);
     }
 
     @CEntryPoint(name = "freeSeriesArray")

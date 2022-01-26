@@ -1,0 +1,100 @@
+package com.powsybl.dataframe.network.adders;
+
+import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.CreateEquipmentHelper;
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ShuntCompensatorAdder;
+import com.powsybl.iidm.network.ShuntCompensatorLinearModelAdder;
+import com.powsybl.iidm.network.ShuntCompensatorNonLinearModelAdder;
+
+import java.util.List;
+
+/**
+ * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ */
+public class ShuntDataframeAdder implements NetworkElementAdder {
+
+    private static final List<SeriesMetadata> SHUNT_METADATA = List.of(
+            SeriesMetadata.strings("voltage_level_id"),
+            SeriesMetadata.strings("bus_id"),
+            SeriesMetadata.strings("connectable_bus_id"),
+            SeriesMetadata.ints("node"),
+            SeriesMetadata.strings("id"),
+            SeriesMetadata.strings("name"),
+            SeriesMetadata.ints("section_count"),
+            SeriesMetadata.doubles("target_deadband"),
+            SeriesMetadata.doubles("target_v"),
+            SeriesMetadata.strings("model_type")
+    );
+
+    private static final List<SeriesMetadata> SECTIONS_METADATA = List.of(
+            SeriesMetadata.strings("id"),
+            SeriesMetadata.doubles("g_per_section"),
+            SeriesMetadata.doubles("b_per_section"),
+            SeriesMetadata.ints("max_section_count")
+    );
+
+    @Override
+    public List<List<SeriesMetadata>> getMetadata() {
+        return List.of(SHUNT_METADATA, SECTIONS_METADATA);
+    }
+
+    @Override
+    public void addElement(Network network, List<UpdatingDataframe> dataframes, int indexElement) {
+        UpdatingDataframe shuntDataframe = dataframes.get(0);
+        UpdatingDataframe sectionDataframe = dataframes.get(1);
+        String voltageLevelId = shuntDataframe.getStringValue("voltage_level_id", indexElement)
+                .orElseThrow(() -> new PowsyblException("voltage_level_id is missing"));
+        if (shuntDataframe.getStringValue("id", indexElement).isEmpty()) {
+            throw new PowsyblException("id must be defined for a linear shunt");
+        }
+        String shuntId = shuntDataframe.getStringValue("id", indexElement).get();
+        ShuntCompensatorAdder adder = network.getVoltageLevel(voltageLevelId)
+                .newShuntCompensator();
+        CreateEquipmentHelper.createInjection(adder, shuntDataframe, indexElement);
+        shuntDataframe.getIntValue("section_count", indexElement).ifPresent(adder::setSectionCount);
+        shuntDataframe.getDoubleValue("target_deadband", indexElement).ifPresent(adder::setTargetDeadband);
+        shuntDataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setTargetV);
+
+        if (shuntDataframe.getStringValue("model_type", indexElement).isEmpty()) {
+            throw new PowsyblException("model_type must be defined for a linear shunt");
+        }
+        if (shuntDataframe.getStringValue("model_type", indexElement).get().equals("LINEAR")) {
+            ShuntCompensatorLinearModelAdder linearModelAdder = adder.newLinearModel();
+            int index = sectionDataframe.getIndex("id", shuntId);
+            if (index == -1) {
+                throw new PowsyblException("one section must be defined for a linear shunt");
+            }
+            sectionDataframe.getDoubleValue("b_per_section", index).ifPresent(linearModelAdder::setBPerSection);
+            sectionDataframe.getDoubleValue("g_per_section", index).ifPresent(linearModelAdder::setGPerSection);
+            sectionDataframe.getIntValue("max_section_count", index).ifPresent(linearModelAdder::setMaximumSectionCount);
+            linearModelAdder.add();
+
+        } else if (shuntDataframe.getStringValue("model_type", indexElement).get().equals("NON_LINEAR")) {
+            ShuntCompensatorNonLinearModelAdder nonLinearAdder = adder.newNonLinearModel();
+            int sectionNumber = 0;
+            for (int sectionIndex = 0; sectionIndex < sectionDataframe.getLineCount(); sectionIndex++) {
+                String id = sectionDataframe.getStringValue("id", sectionIndex).orElse(null);
+                if (shuntId.equals(id)) {
+                    sectionNumber++;
+                    ShuntCompensatorNonLinearModelAdder.SectionAdder section = nonLinearAdder.beginSection();
+                    sectionDataframe.getDoubleValue("g", sectionIndex).ifPresent(section::setG);
+                    sectionDataframe.getDoubleValue("b", sectionIndex).ifPresent(section::setB);
+                    section.endSection();
+                }
+            }
+            if (sectionNumber == 0) {
+                throw new PowsyblException("at least one section must be defined for a shunt");
+            }
+            nonLinearAdder.add();
+
+        } else {
+            throw new PowsyblException("shunt model type non valid");
+        }
+        adder.add();
+    }
+}

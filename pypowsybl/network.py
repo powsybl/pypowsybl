@@ -197,6 +197,40 @@ def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> 
     return df
 
 
+def _create_c_dataframe(element_type: ElementType, df: _DataFrame, series_metadata: _List[_pypowsybl.SeriesMetadata]):
+    """
+    Creates the C representation of a dataframe.
+    """
+    metadata_by_name = {s.name: s for s in series_metadata}
+    is_index = []
+    columns_names = []
+    columns_values = []
+    columns_types = []
+    is_multi_index = len(df.index.names) > 1
+
+    for idx, index_name in enumerate(df.index.names):
+        if index_name is None:
+            index_name = series_metadata[idx].name
+        if is_multi_index:
+            columns_values.append(df.index.get_level_values(index_name))
+        else:
+            columns_values.append(df.index.values)
+        columns_names.append(index_name)
+        columns_types.append(metadata_by_name[index_name].type)
+        is_index.append(True)
+    columns_names.extend(df.columns.values)
+    for series_name in df.columns.values:
+        if not series_name in metadata_by_name:
+            raise ValueError('No column named {}'.format(series_name))
+        series = df[series_name]
+        series_type = metadata_by_name[series_name].type
+        columns_types.append(series_type)
+        columns_values.append(series.values)
+        is_index.append(False)
+    return _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+
+
+
 class Network(object):
 
     def __init__(self, handle):
@@ -1218,38 +1252,6 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT)
 
-    def _create_c_dataframe(self, element_type: ElementType, df: _DataFrame, creation: bool = False):
-        series_metadata = _pypowsybl.get_series_metadata(element_type) if not creation \
-            else _pypowsybl.get_creation_metadata(element_type)[0]
-
-        metadata_by_name = {s.name: s for s in series_metadata}
-        is_index = []
-        columns_names = []
-        columns_values = []
-        columns_types = []
-        is_multi_index = len(df.index.names) > 1
-
-        for idx, index_name in enumerate(df.index.names):
-            if index_name is None:
-                index_name = series_metadata[idx].name
-            if is_multi_index:
-                columns_values.append(df.index.get_level_values(index_name))
-            else:
-                columns_values.append(df.index.values)
-            columns_names.append(index_name)
-            columns_types.append(metadata_by_name[index_name].type)
-            is_index.append(True)
-        columns_names.extend(df.columns.values)
-        for series_name in df.columns.values:
-            if not series_name in metadata_by_name:
-                raise ValueError('No column named {}'.format(series_name))
-            series = df[series_name]
-            series_type = metadata_by_name[series_name].type
-            columns_types.append(series_type)
-            columns_values.append(series.values)
-            is_index.append(False)
-        return _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
-
     def _update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs):
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
@@ -1262,7 +1264,8 @@ class Network(object):
             df: the data to be updated
         """
         df = _adapt_df_or_kwargs(element_type, df, **kwargs)
-        c_df = self._create_c_dataframe(element_type, df)
+        metadata =_pypowsybl.get_series_metadata(element_type)
+        c_df = _create_c_dataframe(element_type, df, metadata)
         _pypowsybl.update_network_elements_with_series(self._handle, c_df, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs):
@@ -1790,7 +1793,13 @@ class Network(object):
         return _pypowsybl.merge(self._handle, handleList)
 
     def _create_element(self, element_type: ElementType, dfs: _List[_DataFrame]):
-        c_dfs = [self._create_c_dataframe(element_type, df, True) for df in dfs]
+        metadata = _pypowsybl.get_creation_metadata(element_type)
+        c_dfs = []
+        for i in range(0, len(dfs)):
+            df = dfs[i]
+            if df is None:
+                continue
+            c_dfs.append(_create_c_dataframe(element_type, df, metadata[i]))
         _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
     def create_substations(self, df: _DataFrame = None, **kwargs):

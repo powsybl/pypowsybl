@@ -30,7 +30,8 @@ public final class NetworkElementAdders {
             Map.entry(SUBSTATION, new SubstationDataframeAdder()),
             Map.entry(HVDC_LINE, new HvdcDataframeAdder()),
             Map.entry(BATTERY, new BatteryDataframeAdder()),
-            Map.entry(SWITCH, new SwitchDataframeAdder())
+            Map.entry(SWITCH, new SwitchDataframeAdder()),
+            Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder())
     );
 
     private NetworkElementAdders() {

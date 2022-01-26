@@ -290,25 +290,32 @@ def test_dangling_lines():
 
 def test_shunt():
     n = pn.create_four_substations_node_breaker_network()
-    n.create_shunt_compensators(pd.DataFrame(index=pd.Series(name='id', data=['SHUNT_TEST']),
-                                             columns=['name', 'g', 'b', 'model_type', 'max_section_count',
-                                                      'section_count', 'voltage_regulation_on', 'target_v',
-                                                      'target_deadband', 'voltage_level_id', 'node'],
-                                             data=[['SHUNT_TEST', 0.0, -0.0, 'LINEAR', 1, 0, True, 400, 2,
-                                                    'S1VL2', 2]]),
-                                pd.DataFrame(index=['SHUNT_TEST'],
-                                             columns=['g_per_section', 'b_per_section', 'max_section_count'],
-                                             data=[[0.14, -0.01, 2]]))
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT', 'SHUNT_TEST']),
-                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
-                                     'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
-                                     'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
-                                   '', NaN, 1900, NaN, 'S1VL2', '', False],
-                                  ['SHUNT_TEST', 0.0, -0.0, 'LINEAR', 2, 0, False, 400, 2,
-                                   'S1VL2_0', NaN, NaN, NaN, 'S1VL2', 'S1VL2_0', True]])
-    pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                 'target_deadband', 'voltage_level_id', 'node'],
+        data=[['SHUNT_TEST', '', 'LINEAR', 1, 400, 2,
+               'S1VL2', 2]])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+        data=[['SHUNT_TEST', 0.14, -0.01, 2]])
+    n.create_shunt_compensators(shunt_df, model_df)
+
+    shunt = n.get_shunt_compensators().loc['SHUNT_TEST']
+    assert shunt.max_section_count == 2
+    assert shunt.section_count == 1
+    assert shunt.target_v == 400
+    assert shunt.target_deadband == 2
+    assert not shunt.voltage_regulation_on
+    assert shunt.model_type == 'LINEAR'
+    assert shunt.g == 0.14
+    assert shunt.b == -0.01
+
+    model = n.get_linear_shunt_compensator_sections().loc['SHUNT_TEST']
+    assert model.g_per_section == 0.14
+    assert model.b_per_section == -0.01
+    assert model.max_section_count == 2
 
 
 def test_busbar_sections():

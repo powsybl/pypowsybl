@@ -6,7 +6,9 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
@@ -32,10 +34,11 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
-import org.graalvm.nativeimage.c.struct.CPointerTo;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.*;
-import org.graalvm.word.PointerBase;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -44,8 +47,7 @@ import java.util.*;
 
 import static com.powsybl.python.CDataframeHandler.*;
 import static com.powsybl.python.CTypeUtil.toStringList;
-import static com.powsybl.python.PyPowsyblApiHeader.ExceptionHandlerPointer;
-import static com.powsybl.python.PyPowsyblApiHeader.VoidPointerPointer;
+import static com.powsybl.python.PyPowsyblApiHeader.*;
 import static com.powsybl.python.Util.*;
 
 /**
@@ -462,8 +464,8 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getSeriesMetadata")
-    public static ArrayPointer<SeriesMetadataPointer> getSeriesMetadata(IsolateThread thread, ElementType elementType,
-                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static TableMetadataPointer getSeriesMetadata(IsolateThread thread, ElementType elementType,
+                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
             List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
@@ -471,49 +473,56 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    @CEntryPoint(name = "freeSeriesMetadataArray")
-    public static void freeSeriesMetadataArray(IsolateThread thread, ArrayPointer<SeriesMetadataPointer> arrayPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "freeTableMetadata")
+    public static void freeTableMetadata(IsolateThread thread, TableMetadataPointer metadata, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < arrayPtr.getLength(); i++) {
-                SeriesMetadataPointer metadata = arrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(metadata.getName());
-            }
-            UnmanagedMemory.free(arrayPtr.getPtr());
-            UnmanagedMemory.free(arrayPtr);
+            freeTableMetadataContent(metadata);
+            UnmanagedMemory.free(metadata);
         });
     }
 
-    // pointer to an array struct
-    @CPointerTo(ArrayPointer.class)
-    interface ArrayPtr extends PointerBase {
-
-        ArrayPointer read(int index);
-
-        void write(int index, ArrayPointer ptr);
-    }
-
     @CEntryPoint(name = "getCreationMetadata")
-    public static ArrayPointer<ArrayPtr> getCreationMetadata(IsolateThread thread,
-                                                             ElementType elementType,
-                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static TablesMetadataPointer getCreationMetadata(IsolateThread thread,
+                                                            ElementType elementType,
+                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
             List<List<SeriesMetadata>> metadata = NetworkElementAdders.getAdder(type).getMetadata();
-            ArrayPtr pointers = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(ArrayPtr.class));
+            TableMetadataPointer tablesMetadata = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(TableMetadataPointer.class));
             int i = 0;
             for (List<SeriesMetadata> tableMetadata : metadata) {
-                pointers.write(i, createSeriesMetadata(tableMetadata));
+                createSeriesMetadata(tableMetadata, tablesMetadata.addressOf(i));
                 i++;
             }
-            // Allocated the array of pointers
-            ArrayPointer<ArrayPtr> res =  UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
-            res.setLength(metadata.size());
-            res.setPtr(pointers);
+
+            TablesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(TablesMetadataPointer.class));
+            res.setTablesMetadata(tablesMetadata);
+            res.setTablesCount(metadata.size());
             return res;
         });
     }
 
-    static ArrayPointer<SeriesMetadataPointer> createSeriesMetadata(List<SeriesMetadata> metadata) {
+    @CEntryPoint(name = "freeTablesMetadata")
+    public static void freeTablesMetadata(IsolateThread thread, TablesMetadataPointer cMetadata, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < cMetadata.getTablesCount(); i++) {
+                TableMetadataPointer cTableMetadata = cMetadata.getTablesMetadata().addressOf(i);
+                freeTableMetadataContent(cTableMetadata);
+            }
+            UnmanagedMemory.free(cMetadata.getTablesMetadata());
+            UnmanagedMemory.free(cMetadata);
+        });
+    }
+
+    private static void freeTableMetadataContent(TableMetadataPointer metadata) {
+        for (int i = 0; i < metadata.getAttributesCount(); i++) {
+            SeriesMetadataPointer attrMetadata = metadata.getAttributesMetadata().addressOf(i);
+            UnmanagedMemory.free(attrMetadata.getName());
+        }
+        UnmanagedMemory.free(metadata.getAttributesMetadata());
+    }
+
+    private static void createSeriesMetadata(List<SeriesMetadata> metadata, TableMetadataPointer cMetadata) {
         SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
         for (int i = 0; i < metadata.size(); i++) {
             SeriesMetadata colMetadata = metadata.get(i);
@@ -523,10 +532,13 @@ public final class PyPowsyblNetworkApiLib {
             metadataPtr.setIndex(colMetadata.isIndex());
             metadataPtr.setModifiable(colMetadata.isModifiable());
         }
-        ArrayPointer<SeriesMetadataPointer> res = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
-        res.setLength(metadata.size());
-        res.setPtr(seriesMetadataPtr);
-        return res;
+        cMetadata.setAttributesCount(metadata.size());
+        cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
+    private static TableMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+        TableMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(TableMetadataPointer.class));
+        createSeriesMetadata(metadata, res);
+        return res;
+    }
 }
