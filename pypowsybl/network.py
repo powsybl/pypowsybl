@@ -161,7 +161,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     Element type is required to know which attributes must be part of the index.
     """
 
-    metadata = _pypowsybl.get_series_metadata(element_type, False)
+    metadata = _pypowsybl.get_series_metadata(element_type)
     index_columns = [col.name for col in metadata if col.is_index]
 
     columns = {}
