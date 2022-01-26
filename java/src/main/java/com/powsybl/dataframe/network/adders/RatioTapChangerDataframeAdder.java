@@ -8,6 +8,8 @@ import com.powsybl.iidm.network.*;
 import java.util.List;
 
 /**
+ * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Etienne Lesot <etienne.lesot at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
 public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
