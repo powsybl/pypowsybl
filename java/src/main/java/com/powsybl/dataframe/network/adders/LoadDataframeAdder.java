@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LoadAdder;
@@ -46,7 +45,7 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
         LoadAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
                         .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
                 .newLoad();
-        CreateEquipmentHelper.createInjection(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createInjection(adder, dataframe, indexElement);
         dataframe.getDoubleValue("p0", indexElement).ifPresent(adder::setP0);
         dataframe.getDoubleValue("q0", indexElement).ifPresent(adder::setQ0);
         dataframe.getStringValue("type", indexElement).map(LoadType::valueOf).ifPresent(adder::setLoadType);

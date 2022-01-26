@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
@@ -48,7 +47,7 @@ public class SwitchDataframeAdder extends AbstractSimpleAdder {
         TopologyKind kind = vl.getTopologyKind();
         if (kind == TopologyKind.NODE_BREAKER) {
             VoltageLevel.NodeBreakerView.SwitchAdder adder = vl.getNodeBreakerView().newSwitch();
-            CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
+            NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
             dataframe.getStringValue("kind", indexElement).ifPresent(adder::setKind);
             dataframe.getIntValue("node1", indexElement).ifPresent(adder::setNode1);
             dataframe.getIntValue("node2", indexElement).ifPresent(adder::setNode2);
@@ -58,7 +57,7 @@ public class SwitchDataframeAdder extends AbstractSimpleAdder {
             adder.add();
         } else if (kind == TopologyKind.BUS_BREAKER) {
             VoltageLevel.BusBreakerView.SwitchAdder adder = vl.getBusBreakerView().newSwitch();
-            CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
+            NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
             dataframe.getStringValue("bus1_id", indexElement).ifPresent(adder::setBus1);
             dataframe.getStringValue("bus2_id", indexElement).ifPresent(adder::setBus2);
             dataframe.getIntValue("open", indexElement).ifPresent(open -> adder.setOpen(open == 1));

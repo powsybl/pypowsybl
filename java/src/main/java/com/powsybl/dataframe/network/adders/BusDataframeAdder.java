@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BusAdder;
@@ -40,7 +39,7 @@ public class BusDataframeAdder extends AbstractSimpleAdder {
         VoltageLevel vl = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", index)
                 .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")));
         BusAdder adder = vl.getBusBreakerView().newBus();
-        CreateEquipmentHelper.createIdentifiable(adder, dataframe, index);
+        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, index);
         adder.add();
     }
 }

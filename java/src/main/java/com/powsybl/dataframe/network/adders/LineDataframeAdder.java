@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LineAdder;
@@ -49,7 +48,7 @@ public class LineDataframeAdder extends AbstractSimpleAdder {
     @Override
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         LineAdder lineAdder = network.newLine();
-        CreateEquipmentHelper.createBranch(lineAdder, dataframe, indexElement);
+        NetworkElementCreationUtils.createBranch(lineAdder, dataframe, indexElement);
         dataframe.getDoubleValue("b1", indexElement).ifPresent(lineAdder::setB1);
         dataframe.getDoubleValue("b2", indexElement).ifPresent(lineAdder::setB2);
         dataframe.getDoubleValue("g1", indexElement).ifPresent(lineAdder::setG1);

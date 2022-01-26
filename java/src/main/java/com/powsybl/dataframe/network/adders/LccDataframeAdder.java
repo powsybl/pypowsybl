@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LccConverterStationAdder;
@@ -44,7 +43,7 @@ public class LccDataframeAdder extends AbstractSimpleAdder {
         LccConverterStationAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
                         .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
                 .newLccConverterStation();
-        CreateEquipmentHelper.createHvdc(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createHvdc(adder, dataframe, indexElement);
         dataframe.getDoubleValue("power_factor", indexElement).ifPresent(pf -> adder.setPowerFactor((float) pf));
         adder.add();
     }

@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -45,7 +44,7 @@ public class VscDataframeAdder extends AbstractSimpleAdder {
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         VscConverterStationAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
                 .orElseThrow(() -> new PowsyblException("voltage_level_id is missing"))).newVscConverterStation();
-        CreateEquipmentHelper.createHvdc(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createHvdc(adder, dataframe, indexElement);
         dataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setVoltageSetpoint);
         dataframe.getDoubleValue("target_q", indexElement).ifPresent(adder::setReactivePowerSetpoint);
         adder.setVoltageRegulatorOn(dataframe.getIntValue("voltage_regulator_on", indexElement).orElse(0) == 1);

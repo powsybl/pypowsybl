@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BusbarSectionAdder;
@@ -41,7 +40,7 @@ public class BusBarDataframeAdder extends AbstractSimpleAdder {
                         .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
                 .getNodeBreakerView()
                 .newBusbarSection();
-        CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
         dataframe.getIntValue("node", indexElement).ifPresent(adder::setNode);
         adder.add();
     }

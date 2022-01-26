@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -72,7 +71,7 @@ public class TwtDataframeAdder extends AbstractSimpleAdder {
         }
         var adder = s1.newTwoWindingsTransformer();
 
-        CreateEquipmentHelper.createBranch(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createBranch(adder, dataframe, indexElement);
         dataframe.getDoubleValue("rated_u1", indexElement).ifPresent(adder::setRatedU1);
         dataframe.getDoubleValue("rated_u2", indexElement).ifPresent(adder::setRatedU2);
         dataframe.getDoubleValue("rated_s", indexElement).ifPresent(adder::setRatedS);

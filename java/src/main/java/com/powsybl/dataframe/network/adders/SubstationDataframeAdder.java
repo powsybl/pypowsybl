@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Country;
@@ -38,7 +37,7 @@ public class SubstationDataframeAdder extends AbstractSimpleAdder {
     @Override
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         SubstationAdder adder = network.newSubstation();
-        CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
         dataframe.getStringValue("country", indexElement).map(Country::valueOf).ifPresent(adder::setCountry);
         dataframe.getStringValue("tso", indexElement).ifPresent(adder::setTso);
         adder.add();

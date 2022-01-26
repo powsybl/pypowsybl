@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.DanglingLineAdder;
@@ -47,7 +46,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         DanglingLineAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
                 .orElseThrow(() -> new PowsyblException("voltage_level_id is missing"))).newDanglingLine();
-        CreateEquipmentHelper.createInjection(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createInjection(adder, dataframe, indexElement);
         dataframe.getDoubleValue("p0", indexElement).ifPresent(adder::setP0);
         dataframe.getDoubleValue("q0", indexElement).ifPresent(adder::setQ0);
         dataframe.getDoubleValue("r", indexElement).ifPresent(adder::setR);

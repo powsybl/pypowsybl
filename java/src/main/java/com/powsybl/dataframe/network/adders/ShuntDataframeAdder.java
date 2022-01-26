@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
@@ -65,7 +64,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         String shuntId = shuntDataframe.getStringValue("id", indexElement).get();
         ShuntCompensatorAdder adder = network.getVoltageLevel(voltageLevelId)
                 .newShuntCompensator();
-        CreateEquipmentHelper.createInjection(adder, shuntDataframe, indexElement);
+        NetworkElementCreationUtils.createInjection(adder, shuntDataframe, indexElement);
         shuntDataframe.getIntValue("section_count", indexElement).ifPresent(adder::setSectionCount);
         shuntDataframe.getDoubleValue("target_deadband", indexElement).ifPresent(adder::setTargetDeadband);
         shuntDataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setTargetV);

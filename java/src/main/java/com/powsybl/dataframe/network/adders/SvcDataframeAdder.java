@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
@@ -46,7 +45,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         StaticVarCompensatorAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
                         .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
                 .newStaticVarCompensator();
-        CreateEquipmentHelper.createInjection(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createInjection(adder, dataframe, indexElement);
         dataframe.getDoubleValue("b_max", indexElement).ifPresent(adder::setBmax);
         dataframe.getDoubleValue("b_min", indexElement).ifPresent(adder::setBmin);
         dataframe.getStringValue("regulation_mode", indexElement)

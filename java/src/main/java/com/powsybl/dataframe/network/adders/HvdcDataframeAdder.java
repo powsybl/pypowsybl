@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.dataframe.CreateEquipmentHelper;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.HvdcLine;
@@ -43,7 +42,7 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
     @Override
     public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
         HvdcLineAdder adder = network.newHvdcLine();
-        CreateEquipmentHelper.createIdentifiable(adder, dataframe, indexElement);
+        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
         dataframe.getStringValue("converter_station1_id", indexElement).ifPresent(adder::setConverterStationId1);
         dataframe.getStringValue("converter_station2_id", indexElement).ifPresent(adder::setConverterStationId2);
         dataframe.getDoubleValue("max_p", indexElement).ifPresent(adder::setMaxP);
