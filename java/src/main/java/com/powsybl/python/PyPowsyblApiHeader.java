@@ -456,18 +456,8 @@ public final class PyPowsyblApiHeader {
         SeriesMetadataPointer addressOf(int index);
     }
 
-    interface CArrayAccess<T> {
-        T addressOf(int index);
-    }
-
-    /*
-    typedef struct {
-        series_metadata* attributes_metadata;
-        int attributes_count;
-    } table_metadata;
-     */
-    @CStruct("table_metadata")
-    interface TableMetadataPointer extends PointerBase {
+    @CStruct("dataframe_metadata")
+    interface DataframeMetadataPointer extends PointerBase {
 
         @CField("attributes_count")
         int getAttributesCount();
@@ -484,23 +474,23 @@ public final class PyPowsyblApiHeader {
         /**
          * When used as a C array, get the struct at i-th position.
          */
-        TableMetadataPointer addressOf(int index);
+        DataframeMetadataPointer addressOf(int index);
     }
 
-    @CStruct("tables_metadata")
-    interface TablesMetadataPointer extends PointerBase {
+    @CStruct("dataframes_metadata")
+    interface DataframesMetadataPointer extends PointerBase {
 
-        @CField("tables_count")
-        int getTablesCount();
+        @CField("dataframes_count")
+        int getDataframesCount();
 
-        @CField("tables_count")
-        void setTablesCount(int count);
+        @CField("dataframes_count")
+        void setDataframesCount(int count);
 
-        @CField("tables_metadata")
-        TableMetadataPointer getTablesMetadata();
+        @CField("dataframes_metadata")
+        DataframeMetadataPointer getDataframesMetadata();
 
-        @CField("tables_metadata")
-        void setTablesMetadata(TableMetadataPointer metadata);
+        @CField("dataframes_metadata")
+        void setDataframesMetadata(DataframeMetadataPointer metadata);
     }
 
     @CStruct("zone")

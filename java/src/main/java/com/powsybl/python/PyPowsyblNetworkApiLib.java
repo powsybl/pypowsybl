@@ -22,7 +22,6 @@ import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.PyPowsyblApiHeader.*;
 import com.powsybl.python.update.CUpdatingDataframe;
 import com.powsybl.python.update.DoubleSeries;
 import com.powsybl.python.update.IntSeries;
@@ -464,8 +463,8 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getSeriesMetadata")
-    public static TableMetadataPointer getSeriesMetadata(IsolateThread thread, ElementType elementType,
-                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static DataframeMetadataPointer getSeriesMetadata(IsolateThread thread, ElementType elementType,
+                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
             List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
@@ -473,48 +472,48 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    @CEntryPoint(name = "freeTableMetadata")
-    public static void freeTableMetadata(IsolateThread thread, TableMetadataPointer metadata, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "freeDataframeMetadata")
+    public static void freeDataframeMetadata(IsolateThread thread, DataframeMetadataPointer metadata, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            freeTableMetadataContent(metadata);
+            freeDataframeMetadataContent(metadata);
             UnmanagedMemory.free(metadata);
         });
     }
 
     @CEntryPoint(name = "getCreationMetadata")
-    public static TablesMetadataPointer getCreationMetadata(IsolateThread thread,
-                                                            ElementType elementType,
-                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static DataframesMetadataPointer getCreationMetadata(IsolateThread thread,
+                                                                ElementType elementType,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
             List<List<SeriesMetadata>> metadata = NetworkElementAdders.getAdder(type).getMetadata();
-            TableMetadataPointer tablesMetadata = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(TableMetadataPointer.class));
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
             int i = 0;
-            for (List<SeriesMetadata> tableMetadata : metadata) {
-                createSeriesMetadata(tableMetadata, tablesMetadata.addressOf(i));
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                 i++;
             }
 
-            TablesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(TablesMetadataPointer.class));
-            res.setTablesMetadata(tablesMetadata);
-            res.setTablesCount(metadata.size());
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
             return res;
         });
     }
 
-    @CEntryPoint(name = "freeTablesMetadata")
-    public static void freeTablesMetadata(IsolateThread thread, TablesMetadataPointer cMetadata, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "freeDataframesMetadata")
+    public static void freeDataframesMetadata(IsolateThread thread, DataframesMetadataPointer cMetadata, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < cMetadata.getTablesCount(); i++) {
-                TableMetadataPointer cTableMetadata = cMetadata.getTablesMetadata().addressOf(i);
-                freeTableMetadataContent(cTableMetadata);
+            for (int i = 0; i < cMetadata.getDataframesCount(); i++) {
+                DataframeMetadataPointer cDataframeMetadata = cMetadata.getDataframesMetadata().addressOf(i);
+                freeDataframeMetadataContent(cDataframeMetadata);
             }
-            UnmanagedMemory.free(cMetadata.getTablesMetadata());
+            UnmanagedMemory.free(cMetadata.getDataframesMetadata());
             UnmanagedMemory.free(cMetadata);
         });
     }
 
-    private static void freeTableMetadataContent(TableMetadataPointer metadata) {
+    private static void freeDataframeMetadataContent(DataframeMetadataPointer metadata) {
         for (int i = 0; i < metadata.getAttributesCount(); i++) {
             SeriesMetadataPointer attrMetadata = metadata.getAttributesMetadata().addressOf(i);
             UnmanagedMemory.free(attrMetadata.getName());
@@ -522,7 +521,7 @@ public final class PyPowsyblNetworkApiLib {
         UnmanagedMemory.free(metadata.getAttributesMetadata());
     }
 
-    private static void createSeriesMetadata(List<SeriesMetadata> metadata, TableMetadataPointer cMetadata) {
+    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
         SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
         for (int i = 0; i < metadata.size(); i++) {
             SeriesMetadata colMetadata = metadata.get(i);
@@ -536,8 +535,8 @@ public final class PyPowsyblNetworkApiLib {
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
-    private static TableMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
-        TableMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(TableMetadataPointer.class));
+    private static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+        DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
         createSeriesMetadata(metadata, res);
         return res;
     }

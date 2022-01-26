@@ -612,31 +612,31 @@ void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataf
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
-std::vector<SeriesMetadata> convertTableMetadata(table_metadata* tableMetadata) {
+std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
     std::vector<SeriesMetadata> res;
-    for (int i = 0; i < tableMetadata->attributes_count; i++) {
-        const series_metadata& series = tableMetadata->attributes_metadata[i];
+    for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
+        const series_metadata& series = dataframeMetadata->attributes_metadata[i];
         res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
     }
     return res;
 }
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
 
-    table_metadata* metadata = pypowsybl::callJava<table_metadata*>(::getSeriesMetadata, elementType);
-    std::vector<SeriesMetadata> res = convertTableMetadata(metadata);
-    callJava(::freeTableMetadata, metadata);
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
-std::vector<std::vector<SeriesMetadata>> getCreationMetadata(element_type elementType) {
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType) {
 
-    tables_metadata* allTablesMetadata = pypowsybl::callJava<tables_metadata*>(::getCreationMetadata, elementType);
+    dataframes_metadata* allDataframesMetadata = pypowsybl::callJava<dataframes_metadata*>(::getCreationMetadata, elementType);
     std::vector<std::vector<SeriesMetadata>> res;
-    for (int i =0; i < allTablesMetadata->tables_count; i++) {
-        res.push_back(convertTableMetadata(allTablesMetadata->tables_metadata + i));
+    for (int i =0; i < allDataframesMetadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(allDataframesMetadata->dataframes_metadata + i));
     }
-    pypowsybl::callJava(::freeTablesMetadata, allTablesMetadata);
+    pypowsybl::callJava(::freeDataframesMetadata, allDataframesMetadata);
     return res;
 }
 

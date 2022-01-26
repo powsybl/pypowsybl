@@ -163,7 +163,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     Element type is required to know which attributes must be part of the index.
     """
 
-    metadata = _pypowsybl.get_series_metadata(element_type)
+    metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
     index_columns = [col.name for col in metadata if col.is_index]
 
     columns = {}
@@ -1265,7 +1265,7 @@ class Network(object):
             df: the data to be updated
         """
         df = _adapt_df_or_kwargs(element_type, df, **kwargs)
-        metadata =_pypowsybl.get_series_metadata(element_type)
+        metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
         c_df = _create_c_dataframe(df, metadata)
         _pypowsybl.update_network_elements_with_series(self._handle, c_df, element_type)
 
@@ -1794,7 +1794,7 @@ class Network(object):
         return _pypowsybl.merge(self._handle, handleList)
 
     def _create_element(self, element_type: ElementType, dfs: _List[_DataFrame]):
-        metadata = _pypowsybl.get_creation_metadata(element_type)
+        metadata = _pypowsybl.get_network_elements_creation_dataframes_metadata(element_type)
         c_dfs = []
         for i in range(0, len(dfs)):
             df = dfs[i]

@@ -277,9 +277,15 @@ SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& volta
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
+/**
+ * Metadata of the dataframe of network elements data for a given element type.
+ */
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType);
 
-std::vector<std::vector<SeriesMetadata>> getCreationMetadata(element_type elementType);
+/**
+ * Metadata of the list of dataframes to create network elements of the given type.
+ */
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
 
 void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType);
 

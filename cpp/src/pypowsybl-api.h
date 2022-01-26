@@ -137,20 +137,20 @@ typedef struct series_metadata_struct {
 } series_metadata;
 
 /**
- * Metadata for one table : simply a list of attributes metadata.
+ * Metadata for one dataframe : simply a list of attributes metadata.
  */
 typedef struct {
     series_metadata* attributes_metadata;
     int attributes_count;
-} table_metadata;
+} dataframe_metadata;
 
 /**
- * Metadata for a list of tables.
+ * Metadata for a list of dataframes.
  */
 typedef struct {
-    table_metadata* tables_metadata;
-    int tables_count;
-} tables_metadata;
+    dataframe_metadata* dataframes_metadata;
+    int dataframes_count;
+} dataframes_metadata;
 
 typedef struct zone_struct {
     char* id;

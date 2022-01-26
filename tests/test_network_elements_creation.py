@@ -458,5 +458,3 @@ def test_create_network_and_run_loadflow():
     assert line.q2 == pytest.approx(-10, abs=1e-2)
     assert line.p1 == pytest.approx(100, abs=1e-1)
     assert line.q1 == pytest.approx(9.7, abs=1e-1)
-
-
