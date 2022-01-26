@@ -203,47 +203,49 @@ def test_ratio_tap_changers_creation():
                                              data=[[2, 200, False, 0, 1]]),
                                 pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NGEN_NHV1']),
                                              columns=['b', 'g', 'r', 'x', 'rho'],
-                                             data=[[2, 2, 1, 1, 0.5], [2, 2, 1, 1, 0.5]]))
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NHV2_NLOAD']),
-                            columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
-                                     'alpha'],
-                            data=[[1, 0, 1, 2, False, False, 200, 2, '', 8.33, NaN],
-                                  [0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples(
-            [('NGEN_NHV1', 0), ('NGEN_NHV1', 1), ('NHV2_NLOAD', 0),
-             ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
-            names=['id', 'position']),
-        columns=['rho', 'r', 'x', 'g', 'b'],
-        data=[[0.5, 1, 1, 2, 2],
-              [0.5, 1, 1, 2, 2],
-              [0.85, 0, 0, 0, 0],
-              [1.00, 0, 0, 0, 0],
-              [1.15, 0, 0, 0, 0]])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False, atol=10 ** -2)
+                                             data=[[2, 2, 1, 1, 0.5],
+                                                   [2, 2, 1, 1, 0.5]]))
+    rtc = n.get_ratio_tap_changers().loc['NGEN_NHV1']
+    assert rtc.target_deadband == 2
+    assert rtc.target_v == 200
+    assert not rtc.on_load
+    assert rtc.low_tap == 0
+    assert rtc.tap == 1
+    steps = n.get_ratio_tap_changer_steps().loc['NGEN_NHV1']
+    step1, step2 = (steps.loc[0], steps.loc[1])
+    assert step1.b == 2
+    assert step1.g == 2
+    assert step1.r == 1
+    assert step1.x == 1
+    assert step1.rho == 0.5
 
 
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
-    n.create_2_windings_transformers(pd.DataFrame(index=['TWT_TEST'],
-                                                  columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2',
-                                                           'voltage_level1_id', 'voltage_level2_id', 'node1',
-                                                           'node2'],
-                                                  data=[[0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
+    n.create_2_windings_transformers(pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1', 'node2'],
+        data=[['TWT_TEST', 0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
     n.create_phase_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST']),
                                              columns=['target_deadband', 'regulation_mode', 'low_tap', 'tap'],
                                              data=[[2, 'CURRENT_LIMITER', 0, 1]]),
                                 pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST', 'TWT_TEST']),
                                              columns=['b', 'g', 'r', 'x', 'rho', 'alpha'],
-                                             data=[[2, 2, 1, 1, 0.5, 0.1], [2, 2, 1, 1, 0.5, 0.1]]))
-    created = pd.DataFrame(index=pd.Series(name='id', data=['TWT', 'TWT_TEST']),
-                           columns=['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-                                    'regulation_value', 'target_deadband', 'regulating_bus_id'],
-                           data=[[10, 0, 32, 33, True, 'CURRENT_LIMITER', 1000, 100, 'S1VL1_0'],
-                                 [1, 0, 1, 2, False, 'CURRENT_LIMITER', NaN, 2, '']])
-    pd.testing.assert_frame_equal(created, n.get_phase_tap_changers(), check_dtype=False)
+                                             data=[[2, 2, 1, 1, 0.5, 0.1],
+                                                   [2, 2, 1, 1, 0.5, 0.1]]))
+    ptc = n.get_phase_tap_changers().loc['TWT_TEST']
+    assert ptc.target_deadband == 2
+    assert ptc.regulation_mode == 'CURRENT_LIMITER'
+    assert ptc.low_tap == 0
+    assert ptc.tap == 1
+    steps = n.get_phase_tap_changer_steps().loc['TWT_TEST']
+    step1, step2 = (steps.loc[0], steps.loc[1])
+    assert step1.b == 2
+    assert step1.g == 2
+    assert step1.r == 1
+    assert step1.x == 1
+    assert step1.rho == 0.5
+    assert step1.alpha == 0.1
 
 
 def test_lines_creation():
@@ -403,3 +405,52 @@ def test_hvdc_creation():
     assert hvdc.target_p == 100
     assert hvdc.max_p == 200
     assert hvdc.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER'
+
+
+def test_create_network_and_run_loadflow():
+    n = pn.create_empty()
+    stations = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'S1', 'country': 'BE'},
+        {'id': 'S2', 'country': 'DE'}
+    ])
+    n.create_substations(stations)
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+        {'substation_id': 'S2', 'id': 'VL2', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+    ])
+    n.create_voltage_levels(voltage_levels)
+
+    buses = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'B1'},
+        {'voltage_level_id': 'VL2', 'id': 'B2'},
+    ])
+    n.create_buses(buses)
+
+    lines = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'LINE', 'voltage_level1_id': 'VL1', 'voltage_level2_id': 'VL2', 'bus1_id': 'B1', 'bus2_id': 'B2',
+         'r': 0.1, 'x': 1.0, 'g1': 0, 'b1': 1e-6, 'g2': 0, 'b2': 1e-6}
+    ])
+    n.create_lines(lines)
+
+    loads = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL2', 'id': 'LOAD', 'bus_id': 'B2', 'p0': 100, 'q0': 10}
+    ])
+    n.create_loads(loads)
+
+    generators = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'GEN', 'bus_id': 'B1', 'target_p': 100, 'min_p': 0, 'max_p': 200,
+         'target_v': 400, 'voltage_regulator_on': True}
+    ])
+    n.create_generators(generators)
+
+    import pypowsybl.loadflow as lf
+    lf.run_ac(n)
+
+    line = n.get_lines().loc['LINE']
+    assert line.p2 == pytest.approx(-100, abs=1e-2)
+    assert line.q2 == pytest.approx(-10, abs=1e-2)
+    assert line.p1 == pytest.approx(100, abs=1e-1)
+    assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+

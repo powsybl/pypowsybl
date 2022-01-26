@@ -199,7 +199,7 @@ def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> 
     return df
 
 
-def _create_c_dataframe(element_type: ElementType, df: _DataFrame, series_metadata: _List[_pypowsybl.SeriesMetadata]):
+def _create_c_dataframe(df: _DataFrame, series_metadata: _List[_pypowsybl.SeriesMetadata]):
     """
     Creates the C representation of a dataframe.
     """
@@ -230,7 +230,6 @@ def _create_c_dataframe(element_type: ElementType, df: _DataFrame, series_metada
         columns_values.append(series.values)
         is_index.append(False)
     return _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
-
 
 
 class Network(object):
@@ -1267,7 +1266,7 @@ class Network(object):
         """
         df = _adapt_df_or_kwargs(element_type, df, **kwargs)
         metadata =_pypowsybl.get_series_metadata(element_type)
-        c_df = _create_c_dataframe(element_type, df, metadata)
+        c_df = _create_c_dataframe(df, metadata)
         _pypowsybl.update_network_elements_with_series(self._handle, c_df, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs):
@@ -1802,7 +1801,7 @@ class Network(object):
             if df is None:
                 c_dfs.append(None)
             else:
-                c_dfs.append(_create_c_dataframe(element_type, df, metadata[i]))
+                c_dfs.append(_create_c_dataframe(df, metadata[i]))
         _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
     def create_substations(self, df: _DataFrame = None, **kwargs):

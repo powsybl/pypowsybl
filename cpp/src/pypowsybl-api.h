@@ -10,7 +10,7 @@ typedef struct exception_handler_struct {
 } exception_handler;
 
 /**
- * Weakly types array of data.
+ * Weakly typed array of data.
  */
 typedef struct array_struct {
     void* ptr;
@@ -127,7 +127,7 @@ typedef struct series_struct {
 } series;
 
 /**
- * Metadata about one column.
+ * Metadata about one attribute.
  */
 typedef struct series_metadata_struct {
     char* name;
@@ -137,7 +137,7 @@ typedef struct series_metadata_struct {
 } series_metadata;
 
 /**
- * Metadata for one table : simply a list of metadata.
+ * Metadata for one table : simply a list of attributes metadata.
  */
 typedef struct {
     series_metadata* attributes_metadata;
