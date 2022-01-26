@@ -288,7 +288,7 @@ def test_dangling_lines():
     assert new_dl.q0 == 101
 
 
-def test_shunt():
+def test_linear_shunt():
     n = pn.create_four_substations_node_breaker_network()
     shunt_df = pd.DataFrame.from_records(
         index='id',
@@ -316,6 +316,50 @@ def test_shunt():
     assert model.g_per_section == 0.14
     assert model.b_per_section == -0.01
     assert model.max_section_count == 2
+
+
+def test_non_linear_shunt():
+    n = pn.create_four_substations_node_breaker_network()
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                 'target_deadband', 'voltage_level_id', 'node'],
+        data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 2),
+              ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 10)])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g', 'b'],
+        data=[('SHUNT1', 1, 2),
+              ('SHUNT1', 3, 4),
+              ('SHUNT2', 5, 6),
+              ('SHUNT2', 7, 8)])
+    n.create_shunt_compensators(shunt_df, non_linear_model_df=model_df)
+
+    shunt = n.get_shunt_compensators().loc['SHUNT1']
+    assert shunt.max_section_count == 2
+    assert shunt.section_count == 1
+    assert shunt.target_v == 400
+    assert shunt.target_deadband == 2
+    assert not shunt.voltage_regulation_on
+    assert shunt.model_type == 'NON_LINEAR'
+    assert shunt.g == 1
+    assert shunt.b == 2
+
+    model1 = n.get_non_linear_shunt_compensator_sections().loc['SHUNT1']
+    section1 = model1.loc[0]
+    section2 = model1.loc[1]
+    assert section1.g == 1
+    assert section1.b == 2
+    assert section2.g == 3
+    assert section2.b == 4
+
+    model2 = n.get_non_linear_shunt_compensator_sections().loc['SHUNT2']
+    section1 = model2.loc[0]
+    section2 = model2.loc[1]
+    assert section1.g == 5
+    assert section1.b == 6
+    assert section2.g == 7
+    assert section2.b == 8
 
 
 def test_busbar_sections():

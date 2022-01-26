@@ -10,6 +10,8 @@ import sys as _sys
 from typing import List as _List
 from typing import Set as _Set
 
+import pandas as pd
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
 
@@ -1798,8 +1800,9 @@ class Network(object):
         for i in range(0, len(dfs)):
             df = dfs[i]
             if df is None:
-                continue
-            c_dfs.append(_create_c_dataframe(element_type, df, metadata[i]))
+                c_dfs.append(None)
+            else:
+                c_dfs.append(_create_c_dataframe(element_type, df, metadata[i]))
         _pypowsybl.create_element(self._handle, c_dfs, element_type)
 
     def create_substations(self, df: _DataFrame = None, **kwargs):
@@ -1901,14 +1904,22 @@ class Network(object):
         """
         return self._create_element(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, [df])
 
-    def create_shunt_compensators(self, shuntDataframe: _DataFrame, sectionDataframe: _DataFrame = None, **kwargs):
+    def create_shunt_compensators(self, shunt_df: _DataFrame,
+                                  linear_model_df: _DataFrame = None,
+                                  non_linear_model_df: _DataFrame = None,
+                                  **kwargs):
         """
         create shunt compensators on a network
 
         Args:
             df: dataframe of the shunt compensators creation data
         """
-        return self._create_element(_pypowsybl.ElementType.SHUNT_COMPENSATOR, [shuntDataframe, sectionDataframe])
+        if linear_model_df is None:
+            linear_model_df = pd.DataFrame()
+        if non_linear_model_df is None:
+            non_linear_model_df = pd.DataFrame()
+        dfs = [shunt_df, linear_model_df, non_linear_model_df]
+        return self._create_element(_pypowsybl.ElementType.SHUNT_COMPENSATOR, dfs)
 
     def create_switches(self, df: _DataFrame = None, **kwargs):
         """
