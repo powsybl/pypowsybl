@@ -61,7 +61,7 @@ jobs:
 
       - name: Generate coverage
         run: |
-          pip3 uninstall pypowsybl
+          pip3 uninstall -y pypowsybl
           python3 setup.py develop
           pytest --cov=pypowsybl --cov-report xml --cov-report term tests/
 
