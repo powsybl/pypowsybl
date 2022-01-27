@@ -74,6 +74,7 @@ jobs:
           pytest
 
       - name: Generate coverage # In order to generate a coverage that sonar understands, we need to generate it from sources
+        if: matrix.python.name == 'cp39'
         run: |
           pip3 uninstall -y pypowsybl
           python3 setup.py develop
