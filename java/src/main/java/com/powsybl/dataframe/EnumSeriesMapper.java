@@ -22,11 +22,11 @@ public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
     private final Function<T, E> value;
 
     public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value) {
-        this(name, enumClass, value, null);
+        this(name, enumClass, value, null, true);
     }
 
-    public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value, BiConsumer<T, E> updater) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.STRING);
+    public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value, BiConsumer<T, E> updater, boolean defaultAttribute) {
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.STRING, defaultAttribute);
         this.enumClass = enumClass;
         this.updater = updater;
         this.value = value;

@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.DoubleIndexedSeries;
@@ -15,6 +16,7 @@ import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
@@ -27,10 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class NetworkDataframesTest {
 
     private static List<Series> createDataFrame(DataframeElementType type, Network network) {
+        return createDataFrame(type, network, new DataframeFilter());
+    }
+
+    private static List<Series> createDataFrame(DataframeElementType type, Network network, DataframeFilter dataframeFilter) {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add));
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter);
         return series;
     }
 
@@ -217,7 +223,8 @@ class NetworkDataframesTest {
         Network network = EurostagTutorialExample1Factory.create();
         network.getSubstation("P1").setProperty("prop1", "val1");
         network.getSubstation("P2").setProperty("prop2", "val2");
-        List<Series> series = createDataFrame(SUBSTATION, network);
+        List<Series> series = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES, Collections.emptyList()));
 
         assertThat(series)
             .extracting(Series::getName)
@@ -285,4 +292,30 @@ class NetworkDataframesTest {
             .extracting(Series::getName)
             .containsExactly("id", "num", "p", "min_q", "max_q");
     }
+
+    @Test
+    void attributesFiltering() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").setProperty("prop1", "val1");
+        network.getSubstation("P2").setProperty("prop2", "val2");
+        List<Series> seriesDefaults = createDataFrame(SUBSTATION, network,
+                new DataframeFilter());
+        assertThat(seriesDefaults)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "TSO", "geo_tags", "country");
+
+        List<Series> seriesAll = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(seriesAll)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "TSO", "geo_tags", "country", "prop1", "prop2");
+
+        List<Series> seriesAttributesSubset = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.INPUT_ATTRIBUTES,
+                        List.of("name",  "name", "geo_tags", "prop1")));
+        assertThat(seriesAttributesSubset)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "geo_tags", "prop1");
+    }
+
 }

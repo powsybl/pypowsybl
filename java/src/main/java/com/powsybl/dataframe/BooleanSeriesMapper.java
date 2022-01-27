@@ -24,11 +24,11 @@ public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     public BooleanSeriesMapper(String name, Predicate<T> value) {
-        this(name, value, null);
+        this(name, value, null, true);
     }
 
-    public BooleanSeriesMapper(String name, Predicate<T> value, BooleanUpdater<T> updater) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.BOOLEAN);
+    public BooleanSeriesMapper(String name, Predicate<T> value, BooleanUpdater<T> updater, boolean defaultAttribute) {
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.BOOLEAN, defaultAttribute);
         this.updater = updater;
         this.value = value;
     }

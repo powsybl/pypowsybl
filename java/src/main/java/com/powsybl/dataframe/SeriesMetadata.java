@@ -15,12 +15,14 @@ public class SeriesMetadata {
     private final String name;
     private final boolean modifiable;
     private final SeriesDataType type;
+    private final boolean defaultAttribute;
 
-    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type) {
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute) {
         this.index = index;
         this.name = name;
         this.modifiable = modifiable;
         this.type = type;
+        this.defaultAttribute = defaultAttribute;
     }
 
     public boolean isIndex() {
@@ -40,18 +42,22 @@ public class SeriesMetadata {
     }
 
     public static SeriesMetadata strings(String name) {
-        return new SeriesMetadata(false, name, false, SeriesDataType.STRING);
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false);
     }
 
     public static SeriesMetadata ints(String name) {
-        return new SeriesMetadata(false, name, false, SeriesDataType.INT);
+        return new SeriesMetadata(false, name, false, SeriesDataType.INT, false);
     }
 
     public static SeriesMetadata booleans(String name) {
-        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN);
+        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false);
     }
 
     public static SeriesMetadata doubles(String name) {
-        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE);
+        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false);
+    }
+
+    public boolean isDefaultAttribute() {
+        return defaultAttribute;
     }
 }

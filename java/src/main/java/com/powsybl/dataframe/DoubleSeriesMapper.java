@@ -24,11 +24,11 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     public DoubleSeriesMapper(String name, ToDoubleFunction<T> value) {
-        this(name, value, null);
+        this(name, value, null, true);
     }
 
-    public DoubleSeriesMapper(String name, ToDoubleFunction<T> value, DoubleUpdater<T> updater) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE);
+    public DoubleSeriesMapper(String name, ToDoubleFunction<T> value, DoubleUpdater<T> updater, boolean defaultAttribute) {
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE, defaultAttribute);
         this.updater = updater;
         this.value = value;
     }

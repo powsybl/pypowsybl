@@ -20,7 +20,7 @@ public class TestDataframe implements UpdatingDataframe {
     }
 
     public void addColumnName(String name, SeriesDataType type, boolean index) {
-        columns.put(name, new SeriesMetadata(index, name, false, type));
+        columns.put(name, new SeriesMetadata(index, name, false, type, true));
     }
 
     @Override

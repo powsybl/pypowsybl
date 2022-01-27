@@ -820,6 +820,38 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         nx.draw_shell(graph, with_labels=True)
         plt.show()
 
+    def test_dataframe_attributes_filtering(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        buses_selected_attributes = n.get_buses(attributes=['v_mag', 'voltage_level_id'])
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                                columns=['v_mag', 'voltage_level_id'],
+                                data=[[NaN, 'VLGEN'],
+                                      [380, 'VLHV1'],
+                                      [380, 'VLHV2'],
+                                      [NaN, 'VLLOAD']])
+        pd.testing.assert_frame_equal(expected, buses_selected_attributes, check_dtype=False)
+        buses_default_attributes = n.get_buses(all_attributes=False)
+        expected_default_attributes = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                                columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                         'voltage_level_id'],
+                                data=[['', NaN, NaN, 0, 0, 'VLGEN'],
+                                      ['', 380, NaN, 0, 0, 'VLHV1'],
+                                      ['', 380, NaN, 0, 0, 'VLHV2'],
+                                      ['', NaN, NaN, 0, 0, 'VLLOAD']])
+        pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
+        buses_default_attributes2 = n.get_buses(attributes=[])
+        pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes2, check_dtype=False)
+
+        buses_all_attributes = n.get_buses(all_attributes=True)
+        expected_all_attributes = expected_default_attributes
+        pd.testing.assert_frame_equal(expected_all_attributes, buses_all_attributes, check_dtype=False)
+
+        try:
+            buses_all_attributes_conflicting_params = n.get_buses(all_attributes=True, attributes=['v_mag', 'voltage_level_id'])
+            self.fail()
+        except RuntimeError as e:
+            self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
+
 
 if __name__ == '__main__':
     unittest.main()

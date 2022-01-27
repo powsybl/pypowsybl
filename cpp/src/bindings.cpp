@@ -174,6 +174,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
             .export_values();
 
+    py::enum_<filter_attributes_type>(m, "FilterAttributesType")
+            .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
+            .value("DEFAULT_ATTRIBUTES", filter_attributes_type::DEFAULT_ATTRIBUTES)
+            .value("SELECTION_ATTRIBUTES", filter_attributes_type::SELECTION_ATTRIBUTES)
+            .export_values();
+
     py::enum_<validation_type>(m, "ValidationType")
             .value("FLOWS", validation_type::FLOWS)
             .value("GENERATORS", validation_type::GENERATORS)
@@ -517,7 +523,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"));
     
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));

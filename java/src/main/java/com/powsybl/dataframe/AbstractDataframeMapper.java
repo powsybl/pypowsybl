@@ -9,6 +9,7 @@ package com.powsybl.dataframe;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -43,10 +44,11 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     @Override
-    public void createDataframe(T object, DataframeHandler dataframeHandler) {
-        dataframeHandler.allocate(seriesMappers.size());
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
+        Collection<SeriesMapper<U>> mappers = getSeriesMappers(dataframeFilter);
+        dataframeHandler.allocate(mappers.size());
         List<U> items = getItems(object);
-        seriesMappers.values().stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
+        mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
     }
 
     @Override
@@ -86,6 +88,26 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     @Override
     public boolean isSeriesMetaDataExists(String seriesName) {
         return seriesMappers.containsKey(seriesName);
+    }
+
+    public Collection<SeriesMapper<U>> getSeriesMappers(DataframeFilter dataframeFilter) {
+        Collection<SeriesMapper<U>> mappers = seriesMappers.values();
+        return mappers.stream()
+                      .filter(mapper -> filterMapper(mapper, dataframeFilter))
+                      .collect(Collectors.toList());
+    }
+
+    protected boolean filterMapper(SeriesMapper<U> mapper, DataframeFilter dataframeFilter) {
+        switch (dataframeFilter.getAttributeFilterType()) {
+            case DEFAULT_ATTRIBUTES:
+                return mapper.getMetadata().isDefaultAttribute() || mapper.getMetadata().isIndex();
+            case INPUT_ATTRIBUTES:
+                return dataframeFilter.getInputAttributes().contains(mapper.getMetadata().getName()) || mapper.getMetadata().isIndex();
+            case ALL_ATTRIBUTES:
+                return true;
+            default:
+                throw new IllegalStateException("Unexpected attribute filter type: " + dataframeFilter.getAttributeFilterType());
+        }
     }
 
     protected abstract List<U> getItems(T object);
