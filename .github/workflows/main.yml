@@ -62,7 +62,8 @@ jobs:
         run: |
           pip3 uninstall -y pypowsybl
           python3 setup.py develop
-          pytest --cov=pypowsybl --cov-report xml --cov-report term tests/
+          coverage run -m pytest tests/
+          coverage xml
 
       - name: Sonar analysis
         if: matrix.python.name == 'cp39'
