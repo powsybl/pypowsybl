@@ -56,8 +56,7 @@ jobs:
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: |
-          pytest --cov=pypowsybl --cov-report xml:../coverage.xml --cov-report term --cov-config=../.coveragerc
-
+          pytest
 
       - name: Generate coverage
         run: |
