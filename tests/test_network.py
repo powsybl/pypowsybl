@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -856,6 +856,28 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             self.fail()
         except RuntimeError as e:
             self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
+
+    def test_dataframe_elements_filtering(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sel_gen_index = pd.Index(['GEN2'], name='id')
+        expected_gens = n.get_generators().loc[sel_gen_index]
+        filtered_gens = n.get_generators(sel_index=sel_gen_index)
+        pd.testing.assert_frame_equal(expected_gens, filtered_gens, check_dtype=True)
+
+        expected_all_gens = n.get_generators()
+        filtered_gens_empty_sel = n.get_generators(sel_index=pd.Index([], name='id'))
+        pd.testing.assert_frame_equal(expected_all_gens, filtered_gens_empty_sel, check_dtype=True)
+
+        sel_tap_changer_index = pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0),('NHV2_NLOAD', 2)], names=['id', 'position'])
+        expected_tap_changers = n.get_ratio_tap_changer_steps().loc[sel_tap_changer_index]
+        filtered_tap_changers = n.get_ratio_tap_changer_steps(sel_index=sel_tap_changer_index)
+        pd.testing.assert_frame_equal(expected_tap_changers, filtered_tap_changers, check_dtype=True)
+
+        try:
+            n.get_generators(sel_index=pd.Index([], name='DOES_NOT_EXIST'))
+            self.fail()
+        except ValueError as e:
+            self.assertEqual("No column named DOES_NOT_EXIST", str(e))
 
 
 if __name__ == '__main__':

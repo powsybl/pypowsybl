@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -318,4 +318,32 @@ class NetworkDataframesTest {
                 .containsExactly("id", "name", "geo_tags", "prop1");
     }
 
+    @Test
+    void rowsFiltering() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(List.of("P2"), Collections.emptyList()));
+
+        assertThat(series.get(0).getStrings()).containsExactly("P2");
+    }
+
+    @Test
+    void filterRatioTapChangerSteps() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(RATIO_TAP_CHANGER_STEP, network,
+                new DataframeFilter(List.of("NHV2_NLOAD", "NHV2_NLOAD"), List.of(0, 2)));
+
+        assertThat(series.get(0).getStrings()).containsExactly("NHV2_NLOAD", "NHV2_NLOAD");
+        assertThat(series.get(1).getInts()).containsExactly(0, 2);
+    }
+
+    @Test
+    void filterReactiveLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
+        List<Series> series = createDataFrame(REACTIVE_CAPABILITY_CURVE_POINT, network,
+                new DataframeFilter(List.of("GEN2"), List.of(0)));
+
+        assertThat(series.get(0).getStrings()).containsExactly("GEN2");
+        assertThat(series.get(1).getInts()).containsExactly(0);
+    }
 }

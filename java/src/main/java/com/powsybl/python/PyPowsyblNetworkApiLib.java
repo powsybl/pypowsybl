@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.powsybl.python;
 
 import com.google.common.collect.Iterables;
@@ -47,6 +53,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.powsybl.python.CDataframeHandler.*;
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -334,6 +342,7 @@ public final class PyPowsyblNetworkApiLib {
                                                                                                                      ElementType elementType,
                                                                                                                      PyPowsyblApiHeader.FilterAttributesType filterAttributesType,
                                                                                                                      CCharPointerPointer attributesPtrPtr, int attributesCount,
+                                                                                                                     ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
                                                                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
@@ -351,7 +360,35 @@ public final class PyPowsyblNetworkApiLib {
                     filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
                     break;
             }
-            return Dataframes.createCDataframe(mapper, network, new DataframeFilter(filterType, attributes));
+
+            DataframeFilter dataframeFilter;
+            UpdatingDataframe selectingDataframe = createDataframe(dataframe);
+            if (selectingDataframe.getLineCount() > 0) {
+                List<SeriesMetadata> smetas = selectingDataframe.getSeriesMetadata();
+                List<String> selStrings = Collections.emptyList();
+                List<Integer> selIntegers = Collections.emptyList();
+                for (SeriesMetadata smeta : smetas) {
+                    switch (smeta.getType()) {
+                        case STRING:
+                            selStrings = IntStream.range(0, selectingDataframe.getLineCount())
+                                    .mapToObj(elIndex -> selectingDataframe.getStringValue(smeta.getName(), elIndex))
+                                    .collect(Collectors.toList());
+                            break;
+                        case INT:
+                            selIntegers = IntStream.range(0, selectingDataframe.getLineCount())
+                                    .mapToObj(elIndex -> selectingDataframe.getIntValue(smeta.getName(), elIndex))
+                                    .collect(Collectors.toList());
+                            break;
+                        default:
+                            throw new PowsyblException("Index type not supported.");
+                    }
+
+                }
+                dataframeFilter = new DataframeFilter(filterType, attributes, selStrings, selIntegers);
+            } else {
+                dataframeFilter = new DataframeFilter(filterType, attributes);
+            }
+            return Dataframes.createCDataframe(mapper, network, dataframeFilter);
         });
     }
 

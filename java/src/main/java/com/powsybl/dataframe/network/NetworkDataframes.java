@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -686,18 +686,18 @@ public final class NetworkDataframes {
                 network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
     }
 
-    private static Stream<Triple<String, Integer, ReactiveCapabilityCurve.Point>> streamPoints(Network network) {
+    private static Stream<Triple<String, ReactiveCapabilityCurve.Point, Integer>> streamPoints(Network network) {
         return streamReactiveLimitsHolder(network)
                 .filter(p -> p.getRight().getReactiveLimits() instanceof ReactiveCapabilityCurve)
                 .flatMap(p -> indexPoints(p.getLeft(), p.getRight()).stream());
     }
 
-    private static List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> indexPoints(String id, ReactiveLimitsHolder holder) {
+    private static List<Triple<String, ReactiveCapabilityCurve.Point, Integer>> indexPoints(String id, ReactiveLimitsHolder holder) {
         ReactiveCapabilityCurve curve = (ReactiveCapabilityCurve) holder.getReactiveLimits();
-        List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> values = new ArrayList<>(curve.getPointCount());
+        List<Triple<String, ReactiveCapabilityCurve.Point, Integer>> values = new ArrayList<>(curve.getPointCount());
         int num = 0;
         for (ReactiveCapabilityCurve.Point point : curve.getPoints()) {
-            values.add(Triple.of(id, num, point));
+            values.add(Triple.of(id, point, num));
             num++;
         }
         return values;
@@ -706,10 +706,10 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper reactiveCapabilityCurves() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::streamPoints)
                 .stringsIndex("id", Triple::getLeft)
-                .intsIndex("num", Triple::getMiddle)
-                .doubles("p", t -> t.getRight().getP())
-                .doubles("min_q", t -> t.getRight().getMinQ())
-                .doubles("max_q", t -> t.getRight().getMaxQ())
+                .intsIndex("num", Triple::getRight)
+                .doubles("p", t -> t.getMiddle().getP())
+                .doubles("min_q", t -> t.getMiddle().getMinQ())
+                .doubles("max_q", t -> t.getMiddle().getMaxQ())
                 .build();
     }
 
