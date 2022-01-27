@@ -22,24 +22,25 @@ void bindArray(py::module_& m, const std::string& className) {
             }, py::keep_alive<0, 1>());
 }
 
-std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex) {
-    int columnsNumber = columnsNames.size();
-    std::shared_ptr<array> dataframe(new array(), [](array* dataframeToDestroy){
-        for (int indice = 0 ; indice < dataframeToDestroy->length; indice ++) {
-            series* column = ((series*) dataframeToDestroy->ptr) + indice;
-            if (column->type == 0) {
-                pypowsybl::deleteCharPtrPtr((char**) column->data.ptr, column->data.length);
-            } else if (column->type == 1) {
-                delete[] (double*) column->data.ptr;
-            } else if (column->type == 2 || column->type == 3) {
-                delete[] (int*) column->data.ptr;
-            }
-            delete[] column->name;
+void deleteDataframe(dataframe* df) {
+    for (int indice = 0 ; indice < df->series_count; indice ++) {
+        series* column = df->series + indice;
+        if (column->type == 0) {
+            pypowsybl::deleteCharPtrPtr((char**) column->data.ptr, column->data.length);
+        } else if (column->type == 1) {
+            delete[] (double*) column->data.ptr;
+        } else if (column->type == 2 || column->type == 3) {
+            delete[] (int*) column->data.ptr;
         }
-        delete[] (series*) dataframeToDestroy->ptr;
-        delete dataframeToDestroy;
-    });
-    dataframe->ptr = new series[columnsNumber];
+        delete[] column->name;
+    }
+    delete[] df->series;
+    delete df;
+}
+
+std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex) {
+    int columnsNumber = columnsNames.size();
+    std::shared_ptr<dataframe> dataframe(new ::dataframe(), ::deleteDataframe);
     series* columns = new series[columnsNumber];
     for (int indice = 0 ; indice < columnsNumber ; indice ++ ) {
         series* column = columns + indice;
@@ -62,32 +63,27 @@ std::shared_ptr<array> createArray(py::list columnsValues, const std::vector<std
             column->data.ptr = pypowsybl::copyVectorInt(values);
         }
     }
-    dataframe->length = columnsNumber;
-    dataframe->ptr = columns;
+    dataframe->series_count = columnsNumber;
+    dataframe->series = columns;
     return dataframe;
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
-    pypowsybl::updateNetworkElementsWithSeries(network, dataframe, elementType);
-}
-
-std::shared_ptr<array> createDataframeArray(std::vector<array*> dataframes) {
-    std::shared_ptr<array> dataframeArray(new array(), [](array* dataframeToDestroy){
-        delete[] (array*) dataframeToDestroy->ptr;
+std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<dataframe*>& dataframes) {
+    std::shared_ptr<dataframe_array> dataframeArray(new dataframe_array(), [](dataframe_array* dataframeToDestroy){
+        delete[] dataframeToDestroy->dataframes;
         delete dataframeToDestroy;
     });
-    dataframeArray->ptr = new array[dataframes.size()];
-    array* dataframesFinal = new array[dataframes.size()];
+    dataframe* dataframesFinal = new dataframe[dataframes.size()];
     for (int indice = 0 ; indice < dataframes.size() ; indice ++) {
         dataframesFinal[indice] = *dataframes[indice];
     }
-    dataframeArray->ptr = dataframesFinal;
-    dataframeArray->length = dataframes.size();
+    dataframeArray->dataframes = dataframesFinal;
+    dataframeArray->dataframes_count = dataframes.size();
     return dataframeArray;
 }
 
-void createElement(pypowsybl::JavaHandle network, std::vector<array*> dataframes, element_type elementType) {
-    std::shared_ptr<array> dataframeArray = ::createDataframeArray(dataframes);
+void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
@@ -269,13 +265,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component")
             .export_values();
     
-
-    // py::class_<series_struct, std::shared_ptr<series_struct>>(m, "SeriesStruct")
-    //        .def(py::init());
-
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
+    py::class_<dataframe, std::shared_ptr<dataframe>>(m, "Dataframe");
 
     py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
             .def(py::init(&initLoadFlowParameters))
@@ -526,10 +519,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"));
     
-    m.def("update_network_elements_with_series", ::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("array"), py::arg("element_type"));
+    m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
 
-    m.def("create_dataframe", ::createArray, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
+    m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
           py::arg("is_index"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));

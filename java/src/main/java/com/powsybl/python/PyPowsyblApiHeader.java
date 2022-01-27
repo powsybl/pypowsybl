@@ -418,6 +418,40 @@ public final class PyPowsyblApiHeader {
         SeriesPointer addressOf(int index);
     }
 
+    @CStruct("dataframe")
+    interface DataframePointer extends PointerBase {
+
+        @CField("series")
+        SeriesPointer getSeries();
+
+        @CField("series")
+        void setSeries(SeriesPointer series);
+
+        @CField("series_count")
+        int getSeriesCount();
+
+        @CField("series_count")
+        void setSeriesCount(int count);
+
+        DataframePointer addressOf(int index);
+    }
+
+    @CStruct("dataframe_array")
+    interface DataframeArrayPointer extends PointerBase {
+
+        @CField("dataframes")
+        DataframePointer getDataframes();
+
+        @CField("dataframes")
+        void setDataframes(DataframePointer series);
+
+        @CField("dataframes_count")
+        int getDataframesCount();
+
+        @CField("dataframes_count")
+        void setDataframesCount(int count);
+    }
+
     /*
     typedef struct series_metadata_struct {
         char* name;

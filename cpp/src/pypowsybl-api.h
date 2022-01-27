@@ -127,6 +127,22 @@ typedef struct series_struct {
 } series;
 
 /**
+ * A dataframe: simply an array of series.
+ */
+typedef struct dataframe_struct {
+    struct series_struct* series;
+    int series_count;
+} dataframe;
+
+/**
+ * An array of dataframes.
+ */
+typedef struct {
+    dataframe* dataframes;
+    int dataframes_count;
+} dataframe_array;
+
+/**
  * Metadata about one attribute.
  */
 typedef struct series_metadata_struct {

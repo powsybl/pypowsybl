@@ -336,15 +336,15 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createElement")
     public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
-                                     PyPowsyblApiHeader.ElementType elementType,
-                                     PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer>> cDataframes,
+                                     ElementType elementType,
+                                     DataframeArrayPointer cDataframes,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeElementType type = convert(elementType);
             List<UpdatingDataframe> dataframes = new ArrayList<>();
-            for (int i = 0; i < cDataframes.getLength(); i++) {
-                dataframes.add(createDataframe(cDataframes.getPtr().addressOf(i)));
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             NetworkElementAdders.addElements(type, network, dataframes);
         });
@@ -352,7 +352,7 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "updateNetworkElementsWithSeries")
     public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                       ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
+                                                       DataframePointer dataframe,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -361,12 +361,12 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    public static UpdatingDataframe createDataframe(ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe) {
-        int elementCount = dataframe.getPtr().addressOf(0).data().getLength();
-        int columnsNumber = dataframe.getLength();
+    public static UpdatingDataframe createDataframe(DataframePointer dataframe) {
+        int elementCount = dataframe.getSeries().addressOf(0).data().getLength();
+        int columnsNumber = dataframe.getSeriesCount();
         CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
         for (int i = 0; i < columnsNumber; i++) {
-            PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getPtr().addressOf(i);
+            PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
                 case STRING_SERIES_TYPE:

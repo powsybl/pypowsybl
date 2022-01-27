@@ -608,7 +608,7 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
@@ -640,8 +640,27 @@ std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMeta
     return res;
 }
 
-void createElement(pypowsybl::JavaHandle network, array* dataframes, element_type elementType) {
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType) {
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
+}
+
+std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<dataframe*>& dataframes) {
+    std::shared_ptr<dataframe_array> dataframeArray(new dataframe_array(), [](dataframe_array* dataframeToDestroy){
+        delete[] dataframeToDestroy->dataframes;
+        delete dataframeToDestroy;
+    });
+    dataframe* dataframesFinal = new dataframe[dataframes.size()];
+    for (int indice = 0 ; indice < dataframes.size() ; indice ++) {
+        dataframesFinal[indice] = *dataframes[indice];
+    }
+    dataframeArray->dataframes = dataframesFinal;
+    dataframeArray->dataframes_count = dataframes.size();
+    return dataframeArray;
+}
+
+void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
 }
