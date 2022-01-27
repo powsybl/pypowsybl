@@ -58,6 +58,12 @@ jobs:
         run: |
           pytest --cov=pypowsybl --cov-report xml:../coverage.xml --cov-report term --cov-config=../.coveragerc
 
+
+      - name: Generate coverage
+        run: |
+          python3 setup.py develop
+          pytest --cov=pypowsybl --cov-report xml --cov-report term tests/
+
       - name: Sonar analysis
         if: matrix.python.name == 'cp39'
         uses: sonarsource/sonarcloud-github-action@v1.6
