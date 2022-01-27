@@ -7,4 +7,3 @@ coverage==5.5
 networkx
 matplotlib
 pytest>=6.2.5
-pytest-cov>=3.0.0
