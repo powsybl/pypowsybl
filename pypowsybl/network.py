@@ -157,13 +157,12 @@ def _to_array(value):
     return as_array
 
 
-def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
+def _adapt_kwargs(metadata: _List[_pypowsybl.SeriesMetadata], **kwargs) -> _DataFrame:
     """
     Converts named arguments to a dataframe.
     Element type is required to know which attributes must be part of the index.
     """
 
-    metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
     index_columns = [col.name for col in metadata if col.is_index]
 
     columns = {}
@@ -188,12 +187,12 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     return _DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> _DataFrame:
+def _adapt_df_or_kwargs(metadata: _List[_pypowsybl.SeriesMetadata], df: _DataFrame, **kwargs) -> _DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
     if df is None:
-        return _adapt_kwargs(element_type, **kwargs)
+        return _adapt_kwargs(metadata, **kwargs)
     elif kwargs:
         raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
     return df
@@ -1960,8 +1959,8 @@ class Network(object):
             element_type (ElementType): the element type
             df: the data to be updated
         """
-        df = _adapt_df_or_kwargs(element_type, df, **kwargs)
         metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
         _pypowsybl.update_network_elements_with_series(self._handle, c_df, element_type)
 
@@ -2493,9 +2492,10 @@ class Network(object):
             handleList.append(n._handle)
         return _pypowsybl.merge(self._handle, handleList)
 
-    def _create_element(self, element_type: ElementType, dfs: _List[_DataFrame]):
+    def _create_elements(self, element_type: ElementType, dfs: _List[_DataFrame], **kwargs):
         metadata = _pypowsybl.get_network_elements_creation_dataframes_metadata(element_type)
         c_dfs = []
+        dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
         for i in range(0, len(dfs)):
             df = dfs[i]
             if df is None:
@@ -2511,16 +2511,16 @@ class Network(object):
         Args:
             df: dataframe of the substations creation data
         """
-        return self._create_element(_pypowsybl.ElementType.SUBSTATION, [df])
+        return self._create_elements(_pypowsybl.ElementType.SUBSTATION, [df], **kwargs)
 
-    def create_generators(self, df: _DataFrame = None):
+    def create_generators(self, df: _DataFrame = None, **kwargs):
         """
         create generators on a network
 
         Args:
             df: dataframe of the generators creation data
         """
-        self._create_element(ElementType.GENERATOR, [df])
+        self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 
     def create_busbar(self, df: _DataFrame = None, **kwargs):
         """
@@ -2529,7 +2529,7 @@ class Network(object):
         Args:
             df: dataframe of the busbar sections creation data
         """
-        self._create_element(ElementType.BUSBAR_SECTION, [df])
+        self._create_elements(ElementType.BUSBAR_SECTION, [df], **kwargs)
 
     def create_buses(self, df: _DataFrame = None, **kwargs):
         """
@@ -2538,7 +2538,7 @@ class Network(object):
         Args:
            df: dataframe of the buses sections creation data
         """
-        return self._create_element(_pypowsybl.ElementType.BUS, [df])
+        return self._create_elements(_pypowsybl.ElementType.BUS, [df], **kwargs)
 
     def create_loads(self, df: _DataFrame = None, **kwargs):
         """
@@ -2547,7 +2547,7 @@ class Network(object):
         Args:
             df: dataframe of the loads creation data
         """
-        return self._create_element(_pypowsybl.ElementType.LOAD, [df])
+        return self._create_elements(_pypowsybl.ElementType.LOAD, [df], **kwargs)
 
     def create_batteries(self, df: _DataFrame = None, **kwargs):
         """
@@ -2556,7 +2556,7 @@ class Network(object):
         Args:
             df: dataframe of the batteries creation data
         """
-        return self._create_element(_pypowsybl.ElementType.BATTERY, [df])
+        return self._create_elements(_pypowsybl.ElementType.BATTERY, [df], **kwargs)
 
     def create_dangling_lines(self, df: _DataFrame = None, **kwargs):
         """
@@ -2565,7 +2565,7 @@ class Network(object):
         Args:
             df: dataframe of the dangling lines creation data
         """
-        return self._create_element(_pypowsybl.ElementType.DANGLING_LINE, [df])
+        return self._create_elements(_pypowsybl.ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
         """
@@ -2574,7 +2574,7 @@ class Network(object):
         Args:
             df: dataframe of the vsc converter stations creation data
         """
-        return self._create_element(_pypowsybl.ElementType.VSC_CONVERTER_STATION, [df])
+        return self._create_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, [df], **kwargs)
 
     def create_static_var_compensators(self, df: _DataFrame = None, **kwargs):
         """
@@ -2583,7 +2583,7 @@ class Network(object):
         Args:
             df: dataframe of the var compensators creation data
         """
-        return self._create_element(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, [df])
+        return self._create_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
     def create_lines(self, df: _DataFrame = None, **kwargs):
         """
@@ -2592,7 +2592,7 @@ class Network(object):
         Args:
             df: dataframe of the lines creation data
         """
-        return self._create_element(_pypowsybl.ElementType.LINE, [df])
+        return self._create_elements(_pypowsybl.ElementType.LINE, [df], **kwargs)
 
     def create_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
         """
@@ -2601,7 +2601,7 @@ class Network(object):
         Args:
             df: dataframe of the 2 windings transformers creation data
         """
-        return self._create_element(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, [df])
+        return self._create_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
     def create_shunt_compensators(self, shunt_df: _DataFrame,
                                   linear_model_df: _DataFrame = None,
@@ -2618,7 +2618,7 @@ class Network(object):
         if non_linear_model_df is None:
             non_linear_model_df = pd.DataFrame()
         dfs = [shunt_df, linear_model_df, non_linear_model_df]
-        return self._create_element(_pypowsybl.ElementType.SHUNT_COMPENSATOR, dfs)
+        return self._create_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, dfs, **kwargs)
 
     def create_switches(self, df: _DataFrame = None, **kwargs):
         """
@@ -2627,7 +2627,7 @@ class Network(object):
         Args:
             df: dataframe of the switches creation data
         """
-        return self._create_element(_pypowsybl.ElementType.SWITCH, [df])
+        return self._create_elements(_pypowsybl.ElementType.SWITCH, [df])
 
     def create_voltage_levels(self, df: _DataFrame = None, **kwargs):
         """
@@ -2636,7 +2636,7 @@ class Network(object):
         Args:
             df: dataframe of the votage levels creation data
         """
-        return self._create_element(_pypowsybl.ElementType.VOLTAGE_LEVEL, [df])
+        return self._create_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
     def create_ratio_tap_changers(self, ratiosDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs):
         """
@@ -2645,7 +2645,7 @@ class Network(object):
         Args:
             df: dataframe of the ratio tap changers creation data
         """
-        return self._create_element(_pypowsybl.ElementType.RATIO_TAP_CHANGER, [ratiosDataframe, stepsDataframe])
+        return self._create_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, [ratiosDataframe, stepsDataframe], **kwargs)
 
     def create_phase_tap_changers(self, phasesDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs):
         """
@@ -2654,7 +2654,7 @@ class Network(object):
         Args:
             df: dataframe of the phase tap changers creation data
         """
-        return self._create_element(_pypowsybl.ElementType.PHASE_TAP_CHANGER, [phasesDataframe, stepsDataframe])
+        return self._create_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, [phasesDataframe, stepsDataframe], **kwargs)
 
     def create_hvdc_lines(self, df: _DataFrame, **kwargs):
         """
@@ -2663,7 +2663,7 @@ class Network(object):
         Args:
             df: HVDC lines data
         """
-        return self._create_element(_pypowsybl.ElementType.HVDC_LINE, [df])
+        return self._create_elements(_pypowsybl.ElementType.HVDC_LINE, [df], **kwargs)
 
 
 def _create_network(name, network_id=''):

@@ -28,6 +28,13 @@ def test_substation_creation():
     assert s3.country == 'DE'
 
 
+def test_substation_kwargs():
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='S3', country='DE')
+    s3 = n.get_substations().loc['S3']
+    assert s3.country == 'DE'
+
+
 def test_generators_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(pd.DataFrame.from_records(
@@ -38,6 +45,21 @@ def test_generators_creation():
     gen3 = n.get_generators().loc['GEN3']
     assert gen3.target_p == 100.0
     assert gen3.target_q == 150.0
+    assert gen3.voltage_level_id == 'VLHV1'
+    assert gen3.bus_id == 'VLHV1_0'
+
+
+def test_generators_kwargs():
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_generators(id='GEN3', max_p=200, min_p=50, voltage_level_id='VLHV1', bus_id='NHV1',
+                        voltage_regulator_on=True, target_p=100, target_q=0, target_v=400)
+    gen3 = n.get_generators().loc['GEN3']
+    assert gen3.max_p == 200.0
+    assert gen3.min_p == 50.0
+    assert gen3.target_p == 100.0
+    assert gen3.target_q == 0
+    assert gen3.target_v == 400
+    assert gen3.voltage_regulator_on
     assert gen3.voltage_level_id == 'VLHV1'
     assert gen3.bus_id == 'VLHV1_0'
 
