@@ -8,8 +8,13 @@ import pandas as _pd
 import numpy as _np
 from pypowsybl import _pypowsybl
 import pypowsybl.network as _net
-from pypowsybl.network import _adapt_df_or_kwargs, ElementType
+from pypowsybl.network import ElementType
+from pypowsybl.utils.dataframes import _adapt_df_or_kwargs
 
+
+def _adapt_to_dataframe(element_type: ElementType, df: _pd.DataFrame, **kwargs):
+    metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
+    return _adapt_df_or_kwargs(metadata, df, **kwargs)
 
 
 class PerUnitView:
@@ -357,7 +362,7 @@ class PerUnitView:
         """
         Update buses from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.BUS, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.BUS, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_buses())
         self._un_per_unit_v(to_update, ['v_mag'], nominal_v)
         self._un_per_unit_angle(to_update, ['v_angle'])
@@ -367,7 +372,7 @@ class PerUnitView:
         """
         Update generators from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.GENERATOR, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.GENERATOR, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_generators())
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._un_per_unit_p(to_update, ['target_p', 'target_q', 'p', 'q'])
@@ -378,7 +383,7 @@ class PerUnitView:
         """
         Update loads from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.LOAD, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.LOAD, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_loads())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
@@ -388,7 +393,7 @@ class PerUnitView:
         """
         Update batteries from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.BATTERY, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.BATTERY, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_batteries())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q', 'max_p', 'min_p'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
@@ -398,7 +403,7 @@ class PerUnitView:
         """
         Update dangling lines from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.DANGLING_LINE, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.DANGLING_LINE, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_dangling_lines())
         self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
@@ -410,7 +415,7 @@ class PerUnitView:
         """
         Update VSC converter stations from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.VSC_CONVERTER_STATION, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.VSC_CONVERTER_STATION, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_vsc_converter_stations())
         self._un_per_unit_p(to_update, ['p', 'q', 'target_q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
@@ -421,7 +426,7 @@ class PerUnitView:
         """
         Update static var compensators from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_static_var_compensators())
         self._un_per_unit_p(to_update, ['p', 'q', 'target_q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
@@ -432,7 +437,7 @@ class PerUnitView:
         """
         Update HVDC lines from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.HVDC_LINE, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.HVDC_LINE, df, **kwargs).copy()
         nominal_v = self._network.get_hvdc_lines()['nominal_v']
         self._un_per_unit_p(to_update, ['target_p'])
         self._un_per_unit_r(to_update, ['r'], nominal_v)
@@ -442,7 +447,7 @@ class PerUnitView:
         """
         Update lines from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.LINE, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.LINE, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_lines(), 'voltage_level1_id')
         self._un_per_unit_p(to_update, ['p1', 'p2', 'q1', 'q2'])
         self._un_per_unit_r(to_update, ['r', 'x'], nominal_v)
@@ -453,7 +458,7 @@ class PerUnitView:
         """
         Update 2 windings transformers from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs).copy()
         ref = self._network.get_2_windings_transformers()
         nominal_v1 = self._get_indexed_nominal_v(ref, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(ref, 'voltage_level2_id')
@@ -468,7 +473,7 @@ class PerUnitView:
         """
         Update 3 windings transformers from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.THREE_WINDINGS_TRANSFORMER, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.THREE_WINDINGS_TRANSFORMER, df, **kwargs).copy()
         ref = self._network.get_3_windings_transformers()
         nominal_v1 = self._get_indexed_nominal_v(ref, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(ref, 'voltage_level2_id')
@@ -486,7 +491,7 @@ class PerUnitView:
         """
         Update LCC converter stations from per-united data.
         """
-        to_update = _adapt_df_or_kwargs(ElementType.LCC_CONVERTER_STATION, df, **kwargs).copy()
+        to_update = _adapt_to_dataframe(ElementType.LCC_CONVERTER_STATION, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_lcc_converter_stations())
         self._un_per_unit_p(to_update, ['p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)

@@ -11,6 +11,7 @@ import pypowsybl.network as pn
 import util
 import pathlib
 from numpy import NaN
+from pypowsybl import PyPowsyblError
 
 
 @pytest.fixture
@@ -33,6 +34,26 @@ def test_substation_kwargs():
     n.create_substations(id='S3', country='DE')
     s3 = n.get_substations().loc['S3']
     assert s3.country == 'DE'
+
+
+def test_substation_exceptions():
+    n = pn.create_eurostag_tutorial_example1_network()
+    with pytest.raises(ValueError) as exc:
+        n.create_substations(country='FR')
+    assert exc.match('No data provided for index: id')
+
+    with pytest.raises(ValueError) as exc:
+        n.create_substations(id='test', country='FR', invalid=2)
+    assert exc.match('No column named invalid')
+
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_substations(id='test', country='ABC')
+    assert exc.match('No enum constant com.powsybl.iidm.network.Country.ABC')
+
+    # TODO: we should try to have a more explicit message here
+    with pytest.raises(RuntimeError) as exc:
+        n.create_substations(id='test', country=2)
+    assert exc.match('Unable to cast Python instance to C')
 
 
 def test_generators_creation():
