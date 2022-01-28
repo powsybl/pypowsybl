@@ -24,6 +24,7 @@ import java.util.List;
 public class TwtDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level1_id"),
             SeriesMetadata.strings("bus1_id"),
             SeriesMetadata.strings("connectable_bus1_id"),
@@ -32,7 +33,6 @@ public class TwtDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("bus2_id"),
             SeriesMetadata.strings("connectable_bus2_id"),
             SeriesMetadata.ints("node2"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("rated_u1"),
             SeriesMetadata.doubles("rated_u2"),

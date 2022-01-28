@@ -23,7 +23,7 @@ import java.util.List;
 public class SubstationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("country"),
             SeriesMetadata.strings("tso")

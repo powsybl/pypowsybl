@@ -44,10 +44,10 @@ def test_generators_creation():
 
 def test_bus_creation():
     n = pn.create_eurostag_tutorial_example1_network()
-    n.create_buses(pd.DataFrame(index=pd.Series(name='id', data=['BUS_TEST']),
+    n.create_buses(pd.DataFrame(index=['BUS_TEST'],
                                 columns=['voltage_level_id'],
                                 data=[['VLHV2']]))
-    n.create_lines(pd.DataFrame(index=pd.Series(name='id', data=['NHV1_NHV2_3']),
+    n.create_lines(pd.DataFrame(index=['NHV1_NHV2_3'],
                                 columns=['r', 'x', 'g1', 'g2', 'b1', 'b2', 'voltage_level1_id', 'voltage_level2_id',
                                          'bus1_id', 'bus2_id'],
                                 data=[[2, 2, 1, 1, 1, 1, 'VLHV1', 'VLHV2', 'NHV1', 'BUS_TEST']]))

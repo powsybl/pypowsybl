@@ -18,7 +18,7 @@ import java.util.List;
 public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.ints("low_tap"),
@@ -26,7 +26,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
     );
 
     private static final List<SeriesMetadata> STEPS_METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("g"),
             SeriesMetadata.doubles("b"),
             SeriesMetadata.doubles("r"),

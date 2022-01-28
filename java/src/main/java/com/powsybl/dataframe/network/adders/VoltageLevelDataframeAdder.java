@@ -23,8 +23,8 @@ import java.util.List;
 public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("substation_id"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("high_voltage_limit"),
             SeriesMetadata.doubles("low_voltage_limit"),

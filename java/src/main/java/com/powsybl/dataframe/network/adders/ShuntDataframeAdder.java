@@ -21,11 +21,11 @@ import java.util.List;
 public class ShuntDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> SHUNT_METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level_id"),
             SeriesMetadata.strings("bus_id"),
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.ints("section_count"),
             SeriesMetadata.doubles("target_deadband"),

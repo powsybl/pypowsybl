@@ -22,6 +22,7 @@ import java.util.List;
 public class LineDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level1_id"),
             SeriesMetadata.strings("bus1_id"),
             SeriesMetadata.strings("connectable_bus1_id"),
@@ -30,7 +31,6 @@ public class LineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("bus2_id"),
             SeriesMetadata.strings("connectable_bus2_id"),
             SeriesMetadata.ints("node2"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("b1"),
             SeriesMetadata.doubles("b2"),

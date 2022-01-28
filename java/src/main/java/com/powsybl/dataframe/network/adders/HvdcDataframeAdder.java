@@ -23,7 +23,7 @@ import java.util.List;
 public class HvdcDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("converter_station1_id"),
             SeriesMetadata.strings("converter_station2_id"),

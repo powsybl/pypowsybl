@@ -22,12 +22,12 @@ import java.util.List;
 public class SwitchDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level_id"),
             SeriesMetadata.strings("bus1_id"),
             SeriesMetadata.strings("bus2_id"),
             SeriesMetadata.ints("node1"),
             SeriesMetadata.ints("node2"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("kind"),
             SeriesMetadata.booleans("open"),

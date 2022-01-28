@@ -15,7 +15,7 @@ import java.util.List;
 public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.ints("tap"),
             SeriesMetadata.ints("low_tap"),
             SeriesMetadata.booleans("on_load"),
@@ -24,7 +24,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
     );
 
     private static final List<SeriesMetadata> STEPS_METADATA = List.of(
-            SeriesMetadata.strings("id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("g"),
             SeriesMetadata.doubles("b"),
             SeriesMetadata.doubles("r"),

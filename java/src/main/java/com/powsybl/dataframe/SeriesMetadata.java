@@ -57,6 +57,14 @@ public class SeriesMetadata {
         return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false);
     }
 
+    public static SeriesMetadata stringIndex(String name) {
+        return new SeriesMetadata(true, name, false, SeriesDataType.STRING, false);
+    }
+
+    public static SeriesMetadata intIndex(String name) {
+        return new SeriesMetadata(true, name, false, SeriesDataType.INT, false);
+    }
+
     public boolean isDefaultAttribute() {
         return defaultAttribute;
     }

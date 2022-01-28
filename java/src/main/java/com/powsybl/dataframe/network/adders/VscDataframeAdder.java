@@ -23,11 +23,11 @@ import java.util.List;
 public class VscDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level_id"),
             SeriesMetadata.strings("bus_id"),
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),

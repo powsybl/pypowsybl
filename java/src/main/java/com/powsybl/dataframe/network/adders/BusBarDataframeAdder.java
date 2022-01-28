@@ -23,9 +23,9 @@ import java.util.List;
 public class BusBarDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level_id"),
             SeriesMetadata.ints("node"),
-            SeriesMetadata.strings("id"),
             SeriesMetadata.strings("name")
     );
 
