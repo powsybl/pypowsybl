@@ -69,9 +69,16 @@ jobs:
         run: pip3 install wheelhouse/*.whl --user
 
       - name: Run tests
-        working-directory: ./tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: |
-          coverage run -m pytest
+          pytest
+
+      - name: Generate coverage # In order to generate a coverage that sonar understands, we need to generate it from sources
+        if: matrix.python.name == 'cp39'
+        run: |
+          pip3 uninstall -y pypowsybl
+          python3 setup.py develop
+          coverage run -m pytest tests/
           coverage xml
 
       - name: Sonar analysis
@@ -82,7 +89,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: |
-            -Dsonar.python.coverage.reportPaths=tests/coverage.xml
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: Run doc examples
         working-directory: ./docs
