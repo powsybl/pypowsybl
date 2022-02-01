@@ -2436,7 +2436,7 @@ class Network(object):
         """
         self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 
-    def create_busbar(self, df: _DataFrame = None, **kwargs):
+    def create_busbar_sections(self, df: _DataFrame = None, **kwargs):
         """
         create busbar sections on a network
 

@@ -415,10 +415,10 @@ def test_non_linear_shunt():
 
 def test_busbar_sections():
     n = pn.create_four_substations_node_breaker_network()
-    n.create_busbar(pd.DataFrame(index=pd.Series(name='id',
-                                                 data=['S_TEST']),
-                                 columns=['name', 'voltage_level_id', 'node'],
-                                 data=[['S_TEST', 'S1VL1', 1]]))
+    n.create_busbar_sections(pd.DataFrame(index=pd.Series(name='id',
+                                                          data=['S_TEST']),
+                                          columns=['name', 'voltage_level_id', 'node'],
+                                          data=[['S_TEST', 'S1VL1', 1]]))
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS', 'S_TEST']),
@@ -489,6 +489,62 @@ def test_create_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'bus_id': 'B1', 'target_p': 100, 'min_p': 0, 'max_p': 200,
+         'target_v': 400, 'voltage_regulator_on': True}
+    ])
+    n.create_generators(generators)
+
+    import pypowsybl.loadflow as lf
+    lf.run_ac(n)
+
+    line = n.get_lines().loc['LINE']
+    assert line.p2 == pytest.approx(-100, abs=1e-2)
+    assert line.q2 == pytest.approx(-10, abs=1e-2)
+    assert line.p1 == pytest.approx(100, abs=1e-1)
+    assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+
+def test_create_node_breaker_network_and_run_loadflow():
+    n = pn.create_empty()
+    stations = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'S1', 'country': 'BE'},
+        {'id': 'S2', 'country': 'DE'}
+    ])
+    n.create_substations(stations)
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 400},
+        {'substation_id': 'S2', 'id': 'VL2', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 400},
+    ])
+    n.create_voltage_levels(voltage_levels)
+
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BB1', 'node': 0},
+        {'voltage_level_id': 'VL2', 'id': 'BB2', 'node': 0},
+    ])
+    n.create_busbar_sections(busbars)
+
+    n.create_switches(pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BB1', 'kind': 'DISCONNECTOR', 'node1': 0, 'node2': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BREAKER-BB1-LINE', 'kind': 'BREAKER', 'node1': 1, 'node2': 2},
+        {'voltage_level_id': 'VL1', 'id': 'BREAKER-BB1-GEN', 'kind': 'BREAKER', 'node1': 0, 'node2': 3},
+        {'voltage_level_id': 'VL2', 'id': 'DISC-BB2', 'kind': 'DISCONNECTOR', 'node1': 0, 'node2': 1},
+        {'voltage_level_id': 'VL2', 'id': 'BREAKER-BB2-LINE', 'kind': 'BREAKER', 'node1': 1, 'node2': 2},
+        {'voltage_level_id': 'VL2', 'id': 'BREAKER-BB2-LOAD', 'kind': 'BREAKER', 'node1': 0, 'node2': 3},
+    ]))
+
+    lines = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'LINE', 'voltage_level1_id': 'VL1', 'voltage_level2_id': 'VL2', 'node1': 2, 'node2': 2,
+         'r': 0.1, 'x': 1.0, 'g1': 0, 'b1': 1e-6, 'g2': 0, 'b2': 1e-6}
+    ])
+    n.create_lines(lines)
+
+    loads = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL2', 'id': 'LOAD', 'node': 3, 'p0': 100, 'q0': 10}
+    ])
+    n.create_loads(loads)
+
+    generators = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'GEN', 'node': 3, 'target_p': 100, 'min_p': 0, 'max_p': 200,
          'target_v': 400, 'voltage_regulator_on': True}
     ])
     n.create_generators(generators)
