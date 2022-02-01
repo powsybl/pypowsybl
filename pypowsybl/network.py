@@ -2420,37 +2420,87 @@ class Network(object):
 
     def create_substations(self, df: _DataFrame = None, **kwargs):
         """
-        Create substations.
+        Creates substations.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - name
+          - country
+          - tso
+
 
         Args:
-            df: dataframe of the substations creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.SUBSTATION, [df], **kwargs)
 
     def create_generators(self, df: _DataFrame = None, **kwargs):
         """
-        create generators on a network
+        Creates generators.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Expected attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - energy_source
+          - max_p
+          - min_p
+          - target_p
+          - target_q
+          - rated_s
+          - target_v
+          - voltage_regulator_on
 
         Args:
-            df: dataframe of the generators creation data
+            df: Attributes as dataframe.
+            **kwargs: Attributes as keyword arguments.
+
         """
         self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 
     def create_busbar_sections(self, df: _DataFrame = None, **kwargs):
         """
-        create busbar sections on a network
+        Creates bus bar sections.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - node
+          - name
 
         Args:
-            df: dataframe of the busbar sections creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         self._create_elements(ElementType.BUSBAR_SECTION, [df], **kwargs)
 
     def create_buses(self, df: _DataFrame = None, **kwargs):
         """
-        create buses on a network
+        Creates buses.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - name
 
         Args:
-           df: dataframe of the buses sections creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.BUS, [df], **kwargs)
 
@@ -2465,55 +2515,166 @@ class Network(object):
 
     def create_batteries(self, df: _DataFrame = None, **kwargs):
         """
-        create batteries on a network
+        Creates loads.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - type
+          - p0
+          - q0
 
         Args:
-            df: dataframe of the batteries creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.BATTERY, [df], **kwargs)
 
     def create_dangling_lines(self, df: _DataFrame = None, **kwargs):
         """
-        create dangling lines on a network
+        Creates dangling lines.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - p0
+          - q0
+          - r
+          - x
+          - g
+          - b
 
         Args:
-            df: dataframe of the dangling lines creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_vsc_converter_stations(self, df: _DataFrame = None, **kwargs):
         """
-        create vsc converter stations on a network
+        Creates VSC converter stations.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - target_v
+          - target_q
+          - loss_factor
+          - voltage_regulator_on
 
         Args:
-            df: dataframe of the vsc converter stations creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, [df], **kwargs)
 
     def create_static_var_compensators(self, df: _DataFrame = None, **kwargs):
         """
-        create var compensators on a network
+        Creates static var compensators.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - b_max
+          - b_min
+          - regulation_mode
+          - target_v
+          - target_q
 
         Args:
-            df: dataframe of the var compensators creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
     def create_lines(self, df: _DataFrame = None, **kwargs):
         """
-        create lines on a network
+        Creates lines.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level1_id
+          - bus1_id
+          - connectable_bus1_id
+          - node1
+          - voltage_level2_id
+          - bus2_id
+          - connectable_bus2_id
+          - node2
+          - name
+          - b1
+          - b2
+          - g1
+          - g2
+          - r
+          - x
 
         Args:
-            df: dataframe of the lines creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.LINE, [df], **kwargs)
 
     def create_2_windings_transformers(self, df: _DataFrame = None, **kwargs):
         """
-        create 2 windings transformers on a network
+        Creates 2 windings transformers.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level1_id
+          - bus1_id
+          - connectable_bus1_id
+          - node1
+          - voltage_level2_id
+          - bus2_id
+          - connectable_bus2_id
+          - node2
+          - name
+          - rated_u1
+          - rated_u2
+          - rated_s
+          - b
+          - g
+          - r
+          - x
 
         Args:
-            df: dataframe of the 2 windings transformers creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
@@ -2536,19 +2697,49 @@ class Network(object):
 
     def create_switches(self, df: _DataFrame = None, **kwargs):
         """
-        create switches on a network
+        Creates switches.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus1_id
+          - bus2_id
+          - node1
+          - node2
+          - name
+          - kind
+          - open
+          - retained
+          - fictitious
 
         Args:
-            df: dataframe of the switches creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
-        return self._create_elements(_pypowsybl.ElementType.SWITCH, [df])
+        return self._create_elements(_pypowsybl.ElementType.SWITCH, [df], **kwargs)
 
     def create_voltage_levels(self, df: _DataFrame = None, **kwargs):
         """
-        create voltage levels on a network
+        Creates voltage levels.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - substation_id
+          - name
+          - high_voltage_limit
+          - low_voltage_limit
+          - nominal_v
+          - topology_kind
 
         Args:
-            df: dataframe of the votage levels creation data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
@@ -2572,10 +2763,25 @@ class Network(object):
 
     def create_hvdc_lines(self, df: _DataFrame, **kwargs):
         """
-        Create HVDC lines
+        Creates HVDC lines.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - name
+          - converter_station1_id
+          - converter_station2_id
+          - max_p
+          - converters_mode
+          - target_p
+          - r
+          - nominal_v
 
         Args:
-            df: HVDC lines data
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(_pypowsybl.ElementType.HVDC_LINE, [df], **kwargs)
 
