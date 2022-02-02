@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -52,6 +53,8 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
     protected boolean filterItem(T item, DataframeFilter dataframeFilter) {
         if (item instanceof Triple) {
             return filterItem((String) ((Triple) item).getLeft(), (int) ((Triple) item).getRight(), dataframeFilter);
+        } else if (item instanceof Pair) {
+            return dataframeFilter.getRowsIds().contains(((Identifiable) (((Pair) item).getLeft())).getId());
         }
         return dataframeFilter.getRowsIds().contains(((Identifiable) item).getId());
     }

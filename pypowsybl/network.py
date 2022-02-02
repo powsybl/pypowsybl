@@ -2465,7 +2465,7 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = [], sel_index: _pd.Index = None):
+    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = []):
         """
         Get the list of all current limits on the network paired with their branch id.
 
@@ -2476,7 +2476,7 @@ class Network(object):
         Returns:
             all current limits on the network
         """
-        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS, all_attributes, attributes, sel_index)
+        return self.get_elements(_pypowsybl.ElementType.CURRENT_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
