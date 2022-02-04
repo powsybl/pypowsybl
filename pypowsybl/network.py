@@ -7,8 +7,11 @@
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
 import sys as _sys
-from typing import List as _List
-from typing import Set as _Set
+from typing import (
+    List as _List,
+    Set as _Set,
+    Dict as _Dict
+)
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
@@ -2668,7 +2671,7 @@ def get_export_parameters(format: str) -> _DataFrame:
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: dict = {}) -> Network:
+def load(file: str, parameters: _Dict[str, str] = {}) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -2682,7 +2685,7 @@ def load(file: str, parameters: dict = {}) -> Network:
     return Network(_pypowsybl.load_network(file, parameters))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = {}) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
