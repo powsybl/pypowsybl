@@ -80,6 +80,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/powsybl/pypowsybl",
     packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        'pypowsybl': ['py.typed', '*.pyi']
+    },
     ext_modules=[PyPowsyblExtension()],
     cmdclass=dict(build_ext=PyPowsyblBuild),
     zip_safe=False,
