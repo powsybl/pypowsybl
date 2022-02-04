@@ -82,7 +82,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'pypowsybl': ['py.typed', '*.pyi']
+        'pypowsybl': ['*.pyi']
     },
     ext_modules=[PyPowsyblExtension()],
     cmdclass=dict(build_ext=PyPowsyblBuild),
