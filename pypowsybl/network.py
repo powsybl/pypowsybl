@@ -384,8 +384,8 @@ class Network(object):
         return _create_data_frame_from_series_array(series_array)
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
-        Get a dataframe of buses.
+        r"""
+        rGet a dataframe of buses.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -464,7 +464,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes)
 
     def get_generators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of generators.
 
         Args:
@@ -561,7 +561,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes)
 
     def get_loads(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of loads.
 
         Args:
@@ -662,7 +662,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes)
 
     def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of batteries.
 
         Args:
@@ -675,7 +675,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes)
 
     def get_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of lines data.
 
         Args:
@@ -759,7 +759,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes)
 
     def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of 2 windings transformers.
 
         Args:
@@ -845,7 +845,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes)
 
     def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of 3 windings transformers.
 
         Args:
@@ -858,7 +858,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes)
 
     def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of shunt compensators.
 
         Args:
@@ -930,7 +930,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes)
 
     def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of shunt compensators sections for non linear model.
 
         Args:
@@ -951,7 +951,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
     def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of shunt compensators sections for linear model.
 
         Args:
@@ -973,7 +973,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
     def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of dangling lines.
 
         Args:
@@ -1048,7 +1048,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes)
 
     def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of LCC converter stations.
 
         Args:
@@ -1122,7 +1122,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes)
 
     def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of VSC converter stations.
 
         Args:
@@ -1198,7 +1198,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes)
 
     def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of static var compensators.
 
         Args:
@@ -1271,7 +1271,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes)
 
     def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of voltage levels.
 
         Args:
@@ -1350,7 +1350,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes)
 
     def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of busbar sections.
 
         Args:
@@ -1433,7 +1433,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes)
 
     def get_substations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get substations :class:`~pandas.DataFrame`.
 
         Args:
@@ -1446,7 +1446,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes)
 
     def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of HVDC lines.
 
         Args:
@@ -1521,7 +1521,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes)
 
     def get_switches(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of switches.
 
         Args:
@@ -1611,7 +1611,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes)
 
     def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of ratio tap changer steps.
 
         Args:
@@ -1684,7 +1684,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes)
 
     def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Get a dataframe of phase tap changer steps.
 
         Args:
@@ -1761,7 +1761,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes)
 
     def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
         Args:
@@ -1832,7 +1832,7 @@ class Network(object):
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes)
 
     def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
-        """
+        r"""
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
         Args:
