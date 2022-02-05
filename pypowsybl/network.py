@@ -359,7 +359,7 @@ class Network(object):
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -371,7 +371,8 @@ class Network(object):
         Returns:
             a network elements data frame for the specified element type
         """
-
+        if attributes is None:
+            attributes = []
         filter_attributes = _pypowsybl.FilterAttributesType.DEFAULT_ATTRIBUTES
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
@@ -383,7 +384,7 @@ class Network(object):
         series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         rGet a dataframe of buses.
 
@@ -463,7 +464,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes)
 
-    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of generators.
 
@@ -560,7 +561,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes)
 
-    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of loads.
 
@@ -661,7 +662,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -674,7 +675,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes)
 
-    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of lines data.
 
@@ -758,7 +759,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes)
 
-    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of 2 windings transformers.
 
@@ -844,7 +845,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes)
 
-    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of 3 windings transformers.
 
@@ -857,7 +858,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes)
 
-    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators.
 
@@ -929,7 +930,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes)
 
-    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for non linear model.
 
@@ -950,7 +951,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
-    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for linear model.
 
@@ -972,7 +973,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
 
-    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of dangling lines.
 
@@ -1047,7 +1048,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes)
 
-    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of LCC converter stations.
 
@@ -1121,7 +1122,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes)
 
-    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of VSC converter stations.
 
@@ -1197,7 +1198,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes)
 
-    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of static var compensators.
 
@@ -1270,7 +1271,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes)
 
-    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of voltage levels.
 
@@ -1349,7 +1350,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes)
 
-    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of busbar sections.
 
@@ -1432,7 +1433,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes)
 
-    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get substations :class:`~pandas.DataFrame`.
 
@@ -1445,7 +1446,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes)
 
-    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of HVDC lines.
 
@@ -1520,7 +1521,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes)
 
-    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of switches.
 
@@ -1610,7 +1611,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes)
 
-    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of ratio tap changer steps.
 
@@ -1683,7 +1684,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes)
 
-    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Get a dataframe of phase tap changer steps.
 
@@ -1760,7 +1761,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes)
 
-    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
@@ -1831,7 +1832,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes)
 
-    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         r"""
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
@@ -1901,7 +1902,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, all_attributes, attributes)
 
-    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get a dataframe of reactive capability curve points.
 
@@ -2441,7 +2442,7 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = []):
+    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None):
         """
         Get the list of all current limits on the network paired with their branch id.
 
