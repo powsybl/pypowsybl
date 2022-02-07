@@ -8,8 +8,8 @@ import pandas as _pd
 import numpy as _np
 from pypowsybl import _pypowsybl
 import pypowsybl.network as _net
-from pypowsybl.network import _adapt_df_or_kwargs, ElementType
-
+from pypowsybl.network import _adapt_df_or_kwargs, ElementType, ColumnLike
+from typing import List as _List
 
 
 class PerUnitView:
@@ -31,14 +31,14 @@ class PerUnitView:
         self.sqrt3 = _math.sqrt(3)
 
     @property
-    def network(self):
+    def network(self) -> _net.Network:
         """
         The underlying network
         """
         return self._network
 
     @property
-    def sn(self):
+    def sn(self) -> float:
         """
         The base power, in MW, used for per-uniting
         """
@@ -54,60 +54,60 @@ class PerUnitView:
         """
         return _pd.merge(df, self._get_nominal_v(), left_on=vl_attr, right_index=True)['nominal_v']
 
-    def _per_unit_p(self, df: _pd.DataFrame, columns):
+    def _per_unit_p(self, df: _pd.DataFrame, columns: _List[str]) -> None:
         df[columns] /= self.sn
 
-    def _per_unit_v(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _per_unit_v(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         for col in columns:
             df[col] /= nominal_v
 
-    def _per_unit_angle(self, df: _pd.DataFrame, columns):
+    def _per_unit_angle(self, df: _pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
             df[col] = _np.deg2rad(df[col])
 
-    def _per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _per_unit_r(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             df[col] /= factor
 
-    def _per_unit_g(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _per_unit_g(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             df[col] *= factor
 
-    def _per_unit_i(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _per_unit_i(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
             df[col] /= factor
 
-    def _un_per_unit_p(self, df: _pd.DataFrame, columns):
+    def _un_per_unit_p(self, df: _pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
             if col in df.columns:
                 df[col] *= self.sn
 
-    def _un_per_unit_v(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _un_per_unit_v(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         for col in columns:
             if col in df.columns:
                 df[col] *= nominal_v
 
-    def _un_per_unit_angle(self, df: _pd.DataFrame, columns):
+    def _un_per_unit_angle(self, df: _pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
             if col in df.columns:
                 df[col] = _np.rad2deg(df[col])
 
-    def _un_per_unit_r(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _un_per_unit_r(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
                 df[col] *= factor
 
-    def _un_per_unit_g(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _un_per_unit_g(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
                 df[col] /= factor
 
-    def _un_per_unit_i(self, df: _pd.DataFrame, columns, nominal_v: _pd.Series):
+    def _un_per_unit_i(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
         factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
             if col in df.columns:
@@ -145,7 +145,7 @@ class PerUnitView:
         self._per_unit_p(loads, ['p0', 'q0', 'p', 'q'])
         nominal_v = _pd.merge(loads, self._get_nominal_v(),
                               left_on='voltage_level_id', right_index=True)['nominal_v']
-        self._per_unit_i(loads, 'i', nominal_v)
+        self._per_unit_i(loads, ['i'], nominal_v)
         return loads
 
     def get_lines(self) -> _pd.DataFrame:
@@ -353,7 +353,7 @@ class PerUnitView:
         self._per_unit_angle(ratio_tap_changers, ['alpha'])
         return ratio_tap_changers
 
-    def update_buses(self, df: _pd.DataFrame = None, **kwargs):
+    def update_buses(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update buses from per-united data.
         """
@@ -363,7 +363,7 @@ class PerUnitView:
         self._un_per_unit_angle(to_update, ['v_angle'])
         self._network.update_buses(to_update)
 
-    def update_generators(self, df: _pd.DataFrame = None, **kwargs):
+    def update_generators(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update generators from per-united data.
         """
@@ -374,7 +374,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_generators(to_update)
 
-    def update_loads(self, df: _pd.DataFrame = None, **kwargs):
+    def update_loads(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update loads from per-united data.
         """
@@ -384,7 +384,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_loads(to_update)
 
-    def update_batteries(self, df: _pd.DataFrame = None, **kwargs):
+    def update_batteries(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update batteries from per-united data.
         """
@@ -394,7 +394,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_batteries(to_update)
 
-    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs):
+    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update dangling lines from per-united data.
         """
@@ -406,7 +406,7 @@ class PerUnitView:
         self._un_per_unit_g(to_update, ['g', 'b'], nominal_v)
         self._network.update_dangling_lines(to_update)
 
-    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs):
+    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update VSC converter stations from per-united data.
         """
@@ -417,7 +417,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_vsc_converter_stations(to_update)
 
-    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs):
+    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update static var compensators from per-united data.
         """
@@ -428,7 +428,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_static_var_compensators(to_update)
 
-    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs):
+    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update HVDC lines from per-united data.
         """
@@ -438,7 +438,7 @@ class PerUnitView:
         self._un_per_unit_r(to_update, ['r'], nominal_v)
         self._network.update_hvdc_lines(to_update)
 
-    def update_lines(self, df: _pd.DataFrame = None, **kwargs):
+    def update_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update lines from per-united data.
         """
@@ -449,7 +449,7 @@ class PerUnitView:
         self._un_per_unit_g(to_update, ['g1', 'g2', 'b1', 'b2'], nominal_v)
         self._network.update_lines(to_update)
 
-    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs):
+    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update 2 windings transformers from per-united data.
         """
@@ -464,7 +464,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
         self._network.update_2_windings_transformers(to_update)
 
-    def update_3_windings_transformers(self, df: _pd.DataFrame = None, **kwargs):
+    def update_3_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update 3 windings transformers from per-united data.
         """
@@ -482,7 +482,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['rated_u3'], nominal_v3)
         self._network.update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 
-    def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs):
+    def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
         """
         Update LCC converter stations from per-united data.
         """

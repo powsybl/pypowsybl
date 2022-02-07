@@ -28,7 +28,7 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
-Scalar = _Union[int, float, str]
+Scalar = _Union[int, float, str, bool]
 ColumnLike = _Union[Scalar, _List[Scalar], _np.ndarray]
 
 
