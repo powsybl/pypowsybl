@@ -51,7 +51,7 @@ class SecurityAnalysisResult(object):
     The result of a security analysis.
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
         results = _pypowsybl.get_security_analysis_result(self._handle)
         self._post_contingency_results = {}
@@ -76,7 +76,7 @@ class SecurityAnalysisResult(object):
         """
         return self._post_contingency_results
 
-    def find_post_contingency_result(self, contingency_id: str):
+    def find_post_contingency_result(self, contingency_id: str) -> ContingencyResult:
         """
         Result for the specified contingency.
 
@@ -88,7 +88,7 @@ class SecurityAnalysisResult(object):
             raise KeyError("Contingency {} not found".format(contingency_id))
         return result
 
-    def get_table(self):
+    def get_table(self) -> _PrettyTable:
         table = _PrettyTable()
         table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
@@ -142,11 +142,11 @@ class SecurityAnalysis(_ContingencyContainer):
     Allows to run a security analysis on a network.
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         _ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: _Network, parameters: Parameters = None,
-               provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
+               provider : str = 'OpenSecurityAnalysis') -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -164,7 +164,7 @@ class SecurityAnalysis(_ContingencyContainer):
                                contingency_ids: _Union[_List[str], str] = None,
                                branch_ids: _List[str] = None,
                                voltage_level_ids: _List[str] = None,
-                               three_windings_transformer_ids: _List[str] = None):
+                               three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -198,7 +198,7 @@ class SecurityAnalysis(_ContingencyContainer):
     def add_precontingency_monitored_elements(self,
                                               branch_ids: _List[str] = None,
                                               voltage_level_ids: _List[str] = None,
-                                              three_windings_transformer_ids: _List[str] = None):
+                                              three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -215,7 +215,7 @@ class SecurityAnalysis(_ContingencyContainer):
     def add_postcontingency_monitored_elements(self, contingency_ids: _Union[_List[str], str],
                                                branch_ids: _List[str] = None,
                                                voltage_level_ids: _List[str] = None,
-                                               three_windings_transformer_ids: _List[str] = None):
+                                               three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 
