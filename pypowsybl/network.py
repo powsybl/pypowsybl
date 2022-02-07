@@ -2492,7 +2492,7 @@ class Network(object):
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def merge(self, networks: _List[Network]) -> None:
+    def merge(self, *networks: Network) -> None:
         return _pypowsybl.merge(self._handle, [net._handle for net in networks])
 
 
