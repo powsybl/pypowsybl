@@ -153,7 +153,7 @@ additional-builtins=
 allow-global-unused-variables=yes
 
 # List of names allowed to shadow builtins
-allowed-redefined-builtins=
+allowed-redefined-builtins=id,format
 
 # List of strings which can identify a callback function by name. A callback
 # name must start or end with one of those strings.
@@ -436,7 +436,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=120
+max-line-length=300
 
 # Maximum number of lines in a module.
 max-module-lines=1000

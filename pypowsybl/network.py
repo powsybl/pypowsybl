@@ -7,24 +7,28 @@
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
 import sys as _sys
-from typing import List as _List
-from typing import Set as _Set
-
-from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ElementType
+from typing import (
+    List as _List,
+    Set as _Set,
+    Dict as _Dict,
+    Optional as _Optional,
+)
+import datetime as _datetime
 
 import pandas as _pd
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
-import datetime as _datetime
 import numpy as _np
 
+from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import ElementType
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
 _pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
                                                f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
 
+ParamsDict = _Optional[_Dict[str, str]]
 
 class Svg:
     """
@@ -270,7 +274,7 @@ class Network(object):
     def disconnect(self, id: str):
         return _pypowsybl.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}):
+    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None):
         """
         Save a network to a file using a specified format.
 
@@ -279,9 +283,11 @@ class Network(object):
             format (str, optional): format to save the network, defaults to 'XIIDM'
             parameters (dict, optional): a map of parameters
         """
+        if parameters is None:
+            parameters = {}
         _pypowsybl.dump_network(self._handle, file, format, parameters)
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None) -> str:
         """
         Save a network to a string using a specified format.
 
@@ -292,10 +298,14 @@ class Network(object):
         Returns:
             a string representing network
         """
+        if parameters is None:
+            parameters = {}
         return _pypowsybl.dump_network_to_string(self._handle, format, parameters)
 
-    def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = [],
+    def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False):
+        if ids is None:
+            ids = []
         vls = []
         depths = []
         for v in vl_depths:
@@ -376,7 +386,7 @@ class Network(object):
         filter_attributes = _pypowsybl.FilterAttributesType.DEFAULT_ATTRIBUTES
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
-        elif all_attributes:
+        if all_attributes:
             filter_attributes = _pypowsybl.FilterAttributesType.ALL_ATTRIBUTES
         elif len(attributes) > 0:
             filter_attributes = _pypowsybl.FilterAttributesType.SELECTION_ATTRIBUTES
@@ -1949,7 +1959,7 @@ class Network(object):
         columns_names.extend(df.columns.values)
         for series_name in df.columns.values:
             if not series_name in metadata_by_name:
-                raise ValueError('No column named {}'.format(series_name))
+                raise ValueError(f'No column named {series_name}')
             series = df[series_name]
             series_type = metadata_by_name[series_name].type
             columns_types.append(series_type)
@@ -2479,12 +2489,8 @@ class Network(object):
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def merge(self, *args):
-        networkList = list(args)
-        handleList = []
-        for n in networkList:
-            handleList.append(n._handle)
-        return _pypowsybl.merge(self._handle, handleList)
+    def merge(self, networks: _List[Network]):
+        return _pypowsybl.merge(self._handle, [net._handle for net in networks])
 
 
 def _create_network(name, network_id=''):
@@ -2628,12 +2634,12 @@ def get_export_formats() -> _List[str]:
     return _pypowsybl.get_network_export_formats()
 
 
-def get_import_parameters(format: str) -> _DataFrame:
+def get_import_parameters(fmt: str) -> _DataFrame:
     """
     Supported import parameters for a given format.
 
     Args:
-       format (str): the format
+       fmt (str): the format
 
     Returns:
         import parameters data frame
@@ -2651,25 +2657,25 @@ def get_import_parameters(format: str) -> _DataFrame:
            >>> parameters['default']['psse.import.ignore-base-voltage']
            'false'
     """
-    series_array = _pypowsybl.create_importer_parameters_series_array(format)
+    series_array = _pypowsybl.create_importer_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
 
 
-def get_export_parameters(format: str) -> _DataFrame:
+def get_export_parameters(fmt: str) -> _DataFrame:
     """
     Get supported export parameters infos for a given format
 
     Args:
-       format (str): the format
+       fmt (str): the format
 
     Returns:
         export parameters data frame
     """
-    series_array = _pypowsybl.create_exporter_parameters_series_array(format)
+    series_array = _pypowsybl.create_exporter_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: dict = {}) -> Network:
+def load(file: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -2680,10 +2686,12 @@ def load(file: str, parameters: dict = {}) -> Network:
     Returns:
         a network
     """
+    if parameters is None:
+        parameters = []
     return Network(_pypowsybl.load_network(file, parameters))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -2695,4 +2703,6 @@ def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -
     Returns:
         a network
     """
+    if parameters is None:
+        parameters = []
     return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))
