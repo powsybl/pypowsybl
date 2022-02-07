@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Dict, Iterator, List
+from typing import Any, ClassVar, Dict, Iterator, List, Sequence
 
 ALL: ContingencyContextType
 ALL_ATTRIBUTES: FilterAttributesType
@@ -267,7 +267,7 @@ class LoadFlowComponentStatus:
 class LoadFlowParameters:
     balance_type: BalanceType
     connected_component_mode: ConnectedComponentMode
-    countries_to_balance: List[str]
+    countries_to_balance: Sequence[str]
     dc_use_transformer_ratio: bool
     distributed_slack: bool
     no_generator_reactive_limits: bool

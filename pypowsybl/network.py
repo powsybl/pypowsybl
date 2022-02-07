@@ -10,7 +10,8 @@ import sys as _sys
 from typing import (
     List as _List,
     Set as _Set,
-    Dict as _Dict
+    Dict as _Dict,
+    Optional as _Optional
 )
 
 from pypowsybl import _pypowsybl
@@ -25,8 +26,12 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
-_pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
-                                               f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
+def _series_metadata_repr(self: _pypowsybl.SeriesMetadata) -> str:
+    return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
+           f'is_index={self.is_index}, is_modifiable={self.is_modifiable})'
+
+
+_pypowsybl.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
 
 class Svg:
@@ -189,7 +194,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     return _DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> _DataFrame:
+def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **kwargs) -> _DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """

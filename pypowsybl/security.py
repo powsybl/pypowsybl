@@ -17,23 +17,33 @@ from prettytable import PrettyTable as _PrettyTable
 import pandas as _pd
 from pypowsybl.loadflow import Parameters
 
-ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                           f"contingency_id={self.contingency_id!r}" \
-                                           f", status={self.status.name}" \
-                                           f", limit_violations=[{len(self.limit_violations)}]" \
-                                           f")"
 
-LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                        f"subject_id={self.subject_id!r}" \
-                                        f", subject_name={self.subject_name!r}" \
-                                        f", limit_type={self.limit_type.name}" \
-                                        f", limit={self.limit!r}" \
-                                        f", limit_name={self.limit_name!r}" \
-                                        f", acceptable_duration={self.acceptable_duration!r}" \
-                                        f", limit_reduction={self.limit_reduction!r}" \
-                                        f", value={self.value!r}" \
-                                        f", side={self.side.name}" \
-                                        f")"
+def _contingency_result_repr(self: ContingencyResult) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"contingency_id={self.contingency_id!r}" \
+           f", status={self.status.name}" \
+           f", limit_violations=[{len(self.limit_violations)}]" \
+           f")"
+
+
+ContingencyResult.__repr__ = _contingency_result_repr  # type: ignore
+
+
+def _limit_violation_repr(self: LimitViolation) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"subject_id={self.subject_id!r}" \
+           f", subject_name={self.subject_name!r}" \
+           f", limit_type={self.limit_type.name}" \
+           f", limit={self.limit!r}" \
+           f", limit_name={self.limit_name!r}" \
+           f", acceptable_duration={self.acceptable_duration!r}" \
+           f", limit_reduction={self.limit_reduction!r}" \
+           f", value={self.value!r}" \
+           f", side={self.side.name}" \
+           f")"
+
+
+LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
 
 
 class SecurityAnalysisResult(object):
@@ -147,9 +157,7 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p = parameters
-        if parameters is None:
-            p = Parameters()
+        p: Parameters = Parameters() if parameters is None else parameters
         return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, p, provider))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
@@ -181,7 +189,7 @@ class SecurityAnalysis(_ContingencyContainer):
             voltage_level_ids = list()
         if contingency_ids is None:
             contingency_ids = ['']
-        elif type(contingency_ids) == str:
+        elif isinstance(contingency_ids, str):
             contingency_ids = [contingency_ids]
 
         _pypowsybl.add_monitored_elements(self._handle, contingency_context_type, branch_ids, voltage_level_ids,
