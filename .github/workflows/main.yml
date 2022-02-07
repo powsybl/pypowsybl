@@ -73,6 +73,9 @@ jobs:
         run: |
           pytest
 
+      - name: Type checking
+        run: mypy -p pypowsybl
+
       - name: Generate coverage # In order to generate a coverage that sonar understands, we need to generate it from sources
         if: matrix.python.name == 'cp39'
         run: |
@@ -166,6 +169,9 @@ jobs:
       - name: Run tests
         working-directory: ./tests
         run: python3 -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
 
       - name: Run doc examples
         working-directory: ./docs

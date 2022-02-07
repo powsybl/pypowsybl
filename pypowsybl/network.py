@@ -7,8 +7,12 @@
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
 import sys as _sys
-from typing import List as _List
-from typing import Set as _Set
+from typing import (
+    List as _List,
+    Set as _Set,
+    Dict as _Dict,
+    Optional as _Optional
+)
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ElementType
@@ -22,8 +26,12 @@ import numpy as _np
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
-_pypowsybl.SeriesMetadata.__repr__ = lambda s: f'SeriesMetadata(name={s.name}, type={s.type}, ' \
-                                               f'is_index={s.is_index}, is_modifiable={s.is_modifiable})'
+def _series_metadata_repr(self: _pypowsybl.SeriesMetadata) -> str:
+    return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
+           f'is_index={self.is_index}, is_modifiable={self.is_modifiable})'
+
+
+_pypowsybl.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
 
 class Svg:
@@ -186,7 +194,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs) -> _DataFrame:
     return _DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(element_type: ElementType, df: _DataFrame, **kwargs) -> _DataFrame:
+def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **kwargs) -> _DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -2668,7 +2676,7 @@ def get_export_parameters(format: str) -> _DataFrame:
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: dict = {}) -> Network:
+def load(file: str, parameters: _Dict[str, str] = {}) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -2682,7 +2690,7 @@ def load(file: str, parameters: dict = {}) -> Network:
     return Network(_pypowsybl.load_network(file, parameters))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: dict = {}) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = {}) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 

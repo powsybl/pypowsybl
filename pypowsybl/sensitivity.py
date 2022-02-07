@@ -237,7 +237,7 @@ class SensitivityAnalysis(_ContingencyContainer):
             if isinstance(variable_id, str):  # this is an ID
                 flatten_variables_ids.append(variable_id)
                 branch_data_frame_index.append(variable_id)
-            elif isinstance(variable_id, _Tuple):  # this is a power transfer
+            elif isinstance(variable_id, tuple):  # this is a power transfer
                 if len(variable_id) != 2:
                     raise _PyPowsyblError('Power transfer factor should be describe with a tuple 2')
                 flatten_variables_ids.append(variable_id[0])
@@ -270,9 +270,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        p = parameters
-        if parameters is None:
-            p = Parameters()
+        p: Parameters = Parameters() if parameters is None else parameters
         return DcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider),
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
@@ -310,9 +308,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        p = parameters
-        if parameters is None:
-            p = Parameters()
+        p: Parameters = Parameters() if parameters is None else parameters
         return AcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider),
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
