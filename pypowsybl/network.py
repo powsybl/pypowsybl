@@ -377,6 +377,7 @@ class Network(object):
             element_type (ElementType): the element type
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for the specified element_type.
 
         Returns:
             a network elements data frame for the specified element type
@@ -424,6 +425,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of buses.
@@ -504,6 +506,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             the generator data frame.
@@ -601,6 +604,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             the load data frame
@@ -702,6 +706,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of batteries.
@@ -715,6 +720,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of lines data.
@@ -799,6 +805,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of 2 windings transformers.
@@ -885,6 +892,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of 3 windings transformers.
@@ -898,6 +906,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of shunt compensators.
@@ -970,6 +979,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -991,6 +1001,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Notes:
             The resulting dataframe, depending on the parameters, could have the following columns:
@@ -1013,6 +1024,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of dangling lines.
@@ -1088,6 +1100,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of LCC converter stations.
@@ -1162,6 +1175,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.  
 
         Returns:
             A dataframe of VCS converter stations.
@@ -1238,6 +1252,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of static var compensators.
@@ -1311,6 +1326,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of voltage levels.
@@ -1390,6 +1406,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of busbar sections.
@@ -1473,6 +1490,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of substations.
@@ -1486,6 +1504,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of HVDC lines.
@@ -1561,6 +1580,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of switches.
@@ -1651,6 +1671,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of ratio tap changer steps.
@@ -1724,6 +1745,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of phase tap changer steps.
@@ -1801,6 +1823,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             the ratio tap changers data frame
@@ -1872,6 +1895,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             the phase tap changers data frame
@@ -1942,6 +1966,7 @@ class Network(object):
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            sel_index (pandas.Index, optional): allows to select what rows to include in the dataframe, default is all the rows for this network element type.
 
         Returns:
             A dataframe of reactive capability curve points.
