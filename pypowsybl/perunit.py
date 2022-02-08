@@ -8,8 +8,9 @@ import pandas as _pd
 import numpy as _np
 from pypowsybl import _pypowsybl
 import pypowsybl.network as _net
-from pypowsybl.network import _adapt_df_or_kwargs, ElementType, ColumnLike
+from pypowsybl.network import _adapt_df_or_kwargs, ElementType
 from typing import List as _List
+from numpy.typing import ArrayLike as _ArrayLike
 
 
 class PerUnitView:
@@ -353,7 +354,7 @@ class PerUnitView:
         self._per_unit_angle(ratio_tap_changers, ['alpha'])
         return ratio_tap_changers
 
-    def update_buses(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_buses(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update buses from per-united data.
         """
@@ -363,7 +364,7 @@ class PerUnitView:
         self._un_per_unit_angle(to_update, ['v_angle'])
         self._network.update_buses(to_update)
 
-    def update_generators(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_generators(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update generators from per-united data.
         """
@@ -374,7 +375,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_generators(to_update)
 
-    def update_loads(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_loads(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update loads from per-united data.
         """
@@ -384,7 +385,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_loads(to_update)
 
-    def update_batteries(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_batteries(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update batteries from per-united data.
         """
@@ -394,7 +395,7 @@ class PerUnitView:
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_batteries(to_update)
 
-    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update dangling lines from per-united data.
         """
@@ -406,7 +407,7 @@ class PerUnitView:
         self._un_per_unit_g(to_update, ['g', 'b'], nominal_v)
         self._network.update_dangling_lines(to_update)
 
-    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update VSC converter stations from per-united data.
         """
@@ -417,7 +418,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_vsc_converter_stations(to_update)
 
-    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update static var compensators from per-united data.
         """
@@ -428,7 +429,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_static_var_compensators(to_update)
 
-    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update HVDC lines from per-united data.
         """
@@ -438,7 +439,7 @@ class PerUnitView:
         self._un_per_unit_r(to_update, ['r'], nominal_v)
         self._network.update_hvdc_lines(to_update)
 
-    def update_lines(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update lines from per-united data.
         """
@@ -449,7 +450,7 @@ class PerUnitView:
         self._un_per_unit_g(to_update, ['g1', 'g2', 'b1', 'b2'], nominal_v)
         self._network.update_lines(to_update)
 
-    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update 2 windings transformers from per-united data.
         """
@@ -464,7 +465,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
         self._network.update_2_windings_transformers(to_update)
 
-    def update_3_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_3_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update 3 windings transformers from per-united data.
         """
@@ -482,7 +483,7 @@ class PerUnitView:
         self._un_per_unit_v(to_update, ['rated_u3'], nominal_v3)
         self._network.update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 
-    def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update LCC converter stations from per-united data.
         """

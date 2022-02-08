@@ -23,13 +23,9 @@ from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import datetime as _datetime
 import numpy as _np
-
+from numpy.typing import ArrayLike as _ArrayLike
 
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-
-
-Scalar = _Union[int, float, str, bool]
-ColumnLike = _Union[Scalar, _List[Scalar], _np.ndarray]
 
 
 def _series_metadata_repr(self: _pypowsybl.SeriesMetadata) -> str:
@@ -158,7 +154,7 @@ class BusBreakerTopology:
         return graph
 
 
-def _to_array(value: ColumnLike) -> _np.ndarray:
+def _to_array(value: _ArrayLike) -> _np.ndarray:
     """
     Converts a scalar or array to an array
     """
@@ -169,7 +165,7 @@ def _to_array(value: ColumnLike) -> _np.ndarray:
     return as_array
 
 
-def _adapt_kwargs(element_type: ElementType, **kwargs: ColumnLike) -> _DataFrame:
+def _adapt_kwargs(element_type: ElementType, **kwargs: _ArrayLike) -> _DataFrame:
     """
     Converts named arguments to a dataframe.
     Element type is required to know which attributes must be part of the index.
@@ -200,7 +196,7 @@ def _adapt_kwargs(element_type: ElementType, **kwargs: ColumnLike) -> _DataFrame
     return _DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **kwargs: ColumnLike) -> _DataFrame:
+def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **kwargs: _ArrayLike) -> _DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -1928,7 +1924,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
-    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
@@ -1971,7 +1967,7 @@ class Network(object):
         array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
         _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
-    def update_buses(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update buses with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -1985,13 +1981,13 @@ class Network(object):
 
         Args:
             df: the data to be updated, as a data frame.
-            **kwargs: ColumnLike: the data to be updated, as named arguments.
+            **kwargs: _ArrayLike: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
         """
         return self.update_elements(_pypowsybl.ElementType.BUS, df, **kwargs)
 
-    def update_switches(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_switches(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update switches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2011,7 +2007,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.SWITCH, df, **kwargs)
 
-    def update_generators(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_generators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update generators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2040,7 +2036,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.GENERATOR, df, **kwargs)
 
-    def update_loads(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_loads(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update loads with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2061,7 +2057,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LOAD, df, **kwargs)
 
-    def update_batteries(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_batteries(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2082,7 +2078,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.BATTERY, df, **kwargs)
 
-    def update_dangling_lines(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_dangling_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2109,7 +2105,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.DANGLING_LINE, df, **kwargs)
 
-    def update_vsc_converter_stations(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_vsc_converter_stations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2133,7 +2129,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
-    def update_static_var_compensators(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_static_var_compensators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2158,7 +2154,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
-    def update_hvdc_lines(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_hvdc_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update HVDC lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2183,7 +2179,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.HVDC_LINE, df, **kwargs)
 
-    def update_lines(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2210,7 +2206,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LINE, df, **kwargs)
 
-    def update_2_windings_transformers(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_2_windings_transformers(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update 2 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2241,7 +2237,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
-    def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2264,7 +2260,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
-    def update_ratio_tap_changer_steps(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_ratio_tap_changer_steps(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2287,7 +2283,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
 
-    def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_phase_tap_changers(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2310,7 +2306,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
-    def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2334,7 +2330,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
-    def update_shunt_compensators(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_shunt_compensators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2356,7 +2352,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
-    def update_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2378,7 +2374,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
-    def update_non_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_non_linear_shunt_compensator_sections(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2398,7 +2394,7 @@ class Network(object):
         """
         return self.update_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
-    def update_busbar_sections(self, df: _DataFrame = None, **kwargs: ColumnLike) -> None:
+    def update_busbar_sections(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """Update phase tap changers with a ``Pandas`` data frame.
 
         Args:
