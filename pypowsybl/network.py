@@ -264,8 +264,7 @@ class Network(object):
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
-        self._handle = n
+        self._handle = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
 
     def open_switch(self, id: str) -> bool:
         return _pypowsybl.update_switch_position(self._handle, id, True)
@@ -279,7 +278,7 @@ class Network(object):
     def disconnect(self, id: str) -> bool:
         return _pypowsybl.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
+    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = di) -> None:
         """
         Save a network to a file using a specified format.
 

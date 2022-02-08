@@ -323,8 +323,9 @@ good-names=i,
            _,
            # for dataframe
            df,
-           # for base power
-           sn
+           # for electrical quantities
+           p, q, v, sn,
+           id
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted

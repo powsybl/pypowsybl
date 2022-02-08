@@ -119,12 +119,12 @@ class DcSensitivityAnalysisResult(object):
         Returns:
             the matrix of branch flows sensitivities
         """
-        m = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr,
                                                            '' if contingency_id is None else contingency_id)
-        if m is None:
+        if matrix is None:
             return None
         else:
-            data = _np.array(m, copy=False)
+            data = _np.array(matrix, copy=False)
 
             df = _pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
 
@@ -147,11 +147,11 @@ class DcSensitivityAnalysisResult(object):
         Returns:
             the branches active power flows
         """
-        m = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
-        if m is None:
+        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        if matrix is None:
             return None
         else:
-            data = _np.array(m, copy=False)
+            data = _np.array(matrix, copy=False)
             return _pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
 
@@ -176,12 +176,12 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
-        m = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
                                                            '' if contingency_id is None else contingency_id)
-        if m is None:
+        if matrix is None:
             return None
         else:
-            data = _np.array(m, copy=False)
+            data = _np.array(matrix, copy=False)
             return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
 
     def get_reference_voltages(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
@@ -193,11 +193,11 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
-        m = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
-        if m is None:
+        matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        if matrix is None:
             return None
         else:
-            data = _np.array(m, copy=False)
+            data = _np.array(matrix, copy=False)
             return _pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
 
 
