@@ -85,7 +85,7 @@ class SecurityAnalysisResult(object):
         """
         result = self._post_contingency_results[contingency_id]
         if not result:
-            raise KeyError("Contingency {} not found".format(contingency_id))
+            raise KeyError(f'Contingency {contingency_id} not found')
         return result
 
     def get_table(self) -> _PrettyTable:
@@ -100,11 +100,11 @@ class SecurityAnalysisResult(object):
                                limit_violation.subject_id,
                                limit_violation.subject_name,
                                limit_violation.limit_type.name,
-                               "{:.1f}".format(limit_violation.limit),
+                               f'{limit_violation.limit:.1f}',
                                limit_violation.limit_name,
                                limit_violation.acceptable_duration,
                                limit_violation.limit_reduction,
-                               "{:.1f}".format(limit_violation.value),
+                               f'{limit_violation.value:.1f}',
                                limit_violation.side.name])
         return table
 

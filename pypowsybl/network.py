@@ -159,8 +159,8 @@ def _to_array(value: _ArrayLike) -> _np.ndarray:
     """
     as_array = _np.array(value, ndmin=1, copy=False)
     if as_array.ndim != 1:
-        raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
-                         'as keyword argument, got {} dimensions'.format(as_array.ndim))
+        raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
+                         f'as keyword argument, got {as_array.ndim} dimensions')
     return as_array
 
 
@@ -181,8 +181,8 @@ def _adapt_kwargs(element_type: ElementType, **kwargs: _ArrayLike) -> _DataFrame
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError('Network elements update: all arguments must have the same size, '
-                             'got size {} for series {}, expected {}'.format(size, key, expected_size))
+            raise ValueError(f'Network elements update: all arguments must have the same size, '
+                             f'got size {size} for series {key}, expected {expected_size}')
         columns[key] = col
 
     index = None
