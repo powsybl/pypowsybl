@@ -14,11 +14,12 @@ __version__ = '0.13.0'
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
 
-import pypowsybl.network
-import pypowsybl.loadflow
-import pypowsybl.security
-import pypowsybl.sensitivity
-
+from pypowsybl import (
+    network,
+    loadflow,
+    security,
+    sensitivity
+)
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
 # for example:

@@ -11,10 +11,10 @@ import pandas as _pd
 
 
 class ContingencyContainer(object):
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def add_single_element_contingency(self, element_id: str, contingency_id: str = None):
+    def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> None:
         """
         Add one N-1 contingency.
 
@@ -25,7 +25,7 @@ class ContingencyContainer(object):
         """
         _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
 
-    def add_multiple_elements_contingency(self, elements_ids: _List[str], contingency_id: str):
+    def add_multiple_elements_contingency(self, elements_ids: _List[str], contingency_id: str) -> None:
         """
         Add one N-K contingency.
 
@@ -35,7 +35,7 @@ class ContingencyContainer(object):
         """
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
-    def add_single_element_contingencies(self, elements_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None):
+    def add_single_element_contingencies(self, elements_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None) -> None:
         """
         Add multiple N-1 contingencies.
 
@@ -50,7 +50,7 @@ class ContingencyContainer(object):
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
 
-def create_data_frame_from_series_array(series_array):
+def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> _pd.DataFrame:
     series_dict = {}
     index_data = []
     index_names = []
