@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -127,23 +127,26 @@ enum ConnectedComponentMode {
 
 class SeriesMetadata {
 public:
-    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable):
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
         name_(name),
         type_(type),
         isIndex_(isIndex),
-        isModifiable_(isModifiable) {
+        isModifiable_(isModifiable),
+        isDefault_(isDefault) {
     }
 
     const std::string& name() const { return name_; }
     int type() const { return type_; }
     bool isIndex() const { return isIndex_; }
     bool isModifiable() const { return isModifiable_; }
+    bool isDefault() const { return isDefault_; }
 
 private:
     std::string name_;
     int type_;
     bool isIndex_;
     bool isModifiable_;
+    bool isDefault_;
 };
 
 char* copyStringToCharPtr(const std::string& str);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -623,7 +623,7 @@ std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
     Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
     std::vector<SeriesMetadata> res;
     for (const series_metadata& series: array) {
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
     }
     return res;
 }
