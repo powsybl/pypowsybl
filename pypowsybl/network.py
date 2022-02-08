@@ -278,7 +278,7 @@ class Network(object):
     def disconnect(self, id: str) -> bool:
         return _pypowsybl.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = di) -> None:
+    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
         Save a network to a file using a specified format.
 

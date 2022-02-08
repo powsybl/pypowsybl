@@ -5,16 +5,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from __future__ import annotations
-
+from typing import List as _List, Optional as _Optional, Dict as _Dict
+from enum import Enum as _Enum
+import numpy as _np
+import pandas as _pd
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
-from typing import List as _List, Optional as _Optional, Dict as _Dict, Tuple as _Tuple
-from enum import Enum as _Enum
-import numpy as _np
-import pandas as _pd
+
 
 TO_REMOVE = 'TO_REMOVE'
 

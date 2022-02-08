@@ -4,6 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+from typing import (
+    List as _List,
+    Sequence as _Sequence,
+    Optional as _Optional
+)
 from pandas import DataFrame as _DataFrame
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
@@ -15,11 +20,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from typing import (
-    List as _List,
-    Sequence as _Sequence,
-    Optional as _Optional
-)
+
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,

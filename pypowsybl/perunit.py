@@ -3,14 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+from typing import List as _List
 import math as _math
 import pandas as _pd
 import numpy as _np
+from numpy.typing import ArrayLike as _ArrayLike
 from pypowsybl import _pypowsybl
 import pypowsybl.network as _net
 from pypowsybl.network import _adapt_df_or_kwargs, ElementType
-from typing import List as _List
-from numpy.typing import ArrayLike as _ArrayLike
 
 
 class PerUnitView:
