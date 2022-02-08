@@ -2691,7 +2691,7 @@ def load(file: str, parameters: _Dict[str, str] = None) -> Network:
         a network
     """
     if parameters is None:
-        parameters = []
+        parameters = {}
     return Network(_pypowsybl.load_network(file, parameters))
 
 
@@ -2708,5 +2708,5 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
         a network
     """
     if parameters is None:
-        parameters = []
+        parameters = {}
     return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))
