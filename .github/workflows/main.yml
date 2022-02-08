@@ -76,6 +76,10 @@ jobs:
       - name: Type checking
         run: mypy -p pypowsybl
 
+      - name: Linting
+        if: matrix.python.name == 'cp39'
+        run: pylint pypowsybl
+
       - name: Generate coverage # In order to generate a coverage that sonar understands, we need to generate it from sources
         if: matrix.python.name == 'cp39'
         run: |
