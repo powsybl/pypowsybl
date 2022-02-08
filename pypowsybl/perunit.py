@@ -8,7 +8,7 @@ import math as _math
 import pandas as _pd
 import numpy as _np
 from numpy.typing import ArrayLike as _ArrayLike
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 import pypowsybl.network as _net
 from pypowsybl.network import _adapt_df_or_kwargs, ElementType
 

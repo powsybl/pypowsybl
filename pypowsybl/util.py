@@ -6,11 +6,11 @@
 #
 from typing import List as _List, Callable as _Callable
 import pandas as _pd
-import pypowsybl._pypowsybl as _pp
+import pypowsybl._pypowsybl as _pypowsybl
 
 
 class ContingencyContainer(object):
-    def __init__(self, handle: _pp.JavaHandle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
     def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> None:
@@ -22,7 +22,7 @@ class ContingencyContainer(object):
             contingency_id: The ID of the contingency.
                 If ``None``, element_id will be used.
         """
-        _pp.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
+        _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
 
     def add_multiple_elements_contingency(self, elements_ids: _List[str], contingency_id: str) -> None:
         """
@@ -32,7 +32,7 @@ class ContingencyContainer(object):
             elements_ids: The ID of the lost network elements.
             contingency_id: The ID of the contingency.
         """
-        _pp.add_contingency(self._handle, contingency_id, elements_ids)
+        _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
     def add_single_element_contingencies(self, elements_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None) -> None:
         """
@@ -46,10 +46,10 @@ class ContingencyContainer(object):
         """
         for element_id in elements_ids:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
-            _pp.add_contingency(self._handle, contingency_id, [element_id])
+            _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
 
-def create_data_frame_from_series_array(series_array: _pp.SeriesArray) -> _pd.DataFrame:
+def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> _pd.DataFrame:
     series_dict = {}
     index_data = []
     index_names = []

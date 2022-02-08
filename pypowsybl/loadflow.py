@@ -10,7 +10,7 @@ from typing import (
     Optional as _Optional
 )
 from pandas import DataFrame as _DataFrame
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
     ConnectedComponentMode,

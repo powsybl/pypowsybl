@@ -9,7 +9,7 @@ from typing import List as _List, Optional as _Optional, Dict as _Dict
 from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer

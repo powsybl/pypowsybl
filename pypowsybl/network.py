@@ -21,7 +21,7 @@ import networkx as _nx
 import numpy as _np
 from numpy.typing import ArrayLike as _ArrayLike
 
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 

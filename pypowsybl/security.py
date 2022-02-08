@@ -7,7 +7,7 @@
 from typing import Union as _Union, Dict as _Dict, List as _List
 import pandas as _pd
 from prettytable import PrettyTable as _PrettyTable
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import (
