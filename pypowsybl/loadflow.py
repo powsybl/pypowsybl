@@ -17,7 +17,8 @@ from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from typing import (
     List as _List,
-    Sequence as _Sequence
+    Sequence as _Sequence,
+    Optional as _Optional
 )
 
 # enforcing some class metadata on classes imported from C extension,
@@ -40,36 +41,36 @@ class ComponentResult(object):
         self._res = res
 
     @property
-    def status(self):
+    def status(self) -> ComponentStatus:
         """Status of the loadflow for this component."""
         return self._res.status
 
     @property
-    def connected_component_num(self):
+    def connected_component_num(self) -> int:
         """Number of the connected component."""
         return self._res.connected_component_num
 
     @property
-    def synchronous_component_num(self):
+    def synchronous_component_num(self) -> int:
         """Number of the synchronous component."""
         return self._res.synchronous_component_num
 
     @property
-    def iteration_count(self):
+    def iteration_count(self) -> int:
         """The number of iterations performed by the loadflow."""
         return self._res.iteration_count
 
     @property
-    def slack_bus_id(self):
+    def slack_bus_id(self) -> str:
         """ID of the slack bus used for this component."""
         return self._res.slack_bus_id
 
     @property
-    def slack_bus_active_power_mismatch(self):
+    def slack_bus_active_power_mismatch(self) -> float:
         """Remaining active power slack at the end of the loadflow"""
         return self._res.slack_bus_active_power_mismatch
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}("\
                f"connected_component_num={self.connected_component_num!r}"\
                f", synchronous_component_num={self.synchronous_component_num!r}"\
@@ -167,7 +168,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
         if connected_component_mode is not None:
             self.connected_component_mode = connected_component_mode
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}("\
                f"voltage_init_mode={self.voltage_init_mode.name}"\
                f", transformer_voltage_control_on={self.transformer_voltage_control_on!r}"\
@@ -185,7 +186,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow') -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'OpenLoadFlow') -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
@@ -201,7 +202,7 @@ def run_ac(network: _Network, parameters: Parameters = None, provider='OpenLoadF
     return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider='OpenLoadFlow') -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider : str ='OpenLoadFlow') -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
@@ -221,12 +222,16 @@ ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType
                       ValidationType.SVCS, ValidationType.TWTS, ValidationType.TWTS3W]
 
 
+_OptionalDf = _Optional[_DataFrame]
+
+
 class ValidationResult:
     """
     The result of a loadflow validation.
     """
 
-    def __init__(self, branch_flows, buses, generators, svcs, shunts, twts, t3wts):
+    def __init__(self, branch_flows: _OptionalDf, buses: _OptionalDf, generators: _OptionalDf, svcs: _OptionalDf,
+                 shunts: _OptionalDf, twts: _OptionalDf, t3wts: _OptionalDf):
         self._branch_flows = branch_flows
         self._buses = buses
         self._generators = generators
@@ -240,60 +245,60 @@ class ValidationResult:
                       and self._is_valid_or_unchecked(self.t3wts)
 
     @staticmethod
-    def _is_valid_or_unchecked(df: _DataFrame) -> bool:
+    def _is_valid_or_unchecked(df: _OptionalDf) -> bool:
         return df is None or df['validated'].all()
 
     @property
-    def branch_flows(self) -> _DataFrame:
+    def branch_flows(self) -> _OptionalDf:
         """
         Validation results for branch flows.
         """
         return self._branch_flows
 
     @property
-    def buses(self) -> _DataFrame:
+    def buses(self) -> _OptionalDf:
         """
         Validation results for buses.
         """
         return self._buses
 
     @property
-    def generators(self) -> _DataFrame:
+    def generators(self) -> _OptionalDf:
         """
         Validation results for generators.
         """
         return self._generators
 
     @property
-    def svcs(self) -> _DataFrame:
+    def svcs(self) -> _OptionalDf:
         """
         Validation results for SVCs.
         """
         return self._svcs
 
     @property
-    def shunts(self) -> _DataFrame:
+    def shunts(self) -> _OptionalDf:
         """
         Validation results for shunts.
         """
         return self._shunts
 
     @property
-    def twts(self) -> _DataFrame:
+    def twts(self) -> _OptionalDf:
         """
         Validation results for two winding transformers.
         """
         return self._twts
 
     @property
-    def t3wts(self) -> _DataFrame:
+    def t3wts(self) -> _OptionalDf:
         """
         Validation results for three winding transformers.
         """
         return self._t3wts
 
     @property
-    def valid(self):
+    def valid(self) -> bool:
         """
         True if all checked data is valid.
         """
