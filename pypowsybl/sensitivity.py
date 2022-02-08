@@ -25,30 +25,30 @@ class Zone:
         self._shift_keys_by_injections_ids = {} if shift_keys_by_injections_ids is None else shift_keys_by_injections_ids
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._id
 
     @property
-    def shift_keys_by_injections_ids(self):
+    def shift_keys_by_injections_ids(self) -> _Dict[str, float]:
         return self._shift_keys_by_injections_ids
 
     @property
-    def injections_ids(self):
+    def injections_ids(self) -> _List[str]:
         return list(self._shift_keys_by_injections_ids.keys())
 
-    def get_shift_key(self, injection_id: str):
+    def get_shift_key(self, injection_id: str) -> float:
         shift_key = self._shift_keys_by_injections_ids.get(injection_id)
         if shift_key is None:
             raise _PyPowsyblError(f'Injection {injection_id} not found')
         return shift_key
 
-    def add_injection(self, id: str, key: float = 1):
+    def add_injection(self, id: str, key: float = 1) -> None:
         self._shift_keys_by_injections_ids[id] = key
 
-    def remove_injection(self, id: str):
+    def remove_injection(self, id: str) -> None:
         del self._shift_keys_by_injections_ids[id]
 
-    def move_injection_to(self, other_zone: Zone, id: str):
+    def move_injection_to(self, other_zone: Zone, id: str) -> None:
         shift_key = self.get_shift_key(id)
         other_zone.add_injection(id, shift_key)
         self.remove_injection(id)
@@ -101,7 +101,10 @@ class DcSensitivityAnalysisResult(object):
     of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self, result_context_ptr, branches_ids: _List[str], branch_data_frame_index: _List[str]):
+    def __init__(self,
+                 result_context_ptr: _pypowsybl.JavaHandle,
+                 branches_ids: _List[str],
+                 branch_data_frame_index: _List[str]):
         self._handle = result_context_ptr
         self.result_context_ptr = result_context_ptr
         self.branches_ids = branches_ids
@@ -158,8 +161,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self, result_context_ptr, branches_ids: _List[str], branch_data_frame_index: _List[str],
-                 bus_ids: _List[str], target_voltage_ids: _List[str]):
+    def __init__(self, result_context_ptr: _pypowsybl.JavaHandle, branches_ids: _List[str],
+                 branch_data_frame_index: _List[str], bus_ids: _List[str], target_voltage_ids: _List[str]):
         DcSensitivityAnalysisResult.__init__(self, result_context_ptr, branches_ids, branch_data_frame_index)
         self.bus_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
@@ -201,12 +204,12 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
 class SensitivityAnalysis(_ContingencyContainer):
     """ Base class for sensitivity analysis. Do not instantiate it directly!"""
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         _ContingencyContainer.__init__(self, handle)
-        self.branches_ids = None
-        self.branch_data_frame_index = None
+        self.branches_ids: _List[str] = []
+        self.branch_data_frame_index: _List[str] = []
 
-    def set_zones(self, zones: _List[Zone]):
+    def set_zones(self, zones: _List[Zone]) -> None:
         """ Define zones that will be used in branch flow factor matrix.
         Args:
             zones: a list of zones
@@ -217,7 +220,7 @@ class SensitivityAnalysis(_ContingencyContainer):
                                           list(zone.shift_keys_by_injections_ids.values())))
         _pypowsybl.set_zones(self._handle, _zones)
 
-    def set_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List):
+    def set_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List) -> None:
         """
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 
@@ -255,7 +258,7 @@ class SensitivityAnalysis(_ContingencyContainer):
 class DcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents a DC sensitivity analysis."""
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         SensitivityAnalysis.__init__(self, handle)
 
     def run(self, network: _Network, parameters: Parameters = None,
@@ -279,12 +282,12 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
 class AcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents an AC sensitivity analysis."""
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         SensitivityAnalysis.__init__(self, handle)
-        self.bus_voltage_ids = None
-        self.target_voltage_ids = None
+        self.bus_voltage_ids: _List[str] = []
+        self.target_voltage_ids: _List[str] = []
 
-    def set_bus_voltage_factor_matrix(self, bus_ids: _List[str], target_voltage_ids: _List[str]):
+    def set_bus_voltage_factor_matrix(self, bus_ids: _List[str], target_voltage_ids: _List[str]) -> None:
         """ Defines buses for which voltage sensitivities should be computed,
         and to which regulating equipments.
 
