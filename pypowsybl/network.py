@@ -206,7 +206,7 @@ def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **
     return df
 
 
-class Network(object):
+class Network:
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle

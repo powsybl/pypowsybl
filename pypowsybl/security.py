@@ -45,7 +45,7 @@ def _limit_violation_repr(self: LimitViolation) -> str:
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
 
 
-class SecurityAnalysisResult(object):
+class SecurityAnalysisResult:
     """
     The result of a security analysis.
     """

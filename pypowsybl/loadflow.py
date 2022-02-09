@@ -33,7 +33,7 @@ ComponentStatus.__module__ = __name__
 
 # Pure python wrapper for C ext object
 # although it adds some boiler plate code, it integrates better with tools such as sphinx
-class ComponentResult(object):
+class ComponentResult:
     """
     Loadflow result for one connected component of the network.
     """

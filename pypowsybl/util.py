@@ -9,7 +9,7 @@ import pandas as _pd
 import pypowsybl._pypowsybl as _pypowsybl
 
 
-class ContingencyContainer(object):
+class ContingencyContainer:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 

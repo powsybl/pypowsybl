@@ -95,7 +95,7 @@ def create_country_zone(network: _Network, country: str,
     return Zone(country, shift_keys_by_id)
 
 
-class DcSensitivityAnalysisResult(object):
+class DcSensitivityAnalysisResult:
     """ Represents the result of a DC sensitivity analysis.
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
