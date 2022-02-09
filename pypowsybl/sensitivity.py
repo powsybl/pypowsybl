@@ -68,7 +68,7 @@ def create_country_zone(network: _Network, country: str,
                         key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
     substations = network.get_substations()
     voltage_levels = network.get_voltage_levels()
-    if key_type == ZoneKeyType.GENERATOR_MAX_P or key_type == ZoneKeyType.GENERATOR_TARGET_P:
+    if key_type in (ZoneKeyType.GENERATOR_MAX_P, ZoneKeyType.GENERATOR_TARGET_P):
         # join generators, voltage levels and substations to get generators with countries
         generators = network.get_generators()
         generators_with_countries = generators.join(
@@ -123,20 +123,20 @@ class DcSensitivityAnalysisResult:
                                                            '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
-        else:
-            data = _np.array(matrix, copy=False)
 
-            df = _pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
+        data = _np.array(matrix, copy=False)
 
-            # substract second power transfer zone to first one
-            i = 0
-            while i < len(self.branch_data_frame_index):
-                if self.branch_data_frame_index[i] == TO_REMOVE:
-                    df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
-                i += 1
+        df = _pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
 
-            # remove rows corresponding to power transfer second zone
-            return df.drop([TO_REMOVE], errors='ignore')
+        # substract second power transfer zone to first one
+        i = 0
+        while i < len(self.branch_data_frame_index):
+            if self.branch_data_frame_index[i] == TO_REMOVE:
+                df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+            i += 1
+
+        # remove rows corresponding to power transfer second zone
+        return df.drop([TO_REMOVE], errors='ignore')
 
     def get_reference_flows(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The branches active power flows on the base case or on the post contingency state depending if
@@ -150,9 +150,9 @@ class DcSensitivityAnalysisResult:
         matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
-        else:
-            data = _np.array(matrix, copy=False)
-            return _pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
@@ -180,9 +180,9 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
                                                            '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
-        else:
-            data = _np.array(matrix, copy=False)
-            return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
 
     def get_reference_voltages(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The values of bus voltages on the base case or on the post contingency state depending if
@@ -196,9 +196,9 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
-        else:
-            data = _np.array(matrix, copy=False)
-            return _pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
 
 
 class SensitivityAnalysis(_ContingencyContainer):

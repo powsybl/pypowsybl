@@ -201,12 +201,12 @@ def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **
     """
     if df is None:
         return _adapt_kwargs(element_type, **kwargs)
-    elif kwargs:
+    if kwargs:
         raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
     return df
 
 
-class Network:
+class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle

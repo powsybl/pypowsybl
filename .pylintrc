@@ -11,7 +11,7 @@ extension-pkg-allow-list=pypowsybl._pypowsybl
 fail-on=
 
 # Specify a score threshold to be exceeded before program exits with error.
-fail-under=9.0
+fail-under=9.75
 
 # Files or directories to be skipped. They should be base names, not paths.
 ignore=CVS
@@ -80,10 +80,14 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
+        #TODO: decide on the following checks. In practice it seems often legit.
+        too-many-instance-attributes,
+        too-many-arguments,
         #TODO: following checks should be enforced in the future
         line-too-long,
         missing-function-docstring,
-        missing-module-docstring
+        missing-module-docstring,
+        missing-class-docstring
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

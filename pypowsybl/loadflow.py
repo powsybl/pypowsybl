@@ -331,5 +331,3 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
                             shunts=res_by_type.get(ValidationType.SHUNTS, None),
                             twts=res_by_type.get(ValidationType.TWTS, None),
                             t3wts=res_by_type.get(ValidationType.TWTS3W, None))
-
-

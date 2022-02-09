@@ -13,7 +13,7 @@ import pypowsybl.network as _net
 from pypowsybl.network import _adapt_df_or_kwargs, ElementType
 
 
-class PerUnitView:
+class PerUnitView:  # pylint: disable=too-many-public-methods
     """
     A per-unit view of a network, providing getters and update methods for some of the
     network tables.

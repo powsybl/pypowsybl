@@ -91,8 +91,7 @@ class SecurityAnalysisResult:
         table = _PrettyTable()
         table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
-        for contingency_id in self._post_contingency_results:
-            post_contingency_result = self._post_contingency_results[contingency_id]
+        for contingency_id, post_contingency_result in self._post_contingency_results.items():
             table.add_row([contingency_id, post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
             for limit_violation in post_contingency_result.limit_violations:
                 table.add_row(['', '',
@@ -181,11 +180,11 @@ class SecurityAnalysis(_ContingencyContainer):
                              'for NONE or ALL contingencies')
 
         if three_windings_transformer_ids is None:
-            three_windings_transformer_ids = list()
+            three_windings_transformer_ids = []
         if branch_ids is None:
-            branch_ids = list()
+            branch_ids = []
         if voltage_level_ids is None:
-            voltage_level_ids = list()
+            voltage_level_ids = []
         if contingency_ids is None:
             contingency_ids = ['']
         elif isinstance(contingency_ids, str):
