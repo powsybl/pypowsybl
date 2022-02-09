@@ -15,7 +15,6 @@ def no_config():
 
 
 def test_security_analysis():
-    pd.set_option('display.max_columns', None)
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
@@ -23,16 +22,38 @@ def test_security_analysis():
     assert len(sa_result.post_contingency_results) == 1
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
     assert sa_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
-    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'subject_id'],
-                                                            tuples=[('First contingency', 'NHV1_NHV2_2'),
-                                                                    ('First contingency', 'VLHV1')]),
-                            columns=['subject_name', 'limit_type', 'limit_name', 'limit', 'acceptable_duration',
-                                     'limit_reduction', 'value', 'side'],
-                            data=[
-                                ['', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
-                                ['', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
-                            ])
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[
+            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
+            ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
+        ])
     pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
+
+
+def test_variant():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+
+    sa_result = sa.run_ac(n)
+    assert len(sa_result.post_contingency_results) == 1
+    assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
+    assert sa_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
+    assert not sa_result.limit_violations.empty
+
+    #setting load  on variant so that we relieve the violations
+    n.clone_variant(n.get_working_variant_id(), 'variant_2')
+    n.set_working_variant('variant_2')
+    n.update_loads(id='LOAD', p0=100)
+
+    sa_variant_result = sa.run_ac(n)
+    assert len(sa_variant_result.post_contingency_results) == 1
+    assert sa_variant_result.pre_contingency_result.status.name == 'CONVERGED'
+    assert sa_variant_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
+    assert sa_variant_result.limit_violations.empty
 
 
 def test_monitored_elements():
