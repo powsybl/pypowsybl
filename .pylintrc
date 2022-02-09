@@ -80,7 +80,10 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
-        line-too-long
+        #TODO: following checks should be enforced in the future
+        line-too-long,
+        missing-function-docstring,
+        missing-module-docstring
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -510,7 +513,9 @@ exclude-protected=_asdict,
                   _fields,
                   _replace,
                   _source,
-                  _make
+                  _make,
+                  # for java handles:
+                  _handle
 
 # List of valid names for the first argument in a class method.
 valid-classmethod-first-arg=cls
