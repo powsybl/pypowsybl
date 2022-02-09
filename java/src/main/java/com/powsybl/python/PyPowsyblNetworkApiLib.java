@@ -536,6 +536,7 @@ public final class PyPowsyblNetworkApiLib {
                 metadataPtr.setType(convert(metadata.getType()));
                 metadataPtr.setIndex(metadata.isIndex());
                 metadataPtr.setModifiable(metadata.isModifiable());
+                metadataPtr.setDefault(metadata.isDefaultAttribute());
             }
             ArrayPointer<SeriesMetadataPointer> res = UnmanagedMemory.calloc(SizeOf.get(ArrayPointer.class));
             res.setLength(seriesMetadata.size());

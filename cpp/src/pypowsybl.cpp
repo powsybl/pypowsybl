@@ -623,7 +623,7 @@ std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
     Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
     std::vector<SeriesMetadata> res;
     for (const series_metadata& series: array) {
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
     }
     return res;
 }

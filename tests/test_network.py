@@ -857,6 +857,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         except RuntimeError as e:
             self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
 
+    def test_metadata(self):
+        meta_gen = pp._pypowsybl.get_series_metadata(pp._pypowsybl.ElementType.GENERATOR)
+        meta_gen_index_default = [x for x in meta_gen if (x.is_index == True) and (x.is_default == True)]
+        print(meta_gen_index_default)
+        self.assertTrue(len(meta_gen_index_default) > 0)
+
     def test_dataframe_elements_filtering(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         sel_gen_index = pd.Index(['GEN2'], name='id')
@@ -878,7 +884,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             self.fail()
         except ValueError as e:
             self.assertEqual("No column named DOES_NOT_EXIST", str(e))
-
 
 if __name__ == '__main__':
     unittest.main()

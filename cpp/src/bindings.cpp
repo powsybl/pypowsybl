@@ -493,11 +493,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
-            .def(py::init<const std::string&, int, bool, bool>())
+            .def(py::init<const std::string&, int, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
-            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable);
+            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
+            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
 
     m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 

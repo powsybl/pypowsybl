@@ -30,7 +30,7 @@ from pypowsybl.util import create_data_frame_from_series_array as _create_data_f
 
 def _series_metadata_repr(self: _pypowsybl.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
-           f'is_index={self.is_index}, is_modifiable={self.is_modifiable})'
+           f'is_index={self.is_index}, is_modifiable={self.is_modifiable}, is_default={self.is_default})'
 
 
 _pypowsybl.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
