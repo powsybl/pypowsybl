@@ -166,3 +166,28 @@ def test_xnode_sensi():
     s = result.get_branch_flows_sensitivity_matrix()
     assert s.shape == (1, 1)
     assert s['BBE2AA1  FFR3AA1  1']['X'] == pytest.approx(0.176618, abs=1e-6)
+
+
+def test_variant():
+    n = pp.network.create_ieee14()
+    # fix max_p to be less than olf max_p plausible value
+    # (otherwise generators will be discarded from slack distribution)
+    generators = pd.DataFrame(data=[4999.0, 4999.0, 4999.0, 4999.0, 4999.0],
+                              columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
+    n.update_generators(generators)
+    sa = pp.sensitivity.create_dc_analysis()
+    sa.set_branch_flow_factor_matrix(['L1-5-1'], ['B1-G'])
+    r = sa.run(n)
+
+    df = r.get_branch_flows_sensitivity_matrix()
+    assert (1, 1) == df.shape
+    assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
+
+    n.clone_variant(n.get_working_variant_id(), 'variant_2')
+    n.set_working_variant('variant_2')
+    n.update_lines(id='L2-3-1', connected1=False)
+    r = sa.run(n)
+
+    df = r.get_branch_flows_sensitivity_matrix()
+    assert (1, 1) == df.shape
+    assert df['L1-5-1']['B1-G'] == pytest.approx(0.078150, abs=1e-6)
