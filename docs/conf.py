@@ -11,6 +11,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import sys
+try:
+    # trick to assess whether we can use the installed lib (for running tests)
+    # or instead use sources (for doc generation on readthedocs)
+    import pypowsybl._pypowsybl
+except ImportError:
+    # Path to python sources, for doc generation on readthedocs
+    sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
