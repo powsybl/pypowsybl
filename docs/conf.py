@@ -15,10 +15,15 @@ import sys
 try:
     # trick to assess whether we can use the installed lib (for running tests)
     # or instead use sources (for doc generation on readthedocs)
+    print('Checking for pypowsybl installation.')
     import pypowsybl._pypowsybl
+    print('pypowsybl installation found.')
 except ImportError:
     # Path to python sources, for doc generation on readthedocs
-    sys.path.insert(0, os.path.abspath('..'))
+    print('pypowsybl installation not found: appending source directory to path')
+    source_path = os.path.abspath('..')
+    sys.path.insert(0, source_path)
+    print(f'appended {source_path}')
 
 
 # -- Project information -----------------------------------------------------
@@ -89,7 +94,7 @@ except ImportError:
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     # to avoid an error if pypowsybl has not been installed
-    autodoc_mock_imports = ["_pypowsybl"]
+    autodoc_mock_imports = ["pypowsybl._pypowsybl"]
 
 
 # Autodoc options
