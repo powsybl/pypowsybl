@@ -12,9 +12,9 @@ Provides utility methods for dataframes handling:
 """
 from typing import List
 from pandas import DataFrame, Index, MultiIndex
-import pypowsybl._pypowsybl as _pp
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
+import pypowsybl._pypowsybl as _pp
 
 
 def _to_array(value: _ArrayLike) -> np.ndarray:
@@ -64,7 +64,7 @@ def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame = None
     """
     if df is None:
         return _adapt_kwargs(metadata, **kwargs)
-    elif kwargs:
+    if kwargs:
         raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
     return df
 

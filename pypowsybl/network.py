@@ -2419,8 +2419,7 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
         c_dfs: _List[_Optional[_pp.Dataframe]] = []
         dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
-        for i in range(0, len(dfs)):
-            df = dfs[i]
+        for i, df in enumerate(dfs):
             if df is None:
                 c_dfs.append(None)
             else:
@@ -2752,23 +2751,23 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(_pp.ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
-    def create_ratio_tap_changers(self, ratiosDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         create ratio tap changers on a network
 
         Args:
             df: dataframe of the ratio tap changers creation data
         """
-        return self._create_elements(_pp.ElementType.RATIO_TAP_CHANGER, [ratiosDataframe, stepsDataframe], **kwargs)
+        return self._create_elements(_pp.ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df], **kwargs)
 
-    def create_phase_tap_changers(self, phasesDataframe: _DataFrame, stepsDataframe: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         create phase tap changers on a network
 
         Args:
             df: dataframe of the phase tap changers creation data
         """
-        return self._create_elements(_pp.ElementType.PHASE_TAP_CHANGER, [phasesDataframe, stepsDataframe], **kwargs)
+        return self._create_elements(_pp.ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df], **kwargs)
 
     def create_hvdc_lines(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
         """
