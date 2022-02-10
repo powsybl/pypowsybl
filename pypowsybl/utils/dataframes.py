@@ -12,7 +12,7 @@ Provides utility methods for dataframes handling:
 """
 from typing import List
 from pandas import DataFrame, Index, MultiIndex
-from pypowsybl._pypowsybl import SeriesMetadata, create_dataframe
+import pypowsybl._pypowsybl as _pp
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
 
@@ -28,7 +28,7 @@ def _to_array(value: _ArrayLike) -> np.ndarray:
     return as_array
 
 
-def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs: _ArrayLike) -> DataFrame:
+def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
@@ -58,7 +58,7 @@ def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs: _ArrayLike) -> DataF
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[SeriesMetadata], df: DataFrame, **kwargs: _ArrayLike) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame = None, **kwargs: _ArrayLike) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -69,7 +69,7 @@ def _adapt_df_or_kwargs(metadata: List[SeriesMetadata], df: DataFrame, **kwargs:
     return df
 
 
-def _create_c_dataframe(df: DataFrame, series_metadata: List[SeriesMetadata]):
+def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]) -> _pp.Dataframe:
     """
     Creates the C representation of a dataframe.
     """
@@ -99,4 +99,4 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[SeriesMetadata]):
         columns_types.append(series_type)
         columns_values.append(series.values)
         is_index.append(False)
-    return create_dataframe(columns_values, columns_names, columns_types, is_index)
+    return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)

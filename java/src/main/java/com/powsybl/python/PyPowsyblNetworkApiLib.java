@@ -386,6 +386,9 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     public static UpdatingDataframe createDataframe(DataframePointer dataframe) {
+        if (dataframe.isNull()) {
+            return null;
+        }
         int elementCount = dataframe.getSeries().addressOf(0).data().getLength();
         int columnsNumber = dataframe.getSeriesCount();
         CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
