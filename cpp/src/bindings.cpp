@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -493,11 +493,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
-            .def(py::init<const std::string&, int, bool, bool>())
+            .def(py::init<const std::string&, int, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
-            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable);
+            .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
+            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
 
     m.def("get_series_metadata", &pypowsybl::getSeriesMetadata, "Get series metadata for a given element type", py::arg("element_type"));
 
