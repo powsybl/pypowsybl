@@ -5,16 +5,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from __future__ import annotations
-
-from pypowsybl import _pypowsybl
+from typing import List as _List, Optional as _Optional, Dict as _Dict
+from enum import Enum as _Enum
+import numpy as _np
+import pandas as _pd
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
-from typing import List as _List, Optional as _Optional, Dict as _Dict, Tuple as _Tuple
-from enum import Enum as _Enum
-import numpy as _np
-import pandas as _pd
+
 
 TO_REMOVE = 'TO_REMOVE'
 
@@ -68,7 +68,7 @@ def create_country_zone(network: _Network, country: str,
                         key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
     substations = network.get_substations()
     voltage_levels = network.get_voltage_levels()
-    if key_type == ZoneKeyType.GENERATOR_MAX_P or key_type == ZoneKeyType.GENERATOR_TARGET_P:
+    if key_type in (ZoneKeyType.GENERATOR_MAX_P, ZoneKeyType.GENERATOR_TARGET_P):
         # join generators, voltage levels and substations to get generators with countries
         generators = network.get_generators()
         generators_with_countries = generators.join(
@@ -95,7 +95,7 @@ def create_country_zone(network: _Network, country: str,
     return Zone(country, shift_keys_by_id)
 
 
-class DcSensitivityAnalysisResult(object):
+class DcSensitivityAnalysisResult:
     """ Represents the result of a DC sensitivity analysis.
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
@@ -119,24 +119,24 @@ class DcSensitivityAnalysisResult(object):
         Returns:
             the matrix of branch flows sensitivities
         """
-        m = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr,
                                                            '' if contingency_id is None else contingency_id)
-        if m is None:
+        if matrix is None:
             return None
-        else:
-            data = _np.array(m, copy=False)
 
-            df = _pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
+        data = _np.array(matrix, copy=False)
 
-            # substract second power transfer zone to first one
-            i = 0
-            while i < len(self.branch_data_frame_index):
-                if self.branch_data_frame_index[i] == TO_REMOVE:
-                    df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
-                i += 1
+        df = _pd.DataFrame(data=data, columns=self.branches_ids, index=self.branch_data_frame_index)
 
-            # remove rows corresponding to power transfer second zone
-            return df.drop([TO_REMOVE], errors='ignore')
+        # substract second power transfer zone to first one
+        i = 0
+        while i < len(self.branch_data_frame_index):
+            if self.branch_data_frame_index[i] == TO_REMOVE:
+                df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+            i += 1
+
+        # remove rows corresponding to power transfer second zone
+        return df.drop([TO_REMOVE], errors='ignore')
 
     def get_reference_flows(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The branches active power flows on the base case or on the post contingency state depending if
@@ -147,12 +147,12 @@ class DcSensitivityAnalysisResult(object):
         Returns:
             the branches active power flows
         """
-        m = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
-        if m is None:
+        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        if matrix is None:
             return None
-        else:
-            data = _np.array(m, copy=False)
-            return _pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.branches_ids, index=['reference_flows'])
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
@@ -176,13 +176,13 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
-        m = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
                                                            '' if contingency_id is None else contingency_id)
-        if m is None:
+        if matrix is None:
             return None
-        else:
-            data = _np.array(m, copy=False)
-            return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
 
     def get_reference_voltages(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The values of bus voltages on the base case or on the post contingency state depending if
@@ -193,12 +193,12 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
-        m = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
-        if m is None:
+        matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        if matrix is None:
             return None
-        else:
-            data = _np.array(m, copy=False)
-            return _pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
+
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
 
 
 class SensitivityAnalysis(_ContingencyContainer):
