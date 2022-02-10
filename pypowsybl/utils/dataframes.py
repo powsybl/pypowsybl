@@ -14,20 +14,21 @@ from typing import List
 from pandas import DataFrame, Index, MultiIndex
 from pypowsybl._pypowsybl import SeriesMetadata, create_dataframe
 import numpy as np
+from numpy.typing import ArrayLike as _ArrayLike
 
 
-def _to_array(value):
+def _to_array(value: _ArrayLike) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
     as_array = np.array(value, ndmin=1, copy=False)
     if as_array.ndim != 1:
-        raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
-                         'as keyword argument, got {} dimensions'.format(as_array.ndim))
+        raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
+                         f'as keyword argument, got {as_array.ndim} dimensions')
     return as_array
 
 
-def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs) -> DataFrame:
+def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
@@ -41,8 +42,8 @@ def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs) -> DataFrame:
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError('Network elements update: all arguments must have the same size, '
-                             'got size {} for series {}, expected {}'.format(size, key, expected_size))
+            raise ValueError(f'Network elements update: all arguments must have the same size, '
+                             f'got size {size} for series {key}, expected {expected_size}')
         columns[key] = col
 
     index = None
@@ -57,7 +58,7 @@ def _adapt_kwargs(metadata: List[SeriesMetadata], **kwargs) -> DataFrame:
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[SeriesMetadata], df: DataFrame, **kwargs) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: List[SeriesMetadata], df: DataFrame, **kwargs: _ArrayLike) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -91,8 +92,8 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[SeriesMetadata]):
         is_index.append(True)
     columns_names.extend(df.columns.values)
     for series_name in df.columns.values:
-        if not series_name in metadata_by_name:
-            raise ValueError('No column named {}'.format(series_name))
+        if series_name not in metadata_by_name:
+            raise ValueError(f'No column named {series_name}')
         series = df[series_name]
         series_type = metadata_by_name[series_name].type
         columns_types.append(series_type)

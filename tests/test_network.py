@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -852,6 +852,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         except RuntimeError as e:
             self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
 
+    def test_metadata(self):
+        meta_gen = pp._pypowsybl.get_network_elements_dataframe_metadata(pp._pypowsybl.ElementType.GENERATOR)
+        meta_gen_index_default = [x for x in meta_gen if (x.is_index == True) and (x.is_default == True)]
+        print(meta_gen_index_default)
+        self.assertTrue(len(meta_gen_index_default) > 0)
 
 if __name__ == '__main__':
     unittest.main()

@@ -137,12 +137,13 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     }
 
     private SensitivityAnalysisResultContextV1 runV1(Network network, LoadFlowParameters loadFlowParameters, String provider) {
-        SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisParameters.load();
-        sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
+        SensitivityAnalysisParameters parameters = SensitivityAnalysisParameters.load();
+        parameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
         List<SensitivityFactor> factors = createFactors(network);
-        SensitivityAnalysisResult result = SensitivityAnalysis.find(provider).run(network, VariantManagerConstants.INITIAL_VARIANT_ID,
-            n -> factors, contingencies, sensitivityAnalysisParameters, LocalComputationManager.getDefault());
+        SensitivityAnalysisResult result = SensitivityAnalysis.find(provider)
+                .run(network, network.getVariantManager().getWorkingVariantId(), n -> factors,
+                    contingencies, parameters, LocalComputationManager.getDefault());
         SensitivityAnalysisResultContextV1 resultContext = null;
         if (result.isOk()) {
             Collection<SensitivityValue> sensitivityValues = result.getSensitivityValues();
