@@ -22,6 +22,7 @@ import java.util.List;
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
@@ -322,7 +323,7 @@ class NetworkDataframesTest {
     void twoWindingsTransformersFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(TWO_WINDINGS_TRANSFORMER, network,
-                new DataframeFilter(List.of("TWT"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("TWT"))));
         assertThat(series.get(0).getStrings()).containsExactly("TWT");
     }
 
@@ -330,7 +331,7 @@ class NetworkDataframesTest {
     void threeWindingsTransformersFilteredRows() {
         Network network = ThreeWindingsTransformerNetworkFactory.create();
         List<Series> series = createDataFrame(THREE_WINDINGS_TRANSFORMER, network,
-                new DataframeFilter(List.of("3WT"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("3WT"))));
         assertThat(series.get(0).getStrings()).containsExactly("3WT");
     }
 
@@ -338,7 +339,7 @@ class NetworkDataframesTest {
     void shuntsCompensatorFilteredRows() {
         Network network = ShuntTestCaseFactory.create();
         List<Series> series = createDataFrame(SHUNT_COMPENSATOR, network,
-                new DataframeFilter(List.of("SHUNT"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("SHUNT"))));
         assertThat(series.get(0).getStrings()).containsExactly("SHUNT");
     }
 
@@ -346,7 +347,7 @@ class NetworkDataframesTest {
     void batteriesFilteredRows() {
         Network network = BatteryNetworkFactory.create();
         List<Series> series = createDataFrame(BATTERY, network,
-                new DataframeFilter(List.of("BAT2"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("BAT2"))));
         assertThat(series.get(0).getStrings()).containsExactly("BAT2");
     }
 
@@ -354,7 +355,7 @@ class NetworkDataframesTest {
     void busbarSectionsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(BUSBAR_SECTION, network,
-                new DataframeFilter(List.of("S3VL1_BBS"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("S3VL1_BBS"))));
         assertThat(series.get(0).getStrings()).containsExactly("S3VL1_BBS");
     }
 
@@ -362,7 +363,7 @@ class NetworkDataframesTest {
     void busesFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(BUS, network,
-                new DataframeFilter(List.of("S3VL1_0"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("S3VL1_0"))));
         assertThat(series.get(0).getStrings()).containsExactly("S3VL1_0");
     }
 
@@ -370,7 +371,7 @@ class NetworkDataframesTest {
     void danglingLinesFilteredRows() {
         Network network = DanglingLineNetworkFactory.create();
         List<Series> series = createDataFrame(DANGLING_LINE, network,
-                new DataframeFilter(List.of("DL"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("DL"))));
         assertThat(series.get(0).getStrings()).containsExactly("DL");
     }
 
@@ -378,7 +379,7 @@ class NetworkDataframesTest {
     void generatorsFilteredRows() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(GENERATOR, network,
-                new DataframeFilter(List.of("GEN"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("GEN"))));
         assertThat(series.get(0).getStrings()).containsExactly("GEN");
     }
 
@@ -386,7 +387,7 @@ class NetworkDataframesTest {
     void hvdcLinesFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(HVDC_LINE, network,
-                new DataframeFilter(List.of("HVDC1"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("HVDC1"))));
         assertThat(series.get(0).getStrings()).containsExactly("HVDC1");
     }
 
@@ -394,7 +395,7 @@ class NetworkDataframesTest {
     void lccConverterStationsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(LCC_CONVERTER_STATION, network,
-                new DataframeFilter(List.of("LCC2"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("LCC2"))));
         assertThat(series.get(0).getStrings()).containsExactly("LCC2");
     }
 
@@ -402,7 +403,7 @@ class NetworkDataframesTest {
     void linearShuntCompensatorSectionsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(LINEAR_SHUNT_COMPENSATOR_SECTION, network,
-                new DataframeFilter(List.of("SHUNT"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("SHUNT"))));
         assertThat(series.get(0).getStrings()).containsExactly("SHUNT");
     }
 
@@ -410,7 +411,7 @@ class NetworkDataframesTest {
     void linesFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(LINE, network,
-                new DataframeFilter(List.of("LINE_S3S4"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("LINE_S3S4"))));
         assertThat(series.get(0).getStrings()).containsExactly("LINE_S3S4");
     }
 
@@ -418,7 +419,7 @@ class NetworkDataframesTest {
     void loadsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(LOAD, network,
-                new DataframeFilter(List.of("LD4"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("LD4"))));
         assertThat(series.get(0).getStrings()).containsExactly("LD4");
     }
 
@@ -426,7 +427,7 @@ class NetworkDataframesTest {
     void nonLinearShuntCompensatorSectionFilteredRows() {
         Network network = ShuntTestCaseFactory.createNonLinear();
         List<Series> series = createDataFrame(NON_LINEAR_SHUNT_COMPENSATOR_SECTION, network,
-                new DataframeFilter(List.of("SHUNT"), List.of(1)));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("SHUNT"), List.of(1))));
         assertThat(series.get(0).getStrings()).containsExactly("SHUNT");
         assertThat(series.get(1).getInts()).containsExactly(1);
     }
@@ -435,7 +436,7 @@ class NetworkDataframesTest {
     void phaseTapChangerStepsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(PHASE_TAP_CHANGER_STEP, network,
-                new DataframeFilter(List.of("TWT"), List.of(6)));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("TWT"), List.of(6))));
         assertThat(series.get(0).getStrings()).containsExactly("TWT");
         assertThat(series.get(1).getInts()).containsExactly(6);
     }
@@ -444,7 +445,7 @@ class NetworkDataframesTest {
     void phaseTapChangersFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(PHASE_TAP_CHANGER, network,
-                new DataframeFilter(List.of("TWT"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("TWT"))));
         assertThat(series.get(0).getStrings()).containsExactly("TWT");
     }
 
@@ -452,7 +453,7 @@ class NetworkDataframesTest {
     void ratioTapChangerStepsFilteredRows() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(RATIO_TAP_CHANGER_STEP, network,
-                new DataframeFilter(List.of("NHV2_NLOAD", "NHV2_NLOAD"), List.of(0, 2)));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("NHV2_NLOAD", "NHV2_NLOAD"), List.of(0, 2))));
         assertThat(series.get(0).getStrings()).containsExactly("NHV2_NLOAD", "NHV2_NLOAD");
         assertThat(series.get(1).getInts()).containsExactly(0, 2);
     }
@@ -461,7 +462,7 @@ class NetworkDataframesTest {
     void ratioTapChangersFilteredRows() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(RATIO_TAP_CHANGER, network,
-                new DataframeFilter(List.of("NHV2_NLOAD"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("NHV2_NLOAD"))));
         assertThat(series.get(0).getStrings()).containsExactly("NHV2_NLOAD");
     }
 
@@ -469,7 +470,7 @@ class NetworkDataframesTest {
     void reactiveCapabilityCurvePointsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(REACTIVE_CAPABILITY_CURVE_POINT, network,
-                new DataframeFilter(List.of("GH3"), List.of(1)));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("GH3"), List.of(1))));
         assertThat(series.get(0).getStrings()).containsExactly("GH3");
         assertThat(series.get(1).getInts()).containsExactly(1);
     }
@@ -478,7 +479,7 @@ class NetworkDataframesTest {
     void staticVarCompensatorsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(STATIC_VAR_COMPENSATOR, network,
-                new DataframeFilter(List.of("SVC"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("SVC"))));
         assertThat(series.get(0).getStrings()).containsExactly("SVC");
     }
 
@@ -486,7 +487,7 @@ class NetworkDataframesTest {
     void substationsFilteredRows() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(SUBSTATION, network,
-                new DataframeFilter(List.of("P2"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("P2"))));
         assertThat(series.get(0).getStrings()).containsExactly("P2");
     }
 
@@ -494,7 +495,7 @@ class NetworkDataframesTest {
     void switchesFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(SWITCH, network,
-                new DataframeFilter(List.of("S1VL2_GH1_BREAKER"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("S1VL2_GH1_BREAKER"))));
         assertThat(series.get(0).getStrings()).containsExactly("S1VL2_GH1_BREAKER");
     }
 
@@ -502,7 +503,7 @@ class NetworkDataframesTest {
     void voltageLevelsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(VOLTAGE_LEVEL, network,
-                new DataframeFilter(List.of("S2VL1"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("S2VL1"))));
         assertThat(series.get(0).getStrings()).containsExactly("S2VL1");
     }
 
@@ -510,8 +511,25 @@ class NetworkDataframesTest {
     void vscConverterStationsFilteredRows() {
         Network network = FourSubstationsNodeBreakerFactory.create();
         List<Series> series = createDataFrame(VSC_CONVERTER_STATION, network,
-                new DataframeFilter(List.of("VSC2"), Collections.emptyList()));
+                new DataframeFilter(new DataframeFilter.ElementsFilter(List.of("VSC2"))));
         assertThat(series.get(0).getStrings()).containsExactly("VSC2");
     }
 
+    @Test
+    void generatorsNoFilteredRows() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> seriesNoFilter = createDataFrame(GENERATOR, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList()));
+        assertThat(seriesNoFilter.get(0).getStrings()).containsExactly("GEN");
+    }
+
+    @Test
+    void generatorsEmptyFilteredRows() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> seriesEmptyFilter = createDataFrame(GENERATOR, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(),
+                        new DataframeFilter.ElementsFilter(Collections.emptyList(), Collections.emptyList())));
+        assertTrue(seriesEmptyFilter.get(0).getStrings().length == 0);
+
+    }
 }

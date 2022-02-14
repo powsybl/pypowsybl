@@ -9,6 +9,7 @@ package com.powsybl.dataframe;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Define filters to apply to a dataframe.
@@ -18,10 +19,34 @@ import java.util.Objects;
  */
 public class DataframeFilter {
 
+    public static final class ElementsFilter {
+        private final List<String> rowsIds;
+        private final List<Integer> rowsSubIds;
+
+        public ElementsFilter(List<String> rowsIds, List<Integer> rowsSubIds) {
+            this.rowsIds = Objects.requireNonNull(rowsIds);
+            this.rowsSubIds = Objects.requireNonNull(rowsSubIds);
+            if (rowsSubIds.size() > 0 && rowsSubIds.size() != rowsIds.size()) {
+                throw new IllegalArgumentException("rowsIds and rowsSubIds must contain the same number of elements");
+            }
+        }
+
+        public ElementsFilter(List<String> rowsIds) {
+            this(rowsIds, Collections.emptyList());
+        }
+
+        public List<String> getRowsIds() {
+            return rowsIds;
+        }
+
+        public List<Integer> getRowsSubIds() {
+            return rowsSubIds;
+        }
+    }
+
     private final AttributeFilterType attributeFilterType;
     private final List<String> inputAttributes;
-    private final List<String> rowsIds;
-    private final List<Integer> rowsSubIds;
+    ElementsFilter elementsFilter;
 
     public enum AttributeFilterType {
         DEFAULT_ATTRIBUTES,
@@ -29,26 +54,22 @@ public class DataframeFilter {
         ALL_ATTRIBUTES
     }
 
-    public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes, List<String> rowsIds, List<Integer> rowsSubIds) {
+    public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes, ElementsFilter elementsFilter) {
         this.attributeFilterType = Objects.requireNonNull(attributeFilterType);
         this.inputAttributes = Objects.requireNonNull(inputAttributes);
-        this.rowsIds = Objects.requireNonNull(rowsIds);
-        this.rowsSubIds = Objects.requireNonNull(rowsSubIds);
-        if (rowsSubIds.size() > 0 && rowsSubIds.size() != rowsIds.size()) {
-            throw new IllegalArgumentException("rowsIds and rowsSubIds must contain the same number of elements");
-        }
+        this.elementsFilter = elementsFilter;
     }
 
     public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes) {
-        this(attributeFilterType, inputAttributes, Collections.emptyList(), Collections.emptyList());
+        this(attributeFilterType, inputAttributes, null);
     }
 
     public DataframeFilter() {
-        this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), null);
     }
 
-    public DataframeFilter(List<String> rowsIds, List<Integer> rowsSubIds) {
-        this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), rowsIds, rowsSubIds);
+    public DataframeFilter(ElementsFilter elementsFilter) {
+        this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), elementsFilter);
     }
 
     public AttributeFilterType getAttributeFilterType() {
@@ -59,11 +80,7 @@ public class DataframeFilter {
         return inputAttributes;
     }
 
-    public List<String> getRowsIds() {
-        return rowsIds;
-    }
-
-    public List<Integer> getRowsSubIds() {
-        return rowsSubIds;
+    public Optional<ElementsFilter> getElementsFilter() {
+        return Optional.ofNullable(elementsFilter);
     }
 }

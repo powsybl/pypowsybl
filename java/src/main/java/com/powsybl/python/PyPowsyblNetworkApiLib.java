@@ -337,57 +337,62 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    private static DataframeFilter createDataframeFilter(PyPowsyblApiHeader.FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, ArrayPointer<PyPowsyblApiHeader.SeriesPointer> selectedElementsDataframe) {
+        List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
+        AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
+        switch (filterAttributesType) {
+            case ALL_ATTRIBUTES:
+                filterType = AttributeFilterType.ALL_ATTRIBUTES;
+                break;
+            case SELECTION_ATTRIBUTES:
+                filterType = AttributeFilterType.INPUT_ATTRIBUTES;
+                break;
+            case DEFAULT_ATTRIBUTES:
+                filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
+                break;
+        }
+
+        DataframeFilter dataframeFilter;
+        if (selectedElementsDataframe.isNonNull()) {
+            UpdatingDataframe selectingDataframe = createDataframe(selectedElementsDataframe);
+            List<SeriesMetadata> smetas = selectingDataframe.getSeriesMetadata();
+            List<String> selStrings = Collections.emptyList();
+            List<Integer> selIntegers = Collections.emptyList();
+            for (SeriesMetadata smeta : smetas) {
+                switch (smeta.getType()) {
+                    case STRING:
+                        selStrings = IntStream.range(0, selectingDataframe.getLineCount())
+                                .mapToObj(elIndex -> selectingDataframe.getStringValue(smeta.getName(), elIndex))
+                                .collect(Collectors.toList());
+                        break;
+                    case INT:
+                        selIntegers = IntStream.range(0, selectingDataframe.getLineCount())
+                                .mapToObj(elIndex -> selectingDataframe.getIntValue(smeta.getName(), elIndex))
+                                .collect(Collectors.toList());
+                        break;
+                    default:
+                        throw new PowsyblException("Index type not supported.");
+                }
+
+            }
+            dataframeFilter = new DataframeFilter(filterType, attributes, new DataframeFilter.ElementsFilter(selStrings, selIntegers));
+        } else {
+            dataframeFilter = new DataframeFilter(filterType, attributes);
+        }
+        return dataframeFilter;
+    }
+
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                                                      ElementType elementType,
                                                                                                                      PyPowsyblApiHeader.FilterAttributesType filterAttributesType,
                                                                                                                      CCharPointerPointer attributesPtrPtr, int attributesCount,
-                                                                                                                     ArrayPointer<PyPowsyblApiHeader.SeriesPointer> dataframe,
+                                                                                                                     ArrayPointer<PyPowsyblApiHeader.SeriesPointer> selectedElementsDataframe,
                                                                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
-            AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-            switch (filterAttributesType) {
-                case ALL_ATTRIBUTES:
-                    filterType = AttributeFilterType.ALL_ATTRIBUTES;
-                    break;
-                case SELECTION_ATTRIBUTES:
-                    filterType = AttributeFilterType.INPUT_ATTRIBUTES;
-                    break;
-                case DEFAULT_ATTRIBUTES:
-                    filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-                    break;
-            }
-
-            DataframeFilter dataframeFilter;
-            UpdatingDataframe selectingDataframe = createDataframe(dataframe);
-            if (selectingDataframe.getLineCount() > 0) {
-                List<SeriesMetadata> smetas = selectingDataframe.getSeriesMetadata();
-                List<String> selStrings = Collections.emptyList();
-                List<Integer> selIntegers = Collections.emptyList();
-                for (SeriesMetadata smeta : smetas) {
-                    switch (smeta.getType()) {
-                        case STRING:
-                            selStrings = IntStream.range(0, selectingDataframe.getLineCount())
-                                    .mapToObj(elIndex -> selectingDataframe.getStringValue(smeta.getName(), elIndex))
-                                    .collect(Collectors.toList());
-                            break;
-                        case INT:
-                            selIntegers = IntStream.range(0, selectingDataframe.getLineCount())
-                                    .mapToObj(elIndex -> selectingDataframe.getIntValue(smeta.getName(), elIndex))
-                                    .collect(Collectors.toList());
-                            break;
-                        default:
-                            throw new PowsyblException("Index type not supported.");
-                    }
-
-                }
-                dataframeFilter = new DataframeFilter(filterType, attributes, selStrings, selIntegers);
-            } else {
-                dataframeFilter = new DataframeFilter(filterType, attributes);
-            }
+            DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
             return Dataframes.createCDataframe(mapper, network, dataframeFilter);
         });
     }

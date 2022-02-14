@@ -44,30 +44,29 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
     }
 
     protected List<T> getFilteredItems(Network network, DataframeFilter dataframeFilter) {
-        if (dataframeFilter.getRowsIds().size() == 0) {
-            return getItems(network);
-        }
-        return getItems(network).stream().filter(item -> filterItem(item, dataframeFilter)).collect(Collectors.toList());
+        return (dataframeFilter.getElementsFilter().isEmpty()) ? getItems(network) :
+                getItems(network).stream().filter(item -> filterItem(item, dataframeFilter.getElementsFilter().get()))
+                        .collect(Collectors.toList());
     }
 
-    protected boolean filterItem(T item, DataframeFilter dataframeFilter) {
+    protected boolean filterItem(T item, DataframeFilter.ElementsFilter elementsFilter) {
         if (item instanceof Triple) {
-            return filterItem((String) ((Triple) item).getLeft(), (int) ((Triple) item).getRight(), dataframeFilter);
+            return filterItem((String) ((Triple) item).getLeft(), (int) ((Triple) item).getRight(), elementsFilter);
         } else if (item instanceof Pair) {
-            return dataframeFilter.getRowsIds().contains(((Identifiable) (((Pair) item).getLeft())).getId());
+            return elementsFilter.getRowsIds().contains(((Identifiable) (((Pair) item).getLeft())).getId());
         }
-        return dataframeFilter.getRowsIds().contains(((Identifiable) item).getId());
+        return elementsFilter.getRowsIds().contains(((Identifiable) item).getId());
     }
 
-    protected boolean filterItem(String id, int subId, DataframeFilter dataframeFilter) {
-        int[] idIndexes = IntStream.range(0, dataframeFilter.getRowsIds().size())
-                                   .filter(i -> dataframeFilter.getRowsIds().get(i).equals(id))
+    protected boolean filterItem(String id, int subId, DataframeFilter.ElementsFilter elementsFilter) {
+        int[] idIndexes = IntStream.range(0, elementsFilter.getRowsIds().size())
+                                   .filter(i -> elementsFilter.getRowsIds().get(i).equals(id))
                                    .toArray();
         if (idIndexes.length == 0) {
             return false;
         }
         return Arrays.stream(idIndexes)
-                     .mapToObj(i -> dataframeFilter.getRowsSubIds().get(i))
+                     .mapToObj(i -> elementsFilter.getRowsSubIds().get(i))
                      .collect(Collectors.toList())
                      .contains(subId);
     }
