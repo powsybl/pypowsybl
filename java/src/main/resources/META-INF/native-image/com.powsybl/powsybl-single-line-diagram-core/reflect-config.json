@@ -73,19 +73,37 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.svg.GraphMetadata$ArrowMetadata",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
     "name":"com.powsybl.sld.svg.GraphMetadata$NodeMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.sld.svg.GraphMetadata$NodeLabelMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.sld.svg.GraphMetadata$WireMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$LineMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$FeederInfoMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$ElectricalNodeInfoMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
