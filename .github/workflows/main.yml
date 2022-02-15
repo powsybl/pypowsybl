@@ -73,13 +73,24 @@ jobs:
         run: |
           pytest
 
-      - name: Generate coverage # In order to generate a coverage that sonar understands, we need to generate it from sources
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
         if: matrix.python.name == 'cp39'
         run: |
           pip3 uninstall -y pypowsybl
           python3 setup.py develop
+
+      - name: Generate coverage
+        if: matrix.python.name == 'cp39'
+        run: |
           coverage run -m pytest tests/
           coverage xml
+
+      - name: Linting
+        if: matrix.python.name == 'cp39'
+        run: pylint pypowsybl
 
       - name: Sonar analysis
         if: matrix.python.name == 'cp39'
@@ -166,6 +177,9 @@ jobs:
       - name: Run tests
         working-directory: ./tests
         run: python3 -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
 
       - name: Run doc examples
         working-directory: ./docs
