@@ -7,18 +7,15 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
@@ -44,31 +41,12 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
     }
 
     protected List<T> getFilteredItems(Network network, DataframeFilter dataframeFilter) {
-        return (dataframeFilter.getElementsFilter().isEmpty()) ? getItems(network) :
-                getItems(network).stream().filter(item -> filterItem(item, dataframeFilter.getElementsFilter().get()))
-                        .collect(Collectors.toList());
-    }
-
-    protected boolean filterItem(T item, DataframeFilter.ElementsFilter elementsFilter) {
-        if (item instanceof Triple) {
-            return filterItem((String) ((Triple) item).getLeft(), (int) ((Triple) item).getRight(), elementsFilter);
-        } else if (item instanceof Pair) {
-            return elementsFilter.getRowsIds().contains(((Identifiable) (((Pair) item).getLeft())).getId());
+        if (dataframeFilter.getSelectingDataframe().isEmpty()) {
+            return getItems(network);
+        } else {
+            UpdatingDataframe selectedDataframe = dataframeFilter.getSelectingDataframe().get();
+            return IntStream.range(0, selectedDataframe.getLineCount()).mapToObj(i -> getItem(network, selectedDataframe, i)).collect(Collectors.toList());
         }
-        return elementsFilter.getRowsIds().contains(((Identifiable) item).getId());
-    }
-
-    protected boolean filterItem(String id, int subId, DataframeFilter.ElementsFilter elementsFilter) {
-        int[] idIndexes = IntStream.range(0, elementsFilter.getRowsIds().size())
-                                   .filter(i -> elementsFilter.getRowsIds().get(i).equals(id))
-                                   .toArray();
-        if (idIndexes.length == 0) {
-            return false;
-        }
-        return Arrays.stream(idIndexes)
-                     .mapToObj(i -> elementsFilter.getRowsSubIds().get(i))
-                     .collect(Collectors.toList())
-                     .contains(subId);
     }
 
     private List<SeriesMapper<T>> getPropertiesSeries(List<T> items, DataframeFilter dataframeFilter) {

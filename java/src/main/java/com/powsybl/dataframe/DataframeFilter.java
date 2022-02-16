@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.update.UpdatingDataframe;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -19,34 +21,9 @@ import java.util.Optional;
  */
 public class DataframeFilter {
 
-    public static final class ElementsFilter {
-        private final List<String> rowsIds;
-        private final List<Integer> rowsSubIds;
-
-        public ElementsFilter(List<String> rowsIds, List<Integer> rowsSubIds) {
-            this.rowsIds = Objects.requireNonNull(rowsIds);
-            this.rowsSubIds = Objects.requireNonNull(rowsSubIds);
-            if (rowsSubIds.size() > 0 && rowsSubIds.size() != rowsIds.size()) {
-                throw new IllegalArgumentException("rowsIds and rowsSubIds must contain the same number of elements");
-            }
-        }
-
-        public ElementsFilter(List<String> rowsIds) {
-            this(rowsIds, Collections.emptyList());
-        }
-
-        public List<String> getRowsIds() {
-            return rowsIds;
-        }
-
-        public List<Integer> getRowsSubIds() {
-            return rowsSubIds;
-        }
-    }
-
     private final AttributeFilterType attributeFilterType;
     private final List<String> inputAttributes;
-    ElementsFilter elementsFilter;
+    private final UpdatingDataframe selectingDataframe;
 
     public enum AttributeFilterType {
         DEFAULT_ATTRIBUTES,
@@ -54,10 +31,10 @@ public class DataframeFilter {
         ALL_ATTRIBUTES
     }
 
-    public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes, ElementsFilter elementsFilter) {
+    public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes, UpdatingDataframe selectingDataframe) {
         this.attributeFilterType = Objects.requireNonNull(attributeFilterType);
         this.inputAttributes = Objects.requireNonNull(inputAttributes);
-        this.elementsFilter = elementsFilter;
+        this.selectingDataframe = selectingDataframe;
     }
 
     public DataframeFilter(AttributeFilterType attributeFilterType, List<String> inputAttributes) {
@@ -68,10 +45,6 @@ public class DataframeFilter {
         this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), null);
     }
 
-    public DataframeFilter(ElementsFilter elementsFilter) {
-        this(AttributeFilterType.DEFAULT_ATTRIBUTES, Collections.emptyList(), elementsFilter);
-    }
-
     public AttributeFilterType getAttributeFilterType() {
         return attributeFilterType;
     }
@@ -80,7 +53,7 @@ public class DataframeFilter {
         return inputAttributes;
     }
 
-    public Optional<ElementsFilter> getElementsFilter() {
-        return Optional.ofNullable(elementsFilter);
+    public Optional<UpdatingDataframe> getSelectingDataframe() {
+        return Optional.ofNullable(selectingDataframe);
     }
 }
