@@ -4,13 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from pypowsybl import _pypowsybl
-from typing import List as _List
-from typing import Callable as _Callable
+from typing import List as _List, Callable as _Callable
 import pandas as _pd
+import pypowsybl._pypowsybl as _pypowsybl
 
 
-class ContingencyContainer(object):
+class ContingencyContainer:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 

@@ -4,17 +4,16 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import Union as _Union, Dict as _Dict
-from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-
-from typing import List as _List
-
-from pypowsybl import _pypowsybl
+from typing import Union as _Union, Dict as _Dict, List as _List
+import pandas as _pd
+from prettytable import PrettyTable as _PrettyTable
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
 from pypowsybl.network import Network as _Network
-from pypowsybl.util import ContingencyContainer as _ContingencyContainer
-from prettytable import PrettyTable as _PrettyTable
-import pandas as _pd
+from pypowsybl.util import (
+    ContingencyContainer as _ContingencyContainer,
+    create_data_frame_from_series_array as _create_data_frame_from_series_array
+)
 from pypowsybl.loadflow import Parameters
 
 
@@ -46,7 +45,7 @@ def _limit_violation_repr(self: LimitViolation) -> str:
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
 
 
-class SecurityAnalysisResult(object):
+class SecurityAnalysisResult:
     """
     The result of a security analysis.
     """
@@ -85,26 +84,25 @@ class SecurityAnalysisResult(object):
         """
         result = self._post_contingency_results[contingency_id]
         if not result:
-            raise KeyError("Contingency {} not found".format(contingency_id))
+            raise KeyError(f'Contingency {contingency_id} not found')
         return result
 
     def get_table(self) -> _PrettyTable:
         table = _PrettyTable()
         table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
-        for contingency_id in self._post_contingency_results:
-            post_contingency_result = self._post_contingency_results[contingency_id]
+        for contingency_id, post_contingency_result in self._post_contingency_results.items():
             table.add_row([contingency_id, post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
             for limit_violation in post_contingency_result.limit_violations:
                 table.add_row(['', '',
                                limit_violation.subject_id,
                                limit_violation.subject_name,
                                limit_violation.limit_type.name,
-                               "{:.1f}".format(limit_violation.limit),
+                               f'{limit_violation.limit:.1f}',
                                limit_violation.limit_name,
                                limit_violation.acceptable_duration,
                                limit_violation.limit_reduction,
-                               "{:.1f}".format(limit_violation.value),
+                               f'{limit_violation.value:.1f}',
                                limit_violation.side.name])
         return table
 
@@ -182,11 +180,11 @@ class SecurityAnalysis(_ContingencyContainer):
                              'for NONE or ALL contingencies')
 
         if three_windings_transformer_ids is None:
-            three_windings_transformer_ids = list()
+            three_windings_transformer_ids = []
         if branch_ids is None:
-            branch_ids = list()
+            branch_ids = []
         if voltage_level_ids is None:
-            voltage_level_ids = list()
+            voltage_level_ids = []
         if contingency_ids is None:
             contingency_ids = ['']
         elif isinstance(contingency_ids, str):

@@ -4,8 +4,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+from typing import (
+    List as _List,
+    Sequence as _Sequence,
+    Optional as _Optional
+)
 from pandas import DataFrame as _DataFrame
-from pypowsybl import _pypowsybl
+import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
     ConnectedComponentMode,
@@ -15,11 +20,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from typing import (
-    List as _List,
-    Sequence as _Sequence,
-    Optional as _Optional
-)
+
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -32,7 +33,7 @@ ComponentStatus.__module__ = __name__
 
 # Pure python wrapper for C ext object
 # although it adds some boiler plate code, it integrates better with tools such as sphinx
-class ComponentResult(object):
+class ComponentResult:
     """
     Loadflow result for one connected component of the network.
     """
@@ -330,5 +331,3 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
                             shunts=res_by_type.get(ValidationType.SHUNTS, None),
                             twts=res_by_type.get(ValidationType.TWTS, None),
                             t3wts=res_by_type.get(ValidationType.TWTS3W, None))
-
-

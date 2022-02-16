@@ -7,25 +7,23 @@
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
 import sys as _sys
+import datetime as _datetime
 from typing import (
     List as _List,
     Set as _Set,
     Dict as _Dict,
     Optional as _Optional,
-    Union as _Union
 )
-
-from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ElementType
-from pypowsybl._pypowsybl import ArrayStruct
 
 import pandas as _pd
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
-import datetime as _datetime
 import numpy as _np
 from numpy.typing import ArrayLike as _ArrayLike
 
+import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import ArrayStruct
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
@@ -36,6 +34,7 @@ def _series_metadata_repr(self: _pypowsybl.SeriesMetadata) -> str:
 
 _pypowsybl.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
+ParamsDict = _Optional[_Dict[str, str]]
 
 class Svg:
     """
@@ -161,8 +160,8 @@ def _to_array(value: _ArrayLike) -> _np.ndarray:
     """
     as_array = _np.array(value, ndmin=1, copy=False)
     if as_array.ndim != 1:
-        raise ValueError('Network elements update: expecting only scalar or 1 dimension array '
-                         'as keyword argument, got {} dimensions'.format(as_array.ndim))
+        raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
+                         f'as keyword argument, got {as_array.ndim} dimensions')
     return as_array
 
 
@@ -183,8 +182,8 @@ def _adapt_kwargs(element_type: ElementType, **kwargs: _ArrayLike) -> _DataFrame
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError('Network elements update: all arguments must have the same size, '
-                             'got size {} for series {}, expected {}'.format(size, key, expected_size))
+            raise ValueError(f'Network elements update: all arguments must have the same size, '
+                             f'got size {size} for series {key}, expected {expected_size}')
         columns[key] = col
 
     index = None
@@ -203,12 +202,12 @@ def _adapt_df_or_kwargs(element_type: ElementType, df: _Optional[_DataFrame], **
     """
     if df is None:
         return _adapt_kwargs(element_type, **kwargs)
-    elif kwargs:
+    if kwargs:
         raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
     return df
 
 
-class Network(object):
+class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
@@ -266,8 +265,7 @@ class Network(object):
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        n = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
-        self._handle = n
+        self._handle = _pypowsybl.load_network_from_string('tmp.xiidm', xml, {})
 
     def open_switch(self, id: str) -> bool:
         return _pypowsybl.update_switch_position(self._handle, id, True)
@@ -281,7 +279,7 @@ class Network(object):
     def disconnect(self, id: str) -> bool:
         return _pypowsybl.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: dict = {}) -> None:
+    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
         Save a network to a file using a specified format.
 
@@ -290,9 +288,11 @@ class Network(object):
             format (str, optional): format to save the network, defaults to 'XIIDM'
             parameters (dict, optional): a map of parameters
         """
+        if parameters is None:
+            parameters = {}
         _pypowsybl.dump_network(self._handle, file, format, parameters)
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: dict = {}) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None) -> str:
         """
         Save a network to a string using a specified format.
 
@@ -303,10 +303,14 @@ class Network(object):
         Returns:
             a string representing network
         """
+        if parameters is None:
+            parameters = {}
         return _pypowsybl.dump_network_to_string(self._handle, format, parameters)
 
-    def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = [],
+    def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+        if ids is None:
+            ids = []
         vls = []
         depths = []
         for v in vl_depths:
@@ -370,7 +374,7 @@ class Network(object):
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -383,11 +387,12 @@ class Network(object):
         Returns:
             a network elements data frame for the specified element type
         """
-
+        if attributes is None:
+            attributes = []
         filter_attributes = _pypowsybl.FilterAttributesType.DEFAULT_ATTRIBUTES
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
-        elif all_attributes:
+        if all_attributes:
             filter_attributes = _pypowsybl.FilterAttributesType.ALL_ATTRIBUTES
         elif len(attributes) > 0:
             filter_attributes = _pypowsybl.FilterAttributesType.SELECTION_ATTRIBUTES
@@ -396,9 +401,9 @@ class Network(object):
         series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
-        Get a dataframe of buses.
+    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
+        rGet a dataframe of buses.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -477,8 +482,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes, **kwargs)
 
-    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of generators.
 
         Args:
@@ -573,11 +578,10 @@ class Network(object):
             `p` can be lower than `min_p`. Actually, the relation: :math:`\\text{min_p} <= -p <= \\text{max_p}`
             should hold.
         """
-
         return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes, **kwargs)
 
-    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of loads.
 
         Args:
@@ -678,8 +682,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of batteries.
 
         Args:
@@ -692,8 +696,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of lines data.
 
         Args:
@@ -777,8 +781,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes, **kwargs)
 
-    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of 2 windings transformers.
 
         Args:
@@ -864,8 +868,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of 3 windings transformers.
 
         Args:
@@ -878,8 +882,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of shunt compensators.
 
         Args:
@@ -951,8 +955,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of shunt compensators sections for non linear model.
 
         Args:
@@ -973,8 +977,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of shunt compensators sections for linear model.
 
         Args:
@@ -996,8 +1000,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of dangling lines.
 
         Args:
@@ -1072,8 +1076,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
-    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of LCC converter stations.
 
         Args:
@@ -1147,8 +1151,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of VSC converter stations.
 
         Args:
@@ -1224,8 +1228,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of static var compensators.
 
         Args:
@@ -1298,8 +1302,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of voltage levels.
 
         Args:
@@ -1378,8 +1382,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes, **kwargs)
 
-    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of busbar sections.
 
         Args:
@@ -1462,8 +1466,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get substations :class:`~pandas.DataFrame`.
 
         Args:
@@ -1476,8 +1480,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
-    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of HVDC lines.
 
         Args:
@@ -1552,8 +1556,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes, **kwargs)
 
-    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of switches.
 
         Args:
@@ -1643,8 +1647,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of ratio tap changer steps.
 
         Args:
@@ -1717,8 +1721,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Get a dataframe of phase tap changer steps.
 
         Args:
@@ -1795,8 +1799,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
         Args:
@@ -1867,8 +1871,8 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = [], **kwargs: _ArrayLike) -> _DataFrame:
-        """
+    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
         Args:
@@ -1938,7 +1942,7 @@ class Network(object):
         """
         return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
-    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get a dataframe of reactive capability curve points.
 
@@ -1975,7 +1979,7 @@ class Network(object):
         columns_names.extend(df.columns.values)
         for series_name in df.columns.values:
             if not series_name in metadata_by_name:
-                raise ValueError('No column named {}'.format(series_name))
+                raise ValueError(f'No column named {series_name}')
             series = df[series_name]
             series_type = metadata_by_name[series_name].type
             columns_types.append(series_type)
@@ -2482,7 +2486,7 @@ class Network(object):
         """
         return _pypowsybl.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = []) -> _DataFrame:
+    def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all current limits on the network paired with their branch id.
 
@@ -2664,12 +2668,12 @@ def get_export_formats() -> _List[str]:
     return _pypowsybl.get_network_export_formats()
 
 
-def get_import_parameters(format: str) -> _DataFrame:
+def get_import_parameters(fmt: str) -> _DataFrame:
     """
     Supported import parameters for a given format.
 
     Args:
-       format (str): the format
+       fmt (str): the format
 
     Returns:
         import parameters data frame
@@ -2687,25 +2691,25 @@ def get_import_parameters(format: str) -> _DataFrame:
            >>> parameters['default']['psse.import.ignore-base-voltage']
            'false'
     """
-    series_array = _pypowsybl.create_importer_parameters_series_array(format)
+    series_array = _pypowsybl.create_importer_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
 
 
-def get_export_parameters(format: str) -> _DataFrame:
+def get_export_parameters(fmt: str) -> _DataFrame:
     """
     Get supported export parameters infos for a given format
 
     Args:
-       format (str): the format
+       fmt (str): the format
 
     Returns:
         export parameters data frame
     """
-    series_array = _pypowsybl.create_exporter_parameters_series_array(format)
+    series_array = _pypowsybl.create_exporter_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: _Dict[str, str] = {}) -> Network:
+def load(file: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -2716,10 +2720,12 @@ def load(file: str, parameters: _Dict[str, str] = {}) -> Network:
     Returns:
         a network
     """
+    if parameters is None:
+        parameters = {}
     return Network(_pypowsybl.load_network(file, parameters))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = {}) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -2731,4 +2737,6 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Returns:
         a network
     """
+    if parameters is None:
+        parameters = {}
     return Network(_pypowsybl.load_network_from_string(file_name, file_content, parameters))
