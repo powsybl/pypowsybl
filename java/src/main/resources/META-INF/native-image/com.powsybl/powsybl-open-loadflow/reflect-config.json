@@ -17,7 +17,6 @@
       {"name":"getSlackBusPMaxMismatch","parameterTypes":[] },
       {"name":"getSlackBusSelectionMode","parameterTypes":[] },
       {"name":"getSlackBusesIds","parameterTypes":[] },
-      {"name":"getTransformerVoltageControlMode","parameterTypes":[] },
       {"name":"getVoltageInitModeOverride","parameterTypes":[] },
       {"name":"isAddRatioToLinesWithDifferentNominalVoltageAtBothEnds","parameterTypes":[] },
       {"name":"isLoadPowerFactorConstant","parameterTypes":[] },
@@ -31,11 +30,6 @@
     "queryAllDeclaredMethods":true
   },
   {
-    "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$TransformerVoltageControlMode",
-    "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true
-  },
-  {
     "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$VoltageInitModeOverride",
     "allDeclaredFields":true,
     "queryAllDeclaredMethods":true
@@ -44,12 +38,6 @@
     "name":"com.powsybl.openloadflow.network.SlackBusSelectionMode",
     "allDeclaredFields":true,
     "queryAllDeclaredMethods":true
-  },
-  {
-    "name":"com.powsybl.openloadflow.sensi.AbstractSensitivityAnalysisTest",
-    "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true,
-    "queryAllPublicMethods":true
   },
   {
     "name":"com.powsybl.openloadflow.sensi.OpenSensitivityAnalysisParameterJsonSerializer$SerializationSpec",
