@@ -21,5 +21,14 @@
       {"name":"setBaseVoltages","parameterTypes":["java.util.List"] },
       {"name":"setDefaultProfile","parameterTypes":["java.lang.String"] }
     ]
+  },
+  {
+    "name":"com.powsybl.commons.extensions.AbstractExtension",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.commons.extensions.Extension",
+    "queryAllDeclaredMethods":true
   }
 ]
