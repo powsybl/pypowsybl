@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,6 +23,7 @@ from numpy.typing import ArrayLike as _ArrayLike
 
 import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import ArrayStruct
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 
 
@@ -373,7 +374,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                                    main_connected_component, main_synchronous_component,
                                                    not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_elements(self, element_type: _pypowsybl.ElementType, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -381,6 +382,7 @@ class Network:  # pylint: disable=too-many-public-methods
             element_type (ElementType): the element type
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             a network elements data frame for the specified element type
@@ -395,16 +397,18 @@ class Network:  # pylint: disable=too-many-public-methods
         elif len(attributes) > 0:
             filter_attributes = _pypowsybl.FilterAttributesType.SELECTION_ATTRIBUTES
 
-        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes)
+        elements_array = None if not kwargs else self._create_array_struct(element_type, None, **kwargs)
+        series_array = _pypowsybl.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
         return _create_data_frame_from_series_array(series_array)
 
-    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         rGet a dataframe of buses.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of buses.
@@ -476,15 +480,16 @@ class Network:  # pylint: disable=too-many-public-methods
             S4VL1_0 400.0000 -1.1259            S4VL1
             ======= ======== ======= ================
         """
-        return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.BUS, all_attributes, attributes, **kwargs)
 
-    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of generators.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             the generator data frame.
@@ -573,15 +578,16 @@ class Network:  # pylint: disable=too-many-public-methods
             `p` can be lower than `min_p`. Actually, the relation: :math:`\\text{min_p} <= -p <= \\text{max_p}`
             should hold.
         """
-        return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.GENERATOR, all_attributes, attributes, **kwargs)
 
-    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of loads.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             the load data frame
@@ -674,28 +680,30 @@ class Network:  # pylint: disable=too-many-public-methods
             B14-L  UNDEFINED NaN NaN             VL14  VL14_0      True
             ===== ========== === === ================ ======= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of batteries.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of batteries.
         """
-        return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of lines data.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of lines data.
@@ -771,15 +779,16 @@ class Network:  # pylint: disable=too-many-public-methods
             L1-5-1   NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
             ======== === === === === === === ================= ================= ======= ======= ========== ==========
         """
-        return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.LINE, all_attributes, attributes, **kwargs)
 
-    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of 2 windings transformers.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 2 windings transformers.
@@ -857,28 +866,30 @@ class Network:  # pylint: disable=too-many-public-methods
             T5-6-1 NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
             ====== === === === === === === ================= ================= ======= ======= ========== ==========
         """
-        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of 3 windings transformers.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 3 windings transformers.
         """
-        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of shunt compensators.
@@ -942,15 +953,16 @@ class Network:  # pylint: disable=too-many-public-methods
             B9-SH     LINEAR NaN NaN NaN              VL9  VL9_0      True
             ===== ========== === === === ================ ====== =========
         """
-        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.SHUNT_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for non linear model.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -963,15 +975,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
-        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for linear model.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Notes:
             The resulting dataframe, depending on the parameters, could have the following columns:
@@ -985,15 +998,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
            A dataframe of linear models of shunt compensators.
         """
-        return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of dangling lines.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of dangling lines.
@@ -1060,15 +1074,16 @@ class Network:  # pylint: disable=too-many-public-methods
             DL NaN NaN NaN               VL   VL_0      True
             == === === === ================ ====== =========
         """
-        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
-    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of LCC converter stations.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of LCC converter stations.
@@ -1134,15 +1149,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 LCC2 -79.12 NaN NaN            S3VL1 S3VL1_0      True
             ======== ====== === === ================ ======= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of VSC converter stations.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of VCS converter stations.
@@ -1210,15 +1226,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
             ======== ====== ========= ========== ================ ======= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.VSC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of static var compensators.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of static var compensators.
@@ -1283,15 +1300,16 @@ class Network:  # pylint: disable=too-many-public-methods
                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
             ======== === ======== === ================ ======= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of voltage levels.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of voltage levels.
@@ -1362,15 +1380,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 S4VL1            S4     400.0
             ========= ============= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.VOLTAGE_LEVEL, all_attributes, attributes, **kwargs)
 
-    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of busbar sections.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of busbar sections.
@@ -1445,28 +1464,30 @@ class Network:  # pylint: disable=too-many-public-methods
              S4VL1_BBS 400.0000  -1.1259            S4VL1      True
             ========== ======== ======== ================ =========
         """
-        return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.BUSBAR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get substations :class:`~pandas.DataFrame`.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of substations.
         """
-        return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
-    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of HVDC lines.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of HVDC lines.
@@ -1533,15 +1554,16 @@ class Network:  # pylint: disable=too-many-public-methods
             HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0     400.0                  LCC1                  LCC2       True       True
             ===== ================================ ===================== ========= ===================== ===================== ========== ==========
         """
-        return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.HVDC_LINE, all_attributes, attributes, **kwargs)
 
-    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of switches.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of switches.
@@ -1623,15 +1645,16 @@ class Network:  # pylint: disable=too-many-public-methods
                                      ...          ...    ...              ...
             ============================ ============ ====== ================
         """
-        return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of ratio tap changer steps.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of ratio tap changer steps.
@@ -1696,15 +1719,16 @@ class Network:  # pylint: disable=too-many-public-methods
             \                 2 1.150767 0.0 0.0
             ========== ======== ======== === ===
         """
-        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of phase tap changer steps.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of phase tap changer steps.
@@ -1773,15 +1797,16 @@ class Network:  # pylint: disable=too-many-public-methods
             ...      ...  ...       ...       ...
             === ======== ==== ========= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             the ratio tap changers data frame
@@ -1844,15 +1869,16 @@ class Network:  # pylint: disable=too-many-public-methods
             NHV2_NLOAD   1       0        2          3    158.0          VLLOAD_0
             ========== === ======= ======== ========== ======== =================
         """
-        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
             attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            **kwargs: _ArrayLike: the data to be selected, as named arguments.
 
         Returns:
             the phase tap changers data frame
@@ -1914,7 +1940,7 @@ class Network:  # pylint: disable=too-many-public-methods
             TWT  15       0       32         33           S1VL1_0
             === === ======= ======== ========== =================
         """
-        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, all_attributes, attributes)
+        return self.get_elements(_pypowsybl.ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
     def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
@@ -1929,17 +1955,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(_pypowsybl.ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
-    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
-        """
-        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
-
-        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
-        index.
-
-        Args:
-            element_type (ElementType): the element type
-            df: the data to be updated
-        """
+    def _create_array_struct(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> ArrayStruct:
         df = _adapt_df_or_kwargs(element_type, df, **kwargs)
 
         series_metadata = _pypowsybl.get_series_metadata(element_type)
@@ -1969,7 +1985,21 @@ class Network:  # pylint: disable=too-many-public-methods
             columns_types.append(series_type)
             columns_values.append(series.values)
             is_index.append(False)
-        array = _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+        return _pypowsybl.create_dataframe(columns_values, columns_names, columns_types, is_index)
+
+
+    def update_elements(self, element_type: _pypowsybl.ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
+
+        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
+        index.
+
+        Args:
+            element_type (ElementType): the element type
+            df: the data to be updated
+        """
+        array = self._create_array_struct(element_type, df, **kwargs)
         _pypowsybl.update_network_elements_with_series(self._handle, array, element_type)
 
     def update_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:

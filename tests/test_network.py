@@ -863,5 +863,106 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         print(meta_gen_index_default)
         self.assertTrue(len(meta_gen_index_default) > 0)
 
+    def test_dataframe_elements_filtering(self):
+        network_four_subs = pp.network.create_four_substations_node_breaker_network()
+        network_micro_grid = pp.network.create_micro_grid_be_network()
+        network_eurostag = pp.network.create_eurostag_tutorial_example1_network()
+        network_non_linear_shunt = util.create_non_linear_shunt_network()
+        network_with_batteries = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
+
+        expected_selection = network_four_subs.get_2_windings_transformers().loc[['TWT']]
+        filtered_selection = network_four_subs.get_2_windings_transformers(id='TWT')
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_micro_grid.get_3_windings_transformers().loc[['_84ed55f4-61f5-4d9d-8755-bba7b877a246']]
+        filtered_selection = network_micro_grid.get_3_windings_transformers(id=['_84ed55f4-61f5-4d9d-8755-bba7b877a246'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_micro_grid.get_shunt_compensators().loc[['_002b0a40-3957-46db-b84a-30420083558f']]
+        filtered_selection = network_micro_grid.get_shunt_compensators(id=['_002b0a40-3957-46db-b84a-30420083558f'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_with_batteries.get_batteries().loc[['BAT2']]
+        filtered_selection = network_with_batteries.get_batteries(id=['BAT2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_busbar_sections().loc[['S1VL2_BBS2']]
+        filtered_selection = network_four_subs.get_busbar_sections(id=['S1VL2_BBS2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_buses().loc[['S3VL1_0']]
+        filtered_selection = network_four_subs.get_buses(id=['S3VL1_0'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_eurostag.get_generators().loc[['GEN2', 'GEN']]
+        filtered_selection = network_eurostag.get_generators(id=['GEN2', 'GEN'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_hvdc_lines().loc[['HVDC2']]
+        filtered_selection = network_four_subs.get_hvdc_lines(id=['HVDC2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_lcc_converter_stations().loc[['LCC2']]
+        filtered_selection = network_four_subs.get_lcc_converter_stations(id=['LCC2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_linear_shunt_compensator_sections().loc[['SHUNT']]
+        filtered_selection = network_four_subs.get_linear_shunt_compensator_sections(id=['SHUNT'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_lines().loc[['LINE_S3S4']]
+        filtered_selection = network_four_subs.get_lines(id=['LINE_S3S4'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_loads().loc[['LD4']]
+        filtered_selection = network_four_subs.get_loads(id=['LD4'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_non_linear_shunt.get_non_linear_shunt_compensator_sections().loc[pd.MultiIndex.from_tuples([('SHUNT', 1)], names=['id', 'section'])]
+        filtered_selection = network_non_linear_shunt.get_non_linear_shunt_compensator_sections(id=['SHUNT'], section=[1])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_phase_tap_changer_steps().loc[pd.MultiIndex.from_tuples([('TWT', 6)], names=['id', 'position'])]
+        filtered_selection = network_four_subs.get_phase_tap_changer_steps(id=['TWT'], position=[6])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_phase_tap_changers().loc[['TWT']]
+        filtered_selection = network_four_subs.get_phase_tap_changers(id=['TWT'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_eurostag.get_ratio_tap_changer_steps().loc[pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0),('NHV2_NLOAD', 2)],
+                                                                                                    names=['id', 'position'])]
+        filtered_selection = network_eurostag.get_ratio_tap_changer_steps(id=['NHV2_NLOAD', 'NHV2_NLOAD'], position=[0,2])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_eurostag.get_ratio_tap_changers().loc[['NHV2_NLOAD']]
+        filtered_selection = network_eurostag.get_ratio_tap_changers(id=['NHV2_NLOAD'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_static_var_compensators().loc[['SVC']]
+        filtered_selection = network_four_subs.get_static_var_compensators(id=['SVC'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_eurostag.get_substations().loc[['P2']]
+        filtered_selection = network_eurostag.get_substations(id=['P2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_switches().loc[['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER']]
+        filtered_selection = network_four_subs.get_switches(id=['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_voltage_levels().loc[['S2VL1']]
+        filtered_selection = network_four_subs.get_voltage_levels(id=['S2VL1'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection = network_four_subs.get_vsc_converter_stations().loc[['VSC2']]
+        filtered_selection = network_four_subs.get_vsc_converter_stations(id=['VSC2'])
+        pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
+
+        expected_selection_empty = network_four_subs.get_generators().loc[pd.Index([], name='id')]
+        self.assertTrue(expected_selection_empty.empty)
+        filtered_selection_empty = network_four_subs.get_generators(id=[])
+        self.assertTrue(filtered_selection_empty.empty)
+
 if __name__ == '__main__':
     unittest.main()
