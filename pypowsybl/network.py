@@ -347,6 +347,8 @@ class Network:  # pylint: disable=too-many-public-methods
             metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
+        else:
+            elements_array = None
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
         return _create_data_frame_from_series_array(series_array)
@@ -630,7 +632,7 @@ class Network:  # pylint: disable=too-many-public-methods
             B14-L  UNDEFINED NaN NaN             VL14  VL14_0      True
             ===== ========== === === ================ ======= =========
         """
-        return self.get_elements(_pypowsybl.ElementType.LOAD, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
     def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""

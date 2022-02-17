@@ -332,7 +332,7 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
-    private static DataframeFilter createDataframeFilter(PyPowsyblApiHeader.FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, ArrayPointer<PyPowsyblApiHeader.SeriesPointer> selectedElementsDataframe) {
+    private static DataframeFilter createDataframeFilter(PyPowsyblApiHeader.FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, DataframePointer selectedElementsDataframe) {
         List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
         AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
         switch (filterAttributesType) {
@@ -355,11 +355,11 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                                     ElementType elementType,
-                                                                                                                     PyPowsyblApiHeader.FilterAttributesType filterAttributesType,
-                                                                                                                     CCharPointerPointer attributesPtrPtr, int attributesCount,
-                                                                                                                     ArrayPointer<PyPowsyblApiHeader.SeriesPointer> selectedElementsDataframe,
-                                                                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                                  ElementType elementType,
+                                                                                                  PyPowsyblApiHeader.FilterAttributesType filterAttributesType,
+                                                                                                  CCharPointerPointer attributesPtrPtr, int attributesCount,
+                                                                                                  DataframePointer selectedElementsDataframe,
+                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
