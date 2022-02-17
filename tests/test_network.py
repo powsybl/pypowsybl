@@ -871,7 +871,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         network_with_batteries = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
 
         expected_selection = network_four_subs.get_2_windings_transformers().loc[['TWT']]
-        filtered_selection = network_four_subs.get_2_windings_transformers(id=['TWT'])
+        filtered_selection = network_four_subs.get_2_windings_transformers(id='TWT')
         pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
         expected_selection = network_micro_grid.get_3_windings_transformers().loc[['_84ed55f4-61f5-4d9d-8755-bba7b877a246']]
