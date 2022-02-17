@@ -240,9 +240,9 @@ matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, co
 
 matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, array* dataframe);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 
@@ -280,7 +280,17 @@ SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& volta
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType);
+/**
+ * Metadata of the dataframe of network elements data for a given element type.
+ */
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType);
+
+/**
+ * Metadata of the list of dataframes to create network elements of the given type.
+ */
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
+
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 
 }
 

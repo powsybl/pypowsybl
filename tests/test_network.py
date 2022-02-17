@@ -12,6 +12,7 @@ from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 import numpy as np
 
+import pypowsybl
 import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
@@ -298,6 +299,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(25.0, generators['target_v']['GEN'])
         self.assertFalse(generators['voltage_regulator_on']['GEN'])
 
+
     def test_regulated_terminal_node_breaker(self):
         n = pp.network.create_four_substations_node_breaker_network()
         gens = n.get_generators()
@@ -347,7 +349,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         open_switches = switches[switches['open']].index.tolist()
         self.assertEqual(['BREAKER-BB2-VL1_VL2_1'], open_switches)
 
-    def test_create_and_update_2_windings_transformers_data_frame(self):
+    def test_update_2_windings_transformers_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         df = n.get_2_windings_transformers()
         self.assertEqual(
@@ -441,12 +443,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('FIXED_TAP', twt_values.regulation_mode)
         self.assertTrue(pd.isna(twt_values.regulation_value))
         self.assertTrue(pd.isna(twt_values.target_deadband))
-
         update = pd.DataFrame(index=['TWT'],
                               columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
                               data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
         n.update_phase_tap_changers(update)
-
         tap_changers = n.get_phase_tap_changers()
         self.assertEqual(['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
                           'regulation_value', 'target_deadband', 'regulating_bus_id'], tap_changers.columns.tolist())
@@ -513,11 +513,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                     ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.43, -240, 2.5415, 346.43, 'S3VL1',
                                      'S4VL1',
                                      'S3VL1_0', 'S4VL1_0', True, True]])
-
-        pd.options.display.max_columns = None
-        pd.options.display.expand_frame_repr = False
-        lines = n.get_lines()
-        pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
+        pd.testing.assert_frame_equal(expected, n.get_lines(), check_dtype=False)
         lines_update = pd.DataFrame(index=['LINE_S2S3'],
                                     columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],
                                     data=[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]])
@@ -529,10 +525,8 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                 data=[['', 1, 2, 3, 4, 5, 6, 7, 8, 15.011282, 9, 10, 19.418634,
                                        'S2VL1', 'S3VL1', 'S2VL1_0', 'S3VL1_0', True, True],
                                       ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.429584, -240, 2.5415,
-                                       346.429584,
-                                       'S3VL1', 'S4VL1', 'S3VL1_0', 'S4VL1_0', True, True]])
-        lines = n.get_lines()
-        pd.testing.assert_frame_equal(expected, lines, check_dtype=False)
+                                       346.429584, 'S3VL1', 'S4VL1', 'S3VL1_0', 'S4VL1_0', True, True]])
+        pd.testing.assert_frame_equal(expected, n.get_lines(), check_dtype=False)
 
     def test_dangling_lines(self):
         n = util.create_dangling_lines_network()
@@ -631,6 +625,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                       ['S3VL1_BBS', False, 400.0000, 0.0000, 'S3VL1', True],
                                       ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True]])
         pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
+
         n.update_busbar_sections(
             pd.DataFrame(index=['S1VL1_BBS'],
                          columns=['fictitious'],
@@ -858,7 +853,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             self.assertEqual("parameters \"all_attributes\" and \"attributes\" are mutually exclusive", str(e))
 
     def test_metadata(self):
-        meta_gen = pp._pypowsybl.get_series_metadata(pp._pypowsybl.ElementType.GENERATOR)
+        meta_gen = pp._pypowsybl.get_network_elements_dataframe_metadata(pp._pypowsybl.ElementType.GENERATOR)
         meta_gen_index_default = [x for x in meta_gen if (x.is_index == True) and (x.is_default == True)]
         print(meta_gen_index_default)
         self.assertTrue(len(meta_gen_index_default) > 0)
