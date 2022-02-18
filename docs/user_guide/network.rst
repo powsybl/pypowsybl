@@ -50,6 +50,10 @@ The supported formats are the following:
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
 
 
+You may also crate your own network from scratch, see network elements creation methods
+in the API reference :doc:`documentation </reference/network>`.
+
+
 Save a network
 --------------
 
@@ -258,4 +262,3 @@ Once you're done working with your variant, you can remove it:
 .. doctest::
 
    >>> network.remove_variant('Variant')
-
