@@ -1224,6 +1224,7 @@ class Network:  # pylint: disable=too-many-public-methods
             id
                  SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
             ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+
             .. code-block:: python
 
                 net = pp.network.create_four_substations_node_breaker_network()
@@ -2603,6 +2604,29 @@ class Network:  # pylint: disable=too-many-public-methods
             **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
+
+    def create_lcc_converter_stations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Creates LCC converter stations.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - power_factor
+          - loss_factor
+
+        Args:
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
+        """
+        return self._create_elements(ElementType.LCC_CONVERTER_STATION, [df], **kwargs)
 
     def create_vsc_converter_stations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """

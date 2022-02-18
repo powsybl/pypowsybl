@@ -158,6 +158,16 @@ def test_vsc_data_frame():
     assert vsc3.target_v == 400
 
 
+def test_lcc_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    n.create_lcc_converter_stations(id='LCC', voltage_level_id='S3VL1', node=1, loss_factor=0.1, power_factor=0.2)
+    lcc = n.get_lcc_converter_stations().loc['LCC']
+    assert lcc.voltage_level_id == 'S3VL1'
+    assert lcc.bus_id == 'S3VL1_0'
+    assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
+    assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
+
+
 def test_svc_creation():
     n = pn.create_four_substations_node_breaker_network()
     df = pd.DataFrame.from_records(

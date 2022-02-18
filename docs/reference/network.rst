@@ -92,7 +92,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_vsc_converter_stations
 
 
-Network elements  update
+Network elements update
 ------------------------
 
 Network elements can be modified using dataframes:
@@ -105,7 +105,6 @@ Network elements can be modified using dataframes:
    Network.update_batteries
    Network.update_buses
    Network.update_dangling_lines
-   Network.update_elements
    Network.update_generators
    Network.update_hvdc_lines
    Network.update_linear_shunt_compensator_sections
@@ -118,6 +117,36 @@ Network elements can be modified using dataframes:
    Network.update_static_var_compensators
    Network.update_switches
    Network.update_vsc_converter_stations
+
+
+
+Network elements creation
+-------------------------
+
+Network elements can be created using the following methods:
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   Network.create_2_windings_transformers
+   Network.create_batteries
+   Network.create_busbar_sections
+   Network.create_buses
+   Network.create_dangling_lines
+   Network.create_generators
+   Network.create_hvdc_lines
+   Network.create_lcc_converter_stations
+   Network.create_lines
+   Network.create_loads
+   Network.create_phase_tap_changers
+   Network.create_ratio_tap_changers
+   Network.create_shunt_compensators
+   Network.create_static_var_compensators
+   Network.create_substations
+   Network.create_switches
+   Network.create_voltage_levels
+   Network.create_vsc_converter_stations
 
 
 Network variants management
