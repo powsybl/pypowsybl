@@ -38,6 +38,7 @@ _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
 ParamsDict = _Optional[_Dict[str, str]]
 
+
 class Svg:
     """
     This class represents a single line diagram."""
@@ -118,11 +119,11 @@ class BusBreakerTopology:
 
     def __init__(self, network_handle: _pp.JavaHandle, voltage_level_id: str):
         self._elements = _create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_elements(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_elements(network_handle, voltage_level_id), [])
         self._switchs = _create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_switches(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_switches(network_handle, voltage_level_id), [])
         self._buses = _create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_buses(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_buses(network_handle, voltage_level_id), [])
 
     @property
     def switches(self) -> _DataFrame:
@@ -353,16 +354,16 @@ class Network:  # pylint: disable=too-many-public-methods
             filter_attributes = _pp.FilterAttributesType.ALL_ATTRIBUTES
         elif len(attributes) > 0:
             filter_attributes = _pp.FilterAttributesType.SELECTION_ATTRIBUTES
-
+        metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         if kwargs:
-            metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
         else:
             elements_array = None
 
-        series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
-        return _create_data_frame_from_series_array(series_array)
+        series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
+                                                                attributes, elements_array)
+        return _create_data_frame_from_series_array(series_array, metadata=metadata)
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""

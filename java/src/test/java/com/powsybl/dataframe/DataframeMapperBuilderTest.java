@@ -10,6 +10,7 @@ import com.google.common.base.Functions;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.network.Country;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,20 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class DataframeMapperBuilderTest {
 
-    private static enum Color {
-        RED,
-        BLUE
-    }
-
     private static class Element {
         private final String id;
         private final int id2;
         private String strValue;
         private double doubleValue;
         private int intValue;
-        private Color colorValue;
+        private Country colorValue;
 
-        Element(String id, String strValue, double doubleValue, int intValue, Color colorValue) {
+        Element(String id, String strValue, double doubleValue, int intValue, Country colorValue) {
             this.id2 = 0;
             this.id = id;
             this.strValue = strValue;
@@ -46,7 +42,7 @@ class DataframeMapperBuilderTest {
             this.colorValue = colorValue;
         }
 
-        Element(String id, int id2, String strValue, double doubleValue, int intValue, Color colorValue) {
+        Element(String id, int id2, String strValue, double doubleValue, int intValue, Country colorValue) {
             this.id2 = id2;
             this.id = id;
             this.strValue = strValue;
@@ -87,11 +83,11 @@ class DataframeMapperBuilderTest {
             this.intValue = intValue;
         }
 
-        public Color getColorValue() {
+        public Country getColorValue() {
             return colorValue;
         }
 
-        public void setColorValue(Color colorValue) {
+        public void setColorValue(Country colorValue) {
             this.colorValue = colorValue;
         }
     }
@@ -155,7 +151,7 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue, Element::setStrValue)
                 .ints("int", Element::getIntValue, Element::setIntValue)
                 .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal(), (e, ordinal) -> e.setColorValue(Country.values()[ordinal]))
                 .build();
     }
 
@@ -167,12 +163,12 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue)
                 .ints("int", Element::getIntValue)
                 .doubles("double", Element::getDoubleValue)
-                .enums("color", Color.class, Element::getColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal())
                 .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+                new Element("el1", "val1", 1, 10, Country.FR),
+                new Element("el2", "val2", 2, 20, Country.BE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
@@ -197,8 +193,8 @@ class DataframeMapperBuilderTest {
     void updateMonoIndex() {
 
         Container container = new Container(
-                new Element("el1", "val1", 1.0, 10, Color.RED),
-                new Element("el2", "val2", 2.0, 20, Color.BLUE)
+                new Element("el1", "val1", 1.0, 10, Country.FR),
+                new Element("el2", "val2", 2.0, 20, Country.BE)
         );
         mapper = new DataframeMapperBuilder<Container, Element>()
                 .itemsProvider(Container::getElements)
@@ -207,7 +203,7 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue, Element::setStrValue)
                 .ints("int", Element::getIntValue, Element::setIntValue)
                 .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal(), (e, ordinal) -> e.setColorValue(Country.values()[ordinal]))
                 .build();
         mapper.updateSeries(container, createDataframe(2));
         assertEquals(1.2, container.elements.get("el1").getDoubleValue());
@@ -231,9 +227,9 @@ class DataframeMapperBuilderTest {
     @Test
     void updateMultiIndex() {
         MultiIndexContainer container = new MultiIndexContainer(
-                new Element("el1", 0, "val1", 1.0, 10, Color.RED),
-                new Element("el1", 1, "val2", 2.0, 20, Color.BLUE),
-                new Element("el2", 0, "val2", 2.0, 20, Color.BLUE)
+                new Element("el1", 0, "val1", 1.0, 10, Country.FR),
+                new Element("el1", 1, "val2", 2.0, 20, Country.BE),
+                new Element("el2", 0, "val2", 2.0, 20, Country.BE)
         );
         DataframeMapper<MultiIndexContainer> multiIndexMapper = new DataframeMapperBuilder<MultiIndexContainer, Element>()
                 .itemsProvider(MultiIndexContainer::getElements)
@@ -243,7 +239,7 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue, Element::setStrValue)
                 .ints("int", Element::getIntValue, Element::setIntValue)
                 .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal(), (e, ordinal) -> e.setColorValue(Country.values()[ordinal]))
                 .build();
         multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2));
         assertEquals(1.0, container.getElement("el1", 0).getDoubleValue());
@@ -262,12 +258,12 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue, false)
                 .ints("int", Element::getIntValue)
                 .doubles("double", Element::getDoubleValue, false)
-                .enums("color", Color.class, Element::getColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal())
                 .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+                new Element("el1", "val1", 1, 10, Country.FR),
+                new Element("el2", "val2", 2, 20, Country.BE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
@@ -287,12 +283,12 @@ class DataframeMapperBuilderTest {
                 .strings("str", Element::getStrValue, false)
                 .ints("int", Element::getIntValue)
                 .doubles("double", Element::getDoubleValue, false)
-                .enums("color", Color.class, Element::getColorValue)
+                .enums("color", Country.class, e -> e.getColorValue().ordinal())
                 .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+                new Element("el1", "val1", 1, 10, Country.FR),
+                new Element("el2", "val2", 2, 20, Country.BE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();

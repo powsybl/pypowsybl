@@ -105,6 +105,8 @@ public final class Util {
                 return CDataframeHandler.INT_SERIES_TYPE;
             case BOOLEAN:
                 return CDataframeHandler.BOOLEAN_SERIES_TYPE;
+            case ENUM:
+                return CDataframeHandler.ENUM_SERIES_TYPE;
             default:
                 throw new IllegalStateException("Unexpected series type: " + type);
         }

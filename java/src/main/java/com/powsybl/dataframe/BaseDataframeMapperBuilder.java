@@ -138,20 +138,20 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return (B) this;
     }
 
-    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater) {
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {
         return enums(name, enumClass, value, updater, true);
     }
 
-    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater, boolean defaultAttribute) {
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater, boolean defaultAttribute) {
         series.add(new EnumSeriesMapper<>(name, enumClass, value, updater, defaultAttribute));
         return (B) this;
     }
 
-    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value) {
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, ToIntFunction<U> value) {
         return enums(name, enumClass, value, null, true);
     }
 
-    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, boolean defaultAttribute) {
+    public <E extends Enum<E>> B enums(String name, Class<E> enumClass, ToIntFunction<U> value, boolean defaultAttribute) {
         return enums(name, enumClass, value, null, defaultAttribute);
     }
 

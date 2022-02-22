@@ -15,11 +15,9 @@ import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.parameters.Parameter;
-import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.python.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.security.LimitViolation;
-import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
 import org.apache.commons.collections4.IteratorUtils;
 
@@ -38,7 +36,7 @@ public final class Dataframes {
             .itemsProvider(Importer::getParameters)
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)
-            .enums("type", ParameterType.class, Parameter::getType)
+            .strings("type", p -> p.getType().toString())
             .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
             .build();
 
@@ -46,7 +44,7 @@ public final class Dataframes {
             .itemsProvider(Exporter::getParameters)
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)
-            .enums("type", ParameterType.class, Parameter::getType)
+            .strings("type", p -> p.getType().toString())
             .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
             .build();
 
@@ -234,7 +232,7 @@ public final class Dataframes {
                 .stringsIndex("contingency_id", LimitViolationContext::getContingencyId)
                 .stringsIndex("subject_id", LimitViolation::getSubjectId)
                 .strings("subject_name", p -> Objects.toString(p.getSubjectName(), ""))
-                .enums("limit_type", LimitViolationType.class, LimitViolation::getLimitType)
+                .strings("limit_type", l -> l.getLimitType().toString())
                 .strings("limit_name", p -> Objects.toString(p.getLimitName(), ""))
                 .doubles("limit", LimitViolation::getLimit)
                 .ints("acceptable_duration", LimitViolation::getAcceptableDuration)
@@ -257,7 +255,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getNodeBreakerViewSwitches)
                 .stringsIndex("id", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getId())
                 .strings("name", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getOptionalName().orElse(""))
-                .enums("kind", SwitchKind.class, nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getKind())
+                .strings("kind", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getKind().toString())
                 .booleans("open", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().isOpen())
                 .booleans("retained", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().isRetained())
                 .ints("node1", NodeBreakerViewSwitchContext::getNode1)
@@ -315,7 +313,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<VoltageLevel.BusBreakerView, BusBreakerViewSwitchContext>()
                 .itemsProvider(Dataframes::getBusBreakerViewSwitches)
                 .stringsIndex("id", context -> context.getSwitchContext().getId())
-                .enums("kind", SwitchKind.class, context -> context.getSwitchContext().getKind())
+                .strings("kind", context -> context.getSwitchContext().getKind().toString())
                 .booleans("open", context -> context.getSwitchContext().isOpen())
                 .strings("bus1_id", BusBreakerViewSwitchContext::getBusId1)
                 .strings("bus2_id", BusBreakerViewSwitchContext::getBusId2)

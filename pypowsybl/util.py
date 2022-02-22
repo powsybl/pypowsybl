@@ -4,8 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import List as _List, Callable as _Callable
+from typing import List as _List, Callable as _Callable, List, Optional
 import pandas as _pd
+import pandas as pd
 import pypowsybl._pypowsybl as _pypowsybl
 
 
@@ -34,7 +35,8 @@ class ContingencyContainer:
         """
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
-    def add_single_element_contingencies(self, elements_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None) -> None:
+    def add_single_element_contingencies(self, elements_ids: _List[str],
+                                         contingency_id_provider: _Callable[[str], str] = None) -> None:
         """
         Add multiple N-1 contingencies.
 
@@ -49,16 +51,23 @@ class ContingencyContainer:
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
 
-def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> _pd.DataFrame:
+def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray,
+                                        metadata: List[Optional[_pypowsybl.SeriesMetadata]] = None) -> _pd.DataFrame:
+    if not metadata:
+        metadata = [None] * series_array.__sizeof__()
     series_dict = {}
     index_data = []
     index_names = []
-    for series in series_array:
+    for series, serie_metadata in zip(series_array, metadata):
         if series.index:
             index_data.append(series.data)
             index_names.append(series.name)
         else:
-            series_dict[series.name] = series.data
+            if serie_metadata != None and serie_metadata.type == 4:
+                cat_type = pd.CategoricalDtype(_pypowsybl.get_enum_values(serie_metadata.enum_class))
+                series_dict[series.name] = pd.Categorical.from_codes(series.data, dtype=cat_type)
+            else:
+                series_dict[series.name] = series.data
     index = None
     if not index_names:
         raise ValueError('No index in returned dataframe')
@@ -67,3 +76,7 @@ def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) ->
     else:
         index = _pd.MultiIndex.from_arrays(index_data, names=index_names)
     return _pd.DataFrame(series_dict, index=index)
+
+
+def get_enum_values(enum_class: str) -> List[str]:
+    return _pypowsybl.get_enum_values(enum_class)

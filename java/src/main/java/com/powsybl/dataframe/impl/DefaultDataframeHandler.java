@@ -70,4 +70,11 @@ public class DefaultDataframeHandler implements DataframeHandler {
         seriesConsumer.accept(new Series(name, values));
         return (i, s) -> values[i] = s;
     }
+
+    @Override
+    public EnumSeriesWriter newEnumIndex(String name, int size) {
+        int[] values = new int[size];
+        seriesConsumer.accept(new Series(name, values));
+        return (i, s) -> values[i] = s;
+    }
 }

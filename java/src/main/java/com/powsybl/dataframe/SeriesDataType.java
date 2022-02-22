@@ -13,5 +13,6 @@ public enum SeriesDataType {
     STRING,
     BOOLEAN,
     INT,
-    DOUBLE
+    DOUBLE,
+    ENUM
 }

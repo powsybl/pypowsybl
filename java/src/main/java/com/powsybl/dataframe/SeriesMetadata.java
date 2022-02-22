@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import java.util.Objects;
+
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
@@ -16,13 +18,19 @@ public class SeriesMetadata {
     private final boolean modifiable;
     private final SeriesDataType type;
     private final boolean defaultAttribute;
+    private final String enumClass;
 
-    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute) {
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute, String enumClass) {
         this.index = index;
         this.name = name;
         this.modifiable = modifiable;
         this.type = type;
         this.defaultAttribute = defaultAttribute;
+        this.enumClass = Objects.requireNonNull(enumClass);
+    }
+
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute) {
+        this(index, name, modifiable, type, defaultAttribute, "");
     }
 
     public boolean isIndex() {
@@ -39,6 +47,10 @@ public class SeriesMetadata {
 
     public SeriesDataType getType() {
         return type;
+    }
+
+    public String getEnumClass() {
+        return enumClass;
     }
 
     public static SeriesMetadata strings(String name) {

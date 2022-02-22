@@ -127,12 +127,13 @@ enum ConnectedComponentMode {
 
 class SeriesMetadata {
 public:
-    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault, const std::string& enumClass):
         name_(name),
         type_(type),
         isIndex_(isIndex),
         isModifiable_(isModifiable),
-        isDefault_(isDefault) {
+        isDefault_(isDefault),
+        enumClass_(enumClass) {
     }
 
     const std::string& name() const { return name_; }
@@ -140,6 +141,7 @@ public:
     bool isIndex() const { return isIndex_; }
     bool isModifiable() const { return isModifiable_; }
     bool isDefault() const { return isDefault_; }
+    const std::string& enumClass() const { return enumClass_; }
 
 private:
     std::string name_;
@@ -147,6 +149,7 @@ private:
     bool isIndex_;
     bool isModifiable_;
     bool isDefault_;
+    std::string enumClass_;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -307,6 +310,8 @@ std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType
  * Metadata of the list of dataframes to create network elements of the given type.
  */
 std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
+
+std::vector<std::string> getEnumValues(std::string& enumClass);
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 

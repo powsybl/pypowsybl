@@ -11,6 +11,8 @@ Provides utility methods for dataframes handling:
  - ...
 """
 from typing import List
+
+import pandas as pd
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
@@ -79,7 +81,6 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
     columns_values = []
     columns_types = []
     is_multi_index = len(df.index.names) > 1
-
     for idx, index_name in enumerate(df.index.names):
         if index_name is None:
             index_name = series_metadata[idx].name
@@ -95,8 +96,12 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         if series_name not in metadata_by_name:
             raise ValueError(f'No column named {series_name}')
         series = df[series_name]
-        series_type = metadata_by_name[series_name].type
+        metadata = metadata_by_name[series_name]
+        series_type = metadata.type
         columns_types.append(series_type)
-        columns_values.append(series.values)
+        if series_type == 4:
+            columns_values.append(pd.Categorical(series, categories=_pp.get_enum_values(metadata.enum_class)).codes)
+        else:
+            columns_values.append(series.values)
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)

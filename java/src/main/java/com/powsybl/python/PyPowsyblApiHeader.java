@@ -493,6 +493,12 @@ public final class PyPowsyblApiHeader {
         @CField("is_default")
         void setDefault(boolean attDefault);
 
+        @CField("enum_class")
+        CCharPointer getEnumClass();
+
+        @CField("enum_class")
+        void setEnumClass(CCharPointer enumClass);
+
         SeriesMetadataPointer addressOf(int index);
     }
 

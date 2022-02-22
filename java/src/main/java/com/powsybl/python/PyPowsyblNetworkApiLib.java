@@ -226,13 +226,13 @@ public final class PyPowsyblNetworkApiLib {
             MemDataSource dataSource = new MemDataSource();
             var exporter = Exporters.getExporter(formatStr);
             if (exporter == null) {
-                throw new PowsyblException("No expoxter found for '" + formatStr + "' to export as a string");
+                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
             }
             exporter.export(network, parameters, dataSource);
             try {
                 var names = dataSource.listNames(".*?");
                 if (names.size() != 1) {
-                    throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
+                    throw new PowsyblException("Currently we only support string export for single file format (ex, 'XIIDM').");
                 }
                 try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
                      ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -423,6 +423,7 @@ public final class PyPowsyblNetworkApiLib {
                             new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE, true));
                     break;
                 case INT_SERIES_TYPE:
+                case ENUM_SERIES_TYPE:
                 case BOOLEAN_SERIES_TYPE:
                     updatingDataframe.addSeries(new IntSeries(name, elementCount,
                                     (CIntPointer) seriesPointer.data().getPtr()),
@@ -574,6 +575,7 @@ public final class PyPowsyblNetworkApiLib {
             metadataPtr.setIndex(colMetadata.isIndex());
             metadataPtr.setModifiable(colMetadata.isModifiable());
             metadataPtr.setDefault(colMetadata.isDefaultAttribute());
+            metadataPtr.setEnumClass(CTypeUtil.toCharPtr(colMetadata.getEnumClass()));
         }
         cMetadata.setAttributesCount(metadata.size());
         cMetadata.setAttributesMetadata(seriesMetadataPtr);

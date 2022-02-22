@@ -11,6 +11,7 @@ import pandas as pd
 from numpy import NaN
 import util
 from pypowsybl.perunit import per_unit_view
+from pypowsybl.util import get_enum_values
 
 
 class PerUnitTestCase(unittest.TestCase):
@@ -52,6 +53,7 @@ class PerUnitTestCase(unittest.TestCase):
                    'VLGEN', 'VLGEN_0', True],
                   ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 1.02, 3.01, True, '', -3.03,
                    -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+        expected['energy_source'] = pd.Categorical(expected['energy_source'], categories=get_enum_values('energy_source'))
         pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=10 ** -2)
         generators2 = pd.DataFrame(data=[[6.080, 3.02, 1.1, False, False]],
                                    columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'connected'],
@@ -66,6 +68,7 @@ class PerUnitTestCase(unittest.TestCase):
                    'VLGEN', '', False],
                   ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 1.02, 3.01, True, '', -3.03,
                    -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+        expected['energy_source'] = pd.Categorical(expected['energy_source'], categories=get_enum_values('energy_source'))
         pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=10 ** -2)
 
     def test_loads_per_unit(self):
@@ -76,12 +79,14 @@ class PerUnitTestCase(unittest.TestCase):
                                 columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                          'connected'],
                                 data=[['', 'UNDEFINED', 6, 2, 6, 2, 6.43, 'VLLOAD', 'VLLOAD_0', True]])
+        expected['type'] = pd.Categorical(expected['type'], categories=get_enum_values('load_type'))
         pd.testing.assert_frame_equal(expected, n.get_loads(), check_dtype=False, atol=10 ** -2)
         n.update_loads(pd.DataFrame(data=[[5, 3, False]], columns=['p0', 'q0', 'connected'], index=['LOAD']))
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LOAD']),
                                 columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                          'connected'],
                                 data=[['', 'UNDEFINED', 5, 3, 6, 2, NaN, 'VLLOAD', '', False]])
+        expected['type'] = pd.Categorical(expected['type'], categories=get_enum_values('load_type'))
         pd.testing.assert_frame_equal(expected, n.get_loads(), check_dtype=False, atol=10 ** -2)
 
     def test_busbar_per_unit(self):
@@ -109,7 +114,7 @@ class PerUnitTestCase(unittest.TestCase):
                      'converter_station1_id', 'converter_station2_id', 'connected1', 'connected2'],
             data=[('HVDC1', 'HVDC1', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.1, 3, 400, 0, 'VSC1', 'VSC2', True, True),
                   ('HVDC2', 'HVDC2', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.8, 3, 400, 0, 'LCC1', 'LCC2', True, True)])
-
+        expected['converters_mode'] = pd.Categorical(expected['converters_mode'], categories=get_enum_values('converters_mode'))
         pd.testing.assert_frame_equal(expected, n.get_hvdc_lines(), check_dtype=False, atol=10 ** -2)
         n.update_hvdc_lines(id='HVDC1', target_p=[0.11])
         expected = pd.DataFrame.from_records(
@@ -118,6 +123,7 @@ class PerUnitTestCase(unittest.TestCase):
                      'converter_station1_id', 'converter_station2_id', 'connected1', 'connected2'],
             data=[('HVDC1', 'HVDC1', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.11, 3, 400, 0, 'VSC1', 'VSC2', True, True),
                   ('HVDC2', 'HVDC2', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.8, 3, 400, 0, 'LCC1', 'LCC2', True, True)])
+        expected['converters_mode'] = pd.Categorical(expected['converters_mode'], categories=get_enum_values('converters_mode'))
         pd.testing.assert_frame_equal(expected, n.get_hvdc_lines(), check_dtype=False, atol=10 ** -2)
 
     def test_lines_per_unit(self):
@@ -181,6 +187,7 @@ class PerUnitTestCase(unittest.TestCase):
                                          'voltage_level_id', 'bus_id', 'connected'],
                                 data=[['', 0, -19.2, 'LINEAR', 1, 1, False, NaN, NaN, 'S1VL2_0', NaN, 19.2, NaN, 'S1VL2',
                                        'S1VL2_0', True]])
+        expected['model_type'] = pd.Categorical(expected['model_type'], categories=get_enum_values('shunt_compensator_model_type'))
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=10 ** -2)
 
     def test_dangling_lines_per_unit(self):
@@ -254,6 +261,7 @@ class PerUnitTestCase(unittest.TestCase):
             columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode',
                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
             data=[['SVC', '', -0.05, 0.05, 1.0, NaN, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        expected['regulation_mode'] = pd.Categorical(expected['regulation_mode'], categories=get_enum_values('static_var_compensator_regulation_mode'))
         pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=10 ** -2)
 
         n.update_static_var_compensators(pd.DataFrame.from_records(
@@ -265,6 +273,7 @@ class PerUnitTestCase(unittest.TestCase):
             columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode',
                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
             data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        expected['regulation_mode'] = pd.Categorical(expected['regulation_mode'], categories=get_enum_values('static_var_compensator_regulation_mode'))
         pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=10 ** -2)
 
     def test_voltage_level_per_unit(self):

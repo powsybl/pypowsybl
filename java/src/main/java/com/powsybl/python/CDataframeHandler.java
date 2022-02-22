@@ -29,6 +29,7 @@ public class CDataframeHandler implements DataframeHandler {
     public static final int DOUBLE_SERIES_TYPE = 1;
     public static final int INT_SERIES_TYPE = 2;
     public static final int BOOLEAN_SERIES_TYPE = 3;
+    public static final int ENUM_SERIES_TYPE = 4;
 
     private ArrayPointer<SeriesPointer> dataframePtr;
     private int currentIndex;
@@ -87,6 +88,13 @@ public class CDataframeHandler implements DataframeHandler {
     public DoubleSeriesWriter newDoubleSeries(String name, int size) {
         CDoublePointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CDoublePointer.class));
         addSeries(name, size, dataPtr, DOUBLE_SERIES_TYPE);
+        return (i, v) -> dataPtr.addressOf(i).write(v);
+    }
+
+    @Override
+    public EnumSeriesWriter newEnumIndex(String name, int size) {
+        CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
+        addSeries(name, size, dataPtr, ENUM_SERIES_TYPE);
         return (i, v) -> dataPtr.addressOf(i).write(v);
     }
 

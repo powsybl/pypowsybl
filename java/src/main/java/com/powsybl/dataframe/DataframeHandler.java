@@ -34,6 +34,11 @@ public interface DataframeHandler {
         void set(int index, String value);
     }
 
+    @FunctionalInterface
+    interface EnumSeriesWriter {
+        void set(int index, int value);
+    }
+
     void allocate(int seriesCount);
 
     StringSeriesWriter newStringIndex(String name, int size);
@@ -47,5 +52,7 @@ public interface DataframeHandler {
     BooleanSeriesWriter newBooleanSeries(String name, int size);
 
     DoubleSeriesWriter newDoubleSeries(String name, int size);
+
+    EnumSeriesWriter newEnumIndex(String name, int size);
 
 }

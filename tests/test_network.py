@@ -19,7 +19,7 @@ from pypowsybl._pypowsybl import ValidationLevel
 
 import util
 import tempfile
-
+from pypowsybl.util import get_enum_values
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -228,6 +228,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                      'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                      'connected'],
             data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
+        expected['regulation_mode'] = pd.Categorical(expected['regulation_mode'], categories=get_enum_values('static_var_compensator_regulation_mode'))
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
         n.update_static_var_compensators(pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
@@ -240,6 +241,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q', 'i',
                      'voltage_level_id', 'bus_id', 'connected'],
             data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
+        expected['regulation_mode'] = pd.Categorical(expected['regulation_mode'], categories=get_enum_values('static_var_compensator_regulation_mode'))
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
 
     def test_create_generators_data_frame(self):
@@ -332,7 +334,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_regulated_terminal_node_breaker(self):
         n = pp.network.create_four_substations_node_breaker_network()
         gens = n.get_generators()
-        print(n.get_lines())
         self.assertEqual('GH1', gens['regulated_element_id']['GH1'])
 
         n.update_generators(id='GH1', regulated_element_id='S1VL1_BBS')
@@ -539,6 +540,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                                                 tuples=[('NHV1_NHV2_1', '10\'')]),
                                 columns=['side', 'value', 'acceptable_duration', 'is_fictitious'],
                                 data=[['TWO', 1200.0, 600, False]])
+        expected['side'] = pd.Categorical(expected['side'], categories=get_enum_values('branch_side'))
         pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
     def test_deep_copy(self):
@@ -625,6 +627,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'voltage_level_id', 'bus_id', 'connected'],
                                 data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, NaN, NaN,
                                        'S1VL2_0', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+        expected['model_type'] = pd.Categorical(expected['model_type'], categories=get_enum_values('shunt_compensator_model_type'))
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
         n.update_shunt_compensators(
             pd.DataFrame(index=['SHUNT'],
@@ -642,6 +645,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                          'voltage_level_id', 'bus_id', 'connected'],
                                 data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
                                        '', NaN, 1900, NaN, 'S1VL2', '', False]])
+        expected['model_type'] = pd.Categorical(expected['model_type'], categories=get_enum_values('shunt_compensator_model_type'))
         pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
 
     def test_3_windings_transformers(self):
@@ -945,7 +949,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_metadata(self):
         meta_gen = pp._pypowsybl.get_network_elements_dataframe_metadata(pp._pypowsybl.ElementType.GENERATOR)
         meta_gen_index_default = [x for x in meta_gen if (x.is_index == True) and (x.is_default == True)]
-        print(meta_gen_index_default)
         self.assertTrue(len(meta_gen_index_default) > 0)
 
     def test_dataframe_elements_filtering(self):
