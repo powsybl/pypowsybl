@@ -2086,6 +2086,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
+    def update_lcc_converter_stations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Attributes that can be updated are:
+
+        - `target_v`
+        - `target_q`
+        - `voltage_regulator_on`
+        - `p`
+        - `q`
+        - `connected`
+
+        See Also:
+            :meth:`get_vsc_converter_stations`
+
+        Args:
+          df: the data to be updated, as a data frame.
+          **kwargs: the data to be updated, as named arguments.
+              Arguments can be single values or any type of sequence.
+              In the case of sequences, all arguments must have the same length.
+        """
+        return self._update_elements(ElementType.LCC_CONVERTER_STATION, df, **kwargs)
+
     def update_static_var_compensators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
