@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -103,11 +103,6 @@ Array<limit_violation>::~Array() {
 template<>
 Array<series>::~Array() {
     callJava<>(::freeSeriesArray, delegate_);
-}
-
-template<>
-Array<series_metadata>::~Array() {
-    callJava<>(::freeSeriesMetadataArray, delegate_);
 }
 
 template<typename T>
@@ -531,9 +526,9 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes) {
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
 	ToCharPtrPtr attributesPtr(attributes);
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size()));
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
@@ -614,18 +609,40 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
 }
 
-std::vector<SeriesMetadata> getSeriesMetadata(element_type elementType) {
-
-    Array<series_metadata> array(pypowsybl::callJava<array*>(::getSeriesMetadata, elementType));
+std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
     std::vector<SeriesMetadata> res;
-    for (const series_metadata& series: array) {
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable));
+    for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
+        const series_metadata& series = dataframeMetadata->attributes_metadata[i];
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
     }
     return res;
+}
+
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
+
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType) {
+
+    dataframes_metadata* allDataframesMetadata = pypowsybl::callJava<dataframes_metadata*>(::getCreationMetadata, elementType);
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (int i =0; i < allDataframesMetadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(allDataframesMetadata->dataframes_metadata + i));
+    }
+    pypowsybl::callJava(::freeDataframesMetadata, allDataframesMetadata);
+    return res;
+}
+
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType) {
+    pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
 }
 
 }

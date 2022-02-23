@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,12 +7,14 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -29,13 +31,22 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
 
     @Override
     public void createDataframe(Network network, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
-        List<T> items = getItems(network);
+        List<T> items = getFilteredItems(network, dataframeFilter);
         List<SeriesMapper<T>> mappers = new ArrayList<>(getSeriesMappers(dataframeFilter));
         if (addProperties) {
             mappers.addAll(getPropertiesSeries(items, dataframeFilter));
         }
         dataframeHandler.allocate(mappers.size());
         mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
+    }
+
+    protected List<T> getFilteredItems(Network network, DataframeFilter dataframeFilter) {
+        if (dataframeFilter.getSelectingDataframe().isEmpty()) {
+            return getItems(network);
+        } else {
+            UpdatingDataframe selectedDataframe = dataframeFilter.getSelectingDataframe().get();
+            return IntStream.range(0, selectedDataframe.getLineCount()).mapToObj(i -> getItem(network, selectedDataframe, i)).collect(Collectors.toList());
+        }
     }
 
     private List<SeriesMapper<T>> getPropertiesSeries(List<T> items, DataframeFilter dataframeFilter) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -38,6 +38,9 @@ public final class PyPowsyblApiHeader {
         void setMessage(CCharPointer message);
     }
 
+    /**
+     * Structure containing a pointer to a C array + its length.
+     */
     @CStruct("array")
     interface ArrayPointer<T extends PointerBase> extends PointerBase {
 
@@ -52,6 +55,9 @@ public final class PyPowsyblApiHeader {
 
         @CField("length")
         void setLength(int length);
+
+        ArrayPointer addressOf(int index);
+
     }
 
     static <T extends PointerBase> ArrayPointer<T> allocArrayPointer(T ptr, int length) {
@@ -412,6 +418,48 @@ public final class PyPowsyblApiHeader {
         SeriesPointer addressOf(int index);
     }
 
+    @CStruct("dataframe")
+    interface DataframePointer extends PointerBase {
+
+        @CField("series")
+        SeriesPointer getSeries();
+
+        @CField("series")
+        void setSeries(SeriesPointer series);
+
+        @CField("series_count")
+        int getSeriesCount();
+
+        @CField("series_count")
+        void setSeriesCount(int count);
+
+        DataframePointer addressOf(int index);
+    }
+
+    @CStruct("dataframe_array")
+    interface DataframeArrayPointer extends PointerBase {
+
+        @CField("dataframes")
+        DataframePointer getDataframes();
+
+        @CField("dataframes")
+        void setDataframes(DataframePointer series);
+
+        @CField("dataframes_count")
+        int getDataframesCount();
+
+        @CField("dataframes_count")
+        void setDataframesCount(int count);
+    }
+
+    /*
+    typedef struct series_metadata_struct {
+        char* name;
+        int type;
+        unsigned char  is_index;
+        unsigned char  is_modifiable;
+    } series_metadata;
+     */
     @CStruct("series_metadata")
     interface SeriesMetadataPointer extends PointerBase {
 
@@ -439,7 +487,50 @@ public final class PyPowsyblApiHeader {
         @CField("is_modifiable")
         void setModifiable(boolean index);
 
+        @CField("is_default")
+        boolean isDefault();
+
+        @CField("is_default")
+        void setDefault(boolean attDefault);
+
         SeriesMetadataPointer addressOf(int index);
+    }
+
+    @CStruct("dataframe_metadata")
+    interface DataframeMetadataPointer extends PointerBase {
+
+        @CField("attributes_count")
+        int getAttributesCount();
+
+        @CField("attributes_count")
+        void setAttributesCount(int count);
+
+        @CField("attributes_metadata")
+        SeriesMetadataPointer getAttributesMetadata();
+
+        @CField("attributes_metadata")
+        void setAttributesMetadata(SeriesMetadataPointer metadata);
+
+        /**
+         * When used as a C array, get the struct at i-th position.
+         */
+        DataframeMetadataPointer addressOf(int index);
+    }
+
+    @CStruct("dataframes_metadata")
+    interface DataframesMetadataPointer extends PointerBase {
+
+        @CField("dataframes_count")
+        int getDataframesCount();
+
+        @CField("dataframes_count")
+        void setDataframesCount(int count);
+
+        @CField("dataframes_metadata")
+        DataframeMetadataPointer getDataframesMetadata();
+
+        @CField("dataframes_metadata")
+        void setDataframesMetadata(DataframeMetadataPointer metadata);
     }
 
     @CStruct("zone")
@@ -483,7 +574,6 @@ public final class PyPowsyblApiHeader {
 
         ObjectHandle read(int index);
     }
-
 
     @CEnum("contingency_context_type")
     public enum RawContingencyContextType {

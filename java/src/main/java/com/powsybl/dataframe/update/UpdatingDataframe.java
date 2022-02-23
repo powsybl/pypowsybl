@@ -6,26 +6,32 @@
  */
 package com.powsybl.dataframe.update;
 
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public interface UpdatingDataframe {
 
+    int getIndex(String column, String value);
+
     List<SeriesMetadata> getSeriesMetadata();
 
-    double getDoubleValue(String column, int index);
+    OptionalDouble getDoubleValue(String column, int index);
 
-    double getDoubleValue(int column, int index);
+    OptionalDouble getDoubleValue(int column, int index);
 
-    double getDoubleValue(String columnName, int column, int index);
+    OptionalDouble getDoubleValue(String columnName, int column, int index);
 
-    String getStringValue(String column, int index);
+    Optional<String> getStringValue(String column, int index);
 
-    String getStringValue(int column, int index);
+    Optional<String> getStringValue(int column, int index);
 
     /**
      * get a string value in the dataframe according to the column name and the index.
@@ -45,13 +51,15 @@ public interface UpdatingDataframe {
      * @param index
      * @return
      */
-    String getStringValue(String columnName, int column, int index);
+    Optional<String> getStringValue(String columnName, int column, int index);
 
-    int getIntValue(String column, int index);
+    OptionalInt getIntValue(String column, int index);
 
-    int getIntValue(int column, int index);
+    OptionalInt getIntValue(int column, int index);
 
-    int getIntValue(String columnName, int column, int index);
+    OptionalInt getIntValue(String columnName, int column, int index);
 
     int getLineCount();
+
+    boolean containsColumnName(String columnName, SeriesDataType type);
 }

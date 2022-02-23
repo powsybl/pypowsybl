@@ -9,7 +9,6 @@ package com.powsybl.dataframe;
 import com.google.common.base.Functions;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
-import com.powsybl.python.update.Series;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,8 +132,8 @@ class DataframeMapperBuilderTest {
         }
 
         Element getElement(UpdatingDataframe dataframe, int index) {
-            List<Element> result = elements.stream().filter(element -> dataframe.getStringValue("id", index).equals(element.getId())
-                    && dataframe.getIntValue("id2", index) == element.getId2()).collect(Collectors.toList());
+            List<Element> result = elements.stream().filter(element -> dataframe.getStringValue("id", index).get().equals(element.getId())
+                    && dataframe.getIntValue("id2", index).getAsInt() == element.getId2()).collect(Collectors.toList());
             return result.get(0);
         }
 
@@ -184,180 +183,12 @@ class DataframeMapperBuilderTest {
                 .containsExactly("id", "str", "int", "double", "color");
     }
 
-    class TestIntSeries implements Series<List<Integer>> {
-
-        private final List<Integer> values = new ArrayList<>();
-        private final String name;
-
-        public TestIntSeries(List<Integer> values, String name) {
-            this.values.addAll(values);
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getSize() {
-            return values.size();
-        }
-
-        @Override
-        public List<Integer> getValues() {
-            return values;
-        }
-    }
-
-    class TestDoubleSeries implements Series<List<Double>> {
-
-        private final List<Double> values = new ArrayList<>();
-        private final String name;
-
-        public TestDoubleSeries(List<Double> values, String name) {
-            this.values.addAll(values);
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getSize() {
-            return values.size();
-        }
-
-        @Override
-        public List<Double> getValues() {
-            return values;
-        }
-    }
-
-    class TestStringSeries implements Series<List<String>> {
-
-        private final List<String> values = new ArrayList<>();
-        private final String name;
-
-        public TestStringSeries(List<String> values, String name) {
-            this.values.addAll(values);
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getSize() {
-            return values.size();
-        }
-
-        @Override
-        public List<String> getValues() {
-            return values;
-        }
-    }
-
-    class TestDataframe implements UpdatingDataframe {
-
-        private final int size;
-        private final Map<String, SeriesMetadata> columns = new LinkedHashMap<>();
-        private final Map<String, Series> series = new HashMap<>();
-
-        public TestDataframe(int size) {
-            this.size = size;
-        }
-
-        public void addSeries(Series series) {
-            this.series.put(series.getName(), series);
-        }
-
-        public void addColumnName(String name, SeriesDataType type, boolean index) {
-            columns.put(name, new SeriesMetadata(index, name, false, type, true));
-        }
-
-        @Override
-        public List<SeriesMetadata> getSeriesMetadata() {
-            return new ArrayList<>(columns.values());
-        }
-
-        @Override
-        public double getDoubleValue(String column, int index) {
-            return ((TestDoubleSeries) series.get(column)).getValues().get(index);
-        }
-
-        @Override
-        public double getDoubleValue(int column, int index) {
-            return ((TestDoubleSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index);
-        }
-
-        @Override
-        public double getDoubleValue(String columnName, int column, int index) {
-            if (containsColumnName(columnName, SeriesDataType.DOUBLE)) {
-                return getDoubleValue(columnName, index);
-            } else {
-                return getDoubleValue(column, index);
-            }
-        }
-
-        @Override
-        public String getStringValue(String column, int index) {
-            return ((TestStringSeries) series.get(column)).getValues().get(index);
-        }
-
-        @Override
-        public String getStringValue(int column, int index) {
-            return ((TestStringSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index);
-        }
-
-        @Override
-        public String getStringValue(String columnName, int column, int index) {
-            if (containsColumnName(columnName, SeriesDataType.STRING)) {
-                return getStringValue(columnName, index);
-            } else {
-                return getStringValue(column, index);
-            }
-        }
-
-        @Override
-        public int getIntValue(String column, int index) {
-            return ((TestIntSeries) series.get(column)).getValues().get(index);
-        }
-
-        @Override
-        public int getIntValue(int column, int index) {
-            return ((TestIntSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index);
-        }
-
-        @Override
-        public int getIntValue(String columnName, int column, int index) {
-            if (containsColumnName(columnName, SeriesDataType.INT)) {
-                return getIntValue(columnName, index);
-            } else {
-                return getIntValue(column, index);
-            }
-        }
-
-        @Override
-        public int getLineCount() {
-            return size;
-        }
-
-        private boolean containsColumnName(String columnName, SeriesDataType type) {
-            return columns.containsKey(columnName) && columns.get(columnName).getType().equals(type);
-        }
-    }
-
     UpdatingDataframe createDataframe(int size) {
         TestDataframe dataframe = new TestDataframe(size);
         dataframe.addColumnName("id", SeriesDataType.STRING, true);
         dataframe.addColumnName("double", SeriesDataType.DOUBLE, false);
-        dataframe.addSeries(new TestStringSeries(List.of("el1", "el2"), "id"));
-        dataframe.addSeries(new TestDoubleSeries(List.of(1.2, 2.2), "double"));
+        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("el1", "el2"), "id"));
+        dataframe.addSeries(new TestDataframe.TestDoubleSeries(List.of(1.2, 2.2), "double"));
         return dataframe;
 
     }
@@ -389,10 +220,10 @@ class DataframeMapperBuilderTest {
         dataframe.addColumnName("id2", SeriesDataType.INT, true);
         dataframe.addColumnName("double", SeriesDataType.DOUBLE, false);
         dataframe.addColumnName("str", SeriesDataType.STRING, false);
-        dataframe.addSeries(new TestStringSeries(List.of("el1", "el2"), "id"));
-        dataframe.addSeries(new TestIntSeries(List.of(1, 0), "id2"));
-        dataframe.addSeries(new TestDoubleSeries(List.of(1.2, 2.2), "double"));
-        dataframe.addSeries(new TestStringSeries(List.of("val3", "val4"), "str"));
+        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("el1", "el2"), "id"));
+        dataframe.addSeries(new TestDataframe.TestIntSeries(List.of(1, 0), "id2"));
+        dataframe.addSeries(new TestDataframe.TestDoubleSeries(List.of(1.2, 2.2), "double"));
+        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("val3", "val4"), "str"));
         return dataframe;
 
     }

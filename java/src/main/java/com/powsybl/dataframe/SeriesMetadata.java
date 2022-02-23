@@ -41,6 +41,30 @@ public class SeriesMetadata {
         return type;
     }
 
+    public static SeriesMetadata strings(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false);
+    }
+
+    public static SeriesMetadata ints(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.INT, false);
+    }
+
+    public static SeriesMetadata booleans(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false);
+    }
+
+    public static SeriesMetadata doubles(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false);
+    }
+
+    public static SeriesMetadata stringIndex(String name) {
+        return new SeriesMetadata(true, name, false, SeriesDataType.STRING, false);
+    }
+
+    public static SeriesMetadata intIndex(String name) {
+        return new SeriesMetadata(true, name, false, SeriesDataType.INT, false);
+    }
+
     public boolean isDefaultAttribute() {
         return defaultAttribute;
     }
