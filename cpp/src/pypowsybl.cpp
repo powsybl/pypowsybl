@@ -650,6 +650,7 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 void CppToPythonLogger::logFromJava(int level, char* pArg) {
   //py::module_ logging = py::module_::import("logging");
   //logging.attr("warning")(pArg);
+  py::gil_scoped_acquire acquire;
   CppToPythonLogger::get()->getLogger().attr("log")(level, pArg);
 }
 
