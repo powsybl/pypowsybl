@@ -212,9 +212,9 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
 JavaHandle createSecurityAnalysis();
 

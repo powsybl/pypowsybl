@@ -503,6 +503,16 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_ieee14()
         sld = n.get_network_area_diagram()
         self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(voltage_level_ids=None)
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram('VL1')
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(['VL1', 'VL2'])
+        self.assertRegex(sld.svg, '.*<svg.*')
+        n.write_network_area_diagram_svg('test', None)
+        n.write_network_area_diagram_svg('test', ['VL1'])
+        n.write_network_area_diagram_svg('test', ['VL1', 'VL2'])
+
 
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()

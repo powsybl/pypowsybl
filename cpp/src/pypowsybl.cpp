@@ -411,12 +411,14 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& voltageLevelId, int depth) {
-    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) voltageLevelId.data(), depth);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth) {
+    ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
 }
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& voltageLevelId, int depth) {
-    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, (char*) voltageLevelId.data(), depth));
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth) {
+    ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {

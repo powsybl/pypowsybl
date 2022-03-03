@@ -12,7 +12,7 @@ from typing import (
     List as _List,
     Set as _Set,
     Dict as _Dict,
-    Optional as _Optional,
+    Optional as _Optional, Union,
 )
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
@@ -286,7 +286,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_id: str = None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -295,9 +295,13 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
-        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_id if voltage_level_id else '', depth)
+        if voltage_level_ids is None:
+            voltage_level_ids = []
+        if type(voltage_level_ids) == str:
+            voltage_level_ids = [voltage_level_ids]
+        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
-    def get_network_area_diagram(self, voltage_level_id: str = None, depth: int = 0) -> Svg:
+    def get_network_area_diagram(self, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> Svg:
         """
         Create a network area diagram.
 
@@ -308,7 +312,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the network area diagram
         """
-        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_id if voltage_level_id else '', depth))
+        if voltage_level_ids is None:
+            voltage_level_ids = []
+        if type(voltage_level_ids) == str:
+            voltage_level_ids = [voltage_level_ids]
+        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth))
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,
