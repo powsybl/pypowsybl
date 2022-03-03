@@ -629,4 +629,31 @@ public final class PyPowsyblApiLib {
             loggerCallback = fpointer;
         });
     }
+
+    @CEntryPoint(name = "setLogLevel")
+    public static void setLogLevel(IsolateThread thread, int logLevel, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            rootLogger.setLevel(pythonLevelToLogbackLevel(logLevel));
+        });
+    }
+
+    private static Level pythonLevelToLogbackLevel(int l) {
+        switch (l) {
+            case 0:
+                return Level.OFF;
+            case 40:
+                return Level.ERROR;
+            case 30:
+                return Level.WARN;
+            case 20:
+                return Level.INFO;
+            case 10:
+                return Level.DEBUG;
+            case 60:
+                return Level.ALL;
+            default:
+                return Level.OFF;
+        }
+    }
 }

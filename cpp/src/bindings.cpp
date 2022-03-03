@@ -12,6 +12,7 @@
 namespace py = pybind11;
 
 pypowsybl::CppToPythonLogger *pypowsybl::CppToPythonLogger::mSingleton = nullptr;
+bool pypowsybl::CppToPythonLogger::initialized = false;
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
@@ -568,5 +569,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
     m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
-    m.def("setup_logger", &pypowsybl::setupLogger, "Setup the logger", py::arg("logger"));
+    m.def("set_logger", &pypowsybl::setLogger, "Setup the logger", py::arg("logger"));
+    m.def("get_logger", &pypowsybl::getLogger, "Retrieve the logger");
 }

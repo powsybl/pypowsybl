@@ -60,6 +60,13 @@ template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    //Explicitly update log level on java side
+    if( CppToPythonLogger::get()->loggerInitialized() ) {
+      py::object level = CppToPythonLogger::get()->getLogger().attr("level");
+      ::setLogLevel(guard.thread(), level.cast<int>(), &exc);
+    }
+
     f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
@@ -648,20 +655,32 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 }
 
 void CppToPythonLogger::logFromJava(int level, char* pArg) {
-  //py::module_ logging = py::module_::import("logging");
-  //logging.attr("warning")(pArg);
-  py::gil_scoped_acquire acquire;
-  CppToPythonLogger::get()->getLogger().attr("log")(level, pArg);
+
+    py::gil_scoped_acquire acquire;
+    if(CppToPythonLogger::get()->loggerInitialized())
+    {
+        CppToPythonLogger::get()->getLogger().attr("log")(level, pArg);
+    }
 }
 
-//typedef void (*logFromJava)(char* pArg);
 
-void setupLogger(py::object logger) {
-  std::cout <<" SETUP LOGGER FROM C++ : " << std::endl;
-  CppToPythonLogger::get()->setLogger(logger);
-  logger.attr("warning")("My warning log from parameter module");
-  auto fptr = &CppToPythonLogger::logFromJava;
-  pypowsybl::callJava<>(::setupCallback, reinterpret_cast<void *&>(fptr));
+void setLogger(py::object logger) {
+
+    CppToPythonLogger::get()->setLogger(logger);
+    auto fptr = &CppToPythonLogger::logFromJava;
+    pypowsybl::callJava<>(::setupCallback, reinterpret_cast<void *&>(fptr));
+}
+
+py::object getLogger() {
+
+    if(CppToPythonLogger::get()->loggerInitialized())
+    {
+        return CppToPythonLogger::get()->getLogger();
+    }
+    else
+    {
+        return py::object(py::cast(nullptr));
+    }
 }
 
 }

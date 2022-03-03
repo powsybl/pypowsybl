@@ -32,12 +32,15 @@ __all__ = [
     "sensitivity"
 ]
 
-_pypowsybl.setup_logger(logging.getLogger())
+#Setup a default logger that is the root logger with default log level set to ERROR
+_pypowsybl.set_logger(logging.getLogger())
+logging.getLogger().setLevel(level=logging.ERROR)
 
-# Manipulate default logger after that will impact java logs
-#logging.getLogger().setLevel(level=logging.WARNING)
-#logging.getLogger().disabled = True
+def set_logger(logger) -> None:
+    _pypowsybl.set_logger(logger)
 
+def get_logger():
+    return _pypowsybl.get_logger()
 
 def set_debug_mode(debug: bool = True) -> None:
     """Set or unset debug mode

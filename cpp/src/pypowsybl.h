@@ -295,14 +295,18 @@ std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMeta
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 
-void setupLogger(py::object logger);
+void setLogger(py::object logger);
+
+py::object getLogger();
 
 class CppToPythonLogger
 {
   public:
     static CppToPythonLogger* get() {
-    if (!mSingleton)
-      mSingleton = new CppToPythonLogger();
+      if (!mSingleton) {
+        mSingleton = new CppToPythonLogger();
+        initialized = false;
+      }
       return mSingleton;
     }
 
@@ -310,15 +314,21 @@ class CppToPythonLogger
 
     void setLogger(py::object pPythonLogger) {
       this->mlogger = pPythonLogger;
+      initialized = true;
     }
 
     py::object getLogger() {
       return this->mlogger;
     }
 
+    bool loggerInitialized() {
+      return this->initialized;
+    }
+
   private:
     static CppToPythonLogger* mSingleton;
     py::object mlogger;
+    static bool initialized;
 };
 
 }
