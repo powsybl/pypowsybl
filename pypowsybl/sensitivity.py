@@ -171,7 +171,22 @@ class DcSensitivityAnalysisResult:
             the matrix of branch flows sensitivities
         """
         m = _pypowsybl.get_precontingency_branch_flows_sensitivity_matrix(self.result_context_ptr, matrix_id)
-        return self.post_process_branch_flows(m, self.precontingency_branches_ids[matrix_id], self.precontingency_branch_data_frame_index[matrix_id])
+        if m is None:
+            return None
+        else:
+            data = _np.array(m, copy=False)
+
+            df = _pd.DataFrame(data=data, columns=self.precontingency_branches_ids[matrix_id], index=self.precontingency_branch_data_frame_index[matrix_id])
+
+            # substract second power transfer zone to first one
+            i = 0
+            while i < len(self.precontingency_branch_data_frame_index[matrix_id]):
+                if self.precontingency_branch_data_frame_index[matrix_id][i] == TO_REMOVE:
+                    df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+                i += 1
+
+            # remove rows corresponding to power transfer second zone
+            return df.drop([TO_REMOVE], errors='ignore')
 
     def get_postcontingency_branch_flows_sensitivity_matrix(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the post contingency.
@@ -182,7 +197,22 @@ class DcSensitivityAnalysisResult:
             the matrix of branch flows sensitivities
         """
         m = _pypowsybl.get_postcontingency_branch_flows_sensitivity_matrix(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
-        return self.post_process_branch_flows(m, self.postcontingency_branches_ids[matrix_id], self.postcontingency_branch_data_frame_index[matrix_id])
+        if m is None:
+            return None
+        else:
+            data = _np.array(m, copy=False)
+
+            df = _pd.DataFrame(data=data, columns=self.postcontingency_branches_ids[matrix_id], index=self.postcontingency_branch_data_frame_index[matrix_id])
+
+            # substract second power transfer zone to first one
+            i = 0
+            while i < len(self.postcontingency_branch_data_frame_index[matrix_id]):
+                if self.postcontingency_branch_data_frame_index[matrix_id][i] == TO_REMOVE:
+                    df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+                i += 1
+
+            # remove rows corresponding to power transfer second zone
+            return df.drop([TO_REMOVE], errors='ignore')
 
     def get_reference_flows(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The branches active power flows on the base case or on the post contingency state depending if
@@ -282,13 +312,13 @@ class SensitivityAnalysis(_ContingencyContainer):
                 branch_data_frame_index.append(variable_id)
             elif isinstance(variable_id, tuple):  # this is a power transfer
                 if len(variable_id) != 2:
-                    raise PyPowsyblError('Power transfer factor should be describe with a tuple 2')
+                    raise _PyPowsyblError('Power transfer factor should be describe with a tuple 2')
                 flatten_variables_ids.append(variable_id[0])
                 flatten_variables_ids.append(variable_id[1])
                 branch_data_frame_index.append(variable_id[0] + ' -> ' + variable_id[1])
                 branch_data_frame_index.append(TO_REMOVE)
             else:
-                raise PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
+                raise _PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
         return (flatten_variables_ids, branch_data_frame_index)
 
 
