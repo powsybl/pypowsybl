@@ -1,6 +1,7 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"\\QdefaultStyle.css\\E"}
+    {"pattern":"\\QnominalStyle.css\\E"},
+    {"pattern":"\\QtopologicalStyle.css\\E"}
   ]}
 }
