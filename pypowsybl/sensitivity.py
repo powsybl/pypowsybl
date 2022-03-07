@@ -118,22 +118,22 @@ class DcSensitivityAnalysisResult:
         self.postcontingency_branch_data_frame_index = postcontingency_branch_data_frame_index
 
     def post_process_branch_flows(self, flows: _pd.DataFrame, branch_ids: _List[str], branch_data_frame_index: _List[str]) -> _Optional[_pd.DataFrame]:
-       if flows is None:
-           return None
-       else:
-           data = _np.array(flows, copy=False)
+        if flows is None:
+            return None
+        else:
+            data = _np.array(flows, copy=False)
 
-           df = _pd.DataFrame(data=data, columns=branch_ids, index=branch_data_frame_index)
+            df = _pd.DataFrame(data=data, columns=branch_ids, index=branch_data_frame_index)
 
-           # substract second power transfer zone to first one
-           i = 0
-           while i < len(branch_data_frame_index):
-               if branch_data_frame_index[i] == TO_REMOVE:
-                   df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
-               i += 1
+            # substract second power transfer zone to first one
+            i = 0
+            while i < len(branch_data_frame_index):
+                if branch_data_frame_index[i] == TO_REMOVE:
+                    df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+                i += 1
 
-           # remove rows corresponding to power transfer second zone
-           return df.drop([TO_REMOVE], errors='ignore')
+            # remove rows corresponding to power transfer second zone
+            return df.drop([TO_REMOVE], errors='ignore')
 
     def get_branch_flows_sensitivity_matrix(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the base case or on the post contingency state depending if
