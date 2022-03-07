@@ -38,7 +38,7 @@ The supported formats are the following:
 .. doctest::
 
    >>> pp.network.get_import_formats()
-   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM']
+   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY']
 
 .. Note::
 
