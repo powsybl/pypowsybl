@@ -19,12 +19,12 @@ as a result:
     >>> import pypowsybl as pp
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> analysis = pp.sensitivity.create_dc_analysis()
-    >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
+    >>> analysis.add_branch_flow_factor_matrix(matrix_id='m', branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows()
+    >>> result.get_reference_flows('m')
                      NHV1_NHV2_1  NHV1_NHV2_2
     reference_flows        300.0        300.0
-    >>> result.get_branch_flows_sensitivity_matrix()
+    >>> result.get_branch_flows_sensitivity_matrix('m')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
 
@@ -42,9 +42,9 @@ First, we create a zone containing all generators of DE network with a shift key
      >>> params = pp.loadflow.Parameters(distributed_slack=False)
      >>> sa = pp.sensitivity.create_dc_analysis()
      >>> sa.set_zones([zone_de])
-     >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['DE'])
+     >>> sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1'], ['DE'])
      >>> results = sa.run(n, params)
-     >>> m = results.get_branch_flows_sensitivity_matrix()
+     >>> m = results.get_branch_flows_sensitivity_matrix('m')
               BBE2AA1  FFR3AA1  1
      DE             -0.45182
 
@@ -65,9 +65,9 @@ In the following example, we compute the sensitivity of a active power transfer 
      >>> params = pp.loadflow.Parameters(distributed_slack=False)
      >>> sa = pp.sensitivity.create_dc_analysis()
      >>> sa.set_zones([zone_fr, zone_de])
-     >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['FR', 'DE'])
+     >>> sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1'], ['FR', 'DE'])
      >>> results = sa.run(n, params)
-     >>> m = results.get_branch_flows_sensitivity_matrix()
+     >>> m = results.get_branch_flows_sensitivity_matrix('m')
               BBE2AA1  FFR3AA1  1
      FR            -0.708461
      DE            -0.451820
@@ -85,9 +85,9 @@ Let's obtain that directly. In the following example, we create four zones based
      >>> params = pp.loadflow.Parameters(distributed_slack=False)
      >>> sa = pp.sensitivity.create_dc_analysis()
      >>> sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
-     >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+     >>> sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
      >>> result = sa.run(n, params)
-     >>> m = result.get_branch_flows_sensitivity_matrix()
+     >>> m = result.get_branch_flows_sensitivity_matrix('m')
                BBE2AA1  FFR3AA1  1  FFR2AA1  DDE3AA1  1
      FR                  -0.708461             0.291539
      FR -> DE            -0.256641             0.743359
@@ -116,9 +116,9 @@ To calculate to sensitivity of X-Node XXXXXX11 on tie line 'BBE2AA1  FFR3AA1  1'
         >>> zone_x.add_injection('NNL2AA1  XXXXXX11 1')
         >>> sa = pp.sensitivity.create_dc_analysis()
         >>> sa.set_zones([zone_x])
-        >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+        >>> sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1'], ['X'])
         >>> result = sa.run(n)
-        >>> result.get_branch_flows_sensitivity_matrix()
+        >>> result.get_branch_flows_sensitivity_matrix('m')
            BBE2AA1  FFR3AA1  1
         X             0.176618
 
@@ -204,7 +204,7 @@ PyPowSyBl allows to compute more that PTDF. In addition to injections and zones 
 
 .. code-block:: python
 
-     >>> sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], [zone, injection_id, transformer_id, hvdc_id])
+     >>> sa.add_branch_flow_factor_matrix('m', ['BBE2AA1  FFR3AA1  1'], [zone, injection_id, transformer_id, hvdc_id])
 
 AC sensitivity analysis
 -----------------------
@@ -237,12 +237,12 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
 .. doctest::
 
     >>> analysis = pp.sensitivity.create_dc_analysis()
-    >>> analysis.set_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
+    >>> analysis.add_branch_flow_factor_matrix('m', branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
     >>> result.get_reference_flows('NHV1_NHV2_1')
                      NHV1_NHV2_1  NHV1_NHV2_2
     reference_flows          0.0        600.0
-    >>> result.get_branch_flows_sensitivity_matrix('NHV1_NHV2_1')
+    >>> result.get_branch_flows_sensitivity_matrix('m', 'NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
