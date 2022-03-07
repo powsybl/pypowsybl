@@ -28,10 +28,6 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.AnchorPointProvider",
-    "allDeclaredMethods":true
-  },
-  {
     "name":"com.powsybl.sld.library.Component",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
@@ -59,12 +55,6 @@
     "name":"com.powsybl.sld.model.BusCell$Direction",
     "allDeclaredFields":true,
     "allDeclaredMethods":true
-  },
-  {
-    "name":"com.powsybl.sld.model.Point",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
   },
   {
     "name":"com.powsybl.sld.svg.GraphMetadata",

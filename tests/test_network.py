@@ -8,7 +8,6 @@ import copy
 import unittest
 import datetime
 import pandas as pd
-from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 import numpy as np
 
@@ -50,7 +49,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
-        self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
+        self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'], formats)
 
     def test_get_import_parameters(self):
         parameters = pp.network.get_import_parameters('PSS/E')
