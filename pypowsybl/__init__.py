@@ -15,6 +15,7 @@ from pypowsybl import (
     sensitivity
 )
 import logging
+from logging import Logger
 
 __version__ = '0.13.0'
 
@@ -36,10 +37,10 @@ __all__ = [
 _pypowsybl.set_logger(logging.getLogger())
 logging.getLogger().setLevel(level=logging.ERROR)
 
-def set_logger(logger) -> None:
+def set_logger(logger: Logger) -> None:
     _pypowsybl.set_logger(logger)
 
-def get_logger():
+def get_logger() -> Logger:
     return _pypowsybl.get_logger()
 
 def set_debug_mode(debug: bool = True) -> None:
