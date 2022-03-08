@@ -19,7 +19,7 @@ class LoadflowTestCase(unittest.TestCase):
     def test_run_lf(self):
         pp.set_debug_mode(True)
         n = pp.network.create_ieee14()
-        results = lf.run_ac(n)
+        results, report = lf.run_ac(n)
         self.assertEqual(1, len(results))
         self.assertEqual(lf.ComponentStatus.CONVERGED, results[0].status)
         self.assertEqual(0, results[0].connected_component_num)
@@ -29,7 +29,7 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertEqual(7, results[0].iteration_count)
 
         parameters = lf.Parameters(distributed_slack=False)
-        results = lf.run_dc(n, parameters)
+        results, report = lf.run_dc(n, parameters)
         self.assertEqual(1, len(results))
 
     def test_lf_parameters(self):

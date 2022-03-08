@@ -119,6 +119,14 @@ std::shared_ptr<load_flow_parameters> initLoadFlowParameters() {
     });
 }
 
+std::shared_ptr<report_type> initReport() {
+        report_type* report = new report_type();
+    return std::shared_ptr<report_type>(report, [](report_type* ptr){
+        delete[] ptr->message;
+        delete ptr;
+    });
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -346,8 +354,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 p.connected_component_mode = connectedComponentMode;
             });
 
+    py::class_<report_type, std::shared_ptr<report_type>>(m, "Report")
+        .def(py::init(&initReport))
+        .def_property("message", [](const report_type& p) {
+                return (char*)(p.message);
+            }, [](report_type& p, char* message) {
+                p.message = message;
+            });
+
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report"));
 
     m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("validation_type"));
 

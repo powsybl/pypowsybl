@@ -182,3 +182,6 @@ typedef enum {
     SELECTION_ATTRIBUTES
 } filter_attributes_type;
 
+typedef struct report_struct {
+    char* message;
+} report_type;

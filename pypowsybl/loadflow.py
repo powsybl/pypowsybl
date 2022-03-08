@@ -7,7 +7,8 @@
 from typing import (
     List as _List,
     Sequence as _Sequence,
-    Optional as _Optional
+    Optional as _Optional,
+    Tuple as _Tuple
 )
 from pandas import DataFrame as _DataFrame
 import pypowsybl._pypowsybl as _pypowsybl
@@ -187,7 +188,7 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'OpenLoadFlow') -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'OpenLoadFlow') -> _Tuple[_List[ComponentResult], object]:
     """
     Run an AC loadflow on a network.
 
@@ -198,12 +199,15 @@ def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'O
 
     Returns:
         A list of component results, one for each component of the network.
+        The loadflow execution report
     """
     p = parameters if parameters is not None else Parameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
+    report = _pypowsybl.Report()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, report)], \
+           report if report == None else report.message
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider : str ='OpenLoadFlow') -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider : str ='OpenLoadFlow') -> _Tuple[_List[ComponentResult], object]:
     """
     Run a DC loadflow on a network.
 
@@ -214,9 +218,12 @@ def run_dc(network: _Network, parameters: Parameters = None, provider : str ='Op
 
     Returns:
         A list of component results, one for each component of the network.
+        The loadflow execution report
     """
     p = parameters if parameters is not None else Parameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider)]
+    report = _pypowsybl.Report()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, report)], \
+           report if report == None else report.message
 
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,

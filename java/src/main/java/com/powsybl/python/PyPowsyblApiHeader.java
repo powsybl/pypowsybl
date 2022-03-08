@@ -601,4 +601,14 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native FilterAttributesType fromCValue(int value);
     }
+
+    @CStruct("report_type")
+    interface ReportPointer extends PointerBase {
+
+        @CField("message")
+        CCharPointer getMessage();
+
+        @CField("message")
+        void setMessage(CCharPointer message);
+    }
 }

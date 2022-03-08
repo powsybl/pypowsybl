@@ -44,7 +44,7 @@ In order to run an AC loadflow, simply use the :func:`run_ac` method:
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> results = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
+    >>> results, report = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
 
 The result is composed of a list of component results, one for each connected component of the network
 included in the computation:
@@ -103,7 +103,7 @@ Then let's create our test network and run the DC load flow:
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> results = lf.run_dc(network, parameters)
+    >>> results, report = lf.run_dc(network, parameters)
 
 We can finally retrieve the computed flows on lines:
 

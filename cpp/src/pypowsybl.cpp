@@ -394,9 +394,9 @@ std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
-                                          const std::string& provider) {
+                                          const std::string& provider, const std::shared_ptr<report_type>& report) {
     return new LoadFlowComponentResultArray(
-            callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
+            callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data(), report.get()));
 }
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {

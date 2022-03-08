@@ -9,6 +9,8 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -38,6 +40,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
 import org.slf4j.LoggerFactory;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -215,13 +218,28 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                           CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                           CCharPointer provider, ReportPointer report,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             LoadFlow.Runner runner = LoadFlow.find(providerStr);
-            LoadFlowResult result = runner.run(network, parameters);
+
+            LoadFlowResult result;
+            if (report.isNull()) {
+                result = runner.run(network, parameters);
+            } else {
+                ReporterModel reporter = new ReporterModel("pypowsybl-loadflow", "LoadFlow");
+
+                result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                        LocalComputationManager.getDefault(), parameters, reporter);
+
+                StringWriter reporterOut = new StringWriter();
+                reporter.export(reporterOut);
+                report.setMessage(CTypeUtil.toCharPtr(reporterOut.toString()));
+
+            }
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }
