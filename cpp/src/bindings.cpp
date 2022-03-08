@@ -134,7 +134,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
 
+    m.def("set_default_loadflow_provider", &pypowsybl::setDefaultLoadFlowProvider, "Set default loadflow provider", py::arg("provider"));
+
     m.def("is_config_read", &pypowsybl::isConfigRead, "Get config read mode");
+
+    m.def("get_default_loadflow_provider", &pypowsybl::getDefaultLoadFlowProvider, "Get default loadflow provider");
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 

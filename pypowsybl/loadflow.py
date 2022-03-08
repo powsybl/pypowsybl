@@ -187,14 +187,14 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'OpenLoadFlow') -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider: str = '') -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
     Args:
         network:    a network
         parameters: the loadflow parameters
-        provider:   the loadflow implementation provider, default OpenLoadFlow
+        provider:   the loadflow implementation provider, default is the default loadflow provider
 
     Returns:
         A list of component results, one for each component of the network.
@@ -203,14 +203,14 @@ def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'O
     return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider : str ='OpenLoadFlow') -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider: str ='') -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
     Args:
         network:    a network
         parameters: the loadflow parameters
-        provider:   the loadflow implementation provider, default OpenLoadFlow
+        provider:   the loadflow implementation provider, default is the default loadflow provider
 
     Returns:
         A list of component results, one for each component of the network.
@@ -331,3 +331,21 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
                             shunts=res_by_type.get(ValidationType.SHUNTS, None),
                             twts=res_by_type.get(ValidationType.TWTS, None),
                             t3wts=res_by_type.get(ValidationType.TWTS3W, None))
+
+def set_default_provider(provider: str) -> None:
+    """
+    Set the default loadflow provider
+
+    Args:
+        provider: name of the default loadflow provider to set
+    """
+    _pypowsybl.set_default_loadflow_provider(provider)
+
+def get_default_provider() -> str:
+    """
+    Get the current default loadflow provider. if nothing is set it is OpenLoadFlow
+
+    Returns:
+        the name of the current default loadflow provider
+    """
+    return _pypowsybl.get_default_loadflow_provider()

@@ -8,6 +8,7 @@ package com.powsybl.python;
 public final class PyPowsyblConfiguration {
 
     private static boolean readConfig = true;
+    private static String defaultLoadflowProvider = "OpenLoadFlow";
 
     private PyPowsyblConfiguration() {
     }
@@ -24,5 +25,13 @@ public final class PyPowsyblConfiguration {
      */
     public static void setReadConfig(boolean value) {
         readConfig = value;
+    }
+
+    public static String getDefaultLoadFlowProvider() {
+        return defaultLoadflowProvider;
+    }
+
+    public static void setDefaultLoadFlowProvider(String loadflowProvider) {
+        PyPowsyblConfiguration.defaultLoadflowProvider = loadflowProvider;
     }
 }

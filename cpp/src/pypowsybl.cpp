@@ -244,6 +244,14 @@ void setConfigRead(bool configRead) {
     callJava<>(::setConfigRead, configRead);
 }
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider) {
+    callJava<>(::setDefaultLoadFlowProvider, (char*) loadFlowProvider.data());
+}
+
+std::string getDefaultLoadFlowProvider() {
+    return toString(callJava<char*>(::getDefaultLoadFlowProvider));
+}
+
 bool isConfigRead() {
     return callJava<bool>(::isConfigRead);
 }

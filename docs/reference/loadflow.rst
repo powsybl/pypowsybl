@@ -79,3 +79,16 @@ The following method allows to check the consistency of a network with AC loadfl
 
     run_validation
     ValidationResult
+
+Loadflow provider
+-----------------
+
+the following methods allow to get and set the default loadflow provider.
+at initialization the default loadflow provider is 'OpenLoadFlow'.
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+    set_default_provider
+    get_default_provider

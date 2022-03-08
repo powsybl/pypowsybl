@@ -166,7 +166,11 @@ void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);
 
+void setDefaultLoadFlowProvider(const std::string& provider);
+
 bool isConfigRead();
+
+std::string getDefaultLoadFlowProvider();
 
 std::string getVersionTable();
 
