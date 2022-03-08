@@ -20,7 +20,7 @@ import util
 import tempfile
 
 TEST_DIR = pathlib.Path(__file__).parent
-
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 class NetworkTestCase(unittest.TestCase):
 
@@ -79,6 +79,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_load_network(self):
         n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
+        self.assertIsNotNone(n)
+
+    def test_load_power_factory_network(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')))
         self.assertIsNotNone(n)
 
     def test_connect_disconnect(self):
