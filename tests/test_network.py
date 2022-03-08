@@ -63,14 +63,15 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_export_parameters(self):
         parameters = pp.network.get_export_parameters('CGMES')
+        print(parameters.index.tolist())
         self.assertEqual(4, len(parameters))
-        name = 'iidm.export.cgmes.using-only-network'
-        self.assertEqual(name, parameters.index.tolist()[0])
+        name = 'iidm.export.cgmes.export-boundary-power-flows'
+        self.assertEqual(name, parameters.index.tolist()[1])
         self.assertEqual(
-            'Export to CGMES using only information present in IIDM Network (including extensions and aliases)',
+            'Export boundaries\' power flows',
             parameters['description'][name])
         self.assertEqual('BOOLEAN', parameters['type'][name])
-        self.assertEqual('false', parameters['default'][name])
+        self.assertEqual('true', parameters['default'][name])
 
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
@@ -502,6 +503,16 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_ieee14()
         sld = n.get_network_area_diagram()
         self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(voltage_level_ids=None)
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram('VL1')
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(['VL1', 'VL2'])
+        self.assertRegex(sld.svg, '.*<svg.*')
+        n.write_network_area_diagram_svg('test', None)
+        n.write_network_area_diagram_svg('test', ['VL1'])
+        n.write_network_area_diagram_svg('test', ['VL1', 'VL2'])
+
 
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()

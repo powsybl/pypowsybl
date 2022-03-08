@@ -34,9 +34,9 @@ class SecurityAnalysisContext extends AbstractContingencyContainer {
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
         return runner
-            .run(network, network.getVariantManager().getWorkingVariantId(), new DefaultLimitViolationDetector(),
-                new LimitViolationFilter(), LocalComputationManager.getDefault(), securityAnalysisParameters,
-                n -> contingencies, Collections.emptyList(), monitors)
+            .run(network, network.getVariantManager().getWorkingVariantId(), n -> contingencies, securityAnalysisParameters,
+                    LocalComputationManager.getDefault(), new LimitViolationFilter(), new DefaultLimitViolationDetector(),
+                Collections.emptyList(), monitors)
             .getResult();
     }
 

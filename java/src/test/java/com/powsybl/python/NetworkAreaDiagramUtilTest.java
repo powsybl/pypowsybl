@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ class NetworkAreaDiagramUtilTest {
     @Test
     void test() throws IOException {
         Network network = IeeeCdfNetworkFactory.create14();
-        String svg = NetworkAreaDiagramUtil.getSvg(network, null, 0);
+        String svg = NetworkAreaDiagramUtil.getSvg(network, Collections.emptyList(), 0);
         assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.xml"))), StandardCharsets.UTF_8)),
                      TestUtil.normalizeLineSeparator(svg));
     }
