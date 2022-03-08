@@ -17,6 +17,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
 import util
+import tempfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -508,9 +509,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertRegex(sld.svg, '.*<svg.*')
         sld = n.get_network_area_diagram(['VL1', 'VL2'])
         self.assertRegex(sld.svg, '.*<svg.*')
-        n.write_network_area_diagram_svg('test', None)
-        n.write_network_area_diagram_svg('test', ['VL1'])
-        n.write_network_area_diagram_svg('test', ['VL1', 'VL2'])
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            test_svg = tmp_dir_name + "test.svg"
+            n.write_network_area_diagram_svg(test_svg, None)
+            n.write_network_area_diagram_svg(test_svg, ['VL1'])
+            n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
 
 
     def test_current_limits(self):
