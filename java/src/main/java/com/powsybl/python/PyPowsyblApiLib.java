@@ -91,6 +91,30 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider()));
     }
 
+    @CEntryPoint(name = "setDefaultSecurityAnalysisProvider")
+    public static void setDefaultSecurityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
+    public static CCharPointer getDefaultSecurityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider()));
+    }
+
+    @CEntryPoint(name = "setDefaultSensitivityAnalysisProvider")
+    public static void setDefaultSensitivityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSensitivityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSensitivityAnalysisProvider")
+    public static CCharPointer getDefaultSensitivityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider()));
+    }
+
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
@@ -382,10 +406,10 @@ public final class PyPowsyblApiLib {
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             if (providerStr.equals("")) {
-                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+                providerStr = PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider();
             }
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-            rootLogger.info("loadflow provider used for security analysis is : {}", providerStr);
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for security analysis is : {}", providerStr);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(result);
         });
@@ -490,10 +514,10 @@ public final class PyPowsyblApiLib {
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             if (providerStr.equals("")) {
-                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+                providerStr = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
             }
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-            rootLogger.info("loadflow provider used for sensitivity analysis is : {}", providerStr);
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for sensitivity analysis is : {}", providerStr);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });

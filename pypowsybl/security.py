@@ -144,7 +144,7 @@ class SecurityAnalysis(_ContingencyContainer):
         _ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: _Network, parameters: Parameters = None,
-               provider : str = 'OpenSecurityAnalysis') -> SecurityAnalysisResult:
+               provider: str = '') -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -241,3 +241,21 @@ def create_analysis() -> SecurityAnalysis:
         A security analysis object, which allows to run a security analysis on a network.
     """
     return SecurityAnalysis(_pypowsybl.create_security_analysis())
+
+def set_default_provider(provider: str) -> None:
+    """
+    Set the default security analysis provider
+
+    Args:
+        provider: name of the default security analysis provider to set
+    """
+    _pypowsybl.set_default_security_analysis_provider(provider)
+
+def get_default_provider() -> str:
+    """
+    Get the current default security analysis provider. if nothing is set it is OpenSecurityAnalysis
+
+    Returns:
+        the name of the current default security analysis provider
+    """
+    return _pypowsybl.get_default_security_analysis_provider()

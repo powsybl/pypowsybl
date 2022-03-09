@@ -17,7 +17,6 @@ class LoadflowTestCase(unittest.TestCase):
         pp.set_config_read(False)
 
     def test_config(self):
-        pp.set_debug_mode(True)
         self.assertEqual('OpenLoadFlow', pp.loadflow.get_default_provider())
         pp.loadflow.set_default_provider("provider")
         self.assertEqual('provider', pp.loadflow.get_default_provider())

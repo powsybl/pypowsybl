@@ -166,11 +166,19 @@ void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);
 
-void setDefaultLoadFlowProvider(const std::string& provider);
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
 
 bool isConfigRead();
 
 std::string getDefaultLoadFlowProvider();
+
+std::string getDefaultSecurityAnalysisProvider();
+
+std::string getDefaultSensitivityAnalysisProvider();
 
 std::string getVersionTable();
 

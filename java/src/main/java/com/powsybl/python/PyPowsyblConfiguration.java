@@ -9,6 +9,8 @@ public final class PyPowsyblConfiguration {
 
     private static boolean readConfig = true;
     private static String defaultLoadflowProvider = "OpenLoadFlow";
+    private static String defaultSecurityAnalysisProvider = "OpenSecurityAnalysis";
+    private static String defaultSensitivityAnalysisProvider = "OpenSensitivityAnalysis";
 
     private PyPowsyblConfiguration() {
     }
@@ -33,5 +35,21 @@ public final class PyPowsyblConfiguration {
 
     public static void setDefaultLoadFlowProvider(String loadflowProvider) {
         PyPowsyblConfiguration.defaultLoadflowProvider = loadflowProvider;
+    }
+
+    public static String getDefaultSecurityAnalysisProvider() {
+        return defaultSecurityAnalysisProvider;
+    }
+
+    public static void setDefaultSecurityAnalysisProvider(String securityAnalysisProvider) {
+        PyPowsyblConfiguration.defaultSecurityAnalysisProvider = securityAnalysisProvider;
+    }
+
+    public static String getDefaultSensitivityAnalysisProvider() {
+        return defaultSensitivityAnalysisProvider;
+    }
+
+    public static void setDefaultSensitivityAnalysisProvider(String sensitivityAnalysisProvider) {
+        PyPowsyblConfiguration.defaultSensitivityAnalysisProvider = sensitivityAnalysisProvider;
     }
 }

@@ -53,3 +53,15 @@ When the security analysis is completed, you can inspect its results:
     SecurityAnalysisResult.bus_results
     SecurityAnalysisResult.three_windings_transformer_results
 
+Security Analysis provider
+--------------------------
+
+the following methods allow to get and set the default security analysis provider.
+at initialization the default security analysis provider is 'OpenSecurityAnalysis'.
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+    set_default_provider
+    get_default_provider

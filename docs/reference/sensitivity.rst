@@ -81,3 +81,16 @@ When the security analysis is completed, you can inspect its results:
     AcSensitivityAnalysisResult
     AcSensitivityAnalysisResult.get_bus_voltages_sensitivity_matrix
     AcSensitivityAnalysisResult.get_reference_voltages
+
+Sensitivity Analysis provider
+-----------------------------
+
+the following methods allow to get and set the default sensitivity analysis provider.
+at initialization the default sensitivity analysis provider is 'OpenSecurityAnalysis'.
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+    set_default_provider
+    get_default_provider
