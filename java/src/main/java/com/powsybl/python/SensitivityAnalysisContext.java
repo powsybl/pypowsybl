@@ -200,7 +200,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     }
 
     SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
-            SensitivityAnalysisParameters sensitivityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SensitivityAnalysisParameters.load() : new SensitivityAnalysisParameters();
+        SensitivityAnalysisParameters sensitivityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SensitivityAnalysisParameters.load() : new SensitivityAnalysisParameters();
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
 
