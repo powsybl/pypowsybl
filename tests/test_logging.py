@@ -23,14 +23,14 @@ class LoggingTestCase(unittest.TestCase):
         #Build a PyPow logger to handle logs and install it
         pypowLogger = logging.getLogger("PyPow")
         pp.set_logger(pypowLogger)
-        pypowLogger.setLevel(level=logging.ERROR)
+        pypowLogger.setLevel(level=logging.NOTSET)
 
         #Install a handler with a simple queue on logger for validation
         q = queue.Queue()
         handler = handlers.QueueHandler(q)
         pypowLogger.addHandler(handler)
 
-        #This default load flow does not output errors
+        #Logging is off, not log should be in the queue
         n = pp.network.create_ieee14()
         lf.run_ac(n)
         self.assertEqual(0, q.qsize())
