@@ -431,8 +431,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters,
-                                            const std::string& provider) {
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data());
+                                            const std::string& provider, bool dc) {
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc);
 }
 
 JavaHandle createSensitivityAnalysis() {

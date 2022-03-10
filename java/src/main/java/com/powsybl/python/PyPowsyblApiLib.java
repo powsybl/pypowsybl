@@ -358,11 +358,11 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   CCharPointer provider, boolean dc, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(result);
