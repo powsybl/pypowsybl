@@ -26,12 +26,12 @@ PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
-pip3 install --upgrade setuptools pip --user
+pip install --upgrade setuptools pip
 ```
 
 Then you can install PyPowSyBl using pip:
 ```bash
-pip3 install pypowsybl --user
+pip install pypowsybl
 ```
 
 ## Getting started
@@ -76,9 +76,14 @@ VL13_0  1.050   -15.16
 VL14_0  1.036   -16.04
 ```
 
-This is just a quick overview of PyPowSyBl features. For more details and many more examples, go to the documentation and Jupyter notebooks.
+This is just a quick appetizer of PyPowSyBl features. PyPowsybl provides a lot more features:
+security analysis, sensitivity analysis, handling of multiple file formats (including CGMES),
+substation and network diagrams generation, ...
+For more details and examples, go to the documentation and Jupyter notebooks.
 
 ## Build from sources
+
+That section is intended for developers who wish to build pypowsybl from the sources in this repository.
 
 Requirements:
 
@@ -93,26 +98,37 @@ To build from sources and install PyPowSyBl package:
 ```bash
 git clone --recursive https://github.com/powsybl/pypowsybl.git
 export JAVA_HOME=<path to GraalVM>
-pip3 install --upgrade setuptools pip --user
-pip3 install . --user
+pip install --upgrade setuptools pip
+pip install -r requirements.txt
+pip install .
 ```
 
-To run unit tests:
-
-```bash
-python3 -m unittest discover --start-directory tests
-```
-
-While developing, you may find it convenient to use the develop (or editable)
+While developing, you may find it convenient to use the developer (or editable)
 mode of installation:
 
 ```bash
 pip install -e .
-# or to build the C extension with debug symbols:
+# or, to build the C extension with debug symbols:
 python setup.py build --debug develop --user
 ```
 
 Please refer to pip and setuptools documentations for more information.
+
+To run unit tests:
+
+```bash
+pytest tests
+```
+
+To run static type checking with `mypy`:
+```bash
+mypy -p pypowsybl
+```
+
+To run linting inspection with `pylint`:
+```bash
+pylint pypowsybl
+```
 
 ## Contribute to documentation
 
@@ -127,7 +143,11 @@ And then, to build the documentation:
 
 ```bash
 make html
-firefox _build/html/index.html
 ```
 
 Web pages are generated in repository _build/html/ for preview before openning a pull request.
+You can for example open it with firefox browser:
+
+```bash
+firefox _build/html/index.html
+```
