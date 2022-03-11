@@ -58,7 +58,7 @@
     </developers>
 
     <packaging>jar</packaging>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.14.0-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
@@ -76,7 +76,7 @@
         <powsybl-math-native.version>1.1.0</powsybl-math-native.version>
         <powsybl-core.version>4.7.0</powsybl-core.version>
         <powsybl-single-line-diagram.version>2.8.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.17.0</powsybl-open-load-flow.version>
+        <powsybl-open-load-flow.version>0.18.0</powsybl-open-load-flow.version>
         <powsybl-network-area-diagram.version>0.3.0</powsybl-network-area-diagram.version>
     </properties>
 

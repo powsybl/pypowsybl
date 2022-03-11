@@ -156,7 +156,24 @@ class SecurityAnalysis(_ContingencyContainer):
             A security analysis result, containing information about violations and monitored elements
         """
         p: Parameters = Parameters() if parameters is None else parameters
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, p, provider))
+        return SecurityAnalysisResult(
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
+
+    def run_dc(self, network: _Network, parameters: Parameters = None,
+               provider: str = 'OpenSecurityAnalysis') -> SecurityAnalysisResult:
+        """ Runs an DC security analysis.
+
+        Args:
+            network:    Network on which the security analysis will be computed
+            parameters: Security analysis parameters
+            provider:   Name of the security analysis implementation provider to be used
+
+        Returns:
+            A security analysis result, containing information about violations and monitored elements
+        """
+        p: Parameters = Parameters() if parameters is None else parameters
+        return SecurityAnalysisResult(
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,

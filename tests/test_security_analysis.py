@@ -32,7 +32,7 @@ def test_config():
     assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
 
 
-def test_security_analysis():
+def test_ac_security_analysis():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
@@ -105,3 +105,21 @@ def test_monitored_elements():
     assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.06, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.06, abs=1e-2)
+
+
+def test_dc_analysis():
+    n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    n.update_loads(id='LOAD', p0=900)
+    n.update_generators(id='GEN', target_p=900)
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
+    sa_result = sa.run_dc(n)
+    assert len(sa_result.post_contingency_results) == 1
+    assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
+    assert sa_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[['First contingency', 'NHV1_NHV2_1', '', 'ACTIVE_POWER', '', 500, 2147483647, 1, 900, 'ONE']])
+    pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
