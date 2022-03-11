@@ -443,7 +443,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"));
+          py::arg("provider"), py::arg("dc"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
