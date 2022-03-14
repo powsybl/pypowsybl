@@ -150,7 +150,8 @@ class SecurityAnalysis(_ContingencyContainer):
         Args:
             network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters
-            provider:   Name of the security analysis implementation provider to be used
+            provider:   Name of the security analysis implementation provider to be used,
+                        will use default provider if empty.
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
@@ -160,13 +161,14 @@ class SecurityAnalysis(_ContingencyContainer):
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
 
     def run_dc(self, network: _Network, parameters: Parameters = None,
-               provider: str = 'OpenSecurityAnalysis') -> SecurityAnalysisResult:
+               provider: str = '') -> SecurityAnalysisResult:
         """ Runs an DC security analysis.
 
         Args:
             network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters
-            provider:   Name of the security analysis implementation provider to be used
+            provider:   Name of the security analysis implementation provider to be used,
+                        will use default provider if empty.
 
         Returns:
             A security analysis result, containing information about violations and monitored elements

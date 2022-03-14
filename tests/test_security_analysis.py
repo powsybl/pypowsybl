@@ -14,7 +14,7 @@ def no_config():
     pp.set_config_read(False)
 
 
-def test_config():
+def test_default_provider():
     pp.set_debug_mode(True)
     assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
     pp.security.set_default_provider("provider")
@@ -24,6 +24,9 @@ def test_config():
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     with pytest.raises(Exception) as exc_info:
         sa.run_ac(n)
+    assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
+    with pytest.raises(Exception) as exc_info:
+        sa.run_dc(n)
     assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
     sa_result = sa.run_ac(n, provider='OpenSecurityAnalysis')
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
