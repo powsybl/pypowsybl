@@ -7,7 +7,7 @@ Loadflow
 The loadflow module allows to run AC and DC loadflows.
 It also provides a method to check the consistency of a network with loadflow equations.
 
-Run a loadflow
+Running a loadflow
 ------------------
 
 .. autosummary::
@@ -16,6 +16,8 @@ Run a loadflow
 
     run_ac
     run_dc
+    set_default_provider
+    get_default_provider
 
 Parameters
 ----------
@@ -79,16 +81,3 @@ The following method allows to check the consistency of a network with AC loadfl
 
     run_validation
     ValidationResult
-
-Loadflow provider
------------------
-
-the following methods allow to get and set the default loadflow provider.
-at initialization the default loadflow provider is 'OpenLoadFlow'.
-
-.. autosummary::
-   :toctree: api/
-   :nosignatures:
-
-    set_default_provider
-    get_default_provider
