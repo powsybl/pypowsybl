@@ -244,6 +244,30 @@ void setConfigRead(bool configRead) {
     callJava<>(::setConfigRead, configRead);
 }
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider) {
+    callJava<>(::setDefaultLoadFlowProvider, (char*) loadFlowProvider.data());
+}
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider) {
+    callJava<>(::setDefaultSecurityAnalysisProvider, (char*) securityAnalysisProvider.data());
+}
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider) {
+    callJava<>(::setDefaultSensitivityAnalysisProvider, (char*) sensitivityAnalysisProvider.data());
+}
+
+std::string getDefaultLoadFlowProvider() {
+    return toString(callJava<char*>(::getDefaultLoadFlowProvider));
+}
+
+std::string getDefaultSecurityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSecurityAnalysisProvider));
+}
+
+std::string getDefaultSensitivityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSensitivityAnalysisProvider));
+}
+
 bool isConfigRead() {
     return callJava<bool>(::isConfigRead);
 }
