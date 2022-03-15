@@ -126,3 +126,7 @@ def test_dc_analysis():
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
         data=[['First contingency', 'NHV1_NHV2_1', '', 'ACTIVE_POWER', '', 500, 2147483647, 1, 900, 'ONE']])
     pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
+
+
+def test_provider_names():
+    assert 'OpenSecurityAnalysis' in pp.security.get_provider_names()
