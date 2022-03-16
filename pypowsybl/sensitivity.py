@@ -135,7 +135,7 @@ class DcSensitivityAnalysisResult:
             # remove rows corresponding to power transfer second zone
             return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_branch_flows_sensitivity_matrix(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
+    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the base case or on the post contingency state depending if
         a contingency ID has been provided.
 
@@ -163,7 +163,7 @@ class DcSensitivityAnalysisResult:
         # remove rows corresponding to power transfer second zone
         return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_precontingency_branch_flows_sensitivity_matrix(self, matrix_id: str) -> _Optional[_pd.DataFrame]:
+    def get_precontingency_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default') -> _Optional[_pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the base case
         Args:
             matrix_id (str, mandatory): ID of the matrix
@@ -188,7 +188,7 @@ class DcSensitivityAnalysisResult:
             # remove rows corresponding to power transfer second zone
             return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_postcontingency_branch_flows_sensitivity_matrix(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
+    def get_postcontingency_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ Get the matrix of branch flows sensitivities on the post contingency.
         Args:
             matrix_id (str, mandatory): ID of the matrix
@@ -214,7 +214,7 @@ class DcSensitivityAnalysisResult:
             # remove rows corresponding to power transfer second zone
             return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_reference_flows(self, matrix_id: str, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
+    def get_reference_flows(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
         """ The branches active power flows on the base case or on the post contingency state depending if
         a contingency ID has been provided.
 
@@ -321,8 +321,25 @@ class SensitivityAnalysis(_ContingencyContainer):
                 raise _PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
         return (flatten_variables_ids, branch_data_frame_index)
 
+    def set_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List) -> None:
+        """
+        .. deprecated:: 0.14.0
 
-    def add_branch_flow_factor_matrix(self, matrix_id: str, branches_ids: _List[str], variables_ids: _List) -> None:
+        Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
+
+        A variable could be:
+
+         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a zone ID
+         - a couple of zone ID to define a transfer between 2 zones
+
+        Args:
+            branches_ids: IDs of branches for which active power flow sensitivities should be computed
+            variables: variables which may impact branch flows,to which we should compute sensitivities
+        """
+        self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
+
+    def add_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List, matrix_id: str = 'default') -> None:
         """ Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
         A variable could be:
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
@@ -330,16 +347,16 @@ class SensitivityAnalysis(_ContingencyContainer):
          - a couple of zone ID to define a transfer between 2 zones
 
         Args:
-            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
             branches_ids: IDs of branches for which active power flow sensitivities should be computed
             variables: variables which may impact branch flows,to which we should compute sensitivities
+            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
         """
         (flatten_variables_ids, branch_data_frame_index) = self.process_variable_ids(variables_ids)
         _pypowsybl.add_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids, flatten_variables_ids)
         self.branches_ids[matrix_id] = branches_ids
         self.branch_data_frame_index[matrix_id] = branch_data_frame_index
 
-    def add_precontingency_branch_flow_factor_matrix(self, matrix_id: str, branches_ids: _List[str], variables_ids: _List) -> None:
+    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List, matrix_id: str = 'default') -> None:
         """ Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
         A variable could be:
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
@@ -347,9 +364,9 @@ class SensitivityAnalysis(_ContingencyContainer):
          - a couple of zone ID to define a transfer between 2 zones
 
         Args:
-            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
             branches_ids: IDs of branches for which active power flow sensitivities should be computed
             variables: variables which may impact branch flows,to which we should compute sensitivities
+            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
         """
         (flatten_variables_ids, branch_data_frame_index) = self.process_variable_ids(variables_ids)
 
@@ -357,7 +374,7 @@ class SensitivityAnalysis(_ContingencyContainer):
         self.precontingency_branches_ids[matrix_id] = branches_ids
         self.precontingency_branch_data_frame_index[matrix_id] = branch_data_frame_index
 
-    def add_postcontingency_branch_flow_factor_matrix(self, matrix_id: str, branches_ids: _List[str], variables_ids: _List, contingencies_ids: _List[str]) -> None:
+    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List, contingencies_ids: _List[str], matrix_id: str = 'default') -> None:
         """ Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
         A variable could be:
          - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
@@ -365,10 +382,10 @@ class SensitivityAnalysis(_ContingencyContainer):
          - a couple of zone ID to define a transfer between 2 zones
 
         Args:
-            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
             branches_ids: IDs of branches for which active power flow sensitivities should be computed
             variables: variables which may impact branch flows,to which we should compute sensitivities
             contingencies_ids: List of the IDs of the contingencies to simulate
+            matrix_id: The matrix unique identifier, to be used to retrieve the sensibility value
         """
         (flatten_variables_ids, branch_data_frame_index) = self.process_variable_ids(variables_ids)
 
