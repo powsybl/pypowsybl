@@ -79,6 +79,42 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    @CEntryPoint(name = "setDefaultLoadFlowProvider")
+    public static void setDefaultLoadFlowProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultLoadFlowProvider")
+    public static CCharPointer getDefaultLoadFlowProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider()));
+    }
+
+    @CEntryPoint(name = "setDefaultSecurityAnalysisProvider")
+    public static void setDefaultSecurityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
+    public static CCharPointer getDefaultSecurityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider()));
+    }
+
+    @CEntryPoint(name = "setDefaultSensitivityAnalysisProvider")
+    public static void setDefaultSensitivityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSensitivityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSensitivityAnalysisProvider")
+    public static CCharPointer getDefaultSensitivityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider()));
+    }
+
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
@@ -220,6 +256,11 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            }
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            rootLogger.info("loadflow provider used is : {}", providerStr);
             LoadFlow.Runner runner = LoadFlow.find(providerStr);
             LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
@@ -358,12 +399,17 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   CCharPointer provider, boolean dc, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider();
+            }
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for security analysis is : {}", providerStr);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(result);
         });
@@ -467,6 +513,11 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
+            }
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for sensitivity analysis is : {}", providerStr);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });
@@ -514,7 +565,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "freeArray")
     public static <T extends PointerBase> void freeArray(IsolateThread thread, ArrayPointer<T> arrayPointer,
-                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
     }

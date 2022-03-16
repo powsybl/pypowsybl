@@ -35,6 +35,12 @@ public final class NetworkUtil {
         return network;
     }
 
+    public static Network createEurostagTutorialExample1WithFixedPowerLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
+        fix(network);
+        return network;
+    }
+
     private static Network fix(Network network) {
         Generator gen = network.getGenerator("GEN");
         if (gen != null) {

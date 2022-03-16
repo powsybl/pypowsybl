@@ -7,7 +7,7 @@ Loadflow
 The loadflow module allows to run AC and DC loadflows.
 It also provides a method to check the consistency of a network with loadflow equations.
 
-Run a loadflow
+Running a loadflow
 ------------------
 
 .. autosummary::
@@ -16,6 +16,8 @@ Run a loadflow
 
     run_ac
     run_dc
+    set_default_provider
+    get_default_provider
 
 Parameters
 ----------
