@@ -11,7 +11,6 @@ import pandas as pd
 from numpy import NaN
 import numpy as np
 
-import pypowsybl
 import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt

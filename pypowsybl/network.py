@@ -3016,8 +3016,8 @@ def get_import_formats() -> _List[str]:
     """
     Get list of supported import formats
 
-    :return: the list of supported import formats
-    :rtype: List[str]
+    Returns:
+         the list of supported import formats
     """
     return _pp.get_network_import_formats()
 
@@ -3026,8 +3026,8 @@ def get_export_formats() -> _List[str]:
     """
     Get list of supported export formats
 
-    :return: the list of supported export formats
-    :rtype: List[str]
+    Returns:
+        the list of supported export formats
     """
     return _pp.get_network_export_formats()
 

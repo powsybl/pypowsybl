@@ -18,6 +18,7 @@ DATA_DIR = TEST_DIR.parent.joinpath('data')
 def no_config():
     pp.set_config_read(False)
 
+
 def test_config():
     pp.set_debug_mode(True)
     assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
@@ -38,6 +39,7 @@ def test_config():
     assert 'provider' == pp.sensitivity.get_default_provider()
     pp.sensitivity.set_default_provider('OpenSensitivityAnalysis')
     assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+
 
 def test_sensitivity_analysis():
     n = pp.network.create_ieee14()
@@ -211,3 +213,7 @@ def test_variant():
     df = r.get_branch_flows_sensitivity_matrix()
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.078150, abs=1e-6)
+
+
+def test_provider_names():
+    assert 'OpenSensitivityAnalysis' in pp.sensitivity.get_provider_names()

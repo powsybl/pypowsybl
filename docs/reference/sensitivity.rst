@@ -21,6 +21,7 @@ You can run an AC or DC security analysis using the following methods:
     DcSensitivityAnalysis.run
     set_default_provider
     get_default_provider
+    get_provider_names
 
 Contingencies definition
 ------------------------
