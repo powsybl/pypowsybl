@@ -206,8 +206,7 @@ public final class PyPowsyblApiLib {
     }
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
-        return parameters
+        return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
                 .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
@@ -228,9 +227,12 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
-            return convertToLoadFlowParametersPointer(parameters);
+            return convertToLoadFlowParametersPointer(createLoadFlowParameters());
         });
+    }
+
+    private static LoadFlowParameters createLoadFlowParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
 
     @CEntryPoint(name = "freeLoadFlowParameters")
