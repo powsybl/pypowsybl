@@ -283,7 +283,7 @@ def get_provider_names() -> _List[str]:
     """
     Get list of supported provider names
 
-    :return: the list of supported provider names
-    :rtype: List[str]
+    Returns:
+        the list of supported provider names
     """
     return _pypowsybl.get_security_analysis_provider_names()
