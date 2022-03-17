@@ -206,13 +206,14 @@ public final class PyPowsyblApiLib {
     }
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        return new LoadFlowParameters()
+        LoadFlowParameters parameters = PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
+        return parameters
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
                 .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
                 .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
                 .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setShuntCompensatorVoltageControlOn(loadFlowParametersPtr.isSimulShunt())
                 .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
                 .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
