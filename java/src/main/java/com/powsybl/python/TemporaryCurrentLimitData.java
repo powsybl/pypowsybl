@@ -38,36 +38,20 @@ public class TemporaryCurrentLimitData {
     public String getBranchId() {
         return branchId;
     }
-
     public String getName() {
         return name;
     }
-
     public double getValue() {
         return value;
     }
-
     public int getAcceptableDuration() {
         return acceptableDuration;
     }
-
     public Branch.Side getSide() {
         return side;
     }
 
     public boolean isFictitious() {
         return isFictitious;
-    }
-
-    @Override
-    public String toString() {
-        return "TemporaryLimitContext{" +
-            "branchId='" + branchId + '\'' +
-            ", name='" + name + '\'' +
-            ", side=" + side +
-            ", value=" + value +
-            ", acceptableDuration=" + acceptableDuration +
-            ", isFictitious=" + isFictitious +
-            '}';
     }
 }

@@ -2446,7 +2446,12 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all current limits on the network paired with their branch id.
+<<<<<<< HEAD
         get_current_limits is deprecated, use get_operational_limits instead
+||||||| constructed merge base
+=======
+        get_current_limits is deprecated, use get_limits instead
+>>>>>>> create a dataframe with all limits of the network
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -2455,9 +2460,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             all current limits on the network
         """
+<<<<<<< HEAD
         warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
+||||||| constructed merge base
+=======
+        warnings.warn("get_current_limits is deprecated, use get_limits instead", DeprecationWarning)
+>>>>>>> create a dataframe with all limits of the network
         return self.get_elements(ElementType.CURRENT_LIMITS, all_attributes, attributes)
 
+<<<<<<< HEAD
     def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all limits on the network paired with their equipment id.
@@ -2473,6 +2484,24 @@ class Network:  # pylint: disable=too-many-public-methods
         limits['acceptable_duration'] = limits['acceptable_duration'].map(lambda x: Inf if x == -1 else x)
         return limits
 
+||||||| constructed merge base
+=======
+    def get_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get the list of all limits on the network paired with their equipment id.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            all limits on the network
+        """
+        limits = self.get_elements(ElementType.LIMITS, all_attributes, attributes)
+        limits['acceptable_duration'] = limits['acceptable_duration'].map(lambda x: Inf if x == -1 else x)
+        return limits
+
+>>>>>>> create a dataframe with all limits of the network
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
