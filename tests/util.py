@@ -20,3 +20,6 @@ def create_three_windings_transformer_network() -> Network:
 
 def create_non_linear_shunt_network() -> Network:
     return pp.network._create_network('non_linear_shunt')
+
+def create_three_windings_transformer_with_current_limits_network() -> Network:
+    return pp.network._create_network('three_windings_transformer_with_current_limits')

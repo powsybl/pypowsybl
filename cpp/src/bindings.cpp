@@ -184,6 +184,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
+            .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
             .export_values();
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")

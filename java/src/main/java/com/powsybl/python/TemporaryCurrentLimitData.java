@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class TemporaryLimitContext {
+public class TemporaryCurrentLimitData {
 
     private final String branchId;
     private final String name;
@@ -22,7 +22,7 @@ public class TemporaryLimitContext {
     private final int acceptableDuration;
     private final boolean isFictitious;
 
-    public TemporaryLimitContext(String branchId, String name, Branch.Side side, double value, int acceptableDuration, boolean isFictitious) {
+    public TemporaryCurrentLimitData(String branchId, String name, Branch.Side side, double value, int acceptableDuration, boolean isFictitious) {
         this.branchId = Objects.requireNonNull(branchId);
         this.name = Objects.requireNonNull(name);
         this.side = Objects.requireNonNull(side);
@@ -31,7 +31,7 @@ public class TemporaryLimitContext {
         this.isFictitious = isFictitious;
     }
 
-    public TemporaryLimitContext(String branchId, String name, Branch.Side side, double value) {
+    public TemporaryCurrentLimitData(String branchId, String name, Branch.Side side, double value) {
         this(branchId, name, side, value, -1, false);
     }
 

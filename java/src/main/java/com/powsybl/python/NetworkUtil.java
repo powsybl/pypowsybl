@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.powsybl.python.TemporaryLimitData.Side.*;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -198,24 +200,77 @@ public final class NetworkUtil {
         return elementsIds;
     }
 
-    public static Stream<TemporaryLimitContext> getCurrentLimits(Network network) {
-        Stream.Builder<TemporaryLimitContext> temporaryLimitContexts = Stream.builder();
+    public static Stream<TemporaryCurrentLimitData> getCurrentLimits(Network network) {
+        Stream.Builder<TemporaryCurrentLimitData> temporaryLimitContexts = Stream.builder();
         network.getBranchStream().forEach(branch -> {
             if (branch.getCurrentLimits1() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
+                temporaryLimitContexts.add(new TemporaryCurrentLimitData(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
                 branch.getCurrentLimits1().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
+                        .map(temporaryLimit -> new TemporaryCurrentLimitData(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
                                 temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
                 .forEach(temporaryLimitContexts::add);
             }
             if (branch.getCurrentLimits2() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
+                temporaryLimitContexts.add(new TemporaryCurrentLimitData(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
                 branch.getCurrentLimits2().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
+                        .map(temporaryLimit -> new TemporaryCurrentLimitData(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
                                 temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
                         .forEach(temporaryLimitContexts::add);
             }
         });
         return temporaryLimitContexts.build();
+    }
+
+    public static Stream<TemporaryLimitData> getLimits(Network network) {
+        Stream.Builder<TemporaryLimitData> temporaryLimitContexts = Stream.builder();
+        network.getBranchStream().forEach(branch -> {
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getCurrentLimits1(), ONE, PyPowsyblApiHeader.ElementType.LINE);
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getCurrentLimits2(), TWO, PyPowsyblApiHeader.ElementType.LINE);
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getActivePowerLimits1(), ONE, PyPowsyblApiHeader.ElementType.LINE);
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getActivePowerLimits2(), TWO, PyPowsyblApiHeader.ElementType.LINE);
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getApparentPowerLimits1(), ONE, PyPowsyblApiHeader.ElementType.LINE);
+            addLimit(temporaryLimitContexts, branch.getId(),  branch.getApparentPowerLimits2(), TWO, PyPowsyblApiHeader.ElementType.LINE);
+        });
+        network.getDanglingLineStream().forEach(danglingLine -> {
+            addLimit(temporaryLimitContexts, danglingLine.getId(), danglingLine.getCurrentLimits(), NONE,
+                    PyPowsyblApiHeader.ElementType.DANGLING_LINE);
+            addLimit(temporaryLimitContexts, danglingLine.getId(), danglingLine.getActivePowerLimits(), NONE,
+                    PyPowsyblApiHeader.ElementType.DANGLING_LINE);
+            addLimit(temporaryLimitContexts, danglingLine.getId(), danglingLine.getApparentPowerLimits(), NONE,
+                    PyPowsyblApiHeader.ElementType.DANGLING_LINE);
+        });
+        network.getThreeWindingsTransformerStream().forEach(threeWindingsTransformer -> {
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg1().getCurrentLimits(), ONE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg1().getActivePowerLimits(), ONE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg1().getApparentPowerLimits(), ONE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg2().getCurrentLimits(), TWO,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg2().getActivePowerLimits(), TWO,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg2().getApparentPowerLimits(), TWO,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg3().getCurrentLimits(), THREE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg3().getActivePowerLimits(), THREE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+            addLimit(temporaryLimitContexts, threeWindingsTransformer.getId(), threeWindingsTransformer.getLeg3().getApparentPowerLimits(), THREE,
+                    PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER);
+        });
+        return temporaryLimitContexts.build();
+    }
+
+    private static void addLimit(Stream.Builder<TemporaryLimitData> temporaryLimitContexts, String id, LoadingLimits limits,
+                                 TemporaryLimitData.Side side, PyPowsyblApiHeader.ElementType type) {
+        if (limits != null) {
+            temporaryLimitContexts.add(new TemporaryLimitData(id, "permanent_limit", side, limits.getPermanentLimit(), limits.getLimitType(), type));
+            limits.getTemporaryLimits().stream()
+                    .map(temporaryLimit -> new TemporaryLimitData(id, temporaryLimit.getName(), side, temporaryLimit.getValue(),
+                            limits.getLimitType(), type, temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                    .forEach(temporaryLimitContexts::add);
+        }
+
     }
 }

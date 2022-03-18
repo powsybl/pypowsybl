@@ -13,7 +13,9 @@ import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
-import com.powsybl.python.TemporaryLimitContext;
+import com.powsybl.python.PyPowsyblApiHeader;
+import com.powsybl.python.TemporaryCurrentLimitData;
+import com.powsybl.python.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -73,6 +75,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.CURRENT_LIMITS, currentLimits());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
+        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -678,12 +681,25 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper currentLimits() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getCurrentLimits)
-                .stringsIndex("branch_id", TemporaryLimitContext::getBranchId)
-                .stringsIndex("name", TemporaryLimitContext::getName)
-                .enums("side", Branch.Side.class, TemporaryLimitContext::getSide)
-                .doubles("value", TemporaryLimitContext::getValue)
-                .ints("acceptable_duration", TemporaryLimitContext::getAcceptableDuration)
-                .booleans("is_fictitious", TemporaryLimitContext::isFictitious)
+                .stringsIndex("branch_id", TemporaryCurrentLimitData::getBranchId)
+                .stringsIndex("name", TemporaryCurrentLimitData::getName)
+                .enums("side", Branch.Side.class, TemporaryCurrentLimitData::getSide)
+                .doubles("value", TemporaryCurrentLimitData::getValue)
+                .ints("acceptable_duration", TemporaryCurrentLimitData::getAcceptableDuration)
+                .booleans("is_fictitious", TemporaryCurrentLimitData::isFictitious)
+                .build();
+    }
+
+    private static NetworkDataframeMapper operationalLimits() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getLimits)
+                .stringsIndex("element_id", TemporaryLimitData::getId)
+                .stringsIndex("name", TemporaryLimitData::getName)
+                .enums("element_type", PyPowsyblApiHeader.ElementType.class, TemporaryLimitData::getElementType)
+                .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
+                .enums("type",  LimitType.class, TemporaryLimitData::getType)
+                .doubles("value", TemporaryLimitData::getValue)
+                .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
+                .booleans("is_fictitious", TemporaryLimitData::isFictitious)
                 .build();
     }
 

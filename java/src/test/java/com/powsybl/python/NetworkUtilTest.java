@@ -34,7 +34,7 @@ class NetworkUtilTest {
     @Test
     void testCurrentLimits() {
         var network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
-        Stream<TemporaryLimitContext> currentLimits = NetworkUtil.getCurrentLimits(network);
+        Stream<TemporaryCurrentLimitData> currentLimits = NetworkUtil.getCurrentLimits(network);
         assertThat(currentLimits).hasSize(9).element(0).satisfies(l -> {
             assertEquals("NHV1_NHV2_1", l.getBranchId());
             assertEquals("permanent_limit", l.getName());

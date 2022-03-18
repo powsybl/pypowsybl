@@ -8,12 +8,15 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 import sys as _sys
 import datetime as _datetime
+import warnings
 from typing import (
     List as _List,
     Set as _Set,
     Dict as _Dict,
     Optional as _Optional, Union,
 )
+
+from numpy import Inf
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 from numpy.typing import ArrayLike as _ArrayLike
@@ -2443,6 +2446,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all current limits on the network paired with their branch id.
+        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -2451,7 +2455,23 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             all current limits on the network
         """
+        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
         return self.get_elements(ElementType.CURRENT_LIMITS, all_attributes, attributes)
+
+    def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get the list of all limits on the network paired with their equipment id.
+
+        Args:
+            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
+            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            all limits on the network
+        """
+        limits = self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        limits['acceptable_duration'] = limits['acceptable_duration'].map(lambda x: Inf if x == -1 else x)
+        return limits
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
