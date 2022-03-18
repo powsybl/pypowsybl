@@ -28,6 +28,7 @@ Following methods may be used to create a new network instance:
    create_ieee118
    create_ieee300
    create_eurostag_tutorial_example1_network
+   create_eurostag_tutorial_example1_with_power_limits_network
    create_four_substations_node_breaker_network
    create_micro_grid_be_network
    create_micro_grid_nl_network
@@ -66,6 +67,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_2_windings_transformers
    Network.get_3_windings_transformers
    Network.get_batteries
+   Network.get_bus_breaker_topology
    Network.get_busbar_sections
    Network.get_buses
    Network.get_current_limits
@@ -76,6 +78,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_lines
    Network.get_loads
    Network.get_linear_shunt_compensator_sections
+   Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
@@ -86,12 +89,11 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_static_var_compensators
    Network.get_substations
    Network.get_switches
-   Network.get_voltage_level_topology
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
 
 
-Network elements  update
+Network elements update
 ------------------------
 
 Network elements can be modified using dataframes:
@@ -104,18 +106,48 @@ Network elements can be modified using dataframes:
    Network.update_batteries
    Network.update_buses
    Network.update_dangling_lines
-   Network.update_elements
    Network.update_generators
    Network.update_hvdc_lines
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
+   Network.update_non_linear_shunt_compensator_sections
    Network.update_phase_tap_changers
    Network.update_ratio_tap_changers
    Network.update_shunt_compensators
    Network.update_static_var_compensators
    Network.update_switches
    Network.update_vsc_converter_stations
+
+
+
+Network elements creation
+-------------------------
+
+Network elements can be created using the following methods:
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   Network.create_2_windings_transformers
+   Network.create_batteries
+   Network.create_busbar_sections
+   Network.create_buses
+   Network.create_dangling_lines
+   Network.create_generators
+   Network.create_hvdc_lines
+   Network.create_lcc_converter_stations
+   Network.create_lines
+   Network.create_loads
+   Network.create_phase_tap_changers
+   Network.create_ratio_tap_changers
+   Network.create_shunt_compensators
+   Network.create_static_var_compensators
+   Network.create_substations
+   Network.create_switches
+   Network.create_voltage_levels
+   Network.create_vsc_converter_stations
 
 
 Network variants management
@@ -145,6 +177,8 @@ Miscellaneous network functions
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
+   Network.get_network_area_diagram
+   Network.write_network_area_diagram_svg
    Network.disconnect
    Network.connect
    Network.open_switch

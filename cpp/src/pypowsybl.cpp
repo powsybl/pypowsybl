@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -244,6 +244,30 @@ void setConfigRead(bool configRead) {
     callJava<>(::setConfigRead, configRead);
 }
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider) {
+    callJava<>(::setDefaultLoadFlowProvider, (char*) loadFlowProvider.data());
+}
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider) {
+    callJava<>(::setDefaultSecurityAnalysisProvider, (char*) securityAnalysisProvider.data());
+}
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider) {
+    callJava<>(::setDefaultSensitivityAnalysisProvider, (char*) sensitivityAnalysisProvider.data());
+}
+
+std::string getDefaultLoadFlowProvider() {
+    return toString(callJava<char*>(::getDefaultLoadFlowProvider));
+}
+
+std::string getDefaultSecurityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSecurityAnalysisProvider));
+}
+
+std::string getDefaultSensitivityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSensitivityAnalysisProvider));
+}
+
 bool isConfigRead() {
     return callJava<bool>(::isConfigRead);
 }
@@ -399,12 +423,26 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
 }
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {
+    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
+}
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth) {
+    ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
+}
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth) {
+    ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -417,8 +455,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters,
-                                            const std::string& provider) {
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data());
+                                            const std::string& provider, bool dc) {
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -514,20 +552,9 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType) {
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType));
-}
-
-int getSeriesType(element_type elementType, const std::string& seriesName) {
-    return callJava<int>(::getSeriesType, elementType, (char *) seriesName.c_str());
-}
-
-bool isIndex(element_type elementType, const std::string& seriesName) {
-    return callJava<bool>(::isIndex, elementType, (char *) seriesName.c_str());
-}
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index) {
-    return callJava<int>(::getIndexType, elementType, (char *) seriesName.c_str(), index);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
+	ToCharPtrPtr attributesPtr(attributes);
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
@@ -596,8 +623,52 @@ SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, st
     return new SeriesArray(callJava<array*>(::getNodeBreakerViewInternalConnections, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType) {
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewSwitches, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewBuses, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel) {
+    return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
+}
+
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
     pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+}
+
+std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
+    std::vector<SeriesMetadata> res;
+    for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
+        const series_metadata& series = dataframeMetadata->attributes_metadata[i];
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
+    }
+    return res;
+}
+
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
+
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType) {
+
+    dataframes_metadata* allDataframesMetadata = pypowsybl::callJava<dataframes_metadata*>(::getCreationMetadata, elementType);
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (int i =0; i < allDataframesMetadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(allDataframesMetadata->dataframes_metadata + i));
+    }
+    pypowsybl::callJava(::freeDataframesMetadata, allDataframesMetadata);
+    return res;
+}
+
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType) {
+    pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
 }
 
 }

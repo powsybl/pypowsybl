@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -181,6 +181,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -190,6 +191,31 @@ public final class NetworkDataframes {
                 .addExtensions(getExtensionSeriesProviders(DataframeElementType.GENERATOR))
                 .addProperties()
                 .build();
+    }
+
+    private static String getRegulatedElementId(Generator generator) {
+        Terminal terminal = generator.getRegulatingTerminal();
+        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+            //Not supported for the moment
+            return null;
+        }
+        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private static void setRegulatedElement(Generator generator, String elementId) {
+        Network network = generator.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            generator.setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+        } else {
+            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                    ": the regulated element may only be a busbar section or an injection.");
+        }
     }
 
     static NetworkDataframeMapper buses() {
@@ -285,12 +311,14 @@ public final class NetworkDataframes {
     }
 
     static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
-        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index));
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index)
+                .orElseThrow(() -> new PowsyblException("id is missing")));
         if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
             throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
         } else {
             ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
-            int section = dataframe.getIntValue("section", 1, index);
+            int section = dataframe.getIntValue("section", 1, index)
+                    .orElseThrow(() -> new PowsyblException("section is missing"));
             return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
         }
     }
@@ -474,8 +502,9 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getVscConverterStationStream, getOrThrow(Network::getVscConverterStation, "VSC converter station"))
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
-                .doubles("voltage_setpoint", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
-                .doubles("reactive_power_setpoint", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
+                .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
+                .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
+                .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
@@ -492,8 +521,10 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getStaticVarCompensatorStream, getOrThrow(Network::getStaticVarCompensator, "Static var compensator"))
                 .stringsIndex("id", StaticVarCompensator::getId)
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
-                .doubles("voltage_setpoint", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
-                .doubles("reactive_power_setpoint", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
+                .doubles("b_min", StaticVarCompensator::getBmin, StaticVarCompensator::setBmin)
+                .doubles("b_max", StaticVarCompensator::getBmax, StaticVarCompensator::setBmax)
+                .doubles("target_v", StaticVarCompensator::getVoltageSetpoint, StaticVarCompensator::setVoltageSetpoint)
+                .doubles("target_q", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
                 .doubles("p", getP(), setP())
@@ -565,7 +596,7 @@ public final class NetworkDataframes {
                 .stringsIndex("id", HvdcLine::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
                 .enums("converters_mode", HvdcLine.ConvertersMode.class, HvdcLine::getConvertersMode, HvdcLine::setConvertersMode)
-                .doubles("active_power_setpoint", HvdcLine::getActivePowerSetpoint, HvdcLine::setActivePowerSetpoint)
+                .doubles("target_p", HvdcLine::getActivePowerSetpoint, HvdcLine::setActivePowerSetpoint)
                 .doubles("max_p", HvdcLine::getMaxP, HvdcLine::setMaxP)
                 .doubles("nominal_v", HvdcLine::getNominalV, HvdcLine::setNominalV)
                 .doubles("r", HvdcLine::getR, HvdcLine::setR)
@@ -583,15 +614,23 @@ public final class NetworkDataframes {
                 network.getTwoWindingsTransformerStream()
                         .filter(twt -> twt.getRatioTapChanger() != null)
                         .flatMap(twt -> twt.getRatioTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getRatioTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps)
+        return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps, NetworkDataframes::getRatioTapChangers)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
-                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR())
-                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX())
-                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG())
-                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho(), (p, rho) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR(), (p, r) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX(), (p, x) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG(), (p, g) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB(), (p, b) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
+    }
+
+    static Triple<String, RatioTapChanger, Integer> getRatioTapChangers(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", 0, index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        int position = dataframe.getIntValue("position", 1, index)
+                .orElseThrow(() -> new IllegalArgumentException("position column is missing"));
+        return Triple.of(id, network.getTwoWindingsTransformer(id).getRatioTapChanger(), position);
     }
 
     private static NetworkDataframeMapper ptcSteps() {
@@ -599,16 +638,24 @@ public final class NetworkDataframes {
                 network.getTwoWindingsTransformerStream()
                         .filter(twt -> twt.getPhaseTapChanger() != null)
                         .flatMap(twt -> twt.getPhaseTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt.getId(), twt.getPhaseTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps)
+        return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps, NetworkDataframes::getPhaseTapChangers)
                 .stringsIndex("id", Triple::getLeft)
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho())
-                .doubles("alpha", p -> p.getMiddle().getStep(p.getRight()).getAlpha())
-                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR())
-                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX())
-                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG())
-                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB())
+                .doubles("rho", p -> p.getMiddle().getStep(p.getRight()).getRho(), (p, rho) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                .doubles("alpha", p -> p.getMiddle().getStep(p.getRight()).getAlpha(), (p, alpha) -> p.getMiddle().getStep(p.getRight()).setAlpha(alpha))
+                .doubles("r", p -> p.getMiddle().getStep(p.getRight()).getR(), (p, r) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", p -> p.getMiddle().getStep(p.getRight()).getX(), (p, x) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", p -> p.getMiddle().getStep(p.getRight()).getG(), (p, g) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", p -> p.getMiddle().getStep(p.getRight()).getB(), (p, b) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
+    }
+
+    static Triple<String, PhaseTapChanger, Integer> getPhaseTapChangers(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", 0, index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        int position = dataframe.getIntValue("position", 1, index)
+                .orElseThrow(() -> new IllegalArgumentException("position column is missing"));
+        return Triple.of(id, network.getTwoWindingsTransformer(id).getPhaseTapChanger(), position);
     }
 
     private static NetworkDataframeMapper rtcs() {
@@ -667,18 +714,18 @@ public final class NetworkDataframes {
                 network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
     }
 
-    private static Stream<Triple<String, Integer, ReactiveCapabilityCurve.Point>> streamPoints(Network network) {
+    private static Stream<Triple<String, ReactiveCapabilityCurve.Point, Integer>> streamPoints(Network network) {
         return streamReactiveLimitsHolder(network)
                 .filter(p -> p.getRight().getReactiveLimits() instanceof ReactiveCapabilityCurve)
                 .flatMap(p -> indexPoints(p.getLeft(), p.getRight()).stream());
     }
 
-    private static List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> indexPoints(String id, ReactiveLimitsHolder holder) {
+    private static List<Triple<String, ReactiveCapabilityCurve.Point, Integer>> indexPoints(String id, ReactiveLimitsHolder holder) {
         ReactiveCapabilityCurve curve = (ReactiveCapabilityCurve) holder.getReactiveLimits();
-        List<Triple<String, Integer, ReactiveCapabilityCurve.Point>> values = new ArrayList<>(curve.getPointCount());
+        List<Triple<String, ReactiveCapabilityCurve.Point, Integer>> values = new ArrayList<>(curve.getPointCount());
         int num = 0;
         for (ReactiveCapabilityCurve.Point point : curve.getPoints()) {
-            values.add(Triple.of(id, num, point));
+            values.add(Triple.of(id, point, num));
             num++;
         }
         return values;
@@ -687,10 +734,10 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper reactiveCapabilityCurves() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::streamPoints)
                 .stringsIndex("id", Triple::getLeft)
-                .intsIndex("num", Triple::getMiddle)
-                .doubles("p", t -> t.getRight().getP())
-                .doubles("min_q", t -> t.getRight().getMinQ())
-                .doubles("max_q", t -> t.getRight().getMaxQ())
+                .intsIndex("num", Triple::getRight)
+                .doubles("p", t -> t.getMiddle().getP())
+                .doubles("min_q", t -> t.getMiddle().getMinQ())
+                .doubles("max_q", t -> t.getMiddle().getMaxQ())
                 .build();
     }
 

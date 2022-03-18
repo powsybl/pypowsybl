@@ -9,6 +9,9 @@ typedef struct exception_handler_struct {
     char* message;
 } exception_handler;
 
+/**
+ * Weakly typed array of data.
+ */
 typedef struct array_struct {
     void* ptr;
     int length;
@@ -95,6 +98,16 @@ typedef enum {
 } element_type;
 
 typedef enum {
+    FLOWS = 0,
+    GENERATORS,
+    BUSES,
+    SVCS,
+    SHUNTS,
+    TWTS,
+    TWTS3W,
+} validation_type;
+
+typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,
@@ -113,9 +126,59 @@ typedef struct series_struct {
     array data;
 } series;
 
+/**
+ * A dataframe: simply an array of series.
+ */
+typedef struct dataframe_struct {
+    struct series_struct* series;
+    int series_count;
+} dataframe;
+
+/**
+ * An array of dataframes.
+ */
+typedef struct {
+    dataframe* dataframes;
+    int dataframes_count;
+} dataframe_array;
+
+/**
+ * Metadata about one attribute.
+ */
+typedef struct series_metadata_struct {
+    char* name;
+    int type;
+    unsigned char  is_index;
+    unsigned char  is_modifiable;
+    unsigned char  is_default;
+} series_metadata;
+
+/**
+ * Metadata for one dataframe : simply a list of attributes metadata.
+ */
+typedef struct {
+    series_metadata* attributes_metadata;
+    int attributes_count;
+} dataframe_metadata;
+
+/**
+ * Metadata for a list of dataframes.
+ */
+typedef struct {
+    dataframe_metadata* dataframes_metadata;
+    int dataframes_count;
+} dataframes_metadata;
+
 typedef struct zone_struct {
     char* id;
     char** injections_ids;
     double* injections_shift_keys;
     int length;
 } zone;
+
+typedef enum {
+    ALL_ATTRIBUTES = 0,
+    DEFAULT_ATTRIBUTES,
+    SELECTION_ATTRIBUTES
+} filter_attributes_type;
+

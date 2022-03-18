@@ -28,10 +28,6 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.AnchorPointProvider",
-    "allDeclaredMethods":true
-  },
-  {
     "name":"com.powsybl.sld.library.Component",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
@@ -61,31 +57,7 @@
     "allDeclaredMethods":true
   },
   {
-    "name":"com.powsybl.sld.model.Point",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.styles.BaseVoltageConfig",
-    "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
-    "name":"com.powsybl.sld.styles.BaseVoltagesConfig",
-    "allDeclaredFields":true,
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
-  },
-  {
     "name":"com.powsybl.sld.svg.GraphMetadata",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.svg.GraphMetadata$ArrowMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
@@ -97,7 +69,31 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.sld.svg.GraphMetadata$NodeLabelMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.sld.svg.GraphMetadata$WireMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$LineMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$FeederInfoMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.GraphMetadata$ElectricalNodeInfoMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true

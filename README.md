@@ -9,9 +9,12 @@
 [![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/powsybl)
 [![Slack](https://img.shields.io/badge/slack-powsybl-blueviolet.svg?logo=slack)](https://join.slack.com/t/powsybl/shared_invite/zt-rzvbuzjk-nxi0boim1RKPS5PjieI0rA)
 
-
 The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
+
+## Documentation
+
+Latest version of the documentation with API reference and many code samples is [here](https://readthedocs.org/projects/pypowsybl/badge/?version=latest).  
 
 ## Notebooks
 
@@ -19,110 +22,34 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/).
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.7 to 3.10, on Linux, Windows and MacOS.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
-pip3 install --upgrade setuptools pip --user
+pip install --upgrade setuptools pip
 ```
 
 Then you can install PyPowSyBl using pip:
 ```bash
-pip3 install pypowsybl --user
+pip install pypowsybl
 ```
 
-## Build from sources
-
-Requirements:
-
-- Maven >= 3.1
-- Cmake >= 3.14
-- C++11 compiler
-- Python >= 3.7
-- [GraalVM 21.2.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.2.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
-
-To build from sources and install PyPowSyBl package:
-```bash
-git clone --recursive https://github.com/powsybl/pypowsybl.git
-export JAVA_HOME=<path to GraalVM>
-pip3 install --upgrade setuptools pip --user
-pip3 install . --user
-```
-
-To run unit tests:
-```bash
-python3 -m unittest discover --start-directory tests
-```
-
-While developing, you may find it convenient to use the develop (or editable)
-mode of installation:
-```bash
-pip install -e .
-# or to build the C extension with debug symbols:
-python setup.py build --debug develop --user
-```
-
-Please refer to pip and setuptools documentations for more information.
-
-## Contribute to documentation
-
-To run the tests included in the documentation:
-```bash
-cd docs/
-make doctest
-```
-
-And then, to build the documentation:
-```bash
-make html
-firefox _build/html/index.html
-```
-Web pages are generated in repository _build/html/ for preview before openning a pull request.
-
-## Usage
+## Getting started
 
 First, we have to import pypowsybl:
 ```python
 import pypowsybl as pp
 ```
 
-Then we can display the version of the PowSyBl modules:
-```python
-pp.print_version()
-```
-
-```bash
-Powsybl versions:
-+-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-| Repository name             | Maven project version | Git branch | Git version                              | Build timestamp               |
-+-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-| powsybl-open-loadflow       | X.Y.Z                 |            |                                          |                               |
-| powsybl-single-line-diagram | X.Y.Z                 |            |                                          |                               |
-| powsybl-core                | X.Y.Z                 |            |                                          |                               |
-+-----------------------------+-----------------------+------------+------------------------------------------+-------------------------------+
-```
-
 We can create an IEEE 14 buses network and run a load flow computation:
 ```python
 n = pp.network.create_ieee14()
 results = pp.loadflow.run_ac(n)
-for result in results:
-    print(result)
+print(results)
 ```
 
 ```bash
-LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)
-```
-
-We can re-run the load flow computation in DC mode:
-```python
-results = pp.loadflow.run_dc(n)
-```
-
-By default, the application read configs from `${HOME}/.itools/config.yml`
-We can disable this with command :
-```python
-pp.set_config_read(False)
+[LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)]
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
@@ -149,68 +76,78 @@ VL13_0  1.050   -15.16
 VL14_0  1.036   -16.04
 ```
 
-To disconnect or reconnect a line:
-```python
-n.disconnect('L1-2-1')
-n.connect('L1-2-1')
-```
+This is just a quick appetizer of PyPowSyBl features. PyPowsybl provides a lot more features:
+security analysis, sensitivity analysis, handling of multiple file formats (including CGMES),
+substation and network diagrams generation, ...
+For more details and examples, go to the documentation and Jupyter notebooks.
 
-To open or close a switch:
-```python
-n.open_switch('a_switch')
-n.close_switch('a_switch')
-```
+## Build from sources
 
-To go further, you can also load a case file instead of creating the IEEE 14 buses network:
-```python
-n = pp.network.load('test.uct')
-```
+That section is intended for developers who wish to build pypowsybl from the sources in this repository.
 
-And dump the network to another format:
-```python
-n.dump('test.xiidm', 'XIIDM')
-```
+Requirements:
 
-We can generate a single line diagram for a voltage level in the SVG format:
-```python
-n.write_single_line_diagram_svg('VL1', '/tmp/VL1.svg')
-```
+- Maven >= 3.1
+- Cmake >= 3.14
+- C++11 compiler
+- Python >= 3.7
+- [GraalVM 21.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
-To run a security analysis and print results table:
-
-```python
-sa = pp.security.create_analysis()
-sa.add_single_element_contingency('L1-2-1', 'c1')
-sa.add_single_element_contingency('L2-3-1', 'c2')
-sa.add_multiple_elements_contingency(['L1-2-1', 'L1-5-1'], 'c3')
-sa_result = sa.run_ac(n)
-print(sa_result.get_table())
-```
+To build from sources and install PyPowSyBl package:
 
 ```bash
-+----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
-| Contingency ID |   Status  | Equipment ID | Equipment name | Limit type | Limit | Limit name | Acceptable duration | Limit reduction | Value | Side |
-+----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
-|       c3       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
-|       c1       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
-|       c2       | CONVERGED |              |                |            |       |            |                     |                 |       |      |
-+----------------+-----------+--------------+----------------+------------+-------+------------+---------------------+-----------------+-------+------+
+git clone --recursive https://github.com/powsybl/pypowsybl.git
+export JAVA_HOME=<path to GraalVM>
+pip install --upgrade setuptools pip
+pip install -r requirements.txt
+pip install .
 ```
 
-To run a sensitivity analysis and print post contingency sensitivity matrix ([Pandas](https://pandas.pydata.org/) dataframe):
-
-```python
-sa = pp.sensitivity.create_dc_analysis()
-sa.add_single_element_contingency('L1-2-1')
-sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
-sa_result = sa.run(n)
-df = sa_result.get_branch_flows_sensitivity_matrix('L1-2-1')
-print(df)
-```
+While developing, you may find it convenient to use the developer (or editable)
+mode of installation:
 
 ```bash
-      L1-5-1    L2-3-1
-B1-G     0.5 -0.084423
-B2-G    -0.5  0.084423
-B3-G    -0.5 -0.490385
+pip install -e .
+# or, to build the C extension with debug symbols:
+python setup.py build --debug develop --user
+```
+
+Please refer to pip and setuptools documentations for more information.
+
+To run unit tests:
+
+```bash
+pytest tests
+```
+
+To run static type checking with `mypy`:
+```bash
+mypy -p pypowsybl
+```
+
+To run linting inspection with `pylint`:
+```bash
+pylint pypowsybl
+```
+
+## Contribute to documentation
+
+To run the tests included in the documentation:
+
+```bash
+cd docs/
+make doctest
+```
+
+And then, to build the documentation:
+
+```bash
+make html
+```
+
+Web pages are generated in repository _build/html/ for preview before openning a pull request.
+You can for example open it with firefox browser:
+
+```bash
+firefox _build/html/index.html
 ```

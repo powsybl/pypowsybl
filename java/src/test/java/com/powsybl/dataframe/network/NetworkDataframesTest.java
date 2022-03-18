@@ -1,5 +1,5 @@
-    /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+/**
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,11 +7,10 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ActivePowerControl;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
@@ -22,6 +21,7 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
@@ -34,10 +34,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class NetworkDataframesTest {
 
     private static List<Series> createDataFrame(DataframeElementType type, Network network) {
+        return createDataFrame(type, network, new DataframeFilter());
+    }
+
+    private static List<Series> createDataFrame(DataframeElementType type, Network network, DataframeFilter dataframeFilter) {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add));
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter);
         return series;
     }
 
@@ -85,8 +89,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .contains("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
-                "target_q", "voltage_regulator_on", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "target_v",
+                "target_q", "voltage_regulator_on", "regulated_element_id",  "p", "q", "i", "voltage_level_id", "bus_id", "connected");
 
         assertThat(series.get(3).getDoubles())
             .containsExactly(607);
@@ -182,7 +186,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "voltage_setpoint", "reactive_power_setpoint", "voltage_regulator_on",
+            .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on",
                 "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
@@ -217,7 +221,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .contains("id", "name", "converters_mode", "active_power_setpoint", "max_p", "nominal_v", "r",
+            .containsExactly("id", "name", "converters_mode", "target_p", "max_p", "nominal_v", "r",
                 "converter_station1_id", "converter_station2_id", "connected1", "connected2");
     }
 
@@ -262,7 +266,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
             .extracting(Series::getName)
-            .containsExactly("id", "name", "voltage_setpoint", "reactive_power_setpoint", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+            .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -280,7 +284,8 @@ class NetworkDataframesTest {
         Network network = EurostagTutorialExample1Factory.create();
         network.getSubstation("P1").setProperty("prop1", "val1");
         network.getSubstation("P2").setProperty("prop2", "val2");
-        List<Series> series = createDataFrame(SUBSTATION, network);
+        List<Series> series = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES, Collections.emptyList()));
 
         assertThat(series)
             .extracting(Series::getName)
@@ -347,5 +352,30 @@ class NetworkDataframesTest {
         assertThat(series)
             .extracting(Series::getName)
             .containsExactly("id", "num", "p", "min_q", "max_q");
+    }
+
+    @Test
+    void attributesFiltering() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").setProperty("prop1", "val1");
+        network.getSubstation("P2").setProperty("prop2", "val2");
+        List<Series> seriesDefaults = createDataFrame(SUBSTATION, network,
+                new DataframeFilter());
+        assertThat(seriesDefaults)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "TSO", "geo_tags", "country");
+
+        List<Series> seriesAll = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(seriesAll)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "TSO", "geo_tags", "country", "prop1", "prop2");
+
+        List<Series> seriesAttributesSubset = createDataFrame(SUBSTATION, network,
+                new DataframeFilter(DataframeFilter.AttributeFilterType.INPUT_ATTRIBUTES,
+                        List.of("name",  "name", "geo_tags", "prop1")));
+        assertThat(seriesAttributesSubset)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "geo_tags", "prop1");
     }
 }

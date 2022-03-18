@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -72,6 +72,7 @@ typedef Array<contingency_result> ContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
     std::vector<T> values;
@@ -123,6 +124,31 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable),
+        isDefault_(isDefault) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+    bool isDefault() const { return isDefault_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
+    bool isDefault_;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -140,7 +166,19 @@ void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
+
 bool isConfigRead();
+
+std::string getDefaultLoadFlowProvider();
+
+std::string getDefaultSecurityAnalysisProvider();
+
+std::string getDefaultSensitivityAnalysisProvider();
 
 std::string getVersionTable();
 
@@ -180,15 +218,21 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
 
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
+
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
 JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -208,13 +252,9 @@ matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, co
 
 matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 
-int getSeriesType(element_type elementType, const std::string& seriesName);
-
-bool isIndex(element_type elementType, const std::string& seriesName);
-
-int getIndexType(element_type elementType, const std::string& seriesName, int index);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 
@@ -246,7 +286,23 @@ SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& volt
 
 SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, array* dataframe, element_type elementType);
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
+/**
+ * Metadata of the dataframe of network elements data for a given element type.
+ */
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType);
+
+/**
+ * Metadata of the list of dataframes to create network elements of the given type.
+ */
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
+
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 
 }
 

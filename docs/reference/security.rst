@@ -17,6 +17,9 @@ You can run a security analysis using the following methods:
 
     create_analysis
     SecurityAnalysis.run_ac
+    SecurityAnalysis.run_dc
+    set_default_provider
+    get_default_provider
 
 Define contingencies and monitored elements
 -------------------------------------------

@@ -38,7 +38,7 @@ The supported formats are the following:
 .. doctest::
 
    >>> pp.network.get_import_formats()
-   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM']
+   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY']
 
 .. Note::
 
@@ -48,6 +48,10 @@ The supported formats are the following:
     .. code-block:: python
 
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
+
+
+You may also crate your own network from scratch, see network elements creation methods
+in the API reference :doc:`documentation </reference/network>`.
 
 
 Save a network
@@ -109,10 +113,10 @@ For example, you can retrieve generators data as follows:
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> network.get_generators() # doctest: +NORMALIZE_WHITESPACE
-         name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on   p   q   i voltage_level_id   bus_id  connected  ActivePowerControl_available  ActivePowerControl_droop  ActivePowerControl_participate
-    id                                                                                                                                                                                                                                                                 
-    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True                         False                       NaN                           False
-    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True                         False                       NaN                           False
+         name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id   bus_id  connected
+    id
+    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
 
 Most dataframes are indexed on the ID of the elements.
 However, some more complex dataframes have a multi-index : for example,
@@ -258,4 +262,3 @@ Once you're done working with your variant, you can remove it:
 .. doctest::
 
    >>> network.remove_variant('Variant')
-

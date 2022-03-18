@@ -1,0 +1,54 @@
+[
+  {
+    "name":"com.powsybl.openloadflow.OpenLoadFlowParameterJsonSerializer$SerializationSpec",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.OpenLoadFlowParameters",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllDeclaredConstructors":true,
+    "methods":[
+      {"name":"getLowImpedanceBranchMode","parameterTypes":[] },
+      {"name":"getMaxIteration","parameterTypes":[] },
+      {"name":"getNewtonRaphsonConvEpsPerEq","parameterTypes":[] },
+      {"name":"getPlausibleActivePowerLimit","parameterTypes":[] },
+      {"name":"getSlackBusPMaxMismatch","parameterTypes":[] },
+      {"name":"getSlackBusSelectionMode","parameterTypes":[] },
+      {"name":"getSlackBusesIds","parameterTypes":[] },
+      {"name":"getVoltageInitModeOverride","parameterTypes":[] },
+      {"name":"isAddRatioToLinesWithDifferentNominalVoltageAtBothEnds","parameterTypes":[] },
+      {"name":"isLoadPowerFactorConstant","parameterTypes":[] },
+      {"name":"isThrowsExceptionInCaseOfSlackDistributionFailure","parameterTypes":[] },
+      {"name":"isVoltagePerReactivePowerControl","parameterTypes":[] }
+    ]
+  },
+  {
+    "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$LowImpedanceBranchMode",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$VoltageInitModeOverride",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.network.SlackBusSelectionMode",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.sensi.OpenSensitivityAnalysisParameterJsonSerializer$SerializationSpec",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.sensi.OpenSensitivityAnalysisParameters",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllDeclaredConstructors":true,
+    "methods":[{"name":"getDebugDir","parameterTypes":[] }]
+  }
+]
