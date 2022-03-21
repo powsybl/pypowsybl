@@ -4,9 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import numpy as np
 import pandas as pd
 import pytest
 
+import pypowsybl
 import pypowsybl.network as pn
 import util
 import pathlib
@@ -283,7 +285,8 @@ def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1', 'node2'],
+        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1',
+                 'node2'],
         data=[['TWT_TEST', 0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
     n.create_phase_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST']),
                                              columns=['target_deadband', 'regulation_mode', 'low_tap', 'tap'],
@@ -567,3 +570,44 @@ def test_create_node_breaker_network_and_run_loadflow():
     assert line.q2 == pytest.approx(-10, abs=1e-2)
     assert line.p1 == pytest.approx(100, abs=1e-1)
     assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+
+def test_create_limits():
+    pypowsybl.set_debug_mode(True)
+    net = pn.create_eurostag_tutorial_example1_network()
+    net.create_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 600,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 1000,
+         'acceptable_duration': 60, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 400,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 700,
+         'acceptable_duration': 60, 'is_fictitious': False}
+    ]))
+    expected = pd.DataFrame(
+        index=pd.MultiIndex.from_tuples(
+            [('NHV1_NHV2_1', 'permanent_limit'), ('NHV1_NHV2_1', 'permanent_limit'), ('NHV1_NHV2_1', 'permanent_limit'),
+             ('NHV1_NHV2_1', 'permanent_limit')],
+            names=['element_id', 'name']),
+        columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['LINE', 'ONE', 'CURRENT', 500, np.Inf, False],
+              ['LINE', 'TWO', 'CURRENT', 1100, np.Inf, False],
+              ['LINE', 'ONE', 'ACTIVE_POWER', 400, np.Inf, False],
+              ['LINE', 'ONE', 'APPARENT_POWER', 600, np.Inf, False]])
+    pd.testing.assert_frame_equal(expected, net.get_operational_limits().loc[('NHV1_NHV2_1', 'permanent_limit')],
+                                  check_dtype=False)
+    expected = pd.DataFrame(
+        index=pd.MultiIndex.from_tuples(
+            [('NHV1_NHV2_1', '1\''), ('NHV1_NHV2_1', '1\''), ('NHV1_NHV2_1', '1\'')],
+            names=['element_id', 'name']),
+        columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['LINE', 'TWO', 'CURRENT', 1500, 60, False],
+              ['LINE', 'ONE', 'ACTIVE_POWER', 700, 60, False],
+              ['LINE', 'ONE', 'APPARENT_POWER', 1000, 60, False]])
+    pd.testing.assert_frame_equal(expected, net.get_operational_limits().loc[('NHV1_NHV2_1', '1\'')],
+                                  check_dtype=False)

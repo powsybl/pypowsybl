@@ -19,7 +19,7 @@ import networkx as nx
 import util
 import tempfile
 
-from pypowsybl._pypowsybl import NONE, CURRENT, DANGLING_LINE
+from pypowsybl._pypowsybl import NONE
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
