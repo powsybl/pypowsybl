@@ -38,14 +38,14 @@ Several matrix of sensitivity factors can be specified, in that case you must na
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='m1')
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1'], variables_ids=['GEN'], matrix_id='m2')
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows()
+    >>> result.get_reference_flows('m1')
                      NHV1_NHV2_1  NHV1_NHV2_2
     reference_flows        300.0        300.0
     >>> result.get_branch_flows_sensitivity_matrix('m1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
     >>> result.get_branch_flows_sensitivity_matrix('m2')
-          NHV1_NHV2_1
+           NHV1_NHV2_1
     GEN          -0.0
 
 Zone to slack sensitivity
@@ -281,8 +281,8 @@ and postcontingency_branch_flow_factor_matrix methods.
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
     >>> result.get_precontingency_branch_flows_sensitivity_matrix('precontingency')
-      NHV1_NHV2_1  NHV1_NHV2_2
+       NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
     >>> result.get_postcontingency_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
-      NHV1_NHV2_1  NHV1_NHV2_2
+       NHV1_NHV2_1  NHV1_NHV2_2
     GEN          0.0          0.0
