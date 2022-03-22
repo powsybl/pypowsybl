@@ -284,5 +284,5 @@ and postcontingency_branch_flow_factor_matrix methods.
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
     >>> result.get_postcontingency_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
-          NHV1_NHV2_1  NHV1_NHV2_2
-     GEN          0.0          0.0
+         NHV1_NHV2_1  NHV1_NHV2_2
+    GEN          0.0          0.0
