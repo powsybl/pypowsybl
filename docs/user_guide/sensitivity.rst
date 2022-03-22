@@ -19,14 +19,34 @@ as a result:
     >>> import pypowsybl as pp
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> analysis = pp.sensitivity.create_dc_analysis()
-    >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='m')
+    >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows('m')
+    >>> result.get_reference_flows()
                      NHV1_NHV2_1  NHV1_NHV2_2
     reference_flows        300.0        300.0
-    >>> result.get_branch_flows_sensitivity_matrix('m')
+    >>> result.get_branch_flows_sensitivity_matrix()
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
+
+Several matrix of sensitivity factors can be specified, in that case you must name your matrix at creation and reuse this name to query you results :
+
+.. doctest::
+
+    >>> import pypowsybl as pp
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> analysis = pp.sensitivity.create_dc_analysis()
+    >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='m1')
+    >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1'], variables_ids=['GEN'], matrix_id='m2')
+    >>> result = analysis.run(network)
+    >>> result.get_reference_flows()
+                     NHV1_NHV2_1  NHV1_NHV2_2
+    reference_flows        300.0        300.0
+    >>> result.get_branch_flows_sensitivity_matrix('m1')
+          NHV1_NHV2_1  NHV1_NHV2_2
+    LOAD         -0.5         -0.5
+    >>> result.get_branch_flows_sensitivity_matrix('m2')
+          NHV1_NHV2_1
+    GEN          -0.0
 
 Zone to slack sensitivity
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -246,3 +266,23 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
     >>> result.get_branch_flows_sensitivity_matrix('m', 'NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
+
+Pre-contingency only or Specific post-contingencies state analysis
+------------------------
+
+You can also limit the computation of your sensitivities to the pre contingency state or to some specific post contingencies states by using add/get precontingency_branch_flow_factor_matrix
+and postcontingency_branch_flow_factor_matrix methods.
+
+.. doctest::
+
+    >>> analysis = pp.sensitivity.create_dc_analysis()
+    >>> analysis.add_precontingency_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='precontingency')
+    >>> analysis.add_postcontingency_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['GEN'], contingencies_ids=['NHV1_NHV2_1'], matrix_id='postcontingency')
+    >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
+    >>> result = analysis.run(network)
+    >>> result.get_precontingency_branch_flows_sensitivity_matrix('precontingency')
+      NHV1_NHV2_1  NHV1_NHV2_2
+    LOAD         -0.5         -0.5
+    >>> result.get_postcontingency_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
+      NHV1_NHV2_1  NHV1_NHV2_2
+    GEN          0.0          0.0
