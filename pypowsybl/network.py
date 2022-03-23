@@ -24,7 +24,7 @@ from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import ArrayStruct
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
-
+from pypowsybl._pypowsybl import ValidationLevel
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
@@ -2880,6 +2880,33 @@ class Network:  # pylint: disable=too-many-public-methods
             **kwargs: Attributes as keyword arguments.
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
+
+    def get_validation_level(self) -> ValidationLevel:
+        """
+        The network's validation level.
+
+        Returns:
+            the ValidationLevel.
+        """
+        return _pp.get_validation_level(self._handle)
+
+    def validate(self) -> ValidationLevel:
+        """
+        Validate the network
+
+        Returns:
+            the ValidationLevel.
+        """
+        return _pp.validate(self._handle)
+
+    def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
+        """
+        Set the minimum validation level for the network
+
+        Args:
+            validation_level (ValidationLevel): the validation level
+        """
+        _pp.set_min_validation_level(self._handle, validation_level)
 
 
 def _create_network(name: str, network_id: str = '') -> Network:

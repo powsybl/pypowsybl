@@ -689,4 +689,20 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
 }
 
+::validation_level_type getValidationLevel(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::EQUIPMENT;
+    return callJava<validation_level_type>(::getValidationLevel, network);
+}
+
+::validation_level_type validate(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::STEADY_STATE_HYPOTHESIS;
+    return callJava<validation_level_type>(::validate, network);
+}
+
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
+    pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
+}
+
 }

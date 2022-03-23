@@ -16,6 +16,7 @@ import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -40,6 +41,7 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -687,4 +689,39 @@ public final class PyPowsyblApiLib {
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
+
+    @CEntryPoint(name = "getValidationLevel")
+    public static ValidationLevelType getValidationLevel(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.getValidationLevel());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "validate")
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.runValidationChecks());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "setMinValidationLevel")
+    public static void setMinValidationLevel(IsolateThread thread, ObjectHandle networkHandle,
+                                     ValidationLevelType levelType,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        });
+    }
+
 }

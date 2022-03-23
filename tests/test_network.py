@@ -15,6 +15,8 @@ import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
+from pypowsybl._pypowsybl import ValidationLevel
+
 import util
 import tempfile
 
@@ -1005,6 +1007,32 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         filtered_selection_empty = network_four_subs.get_generators(id=[])
         self.assertTrue(filtered_selection_empty.empty)
 
+    def test_validation_level(self):
+        n = pp.network.create_ieee14()
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        gens = pd.DataFrame(data=[[np.NaN]], columns=['target_p'], index=['B1-G'])
+        try:
+            n.update_generators(gens)
+        except pp.PyPowsyblError as e:
+            self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(e))
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        n.update_generators(gens)
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.EQUIPMENT, vl)
+
+    def test_validate(self):
+        n = pp.network.create_ieee14()
+        vl = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        gens = pd.DataFrame(data=[[np.NaN]], columns=['target_p'], index=['B1-G'])
+        n.update_generators(gens)
+        try:
+            n.validate()
+        except pp.PyPowsyblError as e:
+            self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(e))
 
 if __name__ == '__main__':
     unittest.main()
