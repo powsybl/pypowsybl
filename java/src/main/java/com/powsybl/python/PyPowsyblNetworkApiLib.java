@@ -371,6 +371,30 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                                                  CCharPointer extensionName,
+                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        String name = CTypeUtil.toString(extensionName);
+        return doCatch(exceptionHandlerPtr, () -> {
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return Dataframes.createCDataframe(mapper, network);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionsNames")
+    public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return createCharPtrArray(List.copyOf(NetworkDataframes.getExtensionsNames()));
+        });
+    }
+
     @CEntryPoint(name = "createElement")
     public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
                                      ElementType elementType,

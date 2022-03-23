@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
@@ -18,7 +19,6 @@ import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtensionSeriesProvider {
 
     public static final String EXTENSION_NAME = "hvdcOperatorActivePowerRange";
-    public static final String EXTENSION_SEPARATOR = "_";
 
     @Override
     public String getExtensionName() {
@@ -30,17 +30,19 @@ public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtens
         return DataframeElementType.HVDC_LINE;
     }
 
+    private HvdcOperatorActivePowerRange getExtensionOrThrow(HvdcLine item) {
+        HvdcOperatorActivePowerRange itemExtension = item.getExtension(HvdcOperatorActivePowerRange.class);
+        if (itemExtension == null) {
+            throw new PowsyblException("extension " + " '" +  EXTENSION_NAME + "' not found");
+        } else {
+            return itemExtension;
+        }
+    }
+
     @Override
     public void addSeries(NetworkDataframeMapperBuilder builder) {
         NetworkDataframeMapperBuilder<HvdcLine> sBuilder = builder;
-        sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
-            item.getExtension(HvdcOperatorActivePowerRange.class) != null
-        ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "OprFromCS1toCS2", item -> {
-            HvdcOperatorActivePowerRange itemExtension = item.getExtension(HvdcOperatorActivePowerRange.class);
-            return itemExtension != null ? itemExtension.getOprFromCS1toCS2() : Double.NaN;
-        }).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "OprFromCS2toCS1", item -> {
-            HvdcOperatorActivePowerRange itemExtension = item.getExtension(HvdcOperatorActivePowerRange.class);
-            return itemExtension != null ? itemExtension.getOprFromCS2toCS1() : Double.NaN;
-        });
+        sBuilder.doubles("OprFromCS1toCS2", item -> getExtensionOrThrow(item).getOprFromCS1toCS2())
+                .doubles("OprFromCS2toCS1", item -> getExtensionOrThrow(item).getOprFromCS2toCS1());
     }
 }

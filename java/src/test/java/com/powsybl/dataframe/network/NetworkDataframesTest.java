@@ -47,6 +47,14 @@ class NetworkDataframesTest {
         return series;
     }
 
+    private static List<Series> createExtensionDataFrame(String name, Network network) {
+        List<Series> series = new ArrayList<>();
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+        assertNotNull(mapper);
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        return series;
+    }
+
     private DoubleIndexedSeries createInput(List<String> names, double... values) {
         return new DoubleIndexedSeries() {
             @Override
@@ -102,22 +110,19 @@ class NetworkDataframesTest {
     void generatorsExtension() {
         Network network = EurostagTutorialExample1Factory.create();
         Generator gen = network.getGenerator("GEN");
-        ActivePowerControlImpl foo = new ActivePowerControlImpl(gen, true, 1.1f);
-        gen.addExtension(ActivePowerControl.class, foo);
+        ActivePowerControl apcExt = new ActivePowerControlImpl(gen, true, 1.1f);
+        gen.addExtension(ActivePowerControl.class, apcExt);
 
-        List<Series> series = createDataFrame(GENERATOR, network);
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
 
         assertThat(series)
                 .extracting(Series::getName)
-                .contains("ActivePowerControl_available", "ActivePowerControl_droop", "ActivePowerControl_participate");
+                .containsExactly("id", "droop", "participate");
 
-        assertThat(series.get(17).getBooleans())
-                .containsExactly(true);
-        assertThat(series.get(18).getDoubles())
+        assertThat(series.get(1).getDoubles())
                 .containsExactly(1.1f);
-        assertThat(series.get(19).getBooleans())
+        assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
-
     }
 
     @Test
@@ -235,29 +240,27 @@ class NetworkDataframesTest {
         hvdcLine.newExtension(HvdcAngleDroopActivePowerControlAdder.class).withEnabled(true).withDroop(0.1f).withP0(200).add();
         hvdcLine.newExtension(HvdcOperatorActivePowerRangeAdder.class).withOprFromCS1toCS2(1.0f).withOprFromCS2toCS1(2.0f).add();
 
-        List<Series> series = createDataFrame(HVDC_LINE, network);
+        List<Series> ext1Series = createExtensionDataFrame("hvdcAngleDroopActivePowerControl", network);
+        List<Series> ext2Series = createExtensionDataFrame("hvdcOperatorActivePowerRange", network);
 
-        assertThat(series)
+        assertThat(ext1Series)
                 .extracting(Series::getName)
-                .contains("HvdcAngleDroopActivePowerControl_available", "HvdcAngleDroopActivePowerControl_droop",
-                        "HvdcAngleDroopActivePowerControl_P0", "HvdcAngleDroopActivePowerControl_isEnabled",
-                        "hvdcOperatorActivePowerRange_available", "hvdcOperatorActivePowerRange_OprFromCS1toCS2",
-                        "hvdcOperatorActivePowerRange_OprFromCS2toCS1");
+                .containsExactly("id", "droop", "P0", "isEnabled");
 
-        assertThat(series.get(11).getBooleans())
-                .containsExactly(true);
-        assertThat(series.get(12).getDoubles())
+        assertThat(ext1Series.get(1).getDoubles())
                 .containsExactly(0.1f);
-        assertThat(series.get(13).getDoubles())
+        assertThat(ext1Series.get(2).getDoubles())
                 .containsExactly(200);
-        assertThat(series.get(14).getBooleans())
+        assertThat(ext1Series.get(3).getBooleans())
                 .containsExactly(true);
 
-        assertThat(series.get(15).getBooleans())
-                .containsExactly(true);
-        assertThat(series.get(16).getDoubles())
+        assertThat(ext2Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "OprFromCS1toCS2", "OprFromCS2toCS1");
+
+        assertThat(ext2Series.get(1).getDoubles())
                 .containsExactly(1.0f);
-        assertThat(series.get(17).getDoubles())
+        assertThat(ext2Series.get(2).getDoubles())
                 .containsExactly(2.0f);
     }
 

@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.extensions.ActivePowerControl;
@@ -17,8 +18,7 @@ import com.powsybl.iidm.network.extensions.ActivePowerControl;
 @AutoService(NetworkExtensionSeriesProvider.class)
 public class ActivePowerControlSeriesProvider implements NetworkExtensionSeriesProvider  {
 
-    public static final String EXTENSION_NAME = "ActivePowerControl";
-    public static final String EXTENSION_SEPARATOR = "_";
+    public static final String EXTENSION_NAME = "activePowerControl";
 
     @Override
     public String getExtensionName() {
@@ -30,17 +30,19 @@ public class ActivePowerControlSeriesProvider implements NetworkExtensionSeriesP
         return DataframeElementType.GENERATOR;
     }
 
+    private ActivePowerControl getExtensionOrThrow(Generator item) {
+        ActivePowerControl itemExtension = item.getExtension(ActivePowerControl.class);
+        if (itemExtension == null) {
+            throw new PowsyblException("extension " + " '" +  EXTENSION_NAME + "' not found");
+        } else {
+            return itemExtension;
+        }
+    }
+
     @Override
     public void addSeries(NetworkDataframeMapperBuilder builder) {
         NetworkDataframeMapperBuilder<Generator> sBuilder = builder;
-        sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
-            item.getExtension(ActivePowerControl.class) != null
-        ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "droop", item -> {
-            ActivePowerControl itemExtension = item.getExtension(ActivePowerControl.class);
-            return itemExtension != null ? itemExtension.getDroop() : Double.NaN;
-        }).booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "participate", item -> {
-            ActivePowerControl itemExtension = item.getExtension(ActivePowerControl.class);
-            return itemExtension != null ? itemExtension.isParticipate() : Boolean.FALSE;
-        });
+        sBuilder.doubles("droop", item -> getExtensionOrThrow(item).getDroop())
+                .booleans("participate", item -> getExtensionOrThrow(item).isParticipate());
     }
 }

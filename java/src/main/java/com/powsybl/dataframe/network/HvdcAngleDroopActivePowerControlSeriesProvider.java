@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
@@ -17,8 +18,7 @@ import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
 @AutoService(NetworkExtensionSeriesProvider.class)
 public class HvdcAngleDroopActivePowerControlSeriesProvider implements NetworkExtensionSeriesProvider {
 
-    public static final String EXTENSION_NAME = "HvdcAngleDroopActivePowerControl";
-    public static final String EXTENSION_SEPARATOR = "_";
+    public static final String EXTENSION_NAME = "hvdcAngleDroopActivePowerControl";
 
     @Override
     public String getExtensionName() {
@@ -30,20 +30,20 @@ public class HvdcAngleDroopActivePowerControlSeriesProvider implements NetworkEx
         return DataframeElementType.HVDC_LINE;
     }
 
+    private HvdcAngleDroopActivePowerControl getExtensionOrThrow(HvdcLine item) {
+        HvdcAngleDroopActivePowerControl itemExtension = item.getExtension(HvdcAngleDroopActivePowerControl.class);
+        if (itemExtension == null) {
+            throw new PowsyblException("extension " + " '" +  EXTENSION_NAME + "' not found");
+        } else {
+            return itemExtension;
+        }
+    }
+
     @Override
     public void addSeries(NetworkDataframeMapperBuilder builder) {
         NetworkDataframeMapperBuilder<HvdcLine> sBuilder = builder;
-        sBuilder.booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "available", item ->
-            item.getExtension(HvdcAngleDroopActivePowerControl.class) != null
-        ).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "droop", item -> {
-            HvdcAngleDroopActivePowerControl itemExtension = item.getExtension(HvdcAngleDroopActivePowerControl.class);
-            return itemExtension != null ? itemExtension.getDroop() : Double.NaN;
-        }).doubles(EXTENSION_NAME + EXTENSION_SEPARATOR + "P0", item -> {
-            HvdcAngleDroopActivePowerControl itemExtension = item.getExtension(HvdcAngleDroopActivePowerControl.class);
-            return itemExtension != null ? itemExtension.getP0() : Double.NaN;
-        }).booleans(EXTENSION_NAME + EXTENSION_SEPARATOR + "isEnabled", item -> {
-            HvdcAngleDroopActivePowerControl itemExtension = item.getExtension(HvdcAngleDroopActivePowerControl.class);
-            return itemExtension != null ? itemExtension.isEnabled() : false;
-        });
+        sBuilder.doubles("droop", item -> getExtensionOrThrow(item).getDroop())
+                .doubles("P0", item -> getExtensionOrThrow(item).getP0())
+                .booleans("isEnabled", item -> getExtensionOrThrow(item).isEnabled());
     }
 }

@@ -2881,6 +2881,24 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
 
+    def get_extensions_names(self) -> _List[str]:
+        """
+        Get the list of available extensions.
+
+        Returns:
+            all the ids of the existing extensions
+        """
+        return _pp.get_extensions_names(self._handle)
+
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        """
+        creates a dataframe for a specific extension
+
+        Args:
+            extension_name: name of the extension
+        """
+        return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
