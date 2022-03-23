@@ -211,8 +211,8 @@ class PerUnitTestCase(unittest.TestCase):
         expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                                 columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                          'connected'],
-                                data=[['LCC1', 0.6, 1.1, 0.81, 1.08, 1.35, 'S1VL2', 'S1VL2_0', True],
-                                      ['LCC2', 0.6, 1.1, -0.79, 1.05, 1.32, 'S3VL1', 'S3VL1_0', True]])
+                                data=[['LCC1', 0.6, 1.1, 0.8, 1.07, 1.33, 'S1VL2', 'S1VL2_0', True],
+                                      ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True]])
         pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=10 ** -2)
         n.update_lcc_converter_station(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                     columns=['p', 'q'],
