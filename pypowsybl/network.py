@@ -22,9 +22,9 @@ import pandas as pd
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import ArrayStruct
+from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
-from pypowsybl._pypowsybl import ValidationLevel
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
