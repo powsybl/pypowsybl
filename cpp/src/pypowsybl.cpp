@@ -305,6 +305,24 @@ std::vector<std::string> getNetworkExportFormats() {
     return formats.get();
 }
 
+std::vector<std::string> getLoadFlowProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getLoadFlowProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSecurityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSecurityAnalysisProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSensitivityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSensitivityAnalysisProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
 SeriesArray* createImporterParametersSeriesArray(const std::string& format) {
     return new SeriesArray(callJava<array*>(::createImporterParametersSeriesArray, (char*) format.data()));
 }
