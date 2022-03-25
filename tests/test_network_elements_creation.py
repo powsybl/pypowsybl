@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 import pypowsybl
+import pypowsybl.network
 import pypowsybl.network as pn
 import util
 import pathlib
@@ -608,3 +609,21 @@ def test_create_limits():
               ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
+
+def test_delete_elements():
+    pypowsybl.set_debug_mode(True)
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2'])
+    assert net.get_generators().empty
+    net.remove_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    assert net.get_lines().empty
+    net.remove_elements(['NHV2_NLOAD', 'NGEN_NHV1'])
+    assert net.get_2_windings_transformers().empty
+    net.remove_elements('LOAD')
+    assert net.get_loads().empty
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2', 'NHV1_NHV2_1', 'NHV1_NHV2_2', 'NHV2_NLOAD', 'NGEN_NHV1', 'LOAD'])
+    assert net.get_generators().empty
+    assert net.get_lines().empty
+    assert net.get_2_windings_transformers().empty
+    assert net.get_loads().empty

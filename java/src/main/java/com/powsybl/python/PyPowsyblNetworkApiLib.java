@@ -25,6 +25,7 @@ import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
+import com.powsybl.iidm.network.Connectable;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
@@ -51,6 +52,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.powsybl.python.CDataframeHandler.*;
 import static com.powsybl.python.CTypeUtil.toStringList;
@@ -398,6 +400,21 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType)).updateSeries(network, updatingDataframe);
+        });
+    }
+
+    @CEntryPoint(name = "removeNetworkElements")
+    public static void removeNetworkElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer cElementIds,
+                                             int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
+            elementIds.forEach(elementId -> {
+                List<Connectable> connectables = network.getConnectableStream()
+                        .filter(connectable -> connectable.getId().equals(elementId))
+                        .collect(Collectors.toList());
+                connectables.forEach(Connectable::remove);
+            });
         });
     }
 

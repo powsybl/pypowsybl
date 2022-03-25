@@ -3029,6 +3029,18 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         _pp.set_min_validation_level(self._handle, validation_level)
 
+    def remove_elements(self, elements_ids: Union[str, _List[str]]) -> None:
+        """
+        Delete network elements from a network
+
+        Data can be provided as a list or if it is only one element as a str
+
+        Args:
+            elements_ids: element ids to delete
+        """
+        if type(elements_ids) == str:
+            elements_ids = [elements_ids]
+        _pp.remove_elements(self._handle, elements_ids)
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
