@@ -2968,6 +2968,15 @@ def create_eurostag_tutorial_example1_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1')
 
+def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial with Power limits
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with Power limits
+    """
+    return _create_network('eurostag_tutorial_example1_with_power_limits')
+
 
 def create_four_substations_node_breaker_network() -> Network:
     """
@@ -3007,8 +3016,8 @@ def get_import_formats() -> _List[str]:
     """
     Get list of supported import formats
 
-    :return: the list of supported import formats
-    :rtype: List[str]
+    Returns:
+         the list of supported import formats
     """
     return _pp.get_network_import_formats()
 
@@ -3017,8 +3026,8 @@ def get_export_formats() -> _List[str]:
     """
     Get list of supported export formats
 
-    :return: the list of supported export formats
-    :rtype: List[str]
+    Returns:
+        the list of supported export formats
     """
     return _pp.get_network_export_formats()
 

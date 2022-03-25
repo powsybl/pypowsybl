@@ -137,7 +137,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
 
+    m.def("set_default_loadflow_provider", &pypowsybl::setDefaultLoadFlowProvider, "Set default loadflow provider", py::arg("provider"));
+
+    m.def("set_default_security_analysis_provider", &pypowsybl::setDefaultSecurityAnalysisProvider, "Set default security analysis provider", py::arg("provider"));
+
+    m.def("set_default_sensitivity_analysis_provider", &pypowsybl::setDefaultSensitivityAnalysisProvider, "Set default sensitivity analysis provider", py::arg("provider"));
+
     m.def("is_config_read", &pypowsybl::isConfigRead, "Get config read mode");
+
+    m.def("get_default_loadflow_provider", &pypowsybl::getDefaultLoadFlowProvider, "Get default loadflow provider");
+
+    m.def("get_default_security_analysis_provider", &pypowsybl::getDefaultSecurityAnalysisProvider, "Get default security analysis provider");
+
+    m.def("get_default_sensitivity_analysis_provider", &pypowsybl::getDefaultSensitivityAnalysisProvider, "Get default sensitivity analysis provider");
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
@@ -200,6 +212,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
     m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
+
+
+    m.def("get_loadflow_provider_names", &pypowsybl::getLoadFlowProviderNames, "Get supported loadflow providers");
+    m.def("get_security_analysis_provider_names", &pypowsybl::getSecurityAnalysisProviderNames, "Get supported security analysis providers");
+    m.def("get_sensitivity_analysis_provider_names", &pypowsybl::getSensitivityAnalysisProviderNames, "Get supported sensitivity analysis providers");
 
     m.def("create_importer_parameters_series_array", &pypowsybl::createImporterParametersSeriesArray, "Create a parameters series array for a given import format",
           py::arg("format"));
@@ -446,7 +463,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"));
+          py::arg("provider"), py::arg("dc"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 

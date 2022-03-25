@@ -19,6 +19,28 @@ def no_config():
     pp.set_config_read(False)
 
 
+def test_config():
+    pp.set_debug_mode(True)
+    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+    pp.sensitivity.set_default_provider("provider")
+    assert 'provider' == pp.sensitivity.get_default_provider()
+    n = pp.network.create_ieee14()
+    generators = pd.DataFrame(data=[4999.0, 4999.0, 4999.0, 4999.0, 4999.0],
+                              columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
+    n.update_generators(generators)
+    sa = pp.sensitivity.create_dc_analysis()
+    sa.add_single_element_contingency('L1-2-1')
+    sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+    with pytest.raises(Exception) as exc_info:
+        sa.run(n)
+    assert 'SensitivityAnalysisProvider \'provider\' not found' == str(exc_info.value)
+    r = sa.run(n, provider='OpenSensitivityAnalysis')
+    assert 6 == r.get_branch_flows_sensitivity_matrix().size
+    assert 'provider' == pp.sensitivity.get_default_provider()
+    pp.sensitivity.set_default_provider('OpenSensitivityAnalysis')
+    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+
+
 def test_sensitivity_analysis():
     n = pp.network.create_ieee14()
     # fix max_p to be less than olf max_p plausible value
@@ -191,3 +213,7 @@ def test_variant():
     df = r.get_branch_flows_sensitivity_matrix()
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.078150, abs=1e-6)
+
+
+def test_provider_names():
+    assert 'OpenSensitivityAnalysis' in pp.sensitivity.get_provider_names()
