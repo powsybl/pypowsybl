@@ -244,6 +244,30 @@ void setConfigRead(bool configRead) {
     callJava<>(::setConfigRead, configRead);
 }
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider) {
+    callJava<>(::setDefaultLoadFlowProvider, (char*) loadFlowProvider.data());
+}
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider) {
+    callJava<>(::setDefaultSecurityAnalysisProvider, (char*) securityAnalysisProvider.data());
+}
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider) {
+    callJava<>(::setDefaultSensitivityAnalysisProvider, (char*) sensitivityAnalysisProvider.data());
+}
+
+std::string getDefaultLoadFlowProvider() {
+    return toString(callJava<char*>(::getDefaultLoadFlowProvider));
+}
+
+std::string getDefaultSecurityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSecurityAnalysisProvider));
+}
+
+std::string getDefaultSensitivityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSensitivityAnalysisProvider));
+}
+
 bool isConfigRead() {
     return callJava<bool>(::isConfigRead);
 }
@@ -277,6 +301,24 @@ std::vector<std::string> getNetworkImportFormats() {
 
 std::vector<std::string> getNetworkExportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkExportFormats);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getLoadFlowProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getLoadFlowProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSecurityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSecurityAnalysisProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSensitivityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSensitivityAnalysisProviderNames);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
@@ -431,8 +473,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters,
-                                            const std::string& provider) {
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data());
+                                            const std::string& provider, bool dc) {
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc);
 }
 
 JavaHandle createSensitivityAnalysis() {

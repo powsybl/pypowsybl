@@ -166,7 +166,19 @@ void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
+
 bool isConfigRead();
+
+std::string getDefaultLoadFlowProvider();
+
+std::string getDefaultSecurityAnalysisProvider();
+
+std::string getDefaultSensitivityAnalysisProvider();
 
 std::string getVersionTable();
 
@@ -185,6 +197,12 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 std::vector<std::string> getNetworkImportFormats();
 
 std::vector<std::string> getNetworkExportFormats();
+
+std::vector<std::string> getLoadFlowProviderNames();
+
+std::vector<std::string> getSecurityAnalysisProviderNames();
+
+std::vector<std::string> getSensitivityAnalysisProviderNames();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
@@ -220,7 +238,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc);
 
 JavaHandle createSensitivityAnalysis();
 

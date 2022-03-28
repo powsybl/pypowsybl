@@ -15,7 +15,6 @@ from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
 
-
 TO_REMOVE = 'TO_REMOVE'
 
 
@@ -256,7 +255,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
             the matrix of sensitivities
         """
         matrix = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
-                                                           '' if contingency_id is None else contingency_id)
+                                                                '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
@@ -272,7 +271,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
-        matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr, '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr,
+                                                   '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
@@ -400,7 +400,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         SensitivityAnalysis.__init__(self, handle)
 
     def run(self, network: _Network, parameters: Parameters = None,
-            provider: str = 'OpenSensitivityAnalysis') -> DcSensitivityAnalysisResult:
+            provider: str = '') -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -440,7 +440,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.target_voltage_ids = target_voltage_ids
 
     def run(self, network: _Network, parameters: Parameters = None,
-            provider: str = 'OpenSensitivityAnalysis') -> AcSensitivityAnalysisResult:
+            provider: str = '') -> AcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -476,3 +476,33 @@ def create_ac_analysis() -> AcSensitivityAnalysis:
         a new AC sensitivity analysis
     """
     return AcSensitivityAnalysis(_pypowsybl.create_sensitivity_analysis())
+
+
+def set_default_provider(provider: str) -> None:
+    """
+    Set the default sensitivity analysis provider
+
+    Args:
+        provider: name of the default sensitivity analysis provider to set
+    """
+    _pypowsybl.set_default_sensitivity_analysis_provider(provider)
+
+
+def get_default_provider() -> str:
+    """
+    Get the current default sensitivity analysis provider. if nothing is set it is OpenSensitivityAnalysis
+
+    Returns:
+        the name of the current default sensitivity analysis provider
+    """
+    return _pypowsybl.get_default_sensitivity_analysis_provider()
+
+
+def get_provider_names() -> _List[str]:
+    """
+    Get list of supported provider names
+
+    Returns:
+        the list of supported provider names
+    """
+    return _pypowsybl.get_sensitivity_analysis_provider_names()
