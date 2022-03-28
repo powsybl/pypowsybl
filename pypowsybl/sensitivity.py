@@ -394,6 +394,7 @@ class SensitivityAnalysis(_ContingencyContainer):
         self.postcontingency_branches_ids[matrix_id] = branches_ids
         self.postcontingency_branch_data_frame_index[matrix_id] = branch_data_frame_index
 
+
 class DcSensitivityAnalysis(SensitivityAnalysis):
     """ Represents a DC sensitivity analysis."""
 

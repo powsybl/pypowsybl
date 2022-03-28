@@ -29,20 +29,20 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private List<SensitivityVariableSet> variableSets = Collections.emptyList();
 
-    class MatrixInfo {
-        ContingencyContextType contingencyContextType;
+    static class MatrixInfo {
+        private final ContingencyContextType contingencyContextType;
 
-        SensitivityFunctionType functionType;
+        private final SensitivityFunctionType functionType;
 
-        private List<String> columnIds;
+        private final List<String> columnIds;
 
-        private List<String> rowIds;
+        private final List<String> rowIds;
 
-        private List<String> contingencyIds;
+        private final List<String> contingencyIds;
 
-        int offsetData;
+        private int offsetData;
 
-        int offsetColumn;
+        private int offsetColumn;
 
         MatrixInfo(ContingencyContextType context, SensitivityFunctionType functionType, List<String> columnIds, List<String> rowIds, List<String> contingencyIds) {
             this.contingencyContextType = context;
@@ -97,17 +97,13 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         }
     }
 
-    Map<String, MatrixInfo> branchFlowFactorsMatrix = new HashMap<>();
+    private final Map<String, MatrixInfo> branchFlowFactorsMatrix = new HashMap<>();
 
-    MatrixInfo busVoltageFactorsMatrix = null;
+    private MatrixInfo busVoltageFactorsMatrix;
 
-    Map<String, MatrixInfo> preContingencyFactorMatrix = new HashMap<>();
+    private final Map<String, MatrixInfo> preContingencyBranchFlowFactorMatrix = new HashMap<>();
 
-    Map<String, MatrixInfo> postContingencyFactorMatrix = new HashMap<>();
-
-    void setBranchFlowFactorMatrix(List<String> branchesIds, List<String> variablesIds) {
-        addBranchFlowFactorMatrix("default", branchesIds, variablesIds);
-    }
+    private final Map<String, MatrixInfo> postContingencyBranchFlowFactorMatrix = new HashMap<>();
 
     void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
         MatrixInfo info = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
@@ -116,12 +112,12 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     void addPreContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
         MatrixInfo info = new MatrixInfo(ContingencyContextType.NONE, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
-        preContingencyFactorMatrix.put(matrixId, info);
+        preContingencyBranchFlowFactorMatrix.put(matrixId, info);
     }
 
     void addPostContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds, List<String> contingencies) {
         MatrixInfo info = new MatrixInfo(ContingencyContextType.SPECIFIC, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, contingencies);
-        postContingencyFactorMatrix.put(matrixId, info);
+        postContingencyBranchFlowFactorMatrix.put(matrixId, info);
     }
 
     public void setVariableSets(List<SensitivityVariableSet> variableSets) {
@@ -159,7 +155,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
             offsetColumns += matrix.getColumnCount();
         }
 
-        for (MatrixInfo matrix : preContingencyFactorMatrix.values()) {
+        for (MatrixInfo matrix : preContingencyBranchFlowFactorMatrix.values()) {
             matrix.setOffsetData(offsetData);
             matrix.setOffsetColumn(offsetColumns);
             matrices.add(matrix);
@@ -167,7 +163,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
             offsetColumns += matrix.getColumnCount();
         }
 
-        for (MatrixInfo matrix : postContingencyFactorMatrix.values()) {
+        for (MatrixInfo matrix : postContingencyBranchFlowFactorMatrix.values()) {
             matrix.setOffsetData(offsetData);
             matrix.setOffsetColumn(offsetColumns);
             matrices.add(matrix);
@@ -229,9 +225,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                         String variableId = rows.get(row);
                         Injection<?> injection = getInjection(network, variableId);
                         for (int column = 0; column < columns.size(); column++) {
-                            int index = matrix.getOffsetData() + column + columns.size() * row;
                             String branchId = columns.get(column);
-                            Branch branch = network.getBranch(branchId);
+                            Branch<?> branch = network.getBranch(branchId);
                             if (branch == null) {
                                 throw new PowsyblException("Branch '" + branchId + "' not found");
                             }
@@ -268,10 +263,9 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
                     }
                 } else if (matrix.getFunctionType() == SensitivityFunctionType.BUS_VOLTAGE) {
                     for (int row = 0; row < rows.size(); row++) {
-                        final String targetVoltageId = rows.get(row);
+                        String targetVoltageId = rows.get(row);
                         for (int column = 0; column < columns.size(); column++) {
-                            int index = matrix.getOffsetData() + column + rows.size() * row;
-                            final String busVoltageId = columns.get(column);
+                            String busVoltageId = columns.get(column);
                             handler.onFactor(SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
                                     SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId, false, ContingencyContext.all());
                         }
@@ -289,14 +283,12 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         double[][] referencesByContingencyIndex = new double[contingencies.size()][totalColumnsCount];
 
         NavigableMap<Integer, MatrixInfo> factorIndexMatrixMap = new TreeMap<>();
-        NavigableMap<Integer, MatrixInfo> columnsIndexMatrixMap = new TreeMap<>();
         for (MatrixInfo m : matrices) {
             factorIndexMatrixMap.put(m.getOffsetData(), m);
-            columnsIndexMatrixMap.put(m.getOffsetColumn(), m);
         }
 
         SensitivityValueWriter valueWriter = (factorContext, contingencyIndex, value, functionReference) -> {
-            int factorIndex = (Integer) factorContext;
+            int factorIndex = factorContext;
             MatrixInfo m = factorIndexMatrixMap.floorEntry(factorIndex).getValue();
 
             int columnIdx = m.getOffsetColumn() + (factorIndex - m.getOffsetData()) % m.getColumnCount();
@@ -330,8 +322,8 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
         return new SensitivityAnalysisResultContext(branchFlowFactorsMatrix,
                 busVoltageFactorsMatrix,
-                preContingencyFactorMatrix,
-                postContingencyFactorMatrix,
+                preContingencyBranchFlowFactorMatrix,
+                postContingencyBranchFlowFactorMatrix,
                 baseCaseValues,
                 valuesByContingencyId,
                 baseCaseReferences,
