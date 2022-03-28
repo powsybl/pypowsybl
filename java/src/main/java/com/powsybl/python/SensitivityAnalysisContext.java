@@ -105,6 +105,10 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private final Map<String, MatrixInfo> postContingencyBranchFlowFactorMatrix = new HashMap<>();
 
+    void setBranchFlowFactorMatrix(List<String> branchesIds, List<String> variablesIds) {
+        addBranchFlowFactorMatrix("default", branchesIds, variablesIds);
+    }
+
     void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
         MatrixInfo info = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
         branchFlowFactorsMatrix.put(matrixId, info);
