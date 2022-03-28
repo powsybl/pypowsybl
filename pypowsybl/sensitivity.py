@@ -229,6 +229,7 @@ class DcSensitivityAnalysisResult:
             data = _np.array(matrix, copy=False)
             return _pd.DataFrame(data=data, columns=self.branches_ids[matrix_id], index=['reference_flows'])
 
+
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     """ Represents the result of a AC sensitivity analysis.
     The result contains computed values (so called "reference" values) and sensitivity values
