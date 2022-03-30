@@ -2392,7 +2392,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.BUSBAR_SECTION, df, **kwargs)
 
-    def update_voltage_levels(self, df: _DataFrame = None, **kwargs: _ArrayLike)-> None:
+    def update_voltage_levels(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
                 Update voltage levels with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -2412,6 +2412,26 @@ class Network:  # pylint: disable=too-many-public-methods
                         In the case of sequences, all arguments must have the same length.
                 """
         return self._update_elements(ElementType.VOLTAGE_LEVEL, df, **kwargs)
+
+    def update_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+                Update substations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+                Attributes that can be updated are :
+
+                - `TSO`
+                - `country`
+
+                See Also:
+                    :meth:`get_substations`
+
+                Args:
+                    df: the data to be updated, as a data frame.
+                    **kwargs: the data to be updated, as named arguments.
+                        Arguments can be single values or any type of sequence.
+                        In the case of sequences, all arguments must have the same length.
+                """
+        return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
     def get_working_variant_id(self) -> str:
         """
