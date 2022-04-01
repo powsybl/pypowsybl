@@ -47,6 +47,8 @@ In AC mode, you can define voltage sensitivities, in addition to flows sensitivi
    :toctree: api/
 
     SensitivityAnalysis.add_branch_flow_factor_matrix
+    SensitivityAnalysis.add_precontingency_branch_flow_factor_matrix
+    SensitivityAnalysis.add_postcontingency_branch_flow_factor_matrix
     AcSensitivityAnalysis.set_bus_voltage_factor_matrix
     SensitivityAnalysis.set_zones
 
