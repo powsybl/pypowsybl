@@ -280,9 +280,9 @@ and postcontingency_branch_flow_factor_matrix methods.
     >>> analysis.add_postcontingency_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['GEN'], contingencies_ids=['NHV1_NHV2_1'], matrix_id='postcontingency')
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
-    >>> result.get_precontingency_branch_flows_sensitivity_matrix('precontingency')
+    >>> result.get_branch_flows_sensitivity_matrix('precontingency')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
-    >>> result.get_postcontingency_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
+    >>> result.get_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
          NHV1_NHV2_1  NHV1_NHV2_2
     GEN          0.0          0.0
