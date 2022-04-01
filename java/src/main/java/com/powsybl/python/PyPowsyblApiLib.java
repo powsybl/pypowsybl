@@ -502,19 +502,6 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "setBranchFlowFactorMatrix")
-    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
-        });
-    }
-
     @CEntryPoint(name = "addBranchFlowFactorMatrix")
     public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
@@ -623,7 +610,7 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String matrixId = CTypeUtil.toString(matrixPtr);
-            return resultContext.createPreContingencyBranchFlowsSensitivityMatrix(matrixId);
+            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, "");
         });
     }
 
@@ -634,7 +621,7 @@ public final class PyPowsyblApiLib {
             SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             String matrixId = CTypeUtil.toString(matrixPtr);
-            return resultContext.createPostContingencyBranchFlowsSensitivityMatrix(matrixId, contingencyId);
+            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, contingencyId);
         });
     }
 

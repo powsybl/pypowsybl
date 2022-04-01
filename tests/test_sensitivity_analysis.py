@@ -85,11 +85,11 @@ def test_sensitivity_analysis():
 
     assert r.get_branch_flows_sensitivity_matrix('m', 'aaa') is None
 
-    df = r.get_precontingency_branch_flows_sensitivity_matrix('preContingency')
+    df = r.get_branch_flows_sensitivity_matrix('preContingency')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L2-3-1']['B1-G'] == pytest.approx(-0.013675, abs=1e-6)
-    df = r.get_postcontingency_branch_flows_sensitivity_matrix('postContingency', 'L1-2-1')
+    df = r.get_branch_flows_sensitivity_matrix('postContingency', 'L1-2-1')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084423, abs=1e-6)

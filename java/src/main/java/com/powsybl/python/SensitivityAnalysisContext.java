@@ -101,27 +101,28 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private MatrixInfo busVoltageFactorsMatrix;
 
-    private final Map<String, MatrixInfo> preContingencyBranchFlowFactorMatrix = new HashMap<>();
-
-    private final Map<String, MatrixInfo> postContingencyBranchFlowFactorMatrix = new HashMap<>();
-
-    void setBranchFlowFactorMatrix(List<String> branchesIds, List<String> variablesIds) {
-        addBranchFlowFactorMatrix("default", branchesIds, variablesIds);
-    }
-
     void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
+        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
+            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
+        }
         MatrixInfo info = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
         branchFlowFactorsMatrix.put(matrixId, info);
     }
 
     void addPreContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
+        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
+            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
+        }
         MatrixInfo info = new MatrixInfo(ContingencyContextType.NONE, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
-        preContingencyBranchFlowFactorMatrix.put(matrixId, info);
+        branchFlowFactorsMatrix.put(matrixId, info);
     }
 
     void addPostContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds, List<String> contingencies) {
+        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
+            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
+        }
         MatrixInfo info = new MatrixInfo(ContingencyContextType.SPECIFIC, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, contingencies);
-        postContingencyBranchFlowFactorMatrix.put(matrixId, info);
+        branchFlowFactorsMatrix.put(matrixId, info);
     }
 
     public void setVariableSets(List<SensitivityVariableSet> variableSets) {
@@ -152,22 +153,6 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         int offsetColumns = 0;
 
         for (MatrixInfo matrix : branchFlowFactorsMatrix.values()) {
-            matrix.setOffsetData(offsetData);
-            matrix.setOffsetColumn(offsetColumns);
-            matrices.add(matrix);
-            offsetData += matrix.getColumnCount() * matrix.getRowCount();
-            offsetColumns += matrix.getColumnCount();
-        }
-
-        for (MatrixInfo matrix : preContingencyBranchFlowFactorMatrix.values()) {
-            matrix.setOffsetData(offsetData);
-            matrix.setOffsetColumn(offsetColumns);
-            matrices.add(matrix);
-            offsetData += matrix.getColumnCount() * matrix.getRowCount();
-            offsetColumns += matrix.getColumnCount();
-        }
-
-        for (MatrixInfo matrix : postContingencyBranchFlowFactorMatrix.values()) {
             matrix.setOffsetData(offsetData);
             matrix.setOffsetColumn(offsetColumns);
             matrices.add(matrix);
@@ -326,8 +311,6 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
         return new SensitivityAnalysisResultContext(branchFlowFactorsMatrix,
                 busVoltageFactorsMatrix,
-                preContingencyBranchFlowFactorMatrix,
-                postContingencyBranchFlowFactorMatrix,
                 baseCaseValues,
                 valuesByContingencyId,
                 baseCaseReferences,

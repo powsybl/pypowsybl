@@ -530,14 +530,6 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
     callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
 }
 
-void setBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds) {
-    ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr variableIdPtr(variablesIds);
-    callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                variableIdPtr.get(), variablesIds.size());
-}
-
 void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                                const std::vector<std::string>& variablesIds) {
        ToCharPtrPtr branchIdPtr(branchesIds);

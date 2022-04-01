@@ -472,9 +472,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_zones", &pypowsybl::setZones, "Add zones to sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("zones"));
 
-    m.def("set_branch_flow_factor_matrix", &pypowsybl::setBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("branches_ids"), py::arg("variables_ids"));
-
     m.def("add_branch_flow_factor_matrix", &pypowsybl::addBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
               py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"));
 
