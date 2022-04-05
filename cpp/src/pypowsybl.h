@@ -321,32 +321,32 @@ class CppToPythonLogger
 {
   public:
     static CppToPythonLogger* get() {
-      if (!mSingleton) {
-        mSingleton = new CppToPythonLogger();
-        initialized = false;
+      if (!singleton_) {
+        singleton_ = new CppToPythonLogger();
+        initialized_ = false;
       }
-      return mSingleton;
+      return singleton_;
     }
 
-    static void logFromJava(int level, char* pArg);
+    static void logFromJava(int level, int timestamp, char* loggerName, char* message);
 
     void setLogger(py::object pPythonLogger) {
-      this->mlogger = pPythonLogger;
-      initialized = true;
+      this->logger_ = pPythonLogger;
+      initialized_ = true;
     }
 
     py::object getLogger() {
-      return this->mlogger;
+      return this->logger_;
     }
 
     bool loggerInitialized() {
-      return this->initialized;
+      return this->initialized_;
     }
 
   private:
-    static CppToPythonLogger* mSingleton;
-    py::object mlogger;
-    static bool initialized;
+    static CppToPythonLogger* singleton_;
+    py::object logger_;
+    static bool initialized_;
 };
 
 }

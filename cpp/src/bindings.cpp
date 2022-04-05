@@ -11,8 +11,8 @@
 
 namespace py = pybind11;
 
-pypowsybl::CppToPythonLogger *pypowsybl::CppToPythonLogger::mSingleton = nullptr;
-bool pypowsybl::CppToPythonLogger::initialized = false;
+pypowsybl::CppToPythonLogger *pypowsybl::CppToPythonLogger::singleton_ = nullptr;
+bool pypowsybl::CppToPythonLogger::initialized_ = false;
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
