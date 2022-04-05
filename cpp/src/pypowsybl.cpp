@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #include "pypowsybl.h"
+#include "pylogging.h"
 #include "pypowsybl-java.h"
 #include <iostream>
 
@@ -697,33 +698,8 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
 }
 
-void CppToPythonLogger::logFromJava(int level, int timestamp, char* loggerName, char* message) {
-
-    py::gil_scoped_acquire acquire;
-    if(CppToPythonLogger::get()->loggerInitialized())
-    {
-        CppToPythonLogger::get()->getLogger().attr("log")(level, message);
-    }
-}
-
-
-void setLogger(py::object logger) {
-
-    CppToPythonLogger::get()->setLogger(logger);
-    auto fptr = &CppToPythonLogger::logFromJava;
-    pypowsybl::callJava<>(::setupCallback, reinterpret_cast<void *&>(fptr));
-}
-
-py::object getLogger() {
-
-    if(CppToPythonLogger::get()->loggerInitialized())
-    {
-        return CppToPythonLogger::get()->getLogger();
-    }
-    else
-    {
-        return py::object(py::cast(nullptr));
-    }
+void setupCallback(void *& callback) {
+    pypowsybl::callJava<>(::setupCallback, callback);
 }
 
 }
