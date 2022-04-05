@@ -86,6 +86,9 @@ public final class PyPowsyblNetworkApiLib {
                 case "eurostag_tutorial_example1_with_power_limits":
                     network = NetworkUtil.createEurostagTutorialExample1WithFixedPowerLimits();
                     break;
+                case "eurostag_tutorial_example1_with_apc_extension":
+                    network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
+                    break;
                 case "batteries":
                     network = BatteryNetworkFactory.create();
                     break;

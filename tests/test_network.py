@@ -245,6 +245,14 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual('OTHER', generators['energy_source']['GEN'])
         self.assertEqual(607, generators['target_p']['GEN'])
 
+    def test_create_generators_data_frame_with_extension(self):
+        n = pp.network.create_eurostag_tutorial_example1_with_apc_extension()
+        self.assertIn('activePowerControl', n.get_extensions_names())
+        generators_extensions = n.get_extension('activePowerControl')
+        self.assertEqual(1, len(generators_extensions))
+        self.assertTrue(generators_extensions['participate']['GEN'])
+        self.assertAlmostEqual(1.1, generators_extensions['droop']['GEN'])
+
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
         steps = n.get_ratio_tap_changer_steps()

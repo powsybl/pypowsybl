@@ -3036,6 +3036,14 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
 
+def create_eurostag_tutorial_example1_with_apc_extension() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial with an APC extension on GEN
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with an APC extension on GEN
+    """
+    return _create_network('eurostag_tutorial_example1_with_apc_extension')
 
 def create_four_substations_node_breaker_network() -> Network:
     """

@@ -11,15 +11,13 @@ import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.python.NetworkUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -108,17 +106,11 @@ class NetworkDataframesTest {
 
     @Test
     void generatorsExtension() {
-        Network network = EurostagTutorialExample1Factory.create();
-        Generator gen = network.getGenerator("GEN");
-        ActivePowerControl apcExt = new ActivePowerControlImpl(gen, true, 1.1f);
-        gen.addExtension(ActivePowerControl.class, apcExt);
-
+        Network network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
         List<Series> series = createExtensionDataFrame("activePowerControl", network);
-
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "droop", "participate");
-
         assertThat(series.get(1).getDoubles())
                 .containsExactly(1.1f);
         assertThat(series.get(2).getBooleans())
