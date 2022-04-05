@@ -6,7 +6,6 @@
  */
 package com.powsybl.python;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.util.ServiceLoaderCache;
@@ -69,14 +68,6 @@ public final class PyPowsyblApiLib {
     public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
-        });
-    }
-
-    @CEntryPoint(name = "setDebugMode")
-    public static void setDebugMode(IsolateThread thread, boolean debug, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
         });
     }
 

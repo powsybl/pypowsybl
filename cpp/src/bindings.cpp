@@ -131,8 +131,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
 
-    m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
-
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
 
     m.def("set_default_loadflow_provider", &pypowsybl::setDefaultLoadFlowProvider, "Set default loadflow provider", py::arg("provider"));

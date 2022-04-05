@@ -162,8 +162,6 @@ void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
-void setDebugMode(bool debug);
-
 void setConfigRead(bool configRead);
 
 void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);

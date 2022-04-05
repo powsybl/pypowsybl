@@ -3,9 +3,9 @@
 
 CppToPythonLogger *CppToPythonLogger::singleton_ = nullptr;
 bool CppToPythonLogger::initialized_ = false;
+std::mutex CppToPythonLogger::initMutex_;
 
 void CppToPythonLogger::logFromJava(int level, int timestamp, char* loggerName, char* message) {
-
     py::gil_scoped_acquire acquire;
     if (CppToPythonLogger::get()->loggerInitialized()) {
         CppToPythonLogger::get()->getLogger().attr("log")(level, message);

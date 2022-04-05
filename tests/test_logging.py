@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,9 +20,8 @@ class LoggingTestCase(unittest.TestCase):
 
     def test_loglevel_lf(self):
 
-        #Build a PyPow logger to handle logs and install it
-        pypowLogger = logging.getLogger("PyPow")
-        pp.set_logger(pypowLogger)
+        #Retrieve the default powsybl logger
+        pypowLogger = logging.getLogger('powsybl')
         pypowLogger.setLevel(level=logging.NOTSET)
 
         #Install a handler with a simple queue on logger for validation

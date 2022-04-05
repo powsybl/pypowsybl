@@ -34,23 +34,14 @@ __all__ = [
 ]
 
 #Setup a default logger that is the root logger with default log level set to ERROR
-_pypowsybl.set_logger(logging.getLogger())
-logging.getLogger().setLevel(level=logging.ERROR)
+_pypowsybl.set_logger(logging.getLogger('powsybl'))
+logging.getLogger('powsybl').setLevel(level=logging.ERROR)
 
 def set_logger(logger: Logger) -> None:
     _pypowsybl.set_logger(logger)
 
 def get_logger() -> Logger:
     return _pypowsybl.get_logger()
-
-def set_debug_mode(debug: bool = True) -> None:
-    """Set or unset debug mode
-
-    :param debug: `True` to activate debug mode, `False` otherwise
-    :type debug: bool
-    """
-    _pypowsybl.set_debug_mode(debug)
-
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
