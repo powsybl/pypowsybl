@@ -60,8 +60,6 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
-    static boolean readConfig = true;
-
     public static CFunctionPointer loggerCallback;
 
     private PyPowsyblApiLib() {

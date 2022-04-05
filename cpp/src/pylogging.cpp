@@ -7,8 +7,7 @@ bool CppToPythonLogger::initialized_ = false;
 void CppToPythonLogger::logFromJava(int level, int timestamp, char* loggerName, char* message) {
 
     py::gil_scoped_acquire acquire;
-    if(CppToPythonLogger::get()->loggerInitialized())
-    {
+    if (CppToPythonLogger::get()->loggerInitialized()) {
         CppToPythonLogger::get()->getLogger().attr("log")(level, message);
     }
 }
@@ -23,12 +22,10 @@ void setLogger(py::object logger) {
 
 py::object getLogger() {
 
-    if(CppToPythonLogger::get()->loggerInitialized())
-    {
+    if (CppToPythonLogger::get()->loggerInitialized()) {
         return CppToPythonLogger::get()->getLogger();
     }
-    else
-    {
+    else {
         return py::object(py::cast(nullptr));
     }
 }
