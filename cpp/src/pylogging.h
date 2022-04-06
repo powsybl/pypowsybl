@@ -6,31 +6,15 @@ namespace py = pybind11;
 class CppToPythonLogger
 {
   public:
-    static CppToPythonLogger* get() {
-      if (!singleton_) {
-        std::lock_guard<std::mutex> guard(initMutex_);
-        singleton_ = new CppToPythonLogger();
-        initialized_ = false;
-      }
-      return singleton_;
-    }
+    static CppToPythonLogger* get();
 
     static void logFromJava(int level, int timestamp, char* loggerName, char* message);
 
-    void setLogger(py::object pPythonLogger) {
-      std::lock_guard<std::mutex> guard(initMutex_);
-      this->logger_ = pPythonLogger;
-      initialized_ = true;
-    }
+    void setLogger(py::object pPythonLogger);
 
-    py::object getLogger() {
-      return this->logger_;
-    }
+    py::object getLogger();
 
-    bool loggerInitialized() {
-      std::lock_guard<std::mutex> guard(initMutex_);
-      return this->initialized_;
-    }
+    bool loggerInitialized();
 
   private:
     static CppToPythonLogger* singleton_;

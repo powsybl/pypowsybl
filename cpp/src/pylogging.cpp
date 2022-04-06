@@ -1,9 +1,36 @@
 #include "pylogging.h"
 #include "pypowsybl.h"
+#include <iostream>
+
+using namespace pybind11::literals;
 
 CppToPythonLogger *CppToPythonLogger::singleton_ = nullptr;
 bool CppToPythonLogger::initialized_ = false;
 std::mutex CppToPythonLogger::initMutex_;
+
+CppToPythonLogger* CppToPythonLogger::get() {
+  if (!singleton_) {
+    std::lock_guard<std::mutex> guard(initMutex_);
+    singleton_ = new CppToPythonLogger();
+    initialized_ = false;
+  }
+  return singleton_;
+}
+
+void CppToPythonLogger::setLogger(py::object pPythonLogger) {
+  std::lock_guard<std::mutex> guard(initMutex_);
+  this->logger_ = pPythonLogger;
+  initialized_ = true;
+}
+
+py::object CppToPythonLogger::getLogger() {
+  return this->logger_;
+}
+
+bool CppToPythonLogger::loggerInitialized() {
+  std::lock_guard<std::mutex> guard(initMutex_);
+  return this->initialized_;
+}
 
 void CppToPythonLogger::logFromJava(int level, int timestamp, char* loggerName, char* message) {
     py::gil_scoped_acquire acquire;
