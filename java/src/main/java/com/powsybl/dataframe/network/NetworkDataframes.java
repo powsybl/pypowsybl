@@ -768,21 +768,6 @@ public final class NetworkDataframes {
         return twt;
     }
 
-    private static Map<DataframeElementType, List<NetworkExtensionSeriesProvider>> createExtensionsProviders() {
-        Map<DataframeElementType, List<NetworkExtensionSeriesProvider>> pluginExtensionsProviders = Suppliers
-                .memoize(() -> ServiceLoader.load(NetworkExtensionSeriesProvider.class)
-                        .stream().map(ServiceLoader.Provider::get).collect(Collectors.toList()))
-                .get().stream()
-                .collect(Collectors.groupingBy(i -> i.getElementType(),
-                        Collectors.mapping(Function.identity(), Collectors.toList())));
-
-        Map<DataframeElementType, List<NetworkExtensionSeriesProvider>> extensionsProviders = Arrays.stream(DataframeElementType.values())
-                .collect(Collectors.toMap(e -> e, e -> new ArrayList<>()));
-        extensionsProviders.putAll(pluginExtensionsProviders);
-
-        return Collections.unmodifiableMap(extensionsProviders);
-    }
-
     public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName) {
         return EXTENSIONS_MAPPERS.get(extensionName);
     }

@@ -10,7 +10,6 @@ import com.powsybl.dataframe.BaseDataframeMapperBuilder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -51,15 +50,6 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
 
     public NetworkDataframeMapperBuilder<T> addProperties() {
         addProperties = true;
-        return this;
-    }
-
-    public NetworkDataframeMapperBuilder<T> addExtensions(List<NetworkExtensionSeriesProvider> extensionSeriesProviders) {
-        extensionSeriesProviders.stream()
-                .sorted(Comparator.comparing(NetworkExtensionSeriesProvider::getExtensionName))
-                .forEach(extProvider -> {
-                    extProvider.addSeries(this);
-                });
         return this;
     }
 
