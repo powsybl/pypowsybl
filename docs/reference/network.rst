@@ -116,7 +116,9 @@ Network elements can be modified using dataframes:
    Network.update_ratio_tap_changers
    Network.update_shunt_compensators
    Network.update_static_var_compensators
+   Network.update_substations
    Network.update_switches
+   Network.update_voltage_levels
    Network.update_vsc_converter_stations
 
 
