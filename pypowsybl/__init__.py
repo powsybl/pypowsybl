@@ -16,6 +16,7 @@ from pypowsybl import (
 )
 import logging
 from datetime import datetime
+from logging import Logger
 
 __version__ = '0.15.0.dev1'
 
@@ -37,23 +38,20 @@ logformat = '%(timestamp)s - %(loggername)s - %(message)s'
 logging.basicConfig(format=logformat)
 
 class LoggerWrapper:
-    def __init__(self, logger):
+    def __init__(self, logger: Logger):
         self.logger = logger
 
-    def get_logger(self):
-        return self.logger
-
-    def get_level(self):
+    def get_level(self) -> int:
         return self.logger.level
 
-    def log(self, level, message, timestamp, loggername):
+    def log(self, level: int, message: str, timestamp: float, loggername:str) -> None:
         self.logger.log(level, message, extra={'timestamp' : datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f"), 'loggername': loggername})
 
 #Setup a default logger that is the powsybl logger with default log level set to ERROR
 powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger.setLevel(level=logging.ERROR)
 loggerWrapper = LoggerWrapper(powsyblLogger)
 _pypowsybl.set_logger(loggerWrapper)
-loggerWrapper.get_logger().setLevel(level=logging.ERROR)
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
