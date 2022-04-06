@@ -882,9 +882,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
         n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
         n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
-        with self.assertRaises(pp.PyPowsyblError) as context:
-            n.get_bus_breaker_topology('VLHV1').buses
-        self.assertIn('there is no equipment connected on voltage level : VLHV1', str(context.exception.args))
+        bb_buses = n.get_bus_breaker_topology('VLHV1').buses
+        bb_bus = bb_buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
 
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
