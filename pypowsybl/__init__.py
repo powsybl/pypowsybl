@@ -37,12 +37,6 @@ __all__ = [
 _pypowsybl.set_logger(logging.getLogger('powsybl'))
 logging.getLogger('powsybl').setLevel(level=logging.ERROR)
 
-def set_logger(logger: Logger) -> None:
-    _pypowsybl.set_logger(logger)
-
-def get_logger() -> Logger:
-    return _pypowsybl.get_logger()
-
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
 
