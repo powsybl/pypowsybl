@@ -22,8 +22,7 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(final ILoggingEvent e) {
         PyPowsyblApiLib.Callback logMessage = (PyPowsyblApiLib.Callback) PyPowsyblApiLib.loggerCallback;
-        //CTypeUtil.toCharPtr(new String(this.getEncoder().encode(e), StandardCharsets.UTF_8))
-        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), (int) e.getTimeStamp(), CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
+        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp() / 1000.0, CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
     }
 
     public Encoder<ILoggingEvent> getEncoder() {

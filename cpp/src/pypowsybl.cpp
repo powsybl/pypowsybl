@@ -65,7 +65,7 @@ void callJava(F f, ARGS... args) {
     //Explicitly update log level on java side
     if( CppToPythonLogger::get()->loggerInitialized() ) {
       py::gil_scoped_acquire acquire;
-      py::object level = CppToPythonLogger::get()->getLogger().attr("level");
+      py::object level = CppToPythonLogger::get()->getLogger().attr("get_level")();
       ::setLogLevel(guard.thread(), level.cast<int>(), &exc);
     }
 

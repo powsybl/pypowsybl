@@ -32,10 +32,10 @@ bool CppToPythonLogger::loggerInitialized() {
   return this->initialized_;
 }
 
-void CppToPythonLogger::logFromJava(int level, int timestamp, char* loggerName, char* message) {
+void CppToPythonLogger::logFromJava(int level, double timestamp, char* loggerName, char* message) {
     py::gil_scoped_acquire acquire;
     if (CppToPythonLogger::get()->loggerInitialized()) {
-        CppToPythonLogger::get()->getLogger().attr("log")(level, message);
+        CppToPythonLogger::get()->getLogger().attr("log")(level, message, timestamp, loggerName);
     }
 }
 

@@ -8,7 +8,7 @@ class CppToPythonLogger
   public:
     static CppToPythonLogger* get();
 
-    static void logFromJava(int level, int timestamp, char* loggerName, char* message);
+    static void logFromJava(int level, double timestamp, char* loggerName, char* message);
 
     void setLogger(py::object pPythonLogger);
 
