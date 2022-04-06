@@ -790,56 +790,56 @@ public final class NetworkDataframes {
         Map<String, NetworkDataframeMapper> extensionsMapperMap = new HashMap<>();
 
         for (String extensionName : extensionsMap.keySet()) {
-            NetworkExtensionSeriesProvider extprovider = extensionsMap.get(extensionName);
+            NetworkExtensionSeriesProvider extProvider = extensionsMap.get(extensionName);
             NetworkDataframeMapper dataframeMapper = null;
-            switch (extprovider.getElementType()) {
+            switch (extProvider.getElementType()) {
                 case BUS:
-                    dataframeMapper = busesExt(extprovider);
+                    dataframeMapper = busesExt(extProvider);
                     break;
                 case LINE:
-                    dataframeMapper = linesExt(extprovider);
+                    dataframeMapper = linesExt(extProvider);
                     break;
                 case GENERATOR:
-                    dataframeMapper = generatorsExt(extprovider);
+                    dataframeMapper = generatorsExt(extProvider);
                     break;
                 case TWO_WINDINGS_TRANSFORMER:
-                    dataframeMapper = twoWindingTransformersExt(extprovider);
+                    dataframeMapper = twoWindingTransformersExt(extProvider);
                     break;
                 case THREE_WINDINGS_TRANSFORMER:
-                    dataframeMapper = threeWindingTransformersExt(extprovider);
+                    dataframeMapper = threeWindingTransformersExt(extProvider);
                     break;
                 case LOAD:
-                    dataframeMapper = loadsExt(extprovider);
+                    dataframeMapper = loadsExt(extProvider);
                     break;
                 case BATTERY:
-                    dataframeMapper = batteriesExt(extprovider);
+                    dataframeMapper = batteriesExt(extProvider);
                     break;
                 case SHUNT_COMPENSATOR:
-                    dataframeMapper = shuntsExt(extprovider);
+                    dataframeMapper = shuntsExt(extProvider);
                     break;
                 case DANGLING_LINE:
-                    dataframeMapper = danglingLinesExt(extprovider);
+                    dataframeMapper = danglingLinesExt(extProvider);
                     break;
                 case LCC_CONVERTER_STATION:
-                    dataframeMapper = lccsExt(extprovider);
+                    dataframeMapper = lccsExt(extProvider);
                     break;
                 case STATIC_VAR_COMPENSATOR:
-                    dataframeMapper = svcsExt(extprovider);
+                    dataframeMapper = svcsExt(extProvider);
                     break;
                 case SWITCH:
-                    dataframeMapper = switchesExt(extprovider);
+                    dataframeMapper = switchesExt(extProvider);
                     break;
                 case VOLTAGE_LEVEL:
-                    dataframeMapper = voltageLevelsExt(extprovider);
+                    dataframeMapper = voltageLevelsExt(extProvider);
                     break;
                 case SUBSTATION:
-                    dataframeMapper = substationsExt(extprovider);
+                    dataframeMapper = substationsExt(extProvider);
                     break;
                 case BUSBAR_SECTION:
-                    dataframeMapper = busBarsExt(extprovider);
+                    dataframeMapper = busBarsExt(extProvider);
                     break;
                 case HVDC_LINE:
-                    dataframeMapper = hvdcsExt(extprovider);
+                    dataframeMapper = hvdcsExt(extProvider);
                     break;
             }
             extensionsMapperMap.put(extensionName, dataframeMapper);
