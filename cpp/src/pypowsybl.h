@@ -198,6 +198,12 @@ std::vector<std::string> getNetworkImportFormats();
 
 std::vector<std::string> getNetworkExportFormats();
 
+std::vector<std::string> getLoadFlowProviderNames();
+
+std::vector<std::string> getSecurityAnalysisProviderNames();
+
+std::vector<std::string> getSensitivityAnalysisProviderNames();
+
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
 SeriesArray* createExporterParametersSeriesArray(const std::string& format);
