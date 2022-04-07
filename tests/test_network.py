@@ -1065,7 +1065,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             index=pd.MultiIndex.from_tuples([('DL', 'permanent_limit'), ('DL', "20'"), ('DL', "10'")],
                                             names=['element_id', 'name']),
             columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['DANGLING_LINE', 'NONE', 'CURRENT', 100, inf, False],
+            data=[['DANGLING_LINE', 'NONE', 'CURRENT', 100, -1, False],
                   ['DANGLING_LINE', 'NONE', 'CURRENT', 120, 1200, False],
                   ['DANGLING_LINE', 'NONE', 'CURRENT', 140, 600, False]])
         pd.testing.assert_frame_equal(expected, network.get_operational_limits(), check_dtype=False)
@@ -1077,10 +1077,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                              ('NHV1_NHV2_1', 'permanent_limit')],
                                             names=['element_id', 'name']),
             columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['LINE', 'ONE', 'ACTIVE_POWER', 500, inf, False],
-                  ['LINE', 'TWO', 'ACTIVE_POWER', 1100, inf, False],
-                  ['LINE', 'ONE', 'APPARENT_POWER', 500, inf, False],
-                  ['LINE', 'TWO', 'APPARENT_POWER', 1100, inf, False]])
+            data=[['LINE', 'ONE', 'ACTIVE_POWER', 500, -1, False],
+                  ['LINE', 'TWO', 'ACTIVE_POWER', 1100, -1, False],
+                  ['LINE', 'ONE', 'APPARENT_POWER', 500, -1, False],
+                  ['LINE', 'TWO', 'APPARENT_POWER', 1100, -1, False]])
         pd.testing.assert_frame_equal(expected, network.get_operational_limits().loc[('NHV1_NHV2_1', 'permanent_limit')],
                                       check_dtype=False)
         expected = pd.DataFrame(
