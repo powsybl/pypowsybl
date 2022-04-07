@@ -1057,6 +1057,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         filtered_selection_empty = network_four_subs.get_generators(id=[])
         self.assertTrue(filtered_selection_empty.empty)
 
+
     def test_limits(self):
         network = util.create_dangling_lines_network()
 

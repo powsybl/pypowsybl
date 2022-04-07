@@ -2514,7 +2514,7 @@ class Network:  # pylint: disable=too-many-public-methods
             all limits on the network
         """
         limits = self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        limits['acceptable_duration'] = limits['acceptable_duration'].map(lambda x: Inf if x == -1 else x)
+        limits.loc[limits['acceptable_duration'] == -1, 'acceptable_duration'] = Inf
         return limits
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
