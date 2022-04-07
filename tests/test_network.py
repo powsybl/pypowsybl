@@ -875,6 +875,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
         pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
+    def test_not_connected_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
+        pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
+        n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
+        n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
+
+        topo = n.get_bus_breaker_topology('VLHV1')
+        bb_bus = topo.buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
+
+        line = topo.elements.loc['NHV1_NHV2_1']
+        self.assertEqual('', line['bus_id'])
+
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
         network_topology = n.get_bus_breaker_topology('S4VL1')
