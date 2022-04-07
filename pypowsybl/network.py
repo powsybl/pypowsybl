@@ -2499,7 +2499,8 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
         limits = self.get_operational_limits(all_attributes, attributes)
         current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
-        current_limits.index.rename({'element_id': 'branch_id'}, inplace=True)
+        current_limits.index.rename('branch_id', inplace=True)
+        current_limits.set_index('name', append=True, inplace=True)
         return current_limits[['side', 'value', 'acceptable_duration', 'is_fictitious']]
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
@@ -2509,7 +2510,7 @@ class Network:  # pylint: disable=too-many-public-methods
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
           - **element_id**: Identifier of the network element on which this limit applies (could be for example
-            a line or a transformer)
+            a line or a transformer). This is the index column.
           - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
             THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
           - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
@@ -2525,7 +2526,7 @@ class Network:  # pylint: disable=too-many-public-methods
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
-            all limits on the network
+            All limits on the network
         """
         return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
 

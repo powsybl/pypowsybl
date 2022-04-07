@@ -680,9 +680,9 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper operationalLimits() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getLimits)
                 .stringsIndex("element_id", TemporaryLimitData::getId)
-                .stringsIndex("name", TemporaryLimitData::getName)
                 .enums("element_type", PyPowsyblApiHeader.ElementType.class, TemporaryLimitData::getElementType)
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
+                .strings("name", TemporaryLimitData::getName)
                 .enums("type",  LimitType.class, TemporaryLimitData::getType)
                 .doubles("value", TemporaryLimitData::getValue)
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
