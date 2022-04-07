@@ -529,7 +529,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             n.write_network_area_diagram_svg(test_svg, ['VL1'])
             n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
 
-    @unittest.skip
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(9, len(network.get_current_limits()))

@@ -200,27 +200,6 @@ public final class NetworkUtil {
         return elementsIds;
     }
 
-    public static Stream<TemporaryCurrentLimitData> getCurrentLimits(Network network) {
-        Stream.Builder<TemporaryCurrentLimitData> temporaryLimitContexts = Stream.builder();
-        network.getBranchStream().forEach(branch -> {
-            if (branch.getCurrentLimits1() != null) {
-                temporaryLimitContexts.add(new TemporaryCurrentLimitData(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
-                branch.getCurrentLimits1().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryCurrentLimitData(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
-                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
-                .forEach(temporaryLimitContexts::add);
-            }
-            if (branch.getCurrentLimits2() != null) {
-                temporaryLimitContexts.add(new TemporaryCurrentLimitData(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
-                branch.getCurrentLimits2().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryCurrentLimitData(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
-                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
-                        .forEach(temporaryLimitContexts::add);
-            }
-        });
-        return temporaryLimitContexts.build();
-    }
-
     public static Stream<TemporaryLimitData> getLimits(Network network) {
         Stream.Builder<TemporaryLimitData> temporaryLimitContexts = Stream.builder();
         network.getBranchStream().forEach(branch -> {

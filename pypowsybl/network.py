@@ -2497,7 +2497,10 @@ class Network:  # pylint: disable=too-many-public-methods
             all current limits on the network
         """
         warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
-        return self.get_elements(ElementType.CURRENT_LIMITS, all_attributes, attributes)
+        limits = self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
+        current_limits.index.rename({'element_id' : 'branch_id'}, inplace=True)
+        return current_limits[['side', 'value', 'acceptable_duration', 'is_fictitious']]
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """

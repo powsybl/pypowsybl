@@ -14,7 +14,6 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
 import com.powsybl.python.PyPowsyblApiHeader;
-import com.powsybl.python.TemporaryCurrentLimitData;
 import com.powsybl.python.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -73,7 +72,6 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER_STEP, ptcSteps());
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
-        mappers.put(DataframeElementType.CURRENT_LIMITS, currentLimits());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits());
         return Collections.unmodifiableMap(mappers);
@@ -676,17 +674,6 @@ public final class NetworkDataframes {
                 .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
-                .build();
-    }
-
-    private static NetworkDataframeMapper currentLimits() {
-        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getCurrentLimits)
-                .stringsIndex("branch_id", TemporaryCurrentLimitData::getBranchId)
-                .stringsIndex("name", TemporaryCurrentLimitData::getName)
-                .enums("side", Branch.Side.class, TemporaryCurrentLimitData::getSide)
-                .doubles("value", TemporaryCurrentLimitData::getValue)
-                .ints("acceptable_duration", TemporaryCurrentLimitData::getAcceptableDuration)
-                .booleans("is_fictitious", TemporaryCurrentLimitData::isFictitious)
                 .build();
     }
 
