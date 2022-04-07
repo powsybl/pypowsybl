@@ -18,6 +18,7 @@ Running a loadflow
     run_dc
     set_default_provider
     get_default_provider
+    get_provider_names
 
 Parameters
 ----------

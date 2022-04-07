@@ -110,6 +110,8 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertIsNotNone(validation.t3wts)
         self.assertIsNotNone(validation.twts)
 
+    def test_provider_names(self):
+        self.assertTrue('OpenLoadFlow' in pp.loadflow.get_provider_names())
 
 if __name__ == '__main__':
     unittest.main()

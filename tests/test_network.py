@@ -11,7 +11,6 @@ import pandas as pd
 from numpy import NaN, inf
 import numpy as np
 
-import pypowsybl
 import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
@@ -417,9 +416,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_substations_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        substations = n.get_substations()
-        self.assertEqual('RTE', substations['TSO']['P1'])
-        self.assertEqual('FR', substations['country']['P1'])
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'RTE', 'B', 'BE']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
+        n.update_substations(id='P2', TSO='REE', country='ES')
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'REE', 'B', 'ES']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
 
     def test_reactive_capability_curve_points_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -700,6 +707,29 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_non_linear_shunt_compensator_sections(update)
         pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
 
+    def test_voltage_levels(self):
+        net = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 24, NaN, NaN],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 150, NaN, NaN]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+        net.update_voltage_levels(id=['VLGEN', 'VLLOAD'], nominal_v=[25, 151], high_voltage_limit=[50, 175],
+                                  low_voltage_limit=[20, 125])
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 25, 50, 20],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 151, 175, 125]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+
     def test_update_with_keywords(self):
         n = util.create_non_linear_shunt_network()
         n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
@@ -847,6 +877,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected_switches, switches, check_dtype=False)
         pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
         pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
+
+    def test_not_connected_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
+        pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
+        n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
+        n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
+
+        topo = n.get_bus_breaker_topology('VLHV1')
+        bb_bus = topo.buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
+
+        line = topo.elements.loc['NHV1_NHV2_1']
+        self.assertEqual('', line['bus_id'])
 
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -1024,7 +1069,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   ['DANGLING_LINE', 'NONE', 'CURRENT', 120, 1200, False],
                   ['DANGLING_LINE', 'NONE', 'CURRENT', 140, 600, False]])
         pd.testing.assert_frame_equal(expected, network.get_operational_limits(), check_dtype=False)
-        network = pypowsybl.network.create_eurostag_tutorial_example1_with_power_limits_network()
+        network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
         expected = pd.DataFrame(
             index=pd.MultiIndex.from_tuples([('NHV1_NHV2_1', 'permanent_limit'),
                                              ('NHV1_NHV2_1', 'permanent_limit'),
