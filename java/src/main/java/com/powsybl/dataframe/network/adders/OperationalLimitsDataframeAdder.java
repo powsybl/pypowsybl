@@ -6,6 +6,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.LimitsDataframeAdderKey;
 import com.powsybl.python.TemporaryLimitData;
+import gnu.trove.list.array.TIntArrayList;
 
 import java.util.*;
 
@@ -30,7 +31,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     @Override
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe primaryTable = dataframes.get(0);
-        Map<LimitsDataframeAdderKey, List<Integer>> indexMap = new HashMap<>();
+        Map<LimitsDataframeAdderKey, TIntArrayList> indexMap = new HashMap<>();
         for (int i = 0; i < primaryTable.getLineCount(); i++) {
             String elementId = primaryTable.getStringValue("element_id", i)
                     .orElseThrow(() -> new PowsyblException("element_id is missing"));
@@ -39,22 +40,19 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             String limitType = primaryTable.getStringValue("type", i)
                     .orElseThrow(() -> new PowsyblException("type is missing"));
             LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
-            if (!indexMap.containsKey(key)) {
-                indexMap.put(key, new ArrayList<>());
-            }
-            indexMap.get(key).add(i);
+            indexMap.computeIfAbsent(key, k -> new TIntArrayList()).add(i);
         }
 
         addElements(network, primaryTable, indexMap);
     }
 
-    public void addElements(Network network, UpdatingDataframe dataframe, Map<LimitsDataframeAdderKey, List<Integer>> indexMap) {
+    private static void addElements(Network network, UpdatingDataframe dataframe, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
         indexMap.forEach((key, indexList) -> createLimits(network, dataframe, key.getElementId(),
                 key.getSide(), key.getLimitType(), indexList));
     }
 
-    public void createLimits(Network network, UpdatingDataframe dataframe, String elementId, String side, String type,
-                             List<Integer> indexList) {
+    private static void createLimits(Network network, UpdatingDataframe dataframe, String elementId, String side, String type,
+                                     TIntArrayList indexList) {
         IdentifiableType elementType = dataframe.getStringValue("element_type", indexList.get(0))
                 .map(IdentifiableType::valueOf)
                 .orElseThrow(() -> new PowsyblException("element_type is not set"));
@@ -62,17 +60,20 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         TemporaryLimitData.Side limitSide = TemporaryLimitData.Side.valueOf(side);
 
         LoadingLimitsAdder adder = getAdder(network, elementType, elementId, limitType, limitSide);
-        for (Integer index : indexList) {
-            int acceptableDuration = dataframe.getIntValue("acceptable_duration", index).orElseThrow(() -> new PowsyblException("acceptable duration is missing"));
-            double value = dataframe.getDoubleValue("value", index).orElseThrow(() -> new PowsyblException("value is missing"));
+        for (int index : indexList.toArray()) {
+            int acceptableDuration = dataframe.getIntValue("acceptable_duration", index)
+                    .orElseThrow(() -> new PowsyblException("acceptable duration is missing"));
+            double value = dataframe.getDoubleValue("value", index)
+                    .orElseThrow(() -> new PowsyblException("value is missing"));
             OptionalInt isFictitious = dataframe.getIntValue("is_fictitious", index);
             adder = createLimits(adder, acceptableDuration, value, isFictitious,
-                    dataframe.getStringValue("name", index).orElseThrow(() -> new PowsyblException("name is missing")));
+                    dataframe.getStringValue("name", index)
+                            .orElseThrow(() -> new PowsyblException("name is missing")));
         }
         adder.add();
     }
 
-    private LoadingLimitsAdder createLimits(LoadingLimitsAdder adder, int acceptableDuration, double value, OptionalInt isFictitious, String name) {
+    private static LoadingLimitsAdder createLimits(LoadingLimitsAdder adder, int acceptableDuration, double value, OptionalInt isFictitious, String name) {
         if (acceptableDuration == -1) {
             adder.setPermanentLimit(value);
             return adder;
@@ -90,7 +91,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     /**
      * Wraps a branch in a flows limits holder view
      */
-    private FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, Branch.Side side) {
+    private static FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, Branch.Side side) {
         return new FlowsLimitsHolder() {
 
             @Override
@@ -130,7 +131,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         };
     }
 
-    private Branch.Side toBranchSide(TemporaryLimitData.Side side) {
+    private static Branch.Side toBranchSide(TemporaryLimitData.Side side) {
         switch (side) {
             case ONE:
                 return Branch.Side.ONE;
@@ -141,7 +142,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         }
     }
 
-    private FlowsLimitsHolder getLimitsHolder(Network network, IdentifiableType identifiableType, String elementId, TemporaryLimitData.Side side) {
+    private static FlowsLimitsHolder getLimitsHolder(Network network, IdentifiableType identifiableType, String elementId, TemporaryLimitData.Side side) {
         switch (identifiableType) {
             case LINE:
             case TWO_WINDINGS_TRANSFORMER:
@@ -179,7 +180,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         }
     }
 
-    private LoadingLimitsAdder getAdder(Network network, IdentifiableType identifiableType, String elementId, LimitType type, TemporaryLimitData.Side side) {
+    private static LoadingLimitsAdder getAdder(Network network, IdentifiableType identifiableType, String elementId, LimitType type, TemporaryLimitData.Side side) {
         FlowsLimitsHolder limitsHolder = getLimitsHolder(network, identifiableType, elementId, side);
         switch (type) {
             case CURRENT:
