@@ -8,12 +8,15 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 import sys as _sys
 import datetime as _datetime
+import warnings
 from typing import (
     List as _List,
     Set as _Set,
     Dict as _Dict,
     Optional as _Optional, Union,
 )
+
+from numpy import Inf
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 from numpy.typing import ArrayLike as _ArrayLike
@@ -2484,6 +2487,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all current limits on the network paired with their branch id.
+        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -2492,7 +2496,40 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             all current limits on the network
         """
-        return self.get_elements(ElementType.CURRENT_LIMITS, all_attributes, attributes)
+        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
+        limits = self.get_operational_limits(all_attributes, attributes)
+        current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
+        current_limits.index.rename('branch_id', inplace=True)
+        current_limits.set_index('name', append=True, inplace=True)
+        return current_limits[['side', 'value', 'acceptable_duration', 'is_fictitious']]
+
+    def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get the list of operational limits.
+
+        The resulting dataframe, depending on the parameters, will have some of the following columns:
+
+          - **element_id**: Identifier of the network element on which this limit applies (could be for example
+            a line or a transformer). This is the index column.
+          - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
+            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+          - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
+          - **name**:       The name of the limit
+          - **type**:       The type of the limit (CURRENT, ACTIVE_POWER, APPARENT_POWER)
+          - **value**:      The value of the limit
+          - **acceptable_duration**: The duration, in seconds, for which the element can securely be
+            operated under the limit value. By convention, the value -1 represents an infinite duration.
+          - **is_fictitious**: true if this limit is fictitious
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes:     attributes to include in the dataframe. The 2 parameters are mutually
+                            exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            All limits on the network
+        """
+        return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """

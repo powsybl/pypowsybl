@@ -80,6 +80,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_linear_shunt_compensator_sections
    Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
+   Network.get_operational_limits
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
    Network.get_ratio_tap_changer_steps
