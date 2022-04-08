@@ -10,10 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.python.LimitsDataframeAdderKey;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,30 +59,6 @@ public final class NetworkElementAdders {
         if (adder == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-        if (type == OPERATIONAL_LIMITS) {
-            UpdatingDataframe primaryTable = dfs.get(0);
-            Map<LimitsDataframeAdderKey, List<Integer>> indexMap = new HashMap<>();
-            for (int i = 0; i < primaryTable.getLineCount(); i++) {
-                String elementId = primaryTable.getStringValue("element_id", i)
-                        .orElseThrow(() -> new PowsyblException("element id is missing"));
-                String side = primaryTable.getStringValue("side", i)
-                        .orElseThrow(() -> new PowsyblException("side is missing"));
-                String limitType = primaryTable.getStringValue("type", i)
-                        .orElseThrow(() -> new PowsyblException("type is missing"));
-                LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
-                if (!indexMap.containsKey(key)) {
-                    indexMap.put(key, new ArrayList<>());
-                }
-                indexMap.get(key).add(i);
-            }
-
-            ((OperationalLimitsDataframeAdder) adder).addElements(network, primaryTable, indexMap);
-
-        } else {
-            UpdatingDataframe primaryTable = dfs.get(0);
-            for (int i = 0; i < primaryTable.getLineCount(); i++) {
-                adder.addElement(network, dfs, i);
-            }
-        }
+        adder.addElements(network, dfs);
     }
 }

@@ -10,6 +10,7 @@ import com.powsybl.python.TemporaryLimitData;
 import java.util.*;
 
 public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("element_id"),
             SeriesMetadata.strings("name"),
@@ -27,7 +28,24 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     @Override
-    public void addElement(Network network, List<UpdatingDataframe> dataframes, int index) {
+    public void addElements(Network network, List<UpdatingDataframe> dataframes) {
+        UpdatingDataframe primaryTable = dataframes.get(0);
+        Map<LimitsDataframeAdderKey, List<Integer>> indexMap = new HashMap<>();
+        for (int i = 0; i < primaryTable.getLineCount(); i++) {
+            String elementId = primaryTable.getStringValue("element_id", i)
+                    .orElseThrow(() -> new PowsyblException("element_id is missing"));
+            String side = primaryTable.getStringValue("side", i)
+                    .orElseThrow(() -> new PowsyblException("side is missing"));
+            String limitType = primaryTable.getStringValue("type", i)
+                    .orElseThrow(() -> new PowsyblException("type is missing"));
+            LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
+            if (!indexMap.containsKey(key)) {
+                indexMap.put(key, new ArrayList<>());
+            }
+            indexMap.get(key).add(i);
+        }
+
+        addElements(network, primaryTable, indexMap);
     }
 
     public void addElements(Network network, UpdatingDataframe dataframe, Map<LimitsDataframeAdderKey, List<Integer>> indexMap) {
