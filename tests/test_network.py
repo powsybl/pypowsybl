@@ -8,7 +8,7 @@ import copy
 import unittest
 import datetime
 import pandas as pd
-from numpy import NaN, inf
+from numpy import NaN
 import numpy as np
 
 import pypowsybl as pp
@@ -18,7 +18,6 @@ import networkx as nx
 import util
 import tempfile
 
-from pypowsybl._pypowsybl import NONE, CURRENT, DANGLING_LINE
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
