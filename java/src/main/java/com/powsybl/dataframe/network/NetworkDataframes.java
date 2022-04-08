@@ -13,7 +13,6 @@ import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
-import com.powsybl.python.PyPowsyblApiHeader;
 import com.powsybl.python.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -680,7 +679,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper operationalLimits() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getLimits)
                 .stringsIndex("element_id", TemporaryLimitData::getId)
-                .enums("element_type", PyPowsyblApiHeader.ElementType.class, TemporaryLimitData::getElementType)
+                .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
                 .enums("type",  LimitType.class, TemporaryLimitData::getType)
