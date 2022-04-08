@@ -2520,6 +2520,7 @@ class Network:  # pylint: disable=too-many-public-methods
           - **acceptable_duration**: The duration, in seconds, for which the element can securely be
             operated under the limit value. By convention, the value -1 represents an infinite duration.
           - **is_fictitious**: true if this limit is fictitious
+
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
