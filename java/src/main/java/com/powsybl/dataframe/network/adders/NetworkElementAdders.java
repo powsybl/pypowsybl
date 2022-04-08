@@ -43,7 +43,7 @@ public final class NetworkElementAdders {
             Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder()),
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
             Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
-            Map.entry(OPERATIONAL_LIMITS, new LimitsDataframeAdder())
+            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder())
     );
 
     private NetworkElementAdders() {
@@ -79,7 +79,7 @@ public final class NetworkElementAdders {
                 indexMap.get(key).add(i);
             }
 
-            ((LimitsDataframeAdder) adder).addElements(network, primaryTable, indexMap);
+            ((OperationalLimitsDataframeAdder) adder).addElements(network, primaryTable, indexMap);
 
         } else {
             UpdatingDataframe primaryTable = dfs.get(0);

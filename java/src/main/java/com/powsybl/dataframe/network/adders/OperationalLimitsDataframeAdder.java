@@ -9,7 +9,7 @@ import com.powsybl.python.TemporaryLimitData;
 
 import java.util.*;
 
-public class LimitsDataframeAdder implements NetworkElementAdder {
+public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("element_id"),
             SeriesMetadata.strings("name"),
