@@ -579,8 +579,8 @@ SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network
     return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str()));
 }
 
-std::vector<std::string> getExtensionsNames(const JavaHandle& network) {
-    auto formatsArrayPtr = callJava<array*>(::getExtensionsNames, network);
+std::vector<std::string> getExtensionsNames() {
+    auto formatsArrayPtr = callJava<array*>(::getExtensionsNames);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }

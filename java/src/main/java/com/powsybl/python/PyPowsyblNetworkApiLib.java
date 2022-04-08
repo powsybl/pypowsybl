@@ -391,9 +391,8 @@ public final class PyPowsyblNetworkApiLib {
     }
 
     @CEntryPoint(name = "getExtensionsNames")
-    public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
             return createCharPtrArray(List.copyOf(NetworkDataframes.getExtensionsNames()));
         });
     }

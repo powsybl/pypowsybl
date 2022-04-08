@@ -262,7 +262,7 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
 
-std::vector<std::string> getExtensionsNames(const JavaHandle& network);
+std::vector<std::string> getExtensionsNames();
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
