@@ -6,6 +6,7 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.LimitType;
 
 import java.util.Objects;
@@ -19,7 +20,7 @@ public class TemporaryLimitData {
     private final String name;
     private final LimitType type;
     private final Side side;
-    private final PyPowsyblApiHeader.ElementType elementType;
+    private final IdentifiableType elementType;
     private final double value;
     private final int acceptableDuration;
     private final boolean isFictitious;
@@ -31,7 +32,7 @@ public class TemporaryLimitData {
         THREE
     }
 
-    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, PyPowsyblApiHeader.ElementType elementType,
+    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
                               int acceptableDuration, boolean isFictitious) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
@@ -43,7 +44,7 @@ public class TemporaryLimitData {
         this.isFictitious = isFictitious;
     }
 
-    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, PyPowsyblApiHeader.ElementType elementType) {
+    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType) {
         this(id, name, side, value, type, elementType, -1, false);
     }
 
@@ -67,7 +68,7 @@ public class TemporaryLimitData {
         return side;
     }
 
-    public PyPowsyblApiHeader.ElementType getElementType() {
+    public IdentifiableType getElementType() {
         return elementType;
     }
 

@@ -589,25 +589,22 @@ def test_create_limits():
          'type': 'ACTIVE_POWER', 'value': 700,
          'acceptable_duration': 60, 'is_fictitious': False}
     ]))
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples(
-            [('NHV1_NHV2_1', 'permanent_limit'), ('NHV1_NHV2_1', 'permanent_limit'), ('NHV1_NHV2_1', 'permanent_limit'),
-             ('NHV1_NHV2_1', 'permanent_limit')],
-            names=['element_id', 'name']),
-        columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-        data=[['LINE', 'ONE', 'CURRENT', 500, np.Inf, False],
-              ['LINE', 'TWO', 'CURRENT', 1100, np.Inf, False],
-              ['LINE', 'ONE', 'ACTIVE_POWER', 400, np.Inf, False],
-              ['LINE', 'ONE', 'APPARENT_POWER', 600, np.Inf, False]])
-    pd.testing.assert_frame_equal(expected, net.get_operational_limits().loc[('NHV1_NHV2_1', 'permanent_limit')],
-                                  check_dtype=False)
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples(
-            [('NHV1_NHV2_1', '1\''), ('NHV1_NHV2_1', '1\''), ('NHV1_NHV2_1', '1\'')],
-            names=['element_id', 'name']),
-        columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-        data=[['LINE', 'TWO', 'CURRENT', 1500, 60, False],
-              ['LINE', 'ONE', 'ACTIVE_POWER', 700, 60, False],
-              ['LINE', 'ONE', 'APPARENT_POWER', 1000, 60, False]])
-    pd.testing.assert_frame_equal(expected, net.get_operational_limits().loc[('NHV1_NHV2_1', '1\'')],
-                                  check_dtype=False)
+    expected = pd.DataFrame.from_records(
+        index='element_id',
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False]])
+    limits = net.get_operational_limits().loc['NHV1_NHV2_1']
+    permanent_limits = limits[limits['name'] == 'permanent_limit']
+    pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
+
+    expected = pd.DataFrame.from_records(
+        index='element_id',
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
+    one_minute_limits = limits[limits['name'] == '1\'']
+    pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)

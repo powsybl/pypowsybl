@@ -4,17 +4,17 @@ import com.powsybl.iidm.network.IdentifiableType;
 
 import java.util.Optional;
 
-public class BusBreakerViewElementContext {
+public class BusBreakerViewElementData {
     private final String elementId;
     private final String busId;
     private final IdentifiableType type;
     private final SideEnum side;
 
-    public BusBreakerViewElementContext(IdentifiableType type, String busId, String elementId) {
+    public BusBreakerViewElementData(IdentifiableType type, String busId, String elementId) {
         this(type, busId, elementId, null);
     }
 
-    public BusBreakerViewElementContext(IdentifiableType type, String busId, String elementId, SideEnum side) {
+    public BusBreakerViewElementData(IdentifiableType type, String busId, String elementId, SideEnum side) {
         this.type = type;
         this.busId = busId;
         this.elementId = elementId;

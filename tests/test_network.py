@@ -18,7 +18,6 @@ import networkx as nx
 import util
 import tempfile
 
-from pypowsybl._pypowsybl import NONE
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -878,6 +877,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
         pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
+    def test_not_connected_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
+        pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
+        n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
+        n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
+
+        topo = n.get_bus_breaker_topology('VLHV1')
+        bb_bus = topo.buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
+
+        line = topo.elements.loc['NHV1_NHV2_1']
+        self.assertEqual('', line['bus_id'])
+
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
         network_topology = n.get_bus_breaker_topology('S4VL1')
@@ -1046,49 +1060,44 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_limits(self):
         network = util.create_dangling_lines_network()
 
-        expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('DL', 'permanent_limit'), ('DL', "20'"), ('DL', "10'")],
-                                            names=['element_id', 'name']),
-            columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['DANGLING_LINE', 'NONE', 'CURRENT', 100, inf, False],
-                  ['DANGLING_LINE', 'NONE', 'CURRENT', 120, 1200, False],
-                  ['DANGLING_LINE', 'NONE', 'CURRENT', 140, 600, False]])
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False)]
+        )
         pd.testing.assert_frame_equal(expected, network.get_operational_limits(), check_dtype=False)
-        network = pypowsybl.network.create_eurostag_tutorial_example1_with_power_limits_network()
-        expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('NHV1_NHV2_1', 'permanent_limit'),
-                                             ('NHV1_NHV2_1', 'permanent_limit'),
-                                             ('NHV1_NHV2_1', 'permanent_limit'),
-                                             ('NHV1_NHV2_1', 'permanent_limit')],
-                                            names=['element_id', 'name']),
-            columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['LINE', 'ONE', 'ACTIVE_POWER', 500, inf, False],
-                  ['LINE', 'TWO', 'ACTIVE_POWER', 1100, inf, False],
-                  ['LINE', 'ONE', 'APPARENT_POWER', 500, inf, False],
-                  ['LINE', 'TWO', 'APPARENT_POWER', 1100, inf, False]])
-        pd.testing.assert_frame_equal(expected, network.get_operational_limits().loc[('NHV1_NHV2_1', 'permanent_limit')],
-                                      check_dtype=False)
-        expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('NHV1_NHV2_2', "20'"),
-                                             ('NHV1_NHV2_2', "20'")],
-                                            names=['element_id', 'name']),
-            columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['LINE', 'ONE', 'ACTIVE_POWER', 1200, 1200, False],
-                  ['LINE', 'ONE', 'APPARENT_POWER', 1200, 1200, False]])
-        pd.testing.assert_frame_equal(expected, network.get_operational_limits().loc[('NHV1_NHV2_2', '20\'')],
-                                      check_dtype=False)
+
+        network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False)])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_1']
+        limits = limits[limits['name'] == 'permanent_limit']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False],
+                  ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False]])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_2']
+        limits = limits[limits['name'] == '20\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
         network = util.create_three_windings_transformer_with_current_limits_network()
-        expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('3WT', "10'"),
-                                             ('3WT', "10'"),
-                                             ('3WT', "10'")],
-                                            names=['element_id', 'name']),
-            columns=['element_type', 'side', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
-            data=[['THREE_WINDINGS_TRANSFORMER', 'ONE', 'CURRENT', 1400, 600, False],
-                  ['THREE_WINDINGS_TRANSFORMER', 'TWO', 'CURRENT', 140, 600, False],
-                  ['THREE_WINDINGS_TRANSFORMER', 'THREE', 'CURRENT', 14, 600, False]])
-        pd.testing.assert_frame_equal(expected, network.get_operational_limits().loc[('3WT', '10\'')],
-                                      check_dtype=False)
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False]])
+        limits = network.get_operational_limits().loc['3WT']
+        limits = limits[limits['name'] == '10\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
 
 
 if __name__ == '__main__':
