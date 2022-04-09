@@ -143,6 +143,7 @@ Network elements can be created using the following methods:
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
+   Network.create_operational_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
    Network.create_shunt_compensators

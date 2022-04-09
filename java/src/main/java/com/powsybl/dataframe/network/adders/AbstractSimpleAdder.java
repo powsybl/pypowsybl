@@ -15,13 +15,20 @@ import java.util.List;
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
 public abstract class AbstractSimpleAdder implements NetworkElementAdder {
+
     @Override
-    public void addElement(Network network, List<UpdatingDataframe> dataframes, int index) {
+    public void addElements(Network network, List<UpdatingDataframe> dataframes) {
+        UpdatingDataframe primaryDf = getPrimaryDataframe(dataframes);
+        for (int i = 0; i < primaryDf.getLineCount(); i++) {
+            addElement(network, primaryDf, i);
+        }
+    }
+
+    protected UpdatingDataframe getPrimaryDataframe(List<UpdatingDataframe> dataframes) {
         if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
-        UpdatingDataframe dataframe = dataframes.get(0);
-        addElement(network, dataframe, index);
+        return dataframes.get(0);
     }
 
     protected abstract void addElement(Network network, UpdatingDataframe dataframe, int index);

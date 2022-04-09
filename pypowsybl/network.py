@@ -2959,6 +2959,36 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
 
+    def create_operational_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates operational limits.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - **element_id**: the ID of the network element on which we want to create new limits
+          - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
+            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+          - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
+          - **name**: the name of the limit
+          - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
+          - **value**: the value of the limit in A, MVA or MW
+          - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
+          - **is_fictitious** : fictitious limit ?
+
+        For each location of the network defined by a couple (element_id, side):
+          - if operational limits already exist, they will be replaced
+          - multiple limits may be defined, typically with different acceptable_duration
+          - you can only define ONE permanent limit, identified by an acceptable_duration of -1
+
+        Args:
+            df: Attributes as a dataframe.
+            **kwargs: Attributes as keyword arguments.
+        """
+        df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
