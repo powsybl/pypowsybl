@@ -321,6 +321,11 @@ std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMeta
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 
+::validation_level_type getValidationLevel(const JavaHandle& network);
+
+::validation_level_type validate(const JavaHandle& network);
+
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
 }
 
 #endif //PYPOWSYBL_H

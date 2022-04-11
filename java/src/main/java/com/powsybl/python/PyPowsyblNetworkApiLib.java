@@ -95,6 +95,9 @@ public final class PyPowsyblNetworkApiLib {
                 case "three_windings_transformer":
                     network = ThreeWindingsTransformerNetworkFactory.create();
                     break;
+                case "three_windings_transformer_with_current_limits":
+                    network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+                    break;
                 case "shunt":
                     network = ShuntTestCaseFactory.create();
                     break;

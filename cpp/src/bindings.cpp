@@ -183,14 +183,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
-            .value("CURRENT_LIMITS", element_type::CURRENT_LIMITS)
-            .export_values();
+            .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
             .value("DEFAULT_ATTRIBUTES", filter_attributes_type::DEFAULT_ATTRIBUTES)
-            .value("SELECTION_ATTRIBUTES", filter_attributes_type::SELECTION_ATTRIBUTES)
-            .export_values();
+            .value("SELECTION_ATTRIBUTES", filter_attributes_type::SELECTION_ATTRIBUTES);
 
     py::enum_<validation_type>(m, "ValidationType")
             .value("FLOWS", validation_type::FLOWS)
@@ -199,8 +197,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SVCS", validation_type::SVCS)
             .value("SHUNTS", validation_type::SHUNTS)
             .value("TWTS", validation_type::TWTS)
-            .value("TWTS3W", validation_type::TWTS3W)
-            .export_values();
+            .value("TWTS3W", validation_type::TWTS3W);
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
@@ -241,8 +238,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")
             .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
             .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
-            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
-            .export_values();
+            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.");
 
     py::class_<load_flow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const load_flow_component_result& r) {
@@ -269,8 +265,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::VoltageInitMode>(m, "VoltageInitMode", "Define the computation starting point.")
             .value("UNIFORM_VALUES", pypowsybl::VoltageInitMode::UNIFORM_VALUES, "Initialize voltages to uniform values based on nominale voltage.")
             .value("PREVIOUS_VALUES", pypowsybl::VoltageInitMode::PREVIOUS_VALUES, "Use previously computed voltage values as as starting point.")
-            .value("DC_VALUES", pypowsybl::VoltageInitMode::DC_VALUES, "Use values computed by a DC loadflow as a starting point.")
-            .export_values();
+            .value("DC_VALUES", pypowsybl::VoltageInitMode::DC_VALUES, "Use values computed by a DC loadflow as a starting point.");
 
     py::enum_<pypowsybl::BalanceType>(m, "BalanceType", "Define how to distribute slack bus imbalance.")
             .value("PROPORTIONAL_TO_GENERATION_P", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P,
@@ -280,13 +275,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD,
                    "Distribute slack on loads, in proportion of load")
             .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD,
-                   "Distribute slack on loads, in proportion of conform load")
-            .export_values();
+                   "Distribute slack on loads, in proportion of conform load");
 
     py::enum_<pypowsybl::ConnectedComponentMode>(m, "ConnectedComponentMode", "Define which connected components to run on.")
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
-            .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component")
-            .export_values();
+            .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
     
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
@@ -388,14 +381,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("CURRENT", pypowsybl::LimitType::CURRENT)
             .value("LOW_VOLTAGE", pypowsybl::LimitType::LOW_VOLTAGE)
-            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE)
-            .export_values();
+            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE);
 
     py::enum_<pypowsybl::Side>(m, "Side")
             .value("NONE", pypowsybl::Side::NONE)
             .value("ONE", pypowsybl::Side::ONE)
-            .value("TWO", pypowsybl::Side::TWO)
-            .export_values();
+            .value("TWO", pypowsybl::Side::TWO);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {
@@ -574,8 +565,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<contingency_context_type>(m, "ContingencyContextType")
             .value("ALL", contingency_context_type::ALL)
             .value("NONE", contingency_context_type::NONE)
-            .value("SPECIFIC", contingency_context_type::SPECIFIC)
-            .export_values();
+            .value("SPECIFIC", contingency_context_type::SPECIFIC);
 
     m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
     m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
@@ -595,4 +585,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
     m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
+
+    py::enum_<validation_level_type>(m, "ValidationLevel")
+        .value("EQUIPMENT", validation_level_type::EQUIPMENT)
+        .value("STEADY_STATE_HYPOTHESIS", validation_level_type::STEADY_STATE_HYPOTHESIS)
+        .export_values();
+
+    m.def("get_validation_level", &pypowsybl::getValidationLevel, "get the validation level", py::arg("network"));
+
+    m.def("validate", &pypowsybl::validate, "validate", py::arg("network"));
+
+    m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
+
 }
