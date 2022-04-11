@@ -343,7 +343,7 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
-        CURRENT_LIMITS;
+        OPERATIONAL_LIMITS;
 
         @CEnumValue
         public native int getCValue();
@@ -601,4 +601,17 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native FilterAttributesType fromCValue(int value);
     }
+
+    @CEnum("validation_level_type")
+    public enum ValidationLevelType {
+        EQUIPMENT,
+        STEADY_STATE_HYPOTHESIS;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ValidationLevelType fromCValue(int value);
+    }
+
 }

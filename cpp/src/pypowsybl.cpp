@@ -535,12 +535,29 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
     callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
 }
 
-void setBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
+void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                                const std::vector<std::string>& variablesIds) {
-    ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr variableIdPtr(variablesIds);
-    callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                variableIdPtr.get(), variablesIds.size());
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       callJava(::addBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                 variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
+}
+
+void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds) {
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       callJava(::addPreContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
+}
+
+void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds) {
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
+       callJava(::addPostContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), (char*) matrixId.c_str());
 }
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds,
@@ -555,9 +572,10 @@ JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, 
     return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
 }
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
+
+matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
     return callJava<matrix*>(::getBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
+                                (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
 matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
@@ -565,9 +583,9 @@ matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisRes
                                 (char*) contingencyId.c_str());
 }
 
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
+matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
     return callJava<matrix*>(::getReferenceFlows, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
+                                (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
@@ -692,6 +710,22 @@ std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMeta
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType) {
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
+}
+
+::validation_level_type getValidationLevel(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::EQUIPMENT;
+    return callJava<validation_level_type>(::getValidationLevel, network);
+}
+
+::validation_level_type validate(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::STEADY_STATE_HYPOTHESIS;
+    return callJava<validation_level_type>(::validate, network);
+}
+
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
+    pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
 }
 
 void setupCallback(void *& callback) {

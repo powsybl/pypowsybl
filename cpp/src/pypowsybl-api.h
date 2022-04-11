@@ -94,7 +94,7 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
-    CURRENT_LIMITS,
+    OPERATIONAL_LIMITS,
 } element_type;
 
 typedef enum {
@@ -106,6 +106,11 @@ typedef enum {
     TWTS,
     TWTS3W,
 } validation_type;
+
+typedef enum {
+    EQUIPMENT = 0,
+    STEADY_STATE_HYPOTHESIS,
+} validation_level_type;
 
 typedef enum {
     ALL = 0,

@@ -6,6 +6,7 @@
  */
 package com.powsybl.python;
 
+import com.powsybl.commons.PowsyblException;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -19,13 +20,9 @@ import java.util.function.Supplier;
  */
 public class SensitivityAnalysisResultContext {
 
-    private final int flowRowCount;
+    private final Map<String, SensitivityAnalysisContext.MatrixInfo> branchFlowFactorsMatrix;
 
-    private final int flowColCount;
-
-    private final int voltageRowCount;
-
-    private final int voltageColCount;
+    private final SensitivityAnalysisContext.MatrixInfo busVoltageFactorsMatrix;
 
     private final double[] baseCaseValues;
 
@@ -35,13 +32,12 @@ public class SensitivityAnalysisResultContext {
 
     private final Map<String, double[]> referencesByContingencyId;
 
-    public SensitivityAnalysisResultContext(int flowRowCount, int flowColCount, int voltageRowCount, int voltageColCount,
+    public SensitivityAnalysisResultContext(Map<String, SensitivityAnalysisContext.MatrixInfo> branchFlowFactorsMatrix,
+                                            SensitivityAnalysisContext.MatrixInfo busVoltageFactorsMatrix,
                                             double[] baseCaseValues, Map<String, double[]> valuesByContingencyId,
                                             double[] baseCaseReferences, Map<String, double[]> referencesByContingencyId) {
-        this.flowRowCount = flowRowCount;
-        this.flowColCount = flowColCount;
-        this.voltageRowCount = voltageRowCount;
-        this.voltageColCount = voltageColCount;
+        this.branchFlowFactorsMatrix = branchFlowFactorsMatrix;
+        this.busVoltageFactorsMatrix = busVoltageFactorsMatrix;
         this.baseCaseValues = baseCaseValues;
         this.valuesByContingencyId = valuesByContingencyId;
         this.baseCaseReferences = baseCaseReferences;
@@ -56,20 +52,32 @@ public class SensitivityAnalysisResultContext {
         return contingencyId.isEmpty() ? baseCaseReferences : referencesByContingencyId.get(contingencyId);
     }
 
-    public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String contingencyId) {
-        return createDoubleMatrix(() -> getValues(contingencyId), 0, flowRowCount, flowColCount);
+    private SensitivityAnalysisContext.MatrixInfo getBranchFlowFactorsMatrix(String matrixId) {
+        SensitivityAnalysisContext.MatrixInfo m = branchFlowFactorsMatrix.get(matrixId);
+        if (m == null) {
+            throw new PowsyblException("Matrix '" + matrixId + "' not found");
+        }
+        return m;
+    }
+
+    public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String matrixId, String contingencyId) {
+        SensitivityAnalysisContext.MatrixInfo m = getBranchFlowFactorsMatrix(matrixId);
+        return createDoubleMatrix(() -> getValues(contingencyId), m.getOffsetData(), m.getRowCount(), m.getColumnCount());
     }
 
     public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
-        return createDoubleMatrix(() -> getValues(contingencyId), flowRowCount * flowColCount, voltageRowCount, voltageColCount);
+        return createDoubleMatrix(() -> getValues(contingencyId), busVoltageFactorsMatrix.getOffsetData(),
+                busVoltageFactorsMatrix.getRowCount(), busVoltageFactorsMatrix.getColumnCount());
     }
 
-    public PyPowsyblApiHeader.MatrixPointer createReferenceFlows(String contingencyId) {
-        return createDoubleMatrix(() -> getReferences(contingencyId), 0, 1, flowColCount);
+    public PyPowsyblApiHeader.MatrixPointer createReferenceFlowsActivePower(String matrixId, String contingencyId) {
+        SensitivityAnalysisContext.MatrixInfo m = getBranchFlowFactorsMatrix(matrixId);
+        return createDoubleMatrix(() -> getReferences(contingencyId), m.getOffsetColumn(), 1, m.getColumnCount());
     }
 
     public PyPowsyblApiHeader.MatrixPointer createReferenceVoltages(String contingencyId) {
-        return createDoubleMatrix(() -> getReferences(contingencyId), flowColCount, voltageRowCount, voltageColCount);
+        return createDoubleMatrix(() -> getReferences(contingencyId), busVoltageFactorsMatrix.getOffsetData(),
+                busVoltageFactorsMatrix.getRowCount(), busVoltageFactorsMatrix.getColumnCount());
     }
 
     private static PyPowsyblApiHeader.MatrixPointer createDoubleMatrix(Supplier<double[]> srcSupplier, int srcPos, int matRow, int matCol) {
