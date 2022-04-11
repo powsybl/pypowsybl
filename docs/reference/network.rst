@@ -91,6 +91,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_switches
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
+   Network.get_extension
 
 
 Network elements update
@@ -185,6 +186,7 @@ Miscellaneous network functions
    Network.connect
    Network.open_switch
    Network.close_switch
+   get_extensions_names
 
 I/O
 ---

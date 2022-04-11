@@ -248,7 +248,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_extensions(self):
         no_extensions_network = pp.network.create_eurostag_tutorial_example1_network()
         self.assertEqual(0, len(no_extensions_network.get_extension('activePowerControl')))
-        n = pp.network.create_eurostag_tutorial_example1_with_apc_extension()
+        n = pp.network._create_network('eurostag_tutorial_example1_with_apc_extension')
         self.assertIn('activePowerControl', pp.network.get_extensions_names())
         generators_extensions = n.get_extension('activePowerControl')
         self.assertEqual(1, len(generators_extensions))
