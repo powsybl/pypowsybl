@@ -1,61 +1,5 @@
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
 
-ALL: ContingencyContextType
-ALL_ATTRIBUTES: FilterAttributesType
-BATTERY: ElementType
-BUS: ElementType
-BUSBAR_SECTION: ElementType
-BUSES: ValidationType
-CONVERGED: LoadFlowComponentStatus
-CURRENT: LimitType
-CURRENT_LIMITS: ElementType
-DANGLING_LINE: ElementType
-DC_VALUES: VoltageInitMode
-DEFAULT_ATTRIBUTES: FilterAttributesType
-FAILED: LoadFlowComponentStatus
-FLOWS: ValidationType
-GENERATOR: ElementType
-GENERATORS: ValidationType
-HIGH_VOLTAGE: LimitType
-HVDC_LINE: ElementType
-LCC_CONVERTER_STATION: ElementType
-LINE: ElementType
-LINEAR_SHUNT_COMPENSATOR_SECTION: ElementType
-LOAD: ElementType
-LOW_VOLTAGE: LimitType
-MAIN: ConnectedComponentMode
-MAX_ITERATION_REACHED: LoadFlowComponentStatus
-NONE: ContingencyContextType
-NON_LINEAR_SHUNT_COMPENSATOR_SECTION: ElementType
-ONE: Side
-PHASE_TAP_CHANGER: ElementType
-PHASE_TAP_CHANGER_STEP: ElementType
-PREVIOUS_VALUES: VoltageInitMode
-PROPORTIONAL_TO_CONFORM_LOAD: BalanceType
-PROPORTIONAL_TO_GENERATION_P: BalanceType
-PROPORTIONAL_TO_GENERATION_P_MAX: BalanceType
-PROPORTIONAL_TO_LOAD: BalanceType
-RATIO_TAP_CHANGER: ElementType
-RATIO_TAP_CHANGER_STEP: ElementType
-REACTIVE_CAPABILITY_CURVE_POINT: ElementType
-SELECTION_ATTRIBUTES: FilterAttributesType
-SHUNTS: ValidationType
-SHUNT_COMPENSATOR: ElementType
-SOLVER_FAILED: LoadFlowComponentStatus
-SPECIFIC: ContingencyContextType
-STATIC_VAR_COMPENSATOR: ElementType
-SUBSTATION: ElementType
-SVCS: ValidationType
-SWITCH: ElementType
-THREE_WINDINGS_TRANSFORMER: ElementType
-TWO: Side
-TWO_WINDINGS_TRANSFORMER: ElementType
-TWTS: ValidationType
-TWTS3W: ValidationType
-UNIFORM_VALUES: VoltageInitMode
-VOLTAGE_LEVEL: ElementType
-VSC_CONVERTER_STATION: ElementType
-
 class ArrayStruct:
     def __init__(self) -> None: ...
 
@@ -127,11 +71,11 @@ class ElementType:
     BATTERY: ClassVar[ElementType] = ...
     BUS: ClassVar[ElementType] = ...
     BUSBAR_SECTION: ClassVar[ElementType] = ...
-    CURRENT_LIMITS: ClassVar[ElementType] = ...
     DANGLING_LINE: ClassVar[ElementType] = ...
     GENERATOR: ClassVar[ElementType] = ...
     HVDC_LINE: ClassVar[ElementType] = ...
     LCC_CONVERTER_STATION: ClassVar[ElementType] = ...
+    OPERATIONAL_LIMITS: ClassVar[ElementType] = ...
     LINE: ClassVar[ElementType] = ...
     LINEAR_SHUNT_COMPENSATOR_SECTION: ClassVar[ElementType] = ...
     LOAD: ClassVar[ElementType] = ...

@@ -4,8 +4,11 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import gnu.trove.list.array.TIntArrayList;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -38,34 +41,58 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
     }
 
     @Override
-    public void addElement(Network network, List<UpdatingDataframe> dfs, int indexElement) {
-        if (dfs.size() != 2) {
+    public void addElements(Network network, List<UpdatingDataframe> dataframes) {
+        if (dataframes.size() != 2) {
             throw new PowsyblException("Expected 2 dataframes: one for tap changers, one for steps.");
         }
-        createRatioTapChangers(network, dfs.get(0), dfs.get(1), indexElement);
+        UpdatingDataframe tapChangersDf = dataframes.get(0);
+        UpdatingDataframe stepsDf = dataframes.get(1);
+        Map<String, TIntArrayList> stepsIndexes = getStepsIndexes(stepsDf);
+        for (int index = 0; index < tapChangersDf.getLineCount(); index++) {
+            createRatioTapChanger(network, tapChangersDf, stepsDf, index, stepsIndexes);
+        }
     }
 
-    private static void createRatioTapChangers(Network network, UpdatingDataframe ratiosDataframe, UpdatingDataframe stepsDataframe, int indexElement) {
-        String transfomerId = ratiosDataframe.getStringValue("id", indexElement)
+    /**
+     * Mapping transfo ID --> index of steps in the steps dataframe
+     */
+    private static Map<String, TIntArrayList> getStepsIndexes(UpdatingDataframe stepsDataframe) {
+        Map<String, TIntArrayList> stepIndexes = new HashMap<>();
+        for (int stepIndex = 0; stepIndex < stepsDataframe.getLineCount(); stepIndex++) {
+            String transformerId = stepsDataframe.getStringValue("id", stepIndex)
+                    .orElseThrow(() -> new PowsyblException("Steps dataframe: id is not set"));
+            stepIndexes.computeIfAbsent(transformerId, k -> new TIntArrayList())
+                    .add(stepIndex);
+        }
+        return stepIndexes;
+    }
+
+    private static void createRatioTapChanger(Network network,
+                                              UpdatingDataframe tapChangersDataframe,
+                                              UpdatingDataframe stepsDataframe,
+                                              int transformerIndex,
+                                              Map<String, TIntArrayList> stepIndexes) {
+        String transformerId = tapChangersDataframe.getStringValue("id", transformerIndex)
                 .orElseThrow(() -> new PowsyblException("id is missing"));
-        TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(transfomerId);
+        TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(transformerId);
         RatioTapChangerAdder adder = transformer.newRatioTapChanger();
-        ratiosDataframe.getDoubleValue("target_deadband", indexElement).ifPresent(adder::setTargetDeadband);
-        ratiosDataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setTargetV);
-        ratiosDataframe.getIntValue("on_load", indexElement).ifPresent(onLoad -> adder.setLoadTapChangingCapabilities(onLoad == 1));
-        ratiosDataframe.getIntValue("low_tap", indexElement).ifPresent(adder::setLowTapPosition);
-        ratiosDataframe.getIntValue("tap", indexElement).ifPresent(adder::setTapPosition);
-        for (int sectionIndex = 0; sectionIndex < stepsDataframe.getLineCount(); sectionIndex++) {
-            String transformerStepId = stepsDataframe.getStringValue("id", sectionIndex).orElse(null);
-            if (transfomerId.equals(transformerStepId)) {
+        tapChangersDataframe.getDoubleValue("target_deadband", transformerIndex).ifPresent(adder::setTargetDeadband);
+        tapChangersDataframe.getDoubleValue("target_v", transformerIndex).ifPresent(adder::setTargetV);
+        tapChangersDataframe.getIntValue("on_load", transformerIndex).ifPresent(onLoad -> adder.setLoadTapChangingCapabilities(onLoad == 1));
+        tapChangersDataframe.getIntValue("low_tap", transformerIndex).ifPresent(adder::setLowTapPosition);
+        tapChangersDataframe.getIntValue("tap", transformerIndex).ifPresent(adder::setTapPosition);
+        TIntArrayList steps = stepIndexes.get(transformerId);
+        if (steps != null) {
+            steps.forEach(i -> {
                 RatioTapChangerAdder.StepAdder stepAdder = adder.beginStep();
-                stepsDataframe.getDoubleValue("b", indexElement).ifPresent(stepAdder::setB);
-                stepsDataframe.getDoubleValue("g", indexElement).ifPresent(stepAdder::setG);
-                stepsDataframe.getDoubleValue("r", indexElement).ifPresent(stepAdder::setR);
-                stepsDataframe.getDoubleValue("x", indexElement).ifPresent(stepAdder::setX);
-                stepsDataframe.getDoubleValue("rho", indexElement).ifPresent(stepAdder::setRho);
+                stepsDataframe.getDoubleValue("b", transformerIndex).ifPresent(stepAdder::setB);
+                stepsDataframe.getDoubleValue("g", transformerIndex).ifPresent(stepAdder::setG);
+                stepsDataframe.getDoubleValue("r", transformerIndex).ifPresent(stepAdder::setR);
+                stepsDataframe.getDoubleValue("x", transformerIndex).ifPresent(stepAdder::setX);
+                stepsDataframe.getDoubleValue("rho", transformerIndex).ifPresent(stepAdder::setRho);
                 stepAdder.endStep();
-            }
+                return true;
+            });
         }
         adder.add();
     }
