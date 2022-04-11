@@ -606,33 +606,12 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "getPreContingencyBranchFlowsSensitivityMatrix")
-    public static MatrixPointer getPreContingencyBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                              CCharPointer matrixPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-            String matrixId = CTypeUtil.toString(matrixPtr);
-            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, "");
-        });
-    }
-
-    @CEntryPoint(name = "getPostContingencyBranchFlowsSensitivityMatrix")
-    public static MatrixPointer getPostContingencyBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                               CCharPointer matrixPtr, CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            String matrixId = CTypeUtil.toString(matrixPtr);
-            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, contingencyId);
-        });
-    }
-
     @CEntryPoint(name = "getReferenceFlows")
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                     CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             String matrixId = CTypeUtil.toString(matrixIdPtr);
             return resultContext.createReferenceFlowsActivePower(matrixId, contingencyId);

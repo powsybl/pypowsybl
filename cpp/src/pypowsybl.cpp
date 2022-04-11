@@ -573,16 +573,6 @@ matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisRes
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
-matrix* getPreContingencyBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId) {
-    return callJava<matrix*>(::getPreContingencyBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
-                                (char*) matrixId.c_str());
-}
-
-matrix* getPostContingencyBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId) {
-    return callJava<matrix*>(::getPostContingencyBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
-                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
-}
-
 matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
     return callJava<matrix*>(::getBusVoltagesSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) contingencyId.c_str());

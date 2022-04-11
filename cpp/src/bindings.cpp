@@ -491,12 +491,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_branch_flows_sensitivity_matrix", &pypowsybl::getBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
               py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
-    m.def("get_precontingency_branch_flows_sensitivity_matrix", &pypowsybl::getPreContingencyBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
-                  py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"));
-
-    m.def("get_postcontingency_branch_flows_sensitivity_matrix", &pypowsybl::getPostContingencyBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
-                  py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
-
     m.def("get_bus_voltages_sensitivity_matrix", &pypowsybl::getBusVoltagesSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
