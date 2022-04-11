@@ -267,6 +267,10 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
+
+std::vector<std::string> getExtensionsNames();
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);

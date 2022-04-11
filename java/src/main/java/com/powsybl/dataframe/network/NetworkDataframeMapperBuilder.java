@@ -53,6 +53,11 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
         return this;
     }
 
+    public NetworkDataframeMapperBuilder<T> addExtension(NetworkExtensionSeriesProvider extensionSeriesProvider) {
+        extensionSeriesProvider.addSeries(this);
+        return this;
+    }
+
     @Override
     public NetworkDataframeMapper build() {
         return new AbstractNetworkDataframeMapper<T>(series, addProperties) {

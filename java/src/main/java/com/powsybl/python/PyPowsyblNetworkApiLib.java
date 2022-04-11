@@ -86,6 +86,9 @@ public final class PyPowsyblNetworkApiLib {
                 case "eurostag_tutorial_example1_with_power_limits":
                     network = NetworkUtil.createEurostagTutorialExample1WithFixedPowerLimits();
                     break;
+                case "eurostag_tutorial_example1_with_apc_extension":
+                    network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
+                    break;
                 case "batteries":
                     network = BatteryNetworkFactory.create();
                     break;
@@ -371,6 +374,29 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
             return Dataframes.createCDataframe(mapper, network, dataframeFilter);
+        });
+    }
+
+    @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                                                  CCharPointer extensionName,
+                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        String name = CTypeUtil.toString(extensionName);
+        return doCatch(exceptionHandlerPtr, () -> {
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return Dataframes.createCDataframe(mapper, network);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionsNames")
+    public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            return createCharPtrArray(List.copyOf(NetworkDataframes.getExtensionsNames()));
         });
     }
 
