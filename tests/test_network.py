@@ -20,8 +20,10 @@ from pypowsybl._pypowsybl import ValidationLevel
 import util
 import tempfile
 
+
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
+
 
 class NetworkTestCase(unittest.TestCase):
 
@@ -415,9 +417,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_substations_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        substations = n.get_substations()
-        self.assertEqual('RTE', substations['TSO']['P1'])
-        self.assertEqual('FR', substations['country']['P1'])
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'RTE', 'B', 'BE']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
+        n.update_substations(id='P2', TSO='REE', country='ES')
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'REE', 'B', 'ES']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
 
     def test_reactive_capability_curve_points_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -519,7 +529,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             n.write_network_area_diagram_svg(test_svg, None)
             n.write_network_area_diagram_svg(test_svg, ['VL1'])
             n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
-
 
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()
@@ -698,6 +707,29 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_non_linear_shunt_compensator_sections(update)
         pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
 
+    def test_voltage_levels(self):
+        net = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 24, NaN, NaN],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 150, NaN, NaN]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+        net.update_voltage_levels(id=['VLGEN', 'VLLOAD'], nominal_v=[25, 151], high_voltage_limit=[50, 175],
+                                  low_voltage_limit=[20, 125])
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 25, 50, 20],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 151, 175, 125]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+
     def test_update_with_keywords(self):
         n = util.create_non_linear_shunt_network()
         n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
@@ -846,6 +878,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
         pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
+    def test_not_connected_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
+        pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
+        n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
+        n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
+
+        topo = n.get_bus_breaker_topology('VLHV1')
+        bb_bus = topo.buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
+
+        line = topo.elements.loc['NHV1_NHV2_1']
+        self.assertEqual('', line['bus_id'])
+
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
         network_topology = n.get_bus_breaker_topology('S4VL1')
@@ -912,8 +959,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         filtered_selection = network_four_subs.get_2_windings_transformers(id='TWT')
         pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
-        expected_selection = network_micro_grid.get_3_windings_transformers().loc[['_84ed55f4-61f5-4d9d-8755-bba7b877a246']]
-        filtered_selection = network_micro_grid.get_3_windings_transformers(id=['_84ed55f4-61f5-4d9d-8755-bba7b877a246'])
+        expected_selection = network_micro_grid.get_3_windings_transformers().loc[
+            ['_84ed55f4-61f5-4d9d-8755-bba7b877a246']]
+        filtered_selection = network_micro_grid.get_3_windings_transformers(
+            id=['_84ed55f4-61f5-4d9d-8755-bba7b877a246'])
         pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
         expected_selection = network_micro_grid.get_shunt_compensators().loc[['_002b0a40-3957-46db-b84a-30420083558f']]
@@ -990,8 +1039,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         filtered_selection = network_eurostag.get_substations(id=['P2'])
         pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
-        expected_selection = network_four_subs.get_switches().loc[['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER']]
-        filtered_selection = network_four_subs.get_switches(id=['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER'])
+        expected_selection = network_four_subs.get_switches().loc[
+            ['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER']]
+        filtered_selection = network_four_subs.get_switches(
+            id=['S1VL2_GH1_BREAKER', 'S4VL1_BBS_SVC_DISCONNECTOR', 'S1VL2_COUPLER'])
         pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
         expected_selection = network_four_subs.get_voltage_levels().loc[['S2VL1']]
@@ -1006,6 +1057,48 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertTrue(expected_selection_empty.empty)
         filtered_selection_empty = network_four_subs.get_generators(id=[])
         self.assertTrue(filtered_selection_empty.empty)
+
+    def test_limits(self):
+        network = util.create_dangling_lines_network()
+
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False)]
+        )
+        pd.testing.assert_frame_equal(expected, network.get_operational_limits(), check_dtype=False)
+
+        network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False)])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_1']
+        limits = limits[limits['name'] == 'permanent_limit']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False],
+                  ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False]])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_2']
+        limits = limits[limits['name'] == '20\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+        network = util.create_three_windings_transformer_with_current_limits_network()
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False]])
+        limits = network.get_operational_limits().loc['3WT']
+        limits = limits[limits['name'] == '10\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
 
     def test_validation_level(self):
         n = pp.network.create_ieee14()
@@ -1035,7 +1128,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         with self.assertRaises(pp.PyPowsyblError) as exc:
             n.validate()
         self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
-
 
 
 if __name__ == '__main__':

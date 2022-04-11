@@ -7,8 +7,11 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.PhaseTapChanger;
 import com.powsybl.iidm.network.PhaseTapChangerAdder;
 import com.powsybl.iidm.network.TwoWindingsTransformer;
+import gnu.trove.list.array.TIntArrayList;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -41,36 +44,60 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
     }
 
     @Override
-    public void addElement(Network network, List<UpdatingDataframe> dfs, int indexElement) {
-        if (dfs.size() != 2) {
+    public void addElements(Network network, List<UpdatingDataframe> dataframes) {
+        if (dataframes.size() != 2) {
             throw new PowsyblException("Expected 2 dataframes: one for tap changes, one for steps.");
         }
-        createPhaseTapChangers(network, dfs.get(0), dfs.get(1), indexElement);
+        UpdatingDataframe tapChangersDf = dataframes.get(0);
+        UpdatingDataframe stepsDf = dataframes.get(1);
+        Map<String, TIntArrayList> stepsIndexes = getStepsIndexes(stepsDf);
+        for (int index = 0; index < tapChangersDf.getLineCount(); index++) {
+            createPhaseTapChanger(network, tapChangersDf, stepsDf, index, stepsIndexes);
+        }
     }
 
-    private static void createPhaseTapChangers(Network network, UpdatingDataframe phasesDataframe, UpdatingDataframe stepsDataframe, int indexElement) {
-        String transfomerId = phasesDataframe.getStringValue("id", indexElement)
-                .orElseThrow(() -> new PowsyblException("id is missing"));
-        TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(transfomerId);
-        PhaseTapChangerAdder adder = transformer.newPhaseTapChanger();
-        phasesDataframe.getDoubleValue("target_deadband", indexElement).ifPresent(adder::setTargetDeadband);
-        phasesDataframe.getStringValue("regulation_mode", indexElement)
-                .ifPresent(rm -> adder.setRegulationMode(PhaseTapChanger.RegulationMode.valueOf(rm)));
-        phasesDataframe.getIntValue("low_tap", indexElement).ifPresent(adder::setLowTapPosition);
-        for (int sectionIndex = 0; sectionIndex < stepsDataframe.getLineCount(); sectionIndex++) {
-            String transformerStepId = stepsDataframe.getStringValue("id", sectionIndex).orElse(null);
-            if (transfomerId.equals(transformerStepId)) {
-                PhaseTapChangerAdder.StepAdder stepAdder = adder.beginStep();
-                stepsDataframe.getDoubleValue("b", indexElement).ifPresent(stepAdder::setB);
-                stepsDataframe.getDoubleValue("g", indexElement).ifPresent(stepAdder::setG);
-                stepsDataframe.getDoubleValue("r", indexElement).ifPresent(stepAdder::setR);
-                stepsDataframe.getDoubleValue("x", indexElement).ifPresent(stepAdder::setX);
-                stepsDataframe.getDoubleValue("rho", indexElement).ifPresent(stepAdder::setRho);
-                stepsDataframe.getDoubleValue("alpha", indexElement).ifPresent(stepAdder::setAlpha);
-                stepAdder.endStep();
-            }
+    /**
+     * Mapping transfo ID --> index of steps in the steps dataframe
+     */
+    private static Map<String, TIntArrayList> getStepsIndexes(UpdatingDataframe stepsDataframe) {
+        Map<String, TIntArrayList> stepIndexes = new HashMap<>();
+        for (int stepIndex = 0; stepIndex < stepsDataframe.getLineCount(); stepIndex++) {
+            String transformerId = stepsDataframe.getStringValue("id", stepIndex)
+                    .orElseThrow(() -> new PowsyblException("Steps dataframe: id is not set"));
+            stepIndexes.computeIfAbsent(transformerId, k -> new TIntArrayList())
+                    .add(stepIndex);
         }
-        phasesDataframe.getIntValue("tap", indexElement).ifPresent(adder::setTapPosition);
+        return stepIndexes;
+    }
+
+    private static void createPhaseTapChanger(Network network,
+                                              UpdatingDataframe tapChangersDataframe,
+                                              UpdatingDataframe stepsDataframe,
+                                              int transformerIndex,
+                                              Map<String, TIntArrayList> stepIndexes) {
+        String transformerId = tapChangersDataframe.getStringValue("id", transformerIndex)
+                .orElseThrow(() -> new PowsyblException("id is missing"));
+        TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(transformerId);
+        PhaseTapChangerAdder adder = transformer.newPhaseTapChanger();
+        tapChangersDataframe.getDoubleValue("target_deadband", transformerIndex).ifPresent(adder::setTargetDeadband);
+        tapChangersDataframe.getStringValue("regulation_mode", transformerIndex)
+                .ifPresent(rm -> adder.setRegulationMode(PhaseTapChanger.RegulationMode.valueOf(rm)));
+        tapChangersDataframe.getIntValue("low_tap", transformerIndex).ifPresent(adder::setLowTapPosition);
+        TIntArrayList steps = stepIndexes.get(transformerId);
+        if (steps != null) {
+            steps.forEach(i -> {
+                PhaseTapChangerAdder.StepAdder stepAdder = adder.beginStep();
+                stepsDataframe.getDoubleValue("b", transformerIndex).ifPresent(stepAdder::setB);
+                stepsDataframe.getDoubleValue("g", transformerIndex).ifPresent(stepAdder::setG);
+                stepsDataframe.getDoubleValue("r", transformerIndex).ifPresent(stepAdder::setR);
+                stepsDataframe.getDoubleValue("x", transformerIndex).ifPresent(stepAdder::setX);
+                stepsDataframe.getDoubleValue("rho", transformerIndex).ifPresent(stepAdder::setRho);
+                stepsDataframe.getDoubleValue("alpha", transformerIndex).ifPresent(stepAdder::setAlpha);
+                stepAdder.endStep();
+                return true;
+            });
+        }
+        tapChangersDataframe.getIntValue("tap", transformerIndex).ifPresent(adder::setTapPosition);
         adder.add();
     }
 }
