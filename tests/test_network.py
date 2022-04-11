@@ -15,6 +15,8 @@ import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
+from pypowsybl._pypowsybl import ValidationLevel
+
 import util
 import tempfile
 
@@ -1097,6 +1099,35 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         limits = network.get_operational_limits().loc['3WT']
         limits = limits[limits['name'] == '10\'']
         pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+
+    def test_validation_level(self):
+        n = pp.network.create_ieee14()
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        with self.assertRaises(pp.PyPowsyblError) as exc:
+            n.update_generators(id='B1-G', target_p=np.NaN)
+        self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
+
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        n.update_generators(id='B1-G', target_p=np.NaN)
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.EQUIPMENT, vl)
+
+        n.update_generators(id='B1-G', target_p=100)
+        level = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, level)
+
+    def test_validate(self):
+        n = pp.network.create_ieee14()
+        vl = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        vl = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        n.update_generators(id='B1-G', target_p=np.NaN)
+        with self.assertRaises(pp.PyPowsyblError) as exc:
+            n.validate()
+        self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
 
 
 if __name__ == '__main__':

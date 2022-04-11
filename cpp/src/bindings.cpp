@@ -573,4 +573,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
     m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
+
+    py::enum_<validation_level_type>(m, "ValidationLevel")
+        .value("EQUIPMENT", validation_level_type::EQUIPMENT)
+        .value("STEADY_STATE_HYPOTHESIS", validation_level_type::STEADY_STATE_HYPOTHESIS)
+        .export_values();
+
+    m.def("get_validation_level", &pypowsybl::getValidationLevel, "get the validation level", py::arg("network"));
+
+    m.def("validate", &pypowsybl::validate, "validate", py::arg("network"));
+
+    m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
+
 }

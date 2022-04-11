@@ -25,9 +25,9 @@ import pandas as pd
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import ArrayStruct
+from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
-
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
@@ -2988,6 +2988,46 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
+    def get_validation_level(self) -> ValidationLevel:
+        """
+        The network's validation level.
+
+        This it the network validation level as computed by validation checks.
+
+        Returns:
+            the ValidationLevel.
+        """
+        return _pp.get_validation_level(self._handle)
+
+    def validate(self) -> ValidationLevel:
+        """
+        Validate the network.
+
+        The validation will raise an exception if any check is not consistent with the
+        configured minimum validation level.
+
+        Returns:
+            the computed ValidationLevel, which may be higher than the configured minimum level.
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the configured minimum validation level.
+        """
+        return _pp.validate(self._handle)
+
+    def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
+        """
+        Set the minimum validation level for the network.
+
+        Args:
+            validation_level (ValidationLevel): the validation level
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the new minimum validation level.
+        """
+        _pp.set_min_validation_level(self._handle, validation_level)
 
 
 def _create_network(name: str, network_id: str = '') -> Network:

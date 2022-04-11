@@ -108,6 +108,11 @@ typedef enum {
 } validation_type;
 
 typedef enum {
+    EQUIPMENT = 0,
+    STEADY_STATE_HYPOTHESIS,
+} validation_level_type;
+
+typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,

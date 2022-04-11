@@ -187,6 +187,10 @@ Miscellaneous network functions
    Network.connect
    Network.open_switch
    Network.close_switch
+   Network.get_validation_level
+   Network.validate
+   Network.set_min_validation_level
+
 
 I/O
 ---

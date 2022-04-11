@@ -1,9 +1,16 @@
+/**
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.iidm.network.ValidationLevel;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -229,4 +236,27 @@ public final class Util {
                 throw new PowsyblException("Unknown contingency context type : " + type);
         }
     }
+
+    public static PyPowsyblApiHeader.ValidationLevelType convert(ValidationLevel level) {
+        switch (level) {
+            case EQUIPMENT:
+                return PyPowsyblApiHeader.ValidationLevelType.EQUIPMENT;
+            case STEADY_STATE_HYPOTHESIS:
+                return PyPowsyblApiHeader.ValidationLevelType.STEADY_STATE_HYPOTHESIS;
+            default:
+                throw new PowsyblException("Unknown element type : " + level);
+        }
+    }
+
+    public static ValidationLevel convert(PyPowsyblApiHeader.ValidationLevelType levelType) {
+        switch (levelType) {
+            case EQUIPMENT:
+                return ValidationLevel.EQUIPMENT;
+            case STEADY_STATE_HYPOTHESIS:
+                return ValidationLevel.STEADY_STATE_HYPOTHESIS;
+            default:
+                throw new PowsyblException("Unknown element type : " + levelType);
+        }
+    }
+
 }
