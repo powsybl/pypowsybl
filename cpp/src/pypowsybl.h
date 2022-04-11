@@ -248,10 +248,10 @@ void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std
                                const std::vector<std::string>& variablesIds);
 
 void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds);
+                                             const std::vector<std::string>& variablesIds);
 
 void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
+                                              const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 

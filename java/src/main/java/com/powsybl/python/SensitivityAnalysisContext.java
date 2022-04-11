@@ -307,11 +307,11 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
         }
 
         return new SensitivityAnalysisResultContext(branchFlowFactorsMatrix,
-                busVoltageFactorsMatrix,
-                baseCaseValues,
-                valuesByContingencyId,
-                baseCaseReferences,
-                referencesByContingencyId);
+                                                    busVoltageFactorsMatrix,
+                                                    baseCaseValues,
+                                                    valuesByContingencyId,
+                                                    baseCaseReferences,
+                                                    referencesByContingencyId);
     }
 
 }
