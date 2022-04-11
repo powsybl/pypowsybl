@@ -2885,6 +2885,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         The network's validation level.
 
+        This it the network validation level as computed by validation checks.
+
         Returns:
             the ValidationLevel.
         """
@@ -2892,19 +2894,30 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def validate(self) -> ValidationLevel:
         """
-        Validate the network
+        Validate the network.
+
+        The validation will raise an exception if any check is not consistent with the
+        configured minimum validation level.
 
         Returns:
-            the ValidationLevel.
+            the computed ValidationLevel, which may be higher than the configured minimum level.
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the configured minimum validation level.
         """
         return _pp.validate(self._handle)
 
     def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
         """
-        Set the minimum validation level for the network
+        Set the minimum validation level for the network.
 
         Args:
             validation_level (ValidationLevel): the validation level
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the new minimum validation level.
         """
         _pp.set_min_validation_level(self._handle, validation_level)
 
