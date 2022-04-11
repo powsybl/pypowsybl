@@ -80,6 +80,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_linear_shunt_compensator_sections
    Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
+   Network.get_operational_limits
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
    Network.get_ratio_tap_changer_steps
@@ -143,6 +144,7 @@ Network elements can be created using the following methods:
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
+   Network.create_operational_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
    Network.create_shunt_compensators
@@ -186,7 +188,11 @@ Miscellaneous network functions
    Network.connect
    Network.open_switch
    Network.close_switch
+   Network.get_validation_level
+   Network.validate
+   Network.set_min_validation_level
    get_extensions_names
+
 
 I/O
 ---

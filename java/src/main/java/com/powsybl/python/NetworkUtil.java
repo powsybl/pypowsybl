@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.powsybl.python.TemporaryLimitData.Side.*;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -200,25 +202,44 @@ public final class NetworkUtil {
         return elementsIds;
     }
 
-    public static Stream<TemporaryLimitContext> getCurrentLimits(Network network) {
-        Stream.Builder<TemporaryLimitContext> temporaryLimitContexts = Stream.builder();
+    public static Stream<TemporaryLimitData> getLimits(Network network) {
+        Stream.Builder<TemporaryLimitData> limits = Stream.builder();
         network.getBranchStream().forEach(branch -> {
-            if (branch.getCurrentLimits1() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.ONE, branch.getCurrentLimits1().getPermanentLimit()));
-                branch.getCurrentLimits1().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.ONE,
-                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
-                .forEach(temporaryLimitContexts::add);
-            }
-            if (branch.getCurrentLimits2() != null) {
-                temporaryLimitContexts.add(new TemporaryLimitContext(branch.getId(), "permanent_limit", Branch.Side.TWO, branch.getCurrentLimits2().getPermanentLimit()));
-                branch.getCurrentLimits2().getTemporaryLimits().stream()
-                        .map(temporaryLimit -> new TemporaryLimitContext(branch.getId(), temporaryLimit.getName(), Branch.Side.TWO,
-                                temporaryLimit.getValue(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
-                        .forEach(temporaryLimitContexts::add);
-            }
+            addLimit(limits, branch,  branch.getCurrentLimits1(), ONE);
+            addLimit(limits, branch,  branch.getCurrentLimits2(), TWO);
+            addLimit(limits, branch,  branch.getActivePowerLimits1(), ONE);
+            addLimit(limits, branch,  branch.getActivePowerLimits2(), TWO);
+            addLimit(limits, branch,  branch.getApparentPowerLimits1(), ONE);
+            addLimit(limits, branch,  branch.getApparentPowerLimits2(), TWO);
         });
-        return temporaryLimitContexts.build();
+        network.getDanglingLineStream().forEach(danglingLine -> {
+            addLimit(limits, danglingLine, danglingLine.getCurrentLimits(), NONE);
+            addLimit(limits, danglingLine, danglingLine.getActivePowerLimits(), NONE);
+            addLimit(limits, danglingLine, danglingLine.getApparentPowerLimits(), NONE);
+        });
+        network.getThreeWindingsTransformerStream().forEach(threeWindingsTransformer -> {
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getCurrentLimits(), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getActivePowerLimits(), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getApparentPowerLimits(), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getCurrentLimits(), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getActivePowerLimits(), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getApparentPowerLimits(), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getCurrentLimits(), THREE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getActivePowerLimits(), THREE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getApparentPowerLimits(), THREE);
+        });
+        return limits.build();
+    }
+
+    private static void addLimit(Stream.Builder<TemporaryLimitData> temporaryLimitContexts, Identifiable<?> identifiable,
+                                 LoadingLimits limits, TemporaryLimitData.Side side) {
+        if (limits != null) {
+            temporaryLimitContexts.add(new TemporaryLimitData(identifiable.getId(), "permanent_limit", side, limits.getPermanentLimit(), limits.getLimitType(), identifiable.getType()));
+            limits.getTemporaryLimits().stream()
+                    .map(temporaryLimit -> new TemporaryLimitData(identifiable.getId(), temporaryLimit.getName(), side, temporaryLimit.getValue(),
+                            limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                    .forEach(temporaryLimitContexts::add);
+        }
     }
 
     public static Network createEurostagTutorialExample1WithApcExtension() {

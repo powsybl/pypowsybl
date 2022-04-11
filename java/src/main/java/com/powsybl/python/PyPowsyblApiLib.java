@@ -16,6 +16,7 @@ import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -40,6 +41,7 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -502,16 +504,50 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "setBranchFlowFactorMatrix")
-    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+    @CEntryPoint(name = "addBranchFlowFactorMatrix")
+    public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                                  CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                 CCharPointer matrixIdPtr,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
             List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPreContingencyBranchFlowFactorMatrix")
+    public static void addPreContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                               CCharPointer matrixIdPtr,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPreContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPostContingencyBranchFlowFactorMatrix")
+    public static void addPostContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                                CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                                CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                                CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
+                                                                CCharPointer matrixIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPostContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds, contingencies);
         });
     }
 
@@ -550,11 +586,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
     public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createBranchFlowsSensitivityMatrix(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, contingencyId);
         });
     }
 
@@ -570,11 +608,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getReferenceFlows")
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                    CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createReferenceFlows(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createReferenceFlowsActivePower(matrixId, contingencyId);
         });
     }
 
@@ -687,4 +727,39 @@ public final class PyPowsyblApiLib {
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
+
+    @CEntryPoint(name = "getValidationLevel")
+    public static ValidationLevelType getValidationLevel(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.getValidationLevel());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "validate")
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.runValidationChecks());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "setMinValidationLevel")
+    public static void setMinValidationLevel(IsolateThread thread, ObjectHandle networkHandle,
+                                     ValidationLevelType levelType,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        });
+    }
+
 }
