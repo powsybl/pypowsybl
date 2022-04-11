@@ -23,9 +23,9 @@ public interface NetworkElementAdder {
     List<List<SeriesMetadata>> getMetadata();
 
     /**
-     * Adds an element to the network, based on a list of dataframes.
+     * Adds elements to the network, based on a list of dataframes.
      * The first dataframe is considered the "primary" dataframe, other dataframes
      * can provide additional data (think steps for the tap changers).
      */
-    void addElement(Network network, List<UpdatingDataframe> dataframes, int index);
+    void addElements(Network network, List<UpdatingDataframe> dataframes);
 }
