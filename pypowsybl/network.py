@@ -336,10 +336,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
         Args:
-            element_type (ElementType): the element type
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            element_type: the element type
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Keyword Args:
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             a network elements data frame for the specified element type
@@ -366,18 +369,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
-        rGet a dataframe of buses.
+        Get a dataframe of buses.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of buses.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
@@ -385,7 +389,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **synchronous_component**: the number of synchronous components that the bus is part of
               - **voltage_level_id**: at which substation the bus is connected
 
-            This dataframe is indexed by the id of the LCC converter
+            This dataframe is indexed on the bus ID.
 
         Examples:
 
@@ -450,15 +454,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of generators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the generator data frame.
+            the generators dataframe.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **energy_source**: the energy source used to fuel the generator
               - **target_p**: the target active value for the generator (in MW)
@@ -473,7 +478,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation this generator is connected
               - **bus_id**: at which bus this generator is computed
 
-            This dataframe is indexed by the id of the generators
+            This dataframe is indexed on the generator ID.
 
         Examples:
 
@@ -548,12 +553,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of loads.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the load data frame
+            the loads dataframe
 
         Notes:
             The resulting dataframe, depending on the parameters, could have the following columns:
@@ -567,7 +573,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation this load is connected
               - **bus_id**: at which bus this load is connected
 
-            This dataframe is indexed by the id of the loads.
+            This dataframe is indexed on the load ID.
 
         Examples:
 
@@ -650,9 +656,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of batteries.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of batteries.
@@ -664,9 +671,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of lines data.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of lines data.
@@ -749,9 +757,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of 2 windings transformers.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 2 windings transformers.
@@ -836,9 +845,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of 3 windings transformers.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 3 windings transformers.
@@ -850,9 +860,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of shunt compensators.
@@ -923,9 +934,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators sections for non linear model.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -945,9 +957,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators sections for linear model.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Notes:
             The resulting dataframe, depending on the parameters, could have the following columns:
@@ -968,9 +981,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of dangling lines.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of dangling lines.
@@ -1044,9 +1058,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of LCC converter stations.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of LCC converter stations.
@@ -1119,9 +1134,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of VSC converter stations.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of VCS converter stations.
@@ -1196,9 +1212,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of static var compensators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of static var compensators.
@@ -1271,9 +1288,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of voltage levels.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of voltage levels.
@@ -1351,9 +1369,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of busbar sections.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of busbar sections.
@@ -1435,9 +1454,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get substations :class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of substations.
@@ -1449,9 +1469,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of HVDC lines.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of HVDC lines.
@@ -1525,9 +1546,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of switches.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of switches.
@@ -1616,9 +1638,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of ratio tap changer steps.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of ratio tap changer steps.
@@ -1690,9 +1713,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of phase tap changer steps.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of phase tap changer steps.
@@ -1768,9 +1792,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             the ratio tap changers data frame
@@ -1840,9 +1865,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             the phase tap changers data frame
@@ -1911,8 +1937,9 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of reactive capability curve points.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of reactive capability curve points.
