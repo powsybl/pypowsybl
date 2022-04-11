@@ -610,7 +610,7 @@ def test_create_limits():
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
-def test_delete_elements():
+def test_delete_elements_eurostag():
     pypowsybl.set_debug_mode(True)
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
     net.remove_elements(['GEN', 'GEN2'])
@@ -627,3 +627,29 @@ def test_delete_elements():
     assert net.get_lines().empty
     assert net.get_2_windings_transformers().empty
     assert net.get_loads().empty
+
+def test_delete_elements_four_substations():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['TWT', 'HVDC1', 'HVDC2', 'S1'])
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'HVDC2' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    assert 'S1' not in net.get_substations().index
+    assert 'S1VL1' not in net.get_voltage_levels().index
+    assert 'S2VL1' in net.get_voltage_levels().index
+    with pytest.raises(pypowsybl.PyPowsyblError) as err:
+        net.remove_elements('S2VL1')
+    assert 'The voltage level \'S2VL1\' cannot be removed because of a remaining LINE' in str(err.value)
+    net.remove_elements(['LINE_S2S3', 'S2VL1'])
+    assert 'S2VL1' not in net.get_voltage_levels().index
+
+def test_remove_elements_switches():
+    # bug waiting for powsybl core fix
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1', 'S1VL1', 'S1'])
+    assert 'S1VL1_BBS_LD1_DISCONNECTOR' not in net.get_switches().index
+    assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    assert 'S1' not in net.get_substations().index
+    assert 'S1VL1' not in net.get_voltage_levels().index
