@@ -521,10 +521,10 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "addPreContingencyBranchFlowFactorMatrix")
     public static void addPreContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                 CCharPointer matrixIdPtr,
-                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                               CCharPointer matrixIdPtr,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
@@ -536,11 +536,11 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "addPostContingencyBranchFlowFactorMatrix")
     public static void addPostContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                               CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
-                                                               CCharPointer matrixIdPtr,
-                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                                CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                                CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
+                                                                CCharPointer matrixIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
@@ -586,8 +586,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
     public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                  CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
-                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -608,7 +608,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getPreContingencyBranchFlowsSensitivityMatrix")
     public static MatrixPointer getPreContingencyBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                CCharPointer matrixPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                              CCharPointer matrixPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = (SensitivityAnalysisResultContext) ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String matrixId = CTypeUtil.toString(matrixPtr);

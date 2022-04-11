@@ -101,28 +101,25 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
 
     private MatrixInfo busVoltageFactorsMatrix;
 
-    void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
+    void addBranchFlowFactorMatrix(String matrixId, ContingencyContextType contingencyContextType, List<String> branchesIds,
+                                   List<String> variablesIds, List<String> contingencyIds) {
         if (branchFlowFactorsMatrix.containsKey(matrixId)) {
             throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
         }
-        MatrixInfo info = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
+        MatrixInfo info = new MatrixInfo(contingencyContextType, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, contingencyIds);
         branchFlowFactorsMatrix.put(matrixId, info);
+    }
+
+    void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
+        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.ALL, branchesIds, variablesIds, Collections.emptyList());
     }
 
     void addPreContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
-        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
-            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
-        }
-        MatrixInfo info = new MatrixInfo(ContingencyContextType.NONE, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, Collections.emptyList());
-        branchFlowFactorsMatrix.put(matrixId, info);
+        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.NONE, branchesIds, variablesIds, Collections.emptyList());
     }
 
     void addPostContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds, List<String> contingencies) {
-        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
-            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
-        }
-        MatrixInfo info = new MatrixInfo(ContingencyContextType.SPECIFIC, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, contingencies);
-        branchFlowFactorsMatrix.put(matrixId, info);
+        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.SPECIFIC, branchesIds, variablesIds, contingencies);
     }
 
     public void setVariableSets(List<SensitivityVariableSet> variableSets) {
@@ -130,7 +127,7 @@ class SensitivityAnalysisContext extends AbstractContingencyContainer {
     }
 
     void setBusVoltageFactorMatrix(List<String> busVoltageIds, List<String> targetVoltageIds) {
-        this.busVoltageFactorsMatrix = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BUS_VOLTAGE, busVoltageIds, targetVoltageIds, Collections.emptyList());
+        busVoltageFactorsMatrix = new MatrixInfo(ContingencyContextType.ALL, SensitivityFunctionType.BUS_VOLTAGE, busVoltageIds, targetVoltageIds, Collections.emptyList());
     }
 
     private static Injection<?> getInjection(Network network, String injectionId) {
