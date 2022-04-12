@@ -650,12 +650,13 @@ def test_delete_elements_four_substations():
     assert 'S2VL1' not in net.get_voltage_levels().index
 
 def test_remove_elements_switches():
-    # bug waiting for powsybl core fix
     net = pypowsybl.network.create_four_substations_node_breaker_network()
-    net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1', 'S1VL1', 'S1'])
+    net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1'])
+    # TODO: restore it when bug fixed in powsybl-core
+    #net.remove_elements(['S1VL1', 'S1'])
     assert 'S1VL1_BBS_LD1_DISCONNECTOR' not in net.get_switches().index
     assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
     assert 'HVDC1' not in net.get_hvdc_lines().index
     assert 'TWT' not in net.get_2_windings_transformers().index
-    assert 'S1' not in net.get_substations().index
-    assert 'S1VL1' not in net.get_voltage_levels().index
+    #assert 'S1' not in net.get_substations().index
+    #assert 'S1VL1' not in net.get_voltage_levels().index
