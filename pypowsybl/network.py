@@ -3031,14 +3031,25 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def remove_elements(self, elements_ids: Union[str, _List[str]]) -> None:
         """
-        Delete network elements from a network
-
-        Data can be provided as a list or if it is only one element as a str
+        Removes elements from the network.
 
         Args:
-            elements_ids: element ids to delete
+            elements_ids: IDs of the elements to be removed.
+
+        Notes:
+            Elements can be provided as a list of IDs or as a single ID.
+
+            Elements can be any identifiable object of the network
+            (line, generator, switch, substation ...).
+
+        Examples:
+
+            .. code-block:: python
+
+                network.remove_elements('GENERATOR-1')  # Removes only 1 element
+                network.remove_elements(['GENERATOR-1', 'BUS])
         """
-        if type(elements_ids) == str:
+        if isinstance(elements_ids, str):
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
 
