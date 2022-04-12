@@ -2969,8 +2969,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Create loads.
 
         Args:
-            df: dataframe of the loads creation data
-
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
         Notes:
 
