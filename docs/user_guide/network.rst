@@ -50,8 +50,7 @@ The supported formats are the following:
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
 
 
-You may also crate your own network from scratch, see network elements creation methods
-in the API reference :doc:`documentation </reference/network>`.
+You may also create your own network from scratch, see below.
 
 
 Save a network
@@ -262,3 +261,73 @@ Once you're done working with your variant, you can remove it:
 .. doctest::
 
    >>> network.remove_variant('Variant')
+
+
+Creating network elements
+-------------------------
+
+pypowsybl provides methods to add new elements (substations, lines, ...)
+to the network. This enables you to adapt an existing network, or even to create
+one from scratch.
+
+As for updates, most creation methods accept arguments either as a dataframe
+or as named argument.
+
+Let's create our network!
+
+.. testcode::
+
+    network = pp.network.create_empty()
+
+First, we need to create some substations, let's create 2 of them:
+
+.. testcode::
+
+    network.create_substations(id=['S1', 'S2'])
+
+Then, let's add some voltage levels inside those substations, this time with a dataframe:
+
+.. testcode::
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+        {'substation_id': 'S2', 'id': 'VL2', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+    ])
+    network.create_voltage_levels(voltage_levels)
+
+Let's now create some buses inside those voltage levels:
+
+.. testcode::
+
+   network.create_buses(id=['B1', 'B2'], voltage_level_id=['VL1', 'VL2'])
+
+
+Let's connect thoses buses with a line:
+
+.. testcode::
+
+    network.create_lines(id='LINE', voltage_level1_id='VL1', bus1_id='B1',
+                         voltage_level2_id='VL2', bus2_id='B2',
+                         b1=0, b2=0, g1=0, g2=0, r=0.5, x=10)
+
+Finally, let's add a load, and a generator to feed it through our line:
+
+.. testcode::
+
+    network.create_loads(id='LOAD', voltage_level_id='VL2', bus_id='B2', p0=100, q0=10)
+    network.create_generators(id='GEN', voltage_level_id='VL1', bus_id='B1',
+                              min_p=0, max_p=200, target_p=100,
+                              voltage_regulator_on=True, target_v=400)
+
+
+You can now run a loadflow to check our network actually works !
+
+.. doctest::
+
+    >>> import pypowsybl.loadflow as lf
+    >>> res = lf.run_ac(network)
+    >>> str(res[0].status)
+    'ComponentStatus.CONVERGED'
+
+For more details and examples about network elements creations,
+please refer to the API reference :doc:`documentation </reference/network>`.
