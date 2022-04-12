@@ -109,6 +109,7 @@ Network elements can be modified using dataframes:
    Network.update_dangling_lines
    Network.update_generators
    Network.update_hvdc_lines
+   Network.update_lcc_converter_stations
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads

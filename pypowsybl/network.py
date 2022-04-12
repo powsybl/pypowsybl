@@ -1979,8 +1979,11 @@ class Network:  # pylint: disable=too-many-public-methods
         index.
 
         Args:
-            element_type (ElementType): the element type
+            element_type: the element type
             df: the data to be updated
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
         """
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
@@ -1989,21 +1992,29 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def update_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Update buses with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update buses with data provided as a dataframe or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
 
-        - `v_mag`
-        - `v_angle`
+            - `v_mag`
+            - `v_angle`
 
         See Also:
             :meth:`get_buses`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: _ArrayLike: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_buses(id='B1', v_mag=400.0)
+                network.update_buses(id=['B1', 'B2'], v_mag=[400.0, 63.5])
         """
         return self._update_elements(ElementType.BUS, df, **kwargs)
 
@@ -2011,7 +2022,14 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update switches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
 
             - `open`
             - `retained`
@@ -2019,11 +2037,13 @@ class Network:  # pylint: disable=too-many-public-methods
         See Also:
             :meth:`get_switches`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_switches(id='BREAKER-1', open=True)
+                network.update_switches(id=['BREAKER-1', 'DISC-2'], open=[True, False])
         """
         return self._update_elements(ElementType.SWITCH, df, **kwargs)
 
@@ -2031,28 +2051,37 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update generators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_p`
-        - `max_p`
-        - `min_p`
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
-           Only supported in node breaker voltage levels.
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `target_p`
+            - `max_p`
+            - `min_p`
+            - `target_v`
+            - `target_q`
+            - `voltage_regulator_on`
+            - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
+               Only supported in node breaker voltage levels.
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_generators`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_generators(id='G-1', connected=True, target_p=500)
+                network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
         """
         return self._update_elements(ElementType.GENERATOR, df, **kwargs)
 
@@ -2060,20 +2089,29 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update loads with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `p0`
-        - `q0`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `p0`
+            - `q0`
+            - `connected`
 
         See Also:
             :meth:`get_loads`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_loads(id='L-1', p0=10, q0=3)
+                network.update_loads(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.LOAD, df, **kwargs)
 
@@ -2081,20 +2119,29 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `p0`
-        - `q0`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `p0`
+            - `q0`
+            - `connected`
 
         See Also:
             :meth:`get_batteries`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_batteries(id='B-1', p0=10, q0=3)
+                network.update_batteries(id=['B-1', 'B-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.BATTERY, df, **kwargs)
 
@@ -2102,26 +2149,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `r`
-        - `x`
-        - `g`
-        - `b`
-        - `p0`
-        - `q0`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g`
+            - `b`
+            - `p0`
+            - `q0`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_dangling_lines`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dangling_lines(id='L-1', p0=10, q0=3)
+                network.update_dangling_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
 
@@ -2129,23 +2185,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `loss_factor`
+            - `target_v`
+            - `target_q`
+            - `voltage_regulator_on`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
-        Args:
-          df: the data to be updated, as a dataframe.
-          **kwargs: the data to be updated, as named arguments.
-              Arguments can be single values or any type of sequence.
-              In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_vsc_converter_stations(id='S-1', target_v=400, voltage_regulator_on=True)
+                network.update_vsc_converter_stations(id=['S-1', 'S-2'], target_v=[400, 400])
         """
         return self._update_elements(ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
@@ -2153,23 +2219,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `power_factor`
+            - `loss_factor`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
-        Args:
-          df: the data to be updated, as a dataframe.
-          **kwargs: the data to be updated, as named arguments.
-              Arguments can be single values or any type of sequence.
-              In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_lcc_converter_stations(id='S-1', connected=True)
+                network.update_lcc_converter_stations(id=['S-1', 'S-2'], connected=[True, False])
         """
         return self._update_elements(ElementType.LCC_CONVERTER_STATION, df, **kwargs)
 
@@ -2177,24 +2251,34 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
-        - `b_min`
-        - `b_max`
-        - `target_v`
-        - `target_q`
-        - `regulation_mode`
-        - `p`
-        - `q`
-        - `connected`
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `b_min`
+            - `b_max`
+            - `target_v`
+            - `target_q`
+            - `regulation_mode`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_static_var_compensators`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_static_var_compensators(id='SVC-1', target_v=225)
+                network.update_static_var_compensators(id=['SVC-1', 'SVC-2'], target_v=[226, 405])
         """
         return self._update_elements(ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
@@ -2202,24 +2286,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update HVDC lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `converters_mode`
-        - `target_p`
-        - `max_p`
-        - `nominal_v`
-        - `r`
-        - `connected1`
-        - `connected2`
+        Notes:
+            Attributes that can be updated are:
+
+            - `converters_mode`
+            - `target_p`
+            - `max_p`
+            - `nominal_v`
+            - `r`
+            - `connected1`
+            - `connected2`
 
         See Also:
             :meth:`get_hvdc_lines`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_hvdc_lines(id='HVDC-1', target_p=800)
+                network.update_hvdc_lines(id=['HVDC-1', 'HVDC-2'], target_p=[800, 600])
         """
         return self._update_elements(ElementType.HVDC_LINE, df, **kwargs)
 
@@ -2227,26 +2320,38 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g1`
+            - `b1`
+            - `g2`
+            - `b2`
+            - `p1`
+            - `q1`
+            - `p2`
+            - `q2`
+            - `connected1`
+            - `connected2`
+
         See Also:
             :meth:`get_lines`
 
-        Args:
-            df: lines data to be updated.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
-                - `r`
-                - `x`
-                - `g1`
-                - `b1`
-                - `g2`
-                - `b2`
-                - `p1`
-                - `q1`
-                - `p2`
-                - `q2`
-                - `connected1`
-                - `connected2`
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_lines(id='L-1', connected1=False, connected2=True)
+                network.update_lines(id=['L-1', 'L-2'], r=[0.5, 2.0], x=[5, 10])
         """
         return self._update_elements(ElementType.LINE, df, **kwargs)
 
@@ -2254,30 +2359,39 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update 2 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `r`
-        - `x`
-        - `g`
-        - `b`
-        - `rated_u1`
-        - `rated_u2`
-        - `rated_s`
-        - `p1`
-        - `q1`
-        - `p2`
-        - `q2`
-        - `connected1`
-        - `connected2`
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g`
+            - `b`
+            - `rated_u1`
+            - `rated_u2`
+            - `rated_s`
+            - `p1`
+            - `q1`
+            - `p2`
+            - `q2`
+            - `connected1`
+            - `connected2`
 
         See Also:
             :meth:`get_2_windings_transformers`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_2_windings_transformers(id='T-1', connected1=False, connected2=False)
+                network.update_2_windings_transformers(id=['T-1', 'T-2'], r=[0.5, 2.0], x=[5, 10])
         """
         return self._update_elements(ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
@@ -2285,22 +2399,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `tap`
-        - `on_load`
-        - `regulating`
-        - `target_v`
-        - `target_deadband`
+        Notes:
+            Attributes that can be updated are:
+
+            - `tap`
+            - `on_load`
+            - `regulating`
+            - `target_v`
+            - `target_deadband`
 
         See Also:
             :meth:`get_ratio_tap_changers`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_ratio_tap_changers(id='T-1', tap=12)
+                network.update_ratio_tap_changers(id=['T-1', 'T-2'], target_v=[64, 65], regulating=[True, True])
         """
         return self._update_elements(ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
@@ -2308,22 +2431,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `rho`
-        - `r`
-        - `x`
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated are:
+
+            - `rho`
+            - `r`
+            - `x`
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_ratio_tap_changer_steps`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_ratio_tap_changer_steps(id='T-1', position=2, rho=1.1)
         """
         return self._update_elements(ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
 
@@ -2331,46 +2462,63 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `tap`
-        - `regulating`
-        - `regulation_mode`
-        - `regulation_value`
-        - `target_deadband`
+        Notes:
+            Attributes that can be updated :
+
+            - `tap`
+            - `regulating`
+            - `regulation_mode`
+            - `regulation_value`
+            - `target_deadband`
 
         See Also:
             :meth:`get_phase_tap_changers`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
-        """
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_phase_tap_changers(id='T-1', regulation_mode=CURRENT_LIMITER, regulation_value=500)
+                network.update_phase_tap_changers(id=['T-1', 'T-2'], tap=[12, 25])
+      """
         return self._update_elements(ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
     def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `rho`
-        - `alpha`
-        - `r`
-        - `x`
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated :
+
+            - `rho`
+            - `alpha`
+            - `r`
+            - `x`
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_phase_tap_changer_steps`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_phase_tap_changer_steps(id='T-1', position=2, rho=1.1, alpha=-12.3)
         """
         return self._update_elements(ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
@@ -2378,21 +2526,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `section_count`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `section_count`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_shunt_compensators`
 
-        Args:
-           df: the data to be updated, as a dataframe.
-           **kwargs: the data to be updated, as named arguments.
-               Arguments can be single values or any type of sequence.
-               In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_shunt_compensators(id='IND-1', section_count=1, connected=True)
+                network.update_shunt_compensators(id=['IND-1', 'CAP-1'], section_count=[1, 0])
         """
         return self._update_elements(ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
@@ -2400,21 +2557,28 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `g_per_section`
-        - `b_per_section`
-        - `max_section_count`
+        Notes:
+            Attributes that can be updated are:
+
+            - `g_per_section`
+            - `b_per_section`
+            - `max_section_count`
 
         See Also:
             :meth:`get_linear_shunt_compensator_sections`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
 
+            .. code-block:: python
+
+                network.update_linear_shunt_compensator_sections(id='CAP-1', max_section_count=3)
         """
         return self._update_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
@@ -2422,19 +2586,27 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated are :
+
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_non_linear_shunt_compensator_sections`
 
-        Args:
-            df: the data to be updated, as a dataframe.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_non_linear_shunt_compensator_sections(id='CAP-1', section=1, b=1e-5)
         """
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
@@ -2442,50 +2614,71 @@ class Network:  # pylint: disable=too-many-public-methods
         """Update phase tap changers with a ``Pandas`` dataframe.
 
         Args:
-            df (DataFrame): the ``Pandas`` dataframe
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
         """
         return self._update_elements(ElementType.BUSBAR_SECTION, df, **kwargs)
 
     def update_voltage_levels(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-                Update voltage levels with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update voltage levels with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-                Attributes that can be updated are :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-                - `high_voltage_limit`
-                - `low_voltage_limit`
-                - `nominal_v`
+        Notes:
+            Attributes that can be updated are :
 
-                See Also:
-                    :meth:`get_voltage_levels`
+            - `high_voltage_limit`
+            - `low_voltage_limit`
+            - `nominal_v`
 
-                Args:
-                    df: the data to be updated, as a dataframe.
-                    **kwargs: the data to be updated, as named arguments.
-                        Arguments can be single values or any type of sequence.
-                        In the case of sequences, all arguments must have the same length.
-                """
+        See Also:
+            :meth:`get_voltage_levels`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_voltage_levels(id='VL-1', high_voltage_limit=420)
+                network.update_voltage_levels(id=['VL-1', 'VL-2'], low_voltage_limit=[385, 390])
+        """
         return self._update_elements(ElementType.VOLTAGE_LEVEL, df, **kwargs)
 
     def update_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-                Update substations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update substations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-                Attributes that can be updated are :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-                - `TSO`
-                - `country`
+        Notes:
+            Attributes that can be updated are :
 
-                See Also:
-                    :meth:`get_substations`
+            - `TSO`
+            - `country`
 
-                Args:
-                    df: the data to be updated, as a dataframe.
-                    **kwargs: the data to be updated, as named arguments.
-                        Arguments can be single values or any type of sequence.
-                        In the case of sequences, all arguments must have the same length.
-                """
+        See Also:
+            :meth:`get_substations`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_substations(id='S-1', TSO='ELIA', country='BE')
+                network.update_substations(id=['S-1', 'S-2'], country=['BE', 'FR'])
+        """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
     def get_working_variant_id(self) -> str:
