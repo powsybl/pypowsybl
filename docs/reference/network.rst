@@ -126,10 +126,10 @@ Network elements can be modified using dataframes:
 
 
 
-Network elements creation
--------------------------
+Network elements creation and removal
+-------------------------------------
 
-Network elements can be created using the following methods:
+Network elements can be created or removed using the following methods:
 
 .. autosummary::
    :toctree: api/
@@ -154,6 +154,7 @@ Network elements can be created using the following methods:
    Network.create_switches
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
+   Network.remove_elements
 
 
 Network variants management
