@@ -3315,10 +3315,54 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Create shunt compensators.
 
+        Shunt compensator sections can be described in 1 of 2 ways:
+        either with a linear model, with a maximum section count and a per-section values,
+        or with a non linear model, where each section is described individually.
+
+        For this reason, 2 or 3 dataframes need to be provided:
+        one for shunt compensators data, optionally one for linear models,
+        and optionally one for non linear models.
+
         Args:
             shunt_df: dataframe for shunt compensators data
             linear_model_df: dataframe for linear model sections data
             non_linear_model_df: dataframe for sections data
+
+        Notes:
+
+            Valid attributes for the shunt compensators dataframe are:
+
+            - id: the identifier of the new shunt
+            - voltage_level_id: the voltage level where the new shunt will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new shunt will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new shunt will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new shunt will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - model_type: either LINEAR or NON_LINEAR
+            - section_count: the current count of connected sections
+            - target_v: an optional target voltage in kV
+            - target_v: an optional deadband for the target voltage, in kV
+
+            Valid attributes for the linear sections models are:
+
+            - id: the identifier of the new shunt
+            - g_per_section: the conductance, in Ohm, for each section
+            - b_per_section: the susceptance, in Ohm, for each section
+            - max_section_count: the maximum number of connectable sections
+
+            This dataframe must have only one row for each shunt compensator.
+
+            Valid attributes for the non linear sections models are:
+
+            - id: the identifier of the new shunt
+            - g: the conductance, in Ohm, for this section
+            - b: the susceptance, in Ohm, for this section
+
+            This dataframe will have multiple rows for each shunt compensator: one by section.
 
         Examples:
             For example, to create linear model shunts, we need 1 dataframe for the shunts and 1 dataframe
@@ -3450,9 +3494,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Create ratio tap changers on transformers.
 
+        Tap changers data must be provided in 2 separate dataframes:
+        one for the tap changers attributes, and another one for tap changers steps attributes.
+        The latter one will generally have multiple lines for one transformer ID.
+
         Args:
             rtc_df: dataframe of tap changers data
             steps_df: dataframe of steps data
+
+        Notes:
+
+            Valid attributes for the tap changers dataframe are:
+
+            - id: the transformer where this tap changer will be created
+            - tap: the current tap position
+            - low_tap: the number of the lowest tap position (default 0)
+            - on_load: true if the transformer has on-load voltage regulation capability
+            - target_v: the target voltage, in kV
+            - target_deadband: the target voltage regulation deadband, in kV
+
+            Valid attributes for the steps dataframe are:
+
+            - id: the transformer where this step will be added
+            - g: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - b: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - r: the resistance increase compared to the transformer, for this step, in percentage
+            - x: the reactance increased compared to the transformer, for this step, in percentage
+            - rho: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
 
         Examples:
             We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
@@ -3476,8 +3544,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Create phase tap changers on transformers.
 
+        Tap changers data must be provided in 2 separate dataframes:
+        one for the tap changers attributes, and another one for tap changers steps attributes.
+        The latter one will generally have multiple lines for one transformer ID.
+
         Args:
-            df: dataframe of the phase tap changers creation data
+            ptc_df: dataframe of tap changers data
+            steps_df: dataframe of steps data
+
+        Notes:
+
+            Valid attributes for the tap changers dataframe are:
+
+            - id: the transformer where this tap changer will be created
+            - tap: the current tap position
+            - low_tap: the number of the lowest tap position (default 0)
+            - regulation_mode: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
+            - target_deadband: the regulation deadband
+
+            Valid attributes for the steps dataframe are:
+
+            - id: the transformer where this step will be added
+            - g: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - b: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - r: the resistance increase compared to the transformer, for this step, in percentage
+            - x: the reactance increased compared to the transformer, for this step, in percentage
+            - rho: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
+            - alpha: the phase shift, in degrees, for this step
 
         Examples:
             We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
