@@ -562,7 +562,7 @@ class Network:  # pylint: disable=too-many-public-methods
             the loads dataframe
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **type**: type of load
               - **p0**: the active load consumption setpoint (MW)
@@ -680,7 +680,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of lines data.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
             - **r**: the resistance of the line (in Ohm)
             - **x**: the reactance of the line (in Ohm)
@@ -766,7 +766,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of 2 windings transformers.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **r**: the resistance of the transformer at its "2" side  (in Ohm)
               - **x**: the reactance of the transformer at its "2" side (in Ohm)
@@ -869,7 +869,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of shunt compensators.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
@@ -963,7 +963,7 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **g_per_section**: the conductance per section in S
               - **b_per_section**: the susceptance per section in S
@@ -990,7 +990,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of dangling lines.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **r**: The resistance of the dangling line (Ohm)
               - **x**: The reactance of the dangling line (Ohm)
@@ -1067,7 +1067,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of LCC converter stations.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **power_factor**: the power factor
               - **loss_factor**: the loss factor
@@ -1143,7 +1143,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of VCS converter stations.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
@@ -1221,7 +1221,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of static var compensators.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **b_min**: the minimum susceptance
               - **b_max**: the maximum susceptance
@@ -1297,7 +1297,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of voltage levels.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **substation_id**: at which substation the voltage level belongs
               - **nominal_v**: The nominal voltage
@@ -1378,7 +1378,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of busbar sections.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
@@ -1478,7 +1478,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of HVDC lines.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **converters_mode**:
               - **target_p**: (in MW)
@@ -1555,7 +1555,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of switches.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **kind**: the kind of switch
               - **open**: the open status of the switch
@@ -1647,7 +1647,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of ratio tap changer steps.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **rho**:
               - **r**: the resistance of the ratio tap changer step (in Ohm)
@@ -1722,7 +1722,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of phase tap changer steps.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **rho**: the voltage ratio (in per unit)
               - **alpha**: the angle difference (in degree)
@@ -1801,7 +1801,7 @@ class Network:  # pylint: disable=too-many-public-methods
             the ratio tap changers data frame
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **tap**:
               - **low_tap**:
@@ -1871,10 +1871,10 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the phase tap changers data frame
+            the phase tap changers dataframe
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **tap**:
               - **low_tap**:
@@ -1950,7 +1950,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
-        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
+        The dataframe columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
 
         Args:
@@ -1975,7 +1975,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_buses`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: _ArrayLike: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -1995,7 +1995,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_switches`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2024,7 +2024,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_generators`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2045,7 +2045,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_loads`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2066,7 +2066,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_batteries`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2093,7 +2093,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_dangling_lines`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2117,7 +2117,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_vsc_converter_stations`
 
         Args:
-          df: the data to be updated, as a data frame.
+          df: the data to be updated, as a dataframe.
           **kwargs: the data to be updated, as named arguments.
               Arguments can be single values or any type of sequence.
               In the case of sequences, all arguments must have the same length.
@@ -2141,7 +2141,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_vsc_converter_stations`
 
         Args:
-          df: the data to be updated, as a data frame.
+          df: the data to be updated, as a dataframe.
           **kwargs: the data to be updated, as named arguments.
               Arguments can be single values or any type of sequence.
               In the case of sequences, all arguments must have the same length.
@@ -2166,7 +2166,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_static_var_compensators`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2191,7 +2191,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_hvdc_lines`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2249,7 +2249,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_2_windings_transformers`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2272,7 +2272,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_ratio_tap_changers`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2295,7 +2295,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_ratio_tap_changer_steps`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2318,7 +2318,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_phase_tap_changers`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2342,7 +2342,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_phase_tap_changer_steps`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2364,7 +2364,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_shunt_compensators`
 
         Args:
-           df: the data to be updated, as a data frame.
+           df: the data to be updated, as a dataframe.
            **kwargs: the data to be updated, as named arguments.
                Arguments can be single values or any type of sequence.
                In the case of sequences, all arguments must have the same length.
@@ -2385,7 +2385,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_linear_shunt_compensator_sections`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2406,7 +2406,7 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_non_linear_shunt_compensator_sections`
 
         Args:
-            df: the data to be updated, as a data frame.
+            df: the data to be updated, as a dataframe.
             **kwargs: the data to be updated, as named arguments.
                 Arguments can be single values or any type of sequence.
                 In the case of sequences, all arguments must have the same length.
@@ -2414,10 +2414,10 @@ class Network:  # pylint: disable=too-many-public-methods
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_busbar_sections(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
-        """Update phase tap changers with a ``Pandas`` data frame.
+        """Update phase tap changers with a ``Pandas`` dataframe.
 
         Args:
-            df (DataFrame): the ``Pandas`` data frame
+            df (DataFrame): the ``Pandas`` dataframe
 
         """
         return self._update_elements(ElementType.BUSBAR_SECTION, df, **kwargs)
@@ -2436,7 +2436,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     :meth:`get_voltage_levels`
 
                 Args:
-                    df: the data to be updated, as a data frame.
+                    df: the data to be updated, as a dataframe.
                     **kwargs: the data to be updated, as named arguments.
                         Arguments can be single values or any type of sequence.
                         In the case of sequences, all arguments must have the same length.
@@ -2456,7 +2456,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     :meth:`get_substations`
 
                 Args:
-                    df: the data to be updated, as a data frame.
+                    df: the data to be updated, as a dataframe.
                     **kwargs: the data to be updated, as named arguments.
                         Arguments can be single values or any type of sequence.
                         In the case of sequences, all arguments must have the same length.
@@ -3215,7 +3215,7 @@ def get_import_parameters(fmt: str) -> _DataFrame:
        fmt (str): the format
 
     Returns:
-        import parameters data frame
+        import parameters dataframe
 
     Examples:
        .. doctest::
@@ -3242,7 +3242,7 @@ def get_export_parameters(fmt: str) -> _DataFrame:
        fmt (str): the format
 
     Returns:
-        export parameters data frame
+        export parameters dataframe
     """
     series_array = _pp.create_exporter_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
