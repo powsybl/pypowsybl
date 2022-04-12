@@ -8,6 +8,8 @@ package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.ActivePowerControl;
+import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 
 import java.util.List;
@@ -238,5 +240,13 @@ public final class NetworkUtil {
                             limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
                     .forEach(temporaryLimitContexts::add);
         }
+    }
+
+    public static Network createEurostagTutorialExample1WithApcExtension() {
+        Network network = createEurostagTutorialExample1();
+        Generator gen = network.getGenerator("GEN");
+        ActivePowerControl apcExt = new ActivePowerControlImpl(gen, true, 1.1f);
+        gen.addExtension(ActivePowerControl.class, apcExt);
+        return network;
     }
 }
