@@ -593,6 +593,16 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
 }
 
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName) {
+    return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str()));
+}
+
+std::vector<std::string> getExtensionsNames() {
+    auto formatsArrayPtr = callJava<array*>(::getExtensionsNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }

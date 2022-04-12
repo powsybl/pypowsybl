@@ -11,8 +11,13 @@ import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
+import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.python.NetworkUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -37,6 +42,14 @@ class NetworkDataframesTest {
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
         mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter);
+        return series;
+    }
+
+    private static List<Series> createExtensionDataFrame(String name, Network network) {
+        List<Series> series = new ArrayList<>();
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+        assertNotNull(mapper);
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
     }
 
@@ -89,6 +102,19 @@ class NetworkDataframesTest {
 
         assertThat(series.get(3).getDoubles())
             .containsExactly(607);
+    }
+
+    @Test
+    void generatorsExtension() {
+        Network network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "droop", "participate");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.1f);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true);
     }
 
     @Test
@@ -196,6 +222,38 @@ class NetworkDataframesTest {
             .extracting(Series::getName)
             .containsExactly("id", "name", "converters_mode", "target_p", "max_p", "nominal_v", "r",
                 "converter_station1_id", "converter_station2_id", "connected1", "connected2");
+    }
+
+    @Test
+    void hvdcsExtensions() {
+        Network network = HvdcTestNetwork.createLcc();
+
+        HvdcLine hvdcLine = network.getHvdcLine("L");
+        hvdcLine.newExtension(HvdcAngleDroopActivePowerControlAdder.class).withEnabled(true).withDroop(0.1f).withP0(200).add();
+        hvdcLine.newExtension(HvdcOperatorActivePowerRangeAdder.class).withOprFromCS1toCS2(1.0f).withOprFromCS2toCS1(2.0f).add();
+
+        List<Series> ext1Series = createExtensionDataFrame("hvdcAngleDroopActivePowerControl", network);
+        List<Series> ext2Series = createExtensionDataFrame("hvdcOperatorActivePowerRange", network);
+
+        assertThat(ext1Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "droop", "P0", "isEnabled");
+
+        assertThat(ext1Series.get(1).getDoubles())
+                .containsExactly(0.1f);
+        assertThat(ext1Series.get(2).getDoubles())
+                .containsExactly(200);
+        assertThat(ext1Series.get(3).getBooleans())
+                .containsExactly(true);
+
+        assertThat(ext2Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "OprFromCS1toCS2", "OprFromCS2toCS1");
+
+        assertThat(ext2Series.get(1).getDoubles())
+                .containsExactly(1.0f);
+        assertThat(ext2Series.get(2).getDoubles())
+                .containsExactly(2.0f);
     }
 
     @Test

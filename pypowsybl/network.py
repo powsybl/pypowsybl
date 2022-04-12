@@ -3700,6 +3700,21 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         _pp.set_min_validation_level(self._handle, validation_level)
 
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        """
+        Get a dataframe for a specific extension
+
+        Args:
+            extension_name: name of the extension
+
+        Returns:
+            A dataframe with the extension data.
+
+        Notes:
+            The extra id column in the resulting dataframe provides the link to the extension's parent element
+        """
+        return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
@@ -3795,7 +3810,6 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
-
 
 def create_four_substations_node_breaker_network() -> Network:
     """
@@ -3923,3 +3937,12 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+
+def get_extensions_names() -> _List[str]:
+    """
+    Get the list of available extensions.
+
+    Returns:
+        the names of the available extensions
+    """
+    return _pp.get_extensions_names()
