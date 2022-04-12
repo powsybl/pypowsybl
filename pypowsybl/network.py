@@ -345,7 +345,7 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            a network elements data frame for the specified element type
+            a network elements dataframe for the specified element type
         """
         if attributes is None:
             attributes = []
@@ -1461,6 +1461,16 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of substations.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: the name of the substations
+              - **TSO**: the TSO which the substation belongs to
+              - **geo_tags**: additional geographical information about the substation
+              - **country**: the country which the substation belongs to
+
+            This dataframe is indexed on the substation ID.
         """
         return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
@@ -1798,20 +1808,20 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the ratio tap changers data frame
+            the ratio tap changers dataframe
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **tap**:
-              - **low_tap**:
-              - **high_tap**:
-              - **step_count**:
-              - **on_load**:
-              - **regulating**:
-              - **target_v**:
-              - **target_deadband**:
-              - **regulationg_bus_id**:
+              - **tap**: the current tap position
+              - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
+              - **high_tap**: the high tap position
+              - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **on_load**: true if the tap changer has on-load regulation capability
+              - **regulating**: true if the tap changer is in regulation
+              - **target_v**: the target voltage in kV, if the tap changer is in regulation
+              - **target_deadband**: the regulation deadband around the target voltage, in kV
+              - **regulationg_bus_id**: the bus where the tap changer regulates voltage
 
             This dataframe is indexed by the id of the transformer
 
@@ -1876,14 +1886,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **tap**:
-              - **low_tap**:
-              - **high_tap**:
-              - **step_count**:
-              - **regulating**:
-              - **regulation_mode**:
-              - **target_deadband**:
-              - **regulationg_bus_id**:
+              - **tap**: the current tap position
+              - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
+              - **high_tap**: the high tap position
+              - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **regulating**: true if the phase shifter is in regulation
+              - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
+              - **regulation_value**: the target value, in A or MW, depending on regulation_mode
+              - **target_deadband**: the regulation deadband around the target value
+              - **regulationg_bus_id**: the bus where the phase shifter regulates
 
             This dataframe is indexed by the id of the transformer
 
@@ -1936,6 +1947,10 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Get a dataframe of reactive capability curve points.
 
+        For each generator, the min/max reactive capabilities can be represented as curves.
+        This dataframe describes those curves as a list of points, which associate a min and a max value of Q
+        to a given value of P.
+
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
@@ -1943,6 +1958,16 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of reactive capability curve points.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **num**: the point position in the curve description (starts 0 for a given generator)
+              - **p**: the active power of the point, in MW
+              - **min_q**: the minimum value of reactive power, in MVar, for this value of P
+              - **max_q**: the maximum value of reactive power, in MVar, for this value of P
+
+            This dataframe is indexed on the generator ID.
         """
         return self.get_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
