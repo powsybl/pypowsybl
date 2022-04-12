@@ -6,7 +6,6 @@
  */
 package com.powsybl.python;
 
-import ch.qos.logback.classic.Logger;
 import com.google.common.collect.Iterables;
 import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
 import com.powsybl.cgmes.model.test.TestGridModelResources;
@@ -46,15 +45,12 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.powsybl.iidm.network.TopologyKind.BUS_BREAKER;
-import static com.powsybl.iidm.network.TopologyKind.NODE_BREAKER;
 import static com.powsybl.python.CDataframeHandler.*;
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.*;
@@ -412,29 +408,31 @@ public final class PyPowsyblNetworkApiLib {
             List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
             elementIds.forEach(elementId -> {
                 Identifiable identifiable = network.getIdentifiable(elementId);
+                if (identifiable == null) {
+                    throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
+                }
                 if (identifiable instanceof Connectable) {
                     ((Connectable) identifiable).remove();
                 } else if (identifiable instanceof HvdcLine) {
                     ((HvdcLine) identifiable).remove();
                 } else if (identifiable instanceof VoltageLevel) {
-                    Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-                    rootLogger.info("voltage level : {} {}", identifiable, identifiable.getClass());
                     ((VoltageLevel) identifiable).remove();
                 } else if (identifiable instanceof Substation) {
                     ((Substation) identifiable).remove();
                 } else if (identifiable instanceof Switch) {
                     VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
-                    if (voltageLevel.getTopologyKind() == NODE_BREAKER) {
-                        voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
-                    } else if (voltageLevel.getTopologyKind() == BUS_BREAKER) {
-                        voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
-                    } else {
-                        throw new PowsyblException("this voltage level does not have a proper topology kind");
+                    switch (voltageLevel.getTopologyKind()) {
+                        case NODE_BREAKER:
+                            voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        case BUS_BREAKER:
+                            voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        default:
+                            throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
-                } else if (identifiable == null) {
-                    throw new PowsyblException("identifiable with id : %s was not found".format(identifiable.getId()));
                 } else {
-                    throw new PowsyblException("identifiable with id : %s can't be removed".format(identifiable.getId()));
+                    throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
             });
         });
