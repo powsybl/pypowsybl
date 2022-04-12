@@ -2828,10 +2828,10 @@ class Network:  # pylint: disable=too-many-public-methods
             In the latter case, all arguments must have the same length.
 
             Valid attributes are:
-            - id: the identifier of the substation
-            - name: an optional human readable name for the substation
-            - country: an optional country code ('DE', 'IT', ...)
-            - tso: an optional TSO name
+            - **id**: the identifier of the substation
+            - **name**: an optional human readable name for the substation
+            - **country**: an optional country code ('DE', 'IT', ...)
+            - **tso**: an optional TSO name
 
         Examples:
             Using keyword arguments:
@@ -2867,23 +2867,23 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new generator
-            - voltage_level_id: the voltage level where the new generator will be created.
+            - **id**: the identifier of the new generator
+            - **voltage_level_id**: the voltage level where the new generator will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new generator will be connected,
+            - **bus_id**: the bus where the new generator will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new generator will be connectable,
+            - **connectable_bus_id**: the bus where the new generator will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new generator will be connected,
+            - **node**: the node where the new generator will be connected,
               if the voltage level has a node-breaker topology kind.
-            - energy_source: the type of energy source (HYDRO, NUCLEAR, ...)
-            - max_p: maximum active power in MW
-            - min_p: minimum active power in MW
-            - target_p: target active power in MW
-            - target_q: target reactive power in MVar, when the generator does not regulate voltage
-            - rated_s: nominal power in MVA
-            - target_v: target voltage in kV, when the generator regulates voltage
-            - voltage_regulator_on: true if the generator regulates voltage
+            - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
+            - **max_p**: maximum active power in MW
+            - **min_p**: minimum active power in MW
+            - **target_p**: target active power in MW
+            - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
+            - **rated_s**: nominal power in MVA
+            - **target_v**: target voltage in kV, when the generator regulates voltage
+            - **voltage_regulator_on**: true if the generator regulates voltage
 
         Examples:
             Using keyword arguments:
@@ -2916,12 +2916,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new busbar section
-            - voltage_level_id: the voltage level where the new busbar section will be created.
+            - **id**: the identifier of the new busbar section
+            - **voltage_level_id**: the voltage level where the new busbar section will be created.
               The voltage level must already exist.
-            - node: the node where the new generator will be connected,
+            - **node**: the node where the new generator will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
+            - **name**: an optional human-readable name
 
         Examples:
             Using keyword arguments:
@@ -2950,10 +2950,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new configured bus
-            - voltage_level_id: the voltage level where the new bus will be created.
+            - **id**: the identifier of the new configured bus
+            - **voltage_level_id**: the voltage level where the new bus will be created.
               The voltage level must already exist, and must have a bus-breaker topology kind.
-            - name: an optional human-readable name
+            - **name**: an optional human-readable name
 
         Examples:
             Using keyword arguments:
@@ -2979,19 +2979,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new load
-            - voltage_level_id: the voltage level where the new load will be created.
+            - **id**: the identifier of the new load
+            - **voltage_level_id**: the voltage level where the new load will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new load will be connected,
+            - **bus_id**: the bus where the new load will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new load will be connectable,
+            - **connectable_bus_id**: the bus where the new load will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new load will be connected,
+            - **node**: the node where the new load will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - type: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
-            - p0: active power load, in MW
-            - q0: reactive power load, in MVar
+            - **name**: an optional human-readable name
+            - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
+            - **p0**: active power load, in MW
+            - **q0**: reactive power load, in MVar
 
         Examples:
             Using keyword arguments:
@@ -3017,20 +3017,20 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new battery
-            - voltage_level_id: the voltage level where the new battery will be created.
+            - **id**: the identifier of the new battery
+            - **voltage_level_id**: the voltage level where the new battery will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new battery will be connected,
+            - **bus_id**: the bus where the new battery will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new battery will be connectable,
+            - **connectable_bus_id**: the bus where the new battery will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new battery will be connected,
+            - **node**: the node where the new battery will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - min_p: minimum active power, in MW
-            - max_p: maximum active power, in MW
-            - p0: active power consumption, in MW
-            - q0: reactive power consumption, in MVar
+            - **name**: an optional human-readable name
+            - **min_p**: minimum active power, in MW
+            - **max_p**: maximum active power, in MW
+            - **p0**: active power consumption, in MW
+            - **q0**: reactive power consumption, in MVar
 
         Examples:
             Using keyword arguments:
@@ -3057,22 +3057,22 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new line
-            - voltage_level_id: the voltage level where the new line will be created.
+            - **id**: the identifier of the new line
+            - **voltage_level_id**: the voltage level where the new line will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new line will be connected,
+            - **bus_id**: the bus where the new line will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new line will be connectable,
+            - **connectable_bus_id**: the bus where the new line will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new line will be connected,
+            - **node**: the node where the new line will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - p0: the active power consumption, in MW
-            - q0: the reactive power consumption, in MVar
-            - r: the resistance, in Ohms
-            - x: the reactance, in Ohms
-            - g: the shunt conductance, in S
-            - b: the shunt susceptance, in S
+            - **name**: an optional human-readable name
+            - **p0**: the active power consumption, in MW
+            - **q0**: the reactive power consumption, in MVar
+            - **r**: the resistance, in Ohms
+            - **x**: the reactance, in Ohms
+            - **g**: the shunt conductance, in S
+            - **b**: the shunt susceptance, in S
 
         Examples:
             Using keyword arguments:
@@ -3099,18 +3099,18 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new station
-            - voltage_level_id: the voltage level where the new station will be created.
+            - **id**: the identifier of the new station
+            - **voltage_level_id**: the voltage level where the new station will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new station will be connected,
+            - **bus_id**: the bus where the new station will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new station will be connectable,
+            - **connectable_bus_id**: the bus where the new station will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new station will be connected,
+            - **node**: the node where the new station will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - power_factor: the power factor (ratio of the active power to the apparent power)
-            - loss_factor: the loss factor of the station
+            - **name**: an optional human-readable name
+            - **power_factor**: the power factor (ratio of the active power to the apparent power)
+            - **loss_factor**: the loss factor of the station
 
         Examples:
             Using keyword arguments:
@@ -3137,20 +3137,20 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new station
-            - voltage_level_id: the voltage level where the new station will be created.
+            - **id**: the identifier of the new station
+            - **voltage_level_id**: the voltage level where the new station will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new station will be connected,
+            - **bus_id**: the bus where the new station will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new station will be connectable,
+            - **connectable_bus_id**: the bus where the new station will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new station will be connected,
+            - **node**: the node where the new station will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - loss_factor: the loss factor of the new station
-            - voltage_regulator_on: true if the station regulated voltage
-            - target_v: the target voltage, in kV, when the station regulates voltage
-            - target_q: the target reactive power, in MVar, when the station does not regulate voltage
+            - **name**: an optional human-readable name
+            - **loss_factor**: the loss factor of the new station
+            - **voltage_regulator_on**: true if the station regulated voltage
+            - **target_v**: the target voltage, in kV, when the station regulates voltage
+            - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
 
         Examples:
             Using keyword arguments:
@@ -3177,21 +3177,21 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new SVC
-            - voltage_level_id: the voltage level where the new SVC will be created.
+            - **id**: the identifier of the new SVC
+            - **voltage_level_id**: the voltage level where the new SVC will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new SVC will be connected,
+            - **bus_id**: the bus where the new SVC will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new SVC will be connectable,
+            - **connectable_bus_id**: the bus where the new SVC will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new SVC will be connected,
+            - **node**: the node where the new SVC will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - b_max: the maximum susceptance, in S
-            - b_min: the minimum susceptance, in S
-            - regulation_mode: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
-            - target_v: the target voltage, in kV, when the regulation mode is VOLTAGE
-            - target_q: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
+            - **name**: an optional human-readable name
+            - **b_max**: the maximum susceptance, in S
+            - **b_min**: the minimum susceptance, in S
+            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+            - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
+            - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
 
         Examples:
             Using keyword arguments:
@@ -3219,30 +3219,30 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new line
-            - voltage_level1_id: the voltage level where the new line will be connected on side 1.
+            - **id**: the identifier of the new line
+            - **voltage_level1_id**: the voltage level where the new line will be connected on side 1.
               The voltage level must already exist.
-            - bus1_id: the bus where the new line will be connected on side 1,
+            - **bus1_id**: the bus where the new line will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus1_id: the bus where the new line will be connectable on side 1,
+            - **connectable_bus1_id**: the bus where the new line will be connectable on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - node1: the node where the new line will be connected on side 1,
+            - **node1**: the node where the new line will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
-            - voltage_level2_id: the voltage level where the new line will be connected on side 2.
+            - **voltage_level2_id**: the voltage level where the new line will be connected on side 2.
               The voltage level must already exist.
-            - bus2_id: the bus where the new line will be connected on side 2,
+            - **bus2_id**: the bus where the new line will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus2_id: the bus where the new line will be connectable on side 2,
+            - **connectable_bus2_id**: the bus where the new line will be connectable on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - node2: the node where the new line will be connected on side 2,
+            - **node2**: the node where the new line will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - b1: the shunt susceptance, in S, on side 1
-            - b2: the shunt susceptance, in S, on side 2
-            - g1: the shunt conductance, in S, on side 1
-            - g2: the shunt conductance, in S, on side 2
-            - r: the resistance, in Ohm
-            - x: the reactance, in Ohm
+            - **name**: an optional human-readable name
+            - **b1**: the shunt susceptance, in S, on side 1
+            - **b2**: the shunt susceptance, in S, on side 2
+            - **g1**: the shunt conductance, in S, on side 1
+            - **g2**: the shunt conductance, in S, on side 2
+            - **r**: the resistance, in Ohm
+            - **x**: the reactance, in Ohm
 
 
         Examples:
@@ -3271,31 +3271,31 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new transformer
-            - voltage_level1_id: the voltage level where the new transformer will be connected on side 1.
+            - **id**: the identifier of the new transformer
+            - **voltage_level1_id**: the voltage level where the new transformer will be connected on side 1.
               The voltage level must already exist.
-            - bus1_id: the bus where the new transformer will be connected on side 1,
+            - **bus1_id**: the bus where the new transformer will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus1_id: the bus where the new transformer will be connectable on side 1,
+            - **connectable_bus1_id**: the bus where the new transformer will be connectable on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - node1: the node where the new transformer will be connected on side 1,
+            - **node1**: the node where the new transformer will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
-            - voltage_level2_id: the voltage level where the new transformer will be connected on side 2.
+            - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
               The voltage level must already exist.
-            - bus2_id: the bus where the new transformer will be connected on side 2,
+            - **bus2_id**: the bus where the new transformer will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus2_id: the bus where the new transformer will be connectable on side 2,
+            - **connectable_bus2_id**: the bus where the new transformer will be connectable on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - node2: the node where the new transformer will be connected on side 2,
+            - **node2**: the node where the new transformer will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - rated_u1: nominal voltage of the side 1 of the transformer
-            - rated_u2: nominal voltage of the side 2 of the transformer
-            - rated_s: nominal power of the transformer
-            - b: the shunt susceptance, in S
-            - g: the shunt conductance, in S
-            - r: the resistance, in Ohm
-            - x: the reactance, in Ohm
+            - **name**: an optional human-readable name
+            - **rated_u1**: nominal voltage of the side 1 of the transformer
+            - **rated_u2**: nominal voltage of the side 2 of the transformer
+            - **rated_s**: nominal power of the transformer
+            - **b**: the shunt susceptance, in S
+            - **g**: the shunt conductance, in S
+            - **r**: the resistance, in Ohm
+            - **x**: the reactance, in Ohm
 
         Examples:
             Using keyword arguments:
@@ -3332,35 +3332,35 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes for the shunt compensators dataframe are:
 
-            - id: the identifier of the new shunt
-            - voltage_level_id: the voltage level where the new shunt will be created.
+            - **id**: the identifier of the new shunt
+            - **voltage_level_id**: the voltage level where the new shunt will be created.
               The voltage level must already exist.
-            - bus_id: the bus where the new shunt will be connected,
+            - **bus_id**: the bus where the new shunt will be connected,
               if the voltage level has a bus-breaker topology kind.
-            - connectable_bus_id: the bus where the new shunt will be connectable,
+            - **connectable_bus_id**: the bus where the new shunt will be connectable,
               if the voltage level has a bus-breaker topology kind.
-            - node: the node where the new shunt will be connected,
+            - **node**: the node where the new shunt will be connected,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - model_type: either LINEAR or NON_LINEAR
-            - section_count: the current count of connected sections
-            - target_v: an optional target voltage in kV
-            - target_v: an optional deadband for the target voltage, in kV
+            - **name**: an optional human-readable name
+            - **model_type**: either LINEAR or NON_LINEAR
+            - **section_count**: the current count of connected sections
+            - **target_v**: an optional target voltage in kV
+            - **target_v**: an optional deadband for the target voltage, in kV
 
             Valid attributes for the linear sections models are:
 
-            - id: the identifier of the new shunt
-            - g_per_section: the conductance, in Ohm, for each section
-            - b_per_section: the susceptance, in Ohm, for each section
-            - max_section_count: the maximum number of connectable sections
+            - **id**: the identifier of the new shunt
+            - **g_per_section**: the conductance, in Ohm, for each section
+            - **b_per_section**: the susceptance, in Ohm, for each section
+            - **max_section_count**: the maximum number of connectable sections
 
             This dataframe must have only one row for each shunt compensator.
 
             Valid attributes for the non linear sections models are:
 
-            - id: the identifier of the new shunt
-            - g: the conductance, in Ohm, for this section
-            - b: the susceptance, in Ohm, for this section
+            - **id**: the identifier of the new shunt
+            - **g**: the conductance, in Ohm, for this section
+            - **b**: the susceptance, in Ohm, for this section
 
             This dataframe will have multiple rows for each shunt compensator: one by section.
 
@@ -3424,22 +3424,22 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new switch
-            - voltage_level1_id: the voltage level where the new switch will be connected on side 1.
+            - **id**: the identifier of the new switch
+            - **voltage_level1_id**: the voltage level where the new switch will be connected on side 1.
               The voltage level must already exist.
-            - bus1_id: the bus where the new switch will be connected on side 1,
+            - **bus1_id**: the bus where the new switch will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - bus2_id: the bus where the new switch will be connected on side 2,
+            - **bus2_id**: the bus where the new switch will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - node1: the node where the new switch will be connected on side 1,
+            - **node1**: the node where the new switch will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
-            - node2: the node where the new switch will be connected on side 2,
+            - **node2**: the node where the new switch will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
-            - name: an optional human-readable name
-            - kind: the kind of switch (BREAKER, DISCONNECTOR, LOAD_BREAK_SWITCH)
-            - open: true if the switch is open, default false
-            - retained: true if the switch should be retained in bus-breaker topology, default false
-            - fictitious: true if the switch is fictitious, default false
+            - **name**: an optional human-readable name
+            - **kind**: the kind of switch (BREAKER, DISCONNECTOR, LOAD_BREAK_SWITCH)
+            - **open**: true if the switch is open, default false
+            - **retained**: true if the switch should be retained in bus-breaker topology, default false
+            - **fictitious**: true if the switch is fictitious, default false
 
         Examples:
             Using keyword arguments:
@@ -3471,14 +3471,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new voltage level
-            - substation_id: the identifier of the substation which the new voltage level belongs to.
+            - **id**: the identifier of the new voltage level
+            - **substation_id**: the identifier of the substation which the new voltage level belongs to.
               It must already exist.
-            - name: an optional human-readable name
-            - topology_kind: the topology kind, BUS_BREAKER or NODE_BREAKER
-            - nominal_v: the nominal voltage, in kV
-            - low_voltage_limit: the lower operational voltage limit, in kV
-            - high_voltage_limit: the upper operational voltage limit, in kV
+            - **name**: an optional human-readable name
+            - **topology_kind**: the topology kind, BUS_BREAKER or NODE_BREAKER
+            - **nominal_v**: the nominal voltage, in kV
+            - **low_voltage_limit**: the lower operational voltage limit, in kV
+            - **high_voltage_limit**: the upper operational voltage limit, in kV
 
         Examples:
             Using keyword arguments:
@@ -3506,21 +3506,21 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes for the tap changers dataframe are:
 
-            - id: the transformer where this tap changer will be created
-            - tap: the current tap position
-            - low_tap: the number of the lowest tap position (default 0)
-            - on_load: true if the transformer has on-load voltage regulation capability
-            - target_v: the target voltage, in kV
-            - target_deadband: the target voltage regulation deadband, in kV
+            - **id**: the transformer where this tap changer will be created
+            - **tap**: the current tap position
+            - **low_tap**: the number of the lowest tap position (default 0)
+            - **on_load**: true if the transformer has on-load voltage regulation capability
+            - **target_v**: the target voltage, in kV
+            - **target_deadband**: the target voltage regulation deadband, in kV
 
             Valid attributes for the steps dataframe are:
 
-            - id: the transformer where this step will be added
-            - g: the shunt conductance increase compared to the transformer, for this step, in percentage
-            - b: the shunt susceptance increase compared to the transformer, for this step, in percentage
-            - r: the resistance increase compared to the transformer, for this step, in percentage
-            - x: the reactance increased compared to the transformer, for this step, in percentage
-            - rho: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
+            - **id**: the transformer where this step will be added
+            - **g**: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - **b**: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - **r**: the resistance increase compared to the transformer, for this step, in percentage
+            - **x**: the reactance increased compared to the transformer, for this step, in percentage
+            - **rho**: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
 
         Examples:
             We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
@@ -3556,21 +3556,21 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes for the tap changers dataframe are:
 
-            - id: the transformer where this tap changer will be created
-            - tap: the current tap position
-            - low_tap: the number of the lowest tap position (default 0)
-            - regulation_mode: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
-            - target_deadband: the regulation deadband
+            - **id**: the transformer where this tap changer will be created
+            - **tap**: the current tap position
+            - **low_tap**: the number of the lowest tap position (default 0)
+            - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
+            - **target_deadband**: the regulation deadband
 
             Valid attributes for the steps dataframe are:
 
-            - id: the transformer where this step will be added
-            - g: the shunt conductance increase compared to the transformer, for this step, in percentage
-            - b: the shunt susceptance increase compared to the transformer, for this step, in percentage
-            - r: the resistance increase compared to the transformer, for this step, in percentage
-            - x: the reactance increased compared to the transformer, for this step, in percentage
-            - rho: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
-            - alpha: the phase shift, in degrees, for this step
+            - **id**: the transformer where this step will be added
+            - **g**: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - **b**: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - **r**: the resistance increase compared to the transformer, for this step, in percentage
+            - **x**: the reactance increased compared to the transformer, for this step, in percentage
+            - **rho**: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
+            - **alpha**: the phase shift, in degrees, for this step
 
         Examples:
             We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
@@ -3603,17 +3603,17 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - id: the identifier of the new HVDC line
-            - name: an optional human-readable name
-            - converter_station1_id: the station where the new HVDC line will be connected on side 1.
+            - **id**: the identifier of the new HVDC line
+            - **name**: an optional human-readable name
+            - **converter_station1_id**: the station where the new HVDC line will be connected on side 1.
               It must already exist.
-            - converter_station2_id: the station where the new HVDC line will be connected on side 2.
+            - **converter_station2_id**: the station where the new HVDC line will be connected on side 2.
               It must already exist.
-            - r: the resistance of the HVDC line, in Ohm
-            - nominal_v: the nominal voltage of the HVDC line, in kV
-            - max_p: the maximum transmissible power, in MW
-            - target_p: the active power target, in MW
-            - converters_mode: SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
+            - **r**: the resistance of the HVDC line, in Ohm
+            - **nominal_v**: the nominal voltage of the HVDC line, in kV
+            - **max_p**: the maximum transmissible power, in MW
+            - **target_p**: the active power target, in MW
+            - **converters_mode**: SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
 
         Examples:
             Using keyword arguments:
