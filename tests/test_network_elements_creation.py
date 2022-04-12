@@ -259,13 +259,17 @@ def test_voltage_levels_creation():
 
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
-    n.create_ratio_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1']),
-                                             columns=['target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
-                                             data=[[2, 200, False, 0, 1]]),
-                                pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NGEN_NHV1']),
-                                             columns=['b', 'g', 'r', 'x', 'rho'],
-                                             data=[[2, 2, 1, 1, 0.5],
-                                                   [2, 2, 1, 1, 0.5]]))
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
+        data=[('NGEN_NHV1', 2, 200, False, 0, 1)])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+              ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+
     rtc = n.get_ratio_tap_changers().loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
@@ -288,13 +292,16 @@ def test_phase_tap_changers_creation():
         columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1',
                  'node2'],
         data=[['TWT_TEST', 0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
-    n.create_phase_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST']),
-                                             columns=['target_deadband', 'regulation_mode', 'low_tap', 'tap'],
-                                             data=[[2, 'CURRENT_LIMITER', 0, 1]]),
-                                pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST', 'TWT_TEST']),
-                                             columns=['b', 'g', 'r', 'x', 'rho', 'alpha'],
-                                             data=[[2, 2, 1, 1, 0.5, 0.1],
-                                                   [2, 2, 1, 1, 0.5, 0.1]]))
+
+    ptc_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap'],
+        data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1)])
+    steps_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+    n.create_phase_tap_changers(ptc_df, steps_df)
+
     ptc = n.get_phase_tap_changers().loc['TWT_TEST']
     assert ptc.target_deadband == 2
     assert ptc.regulation_mode == 'CURRENT_LIMITER'
@@ -358,12 +365,11 @@ def test_linear_shunt():
         index='id',
         columns=['id', 'name', 'model_type', 'section_count', 'target_v',
                  'target_deadband', 'voltage_level_id', 'node'],
-        data=[['SHUNT_TEST', '', 'LINEAR', 1, 400, 2,
-               'S1VL2', 2]])
+        data=[('SHUNT_TEST', '', 'LINEAR', 1, 400, 2, 'S1VL2', 2)])
     model_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
-        data=[['SHUNT_TEST', 0.14, -0.01, 2]])
+        data=[('SHUNT_TEST', 0.14, -0.01, 2)])
     n.create_shunt_compensators(shunt_df, model_df)
 
     shunt = n.get_shunt_compensators().loc['SHUNT_TEST']
