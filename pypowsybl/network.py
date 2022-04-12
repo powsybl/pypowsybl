@@ -2822,17 +2822,33 @@ class Network:  # pylint: disable=too-many-public-methods
         In the latter case, all arguments must have the same length.
 
         Valid attributes are:
-          - id
-          - name
-          - country
-          - tso
-
+          - id: the identifier of the substation
+          - name: an optional human readable name for the substation
+          - country: an optional country code ('DE', 'IT', ...)
+          - tso: an optional TSO name
 
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_substations(id='S-1', country='IT', TSO='TERNA')
+
+            Or using a dataframe:
+
+           .. code-block:: python
+
+                stations = pd.DataFrame.from_records(index='id', data=[
+                    {'id': 'S1', 'country': 'BE'},
+                    {'id': 'S2', 'country': 'DE'}
+                ])
+                network.create_substations(stations)
         """
-        return self._create_elements(ElementType.SUBSTATION, [df], **kwargs)
+        self._create_elements(ElementType.SUBSTATION, [df], **kwargs)
 
     def create_generators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -2860,6 +2876,19 @@ class Network:  # pylint: disable=too-many-public-methods
             df: Attributes as dataframe.
             **kwargs: Attributes as keyword arguments.
 
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_generators(id='GEN',
+                                          voltage_level_id='VL1',
+                                          bus_id='B1',
+                                          target_p=100,
+                                          min_p=0,
+                                          max_p=200,
+                                          target_v=400,
+                                          voltage_regulator_on=True)
         """
         self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 
@@ -2879,12 +2908,19 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_busbar_sections(id='BBS', voltage_level_id='VL1', node=0)
         """
         self._create_elements(ElementType.BUSBAR_SECTION, [df], **kwargs)
 
     def create_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Creates buses.
+        Creates buses in bus-breaker voltage levels.
 
         Data may be provided as a dataframe or as keyword arguments.
         In the latter case, all arguments must have the same length.
@@ -2897,21 +2933,19 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_buses(id='B1', voltage_level_id='VL1')
         """
         return self._create_elements(ElementType.BUS, [df], **kwargs)
 
     def create_loads(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create loads on a network
-
-        Args:
-            df: dataframe of the loads creation data
-        """
-        return self._create_elements(ElementType.LOAD, [df], **kwargs)
-
-    def create_batteries(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
-        """
-        Creates loads.
+        Create loads.
 
         Data may be provided as a dataframe or as keyword arguments.
         In the latter case, all arguments must have the same length.
@@ -2928,8 +2962,47 @@ class Network:  # pylint: disable=too-many-public-methods
           - q0
 
         Args:
+            df: dataframe of the loads creation data
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_loads(id='LOAD-1', voltage_level_id='VL1', bus_id='B1', p0=10, q0=3)
+        """
+        return self._create_elements(ElementType.LOAD, [df], **kwargs)
+
+    def create_batteries(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Creates batteries.
+
+        Data may be provided as a dataframe or as keyword arguments.
+        In the latter case, all arguments must have the same length.
+
+        Valid attributes are:
+          - id
+          - voltage_level_id
+          - bus_id
+          - connectable_bus_id
+          - node
+          - name
+          - min_p
+          - max_p
+          - p0
+          - q0
+
+        Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_batteries(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                                         min_p=5, max_p=50, p0=10, q0=3)
         """
         return self._create_elements(ElementType.BATTERY, [df], **kwargs)
 
@@ -2957,6 +3030,14 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                                              p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
@@ -2980,6 +3061,14 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_lcc_converter_stations(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                      power_factor=0.3, loss_factor=0.1)
         """
         return self._create_elements(ElementType.LCC_CONVERTER_STATION, [df], **kwargs)
 
@@ -3005,6 +3094,14 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_vsc_converter_stations(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                      loss_factor=0.1, voltage_regulator_on=True, target_v=400.0)
         """
         return self._create_elements(ElementType.VSC_CONVERTER_STATION, [df], **kwargs)
 
@@ -3031,6 +3128,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_static_var_compensators(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                       b_min=-0.01, b_max=0.01, regulation_mode='VOLTAGE',
+                                                       target_v=400.0)
         """
         return self._create_elements(ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
@@ -3062,6 +3168,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_lines(id='LINE-1', voltage_level1_id='VL1', bus1_id='B1',
+                                     voltage_level2_id='VL2', bus2_id='B2',
+                                     b1=1e-6, b2=1e-6, g1=0, , g2=0, r=0.5, x=10)
         """
         return self._create_elements(ElementType.LINE, [df], **kwargs)
 
@@ -3094,6 +3209,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_2_windings_transformers(id='T-1', voltage_level1_id='VL1', bus1_id='B1',
+                                                       voltage_level2_id='VL2', bus2_id='B2',
+                                                       b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=400, rated_u2=225)
         """
         return self._create_elements(ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
@@ -3102,10 +3226,50 @@ class Network:  # pylint: disable=too-many-public-methods
                                   non_linear_model_df: _Optional[_DataFrame] = None,
                                   **kwargs: _ArrayLike) -> None:
         """
-        create shunt compensators on a network
+        Create shunt compensators.
 
         Args:
-            df: dataframe of the shunt compensators creation data
+            shunt_df: dataframe for shunt compensators data
+            linear_model_df: dataframe for linear model sections data
+            non_linear_model_df: dataframe for sections data
+
+        Examples:
+            For example, to create linear model shunts, we need 1 dataframe for the shunts and 1 dataframe
+            for the linear model of sections:
+
+            .. code-block:: python
+
+                shunt_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                             'target_deadband', 'voltage_level_id', 'node'],
+                    data=[('SHUNT-1', '', 'LINEAR', 1, 400, 2, 'S1VL2', 2)])
+                model_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+                    data=[('SHUNT-1', 0.14, -0.01, 2)])
+                n.create_shunt_compensators(shunt_df, model_df)
+
+
+            For non linear model shunts, we need 1 dataframe for the shunts and 1 dataframe
+            for the sections:
+
+            .. code-block:: python
+
+                shunt_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                             'target_deadband', 'voltage_level_id', 'node'],
+                    data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 2),
+                          ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 10)])
+                model_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'g', 'b'],
+                    data=[('SHUNT1', 1, 2),
+                          ('SHUNT1', 3, 4),
+                          ('SHUNT2', 5, 6),
+                          ('SHUNT2', 7, 8)])
+                n.create_shunt_compensators(shunt_df, non_linear_model_df=model_df)
         """
         if linear_model_df is None:
             linear_model_df = pd.DataFrame()
@@ -3137,6 +3301,19 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                # In a bus-breaker voltage level, between configured buses B1 and B2
+                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', bus1_id='B1', bus2_id='B2',
+                                        kind='BREAKER', open=False)
+
+                # In a node-breaker voltage level, between nodes 5 and 7
+                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', node1=5, node2=7,
+                                        kind='BREAKER', open=False)
         """
         return self._create_elements(ElementType.SWITCH, [df], **kwargs)
 
@@ -3159,24 +3336,63 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='BUS_BREAKER',
+                                              nominal_v=400, low_voltage_limit=380, high_voltage_limit=420)
         """
         return self._create_elements(ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
     def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create ratio tap changers on a network
+        Create ratio tap changers on transformers.
 
         Args:
-            df: dataframe of the ratio tap changers creation data
+            rtc_df: dataframe of tap changers data
+            steps_df: dataframe of steps data
+
+        Examples:
+            We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
+
+            .. code-block:: python
+
+                rtc_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
+                    data=[('NGEN_NHV1', 2, 200, False, 0, 1)])
+                steps_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+                    data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+                network.create_ratio_tap_changers(rtc_df, steps_df)
         """
         return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df], **kwargs)
 
     def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create phase tap changers on a network
+        Create phase tap changers on transformers.
 
         Args:
             df: dataframe of the phase tap changers creation data
+
+        Examples:
+            We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
+
+            .. code-block:: python
+
+                ptc_df = pd.DataFrame.from_records(
+                    index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap'],
+                    data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1)])
+                steps_df = pd.DataFrame.from_records(
+                    index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+                    data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+                          ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+                n.create_phase_tap_changers(ptc_df, steps_df)
         """
         return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df], **kwargs)
 
@@ -3201,6 +3417,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             **kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_hvdc_lines(id='HVDC-1', converter_station1_id='CS-1', converter_station2_id='CS-2',
+                                          r=1.0, nominal_v=400, converters_mode='SIDE_1_RECTIFIER_SIDE_2_INVERTER',
+                                          max_p=1000, target_p=800)
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
 
