@@ -2829,7 +2829,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -2874,7 +2874,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -2907,7 +2907,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -2932,7 +2932,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -2994,7 +2994,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3029,7 +3029,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3060,7 +3060,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3093,7 +3093,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3127,7 +3127,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3167,7 +3167,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3208,7 +3208,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3300,7 +3300,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3335,7 +3335,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3416,7 +3416,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
         Examples:
             Using keyword arguments:
@@ -3454,7 +3454,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
         """
         df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
