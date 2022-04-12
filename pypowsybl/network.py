@@ -2818,18 +2818,20 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates substations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id: the identifier of the substation
-          - name: an optional human readable name for the substation
-          - country: an optional country code ('DE', 'IT', ...)
-          - tso: an optional TSO name
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            - id: the identifier of the substation
+            - name: an optional human readable name for the substation
+            - country: an optional country code ('DE', 'IT', ...)
+            - tso: an optional TSO name
 
         Examples:
             Using keyword arguments:
@@ -2854,27 +2856,34 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates generators.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Expected attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - energy_source
-          - max_p
-          - min_p
-          - target_p
-          - target_q
-          - rated_s
-          - target_v
-          - voltage_regulator_on
-
         Args:
             df: Attributes as dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new generator
+            - voltage_level_id: the voltage level where the new generator will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new generator will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new generator will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new generator will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - energy_source: the type of energy source (HYDRO, NUCLEAR, ...)
+            - max_p: maximum active power in MW
+            - min_p: minimum active power in MW
+            - target_p: target active power in MW
+            - target_q: target reactive power in MVar, when the generator does not regulate voltage
+            - rated_s: nominal power in MVA
+            - target_v: target voltage in kV, when the generator regulates voltage
+            - voltage_regulator_on: true if the generator regulates voltage
 
         Examples:
             Using keyword arguments:
@@ -2896,18 +2905,23 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates bus bar sections.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - node
-          - name
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new busbar section
+            - voltage_level_id: the voltage level where the new busbar section will be created.
+              The voltage level must already exist.
+            - node: the node where the new generator will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
 
         Examples:
             Using keyword arguments:
@@ -2922,17 +2936,24 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates buses in bus-breaker voltage levels.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - name
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            This method can only create "configured buses", in bus-breaker voltage levels,
+            as opposed to electrical buses computed from this underlying topology.
+
+            Valid attributes are:
+
+            - id: the identifier of the new configured bus
+            - voltage_level_id: the voltage level where the new bus will be created.
+              The voltage level must already exist, and must have a bus-breaker topology kind.
+            - name: an optional human-readable name
 
         Examples:
             Using keyword arguments:
@@ -2947,22 +2968,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Create loads.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - type
-          - p0
-          - q0
-
         Args:
             df: dataframe of the loads creation data
+
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new load
+            - voltage_level_id: the voltage level where the new load will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new load will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new load will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new load will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - type: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
+            - p0: active power load, in MW
+            - q0: reactive power load, in MVar
 
         Examples:
             Using keyword arguments:
@@ -2977,24 +3006,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates batteries.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - min_p
-          - max_p
-          - p0
-          - q0
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new battery
+            - voltage_level_id: the voltage level where the new battery will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new battery will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new battery will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new battery will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - min_p: minimum active power, in MW
+            - max_p: maximum active power, in MW
+            - p0: active power consumption, in MW
+            - q0: reactive power consumption, in MVar
 
         Examples:
             Using keyword arguments:
@@ -3010,26 +3046,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates dangling lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - p0
-          - q0
-          - r
-          - x
-          - g
-          - b
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new line
+            - voltage_level_id: the voltage level where the new line will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new line will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new line will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new line will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - p0: the active power consumption, in MW
+            - q0: the reactive power consumption, in MVar
+            - r: the resistance, in Ohms
+            - x: the reactance, in Ohms
+            - g: the shunt conductance, in S
+            - b: the shunt susceptance, in S
 
         Examples:
             Using keyword arguments:
@@ -3045,22 +3088,29 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates LCC converter stations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - power_factor
-          - loss_factor
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new station
+            - voltage_level_id: the voltage level where the new station will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new station will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new station will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new station will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - power_factor: the power factor (ratio of the active power to the apparent power)
+            - loss_factor: the loss factor of the station
 
         Examples:
             Using keyword arguments:
@@ -3076,24 +3126,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates VSC converter stations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - target_v
-          - target_q
-          - loss_factor
-          - voltage_regulator_on
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new station
+            - voltage_level_id: the voltage level where the new station will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new station will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new station will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new station will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - loss_factor: the loss factor of the new station
+            - voltage_regulator_on: true if the station regulated voltage
+            - target_v: the target voltage, in kV, when the station regulates voltage
+            - target_q: the target reactive power, in MVar, when the station does not regulate voltage
 
         Examples:
             Using keyword arguments:
@@ -3109,25 +3166,32 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates static var compensators.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - b_max
-          - b_min
-          - regulation_mode
-          - target_v
-          - target_q
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new SVC
+            - voltage_level_id: the voltage level where the new SVC will be created.
+              The voltage level must already exist.
+            - bus_id: the bus where the new SVC will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus_id: the bus where the new SVC will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - node: the node where the new SVC will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - b_max: the maximum susceptance, in S
+            - b_min: the minimum susceptance, in S
+            - regulation_mode: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+            - target_v: the target voltage, in kV, when the regulation mode is VOLTAGE
+            - target_q: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
 
         Examples:
             Using keyword arguments:
@@ -3144,30 +3208,42 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level1_id
-          - bus1_id
-          - connectable_bus1_id
-          - node1
-          - voltage_level2_id
-          - bus2_id
-          - connectable_bus2_id
-          - node2
-          - name
-          - b1
-          - b2
-          - g1
-          - g2
-          - r
-          - x
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new line
+            - voltage_level1_id: the voltage level where the new line will be connected on side 1.
+              The voltage level must already exist.
+            - bus1_id: the bus where the new line will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus1_id: the bus where the new line will be connectable on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - node1: the node where the new line will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - voltage_level2_id: the voltage level where the new line will be connected on side 2.
+              The voltage level must already exist.
+            - bus2_id: the bus where the new line will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus2_id: the bus where the new line will be connectable on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - node2: the node where the new line will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - b1: the shunt susceptance, in S, on side 1
+            - b2: the shunt susceptance, in S, on side 2
+            - g1: the shunt conductance, in S, on side 1
+            - g2: the shunt conductance, in S, on side 2
+            - r: the resistance, in Ohm
+            - x: the reactance, in Ohm
+
 
         Examples:
             Using keyword arguments:
@@ -3184,31 +3260,42 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates 2 windings transformers.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level1_id
-          - bus1_id
-          - connectable_bus1_id
-          - node1
-          - voltage_level2_id
-          - bus2_id
-          - connectable_bus2_id
-          - node2
-          - name
-          - rated_u1
-          - rated_u2
-          - rated_s
-          - b
-          - g
-          - r
-          - x
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new transformer
+            - voltage_level1_id: the voltage level where the new transformer will be connected on side 1.
+              The voltage level must already exist.
+            - bus1_id: the bus where the new transformer will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus1_id: the bus where the new transformer will be connectable on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - node1: the node where the new transformer will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - voltage_level2_id: the voltage level where the new transformer will be connected on side 2.
+              The voltage level must already exist.
+            - bus2_id: the bus where the new transformer will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - connectable_bus2_id: the bus where the new transformer will be connectable on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - node2: the node where the new transformer will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - rated_u1: nominal voltage of the side 1 of the transformer
+            - rated_u2: nominal voltage of the side 2 of the transformer
+            - rated_s: nominal power of the transformer
+            - b: the shunt susceptance, in S
+            - g: the shunt conductance, in S
+            - r: the resistance, in Ohm
+            - x: the reactance, in Ohm
 
         Examples:
             Using keyword arguments:
@@ -3282,25 +3369,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates switches.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus1_id
-          - bus2_id
-          - node1
-          - node2
-          - name
-          - kind
-          - open
-          - retained
-          - fictitious
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new switch
+            - voltage_level1_id: the voltage level where the new switch will be connected on side 1.
+              The voltage level must already exist.
+            - bus1_id: the bus where the new switch will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - bus2_id: the bus where the new switch will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - node1: the node where the new switch will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - node2: the node where the new switch will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - name: an optional human-readable name
+            - kind: the kind of switch (BREAKER, DISCONNECTOR, LOAD_BREAK_SWITCH)
+            - open: true if the switch is open, default false
+            - retained: true if the switch should be retained in bus-breaker topology, default false
+            - fictitious: true if the switch is fictitious, default false
 
         Examples:
             Using keyword arguments:
@@ -3321,21 +3416,25 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates voltage levels.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - substation_id
-          - name
-          - high_voltage_limit
-          - low_voltage_limit
-          - nominal_v
-          - topology_kind
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new voltage level
+            - substation_id: the identifier of the substation which the new voltage level belongs to.
+              It must already exist.
+            - name: an optional human-readable name
+            - topology_kind: the topology kind, BUS_BREAKER or NODE_BREAKER
+            - nominal_v: the nominal voltage, in kV
+            - low_voltage_limit: the lower operational voltage limit, in kV
+            - high_voltage_limit: the upper operational voltage limit, in kV
 
         Examples:
             Using keyword arguments:
@@ -3400,23 +3499,28 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates HVDC lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - name
-          - converter_station1_id
-          - converter_station2_id
-          - max_p
-          - converters_mode
-          - target_p
-          - r
-          - nominal_v
-
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - id: the identifier of the new HVDC line
+            - name: an optional human-readable name
+            - converter_station1_id: the station where the new HVDC line will be connected on side 1.
+              It must already exist.
+            - converter_station2_id: the station where the new HVDC line will be connected on side 2.
+              It must already exist.
+            - r: the resistance of the HVDC line, in Ohm
+            - nominal_v: the nominal voltage of the HVDC line, in kV
+            - max_p: the maximum transmissible power, in MW
+            - target_p: the active power target, in MW
+            - converters_mode: SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
 
         Examples:
             Using keyword arguments:
@@ -3433,24 +3537,28 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates operational limits.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
+        Notes:
 
-        Valid attributes are:
-          - **element_id**: the ID of the network element on which we want to create new limits
-          - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
-            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
-          - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
-          - **name**: the name of the limit
-          - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
-          - **value**: the value of the limit in A, MVA or MW
-          - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
-          - **is_fictitious** : fictitious limit ?
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
 
-        For each location of the network defined by a couple (element_id, side):
-          - if operational limits already exist, they will be replaced
-          - multiple limits may be defined, typically with different acceptable_duration
-          - you can only define ONE permanent limit, identified by an acceptable_duration of -1
+            Valid attributes are:
+
+            - **element_id**: the ID of the network element on which we want to create new limits
+            - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
+              THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+            - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
+            - **name**: the name of the limit
+            - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
+            - **value**: the value of the limit in A, MVA or MW
+            - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
+            - **is_fictitious** : fictitious limit ?
+
+            For each location of the network defined by a couple (element_id, side):
+
+            - if operational limits already exist, they will be replaced
+            - multiple limits may be defined, typically with different acceptable_duration
+            - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
         Args:
             df: Attributes as a dataframe.
