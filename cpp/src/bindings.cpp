@@ -597,4 +597,5 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
 
+    m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
 }

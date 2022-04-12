@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 import pypowsybl
+import pypowsybl.network
 import pypowsybl.network as pn
 import util
 import pathlib
@@ -614,3 +615,48 @@ def test_create_limits():
               ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
+
+def test_delete_elements_eurostag():
+    pypowsybl.set_debug_mode(True)
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2'])
+    assert net.get_generators().empty
+    net.remove_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    assert net.get_lines().empty
+    net.remove_elements(['NHV2_NLOAD', 'NGEN_NHV1'])
+    assert net.get_2_windings_transformers().empty
+    net.remove_elements('LOAD')
+    assert net.get_loads().empty
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2', 'NHV1_NHV2_1', 'NHV1_NHV2_2', 'NHV2_NLOAD', 'NGEN_NHV1', 'LOAD'])
+    assert net.get_generators().empty
+    assert net.get_lines().empty
+    assert net.get_2_windings_transformers().empty
+    assert net.get_loads().empty
+
+def test_delete_elements_four_substations():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['TWT', 'HVDC1', 'HVDC2', 'S1'])
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'HVDC2' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    assert 'S1' not in net.get_substations().index
+    assert 'S1VL1' not in net.get_voltage_levels().index
+    assert 'S2VL1' in net.get_voltage_levels().index
+    with pytest.raises(pypowsybl.PyPowsyblError) as err:
+        net.remove_elements('S2VL1')
+    assert 'The voltage level \'S2VL1\' cannot be removed because of a remaining LINE' in str(err.value)
+    net.remove_elements(['LINE_S2S3', 'S2VL1'])
+    assert 'S2VL1' not in net.get_voltage_levels().index
+
+def test_remove_elements_switches():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1'])
+    # TODO: restore it when bug fixed in powsybl-core
+    #net.remove_elements(['S1VL1', 'S1'])
+    assert 'S1VL1_BBS_LD1_DISCONNECTOR' not in net.get_switches().index
+    assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    #assert 'S1' not in net.get_substations().index
+    #assert 'S1VL1' not in net.get_voltage_levels().index

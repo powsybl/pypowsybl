@@ -695,7 +695,6 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
 }
 
 std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
-
     dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
@@ -731,6 +730,11 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
     pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
+}
+
+void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    pypowsybl::callJava<>(::removeNetworkElements, network, elementIdsPtr.get(), elementIds.size());
 }
 
 }

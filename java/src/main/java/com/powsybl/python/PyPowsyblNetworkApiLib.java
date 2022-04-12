@@ -25,8 +25,7 @@ import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
@@ -297,9 +296,9 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                                             CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
-                                                                                             CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
-                                                                                             boolean notConnectedToSameBusAtBothSides, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                          CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
+                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
+                                                                          boolean notConnectedToSameBusAtBothSides, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
@@ -424,6 +423,44 @@ public final class PyPowsyblNetworkApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType)).updateSeries(network, updatingDataframe);
+        });
+    }
+
+    @CEntryPoint(name = "removeNetworkElements")
+    public static void removeNetworkElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer cElementIds,
+                                             int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
+            elementIds.forEach(elementId -> {
+                Identifiable identifiable = network.getIdentifiable(elementId);
+                if (identifiable == null) {
+                    throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
+                }
+                if (identifiable instanceof Connectable) {
+                    ((Connectable) identifiable).remove();
+                } else if (identifiable instanceof HvdcLine) {
+                    ((HvdcLine) identifiable).remove();
+                } else if (identifiable instanceof VoltageLevel) {
+                    ((VoltageLevel) identifiable).remove();
+                } else if (identifiable instanceof Substation) {
+                    ((Substation) identifiable).remove();
+                } else if (identifiable instanceof Switch) {
+                    VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
+                    switch (voltageLevel.getTopologyKind()) {
+                        case NODE_BREAKER:
+                            voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        case BUS_BREAKER:
+                            voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        default:
+                            throw new PowsyblException("this voltage level does not have a proper topology kind");
+                    }
+                } else {
+                    throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
+                }
+            });
         });
     }
 
