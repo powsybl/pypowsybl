@@ -2831,7 +2831,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **id**: the identifier of the substation
             - **name**: an optional human readable name for the substation
             - **country**: an optional country code ('DE', 'IT', ...)
-            - **tso**: an optional TSO name
+            - **TSO**: an optional TSO name
 
         Examples:
             Using keyword arguments:
