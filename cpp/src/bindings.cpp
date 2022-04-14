@@ -538,6 +538,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
+
+    m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"));
+
+    m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
     
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
@@ -590,7 +595,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
-
     m.def("set_logger", &setLogger, "Setup the logger", py::arg("logger"));
     m.def("get_logger", &getLogger, "Retrieve the logger");
+    m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
 }

@@ -26,7 +26,8 @@ public class SubstationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("country"),
-            SeriesMetadata.strings("tso")
+            SeriesMetadata.strings("tso"),
+            SeriesMetadata.strings("TSO")
     );
 
     @Override
@@ -40,6 +41,7 @@ public class SubstationDataframeAdder extends AbstractSimpleAdder {
         NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
         dataframe.getStringValue("country", indexElement).map(Country::valueOf).ifPresent(adder::setCountry);
         dataframe.getStringValue("tso", indexElement).ifPresent(adder::setTso);
+        dataframe.getStringValue("TSO", indexElement).ifPresent(adder::setTso);
         adder.add();
     }
 }

@@ -92,6 +92,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_switches
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
+   Network.get_extension
 
 
 Network elements update
@@ -109,6 +110,7 @@ Network elements can be modified using dataframes:
    Network.update_dangling_lines
    Network.update_generators
    Network.update_hvdc_lines
+   Network.update_lcc_converter_stations
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
@@ -124,10 +126,10 @@ Network elements can be modified using dataframes:
 
 
 
-Network elements creation
--------------------------
+Network elements creation and removal
+-------------------------------------
 
-Network elements can be created using the following methods:
+Network elements can be created or removed using the following methods:
 
 .. autosummary::
    :toctree: api/
@@ -152,6 +154,7 @@ Network elements can be created using the following methods:
    Network.create_switches
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
+   Network.remove_elements
 
 
 Network variants management
@@ -190,6 +193,7 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
+   get_extensions_names
 
 
 I/O

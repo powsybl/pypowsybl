@@ -598,6 +598,16 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
 }
 
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName) {
+    return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str()));
+}
+
+std::vector<std::string> getExtensionsNames() {
+    auto formatsArrayPtr = callJava<array*>(::getExtensionsNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }
@@ -690,7 +700,6 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
 }
 
 std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
-
     dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
@@ -728,8 +737,13 @@ void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type 
     pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
 }
 
+
 void setupCallback(void *& callback) {
     pypowsybl::callJava<>(::setupCallback, callback);
+}
+void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    pypowsybl::callJava<>(::removeNetworkElements, network, elementIdsPtr.get(), elementIds.size());
 }
 
 }
