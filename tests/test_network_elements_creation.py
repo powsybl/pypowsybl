@@ -39,6 +39,18 @@ def test_substation_kwargs():
     assert s3.country == 'DE'
 
 
+def test_substation_tso():
+    # accepting lower case for backward compat
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='S3', tso='TERNA')
+    s3 = n.get_substations().loc['S3']
+    assert s3.TSO == 'TERNA'
+
+    n.create_substations(id='S4', TSO='TERNA')
+    s4 = n.get_substations().loc['S4']
+    assert s4.TSO == 'TERNA'
+
+
 def test_substation_exceptions():
     n = pn.create_eurostag_tutorial_example1_network()
     with pytest.raises(ValueError) as exc:
@@ -616,6 +628,7 @@ def test_create_limits():
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
+
 def test_delete_elements_eurostag():
     pypowsybl.set_debug_mode(True)
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
@@ -634,6 +647,7 @@ def test_delete_elements_eurostag():
     assert net.get_2_windings_transformers().empty
     assert net.get_loads().empty
 
+
 def test_delete_elements_four_substations():
     net = pypowsybl.network.create_four_substations_node_breaker_network()
     net.remove_elements(['TWT', 'HVDC1', 'HVDC2', 'S1'])
@@ -648,6 +662,7 @@ def test_delete_elements_four_substations():
     assert 'The voltage level \'S2VL1\' cannot be removed because of a remaining LINE' in str(err.value)
     net.remove_elements(['LINE_S2S3', 'S2VL1'])
     assert 'S2VL1' not in net.get_voltage_levels().index
+
 
 def test_remove_elements_switches():
     net = pypowsybl.network.create_four_substations_node_breaker_network()
