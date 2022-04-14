@@ -4,44 +4,53 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import Union as _Union, Dict as _Dict
-from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-
-from typing import List as _List
-
-import _pypowsybl
-from _pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
-from pypowsybl.network import Network as _Network
-from pypowsybl.util import ContingencyContainer as _ContingencyContainer
-from prettytable import PrettyTable as _PrettyTable
+from typing import Union as _Union, Dict as _Dict, List as _List
 import pandas as _pd
+from prettytable import PrettyTable as _PrettyTable
+import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
+from pypowsybl.network import Network as _Network
+from pypowsybl.util import (
+    ContingencyContainer as _ContingencyContainer,
+    create_data_frame_from_series_array as _create_data_frame_from_series_array
+)
 from pypowsybl.loadflow import Parameters
 
-ContingencyResult.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                           f"contingency_id={self.contingency_id!r}" \
-                                           f", status={self.status.name}" \
-                                           f", limit_violations=[{len(self.limit_violations)}]" \
-                                           f")"
 
-LimitViolation.__repr__ = lambda self: f"{self.__class__.__name__}(" \
-                                        f"subject_id={self.subject_id!r}" \
-                                        f", subject_name={self.subject_name!r}" \
-                                        f", limit_type={self.limit_type.name}" \
-                                        f", limit={self.limit!r}" \
-                                        f", limit_name={self.limit_name!r}" \
-                                        f", acceptable_duration={self.acceptable_duration!r}" \
-                                        f", limit_reduction={self.limit_reduction!r}" \
-                                        f", value={self.value!r}" \
-                                        f", side={self.side.name}" \
-                                        f")"
+def _contingency_result_repr(self: ContingencyResult) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"contingency_id={self.contingency_id!r}" \
+           f", status={self.status.name}" \
+           f", limit_violations=[{len(self.limit_violations)}]" \
+           f")"
 
 
-class SecurityAnalysisResult(object):
+ContingencyResult.__repr__ = _contingency_result_repr  # type: ignore
+
+
+def _limit_violation_repr(self: LimitViolation) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"subject_id={self.subject_id!r}" \
+           f", subject_name={self.subject_name!r}" \
+           f", limit_type={self.limit_type.name}" \
+           f", limit={self.limit!r}" \
+           f", limit_name={self.limit_name!r}" \
+           f", acceptable_duration={self.acceptable_duration!r}" \
+           f", limit_reduction={self.limit_reduction!r}" \
+           f", value={self.value!r}" \
+           f", side={self.side.name}" \
+           f")"
+
+
+LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
+
+
+class SecurityAnalysisResult:
     """
     The result of a security analysis.
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
         results = _pypowsybl.get_security_analysis_result(self._handle)
         self._post_contingency_results = {}
@@ -66,7 +75,7 @@ class SecurityAnalysisResult(object):
         """
         return self._post_contingency_results
 
-    def find_post_contingency_result(self, contingency_id: str):
+    def find_post_contingency_result(self, contingency_id: str) -> ContingencyResult:
         """
         Result for the specified contingency.
 
@@ -75,26 +84,25 @@ class SecurityAnalysisResult(object):
         """
         result = self._post_contingency_results[contingency_id]
         if not result:
-            raise KeyError("Contingency {} not found".format(contingency_id))
+            raise KeyError(f'Contingency {contingency_id} not found')
         return result
 
-    def get_table(self):
+    def get_table(self) -> _PrettyTable:
         table = _PrettyTable()
         table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
-        for contingency_id in self._post_contingency_results:
-            post_contingency_result = self._post_contingency_results[contingency_id]
+        for contingency_id, post_contingency_result in self._post_contingency_results.items():
             table.add_row([contingency_id, post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
             for limit_violation in post_contingency_result.limit_violations:
                 table.add_row(['', '',
                                limit_violation.subject_id,
                                limit_violation.subject_name,
                                limit_violation.limit_type.name,
-                               "{:.1f}".format(limit_violation.limit),
+                               f'{limit_violation.limit:.1f}',
                                limit_violation.limit_name,
                                limit_violation.acceptable_duration,
                                limit_violation.limit_reduction,
-                               "{:.1f}".format(limit_violation.value),
+                               f'{limit_violation.value:.1f}',
                                limit_violation.side.name])
         return table
 
@@ -132,31 +140,48 @@ class SecurityAnalysis(_ContingencyContainer):
     Allows to run a security analysis on a network.
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         _ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: _Network, parameters: Parameters = None,
-               provider='OpenSecurityAnalysis') -> SecurityAnalysisResult:
+               provider: str = '') -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
             network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters
-            provider:   Name of the security analysis implementation provider to be used
+            provider:   Name of the security analysis implementation provider to be used,
+                        will use default provider if empty.
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p = parameters
-        if parameters is None:
-            p = Parameters()
-        return SecurityAnalysisResult(_pypowsybl.run_security_analysis(self._handle, network._handle, p, provider))
+        p: Parameters = Parameters() if parameters is None else parameters
+        return SecurityAnalysisResult(
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
+
+    def run_dc(self, network: _Network, parameters: Parameters = None,
+               provider: str = '') -> SecurityAnalysisResult:
+        """ Runs an DC security analysis.
+
+        Args:
+            network:    Network on which the security analysis will be computed
+            parameters: Security analysis parameters
+            provider:   Name of the security analysis implementation provider to be used,
+                        will use default provider if empty.
+
+        Returns:
+            A security analysis result, containing information about violations and monitored elements
+        """
+        p: Parameters = Parameters() if parameters is None else parameters
+        return SecurityAnalysisResult(
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True))
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,
                                branch_ids: _List[str] = None,
                                voltage_level_ids: _List[str] = None,
-                               three_windings_transformer_ids: _List[str] = None):
+                               three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -174,14 +199,14 @@ class SecurityAnalysis(_ContingencyContainer):
                              'for NONE or ALL contingencies')
 
         if three_windings_transformer_ids is None:
-            three_windings_transformer_ids = list()
+            three_windings_transformer_ids = []
         if branch_ids is None:
-            branch_ids = list()
+            branch_ids = []
         if voltage_level_ids is None:
-            voltage_level_ids = list()
+            voltage_level_ids = []
         if contingency_ids is None:
             contingency_ids = ['']
-        elif type(contingency_ids) == str:
+        elif isinstance(contingency_ids, str):
             contingency_ids = [contingency_ids]
 
         _pypowsybl.add_monitored_elements(self._handle, contingency_context_type, branch_ids, voltage_level_ids,
@@ -190,7 +215,7 @@ class SecurityAnalysis(_ContingencyContainer):
     def add_precontingency_monitored_elements(self,
                                               branch_ids: _List[str] = None,
                                               voltage_level_ids: _List[str] = None,
-                                              three_windings_transformer_ids: _List[str] = None):
+                                              three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -207,7 +232,7 @@ class SecurityAnalysis(_ContingencyContainer):
     def add_postcontingency_monitored_elements(self, contingency_ids: _Union[_List[str], str],
                                                branch_ids: _List[str] = None,
                                                voltage_level_ids: _List[str] = None,
-                                               three_windings_transformer_ids: _List[str] = None):
+                                               three_windings_transformer_ids: _List[str] = None) -> None:
         """ Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 
@@ -235,3 +260,30 @@ def create_analysis() -> SecurityAnalysis:
         A security analysis object, which allows to run a security analysis on a network.
     """
     return SecurityAnalysis(_pypowsybl.create_security_analysis())
+
+def set_default_provider(provider: str) -> None:
+    """
+    Set the default security analysis provider
+
+    Args:
+        provider: name of the default security analysis provider to set
+    """
+    _pypowsybl.set_default_security_analysis_provider(provider)
+
+def get_default_provider() -> str:
+    """
+    Get the current default security analysis provider. if nothing is set it is OpenSecurityAnalysis
+
+    Returns:
+        the name of the current default security analysis provider
+    """
+    return _pypowsybl.get_default_security_analysis_provider()
+
+def get_provider_names() -> _List[str]:
+    """
+    Get list of supported provider names
+
+    Returns:
+        the list of supported provider names
+    """
+    return _pypowsybl.get_security_analysis_provider_names()

@@ -5,8 +5,9 @@ Loadflow
 .. module:: pypowsybl.loadflow
 
 The loadflow module allows to run AC and DC loadflows.
+It also provides a method to check the consistency of a network with loadflow equations.
 
-Run a loadflow
+Running a loadflow
 ------------------
 
 .. autosummary::
@@ -15,6 +16,9 @@ Run a loadflow
 
     run_ac
     run_dc
+    set_default_provider
+    get_default_provider
+    get_provider_names
 
 Parameters
 ----------
@@ -65,3 +69,16 @@ Some enum classes are used in results:
    :template: autosummary/class_without_members.rst
 
     ComponentStatus
+
+
+Validate loadflow results
+-------------------------
+
+The following method allows to check the consistency of a network with AC loadflow equations.
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+    run_validation
+    ValidationResult

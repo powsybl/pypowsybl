@@ -33,7 +33,7 @@ the violations created by the contingency, they are collected by contingency in 
     >>> result.pre_contingency_result
     ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[3])
     >>> result.post_contingency_results
-    {'First contingency': ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[2])}
+    {'First contingency': ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[3])}
     >>> result.limit_violations
                                   subject_name   limit_type limit_name   limit  acceptable_duration  limit_reduction        value side
     contingency_id    subject_id
@@ -42,7 +42,7 @@ the violations created by the contingency, they are collected by contingency in 
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   398.917401
     First contingency NHV1_NHV2_2                   CURRENT             1200.0                   60              1.0  1438.021676  ONE
                       NHV1_NHV2_2                   CURRENT              500.0           2147483647              1.0  1477.824335  TWO
-
+                      VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
 
 
@@ -76,12 +76,32 @@ Information can be obtained on buses, branches and three windings transformers.
     NGEN_NHV1      VLHV2            NHV2    569.04    -1.71
     NHV1_NHV2_1    VLHV2            NHV2    366.58    -7.50
     >>> results.branch_results
-                                   p1     q1       i1      p2      q2       i2
+                                   p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id branch_id
-                   NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99
-    NGEN_NHV1      NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75
-                   NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75
-    NHV1_NHV2_1    NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83
+                   NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
+    NGEN_NHV1      NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
+                   NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
+    NHV1_NHV2_1    NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83            NaN
+
+.. testcleanup:: security.monitored_elements
+
+It also possible to get flow transfer on monitored branches in case of N-1 branch contingencies:
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_eurostag_tutorial_example1_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_single_element_contingencies(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> sa_result = sa.run_ac(n)
+    >>> sa_result.branch_results
+                                        p1          q1           i1          p2          q2           i2  flow_transfer
+    contingency_id branch_id
+                   NHV1_NHV2_2  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
+                   NHV1_NHV2_1  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
+    NHV1_NHV2_2    NHV1_NHV2_1  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
+    NHV1_NHV2_1    NHV1_NHV2_2  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
 
 .. testcleanup:: security.monitored_elements
 

@@ -38,7 +38,7 @@ The supported formats are the following:
 .. doctest::
 
    >>> pp.network.get_import_formats()
-   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM']
+   ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY']
 
 .. Note::
 
@@ -48,6 +48,9 @@ The supported formats are the following:
     .. code-block:: python
 
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
+
+
+You may also create your own network from scratch, see below.
 
 
 Save a network
@@ -109,10 +112,10 @@ For example, you can retrieve generators data as follows:
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> network.get_generators() # doctest: +NORMALIZE_WHITESPACE
-         name energy_source  target_p    min_p   max_p          min_q          max_q reactive_limits_kind  target_v  target_q  voltage_regulator_on   p   q   i voltage_level_id   bus_id  connected
+         name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id   bus_id  connected
     id
-    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03              MIN_MAX      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
-    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308              MIN_MAX      24.5     301.0                  True NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
 
 Most dataframes are indexed on the ID of the elements.
 However, some more complex dataframes have a multi-index : for example,
@@ -259,3 +262,72 @@ Once you're done working with your variant, you can remove it:
 
    >>> network.remove_variant('Variant')
 
+
+Creating network elements
+-------------------------
+
+pypowsybl provides methods to add new elements (substations, lines, ...)
+to the network. This enables you to adapt an existing network, or even to create
+one from scratch.
+
+As for updates, most creation methods accept arguments either as a dataframe
+or as named argument.
+
+Let's create our network!
+
+.. testcode::
+
+    network = pp.network.create_empty()
+
+First, we need to create some substations, let's create 2 of them:
+
+.. testcode::
+
+    network.create_substations(id=['S1', 'S2'])
+
+Then, let's add some voltage levels inside those substations, this time with a dataframe:
+
+.. testcode::
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+        {'substation_id': 'S2', 'id': 'VL2', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 400},
+    ])
+    network.create_voltage_levels(voltage_levels)
+
+Let's now create some buses inside those voltage levels:
+
+.. testcode::
+
+   network.create_buses(id=['B1', 'B2'], voltage_level_id=['VL1', 'VL2'])
+
+
+Let's connect thoses buses with a line:
+
+.. testcode::
+
+    network.create_lines(id='LINE', voltage_level1_id='VL1', bus1_id='B1',
+                         voltage_level2_id='VL2', bus2_id='B2',
+                         b1=0, b2=0, g1=0, g2=0, r=0.5, x=10)
+
+Finally, let's add a load, and a generator to feed it through our line:
+
+.. testcode::
+
+    network.create_loads(id='LOAD', voltage_level_id='VL2', bus_id='B2', p0=100, q0=10)
+    network.create_generators(id='GEN', voltage_level_id='VL1', bus_id='B1',
+                              min_p=0, max_p=200, target_p=100,
+                              voltage_regulator_on=True, target_v=400)
+
+
+You can now run a loadflow to check our network actually works !
+
+.. doctest::
+
+    >>> import pypowsybl.loadflow as lf
+    >>> res = lf.run_ac(network)
+    >>> str(res[0].status)
+    'ComponentStatus.CONVERGED'
+
+For more details and examples about network elements creations,
+please refer to the API reference :doc:`documentation </reference/network>`.

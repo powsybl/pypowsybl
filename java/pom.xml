@@ -49,27 +49,35 @@
             <organization>RTE</organization>
             <organizationUrl>http://www.rte-france.com</organizationUrl>
         </developer>
+        <developer>
+            <name>Etienne LESOT</name>
+            <email>etienne.lesot@rte-france.com</email>
+            <organization>RTE</organization>
+            <organizationUrl>http://www.rte-france.com</organizationUrl>
+        </developer>
     </developers>
 
     <packaging>jar</packaging>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.15.0-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
 
-        <graalvm.version>21.2.0</graalvm.version>
+        <assertj.version>3.11.0</assertj.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <graalvm.version>21.3.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <logback.version>1.2.3</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
+        <slf4j.version>1.7.30</slf4j.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-        <slf4j.version>1.7.30</slf4j.version>
-        <powsybl-math-native.version>1.0.4</powsybl-math-native.version>
-        <powsybl-core.version>4.4.0</powsybl-core.version>
-        <powsybl-single-line-diagram.version>2.4.0</powsybl-single-line-diagram.version>
-        <powsybl-open-load-flow.version>0.13.0</powsybl-open-load-flow.version>
-        <assertj.version>3.11.0</assertj.version>
+        <powsybl-math-native.version>1.1.0</powsybl-math-native.version>
+        <powsybl-core.version>4.7.0</powsybl-core.version>
+        <powsybl-single-line-diagram.version>2.8.0</powsybl-single-line-diagram.version>
+        <powsybl-open-load-flow.version>0.19.0</powsybl-open-load-flow.version>
+        <powsybl-network-area-diagram.version>0.3.0</powsybl-network-area-diagram.version>
     </properties>
 
     <build>
@@ -200,12 +208,12 @@
             <artifactId>mapdb</artifactId>
             <version>${mapdb.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-conversion</artifactId>
-            <version>${powsybl-core.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections4.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-conformity</artifactId>
@@ -216,11 +224,6 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-model</artifactId>
             <type>test-jar</type>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-config-classic</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
@@ -251,22 +254,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-xml-converter</artifactId>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-loadflow-api</artifactId>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-matpower-converter</artifactId>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-psse-converter</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
         <dependency>
@@ -276,17 +264,12 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-network-area-diagram</artifactId>
+            <version>${powsybl-network-area-diagram.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
-            <version>${powsybl-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-ucte-converter</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
 
@@ -300,6 +283,18 @@
 
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-cgmes-conversion</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-config-classic</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-iidm-impl</artifactId>
             <version>${powsybl-core.version}</version>
         </dependency>
@@ -310,8 +305,9 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-open-loadflow</artifactId>
-            <version>${powsybl-open-load-flow.version}</version>
+            <artifactId>powsybl-iidm-xml-converter</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -319,8 +315,56 @@
             <version>${powsybl-math-native.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-matpower-converter</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-open-loadflow</artifactId>
+            <version>${powsybl-open-load-flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-powerfactory-converter</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-powerfactory-dgs</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-psse-converter</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-ucte-converter</artifactId>
+            <version>${powsybl-core.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- test -->
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-commons</artifactId>
+            <version>${powsybl-core.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>

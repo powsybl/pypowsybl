@@ -9,24 +9,27 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.openloadflow.sensi.SensitivityVariableSet;
-import com.powsybl.openloadflow.sensi.WeightedSensitivityVariable;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationsResult;
+import com.powsybl.security.SecurityAnalysisProvider;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
+import com.powsybl.sensitivity.SensitivityAnalysisProvider;
+import com.powsybl.sensitivity.SensitivityVariableSet;
+import com.powsybl.sensitivity.WeightedSensitivityVariable;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -37,6 +40,8 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -54,8 +59,6 @@ import static com.powsybl.python.Util.*;
  */
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
-
-    static boolean readConfig = true;
 
     private PyPowsyblApiLib() {
     }
@@ -78,13 +81,49 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            readConfig = read;
+            PyPowsyblConfiguration.setReadConfig(read);
         });
+    }
+
+    @CEntryPoint(name = "setDefaultLoadFlowProvider")
+    public static void setDefaultLoadFlowProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultLoadFlowProvider")
+    public static CCharPointer getDefaultLoadFlowProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider()));
+    }
+
+    @CEntryPoint(name = "setDefaultSecurityAnalysisProvider")
+    public static void setDefaultSecurityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
+    public static CCharPointer getDefaultSecurityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider()));
+    }
+
+    @CEntryPoint(name = "setDefaultSensitivityAnalysisProvider")
+    public static void setDefaultSensitivityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PyPowsyblConfiguration.setDefaultSensitivityAnalysisProvider(CTypeUtil.toString(provider));
+        });
+    }
+
+    @CEntryPoint(name = "getDefaultSensitivityAnalysisProvider")
+    public static CCharPointer getDefaultSensitivityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider()));
     }
 
     @CEntryPoint(name = "isConfigRead")
     public static boolean isConfigRead(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> readConfig);
+        return doCatch(exceptionHandlerPtr, PyPowsyblConfiguration::isReadConfig);
     }
 
     @CEntryPoint(name = "getVersionTable")
@@ -100,6 +139,24 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporters.getFormats())));
+    }
+
+    @CEntryPoint(name = "getLoadFlowProviderNames")
+    public static ArrayPointer<CCharPointerPointer> getLoadFlowProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(LoadFlowProvider.class).getServices()
+                .stream().map(LoadFlowProvider::getName).collect(Collectors.toList())));
+    }
+
+    @CEntryPoint(name = "getSecurityAnalysisProviderNames")
+    public static ArrayPointer<CCharPointerPointer> getSecurityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(SecurityAnalysisProvider.class).getServices()
+                .stream().map(SecurityAnalysisProvider::getName).collect(Collectors.toList())));
+    }
+
+    @CEntryPoint(name = "getSensitivityAnalysisProviderNames")
+    public static ArrayPointer<CCharPointerPointer> getSensitivityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(SensitivityAnalysisProvider.class).getServices()
+                .stream().map(SensitivityAnalysisProvider::getName).collect(Collectors.toList())));
     }
 
     @CEntryPoint(name = "freeStringArray")
@@ -151,13 +208,13 @@ public final class PyPowsyblApiLib {
     }
 
     private static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer loadFlowParametersPtr) {
-        return new LoadFlowParameters()
+        return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
                 .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
                 .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
                 .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-                .setSimulShunt(loadFlowParametersPtr.isSimulShunt())
+                .setShuntCompensatorVoltageControlOn(loadFlowParametersPtr.isSimulShunt())
                 .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
                 .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
@@ -172,9 +229,12 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowParameters parameters = readConfig ? LoadFlowParameters.load() : new LoadFlowParameters();
-            return convertToLoadFlowParametersPointer(parameters);
+            return convertToLoadFlowParametersPointer(createLoadFlowParameters());
         });
+    }
+
+    private static LoadFlowParameters createLoadFlowParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
 
     @CEntryPoint(name = "freeLoadFlowParameters")
@@ -223,6 +283,11 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            }
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            rootLogger.info("loadflow provider used is : {}", providerStr);
             LoadFlow.Runner runner = LoadFlow.find(providerStr);
             LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
@@ -278,6 +343,28 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+            return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+                                                  CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramSvg")
+    public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
+                                                        int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth);
             return CTypeUtil.toCharPtr(svg);
         });
     }
@@ -339,12 +426,17 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, LoadFlowParametersPointer loadFlowParametersPtr,
-                                                   CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   CCharPointer provider, boolean dc, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(false, loadFlowParametersPtr);
+            LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider();
+            }
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for security analysis is : {}", providerStr);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(result);
         });
@@ -412,16 +504,50 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "setBranchFlowFactorMatrix")
-    public static void setBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+    @CEntryPoint(name = "addBranchFlowFactorMatrix")
+    public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,
                                                  CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                 CCharPointer matrixIdPtr,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
             List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            analysisContext.setBranchFlowFactorMatrix(branchesIds, variablesIds);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPreContingencyBranchFlowFactorMatrix")
+    public static void addPreContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                               CCharPointer matrixIdPtr,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPreContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPostContingencyBranchFlowFactorMatrix")
+    public static void addPostContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                                CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                                                CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                                                CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
+                                                                CCharPointer matrixIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            analysisContext.addPostContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds, contingencies);
         });
     }
 
@@ -448,6 +574,11 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters loadFlowParameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
+            }
+            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
+            logger.info("loadflow provider used for sensitivity analysis is : {}", providerStr);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });
@@ -455,11 +586,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getBranchFlowsSensitivityMatrix")
     public static MatrixPointer getBranchFlowsSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                                CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createBranchFlowsSensitivityMatrix(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createBranchFlowsSensitivityMatrix(matrixId, contingencyId);
         });
     }
 
@@ -475,11 +608,13 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getReferenceFlows")
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                  CCharPointer contingencyIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                    CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            return resultContext.createReferenceFlows(contingencyId);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            return resultContext.createReferenceFlowsActivePower(matrixId, contingencyId);
         });
     }
 
@@ -491,6 +626,13 @@ public final class PyPowsyblApiLib {
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             return resultContext.createReferenceVoltages(contingencyId);
         });
+    }
+
+    @CEntryPoint(name = "freeArray")
+    public static <T extends PointerBase> void freeArray(IsolateThread thread, ArrayPointer<T> arrayPointer,
+                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
+        UnmanagedMemory.free(arrayPointer.getPtr());
+        UnmanagedMemory.free(arrayPointer);
     }
 
     @CEntryPoint(name = "freeSeriesArray")
@@ -523,46 +665,6 @@ public final class PyPowsyblApiLib {
         }
     }
 
-    @CEntryPoint(name = "getSeriesType")
-    public static int getSeriesType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .getType();
-            return convert(type);
-        });
-    }
-
-    @CEntryPoint(name = "getIndexType")
-    public static int getIndexType(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, int index, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            SeriesDataType type;
-            if (seriesName.equals("")) {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata()
-                        .get(index)
-                        .getType();
-            } else {
-                type = NetworkDataframes.getDataframeMapper(convert(elementType))
-                        .getSeriesMetadata(seriesName)
-                        .getType();
-            }
-            return convert(type);
-        });
-    }
-
-    @CEntryPoint(name = "isIndex")
-    public static boolean isIndex(IsolateThread thread, ElementType elementType, CCharPointer seriesNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String seriesName = CTypeUtil.toString(seriesNamePtr);
-            return NetworkDataframes.getDataframeMapper(convert(elementType))
-                    .getSeriesMetadata(seriesName)
-                    .isIndex();
-        });
-    }
-
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
@@ -574,7 +676,6 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             return CTypeUtil.toCharPtr(network.getVariantManager().getWorkingVariantId());
         });
-
     }
 
     @CEntryPoint(name = "addMonitoredElements")
@@ -626,4 +727,39 @@ public final class PyPowsyblApiLib {
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
+
+    @CEntryPoint(name = "getValidationLevel")
+    public static ValidationLevelType getValidationLevel(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.getValidationLevel());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "validate")
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            return Util.convert(network.runValidationChecks());
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return Util.convert(ValidationLevel.MINIMUM_VALUE);
+        }
+    }
+
+    @CEntryPoint(name = "setMinValidationLevel")
+    public static void setMinValidationLevel(IsolateThread thread, ObjectHandle networkHandle,
+                                     ValidationLevelType levelType,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        });
+    }
+
 }

@@ -26,7 +26,7 @@ public interface DataframeMapper<T> {
      * Provides dataframe data to the handler, which is responsible to
      * format it as needed.
      */
-    void createDataframe(T object, DataframeHandler dataframeHandler);
+    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter);
 
     List<SeriesMetadata> getSeriesMetadata();
 
@@ -36,4 +36,6 @@ public interface DataframeMapper<T> {
      * Updates object data with the provided series.
      */
     void updateSeries(T object, UpdatingDataframe updatingDataframe);
+
+    boolean isSeriesMetaDataExists(String seriesName);
 }
