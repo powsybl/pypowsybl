@@ -1224,6 +1224,33 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             n.validate()
         self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
 
+    def test_switches_node_breaker_connection_info(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        switches = n.get_switches(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'node1', 'node2'])
+        self.assertTrue((switches['bus_breaker_bus1_id'] == '').all())
+        self.assertTrue((switches['bus_breaker_bus2_id'] == '').all())
+        self.assertTrue((switches['node1'] >= 0).all())
+        self.assertTrue((switches['node2'] >= 0).all())
+        disc = switches.loc['S1VL1_BBS_LD1_DISCONNECTOR']
+        self.assertEqual(disc.node1, 0)
+        self.assertEqual(disc.node2, 1)
+
+    def test_switches_node_breaker_connection_info(self):
+        n = pp.network.create_empty()
+        n.create_substations(id='S')
+        n.create_voltage_levels(id='VL', substation_id='S', topology_kind='BUS_BREAKER', nominal_v=400)
+        n.create_buses(id=['B1', 'B2'], voltage_level_id=['VL', 'VL'])
+        n.create_switches(id='BREAKER', voltage_level_id='VL', bus1_id='B1', bus2_id='B2')
+        switches = n.get_switches(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'node1', 'node2'])
+        expected = pd.DataFrame.from_records(index='id',
+                                             data=[{'id': 'BREAKER',
+                                                   'bus_breaker_bus1_id': 'B1',
+                                                   'bus_breaker_bus2_id': 'B2',
+                                                   'node1': -1,
+                                                   'node2': -1}])
+
+        pd.testing.assert_frame_equal(switches, expected, check_dtype=False)
+
 
 if __name__ == '__main__':
     unittest.main()

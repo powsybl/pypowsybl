@@ -556,6 +556,38 @@ public final class NetworkDataframes {
                 .build();
     }
 
+    private static String getBus1Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus1(s.getId()).getId();
+    }
+
+    private static String getBus2Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus2(s.getId()).getId();
+    }
+
+    private static int getNode1(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode1(s.getId());
+    }
+
+    private static int getNode2(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode2(s.getId());
+    }
+
     private static NetworkDataframeMapper switches() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getSwitchStream, getOrThrow(Network::getSwitch, "Switch"))
                 .stringsIndex("id", Switch::getId)
@@ -564,6 +596,10 @@ public final class NetworkDataframes {
                 .booleans("open", Switch::isOpen, Switch::setOpen)
                 .booleans("retained", Switch::isRetained, Switch::setRetained)
                 .strings("voltage_level_id", s -> s.getVoltageLevel().getId())
+                .strings("bus_breaker_bus1_id", NetworkDataframes::getBus1Id, false)
+                .strings("bus_breaker_bus2_id", NetworkDataframes::getBus2Id, false)
+                .ints("node1", NetworkDataframes::getNode1, false)
+                .ints("node2", NetworkDataframes::getNode2, false)
                 .addProperties()
                 .build();
     }

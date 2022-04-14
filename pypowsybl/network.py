@@ -1595,10 +1595,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **kind**: the kind of switch
-              - **open**: the open status of the switch
-              - **retained**: the retain status of the switch
-              - **voltage_level_id**: at which substation the switch is connected
+            - **kind**: the kind of switch
+            - **open**: the open status of the switch
+            - **retained**: the retain status of the switch
+            - **voltage_level_id**: at which substation the switch is connected
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **node1** (optional): node where this switch is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this switch is connected on side 2, in node-breaker voltage levels
+
 
             This dataframe is indexed by the id of the switches
 
