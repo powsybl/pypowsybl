@@ -28,6 +28,7 @@ Following methods may be used to create a new network instance:
    create_ieee118
    create_ieee300
    create_eurostag_tutorial_example1_network
+   create_eurostag_tutorial_example1_with_power_limits_network
    create_four_substations_node_breaker_network
    create_micro_grid_be_network
    create_micro_grid_nl_network
@@ -79,6 +80,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_linear_shunt_compensator_sections
    Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
+   Network.get_operational_limits
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
    Network.get_ratio_tap_changer_steps
@@ -90,6 +92,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_switches
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
+   Network.get_extension
 
 
 Network elements update
@@ -107,6 +110,7 @@ Network elements can be modified using dataframes:
    Network.update_dangling_lines
    Network.update_generators
    Network.update_hvdc_lines
+   Network.update_lcc_converter_stations
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
@@ -115,15 +119,17 @@ Network elements can be modified using dataframes:
    Network.update_ratio_tap_changers
    Network.update_shunt_compensators
    Network.update_static_var_compensators
+   Network.update_substations
    Network.update_switches
+   Network.update_voltage_levels
    Network.update_vsc_converter_stations
 
 
 
-Network elements creation
--------------------------
+Network elements creation and removal
+-------------------------------------
 
-Network elements can be created using the following methods:
+Network elements can be created or removed using the following methods:
 
 .. autosummary::
    :toctree: api/
@@ -139,6 +145,7 @@ Network elements can be created using the following methods:
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
+   Network.create_operational_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
    Network.create_shunt_compensators
@@ -147,6 +154,7 @@ Network elements can be created using the following methods:
    Network.create_switches
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
+   Network.remove_elements
 
 
 Network variants management
@@ -176,10 +184,17 @@ Miscellaneous network functions
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
+   Network.get_network_area_diagram
+   Network.write_network_area_diagram_svg
    Network.disconnect
    Network.connect
    Network.open_switch
    Network.close_switch
+   Network.get_validation_level
+   Network.validate
+   Network.set_min_validation_level
+   get_extensions_names
+
 
 I/O
 ---

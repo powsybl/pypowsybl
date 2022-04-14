@@ -39,7 +39,8 @@ public final class NetworkElementAdders {
             Map.entry(SWITCH, new SwitchDataframeAdder()),
             Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder()),
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
-            Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder())
+            Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
+            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder())
     );
 
     private NetworkElementAdders() {
@@ -58,10 +59,6 @@ public final class NetworkElementAdders {
         if (adder == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-
-        UpdatingDataframe primaryTable = dfs.get(0);
-        for (int i = 0; i < primaryTable.getLineCount(); i++) {
-            adder.addElement(network, dfs, i);
-        }
+        adder.addElements(network, dfs);
     }
 }

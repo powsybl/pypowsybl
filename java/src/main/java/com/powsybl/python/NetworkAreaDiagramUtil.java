@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -29,30 +30,30 @@ public final class NetworkAreaDiagramUtil {
     private NetworkAreaDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String voltageLevelId, int depth, Writer writer) {
+    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer) {
         SvgParameters svgParameters = new SvgParameters()
                 .setSvgWidthAndHeightAdded(true)
                 .setFixedWidth(800)
                 .setFixedHeight(600);
-        Predicate<VoltageLevel> filter = voltageLevelId != null && voltageLevelId.length() > 0
-                ? VoltageLevelFilter.createVoltageLevelDepthFilter(network, voltageLevelId, depth)
+        Predicate<VoltageLevel> filter =  voltageLevelIds.size() > 0
+                ? VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth)
                 : VoltageLevelFilter.NO_FILTER;
         new NetworkAreaDiagram(network, filter)
                 .draw(writer, svgParameters);
     }
 
-    static String getSvg(Network network, String voltageLevelId, int depth) {
+    static String getSvg(Network network, List<String> voltageLevelIds, int depth) {
         try (StringWriter writer = new StringWriter()) {
-            writeSvg(network, voltageLevelId, depth, writer);
+            writeSvg(network, voltageLevelIds, depth, writer);
             return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    static void writeSvg(Network network, String voltageLevelId, int depth, String svgFile) {
+    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
-            writeSvg(network, voltageLevelId, depth, writer);
+            writeSvg(network, voltageLevelIds, depth, writer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -33,7 +33,7 @@ the violations created by the contingency, they are collected by contingency in 
     >>> result.pre_contingency_result
     ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[3])
     >>> result.post_contingency_results
-    {'First contingency': ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[2])}
+    {'First contingency': ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[3])}
     >>> result.limit_violations
                                   subject_name   limit_type limit_name   limit  acceptable_duration  limit_reduction        value side
     contingency_id    subject_id
@@ -42,7 +42,7 @@ the violations created by the contingency, they are collected by contingency in 
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   398.917401
     First contingency NHV1_NHV2_2                   CURRENT             1200.0                   60              1.0  1438.021676  ONE
                       NHV1_NHV2_2                   CURRENT              500.0           2147483647              1.0  1477.824335  TWO
-
+                      VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
 
 

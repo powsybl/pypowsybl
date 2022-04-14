@@ -4,9 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import numpy as np
 import pandas as pd
 import pytest
 
+import pypowsybl
+import pypowsybl.network
 import pypowsybl.network as pn
 import util
 import pathlib
@@ -34,6 +37,18 @@ def test_substation_kwargs():
     n.create_substations(id='S3', country='DE')
     s3 = n.get_substations().loc['S3']
     assert s3.country == 'DE'
+
+
+def test_substation_tso():
+    # accepting lower case for backward compat
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='S3', tso='TERNA')
+    s3 = n.get_substations().loc['S3']
+    assert s3.TSO == 'TERNA'
+
+    n.create_substations(id='S4', TSO='TERNA')
+    s4 = n.get_substations().loc['S4']
+    assert s4.TSO == 'TERNA'
 
 
 def test_substation_exceptions():
@@ -257,13 +272,17 @@ def test_voltage_levels_creation():
 
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
-    n.create_ratio_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1']),
-                                             columns=['target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
-                                             data=[[2, 200, False, 0, 1]]),
-                                pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NGEN_NHV1']),
-                                             columns=['b', 'g', 'r', 'x', 'rho'],
-                                             data=[[2, 2, 1, 1, 0.5],
-                                                   [2, 2, 1, 1, 0.5]]))
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
+        data=[('NGEN_NHV1', 2, 200, False, 0, 1)])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+              ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+
     rtc = n.get_ratio_tap_changers().loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
@@ -283,15 +302,19 @@ def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1', 'node2'],
+        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1',
+                 'node2'],
         data=[['TWT_TEST', 0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
-    n.create_phase_tap_changers(pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST']),
-                                             columns=['target_deadband', 'regulation_mode', 'low_tap', 'tap'],
-                                             data=[[2, 'CURRENT_LIMITER', 0, 1]]),
-                                pd.DataFrame(index=pd.Series(name='id', data=['TWT_TEST', 'TWT_TEST']),
-                                             columns=['b', 'g', 'r', 'x', 'rho', 'alpha'],
-                                             data=[[2, 2, 1, 1, 0.5, 0.1],
-                                                   [2, 2, 1, 1, 0.5, 0.1]]))
+
+    ptc_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap'],
+        data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1)])
+    steps_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+    n.create_phase_tap_changers(ptc_df, steps_df)
+
     ptc = n.get_phase_tap_changers().loc['TWT_TEST']
     assert ptc.target_deadband == 2
     assert ptc.regulation_mode == 'CURRENT_LIMITER'
@@ -355,12 +378,11 @@ def test_linear_shunt():
         index='id',
         columns=['id', 'name', 'model_type', 'section_count', 'target_v',
                  'target_deadband', 'voltage_level_id', 'node'],
-        data=[['SHUNT_TEST', '', 'LINEAR', 1, 400, 2,
-               'S1VL2', 2]])
+        data=[('SHUNT_TEST', '', 'LINEAR', 1, 400, 2, 'S1VL2', 2)])
     model_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
-        data=[['SHUNT_TEST', 0.14, -0.01, 2]])
+        data=[('SHUNT_TEST', 0.14, -0.01, 2)])
     n.create_shunt_compensators(shunt_df, model_df)
 
     shunt = n.get_shunt_compensators().loc['SHUNT_TEST']
@@ -567,3 +589,89 @@ def test_create_node_breaker_network_and_run_loadflow():
     assert line.q2 == pytest.approx(-10, abs=1e-2)
     assert line.p1 == pytest.approx(100, abs=1e-1)
     assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+
+def test_create_limits():
+    pypowsybl.set_debug_mode(True)
+    net = pn.create_eurostag_tutorial_example1_network()
+    net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 600,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 1000,
+         'acceptable_duration': 60, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 400,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 700,
+         'acceptable_duration': 60, 'is_fictitious': False}
+    ]))
+    expected = pd.DataFrame.from_records(
+        index='element_id',
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False]])
+    limits = net.get_operational_limits().loc['NHV1_NHV2_1']
+    permanent_limits = limits[limits['name'] == 'permanent_limit']
+    pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
+
+    expected = pd.DataFrame.from_records(
+        index='element_id',
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        data=[['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
+    one_minute_limits = limits[limits['name'] == '1\'']
+    pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
+
+
+def test_delete_elements_eurostag():
+    pypowsybl.set_debug_mode(True)
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2'])
+    assert net.get_generators().empty
+    net.remove_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    assert net.get_lines().empty
+    net.remove_elements(['NHV2_NLOAD', 'NGEN_NHV1'])
+    assert net.get_2_windings_transformers().empty
+    net.remove_elements('LOAD')
+    assert net.get_loads().empty
+    net = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    net.remove_elements(['GEN', 'GEN2', 'NHV1_NHV2_1', 'NHV1_NHV2_2', 'NHV2_NLOAD', 'NGEN_NHV1', 'LOAD'])
+    assert net.get_generators().empty
+    assert net.get_lines().empty
+    assert net.get_2_windings_transformers().empty
+    assert net.get_loads().empty
+
+
+def test_delete_elements_four_substations():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['TWT', 'HVDC1', 'HVDC2', 'S1'])
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'HVDC2' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    assert 'S1' not in net.get_substations().index
+    assert 'S1VL1' not in net.get_voltage_levels().index
+    assert 'S2VL1' in net.get_voltage_levels().index
+    with pytest.raises(pypowsybl.PyPowsyblError) as err:
+        net.remove_elements('S2VL1')
+    assert 'The voltage level \'S2VL1\' cannot be removed because of a remaining LINE' in str(err.value)
+    net.remove_elements(['LINE_S2S3', 'S2VL1'])
+    assert 'S2VL1' not in net.get_voltage_levels().index
+
+
+def test_remove_elements_switches():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1'])
+    # TODO: restore it when bug fixed in powsybl-core
+    #net.remove_elements(['S1VL1', 'S1'])
+    assert 'S1VL1_BBS_LD1_DISCONNECTOR' not in net.get_switches().index
+    assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
+    assert 'HVDC1' not in net.get_hvdc_lines().index
+    assert 'TWT' not in net.get_2_windings_transformers().index
+    #assert 'S1' not in net.get_substations().index
+    #assert 'S1VL1' not in net.get_voltage_levels().index

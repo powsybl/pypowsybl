@@ -8,20 +8,22 @@ import copy
 import unittest
 import datetime
 import pandas as pd
-from networkx.classes.reportviews import EdgeView
 from numpy import NaN
 import numpy as np
 
-import pypowsybl
 import pypowsybl as pp
 import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
-import pypowsybl.network
+from pypowsybl.network import ValidationLevel
+
 import util
+import tempfile
+
 
 TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 
 class NetworkTestCase(unittest.TestCase):
@@ -52,7 +54,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_import_format(self):
         formats = pp.network.get_import_formats()
-        self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM'], formats)
+        self.assertEqual(['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'], formats)
 
     def test_get_import_parameters(self):
         parameters = pp.network.get_import_parameters('PSS/E')
@@ -65,14 +67,15 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_export_parameters(self):
         parameters = pp.network.get_export_parameters('CGMES')
+        print(parameters.index.tolist())
         self.assertEqual(4, len(parameters))
-        name = 'iidm.export.cgmes.using-only-network'
-        self.assertEqual(name, parameters.index.tolist()[0])
+        name = 'iidm.export.cgmes.export-boundary-power-flows'
+        self.assertEqual(name, parameters.index.tolist()[1])
         self.assertEqual(
-            'Export to CGMES using only information present in IIDM Network (including extensions and aliases)',
+            'Export boundaries\' power flows',
             parameters['description'][name])
         self.assertEqual('BOOLEAN', parameters['type'][name])
-        self.assertEqual('false', parameters['default'][name])
+        self.assertEqual('true', parameters['default'][name])
 
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
@@ -80,6 +83,10 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_load_network(self):
         n = pp.network.load(str(TEST_DIR.joinpath('empty-network.xml')))
+        self.assertIsNotNone(n)
+
+    def test_load_power_factory_network(self):
+        n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')))
         self.assertIsNotNone(n)
 
     def test_connect_disconnect(self):
@@ -217,6 +224,28 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(attributes=['bus_breaker_bus_id', 'node']),
                                       check_dtype=False, atol=10 ** -2)
 
+    def test_lcc_data_frame(self):
+        n = pp.network.create_four_substations_node_breaker_network()
+        stations = n.get_lcc_converter_stations()
+
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
+                                columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id', 'connected'],
+                                data=[['LCC1', 0.6, 1.1, 80.88, NaN, NaN, 'S1VL2', 'S1VL2_0', True],
+                                      ['LCC2', 0.6, 1.1, - 79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, stations, check_dtype=False)
+        n.update_lcc_converter_stations(
+            pd.DataFrame(index=['LCC1'],
+                         columns=['power_factor', 'loss_factor', 'p', 'q'],
+                         data=[[0.7, 1.2, 82, 69]]))
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['LCC1', 'LCC2']),
+                                columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id', 'connected'],
+                                data=[['LCC1', 0.7, 1.2, 82, 69, 154.68, 'S1VL2', 'S1VL2_0', True],
+                                      ['LCC2', 0.6, 1.1, - 79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=10 ** -2)
+
     def test_hvdc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         lines = n.get_hvdc_lines()
@@ -268,6 +297,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             columns=['bus_breaker_bus_id', 'node'],
             data=[['S1VL2_7', 7], ['S1VL2_9', 9], ['S1VL2_11', 11], ['S2VL1_2', 2], ['S3VL1_6', 6]])
         pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=10 ** -2)
+
+    def test_extensions(self):
+        no_extensions_network = pp.network.create_eurostag_tutorial_example1_network()
+        self.assertEqual(0, len(no_extensions_network.get_extension('activePowerControl')))
+        n = pp.network._create_network('eurostag_tutorial_example1_with_apc_extension')
+        self.assertIn('activePowerControl', pp.network.get_extensions_names())
+        generators_extensions = n.get_extension('activePowerControl')
+        self.assertEqual(1, len(generators_extensions))
+        self.assertTrue(generators_extensions['participate']['GEN'])
+        self.assertAlmostEqual(1.1, generators_extensions['droop']['GEN'])
+        self.assertEqual(0, len(n.get_extension('hvdcOperatorActivePowerRange')))
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -430,7 +470,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                       ['', 0.047, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
                                        'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
         pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -2)
-        n = pypowsybl.network.create_four_substations_node_breaker_network()
+        n = pp.network.create_four_substations_node_breaker_network()
         twt = n.get_2_windings_transformers(attributes=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2'])
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['TWT']),
@@ -445,9 +485,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_substations_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
-        substations = n.get_substations()
-        self.assertEqual('RTE', substations['TSO']['P1'])
-        self.assertEqual('FR', substations['country']['P1'])
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'RTE', 'B', 'BE']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
+        n.update_substations(id='P2', TSO='REE', country='ES')
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
+                                columns=['name', 'TSO', 'geo_tags', 'country'],
+                                data=[['', 'RTE', 'A', 'FR'],
+                                      ['', 'REE', 'B', 'ES']])
+        pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
 
     def test_reactive_capability_curve_points_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -538,6 +586,17 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_ieee14()
         sld = n.get_network_area_diagram()
         self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(voltage_level_ids=None)
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram('VL1')
+        self.assertRegex(sld.svg, '.*<svg.*')
+        sld = n.get_network_area_diagram(['VL1', 'VL2'])
+        self.assertRegex(sld.svg, '.*<svg.*')
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            test_svg = tmp_dir_name + "test.svg"
+            n.write_network_area_diagram_svg(test_svg, None)
+            n.write_network_area_diagram_svg(test_svg, ['VL1'])
+            n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
 
     def test_current_limits(self):
         network = pp.network.create_eurostag_tutorial_example1_network()
@@ -743,6 +802,29 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n.update_non_linear_shunt_compensator_sections(update)
         pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
 
+    def test_voltage_levels(self):
+        net = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 24, NaN, NaN],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 150, NaN, NaN]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+        net.update_voltage_levels(id=['VLGEN', 'VLLOAD'], nominal_v=[25, 151], high_voltage_limit=[50, 175],
+                                  low_voltage_limit=[20, 125])
+        expected = pd.DataFrame(index=pd.Series(name='id',
+                                                data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
+                                columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
+                                         'low_voltage_limit'],
+                                data=[['', 'P1', 25, 50, 20],
+                                      ['', 'P1', 380, 500, 400],
+                                      ['', 'P2', 380, 500, 300],
+                                      ['', 'P2', 151, 175, 125]])
+        pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
+
     def test_update_with_keywords(self):
         n = util.create_non_linear_shunt_network()
         n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
@@ -890,6 +972,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected_switches, switches, check_dtype=False)
         pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
         pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
+
+    def test_not_connected_bus_breaker(self):
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
+        pd.testing.assert_frame_equal(expected, n.get_bus_breaker_topology('VLHV1').buses, check_dtype=False)
+        n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], connected1=[False, False], connected2=[False, False])
+        n.update_2_windings_transformers(id='NGEN_NHV1', connected1=False, connected2=False)
+
+        topo = n.get_bus_breaker_topology('VLHV1')
+        bb_bus = topo.buses.loc['NHV1']
+        self.assertEqual('', bb_bus['name'])
+        self.assertEqual('', bb_bus['bus_id'])
+
+        line = topo.elements.loc['NHV1_NHV2_1']
+        self.assertEqual('', line['bus_id'])
 
     def test_graph_busbreakerview(self):
         n = pp.network.create_four_substations_node_breaker_network()
@@ -1055,6 +1152,77 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertTrue(expected_selection_empty.empty)
         filtered_selection_empty = network_four_subs.get_generators(id=[])
         self.assertTrue(filtered_selection_empty.empty)
+
+    def test_limits(self):
+        network = util.create_dangling_lines_network()
+
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False),
+                  ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False)]
+        )
+        pd.testing.assert_frame_equal(expected, network.get_operational_limits(), check_dtype=False)
+
+        network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False),
+                  ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False)])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_1']
+        limits = limits[limits['name'] == 'permanent_limit']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False],
+                  ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False]])
+        limits = network.get_operational_limits().loc['NHV1_NHV2_2']
+        limits = limits[limits['name'] == '20\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+        network = util.create_three_windings_transformer_with_current_limits_network()
+        expected = pd.DataFrame.from_records(
+            index='element_id',
+            columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+            data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False],
+                  ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False]])
+        limits = network.get_operational_limits().loc['3WT']
+        limits = limits[limits['name'] == '10\'']
+        pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+
+    def test_validation_level(self):
+        n = pp.network.create_ieee14()
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        with self.assertRaises(pp.PyPowsyblError) as exc:
+            n.update_generators(id='B1-G', target_p=np.NaN)
+        self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
+
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        n.update_generators(id='B1-G', target_p=np.NaN)
+        vl = n.get_validation_level()
+        self.assertEqual(ValidationLevel.EQUIPMENT, vl)
+
+        n.update_generators(id='B1-G', target_p=100)
+        level = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, level)
+
+    def test_validate(self):
+        n = pp.network.create_ieee14()
+        vl = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+        vl = n.validate()
+        self.assertEqual(ValidationLevel.STEADY_STATE_HYPOTHESIS, vl)
+        n.update_generators(id='B1-G', target_p=np.NaN)
+        with self.assertRaises(pp.PyPowsyblError) as exc:
+            n.validate()
+        self.assertEqual("Generator 'B1-G': invalid value (NaN) for active power setpoint", str(exc.exception))
 
 
 if __name__ == '__main__':
