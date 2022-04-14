@@ -293,7 +293,7 @@ class NetworkDataframesTest {
 
         assertThat(ext1Series)
                 .extracting(Series::getName)
-                .containsExactly("id", "droop", "P0", "isEnabled");
+                .containsExactly("id", "droop", "p0", "enabled");
 
         assertThat(ext1Series.get(1).getDoubles())
                 .containsExactly(0.1f);
@@ -304,7 +304,7 @@ class NetworkDataframesTest {
 
         assertThat(ext2Series)
                 .extracting(Series::getName)
-                .containsExactly("id", "OprFromCS1toCS2", "OprFromCS2toCS1");
+                .containsExactly("id", "opr_from_cs1_to_cs2", "opr_from_cs2_to_cs1");
 
         assertThat(ext2Series.get(1).getDoubles())
                 .containsExactly(1.0f);
