@@ -17,7 +17,7 @@ public class BranchResultContext extends BranchResult {
 
     public BranchResultContext(BranchResult branchResult, String contingency) {
         super(branchResult.getBranchId(), branchResult.getP1(), branchResult.getQ1(), branchResult.getI1(),
-            branchResult.getP2(), branchResult.getQ2(), branchResult.getI2());
+            branchResult.getP2(), branchResult.getQ2(), branchResult.getI2(), branchResult.getFlowTransfer());
         this.contingencyId = contingency;
     }
 
