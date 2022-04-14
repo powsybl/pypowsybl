@@ -333,6 +333,8 @@ void setupLoggerCallback(void *& callback);
 void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
+std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
+
 }
 
 #endif //PYPOWSYBL_H
