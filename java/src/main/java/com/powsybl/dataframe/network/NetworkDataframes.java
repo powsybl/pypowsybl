@@ -187,6 +187,8 @@ public final class NetworkDataframes {
                 .doubles("i", g -> g.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", g -> getNode(g.getTerminal()), false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -219,9 +221,9 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper buses() {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
-                getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
+                getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
-                .strings("name", n -> n.getOptionalName().orElse(""))
+                .strings("name", b -> b.getOptionalName().orElse(""))
                 .doubles("v_mag", Bus::getV, Bus::setV)
                 .doubles("v_angle", Bus::getAngle, Bus::setAngle)
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
@@ -240,10 +242,12 @@ public final class NetworkDataframes {
                 .doubles("q0", Load::getQ0, Load::setQ0)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
-                .doubles("i", g -> g.getTerminal().getI())
+                .doubles("i", l -> l.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
-                .strings("bus_id", g -> getBusId(g.getTerminal()))
-                .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
+                .strings("bus_id", l -> getBusId(l.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", l -> getNode(l.getTerminal()), false)
+                .booleans("connected", l -> l.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
     }
@@ -261,6 +265,8 @@ public final class NetworkDataframes {
                 .doubles("i", b -> b.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", b -> getBusId(b.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -284,6 +290,8 @@ public final class NetworkDataframes {
                 .doubles("i", sc -> sc.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", sc -> getBusId(sc.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", sc -> getNode(sc.getTerminal()), false)
                 .booleans("connected", sc -> sc.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -366,7 +374,11 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))
+                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), false)
+                .ints("node1", l -> getNode(l.getTerminal1()), false)
                 .strings("bus2_id", l -> getBusId(l.getTerminal2()))
+                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), false)
+                .ints("node2", l -> getNode(l.getTerminal2()), false)
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
                 .addProperties()
@@ -393,7 +405,11 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), false)
+                .ints("node1", twt -> getNode(twt.getTerminal1()), false)
                 .strings("bus2_id", twt -> getBusId(twt.getTerminal2()))
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), false)
+                .ints("node2", twt -> getNode(twt.getTerminal2()), false)
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
                 .addProperties()
@@ -418,6 +434,8 @@ public final class NetworkDataframes {
                 .doubles("i1", twt -> twt.getLeg1().getTerminal().getI())
                 .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), false)
+                .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected())
                 .doubles("r2", twt -> twt.getLeg2().getR(), (twt, v) -> twt.getLeg2().setR(v))
                 .doubles("x2", twt -> twt.getLeg2().getX(), (twt, v) -> twt.getLeg2().setX(v))
@@ -432,6 +450,8 @@ public final class NetworkDataframes {
                 .doubles("i2", twt -> twt.getLeg2().getTerminal().getI())
                 .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
                 .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), false)
+                .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected())
                 .doubles("r3", twt -> twt.getLeg3().getR(), (twt, v) -> twt.getLeg3().setR(v))
                 .doubles("x3", twt -> twt.getLeg3().getX(), (twt, v) -> twt.getLeg3().setX(v))
@@ -446,6 +466,8 @@ public final class NetworkDataframes {
                 .doubles("i3", twt -> twt.getLeg3().getTerminal().getI())
                 .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
                 .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
+                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
+                .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected())
                 .addProperties()
                 .build();
@@ -466,6 +488,8 @@ public final class NetworkDataframes {
                 .doubles("i", dl -> dl.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
                 .addProperties()
@@ -483,6 +507,8 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -501,6 +527,8 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -521,9 +549,43 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", svc -> getBusId(svc.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", svc -> getNode(svc.getTerminal()), false)
                 .booleans("connected", svc -> svc.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
+    }
+
+    private static String getBus1Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus1(s.getId()).getId();
+    }
+
+    private static String getBus2Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus2(s.getId()).getId();
+    }
+
+    private static int getNode1(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode1(s.getId());
+    }
+
+    private static int getNode2(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode2(s.getId());
     }
 
     private static NetworkDataframeMapper switches() {
@@ -534,6 +596,10 @@ public final class NetworkDataframes {
                 .booleans("open", Switch::isOpen, Switch::setOpen)
                 .booleans("retained", Switch::isRetained, Switch::setRetained)
                 .strings("voltage_level_id", s -> s.getVoltageLevel().getId())
+                .strings("bus_breaker_bus1_id", NetworkDataframes::getBus1Id, false)
+                .strings("bus_breaker_bus2_id", NetworkDataframes::getBus2Id, false)
+                .ints("node1", NetworkDataframes::getNode1, false)
+                .ints("node2", NetworkDataframes::getNode2, false)
                 .addProperties()
                 .build();
     }
@@ -746,6 +812,27 @@ public final class NetworkDataframes {
         } else {
             Bus bus = t.getBusView().getBus();
             return bus != null ? bus.getId() : "";
+        }
+    }
+
+    private static String getBusBreakerViewBusId(Terminal t) {
+        if (t == null) {
+            return "";
+        } else {
+            Bus bus = t.getBusBreakerView().getBus();
+            return bus != null ? bus.getId() : "";
+        }
+    }
+
+    private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {
+        return i -> getBusBreakerViewBusId(i.getTerminal());
+    }
+
+    private static int getNode(Terminal t) {
+        if (t.getVoltageLevel().getTopologyKind().equals(TopologyKind.NODE_BREAKER)) {
+            return t.getNodeBreakerView().getNode();
+        } else {
+            return -1;
         }
     }
 
