@@ -10,6 +10,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Custom appender for python logging
  *
@@ -19,10 +23,13 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
 
     private Encoder<ILoggingEvent> encoder;
 
+    private final DateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+
     @Override
     protected void append(final ILoggingEvent e) {
         PyPowsyblApiLib.Callback logMessage = (PyPowsyblApiLib.Callback) PyPowsyblApiLib.loggerCallback;
-        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp() / 1000.0, CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
+        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), CTypeUtil.toCharPtr(formatter.format(new Date(e.getTimeStamp()))),
+                CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
     }
 
     public Encoder<ILoggingEvent> getEncoder() {
