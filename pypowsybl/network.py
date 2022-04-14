@@ -476,7 +476,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **voltage_level_id**: at which substation this generator is connected
-              - **bus_id**: at which bus this generator is computed
+              - **bus_id**: bus where this generator is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
+              - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
 
             This dataframe is indexed on the generator ID.
 
@@ -571,7 +573,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the result reactive load consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
               - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this load is connected
-              - **bus_id**: at which bus this load is connected
+              - **bus_id**: bus where this load is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this load is connected
+              - **node**  (optional): node where this load is connected, in node-breaker voltage levels
 
             This dataframe is indexed on the load ID.
 
@@ -694,10 +698,14 @@ class Network:  # pylint: disable=too-many-public-methods
             - **p2**: the active flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
             - **q2**: the reactive flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
             - **i2**: the current on the line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-            - **voltage_level1_id**: at which substation the "1" side of the powerline is connected
-            - **voltage_level2_id**: at which substation the "2" side of the powerline is connected
-            - **bus1_id**: at which bus the "1" side of the powerline is connected
-            - **bus2_id**: at which bus the "2" side of the powerline is connected
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
 
@@ -768,23 +776,29 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **r**: the resistance of the transformer at its "2" side  (in Ohm)
-              - **x**: the reactance of the transformer at its "2" side (in Ohm)
-              - **b**: the susceptance of transformer at its "2" side (in Siemens)
-              - **g**: the  conductance of transformer at its "2" side (in Siemens)
-              - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
-              - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
-              - **rated_s**:
-              - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
-              - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
-              - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
-              - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-              - **voltage_level1_id**: at which substation the "1" side of the transformer is connected
-              - **voltage_level2_id**: at which substation the "2" side of the transformer is connected
-              - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
-              - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
+            - **r**: the resistance of the transformer at its "2" side  (in Ohm)
+            - **x**: the reactance of the transformer at its "2" side (in Ohm)
+            - **b**: the susceptance of transformer at its "2" side (in Siemens)
+            - **g**: the  conductance of transformer at its "2" side (in Siemens)
+            - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
+            - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
+            - **rated_s**:
+            - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+            - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+            - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
+            - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
+            - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
+            - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -878,8 +892,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
               - **voltage_level_id**: at which substation the shunt is connected
-              - **bus_id**: indicate at which bus the shunt is connected
+              - **bus_id**: bus where this shunt is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this shunt is connected
+              - **node**  (optional): node where this shunt is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the shunt is connected to a bus
+
 
             This dataframe is indexed by the id of the shunt compensators
 
@@ -1002,7 +1019,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the dangling line is connected
-              - **bus_id**: at which bus the dangling line is connected
+              - **bus_id**: bus where this line is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
+              - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
 
             This dataframe is indexed by the id of the dangling lines
@@ -1075,7 +1094,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the LCC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the LCC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the LCC converter station is connected
-              - **bus_id**: at which bus the LCC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
 
             This dataframe is indexed by the id of the LCC converter
@@ -1153,7 +1174,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the VSC converter station is connected
-              - **bus_id**: at which bus the VSC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
 
             This dataframe is indexed by the id of the VSC converter
@@ -1232,7 +1255,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the var compensator is connected
-              - **bus_id**: at which bus the var compensator is connected
+              - **bus_id**: bus where this SVC is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this SVC is connected
+              - **node**  (optional): node where this SVC is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the var compensator is connected to a bus
 
             This dataframe is indexed by the id of the var compensator
@@ -1384,6 +1409,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **v**: The voltage magnitude of the busbar section (in kV)
               - **angle**: the voltage angle of the busbar section (in radian)
               - **voltage_level_id**: at which substation the busbar section is connected
+              - **bus_id**: bus this busbar section belongs to
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to
+              - **node**  (optional): node associated to the this busbar section, in node-breaker voltage levels
               - **connected**: ``True`` if the busbar section is connected to a bus
 
             This dataframe is indexed by the id of the busbar sections
