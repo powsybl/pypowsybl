@@ -1023,8 +1023,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   ['', 380, NaN, 0, 0, 'VLHV2'],
                   ['', NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
-        buses_default_attributes2 = n.get_buses(attributes=[])
-        pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes2, check_dtype=False)
+        buses_empty = n.get_buses(attributes=[])
+        expected_empty = expected_default_attributes[[]]
+        pd.testing.assert_frame_equal(expected_empty, buses_empty, check_dtype=False)
 
         buses_all_attributes = n.get_buses(all_attributes=True)
         expected_all_attributes = expected_default_attributes
