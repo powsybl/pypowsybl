@@ -354,7 +354,6 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ucte-converter</artifactId>
             <version>${powsybl-core.version}</version>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- test -->

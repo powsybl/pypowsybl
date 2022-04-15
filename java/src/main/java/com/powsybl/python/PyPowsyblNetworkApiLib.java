@@ -7,7 +7,6 @@
 package com.powsybl.python;
 
 import com.google.common.collect.Iterables;
-import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
 import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
@@ -21,13 +20,11 @@ import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
-import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.update.CUpdatingDataframe;
 import com.powsybl.python.update.DoubleSeries;
@@ -72,71 +69,10 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetwork")
     public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        String networkName = CTypeUtil.toString(name);
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network;
-            switch (networkName) {
-                case "four_substations_node_breaker":
-                    network = FourSubstationsNodeBreakerFactory.create();
-                    break;
-                case "eurostag_tutorial_example1":
-                    network = NetworkUtil.createEurostagTutorialExample1WithFixedCurrentLimits();
-                    break;
-                case "eurostag_tutorial_example1_with_power_limits":
-                    network = NetworkUtil.createEurostagTutorialExample1WithFixedPowerLimits();
-                    break;
-                case "eurostag_tutorial_example1_with_apc_extension":
-                    network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
-                    break;
-                case "batteries":
-                    network = BatteryNetworkFactory.create();
-                    break;
-                case "dangling_lines":
-                    network = DanglingLineNetworkFactory.create();
-                    break;
-                case "three_windings_transformer":
-                    network = ThreeWindingsTransformerNetworkFactory.create();
-                    break;
-                case "three_windings_transformer_with_current_limits":
-                    network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
-                    break;
-                case "shunt":
-                    network = ShuntTestCaseFactory.create();
-                    break;
-                case "non_linear_shunt":
-                    network = ShuntTestCaseFactory.createNonLinear();
-                    break;
-                case "ieee9":
-                    network = IeeeCdfNetworkFactory.create9();
-                    break;
-                case "ieee14":
-                    network = IeeeCdfNetworkFactory.create14();
-                    break;
-                case "ieee30":
-                    network = IeeeCdfNetworkFactory.create30();
-                    break;
-                case "ieee57":
-                    network = IeeeCdfNetworkFactory.create57();
-                    break;
-                case "ieee118":
-                    network = IeeeCdfNetworkFactory.create118();
-                    break;
-                case "ieee300":
-                    network = IeeeCdfNetworkFactory.create300();
-                    break;
-                case "empty":
-                    String networkId = CTypeUtil.toString(id);
-                    network = Network.create(networkId, "");
-                    break;
-                case "micro_grid_be":
-                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE());
-                    break;
-                case "micro_grid_nl":
-                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL());
-                    break;
-                default:
-                    throw new PowsyblException("network " + networkName + " not found");
-            }
+            String networkName = CTypeUtil.toString(name);
+            String networkId = CTypeUtil.toString(id);
+            Network network = Networks.create(networkName, networkId);
             return ObjectHandles.getGlobal().create(network);
         });
     }
