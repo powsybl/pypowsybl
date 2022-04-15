@@ -52,6 +52,14 @@ public final class Networks {
             .flatMap(provider -> provider.getNetworkFactories().stream())
             .collect(Collectors.toMap(NamedNetworkFactory::getName, Function.identity()));
 
+    /**
+     * Creates an instance of network corresponding to the specified factory name.
+     * A network ID may be provided but will not be honoured by all factories.
+     *
+     * @param networkFactoryName Name of the network factory (for ex. "empty" or "ieee9")
+     * @param networkId          Id of the network. It may not be used by all factories.
+     * @return                   A new network.
+     */
     public static Network create(String networkFactoryName, String networkId) {
         NetworkFactory factory = FACTORIES.get(networkFactoryName);
         if (factory == null) {
@@ -60,10 +68,16 @@ public final class Networks {
         return factory.createNetwork(networkId);
     }
 
+    /**
+     * Helper method to create a named network factory, which will ignore network ID.
+     */
     public static NamedNetworkFactory factory(String name, Supplier<Network> supplier) {
         return factory(name, id -> supplier.get());
     }
 
+    /**
+     * Helper method to create a named network factory.
+     */
     public static NamedNetworkFactory factory(String name, NetworkFactory factory) {
         return new NamedNetworkFactory() {
             @Override
