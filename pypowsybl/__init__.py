@@ -34,9 +34,6 @@ __all__ = [
     "sensitivity"
 ]
 
-logformat = '%(timestamp)s - %(loggername)s - %(message)s'
-logging.basicConfig(format=logformat)
-
 #Setup a default logger that is the powsybl logger with default log level set to ERROR
 powsyblLogger = logging.getLogger('powsybl')
 powsyblLogger.setLevel(level=logging.ERROR)
