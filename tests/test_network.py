@@ -23,7 +23,7 @@ import tempfile
 
 
 TEST_DIR = pathlib.Path(__file__).parent
-DATA_DIR = TEST_DIR.parent.joinpath('data')
+DATA_DIR = TEST_DIR.parent / 'data'
 
 
 class NetworkTestCase(unittest.TestCase):
@@ -297,17 +297,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             columns=['bus_breaker_bus_id', 'node'],
             data=[['S1VL2_7', 7], ['S1VL2_9', 9], ['S1VL2_11', 11], ['S2VL1_2', 2], ['S3VL1_6', 6]])
         pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=10 ** -2)
-
-    def test_extensions(self):
-        no_extensions_network = pp.network.create_eurostag_tutorial_example1_network()
-        self.assertEqual(0, len(no_extensions_network.get_extension('activePowerControl')))
-        n = pp.network._create_network('eurostag_tutorial_example1_with_apc_extension')
-        self.assertIn('activePowerControl', pp.network.get_extensions_names())
-        generators_extensions = n.get_extension('activePowerControl')
-        self.assertEqual(1, len(generators_extensions))
-        self.assertTrue(generators_extensions['participate']['GEN'])
-        self.assertAlmostEqual(1.1, generators_extensions['droop']['GEN'])
-        self.assertEqual(0, len(n.get_extension('hvdcOperatorActivePowerRange')))
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
