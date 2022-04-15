@@ -354,7 +354,7 @@ class Network:  # pylint: disable=too-many-public-methods
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
         if all_attributes:
             filter_attributes = _pp.FilterAttributesType.ALL_ATTRIBUTES
-        elif len(attributes) > 0:
+        elif attributes is not None:
             filter_attributes = _pp.FilterAttributesType.SELECTION_ATTRIBUTES
 
         if kwargs:
