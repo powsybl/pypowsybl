@@ -313,9 +313,11 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_micro_grid_be_network()
         generators = n.get_generators()
         gen1 = '_3a3b27be-b18b-4385-b557-6735d733baf0'
+        print(generators['min_q'][gen1])
+        print(generators['max_q'][gen1])
         self.assertEqual('CURVE', generators['reactive_limits_kind'][gen1])
-        self.assertEqual(-210.0, generators['min_q'][gen1])
-        self.assertEqual(210.0, generators['max_q'][gen1])
+        self.assertTrue(np.isnan(generators['min_q'][gen1]))
+        self.assertTrue(np.isnan(generators['max_q'][gen1]))
         gen2 = '_550ebe0d-f2b2-48c1-991f-cebea43a21aa'
         self.assertEqual('MIN_MAX', generators['reactive_limits_kind'][gen2])
         self.assertEqual(-200.0, generators['min_q'][gen2])
@@ -847,6 +849,24 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         n = pp.network.create_four_substations_node_breaker_network()
         n.update_generators(id=['GTH1', 'GTH2'], target_p=[200, 300])
         self.assertEqual([200, 300], n.get_generators().loc[['GTH1', 'GTH2'], 'target_p'].to_list())
+
+    def test_update_generators_minax_reactive_limits(self):
+        n = pp.network.create_micro_grid_be_network()
+        print(n.get_generators(attributes=['min_q', 'max_q', 'reactive_limits_kind']))
+        generators = n.get_generators()
+        gen_with_min_max_reactive_limits = '_550ebe0d-f2b2-48c1-991f-cebea43a21aa'
+        self.assertEqual('MIN_MAX', generators['reactive_limits_kind'][gen_with_min_max_reactive_limits])
+        self.assertEqual(-200.0, generators['min_q'][gen_with_min_max_reactive_limits])
+        self.assertEqual(200.0, generators['max_q'][gen_with_min_max_reactive_limits])
+        n.update_generators(id=[gen_with_min_max_reactive_limits], min_q=[-205], max_q=[205])
+        generators = n.get_generators()
+        print(n.get_generators(attributes=['min_q', 'max_q', 'reactive_limits_kind']))
+        self.assertEqual('MIN_MAX', generators['reactive_limits_kind'][gen_with_min_max_reactive_limits])
+        self.assertEqual(-205.0, generators['min_q'][gen_with_min_max_reactive_limits])
+        self.assertEqual(205.0, generators['max_q'][gen_with_min_max_reactive_limits])
+        gen_with_curve_reactive_limits = '_3a3b27be-b18b-4385-b557-6735d733baf0'
+        with self.assertRaises(pp.PyPowsyblError):
+            n.update_generators(id=[gen_with_curve_reactive_limits], min_q=[-200])
 
     def test_invalid_update_kwargs(self):
         n = pp.network.create_four_substations_node_breaker_network()
