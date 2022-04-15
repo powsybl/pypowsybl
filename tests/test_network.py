@@ -1012,8 +1012,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   ['', 380, NaN, 0, 0, 'VLHV2'],
                   ['', NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
-        buses_default_attributes2 = n.get_buses(attributes=[])
-        pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes2, check_dtype=False)
+        buses_empty = n.get_buses(attributes=[])
+        expected_empty = expected_default_attributes[[]]
+        pd.testing.assert_frame_equal(expected_empty, buses_empty, check_dtype=False)
 
         buses_all_attributes = n.get_buses(all_attributes=True)
         expected_all_attributes = expected_default_attributes
@@ -1224,7 +1225,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(disc.node1, 0)
         self.assertEqual(disc.node2, 1)
 
-    def test_switches_node_breaker_connection_info(self):
+    def test_switches_bus_breaker_connection_info(self):
         n = pp.network.create_empty()
         n.create_substations(id='S')
         n.create_voltage_levels(id='VL', substation_id='S', topology_kind='BUS_BREAKER', nominal_v=400)
@@ -1239,6 +1240,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                                    'node2': -1}])
 
         pd.testing.assert_frame_equal(switches, expected, check_dtype=False)
+
+    def test_get_empty_attributes(self):
+        network = pp.network.create_eurostag_tutorial_example1_network()
+        gens = network.get_generators(attributes=[])
+        self.assertEquals(gens.index.tolist(), ['GEN', 'GEN2'])
+        self.assertTrue(gens.columns.empty)
 
 
 if __name__ == '__main__':

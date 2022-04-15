@@ -347,15 +347,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             a network elements dataframe for the specified element type
         """
-        if attributes is None:
-            attributes = []
         filter_attributes = _pp.FilterAttributesType.DEFAULT_ATTRIBUTES
-        if all_attributes and len(attributes) > 0:
-            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
         if all_attributes:
             filter_attributes = _pp.FilterAttributesType.ALL_ATTRIBUTES
-        elif len(attributes) > 0:
+        elif attributes is not None:
             filter_attributes = _pp.FilterAttributesType.SELECTION_ATTRIBUTES
+        if attributes is None:
+            attributes = []
+        if all_attributes and len(attributes) > 0:
+            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
         if kwargs:
             metadata = _pp.get_network_elements_dataframe_metadata(element_type)
