@@ -14,7 +14,7 @@ GraalVM to compile Java code to a native library.
 
 ## Documentation
 
-Latest version of the documentation with API reference and many code samples is [here](https://readthedocs.org/projects/pypowsybl/badge/?version=latest).  
+Latest version of the documentation with API reference and many code samples is [here](https://pypowsybl.readthedocs.io/en/latest/?badge=latest).  
 
 ## Notebooks
 
