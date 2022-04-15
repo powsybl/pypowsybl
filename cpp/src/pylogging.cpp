@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2022, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #include "pylogging.h"
 #include "pypowsybl.h"
 #include <iostream>
@@ -29,7 +35,7 @@ py::object CppToPythonLogger::getLogger() {
 
 bool CppToPythonLogger::loggerInitialized() {
   std::lock_guard<std::mutex> guard(initMutex_);
-  return this->initialized_;
+  return initialized_;
 }
 
 void CppToPythonLogger::logFromJava(int level, char* timestamp, char* loggerName, char* message) {
@@ -52,8 +58,7 @@ py::object getLogger() {
 
     if (CppToPythonLogger::get()->loggerInitialized()) {
         return CppToPythonLogger::get()->getLogger();
-    }
-    else {
+    } else {
         return py::object(py::cast(nullptr));
     }
 }
