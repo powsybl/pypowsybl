@@ -11,6 +11,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
+import com.powsybl.dataframe.network.extensions.NetworkExtensionDataframeProvider;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
@@ -187,6 +188,8 @@ public final class NetworkDataframes {
                 .doubles("i", g -> g.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", g -> getNode(g.getTerminal()), false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -219,9 +222,9 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper buses() {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
-                getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
+                getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
-                .strings("name", n -> n.getOptionalName().orElse(""))
+                .strings("name", b -> b.getOptionalName().orElse(""))
                 .doubles("v_mag", Bus::getV, Bus::setV)
                 .doubles("v_angle", Bus::getAngle, Bus::setAngle)
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
@@ -240,10 +243,12 @@ public final class NetworkDataframes {
                 .doubles("q0", Load::getQ0, Load::setQ0)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
-                .doubles("i", g -> g.getTerminal().getI())
+                .doubles("i", l -> l.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
-                .strings("bus_id", g -> getBusId(g.getTerminal()))
-                .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
+                .strings("bus_id", l -> getBusId(l.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", l -> getNode(l.getTerminal()), false)
+                .booleans("connected", l -> l.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
     }
@@ -261,6 +266,8 @@ public final class NetworkDataframes {
                 .doubles("i", b -> b.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", b -> getBusId(b.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -284,6 +291,8 @@ public final class NetworkDataframes {
                 .doubles("i", sc -> sc.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", sc -> getBusId(sc.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", sc -> getNode(sc.getTerminal()), false)
                 .booleans("connected", sc -> sc.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -366,7 +375,11 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))
+                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), false)
+                .ints("node1", l -> getNode(l.getTerminal1()), false)
                 .strings("bus2_id", l -> getBusId(l.getTerminal2()))
+                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), false)
+                .ints("node2", l -> getNode(l.getTerminal2()), false)
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
                 .addProperties()
@@ -393,7 +406,11 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), false)
+                .ints("node1", twt -> getNode(twt.getTerminal1()), false)
                 .strings("bus2_id", twt -> getBusId(twt.getTerminal2()))
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), false)
+                .ints("node2", twt -> getNode(twt.getTerminal2()), false)
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
                 .addProperties()
@@ -418,6 +435,8 @@ public final class NetworkDataframes {
                 .doubles("i1", twt -> twt.getLeg1().getTerminal().getI())
                 .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), false)
+                .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected())
                 .doubles("r2", twt -> twt.getLeg2().getR(), (twt, v) -> twt.getLeg2().setR(v))
                 .doubles("x2", twt -> twt.getLeg2().getX(), (twt, v) -> twt.getLeg2().setX(v))
@@ -432,6 +451,8 @@ public final class NetworkDataframes {
                 .doubles("i2", twt -> twt.getLeg2().getTerminal().getI())
                 .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
                 .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), false)
+                .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected())
                 .doubles("r3", twt -> twt.getLeg3().getR(), (twt, v) -> twt.getLeg3().setR(v))
                 .doubles("x3", twt -> twt.getLeg3().getX(), (twt, v) -> twt.getLeg3().setX(v))
@@ -446,6 +467,8 @@ public final class NetworkDataframes {
                 .doubles("i3", twt -> twt.getLeg3().getTerminal().getI())
                 .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
                 .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
+                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
+                .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected())
                 .addProperties()
                 .build();
@@ -466,6 +489,8 @@ public final class NetworkDataframes {
                 .doubles("i", dl -> dl.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
                 .addProperties()
@@ -483,6 +508,8 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -501,6 +528,8 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
@@ -521,9 +550,43 @@ public final class NetworkDataframes {
                 .doubles("i", st -> st.getTerminal().getI())
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", svc -> getBusId(svc.getTerminal()))
+                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .ints("node", svc -> getNode(svc.getTerminal()), false)
                 .booleans("connected", svc -> svc.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
+    }
+
+    private static String getBus1Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus1(s.getId()).getId();
+    }
+
+    private static String getBus2Id(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+            return "";
+        }
+        return vl.getBusBreakerView().getBus2(s.getId()).getId();
+    }
+
+    private static int getNode1(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode1(s.getId());
+    }
+
+    private static int getNode2(Switch s) {
+        VoltageLevel vl = s.getVoltageLevel();
+        if (vl.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            return -1;
+        }
+        return vl.getNodeBreakerView().getNode2(s.getId());
     }
 
     private static NetworkDataframeMapper switches() {
@@ -534,6 +597,10 @@ public final class NetworkDataframes {
                 .booleans("open", Switch::isOpen, Switch::setOpen)
                 .booleans("retained", Switch::isRetained, Switch::setRetained)
                 .strings("voltage_level_id", s -> s.getVoltageLevel().getId())
+                .strings("bus_breaker_bus1_id", NetworkDataframes::getBus1Id, false)
+                .strings("bus_breaker_bus2_id", NetworkDataframes::getBus2Id, false)
+                .ints("node1", NetworkDataframes::getNode1, false)
+                .ints("node2", NetworkDataframes::getNode2, false)
                 .addProperties()
                 .build();
     }
@@ -749,6 +816,27 @@ public final class NetworkDataframes {
         }
     }
 
+    private static String getBusBreakerViewBusId(Terminal t) {
+        if (t == null) {
+            return "";
+        } else {
+            Bus bus = t.getBusBreakerView().getBus();
+            return bus != null ? bus.getId() : "";
+        }
+    }
+
+    private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {
+        return i -> getBusBreakerViewBusId(i.getTerminal());
+    }
+
+    private static int getNode(Terminal t) {
+        if (t.getVoltageLevel().getTopologyKind().equals(TopologyKind.NODE_BREAKER)) {
+            return t.getNodeBreakerView().getNode();
+        } else {
+            return -1;
+        }
+    }
+
     /**
      * Wraps equipment getter to throw if not found
      */
@@ -774,13 +862,11 @@ public final class NetworkDataframes {
         return EXTENSIONS_MAPPERS.get(extensionName);
     }
 
-    public static Map<String, NetworkExtensionSeriesProvider> createExtensionsProvidersByName() {
-        Map<String, NetworkExtensionSeriesProvider> pluginExtensionsProviders = Suppliers
-                .memoize(() -> ServiceLoader.load(NetworkExtensionSeriesProvider.class)
+    public static List<NetworkExtensionDataframeProvider> createExtensionsProviders() {
+        return Suppliers
+                .memoize(() -> ServiceLoader.load(NetworkExtensionDataframeProvider.class)
                         .stream().map(ServiceLoader.Provider::get).collect(Collectors.toList()))
-                .get().stream()
-                .collect(Collectors.toMap(NetworkExtensionSeriesProvider::getExtensionName, Function.identity()));
-        return Collections.unmodifiableMap(pluginExtensionsProviders);
+                .get();
     }
 
     public static List<String> getExtensionsNames() {
@@ -788,209 +874,9 @@ public final class NetworkDataframes {
     }
 
     private static Map<String, NetworkDataframeMapper> createExtensionsMappers() {
-        Map<String, NetworkExtensionSeriesProvider> extensionsMap =  createExtensionsProvidersByName();
-        Map<String, NetworkDataframeMapper> extensionsMapperMap = new HashMap<>();
-
-        for (String extensionName : extensionsMap.keySet()) {
-            NetworkExtensionSeriesProvider extProvider = extensionsMap.get(extensionName);
-            NetworkDataframeMapper dataframeMapper = null;
-            switch (extProvider.getElementType()) {
-                case BUS:
-                    dataframeMapper = busesExt(extProvider);
-                    break;
-                case LINE:
-                    dataframeMapper = linesExt(extProvider);
-                    break;
-                case GENERATOR:
-                    dataframeMapper = generatorsExt(extProvider);
-                    break;
-                case TWO_WINDINGS_TRANSFORMER:
-                    dataframeMapper = twoWindingTransformersExt(extProvider);
-                    break;
-                case THREE_WINDINGS_TRANSFORMER:
-                    dataframeMapper = threeWindingTransformersExt(extProvider);
-                    break;
-                case LOAD:
-                    dataframeMapper = loadsExt(extProvider);
-                    break;
-                case BATTERY:
-                    dataframeMapper = batteriesExt(extProvider);
-                    break;
-                case SHUNT_COMPENSATOR:
-                    dataframeMapper = shuntsExt(extProvider);
-                    break;
-                case DANGLING_LINE:
-                    dataframeMapper = danglingLinesExt(extProvider);
-                    break;
-                case LCC_CONVERTER_STATION:
-                    dataframeMapper = lccsExt(extProvider);
-                    break;
-                case STATIC_VAR_COMPENSATOR:
-                    dataframeMapper = svcsExt(extProvider);
-                    break;
-                case SWITCH:
-                    dataframeMapper = switchesExt(extProvider);
-                    break;
-                case VOLTAGE_LEVEL:
-                    dataframeMapper = voltageLevelsExt(extProvider);
-                    break;
-                case SUBSTATION:
-                    dataframeMapper = substationsExt(extProvider);
-                    break;
-                case BUSBAR_SECTION:
-                    dataframeMapper = busBarsExt(extProvider);
-                    break;
-                case HVDC_LINE:
-                    dataframeMapper = hvdcsExt(extProvider);
-                    break;
-            }
-            extensionsMapperMap.put(extensionName, dataframeMapper);
-        }
-        return Collections.unmodifiableMap(extensionsMapperMap);
-    }
-
-    static NetworkDataframeMapper generatorsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getGeneratorStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getGenerator, "Generator"))
-                .stringsIndex("id", Generator::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper busesExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow((n, id) -> n.getBusView().getBus(id), "Bus"))
-                .stringsIndex("id", Bus::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper loadsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getLoadStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getLoad, "Load"))
-                .stringsIndex("id", Load::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper batteriesExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getBatteryStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getBattery, "Battery"))
-                .stringsIndex("id", Battery::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper shuntsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getShuntCompensatorStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getShuntCompensator, "Shunt compensator"))
-                .stringsIndex("id", ShuntCompensator::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper linesExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getLineStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getLine, "Line"))
-                .stringsIndex("id", Line::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper twoWindingTransformersExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getTwoWindingsTransformer, "Two windings transformer"))
-                .stringsIndex("id", TwoWindingsTransformer::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper threeWindingTransformersExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getThreeWindingsTransformerStream()
-                    .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                     getOrThrow(Network::getThreeWindingsTransformer, "Three windings transformer"))
-                .stringsIndex("id", ThreeWindingsTransformer::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper danglingLinesExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getDanglingLine, "Dangling line"))
-                .stringsIndex("id", DanglingLine::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    static NetworkDataframeMapper lccsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getLccConverterStationStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getLccConverterStation, "LCC converter station"))
-                .stringsIndex("id", LccConverterStation::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper svcsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getStaticVarCompensatorStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getStaticVarCompensator, "Static var compensator"))
-                .stringsIndex("id", StaticVarCompensator::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper switchesExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getSwitchStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getSwitch, "Switch"))
-                .stringsIndex("id", Switch::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper voltageLevelsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getVoltageLevelStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getVoltageLevel, "Voltage level"))
-                .stringsIndex("id", VoltageLevel::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper substationsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getSubstationStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getSubstation, "Substation"))
-                .stringsIndex("id", Identifiable::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper busBarsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getBusbarSectionStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getBusbarSection, "Bus bar section"))
-                .stringsIndex("id", BusbarSection::getId)
-                .addExtension(extProvider)
-                .build();
-    }
-
-    private static NetworkDataframeMapper hvdcsExt(NetworkExtensionSeriesProvider extProvider) {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getHvdcLineStream()
-                        .filter(item -> item.getExtensionByName(extProvider.getExtensionName()) != null),
-                        getOrThrow(Network::getHvdcLine, "HVDC line"))
-                .stringsIndex("id", HvdcLine::getId)
-                .addExtension(extProvider)
-                .build();
+        return createExtensionsProviders().stream()
+                .collect(Collectors.toMap(NetworkExtensionDataframeProvider::getExtensionName,
+                        NetworkExtensionDataframeProvider::createMapper));
     }
 }
 

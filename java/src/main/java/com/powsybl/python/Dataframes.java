@@ -160,6 +160,7 @@ public final class Dataframes {
                 .doubles("p2", BranchResultContext::getP2)
                 .doubles("q2", BranchResultContext::getQ2)
                 .doubles("i2", BranchResultContext::getI2)
+                .doubles("flow_transfer", BranchResultContext::getFlowTransfer)
                 .build();
     }
 

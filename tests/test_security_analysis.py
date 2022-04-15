@@ -101,12 +101,23 @@ def test_monitored_elements():
     pd.testing.assert_frame_equal(expected, bus_results)
 
     assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'branch_id']
-    assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2']
+    assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
     assert len(branch_results) == 4
     assert branch_results.loc['', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
     assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.06, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.06, abs=1e-2)
+
+
+def test_flow_transfer():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingencies(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    sa_result = sa.run_ac(n)
+    branch_results = sa_result.branch_results
+    assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
+    assert branch_results.loc['NHV1_NHV2_2', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
 
 
 def test_dc_analysis():
