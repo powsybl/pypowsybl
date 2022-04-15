@@ -6,21 +6,19 @@
  */
 package com.powsybl.python;
 
-import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
-import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
-import com.powsybl.iidm.import_.Importers;
+import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategoryAdder;
-import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
-import com.powsybl.iidm.network.test.*;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 
+import java.util.List;
 import java.util.Map;
-
-import static java.util.Map.entry;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Networks factories, for "classic" networks or test network.
@@ -32,45 +30,66 @@ public final class Networks {
     private Networks() {
     }
 
+    /**
+     * Service provider interface for third party builds
+     * to provide additional named networks.
+     */
+    public interface NetworksProvider {
+        List<NamedNetworkFactory> getNetworkFactories();
+    }
+
     @FunctionalInterface
-    private interface NetworkFactory {
+    public interface NetworkFactory {
         Network createNetwork(String id);
     }
 
-    private static final Map<String, NetworkFactory> FACTORIES = Map.ofEntries(
-        entry("empty", id -> Network.create(id, "")),
-        entry("ieee9", id -> IeeeCdfNetworkFactory.create9()),
-        entry("ieee14", id -> IeeeCdfNetworkFactory.create14()),
-        entry("ieee30", id -> IeeeCdfNetworkFactory.create30()),
-        entry("ieee57", id -> IeeeCdfNetworkFactory.create57()),
-        entry("ieee118", id -> IeeeCdfNetworkFactory.create118()),
-        entry("ieee300", id -> IeeeCdfNetworkFactory.create300()),
-        entry("micro_grid_be", id -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE())),
-        entry("micro_grid_nl", id -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL())),
-        entry("four_substations_node_breaker", id -> FourSubstationsNodeBreakerFactory.create()),
-        entry("eurostag_tutorial_example1", id -> createEurostagTutorialExample1WithFixedCurrentLimits()),
-        entry("eurostag_tutorial_example1_with_power_limits", id -> createEurostagTutorialExample1WithFixedPowerLimits()),
-        entry("eurostag_tutorial_example1_with_apc_extension", id -> createEurostagTutorialExample1WithApcExtension()),
-        entry("eurostag_tutorial_example1_with_entsoe_category", id -> eurostagWithEntsoeCategory()),
-        entry("batteries", id -> BatteryNetworkFactory.create()),
-        entry("dangling_lines", id -> DanglingLineNetworkFactory.create()),
-        entry("three_windings_transformer", id -> ThreeWindingsTransformerNetworkFactory.create()),
-        entry("three_windings_transformer_with_current_limits", id -> ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits()),
-        entry("shunt", id -> ShuntTestCaseFactory.create()),
-        entry("non_linear_shunt", id -> ShuntTestCaseFactory.createNonLinear())
-    );
-
-    private static Network importCgmes(TestGridModelResources modelResources) {
-        return Importers.getImporter("CGMES")
-                .importData(modelResources.dataSource(), new NetworkFactoryImpl(), null);
+    public interface NamedNetworkFactory extends NetworkFactory {
+        String getName();
     }
 
+    private static final Map<String, NetworkFactory> FACTORIES = new ServiceLoaderCache<>(NetworksProvider.class)
+            .getServices().stream()
+            .flatMap(provider -> provider.getNetworkFactories().stream())
+            .collect(Collectors.toMap(NamedNetworkFactory::getName, Function.identity()));
+
+    /**
+     * Creates an instance of network corresponding to the specified factory name.
+     * A network ID may be provided but will not be honoured by all factories.
+     *
+     * @param networkFactoryName Name of the network factory (for ex. "empty" or "ieee9")
+     * @param networkId          Id of the network. It may not be used by all factories.
+     * @return                   A new network.
+     */
     public static Network create(String networkFactoryName, String networkId) {
         NetworkFactory factory = FACTORIES.get(networkFactoryName);
         if (factory == null) {
             throw new PowsyblException("No network factory for ID " + networkFactoryName);
         }
         return factory.createNetwork(networkId);
+    }
+
+    /**
+     * Helper method to create a named network factory, which will ignore network ID.
+     */
+    public static NamedNetworkFactory factory(String name, Supplier<Network> supplier) {
+        return factory(name, id -> supplier.get());
+    }
+
+    /**
+     * Helper method to create a named network factory.
+     */
+    public static NamedNetworkFactory factory(String name, NetworkFactory factory) {
+        return new NamedNetworkFactory() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public Network createNetwork(String id) {
+                return factory.createNetwork(id);
+            }
+        };
     }
 
     public static Network createEurostagTutorialExample1() {
