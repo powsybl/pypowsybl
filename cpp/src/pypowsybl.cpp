@@ -57,17 +57,21 @@ private:
 //copies to string and frees memory allocated by java
 std::string toString(char* cstring);
 
+//Explicitly update log level on java side
+void setLogLevelFromPythonLogger(GraalVmGuard* guard, exception_handler* exc) {
+  if( CppToPythonLogger::get()->loggerInitialized() ) {
+    py::gil_scoped_acquire acquire;
+    py::object level = CppToPythonLogger::get()->getLogger().attr("level");
+    ::setLogLevel(guard->thread(), level.cast<int>(), exc);
+  }
+}
+
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
 
-    //Explicitly update log level on java side
-    if( CppToPythonLogger::get()->loggerInitialized() ) {
-      py::gil_scoped_acquire acquire;
-      py::object level = CppToPythonLogger::get()->getLogger().attr("level");
-      ::setLogLevel(guard.thread(), level.cast<int>(), &exc);
-    }
+    setLogLevelFromPythonLogger(&guard, &exc);
 
     f(guard.thread(), args..., &exc);
     if (exc.message) {
@@ -79,6 +83,9 @@ template<typename T, typename F, typename... ARGS>
 T callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    setLogLevelFromPythonLogger(&guard, &exc);
+
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
