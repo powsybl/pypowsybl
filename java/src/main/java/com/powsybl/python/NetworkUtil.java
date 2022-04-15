@@ -8,9 +8,6 @@ package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
-import com.powsybl.iidm.network.impl.extensions.ActivePowerControlImpl;
-import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 
 import java.util.List;
 import java.util.Set;
@@ -25,36 +22,6 @@ import static com.powsybl.python.TemporaryLimitData.Side.*;
 public final class NetworkUtil {
 
     private NetworkUtil() {
-    }
-
-    public static Network createEurostagTutorialExample1() {
-        Network network = EurostagTutorialExample1Factory.create();
-        fix(network);
-        return network;
-    }
-
-    public static Network createEurostagTutorialExample1WithFixedCurrentLimits() {
-        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
-        fix(network);
-        return network;
-    }
-
-    public static Network createEurostagTutorialExample1WithFixedPowerLimits() {
-        Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
-        fix(network);
-        return network;
-    }
-
-    private static Network fix(Network network) {
-        Generator gen = network.getGenerator("GEN");
-        if (gen != null) {
-            gen.setMaxP(4999);
-        }
-        Generator gen2 = network.getGenerator("GEN2");
-        if (gen2 != null) {
-            gen2.setMaxP(4999);
-        }
-        return network;
     }
 
     static boolean updateSwitchPosition(Network network, String switchId, boolean open) {
@@ -242,11 +209,4 @@ public final class NetworkUtil {
         }
     }
 
-    public static Network createEurostagTutorialExample1WithApcExtension() {
-        Network network = createEurostagTutorialExample1();
-        Generator gen = network.getGenerator("GEN");
-        ActivePowerControl apcExt = new ActivePowerControlImpl(gen, true, 1.1f);
-        gen.addExtension(ActivePowerControl.class, apcExt);
-        return network;
-    }
 }

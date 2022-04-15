@@ -9,9 +9,8 @@ package com.powsybl.dataframe.network.extensions;
 import com.google.auto.service.AutoService;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
+import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -20,27 +19,25 @@ import java.util.stream.Stream;
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class ActivePowerControlSeriesProvider implements NetworkExtensionDataframeProvider {
-
-    public static final String EXTENSION_NAME = "activePowerControl";
+public class HvdcOperatorActivePowerRangeDataframeProvider implements NetworkExtensionDataframeProvider {
 
     @Override
     public String getExtensionName() {
-        return EXTENSION_NAME;
+        return HvdcOperatorActivePowerRange.NAME;
     }
 
-    private Stream<ActivePowerControl> itemsStream(Network network) {
-        return network.getGeneratorStream()
-                .map(g -> (ActivePowerControl) g.getExtension(ActivePowerControl.class))
+    private Stream<HvdcOperatorActivePowerRange> itemsStream(Network network) {
+        return network.getHvdcLineStream()
+                .map(g -> (HvdcOperatorActivePowerRange) g.getExtension(HvdcOperatorActivePowerRange.class))
                 .filter(Objects::nonNull);
     }
 
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream)
-                .stringsIndex("id", ext -> ((Identifiable) ext.getExtendable()).getId())
-                .doubles("droop", ActivePowerControl::getDroop)
-                .booleans("participate", ActivePowerControl::isParticipate)
+                .stringsIndex("id", ext -> ext.getExtendable().getId())
+                .doubles("opr_from_cs1_to_cs2", HvdcOperatorActivePowerRange::getOprFromCS1toCS2)
+                .doubles("opr_from_cs2_to_cs1", HvdcOperatorActivePowerRange::getOprFromCS2toCS1)
                 .build();
     }
 }
