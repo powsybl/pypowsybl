@@ -6,16 +6,24 @@
  */
 package com.powsybl.dataframe.network.adders;
 
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BranchAdder;
 import com.powsybl.iidm.network.HvdcConverterStationAdder;
 import com.powsybl.iidm.network.IdentifiableAdder;
 import com.powsybl.iidm.network.InjectionAdder;
 
+import static com.powsybl.dataframe.update.UpdatingDataframe.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
 public final class NetworkElementCreationUtils {
+
+    public static void createIdentifiable(IdentifiableAdder adder, StringSeries ids, StringSeries names, int row) {
+        applyIfPresent(ids, row, adder::setId);
+        applyIfPresent(names, row, adder::setName);
+    }
 
     public static void createIdentifiable(IdentifiableAdder adder, UpdatingDataframe dataframe, int indexElement) {
         dataframe.getStringValue("id", indexElement).ifPresent(adder::setId);

@@ -32,7 +32,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe primaryTable = dataframes.get(0);
         Map<LimitsDataframeAdderKey, TIntArrayList> indexMap = new HashMap<>();
-        for (int i = 0; i < primaryTable.getLineCount(); i++) {
+        for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String elementId = primaryTable.getStringValue("element_id", i)
                     .orElseThrow(() -> new PowsyblException("element_id is missing"));
             String side = primaryTable.getStringValue("side", i)

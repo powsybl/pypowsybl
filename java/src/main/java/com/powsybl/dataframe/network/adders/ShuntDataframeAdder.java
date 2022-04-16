@@ -63,7 +63,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe sectionsDf = dataframes.get(2);
         TObjectIntMap<String> linearModelsIndexes = getLinearModelsIndexes(linearModelsDf);
         Map<String, TIntArrayList> sectionsIndexes = getSectionsIndexes(sectionsDf);
-        for (int index = 0; index < shuntsDf.getLineCount(); index++) {
+        for (int index = 0; index < shuntsDf.getRowCount(); index++) {
             createShunt(network, shuntsDf, linearModelsDf, sectionsDf, linearModelsIndexes, sectionsIndexes, index);
         }
     }
@@ -73,7 +73,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
      */
     private static TObjectIntMap<String> getLinearModelsIndexes(UpdatingDataframe linearModelsDf) {
         TObjectIntMap<String> indexes = new TObjectIntHashMap<>(10, 0.5f, -1);
-        for (int modelIndex = 0; modelIndex < linearModelsDf.getLineCount(); modelIndex++) {
+        for (int modelIndex = 0; modelIndex < linearModelsDf.getRowCount(); modelIndex++) {
             String shuntId = linearModelsDf.getStringValue("id", modelIndex)
                     .orElseThrow(() -> new PowsyblException("Linear models dataframe: id is not set"));
             indexes.put(shuntId, modelIndex);
@@ -86,7 +86,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
      */
     private static Map<String, TIntArrayList> getSectionsIndexes(UpdatingDataframe sectionsDf) {
         Map<String, TIntArrayList> sectionsIndexes = new HashMap<>();
-        for (int sectionIndex = 0; sectionIndex < sectionsDf.getLineCount(); sectionIndex++) {
+        for (int sectionIndex = 0; sectionIndex < sectionsDf.getRowCount(); sectionIndex++) {
             String shuntId = sectionsDf.getStringValue("id", sectionIndex)
                     .orElseThrow(() -> new PowsyblException("Shunt sections dataframe: id is not set"));
             sectionsIndexes.computeIfAbsent(shuntId, k -> new TIntArrayList())

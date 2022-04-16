@@ -1,5 +1,8 @@
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.update.Series;
 
@@ -24,104 +27,43 @@ public class TestDataframe implements UpdatingDataframe {
     }
 
     @Override
-    public int getIndex(String column, String value) {
-        return ((TestStringSeries) series.get(column)).getValues().indexOf(value);
-    }
-
-    @Override
     public List<SeriesMetadata> getSeriesMetadata() {
         return new ArrayList<>(columns.values());
     }
 
     @Override
-    public OptionalDouble getDoubleValue(String column, int index) {
-        if (series.get(column) == null) {
-            return OptionalDouble.empty();
-        } else {
-            return OptionalDouble.of(((TestDoubleSeries) series.get(column)).getValues().get(index));
+    public DoubleSeries getDoubles(String column) {
+        Series col = series.get(column);
+        if (!(col instanceof TestDoubleSeries)) {
+            return null;
         }
+        TestDoubleSeries asDouble = (TestDoubleSeries) col;
+        return index -> asDouble.getValues().get(index);
     }
 
     @Override
-    public OptionalDouble getDoubleValue(int column, int index) {
-        if (series.get(getSeriesMetadata().get(column).getName()) == null) {
-            return  OptionalDouble.empty();
-        } else {
-            return OptionalDouble.of(((TestDoubleSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index));
+    public IntSeries getInts(String column) {
+        Series col = series.get(column);
+        if (!(col instanceof TestIntSeries)) {
+            return null;
         }
+        TestIntSeries asInt = (TestIntSeries) col;
+        return index -> asInt.getValues().get(index);
     }
 
     @Override
-    public OptionalDouble getDoubleValue(String columnName, int column, int index) {
-        if (containsColumnName(columnName, SeriesDataType.DOUBLE)) {
-            return getDoubleValue(columnName, index);
-        } else {
-            return getDoubleValue(column, index);
+    public StringSeries getStrings(String column) {
+        Series col = series.get(column);
+        if (!(col instanceof TestStringSeries)) {
+            return null;
         }
+        TestStringSeries asString = (TestStringSeries) col;
+        return index -> asString.getValues().get(index);
     }
 
     @Override
-    public Optional<String> getStringValue(String column, int index) {
-        if (series.get(column) == null) {
-            return Optional.empty();
-        } else {
-            return Optional.of(((TestStringSeries) series.get(column)).getValues().get(index));
-        }
-    }
-
-    @Override
-    public Optional<String> getStringValue(int column, int index) {
-        if (series.get(column) == null) {
-            return Optional.empty();
-        } else {
-            return Optional.of(((TestStringSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index));
-        }
-    }
-
-    @Override
-    public Optional<String> getStringValue(String columnName, int column, int index) {
-        if (containsColumnName(columnName, SeriesDataType.STRING)) {
-            return getStringValue(columnName, index);
-        } else {
-            return getStringValue(column, index);
-        }
-    }
-
-    @Override
-    public OptionalInt getIntValue(String column, int index) {
-        if (series.get(column) == null) {
-            return OptionalInt.empty();
-        } else {
-            return OptionalInt.of(((TestIntSeries) series.get(column)).getValues().get(index));
-        }
-    }
-
-    @Override
-    public OptionalInt getIntValue(int column, int index) {
-        if (series.get(getSeriesMetadata().get(column).getName()) == null) {
-            return OptionalInt.empty();
-        } else {
-            return OptionalInt.of(((TestIntSeries) series.get(getSeriesMetadata().get(column).getName())).getValues().get(index));
-        }
-    }
-
-    @Override
-    public OptionalInt getIntValue(String columnName, int column, int index) {
-        if (containsColumnName(columnName, SeriesDataType.INT)) {
-            return getIntValue(columnName, index);
-        } else {
-            return getIntValue(column, index);
-        }
-    }
-
-    @Override
-    public int getLineCount() {
+    public int getRowCount() {
         return size;
-    }
-
-    @Override
-    public boolean containsColumnName(String columnName, SeriesDataType type) {
-        return columns.containsKey(columnName) && columns.get(columnName).getType().equals(type);
     }
 
     public static class TestIntSeries implements Series<List<Integer>> {

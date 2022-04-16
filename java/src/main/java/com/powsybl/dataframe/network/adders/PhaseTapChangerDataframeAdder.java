@@ -51,7 +51,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe tapChangersDf = dataframes.get(0);
         UpdatingDataframe stepsDf = dataframes.get(1);
         Map<String, TIntArrayList> stepsIndexes = getStepsIndexes(stepsDf);
-        for (int index = 0; index < tapChangersDf.getLineCount(); index++) {
+        for (int index = 0; index < tapChangersDf.getRowCount(); index++) {
             createPhaseTapChanger(network, tapChangersDf, stepsDf, index, stepsIndexes);
         }
     }
@@ -61,7 +61,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
      */
     private static Map<String, TIntArrayList> getStepsIndexes(UpdatingDataframe stepsDataframe) {
         Map<String, TIntArrayList> stepIndexes = new HashMap<>();
-        for (int stepIndex = 0; stepIndex < stepsDataframe.getLineCount(); stepIndex++) {
+        for (int stepIndex = 0; stepIndex < stepsDataframe.getRowCount(); stepIndex++) {
             String transformerId = stepsDataframe.getStringValue("id", stepIndex)
                     .orElseThrow(() -> new PowsyblException("Steps dataframe: id is not set"));
             stepIndexes.computeIfAbsent(transformerId, k -> new TIntArrayList())

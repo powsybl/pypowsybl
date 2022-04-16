@@ -19,7 +19,7 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
     @Override
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe primaryDf = getPrimaryDataframe(dataframes);
-        for (int i = 0; i < primaryDf.getLineCount(); i++) {
+        for (int i = 0; i < primaryDf.getRowCount(); i++) {
             addElement(network, primaryDf, i);
         }
     }

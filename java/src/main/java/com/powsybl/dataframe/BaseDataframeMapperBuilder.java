@@ -48,7 +48,7 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
 
     public B itemGetter(BiFunction<T, String, U> itemGetter) {
         this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber) -> {
-            String id = updatingDataframe.getStringValue("id", 0, lineNumber)
+            String id = updatingDataframe.getStringValue("id", lineNumber)
                     .orElseThrow(() -> new PowsyblException("id is missing"));
             return itemGetter.apply(network, id);
         };

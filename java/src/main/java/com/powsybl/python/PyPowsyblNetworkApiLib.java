@@ -27,9 +27,9 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.update.CUpdatingDataframe;
-import com.powsybl.python.update.DoubleSeries;
-import com.powsybl.python.update.IntSeries;
-import com.powsybl.python.update.StringSeries;
+import com.powsybl.python.update.CDoubleSeries;
+import com.powsybl.python.update.CIntSeries;
+import com.powsybl.python.update.CStringSeries;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -412,19 +412,16 @@ public final class PyPowsyblNetworkApiLib {
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
                 case STRING_SERIES_TYPE:
-                    updatingDataframe.addSeries(new StringSeries(name, elementCount,
-                                    (CCharPointerPointer) seriesPointer.data().getPtr()),
+                    updatingDataframe.addSeries(new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()),
                             new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING, true));
                     break;
                 case DOUBLE_SERIES_TYPE:
-                    updatingDataframe.addSeries(new DoubleSeries(name, elementCount,
-                                    (CDoublePointer) seriesPointer.data().getPtr()),
+                    updatingDataframe.addSeries(new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()),
                             new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE, true));
                     break;
                 case INT_SERIES_TYPE:
                 case BOOLEAN_SERIES_TYPE:
-                    updatingDataframe.addSeries(new IntSeries(name, elementCount,
-                                    (CIntPointer) seriesPointer.data().getPtr()),
+                    updatingDataframe.addSeries(new CIntSeries((CIntPointer) seriesPointer.data().getPtr()),
                             new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT, true));
                     break;
             }
