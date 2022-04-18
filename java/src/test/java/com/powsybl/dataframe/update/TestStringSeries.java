@@ -8,10 +8,10 @@ import java.util.List;
  */
 public class TestStringSeries implements StringSeries {
 
-    private final List<String> values = new ArrayList<>();
+    private final List<String> values;
 
-    public TestStringSeries(List<String> values) {
-        this.values.addAll(values);
+    public TestStringSeries(String... values) {
+        this.values = List.of(values);
     }
 
     @Override

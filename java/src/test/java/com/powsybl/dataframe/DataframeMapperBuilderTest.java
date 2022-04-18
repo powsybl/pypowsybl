@@ -189,8 +189,8 @@ class DataframeMapperBuilderTest {
 
     UpdatingDataframe createDataframe(int size) {
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(size);
-        dataframe.addSeries("id", true, new TestStringSeries(List.of("el1", "el2")));
-        dataframe.addSeries("double", false, new TestDoubleSeries(List.of(1.2, 2.2)));
+        dataframe.addSeries("id", true, new TestStringSeries("el1", "el2"));
+        dataframe.addSeries("double", false, new TestDoubleSeries(1.2, 2.2));
         return dataframe;
 
     }
@@ -218,10 +218,10 @@ class DataframeMapperBuilderTest {
 
     UpdatingDataframe createDataframeMultiIndex(int size) {
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(size);
-        dataframe.addSeries("id", true, new TestStringSeries(List.of("el1", "el2")));
-        dataframe.addSeries("id2", true, new TestIntSeries(List.of(1, 0)));
-        dataframe.addSeries("double", false, new TestDoubleSeries(List.of(1.2, 2.2)));
-        dataframe.addSeries("str", false, new TestStringSeries(List.of("val3", "val4")));
+        dataframe.addSeries("id", true, new TestStringSeries("el1", "el2"));
+        dataframe.addSeries("id2", true, new TestIntSeries(1, 0));
+        dataframe.addSeries("double", false, new TestDoubleSeries(1.2, 2.2));
+        dataframe.addSeries("str", false, new TestStringSeries("val3", "val4"));
         return dataframe;
 
     }
