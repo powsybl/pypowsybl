@@ -4,26 +4,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.python.update;
+package com.powsybl.dataframe.update;
+
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.DoubleSeries;
-import com.powsybl.dataframe.update.IntSeries;
-import com.powsybl.dataframe.update.StringSeries;
-import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.*;
 
 /**
+ * Default implementation for the dataframe, the behaviour will rely on the provided series implementations.
+ *
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
+ * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-public class CUpdatingDataframe implements UpdatingDataframe {
+public class DefaultUpdatingDataframe implements UpdatingDataframe {
     private final int rowCount;
     private final Map<String, SeriesMetadata> seriesMetadata = new LinkedHashMap<>();
     private final Map<String, IntSeries> intSeries = new HashMap<>();
     private final Map<String, DoubleSeries> doubleSeries = new HashMap<>();
     private final Map<String, StringSeries> stringSeries = new HashMap<>();
 
-    public CUpdatingDataframe(int rowCount) {
+    public DefaultUpdatingDataframe(int rowCount) {
         this.rowCount = rowCount;
     }
 
@@ -47,19 +48,19 @@ public class CUpdatingDataframe implements UpdatingDataframe {
         return stringSeries.get(column);
     }
 
-    public void addSeries(IntSeries series, SeriesMetadata seriesMetadata) {
-        this.seriesMetadata.put(seriesMetadata.getName(), seriesMetadata);
-        this.intSeries.put(seriesMetadata.getName(), series);
+    public void addSeries(String name, boolean index, IntSeries data) {
+        this.seriesMetadata.put(name, new SeriesMetadata(index, name, true, SeriesDataType.INT, true));
+        this.intSeries.put(name, data);
     }
 
-    public void addSeries(DoubleSeries series, SeriesMetadata seriesMetadata) {
-        this.seriesMetadata.put(seriesMetadata.getName(), seriesMetadata);
-        this.doubleSeries.put(seriesMetadata.getName(), series);
+    public void addSeries(String name, boolean index, DoubleSeries series) {
+        this.seriesMetadata.put(name, new SeriesMetadata(index, name, true, SeriesDataType.DOUBLE, true));
+        this.doubleSeries.put(name, series);
     }
 
-    public void addSeries(StringSeries series, SeriesMetadata seriesMetadata) {
-        this.seriesMetadata.put(seriesMetadata.getName(), seriesMetadata);
-        this.stringSeries.put(seriesMetadata.getName(), series);
+    public void addSeries(String name, boolean index, StringSeries series) {
+        this.seriesMetadata.put(name, new SeriesMetadata(index, name, true, SeriesDataType.STRING, true));
+        this.stringSeries.put(name, series);
     }
 
     @Override

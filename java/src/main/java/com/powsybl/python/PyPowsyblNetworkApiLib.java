@@ -14,11 +14,11 @@ import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -26,7 +26,6 @@ import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.update.CUpdatingDataframe;
 import com.powsybl.python.update.CDoubleSeries;
 import com.powsybl.python.update.CIntSeries;
 import com.powsybl.python.update.CStringSeries;
@@ -406,26 +405,24 @@ public final class PyPowsyblNetworkApiLib {
         }
         int elementCount = dataframe.getSeries().addressOf(0).data().getLength();
         int columnsNumber = dataframe.getSeriesCount();
-        CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
+        DefaultUpdatingDataframe updatingDataframe = new DefaultUpdatingDataframe(elementCount);
         for (int i = 0; i < columnsNumber; i++) {
             PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
                 case STRING_SERIES_TYPE:
-                    updatingDataframe.addSeries(new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
                     break;
                 case DOUBLE_SERIES_TYPE:
-                    updatingDataframe.addSeries(new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
                     break;
                 case INT_SERIES_TYPE:
                 case BOOLEAN_SERIES_TYPE:
-                    updatingDataframe.addSeries(new CIntSeries((CIntPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
                     break;
+                default:
+                    throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
             }
-
         }
         return updatingDataframe;
     }

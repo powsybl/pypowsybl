@@ -7,8 +7,10 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.TestDataframe;
+import com.powsybl.dataframe.update.TestDoubleSeries;
+import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.TestIntSeries;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.ShuntCompensatorLinearModel;
@@ -38,7 +40,7 @@ class NetworkElementAddersTest {
     @Test
     void twt2() {
         var network = EurostagTutorialExample1Factory.create();
-        TestDataframe dataframe = new TestDataframe(1);
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "test");
         addSingletonStringColumnAndValue(dataframe, "substation_id", "P1");
         addSingletonStringColumnAndValue(dataframe, "name", "l3");
@@ -59,25 +61,22 @@ class NetworkElementAddersTest {
         assertEquals(3, network.getTwoWindingsTransformerCount());
     }
 
-    private void addSingletonStringColumnAndValue(TestDataframe dataframe, String column, String... value) {
-        dataframe.addColumnName(column, SeriesDataType.STRING, false);
-        dataframe.addSeries(new TestDataframe.TestStringSeries(Arrays.asList(value), column));
+    private void addSingletonStringColumnAndValue(DefaultUpdatingDataframe dataframe, String column, String... value) {
+        dataframe.addSeries(column, false, new TestStringSeries(Arrays.asList(value)));
     }
 
-    private void addSingletonDoubleColumnAndValue(TestDataframe dataframe, String column, double... value) {
-        dataframe.addColumnName(column, SeriesDataType.DOUBLE, false);
-        dataframe.addSeries(new TestDataframe.TestDoubleSeries(Arrays.stream(value).boxed().collect(Collectors.toList()), column));
+    private void addSingletonDoubleColumnAndValue(DefaultUpdatingDataframe dataframe, String column, double... value) {
+        dataframe.addSeries(column, false, new TestDoubleSeries(Arrays.stream(value).boxed().collect(Collectors.toList())));
     }
 
-    private void addSingletonIntColumnAndValue(TestDataframe dataframe, String column, int... value) {
-        dataframe.addColumnName(column, SeriesDataType.DOUBLE, false);
-        dataframe.addSeries(new TestDataframe.TestIntSeries(Arrays.stream(value).boxed().collect(Collectors.toList()), column));
+    private void addSingletonIntColumnAndValue(DefaultUpdatingDataframe dataframe, String column, int... value) {
+        dataframe.addSeries(column, false, new TestIntSeries(Arrays.stream(value).boxed().collect(Collectors.toList())));
     }
 
     @Test
     void line() {
         var network = EurostagTutorialExample1Factory.create();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonDoubleColumnAndValue(dataframe, "r", 4.0);
         addSingletonDoubleColumnAndValue(dataframe, "x", 4.0);
         addSingletonDoubleColumnAndValue(dataframe, "g1", 4.0);
@@ -99,7 +98,7 @@ class NetworkElementAddersTest {
     @Test
     void lcc() {
         var network = HvdcTestNetwork.createLcc();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "C3");
         addSingletonStringColumnAndValue(dataframe, "name", "name-c3");
         addSingletonStringColumnAndValue(dataframe, "connectable_bus_id", "B1");
@@ -114,7 +113,7 @@ class NetworkElementAddersTest {
     @Test
     void vsc() {
         var network = HvdcTestNetwork.createVsc();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "C3");
         addSingletonStringColumnAndValue(dataframe, "name", "name-c3");
         addSingletonStringColumnAndValue(dataframe, "connectable_bus_id", "B1");
@@ -131,7 +130,7 @@ class NetworkElementAddersTest {
     @Test
     void danglingLine() {
         var network = DanglingLineNetworkFactory.create();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "dl2");
         addSingletonStringColumnAndValue(dataframe, "name", "name-dl2");
         addSingletonStringColumnAndValue(dataframe, "connectable_bus_id", "BUS");
@@ -150,7 +149,7 @@ class NetworkElementAddersTest {
     @Test
     void busbar() {
         var network = HvdcTestNetwork.createBase();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "bs2");
         addSingletonStringColumnAndValue(dataframe, "name", "name-bs2");
         addSingletonStringColumnAndValue(dataframe, "voltage_level_id", "VL2");
@@ -162,7 +161,7 @@ class NetworkElementAddersTest {
     @Test
     void load() {
         var network = EurostagTutorialExample1Factory.create();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(dataframe, "id", "LOAD2");
         addSingletonStringColumnAndValue(dataframe, "voltage_level_id", "VLLOAD");
         addSingletonStringColumnAndValue(dataframe, "connectable_bus_id", "NLOAD");
@@ -186,7 +185,7 @@ class NetworkElementAddersTest {
     @Test
     void generator() {
         var network = EurostagTutorialExample1Factory.create();
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonDoubleColumnAndValue(dataframe, "max_p", 3.0d);
         addSingletonDoubleColumnAndValue(dataframe, "min_p", 1.0d);
         addSingletonDoubleColumnAndValue(dataframe, "target_p", 4.0d);
@@ -206,7 +205,7 @@ class NetworkElementAddersTest {
     @Test
     void linearShunt() {
         var network = ShuntTestCaseFactory.create();
-        TestDataframe shuntDataframe = new TestDataframe(1);
+        var shuntDataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(shuntDataframe, "id", "SHUNT2");
         addSingletonDoubleColumnAndValue(shuntDataframe, "b", 1.0);
         addSingletonDoubleColumnAndValue(shuntDataframe, "g", 2.0);
@@ -217,7 +216,7 @@ class NetworkElementAddersTest {
         addSingletonStringColumnAndValue(shuntDataframe, "bus_id", "B1");
         addSingletonStringColumnAndValue(shuntDataframe, "model_type", "LINEAR");
         addSingletonIntColumnAndValue(shuntDataframe, "section_count", 1);
-        TestDataframe sectionDataframe = new TestDataframe(1);
+        var sectionDataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(sectionDataframe, "id", "SHUNT2");
         addSingletonIntColumnAndValue(sectionDataframe, "max_section_count", 1);
         addSingletonDoubleColumnAndValue(sectionDataframe, "b_per_section", 0.1);
@@ -236,7 +235,7 @@ class NetworkElementAddersTest {
     @Test
     void nonLinearShunt() {
         var network = ShuntTestCaseFactory.create();
-        TestDataframe shuntDataframe = new TestDataframe(1);
+        var shuntDataframe = new DefaultUpdatingDataframe(1);
         addSingletonStringColumnAndValue(shuntDataframe, "id", "SHUNT2");
         addSingletonDoubleColumnAndValue(shuntDataframe, "b", 1.0);
         addSingletonDoubleColumnAndValue(shuntDataframe, "g", 2.0);
@@ -247,7 +246,7 @@ class NetworkElementAddersTest {
         addSingletonStringColumnAndValue(shuntDataframe, "bus_id", "B1");
         addSingletonStringColumnAndValue(shuntDataframe, "model_type", "NON_LINEAR");
         addSingletonIntColumnAndValue(shuntDataframe, "section_count", 2);
-        TestDataframe sectionDataframe = new TestDataframe(2);
+        var sectionDataframe = new DefaultUpdatingDataframe(2);
         addSingletonStringColumnAndValue(sectionDataframe, "id", "SHUNT2", "SHUNT2");
         addSingletonDoubleColumnAndValue(sectionDataframe, "g", 0.1, 0.3);
         addSingletonDoubleColumnAndValue(sectionDataframe, "b", 0.1, 0.3);
@@ -266,7 +265,7 @@ class NetworkElementAddersTest {
     void svc() {
         var network = SvcTestCaseFactory.create();
         var mode = StaticVarCompensator.RegulationMode.OFF;
-        TestDataframe dataframe = new TestDataframe(1);
+        var dataframe = new DefaultUpdatingDataframe(1);
         addSingletonDoubleColumnAndValue(dataframe, "b_min", 0.0003);
         addSingletonDoubleColumnAndValue(dataframe, "b_max", 0.0009);
         addSingletonDoubleColumnAndValue(dataframe, "target_v", 30.0);

@@ -9,7 +9,11 @@ package com.powsybl.dataframe;
 import com.google.common.base.Functions;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.TestDoubleSeries;
+import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dataframe.update.TestIntSeries;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -184,11 +188,9 @@ class DataframeMapperBuilderTest {
     }
 
     UpdatingDataframe createDataframe(int size) {
-        TestDataframe dataframe = new TestDataframe(size);
-        dataframe.addColumnName("id", SeriesDataType.STRING, true);
-        dataframe.addColumnName("double", SeriesDataType.DOUBLE, false);
-        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("el1", "el2"), "id"));
-        dataframe.addSeries(new TestDataframe.TestDoubleSeries(List.of(1.2, 2.2), "double"));
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(size);
+        dataframe.addSeries("id", true, new TestStringSeries(List.of("el1", "el2")));
+        dataframe.addSeries("double", false, new TestDoubleSeries(List.of(1.2, 2.2)));
         return dataframe;
 
     }
@@ -215,15 +217,11 @@ class DataframeMapperBuilderTest {
     }
 
     UpdatingDataframe createDataframeMultiIndex(int size) {
-        TestDataframe dataframe = new TestDataframe(size);
-        dataframe.addColumnName("id", SeriesDataType.STRING, true);
-        dataframe.addColumnName("id2", SeriesDataType.INT, true);
-        dataframe.addColumnName("double", SeriesDataType.DOUBLE, false);
-        dataframe.addColumnName("str", SeriesDataType.STRING, false);
-        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("el1", "el2"), "id"));
-        dataframe.addSeries(new TestDataframe.TestIntSeries(List.of(1, 0), "id2"));
-        dataframe.addSeries(new TestDataframe.TestDoubleSeries(List.of(1.2, 2.2), "double"));
-        dataframe.addSeries(new TestDataframe.TestStringSeries(List.of("val3", "val4"), "str"));
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(size);
+        dataframe.addSeries("id", true, new TestStringSeries(List.of("el1", "el2")));
+        dataframe.addSeries("id2", true, new TestIntSeries(List.of(1, 0)));
+        dataframe.addSeries("double", false, new TestDoubleSeries(List.of(1.2, 2.2)));
+        dataframe.addSeries("str", false, new TestStringSeries(List.of("val3", "val4")));
         return dataframe;
 
     }
