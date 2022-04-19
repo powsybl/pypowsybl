@@ -15,7 +15,6 @@ def no_config():
 
 
 def test_default_provider():
-    pp.set_debug_mode(True)
     assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
     pp.security.set_default_provider("provider")
     assert 'provider' == pp.security.get_default_provider()

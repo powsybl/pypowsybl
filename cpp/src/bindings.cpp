@@ -8,6 +8,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include "pypowsybl.h"
+#include "pylogging.h"
 
 namespace py = pybind11;
 
@@ -129,8 +130,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
 
     m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
-
-    m.def("set_debug_mode", &pypowsybl::setDebugMode, "Set debug mode");
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
 
@@ -596,6 +595,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
-
+    m.def("set_logger", &setLogger, "Setup the logger", py::arg("logger"));
+    m.def("get_logger", &getLogger, "Retrieve the logger");
     m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
 }
