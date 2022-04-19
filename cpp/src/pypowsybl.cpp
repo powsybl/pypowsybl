@@ -754,4 +754,14 @@ void removeNetworkElements(const JavaHandle& network, const std::vector<std::str
     pypowsybl::callJava<>(::removeNetworkElements, network, elementIdsPtr.get(), elementIds.size());
 }
 
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe) {
+    pypowsybl::callJava<>(::addNetworkElementProperties, network, dataframe);
+}
+
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties) {
+    ToCharPtrPtr idsPtr(ids);
+    ToCharPtrPtr propertiesPtr(properties);
+    pypowsybl::callJava<>(::removeNetworkElementProperties, network, idsPtr.get(), ids.size(), propertiesPtr.get(), properties.size());
+}
+
 }

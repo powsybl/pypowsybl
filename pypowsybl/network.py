@@ -27,7 +27,9 @@ from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import ArrayStruct
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
+from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe, _create_properties_c_dataframe, \
+    _adapt_properties_kwargs
+
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
@@ -3771,6 +3773,40 @@ class Network:  # pylint: disable=too-many-public-methods
             The extra id column in the resulting dataframe provides the link to the extension's parent element
         """
         return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+
+    def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Add network element properties with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+
+        Args:
+            df: the properties to be created or updated. The index has to be `id`
+                    identifying the network elements.
+            kwargs: the properties to be added as string.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        """
+        if df is None:
+            df = _adapt_properties_kwargs(**kwargs)
+        if df.isnull().values.any() > 0:
+            raise _pp.PyPowsyblError("dataframe can not contain NaN values")
+        for series_name in df.columns.values:
+            df[series_name] = df[series_name].astype(str)
+        c_df = _create_properties_c_dataframe(df)
+        _pp.add_network_element_properties(self._handle, c_df)
+
+    def remove_elements_properties(self, ids: _List[str], properties: _List[str]) -> None:
+        """
+        Remove network properties from a list of network elements with data provided as a string lists
+
+
+        Args:
+            ids: list of the network elements that will have their properties removed
+            properties: list of the properties that will be removed
+        """
+        _pp.remove_network_element_properties(self._handle, ids, properties)
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
