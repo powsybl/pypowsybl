@@ -8,8 +8,11 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.TopologyKind;
 import com.powsybl.iidm.network.VoltageLevelAdder;
 
 import java.util.Collections;
@@ -37,15 +40,43 @@ public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class VoltageLevelSeries extends IdentifiableSeries {
+
+        private final StringSeries substations;
+        private final StringSeries topologyKind;
+        private final DoubleSeries nominalV;
+        private final DoubleSeries lowVoltageLimit;
+        private final DoubleSeries highVoltageLimit;
+
+        VoltageLevelSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.substations = dataframe.getStrings("substation_id");
+            if (this.substations == null) {
+                throw new PowsyblException("substation_id is missing");
+            }
+            this.topologyKind = dataframe.getStrings("topology_kind");
+            this.nominalV = dataframe.getDoubles("nominal_v");
+            this.lowVoltageLimit = dataframe.getDoubles("low_voltage_limit");
+            this.highVoltageLimit = dataframe.getDoubles("high_voltage_limit");
+        }
+
+        void create(Network network, int row) {
+            VoltageLevelAdder adder = network.getSubstation(substations.get(row))
+                    .newVoltageLevel();
+            setIdentifiableAttributes(adder, row);
+            NetworkElementCreationUtils.applyIfPresent(topologyKind, row, TopologyKind.class, adder::setTopologyKind);
+            NetworkElementCreationUtils.applyIfPresent(nominalV, row, adder::setNominalV);
+            NetworkElementCreationUtils.applyIfPresent(lowVoltageLimit, row, adder::setLowVoltageLimit);
+            NetworkElementCreationUtils.applyIfPresent(highVoltageLimit, row, adder::setHighVoltageLimit);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        VoltageLevelAdder adder = network.getSubstation(dataframe.getStringValue("substation_id", indexElement)
-                .orElseThrow(() -> new PowsyblException("substation_id is missing"))).newVoltageLevel();
-        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
-        dataframe.getDoubleValue("high_voltage_limit", indexElement).ifPresent(adder::setHighVoltageLimit);
-        dataframe.getDoubleValue("low_voltage_limit", indexElement).ifPresent(adder::setLowVoltageLimit);
-        dataframe.getDoubleValue("nominal_v", indexElement).ifPresent(adder::setNominalV);
-        dataframe.getStringValue("topology_kind", indexElement).ifPresent(adder::setTopologyKind);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        VoltageLevelSeries series = new VoltageLevelSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

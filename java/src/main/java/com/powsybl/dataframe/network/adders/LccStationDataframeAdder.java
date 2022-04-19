@@ -11,7 +11,8 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.LccConverterStationAdder;
+import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-public class SvcDataframeAdder extends AbstractSimpleAdder {
+public class LccStationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
@@ -30,11 +31,8 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.doubles("b_max"),
-            SeriesMetadata.doubles("b_min"),
-            SeriesMetadata.strings("regulation_mode"),
-            SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q")
+            SeriesMetadata.doubles("power_factor"),
+            SeriesMetadata.doubles("loss_factor")
     );
 
     @Override
@@ -42,44 +40,35 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class StaticVarCompensatorSeries extends InjectionSeries {
+    private static class LccStationSeries extends InjectionSeries {
 
         private final StringSeries voltageLevels;
-        private final DoubleSeries bMin;
-        private final DoubleSeries bMax;
-        private final StringSeries regulationModes;
-        private final DoubleSeries targetV;
-        private final DoubleSeries targetQ;
+        private final DoubleSeries powerFactors;
+        private final DoubleSeries lossFactors;
 
-        StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
+        LccStationSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
             if (voltageLevels == null) {
                 throw new PowsyblException("voltage_level_id is missing");
             }
-            this.bMin = dataframe.getDoubles("b_min");
-            this.bMax = dataframe.getDoubles("b_max");
-            this.targetQ = dataframe.getDoubles("target_q");
-            this.targetV = dataframe.getDoubles("target_v");
-            this.regulationModes = dataframe.getStrings("regulation_mode");
+            this.powerFactors = dataframe.getDoubles("power_factor");
+            this.lossFactors = dataframe.getDoubles("loss_factor");
         }
 
         void create(Network network, int row) {
-            StaticVarCompensatorAdder adder = network.getVoltageLevel(voltageLevels.get(row))
-                    .newStaticVarCompensator();
+            LccConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+                    .newLccConverterStation();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(bMin, row, adder::setBmin);
-            NetworkElementCreationUtils.applyIfPresent(bMax, row, adder::setBmax);
-            NetworkElementCreationUtils.applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+            NetworkElementCreationUtils.applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+            NetworkElementCreationUtils.applyIfPresent(powerFactors, row, f -> adder.setPowerFactor((float) f));
             adder.add();
         }
     }
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        StaticVarCompensatorSeries series = new StaticVarCompensatorSeries(dataframe);
+        LccStationSeries series = new LccStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }

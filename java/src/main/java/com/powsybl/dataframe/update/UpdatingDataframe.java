@@ -10,34 +10,12 @@ import com.powsybl.dataframe.SeriesMetadata;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
-import java.util.function.IntConsumer;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public interface UpdatingDataframe {
-
-    static void applyIfPresent(IntSeries series, int index, IntConsumer consumer) {
-        if (series != null) {
-            consumer.accept(series.get(index));
-        }
-    }
-
-    static void applyIfPresent(DoubleSeries series, int index, DoubleConsumer consumer) {
-        if (series != null) {
-            consumer.accept(series.get(index));
-        }
-    }
-
-    static void applyIfPresent(StringSeries series, int index, Consumer<String> consumer) {
-        if (series != null) {
-            consumer.accept(series.get(index));
-        }
-    }
 
     List<SeriesMetadata> getSeriesMetadata();
 
@@ -46,11 +24,6 @@ public interface UpdatingDataframe {
     IntSeries getInts(String column);
 
     StringSeries getStrings(String column);
-
-    default OptionalDouble getDoubleValue(String column, int row) {
-        DoubleSeries series = getDoubles(column);
-        return series != null ? OptionalDouble.of(series.get(row)) : OptionalDouble.empty();
-    }
 
     default Optional<String> getStringValue(String column, int row) {
         StringSeries series = getStrings(column);

@@ -7,11 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.update.TestDoubleSeries;
-import com.powsybl.dataframe.update.TestStringSeries;
-import com.powsybl.dataframe.update.TestIntSeries;
-import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
-import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dataframe.update.*;
 import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.ShuntCompensatorLinearModel;
 import com.powsybl.iidm.network.ShuntCompensatorNonLinearModel;
@@ -21,9 +17,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.LINEAR;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.NON_LINEAR;

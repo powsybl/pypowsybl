@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LineAdder;
 import com.powsybl.iidm.network.Network;
@@ -45,16 +46,43 @@ public class LineDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class LineSeries extends BranchSeries {
+
+        private final DoubleSeries b1;
+        private final DoubleSeries b2;
+        private final DoubleSeries g1;
+        private final DoubleSeries g2;
+        private final DoubleSeries r;
+        private final DoubleSeries x;
+
+        LineSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.b1 = dataframe.getDoubles("b1");
+            this.b2 = dataframe.getDoubles("b2");
+            this.g1 = dataframe.getDoubles("g1");
+            this.g2 = dataframe.getDoubles("g2");
+            this.r = dataframe.getDoubles("r");
+            this.x = dataframe.getDoubles("x");
+        }
+
+        void create(Network network, int row) {
+            LineAdder adder = network.newLine();
+            setBranchAttributes(adder, row);
+            NetworkElementCreationUtils.applyIfPresent(b1, row, adder::setB1);
+            NetworkElementCreationUtils.applyIfPresent(b2, row, adder::setB2);
+            NetworkElementCreationUtils.applyIfPresent(g1, row, adder::setG1);
+            NetworkElementCreationUtils.applyIfPresent(g2, row, adder::setG2);
+            NetworkElementCreationUtils.applyIfPresent(r, row, adder::setR);
+            NetworkElementCreationUtils.applyIfPresent(x, row, adder::setX);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        LineAdder lineAdder = network.newLine();
-        NetworkElementCreationUtils.createBranch(lineAdder, dataframe, indexElement);
-        dataframe.getDoubleValue("b1", indexElement).ifPresent(lineAdder::setB1);
-        dataframe.getDoubleValue("b2", indexElement).ifPresent(lineAdder::setB2);
-        dataframe.getDoubleValue("g1", indexElement).ifPresent(lineAdder::setG1);
-        dataframe.getDoubleValue("g2", indexElement).ifPresent(lineAdder::setG2);
-        dataframe.getDoubleValue("r", indexElement).ifPresent(lineAdder::setR);
-        dataframe.getDoubleValue("x", indexElement).ifPresent(lineAdder::setX);
-        lineAdder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        LineSeries series = new LineSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

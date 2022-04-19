@@ -8,6 +8,8 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BatteryAdder;
 import com.powsybl.iidm.network.Network;
@@ -40,16 +42,43 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class BatterySeries extends InjectionSeries {
+
+        private final StringSeries voltageLevels;
+        private final DoubleSeries maxP;
+        private final DoubleSeries minP;
+        private final DoubleSeries p0;
+        private final DoubleSeries q0;
+
+        BatterySeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.maxP = dataframe.getDoubles("max_p");
+            this.minP = dataframe.getDoubles("min_p");
+            this.p0 = dataframe.getDoubles("p0");
+            this.q0 = dataframe.getDoubles("q0");
+        }
+
+        void createBattery(Network network, int row) {
+            BatteryAdder batteryAdder = network.getVoltageLevel(voltageLevels.get(row))
+                    .newBattery();
+            setInjectionAttributes(batteryAdder, row);
+            NetworkElementCreationUtils.applyIfPresent(maxP, row, batteryAdder::setMaxP);
+            NetworkElementCreationUtils.applyIfPresent(minP, row, batteryAdder::setMinP);
+            NetworkElementCreationUtils.applyIfPresent(p0, row, batteryAdder::setP0);
+            NetworkElementCreationUtils.applyIfPresent(q0, row, batteryAdder::setQ0);
+            batteryAdder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        BatteryAdder batteryAdder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                        .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
-                .newBattery();
-        NetworkElementCreationUtils.createInjection(batteryAdder, dataframe, indexElement);
-        dataframe.getDoubleValue("max_p", indexElement).ifPresent(batteryAdder::setMaxP);
-        dataframe.getDoubleValue("min_p", indexElement).ifPresent(batteryAdder::setMinP);
-        dataframe.getDoubleValue("p0", indexElement).ifPresent(batteryAdder::setP0);
-        dataframe.getDoubleValue("q0", indexElement).ifPresent(batteryAdder::setQ0);
-        batteryAdder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        BatterySeries series = new BatterySeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.createBattery(network, row);
+        }
     }
 }

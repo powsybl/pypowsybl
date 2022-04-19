@@ -7,10 +7,10 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.HvdcLine;
-import com.powsybl.iidm.network.HvdcLineAdder;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,17 +39,46 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class HvdcLineSeries extends IdentifiableSeries {
+
+        private final StringSeries converterStations1;
+        private final StringSeries converterStations2;
+        private final DoubleSeries maxP;
+        private final StringSeries convertersModes;
+        private final DoubleSeries targetP;
+        private final DoubleSeries r;
+        private final DoubleSeries nominalV;
+
+        HvdcLineSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.converterStations1 = dataframe.getStrings("converter_station1_id");
+            this.converterStations2 = dataframe.getStrings("converter_station2_id");
+            this.maxP = dataframe.getDoubles("max_p");
+            this.convertersModes = dataframe.getStrings("converters_mode");
+            this.targetP = dataframe.getDoubles("target_p");
+            this.r = dataframe.getDoubles("r");
+            this.nominalV = dataframe.getDoubles("nominal_v");
+        }
+
+        void create(Network network, int row) {
+            HvdcLineAdder adder = network.newHvdcLine();
+            setIdentifiableAttributes(adder, row);
+            NetworkElementCreationUtils.applyIfPresent(converterStations1, row, adder::setConverterStationId1);
+            NetworkElementCreationUtils.applyIfPresent(converterStations2, row, adder::setConverterStationId2);
+            NetworkElementCreationUtils.applyIfPresent(maxP, row, adder::setMaxP);
+            NetworkElementCreationUtils.applyIfPresent(convertersModes, row, HvdcLine.ConvertersMode.class, adder::setConvertersMode);
+            NetworkElementCreationUtils.applyIfPresent(targetP, row, adder::setActivePowerSetpoint);
+            NetworkElementCreationUtils.applyIfPresent(r, row, adder::setR);
+            NetworkElementCreationUtils.applyIfPresent(nominalV, row, adder::setNominalV);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        HvdcLineAdder adder = network.newHvdcLine();
-        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
-        dataframe.getStringValue("converter_station1_id", indexElement).ifPresent(adder::setConverterStationId1);
-        dataframe.getStringValue("converter_station2_id", indexElement).ifPresent(adder::setConverterStationId2);
-        dataframe.getDoubleValue("max_p", indexElement).ifPresent(adder::setMaxP);
-        dataframe.getStringValue("converters_mode", indexElement).map(HvdcLine.ConvertersMode::valueOf).ifPresent(adder::setConvertersMode);
-        dataframe.getDoubleValue("target_p", indexElement).ifPresent(adder::setActivePowerSetpoint);
-        dataframe.getDoubleValue("r", indexElement).ifPresent(adder::setR);
-        dataframe.getDoubleValue("nominal_v", indexElement).ifPresent(adder::setNominalV);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        HvdcLineSeries series = new HvdcLineSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

@@ -16,14 +16,14 @@ import com.powsybl.iidm.network.SubstationAdder;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.update.UpdatingDataframe.applyIfPresent;
+import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-public class SubstationDataframeAdder implements NetworkElementAdder {
+public class SubstationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
@@ -33,36 +33,39 @@ public class SubstationDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.strings("TSO")
     );
 
+    private static class SubstationSeries extends IdentifiableSeries {
+        private final StringSeries countries;
+        private final StringSeries tsos;
+
+        SubstationSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.countries = dataframe.getStrings("country");
+            if (dataframe.getStrings("tso") != null) {
+                this.tsos = dataframe.getStrings("tso");
+            } else {
+                this.tsos = dataframe.getStrings("TSO");
+            }
+        }
+
+        void createSubstation(Network network, int row) {
+            SubstationAdder adder = network.newSubstation();
+            setIdentifiableAttributes(adder, row);
+            applyIfPresent(countries, row, Country.class, adder::setCountry);
+            applyIfPresent(tsos, row, adder::setTso);
+            adder.add();
+        }
+    }
+
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
         return Collections.singletonList(METADATA);
     }
 
     @Override
-    public void addElements(Network network, List<UpdatingDataframe> dataframes) {
-        UpdatingDataframe primaryDf = getPrimaryDataframe(dataframes);
-        StringSeries countries = primaryDf.getStrings("country");
-        StringSeries tsos1 = primaryDf.getStrings("tso");
-        StringSeries tsos2 = primaryDf.getStrings("TSO");
-        for (int i = 0; i < primaryDf.getRowCount(); i++) {
-            addElement(network, primaryDf, countries, tsos1, tsos2, i);
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        SubstationSeries series = new SubstationSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.createSubstation(network, row);
         }
-    }
-
-    protected UpdatingDataframe getPrimaryDataframe(List<UpdatingDataframe> dataframes) {
-        if (dataframes.size() != 1) {
-            throw new IllegalArgumentException("Expected only one input dataframe");
-        }
-        return dataframes.get(0);
-    }
-
-    private void addElement(Network network, UpdatingDataframe dataframe,
-                            StringSeries countries, StringSeries tsos1, StringSeries tsos2, int row) {
-        SubstationAdder adder = network.newSubstation();
-        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, row);
-        applyIfPresent(countries, row, country -> adder.setCountry(Country.valueOf(country)));
-        applyIfPresent(tsos1, row, adder::setTso);
-        applyIfPresent(tsos2, row, adder::setTso);
-        adder.add();
     }
 }
