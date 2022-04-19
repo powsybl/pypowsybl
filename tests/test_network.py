@@ -23,7 +23,7 @@ import tempfile
 
 
 TEST_DIR = pathlib.Path(__file__).parent
-DATA_DIR = TEST_DIR.parent.joinpath('data')
+DATA_DIR = TEST_DIR.parent / 'data'
 
 
 class NetworkTestCase(unittest.TestCase):
@@ -297,17 +297,6 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
             columns=['bus_breaker_bus_id', 'node'],
             data=[['S1VL2_7', 7], ['S1VL2_9', 9], ['S1VL2_11', 11], ['S2VL1_2', 2], ['S3VL1_6', 6]])
         pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=10 ** -2)
-
-    def test_extensions(self):
-        no_extensions_network = pp.network.create_eurostag_tutorial_example1_network()
-        self.assertEqual(0, len(no_extensions_network.get_extension('activePowerControl')))
-        n = pp.network._create_network('eurostag_tutorial_example1_with_apc_extension')
-        self.assertIn('activePowerControl', pp.network.get_extensions_names())
-        generators_extensions = n.get_extension('activePowerControl')
-        self.assertEqual(1, len(generators_extensions))
-        self.assertTrue(generators_extensions['participate']['GEN'])
-        self.assertAlmostEqual(1.1, generators_extensions['droop']['GEN'])
-        self.assertEqual(0, len(n.get_extension('hvdcOperatorActivePowerRange')))
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
@@ -1023,8 +1012,9 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                   ['', 380, NaN, 0, 0, 'VLHV2'],
                   ['', NaN, NaN, 0, 0, 'VLLOAD']])
         pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
-        buses_default_attributes2 = n.get_buses(attributes=[])
-        pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes2, check_dtype=False)
+        buses_empty = n.get_buses(attributes=[])
+        expected_empty = expected_default_attributes[[]]
+        pd.testing.assert_frame_equal(expected_empty, buses_empty, check_dtype=False)
 
         buses_all_attributes = n.get_buses(all_attributes=True)
         expected_all_attributes = expected_default_attributes
@@ -1235,7 +1225,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         self.assertEqual(disc.node1, 0)
         self.assertEqual(disc.node2, 1)
 
-    def test_switches_node_breaker_connection_info(self):
+    def test_switches_bus_breaker_connection_info(self):
         n = pp.network.create_empty()
         n.create_substations(id='S')
         n.create_voltage_levels(id='VL', substation_id='S', topology_kind='BUS_BREAKER', nominal_v=400)
@@ -1250,6 +1240,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                                    'node2': -1}])
 
         pd.testing.assert_frame_equal(switches, expected, check_dtype=False)
+
+    def test_get_empty_attributes(self):
+        network = pp.network.create_eurostag_tutorial_example1_network()
+        gens = network.get_generators(attributes=[])
+        self.assertEquals(gens.index.tolist(), ['GEN', 'GEN2'])
+        self.assertTrue(gens.columns.empty)
 
 
 if __name__ == '__main__':

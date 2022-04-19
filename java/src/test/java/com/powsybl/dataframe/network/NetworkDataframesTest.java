@@ -17,7 +17,7 @@ import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
-import com.powsybl.python.NetworkUtil;
+import com.powsybl.python.Networks;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ class NetworkDataframesTest {
 
     @Test
     void generatorsExtension() {
-        Network network = NetworkUtil.createEurostagTutorialExample1WithApcExtension();
+        Network network = Networks.createEurostagTutorialExample1WithApcExtension();
         List<Series> series = createExtensionDataFrame("activePowerControl", network);
         assertThat(series)
                 .extracting(Series::getName)

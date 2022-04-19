@@ -10,27 +10,25 @@ import com.google.auto.service.AutoService;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
+import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategory;
 
 import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtensionDataframeProvider {
-
-    public static final String EXTENSION_NAME = "hvdcOperatorActivePowerRange";
+public class GeneratorEntsoeCategoryDataframeProvider implements NetworkExtensionDataframeProvider {
 
     @Override
     public String getExtensionName() {
-        return EXTENSION_NAME;
+        return GeneratorEntsoeCategory.NAME;
     }
 
-    private Stream<HvdcOperatorActivePowerRange> itemsStream(Network network) {
-        return network.getHvdcLineStream()
-                .map(g -> (HvdcOperatorActivePowerRange) g.getExtension(HvdcOperatorActivePowerRange.class))
+    private Stream<GeneratorEntsoeCategory> itemsStream(Network network) {
+        return network.getGeneratorStream()
+                .map(g -> (GeneratorEntsoeCategory) g.getExtension(GeneratorEntsoeCategory.class))
                 .filter(Objects::nonNull);
     }
 
@@ -38,8 +36,7 @@ public class HvdcOperatorActivePowerRangeSeriesProvider implements NetworkExtens
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream)
                 .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .doubles("opr_from_cs1_to_cs2", HvdcOperatorActivePowerRange::getOprFromCS1toCS2)
-                .doubles("opr_from_cs2_to_cs1", HvdcOperatorActivePowerRange::getOprFromCS2toCS1)
+                .ints("code", GeneratorEntsoeCategory::getCode)
                 .build();
     }
 }
