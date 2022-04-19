@@ -745,10 +745,10 @@ void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type 
     pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
 }
 
-
-void setupCallback(void *& callback) {
-    pypowsybl::callJava<>(::setupCallback, callback);
+void setupLoggerCallback(void *& callback) {
+    pypowsybl::callJava<>(::setupLoggerCallback, callback);
 }
+
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds) {
     ToCharPtrPtr elementIdsPtr(elementIds);
     pypowsybl::callJava<>(::removeNetworkElements, network, elementIdsPtr.get(), elementIds.size());

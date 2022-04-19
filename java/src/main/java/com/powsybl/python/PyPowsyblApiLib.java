@@ -757,13 +757,13 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    interface Callback extends CFunctionPointer {
+    interface LoggerCallback extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
     }
 
-    @CEntryPoint(name = "setupCallback")
-    public static void setupCallback(IsolateThread thread, Callback fpointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "setupLoggerCallback")
+    public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             loggerCallback = fpointer;
         });

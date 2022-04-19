@@ -327,7 +327,7 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
 
-void setupCallback(void *& callback);
+void setupLoggerCallback(void *& callback);
 
 }
 

@@ -21,7 +21,7 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(final ILoggingEvent e) {
-        PyPowsyblApiLib.Callback logMessage = (PyPowsyblApiLib.Callback) PyPowsyblApiLib.loggerCallback;
+        PyPowsyblApiLib.LoggerCallback logMessage = (PyPowsyblApiLib.LoggerCallback) PyPowsyblApiLib.loggerCallback;
         logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(),
                 CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
     }
