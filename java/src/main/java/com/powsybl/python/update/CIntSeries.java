@@ -6,32 +6,22 @@
  */
 package com.powsybl.python.update;
 
+import com.powsybl.dataframe.update.IntSeries;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
-public class IntSeries implements Series<CIntPointer> {
+public class CIntSeries implements IntSeries {
 
     private final CIntPointer values;
-    private final String name;
-    private final int size;
 
-    public IntSeries(String name, int size, CIntPointer values) {
-        this.name = name;
-        this.size = size;
+    public CIntSeries(CIntPointer values) {
         this.values = values;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public CIntPointer getValues() {
-        return values;
+    @Override
+    public int get(int index) {
+        return values.read(index);
     }
 }

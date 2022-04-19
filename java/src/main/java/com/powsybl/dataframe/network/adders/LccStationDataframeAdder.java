@@ -11,7 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.DanglingLineAdder;
+import com.powsybl.iidm.network.LccConverterStationAdder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
@@ -24,7 +24,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
+public class LccStationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
@@ -33,12 +33,8 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.doubles("p0"),
-            SeriesMetadata.doubles("q0"),
-            SeriesMetadata.doubles("r"),
-            SeriesMetadata.doubles("x"),
-            SeriesMetadata.doubles("g"),
-            SeriesMetadata.doubles("b")
+            SeriesMetadata.doubles("power_factor"),
+            SeriesMetadata.doubles("loss_factor")
     );
 
     @Override
@@ -46,47 +42,35 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class DanglingLineSeries extends InjectionSeries {
+    private static class LccStationSeries extends InjectionSeries {
 
         private final StringSeries voltageLevels;
-        private final DoubleSeries p0;
-        private final DoubleSeries q0;
-        private final DoubleSeries r;
-        private final DoubleSeries x;
-        private final DoubleSeries g;
-        private final DoubleSeries b;
+        private final DoubleSeries powerFactors;
+        private final DoubleSeries lossFactors;
 
-        DanglingLineSeries(UpdatingDataframe dataframe) {
+        LccStationSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
             if (voltageLevels == null) {
                 throw new PowsyblException("voltage_level_id is missing");
             }
-            this.p0 = dataframe.getDoubles("p0");
-            this.q0 = dataframe.getDoubles("q0");
-            this.r = dataframe.getDoubles("r");
-            this.x = dataframe.getDoubles("x");
-            this.g = dataframe.getDoubles("g");
-            this.b = dataframe.getDoubles("b");
+            this.powerFactors = dataframe.getDoubles("power_factor");
+            this.lossFactors = dataframe.getDoubles("loss_factor");
         }
 
         void create(Network network, int row) {
-            DanglingLineAdder adder = network.getVoltageLevel(voltageLevels.get(row))
-                    .newDanglingLine();
+            LccConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+                    .newLccConverterStation();
             setInjectionAttributes(adder, row);
-            applyIfPresent(p0, row, adder::setP0);
-            applyIfPresent(q0, row, adder::setQ0);
-            applyIfPresent(r, row, adder::setR);
-            applyIfPresent(x, row, adder::setX);
-            applyIfPresent(g, row, adder::setG);
-            applyIfPresent(b, row, adder::setB);
+            applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+            applyIfPresent(powerFactors, row, f -> adder.setPowerFactor((float) f));
             adder.add();
         }
     }
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        DanglingLineSeries series = new DanglingLineSeries(dataframe);
+        LccStationSeries series = new LccStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }

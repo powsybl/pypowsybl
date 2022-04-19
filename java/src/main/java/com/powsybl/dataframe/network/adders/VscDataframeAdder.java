@@ -8,12 +8,18 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VscConverterStationAdder;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -40,14 +46,43 @@ public class VscDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class VscStationSeries extends InjectionSeries {
+
+        private final StringSeries voltageLevels;
+        private final DoubleSeries lossFactors;
+        private final DoubleSeries targetV;
+        private final DoubleSeries targetQ;
+        private final IntSeries voltageRegulatorOn;
+
+        VscStationSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.lossFactors = dataframe.getDoubles("loss_factor");
+            this.targetV = dataframe.getDoubles("target_v");
+            this.targetQ = dataframe.getDoubles("target_q");
+            this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
+        }
+
+        void create(Network network, int row) {
+            VscConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+                    .newVscConverterStation();
+            setInjectionAttributes(adder, row);
+            applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        VscConverterStationAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                .orElseThrow(() -> new PowsyblException("voltage_level_id is missing"))).newVscConverterStation();
-        NetworkElementCreationUtils.createHvdc(adder, dataframe, indexElement);
-        dataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setVoltageSetpoint);
-        dataframe.getDoubleValue("target_q", indexElement).ifPresent(adder::setReactivePowerSetpoint);
-        adder.setVoltageRegulatorOn(dataframe.getIntValue("voltage_regulator_on", indexElement).orElse(0) == 1);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        VscStationSeries series = new VscStationSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

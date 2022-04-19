@@ -8,6 +8,8 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LoadAdder;
 import com.powsybl.iidm.network.LoadType;
@@ -15,6 +17,8 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -40,15 +44,41 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class LoadSeries extends InjectionSeries {
+
+        private final StringSeries voltageLevels;
+        private final DoubleSeries p0;
+        private final DoubleSeries q0;
+        private final StringSeries type;
+
+        LoadSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.p0 = dataframe.getDoubles("p0");
+            this.q0 = dataframe.getDoubles("q0");
+            this.type = dataframe.getStrings("type");
+
+        }
+
+        void create(Network network, int row) {
+            LoadAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+                    .newLoad();
+            setInjectionAttributes(adder, row);
+            applyIfPresent(p0, row, adder::setP0);
+            applyIfPresent(q0, row, adder::setQ0);
+            applyIfPresent(type, row, LoadType.class, adder::setLoadType);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        LoadAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                        .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
-                .newLoad();
-        NetworkElementCreationUtils.createInjection(adder, dataframe, indexElement);
-        dataframe.getDoubleValue("p0", indexElement).ifPresent(adder::setP0);
-        dataframe.getDoubleValue("q0", indexElement).ifPresent(adder::setQ0);
-        dataframe.getStringValue("type", indexElement).map(LoadType::valueOf).ifPresent(adder::setLoadType);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        LoadSeries series = new LoadSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }
