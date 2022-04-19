@@ -299,15 +299,25 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_generator_maxq_minq_reactive_limits(self):
         n = pp.network.create_micro_grid_be_network()
-        generators = n.get_generators()
-        gen1 = '_3a3b27be-b18b-4385-b557-6735d733baf0'
-        self.assertEqual('CURVE', generators['reactive_limits_kind'][gen1])
-        self.assertTrue(np.isnan(generators['min_q'][gen1]))
-        self.assertTrue(np.isnan(generators['max_q'][gen1]))
-        gen2 = '_550ebe0d-f2b2-48c1-991f-cebea43a21aa'
-        self.assertEqual('MIN_MAX', generators['reactive_limits_kind'][gen2])
-        self.assertEqual(-200.0, generators['min_q'][gen2])
-        self.assertEqual(200.0, generators['max_q'][gen2])
+        gen1_id = '_3a3b27be-b18b-4385-b557-6735d733baf0'
+        n.update_generators(id=gen1_id, p=90, target_p=80)
+        generators = n.get_generators(attributes=['reactive_limits_kind',
+                                                  'min_q', 'max_q',
+                                                  'min_q_at_p', 'max_q_at_p',
+                                                  'min_q_at_target_p', 'max_q_at_target_p'])
+        gen1 = generators.loc['_3a3b27be-b18b-4385-b557-6735d733baf0']
+        self.assertEqual('CURVE', gen1['reactive_limits_kind'])
+        self.assertTrue(np.isnan(gen1['min_q']))
+        self.assertTrue(np.isnan(gen1['max_q']))
+        self.assertEqual(-210, gen1['min_q_at_p'])
+        self.assertEqual(210, gen1['max_q_at_p'])
+        self.assertEqual(-220, gen1['min_q_at_target_p'])
+        self.assertEqual(220, gen1['max_q_at_target_p'])
+
+        gen2 = generators.loc['_550ebe0d-f2b2-48c1-991f-cebea43a21aa']
+        self.assertEqual('MIN_MAX', gen2['reactive_limits_kind'])
+        self.assertEqual(-200.0, gen2['min_q'])
+        self.assertEqual(200.0, gen2['max_q'])
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
