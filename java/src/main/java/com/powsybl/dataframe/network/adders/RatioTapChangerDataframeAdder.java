@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.applyBooleanIfPresent;
-import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.applyIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>

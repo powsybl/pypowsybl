@@ -16,6 +16,9 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -76,20 +79,20 @@ public class SwitchDataframeAdder extends AbstractSimpleAdder {
             if (kind == TopologyKind.NODE_BREAKER) {
                 VoltageLevel.NodeBreakerView.SwitchAdder adder = vl.getNodeBreakerView().newSwitch();
                 setIdentifiableAttributes(adder, row);
-                NetworkElementCreationUtils.applyIfPresent(kinds, row, adder::setKind);
-                NetworkElementCreationUtils.applyIfPresent(nodes1, row, adder::setNode1);
-                NetworkElementCreationUtils.applyIfPresent(nodes2, row, adder::setNode2);
-                NetworkElementCreationUtils.applyBooleanIfPresent(open, row, adder::setOpen);
-                NetworkElementCreationUtils.applyBooleanIfPresent(retained, row, adder::setRetained);
-                NetworkElementCreationUtils.applyBooleanIfPresent(fictitious, row, adder::setFictitious);
+                applyIfPresent(kinds, row, adder::setKind);
+                applyIfPresent(nodes1, row, adder::setNode1);
+                applyIfPresent(nodes2, row, adder::setNode2);
+                applyBooleanIfPresent(open, row, adder::setOpen);
+                applyBooleanIfPresent(retained, row, adder::setRetained);
+                applyBooleanIfPresent(fictitious, row, adder::setFictitious);
                 adder.add();
             } else if (kind == TopologyKind.BUS_BREAKER) {
                 VoltageLevel.BusBreakerView.SwitchAdder adder = vl.getBusBreakerView().newSwitch();
                 setIdentifiableAttributes(adder, row);
-                NetworkElementCreationUtils.applyIfPresent(buses1, row, adder::setBus1);
-                NetworkElementCreationUtils.applyIfPresent(buses2, row, adder::setBus2);
-                NetworkElementCreationUtils.applyBooleanIfPresent(open, row, adder::setOpen);
-                NetworkElementCreationUtils.applyBooleanIfPresent(fictitious, row, adder::setFictitious);
+                applyIfPresent(buses1, row, adder::setBus1);
+                applyIfPresent(buses2, row, adder::setBus2);
+                applyBooleanIfPresent(open, row, adder::setOpen);
+                applyBooleanIfPresent(fictitious, row, adder::setFictitious);
                 adder.add();
             }
         }

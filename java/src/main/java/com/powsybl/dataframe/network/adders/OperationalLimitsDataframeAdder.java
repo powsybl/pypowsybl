@@ -13,7 +13,7 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.*;
 
-import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.*;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
 
 public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 

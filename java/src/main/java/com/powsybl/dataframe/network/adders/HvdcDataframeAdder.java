@@ -15,6 +15,8 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -63,13 +65,13 @@ public class HvdcDataframeAdder extends AbstractSimpleAdder {
         void create(Network network, int row) {
             HvdcLineAdder adder = network.newHvdcLine();
             setIdentifiableAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(converterStations1, row, adder::setConverterStationId1);
-            NetworkElementCreationUtils.applyIfPresent(converterStations2, row, adder::setConverterStationId2);
-            NetworkElementCreationUtils.applyIfPresent(maxP, row, adder::setMaxP);
-            NetworkElementCreationUtils.applyIfPresent(convertersModes, row, HvdcLine.ConvertersMode.class, adder::setConvertersMode);
-            NetworkElementCreationUtils.applyIfPresent(targetP, row, adder::setActivePowerSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(r, row, adder::setR);
-            NetworkElementCreationUtils.applyIfPresent(nominalV, row, adder::setNominalV);
+            applyIfPresent(converterStations1, row, adder::setConverterStationId1);
+            applyIfPresent(converterStations2, row, adder::setConverterStationId2);
+            applyIfPresent(maxP, row, adder::setMaxP);
+            applyIfPresent(convertersModes, row, HvdcLine.ConvertersMode.class, adder::setConvertersMode);
+            applyIfPresent(targetP, row, adder::setActivePowerSetpoint);
+            applyIfPresent(r, row, adder::setR);
+            applyIfPresent(nominalV, row, adder::setNominalV);
             adder.add();
         }
     }

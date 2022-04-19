@@ -16,7 +16,7 @@ import com.powsybl.iidm.network.SubstationAdder;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.applyIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>

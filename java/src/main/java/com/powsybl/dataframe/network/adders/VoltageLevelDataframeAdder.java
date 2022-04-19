@@ -18,6 +18,8 @@ import com.powsybl.iidm.network.VoltageLevelAdder;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -64,10 +66,10 @@ public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
             VoltageLevelAdder adder = network.getSubstation(substations.get(row))
                     .newVoltageLevel();
             setIdentifiableAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(topologyKind, row, TopologyKind.class, adder::setTopologyKind);
-            NetworkElementCreationUtils.applyIfPresent(nominalV, row, adder::setNominalV);
-            NetworkElementCreationUtils.applyIfPresent(lowVoltageLimit, row, adder::setLowVoltageLimit);
-            NetworkElementCreationUtils.applyIfPresent(highVoltageLimit, row, adder::setHighVoltageLimit);
+            applyIfPresent(topologyKind, row, TopologyKind.class, adder::setTopologyKind);
+            applyIfPresent(nominalV, row, adder::setNominalV);
+            applyIfPresent(lowVoltageLimit, row, adder::setLowVoltageLimit);
+            applyIfPresent(highVoltageLimit, row, adder::setHighVoltageLimit);
             adder.add();
         }
     }

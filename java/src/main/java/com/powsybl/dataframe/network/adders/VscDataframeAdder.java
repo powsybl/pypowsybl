@@ -18,6 +18,9 @@ import com.powsybl.iidm.network.VscConverterStationAdder;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -67,10 +70,10 @@ public class VscDataframeAdder extends AbstractSimpleAdder {
             VscConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
                     .newVscConverterStation();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
-            NetworkElementCreationUtils.applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            NetworkElementCreationUtils.applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
             adder.add();
         }
     }

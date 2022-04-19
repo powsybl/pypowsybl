@@ -17,6 +17,8 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -55,7 +57,7 @@ public class BusBarDataframeAdder extends AbstractSimpleAdder {
                     .getNodeBreakerView()
                     .newBusbarSection();
             setIdentifiableAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(nodes, row, adder::setNode);
+            applyIfPresent(nodes, row, adder::setNode);
             adder.add();
         }
     }

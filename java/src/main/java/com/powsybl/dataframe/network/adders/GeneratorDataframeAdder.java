@@ -17,6 +17,9 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -77,14 +80,14 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             GeneratorAdder adder = network.getVoltageLevel(voltageLevels.get(row))
                     .newGenerator();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(maxP, row, adder::setMaxP);
-            NetworkElementCreationUtils.applyIfPresent(minP, row, adder::setMinP);
-            NetworkElementCreationUtils.applyIfPresent(targetP, row, adder::setTargetP);
-            NetworkElementCreationUtils.applyIfPresent(targetQ, row, adder::setTargetQ);
-            NetworkElementCreationUtils.applyIfPresent(targetV, row, adder::setTargetV);
-            NetworkElementCreationUtils.applyIfPresent(ratedS, row, adder::setRatedS);
-            NetworkElementCreationUtils.applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-            NetworkElementCreationUtils.applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
+            applyIfPresent(maxP, row, adder::setMaxP);
+            applyIfPresent(minP, row, adder::setMinP);
+            applyIfPresent(targetP, row, adder::setTargetP);
+            applyIfPresent(targetQ, row, adder::setTargetQ);
+            applyIfPresent(targetV, row, adder::setTargetV);
+            applyIfPresent(ratedS, row, adder::setRatedS);
+            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
             adder.add();
         }
     }

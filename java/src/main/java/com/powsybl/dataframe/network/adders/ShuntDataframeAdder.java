@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -128,9 +130,9 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             ShuntCompensatorAdder adder = network.getVoltageLevel(voltageLevelId)
                     .newShuntCompensator();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(sectionCount, row, adder::setSectionCount);
-            NetworkElementCreationUtils.applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
-            NetworkElementCreationUtils.applyIfPresent(targetV, row, adder::setTargetV);
+            applyIfPresent(sectionCount, row, adder::setSectionCount);
+            applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
+            applyIfPresent(targetV, row, adder::setTargetV);
 
             ShuntCompensatorModelType modelType = ShuntCompensatorModelType.valueOf(modelTypes.get(row));
 
@@ -140,9 +142,9 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 if (index == -1) {
                     throw new PowsyblException("one section must be defined for a linear shunt");
                 }
-                NetworkElementCreationUtils.applyIfPresent(bPerSection, index, linearModelAdder::setBPerSection);
-                NetworkElementCreationUtils.applyIfPresent(gPerSection, index, linearModelAdder::setGPerSection);
-                NetworkElementCreationUtils.applyIfPresent(maxSectionCount, index, linearModelAdder::setMaximumSectionCount);
+                applyIfPresent(bPerSection, index, linearModelAdder::setBPerSection);
+                applyIfPresent(gPerSection, index, linearModelAdder::setGPerSection);
+                applyIfPresent(maxSectionCount, index, linearModelAdder::setMaximumSectionCount);
                 linearModelAdder.add();
             } else if (modelType == ShuntCompensatorModelType.NON_LINEAR) {
                 ShuntCompensatorNonLinearModelAdder nonLinearAdder = adder.newNonLinearModel();
@@ -152,8 +154,8 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 }
                 sections.forEach(i -> {
                     ShuntCompensatorNonLinearModelAdder.SectionAdder section = nonLinearAdder.beginSection();
-                    NetworkElementCreationUtils.applyIfPresent(g, i, section::setG);
-                    NetworkElementCreationUtils.applyIfPresent(b, i, section::setB);
+                    applyIfPresent(g, i, section::setG);
+                    applyIfPresent(b, i, section::setB);
                     section.endSection();
                     return true;
                 });

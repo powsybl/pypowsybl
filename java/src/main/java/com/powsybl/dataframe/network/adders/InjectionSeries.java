@@ -11,7 +11,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.InjectionAdder;
 
-import static com.powsybl.dataframe.network.adders.NetworkElementCreationUtils.applyIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * Common series for all injections.

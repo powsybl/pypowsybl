@@ -18,6 +18,8 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -65,9 +67,9 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
             LoadAdder adder = network.getVoltageLevel(voltageLevels.get(row))
                     .newLoad();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(p0, row, adder::setP0);
-            NetworkElementCreationUtils.applyIfPresent(q0, row, adder::setQ0);
-            NetworkElementCreationUtils.applyIfPresent(type, row, LoadType.class, adder::setLoadType);
+            applyIfPresent(p0, row, adder::setP0);
+            applyIfPresent(q0, row, adder::setQ0);
+            applyIfPresent(type, row, LoadType.class, adder::setLoadType);
             adder.add();
         }
     }

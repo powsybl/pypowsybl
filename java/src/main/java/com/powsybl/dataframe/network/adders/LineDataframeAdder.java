@@ -15,6 +15,8 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -68,12 +70,12 @@ public class LineDataframeAdder extends AbstractSimpleAdder {
         void create(Network network, int row) {
             LineAdder adder = network.newLine();
             setBranchAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(b1, row, adder::setB1);
-            NetworkElementCreationUtils.applyIfPresent(b2, row, adder::setB2);
-            NetworkElementCreationUtils.applyIfPresent(g1, row, adder::setG1);
-            NetworkElementCreationUtils.applyIfPresent(g2, row, adder::setG2);
-            NetworkElementCreationUtils.applyIfPresent(r, row, adder::setR);
-            NetworkElementCreationUtils.applyIfPresent(x, row, adder::setX);
+            applyIfPresent(b1, row, adder::setB1);
+            applyIfPresent(b2, row, adder::setB2);
+            applyIfPresent(g1, row, adder::setG1);
+            applyIfPresent(g2, row, adder::setG2);
+            applyIfPresent(r, row, adder::setR);
+            applyIfPresent(x, row, adder::setX);
             adder.add();
         }
     }

@@ -16,6 +16,8 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -68,11 +70,11 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             StaticVarCompensatorAdder adder = network.getVoltageLevel(voltageLevels.get(row))
                     .newStaticVarCompensator();
             setInjectionAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(bMin, row, adder::setBmin);
-            NetworkElementCreationUtils.applyIfPresent(bMax, row, adder::setBmax);
-            NetworkElementCreationUtils.applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            NetworkElementCreationUtils.applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+            applyIfPresent(bMin, row, adder::setBmin);
+            applyIfPresent(bMax, row, adder::setBmax);
+            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+            applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
             adder.add();
         }
     }

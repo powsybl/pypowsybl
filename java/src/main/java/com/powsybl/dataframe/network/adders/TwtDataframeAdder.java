@@ -15,6 +15,8 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -87,13 +89,13 @@ public class TwtDataframeAdder extends AbstractSimpleAdder {
             }
             var adder = s1.newTwoWindingsTransformer();
             setBranchAttributes(adder, row);
-            NetworkElementCreationUtils.applyIfPresent(ratedU1, row, adder::setRatedU1);
-            NetworkElementCreationUtils.applyIfPresent(ratedU2, row, adder::setRatedU2);
-            NetworkElementCreationUtils.applyIfPresent(ratedS, row, adder::setRatedS);
-            NetworkElementCreationUtils.applyIfPresent(b, row, adder::setB);
-            NetworkElementCreationUtils.applyIfPresent(g, row, adder::setG);
-            NetworkElementCreationUtils.applyIfPresent(r, row, adder::setR);
-            NetworkElementCreationUtils.applyIfPresent(x, row, adder::setX);
+            applyIfPresent(ratedU1, row, adder::setRatedU1);
+            applyIfPresent(ratedU2, row, adder::setRatedU2);
+            applyIfPresent(ratedS, row, adder::setRatedS);
+            applyIfPresent(b, row, adder::setB);
+            applyIfPresent(g, row, adder::setG);
+            applyIfPresent(r, row, adder::setR);
+            applyIfPresent(x, row, adder::setX);
             adder.add();
         }
     }

@@ -19,15 +19,20 @@ import java.util.function.IntConsumer;
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
-public final class NetworkElementCreationUtils {
+final class SeriesUtils {
 
-    private NetworkElementCreationUtils() {
+    private SeriesUtils() {
     }
 
     static void applyIfPresent(IntSeries series, int index, IntConsumer consumer) {
         if (series != null) {
             consumer.accept(series.get(index));
         }
+    }
+
+    @FunctionalInterface
+    interface BooleanConsumer {
+        void accept(boolean value);
     }
 
     static void applyBooleanIfPresent(IntSeries series, int index, BooleanConsumer consumer) {
@@ -76,10 +81,5 @@ public final class NetworkElementCreationUtils {
             throw new PowsyblException("Required column " + name + " is missing.");
         }
         return series;
-    }
-
-    @FunctionalInterface
-    interface BooleanConsumer {
-        void accept(boolean value);
     }
 }
