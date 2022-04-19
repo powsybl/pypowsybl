@@ -79,7 +79,7 @@ ExternalProject_Add(native-image
 set(SOURCE_DIR "src")
 
 include_directories(${SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
-set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp")
+set(SOURCES "${SOURCE_DIR}/pypowsybl.cpp" "${SOURCE_DIR}/pylogging.cpp")
 
 link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
 

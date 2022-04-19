@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #include "pypowsybl.h"
+#include "pylogging.h"
 #include "pypowsybl-java.h"
 #include <iostream>
 
@@ -56,10 +57,23 @@ private:
 //copies to string and frees memory allocated by java
 std::string toString(char* cstring);
 
+//Explicitly update log level on java side
+void setLogLevelFromPythonLogger(GraalVmGuard* guard, exception_handler* exc) {
+    py::object logger = CppToPythonLogger::get()->getLogger();
+    if (!logger.is_none()) {
+        py::gil_scoped_acquire acquire;
+        py::object level = logger.attr("level");
+        ::setLogLevel(guard->thread(), level.cast<int>(), exc);
+     }
+}
+
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    setLogLevelFromPythonLogger(&guard, &exc);
+
     f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
@@ -70,6 +84,9 @@ template<typename T, typename F, typename... ARGS>
 T callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    setLogLevelFromPythonLogger(&guard, &exc);
+
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
@@ -234,10 +251,6 @@ std::string toString(char* cstring) {
 
 void setJavaLibraryPath(const std::string& javaLibraryPath) {
     callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
-}
-
-void setDebugMode(bool debug) {
-    callJava<>(::setDebugMode, debug);
 }
 
 void setConfigRead(bool configRead) {
@@ -730,6 +743,10 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
     pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
+}
+
+void setupLoggerCallback(void *& callback) {
+    pypowsybl::callJava<>(::setupLoggerCallback, callback);
 }
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds) {

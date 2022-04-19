@@ -6,7 +6,6 @@
  */
 package com.powsybl.python;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.util.ServiceLoaderCache;
@@ -37,6 +36,8 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.function.CFunctionPointer;
+import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -60,6 +61,8 @@ import static com.powsybl.python.Util.*;
 @CContext(Directives.class)
 public final class PyPowsyblApiLib {
 
+    public static CFunctionPointer loggerCallback;
+
     private PyPowsyblApiLib() {
     }
 
@@ -67,14 +70,6 @@ public final class PyPowsyblApiLib {
     public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
-        });
-    }
-
-    @CEntryPoint(name = "setDebugMode")
-    public static void setDebugMode(IsolateThread thread, boolean debug, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            rootLogger.setLevel(debug ? Level.DEBUG : Level.ERROR);
         });
     }
 
@@ -762,4 +757,23 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    interface LoggerCallback extends CFunctionPointer {
+        @InvokeCFunctionPointer
+        void invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
+    }
+
+    @CEntryPoint(name = "setupLoggerCallback")
+    public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            loggerCallback = fpointer;
+        });
+    }
+
+    @CEntryPoint(name = "setLogLevel")
+    public static void setLogLevel(IsolateThread thread, int logLevel, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            rootLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+        });
+    }
 }

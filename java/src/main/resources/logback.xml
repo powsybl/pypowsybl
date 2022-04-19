@@ -1,14 +1,14 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="custom" class="com.powsybl.python.CustomAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <root level="ERROR">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="custom" />
     </root>
     <logger name="org.nocrala.tools.texttablefmt" level="ERROR" additivity="false">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="custom" />
     </logger>
 </configuration>

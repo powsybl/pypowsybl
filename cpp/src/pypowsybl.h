@@ -162,8 +162,6 @@ void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
-void setDebugMode(bool debug);
-
 void setConfigRead(bool configRead);
 
 void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
@@ -328,6 +326,9 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 ::validation_level_type validate(const JavaHandle& network);
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
+
+void setupLoggerCallback(void *& callback);
+
 }
 
 #endif //PYPOWSYBL_H

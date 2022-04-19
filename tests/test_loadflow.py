@@ -29,7 +29,6 @@ class LoadflowTestCase(unittest.TestCase):
         self.assertEqual('OpenLoadFlow', pp.loadflow.get_default_provider())
 
     def test_run_lf(self):
-        pp.set_debug_mode(True)
         n = pp.network.create_ieee14()
         results = lf.run_ac(n)
         self.assertEqual(1, len(results))
