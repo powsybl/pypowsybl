@@ -59,9 +59,10 @@ std::string toString(char* cstring);
 
 //Explicitly update log level on java side
 void setLogLevelFromPythonLogger(GraalVmGuard* guard, exception_handler* exc) {
-    if (CppToPythonLogger::get()->loggerInitialized()) {
+    py::object logger = CppToPythonLogger::get()->getLogger();
+    if (!logger.is_none()) {
         py::gil_scoped_acquire acquire;
-        py::object level = CppToPythonLogger::get()->getLogger().attr("level");
+        py::object level = logger.attr("level");
         ::setLogLevel(guard->thread(), level.cast<int>(), exc);
      }
 }

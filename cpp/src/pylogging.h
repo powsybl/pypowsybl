@@ -11,24 +11,24 @@ namespace py = pybind11;
 
 class CppToPythonLogger {
 public:
+    CppToPythonLogger();
+
     static CppToPythonLogger* get();
 
-    static void logFromJava(int level, long timestamp, char* loggerName, char* message);
-
-    void setLogger(py::object pPythonLogger);
+    void setLogger(py::object& logger);
 
     py::object getLogger();
 
-    static bool loggerInitialized();
-
 private:
     py::object logger_;
+    std::mutex loggerMutex_;
 
     static CppToPythonLogger* singleton_;
-    static bool initialized_;
     static std::mutex initMutex_;
 };
 
-void setLogger(py::object logger);
+void logFromJava(int level, long timestamp, char* loggerName, char* message);
+
+void setLogger(py::object& logger);
 
 py::object getLogger();

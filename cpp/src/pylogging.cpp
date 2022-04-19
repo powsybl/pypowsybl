@@ -11,52 +11,45 @@
 using namespace pybind11::literals;
 
 CppToPythonLogger *CppToPythonLogger::singleton_ = nullptr;
-bool CppToPythonLogger::initialized_ = false;
 std::mutex CppToPythonLogger::initMutex_;
 
 CppToPythonLogger* CppToPythonLogger::get() {
+    std::lock_guard<std::mutex> guard(initMutex_);
     if (!singleton_) {
-        std::lock_guard<std::mutex> guard(initMutex_);
         singleton_ = new CppToPythonLogger();
-        initialized_ = false;
     }
     return singleton_;
 }
 
-void CppToPythonLogger::setLogger(py::object pPythonLogger) {
-    std::lock_guard<std::mutex> guard(initMutex_);
-    this->logger_ = pPythonLogger;
-    initialized_ = true;
+CppToPythonLogger::CppToPythonLogger()
+    : logger_(py::none()) {
+}
+
+void CppToPythonLogger::setLogger(py::object& logger) {
+    std::lock_guard<std::mutex> guard(loggerMutex_);
+    logger_ = logger;
 }
 
 py::object CppToPythonLogger::getLogger() {
-    return this->logger_;
+    std::lock_guard<std::mutex> guard(loggerMutex_);
+    return logger_;
 }
 
-bool CppToPythonLogger::loggerInitialized() {
-    std::lock_guard<std::mutex> guard(initMutex_);
-    return initialized_;
-}
-
-void CppToPythonLogger::logFromJava(int level, long timestamp, char* loggerName, char* message) {
-    py::gil_scoped_acquire acquire;
-    if (CppToPythonLogger::get()->loggerInitialized()) {
+void logFromJava(int level, long timestamp, char* loggerName, char* message) {
+    py::object logger = CppToPythonLogger::get()->getLogger();
+    if (!logger.is_none()) {
+        py::gil_scoped_acquire acquire;
         py::dict d("java_logger_name"_a=loggerName, "java_timestamp"_a=timestamp);
         CppToPythonLogger::get()->getLogger().attr("log")(level, message, "extra"_a=d);
     }
 }
 
-
-void setLogger(py::object logger) {
+void setLogger(py::object& logger) {
     CppToPythonLogger::get()->setLogger(logger);
-    auto fptr = &CppToPythonLogger::logFromJava;
+    auto fptr = &::logFromJava;
     pypowsybl::setupCallback(reinterpret_cast<void *&>(fptr));
 }
 
 py::object getLogger() {
-    if (CppToPythonLogger::get()->loggerInitialized()) {
-        return CppToPythonLogger::get()->getLogger();
-    } else {
-        return py::object(py::cast(nullptr));
-    }
+    return CppToPythonLogger::get()->getLogger();
 }
