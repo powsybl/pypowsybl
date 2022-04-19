@@ -15,27 +15,27 @@ bool CppToPythonLogger::initialized_ = false;
 std::mutex CppToPythonLogger::initMutex_;
 
 CppToPythonLogger* CppToPythonLogger::get() {
-  if (!singleton_) {
-    std::lock_guard<std::mutex> guard(initMutex_);
-    singleton_ = new CppToPythonLogger();
-    initialized_ = false;
-  }
-  return singleton_;
+    if (!singleton_) {
+        std::lock_guard<std::mutex> guard(initMutex_);
+        singleton_ = new CppToPythonLogger();
+        initialized_ = false;
+    }
+    return singleton_;
 }
 
 void CppToPythonLogger::setLogger(py::object pPythonLogger) {
-  std::lock_guard<std::mutex> guard(initMutex_);
-  this->logger_ = pPythonLogger;
-  initialized_ = true;
+    std::lock_guard<std::mutex> guard(initMutex_);
+    this->logger_ = pPythonLogger;
+    initialized_ = true;
 }
 
 py::object CppToPythonLogger::getLogger() {
-  return this->logger_;
+    return this->logger_;
 }
 
 bool CppToPythonLogger::loggerInitialized() {
-  std::lock_guard<std::mutex> guard(initMutex_);
-  return initialized_;
+    std::lock_guard<std::mutex> guard(initMutex_);
+    return initialized_;
 }
 
 void CppToPythonLogger::logFromJava(int level, long timestamp, char* loggerName, char* message) {
@@ -48,14 +48,12 @@ void CppToPythonLogger::logFromJava(int level, long timestamp, char* loggerName,
 
 
 void setLogger(py::object logger) {
-
     CppToPythonLogger::get()->setLogger(logger);
     auto fptr = &CppToPythonLogger::logFromJava;
     pypowsybl::setupCallback(reinterpret_cast<void *&>(fptr));
 }
 
 py::object getLogger() {
-
     if (CppToPythonLogger::get()->loggerInitialized()) {
         return CppToPythonLogger::get()->getLogger();
     } else {

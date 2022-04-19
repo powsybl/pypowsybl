@@ -15,8 +15,6 @@ from pypowsybl import (
     sensitivity
 )
 import logging
-from datetime import datetime
-from logging import Logger
 
 __version__ = '0.15.0.dev1'
 
@@ -34,10 +32,11 @@ __all__ = [
     "sensitivity"
 ]
 
-#Setup a default logger that is the powsybl logger with default log level set to ERROR
+
+# setup a default logger that is the powsybl logger with default log level set to ERROR
 powsyblLogger = logging.getLogger('powsybl')
-powsyblLogger.setLevel(level=logging.ERROR)
 _pypowsybl.set_logger(powsyblLogger)
+
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
