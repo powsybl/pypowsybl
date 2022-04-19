@@ -7,8 +7,12 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -51,37 +55,87 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
     }
 
+    interface ColumnUpdater<U> {
+        void update(int index, U object);
+    }
+
+    private static final class IntColumnUpdater<U> implements ColumnUpdater<U> {
+        private final IntSeries values;
+        private final SeriesMapper<U> mapper;
+
+        private IntColumnUpdater(IntSeries values, SeriesMapper<U> mapper) {
+            this.values = values;
+            this.mapper = mapper;
+        }
+
+        @Override
+        public void update(int index, U object) {
+            mapper.updateInt(object, values.get(index));
+        }
+    }
+
+    private static final class DoubleColumnUpdater<U> implements ColumnUpdater<U> {
+        private final DoubleSeries values;
+        private final SeriesMapper<U> mapper;
+
+        private DoubleColumnUpdater(DoubleSeries values, SeriesMapper<U> mapper) {
+            this.values = values;
+            this.mapper = mapper;
+        }
+
+        @Override
+        public void update(int index, U object) {
+            mapper.updateDouble(object, values.get(index));
+        }
+    }
+
+    private static final class StringColumnUpdater<U> implements ColumnUpdater<U> {
+        private final StringSeries values;
+        private final SeriesMapper<U> mapper;
+
+        private StringColumnUpdater(StringSeries values, SeriesMapper<U> mapper) {
+            this.values = values;
+            this.mapper = mapper;
+        }
+
+        @Override
+        public void update(int index, U object) {
+            mapper.updateString(object, values.get(index));
+        }
+    }
+
     @Override
     public void updateSeries(T object, UpdatingDataframe updatingDataframe) {
-        for (int i = 0; i < updatingDataframe.getLineCount(); i++) {
-            for (SeriesMetadata column : updatingDataframe.getSeriesMetadata()) {
-                if (!column.isIndex()) {
-                    String seriesName = column.getName();
-                    SeriesMapper<U> series = seriesMappers.get(seriesName);
-                    switch (column.getType()) {
-                        case STRING:
-                            if (updatingDataframe.getStringValue(seriesName, i).isPresent()) {
-                                series.updateString(getItem(object, updatingDataframe, i),
-                                        updatingDataframe.getStringValue(seriesName, i).get());
-                            }
-                            break;
-                        case DOUBLE:
-                            if (updatingDataframe.getDoubleValue(seriesName, i).isPresent()) {
-                                series.updateDouble(getItem(object, updatingDataframe, i),
-                                        updatingDataframe.getDoubleValue(seriesName, i).getAsDouble());
-                            }
-                            break;
-                        case INT:
-                            if (updatingDataframe.getIntValue(seriesName, i).isPresent()) {
-                                series.updateInt(getItem(object, updatingDataframe, i),
-                                        updatingDataframe.getIntValue(seriesName, i).getAsInt());
-                            }
-                            break;
-                        default:
-                            throw new IllegalStateException("Unexpected series type for update: " + column.getType());
-                    }
-                }
+
+        //Setup links to minimize searches on column names
+        List<ColumnUpdater<U>> updaters = new ArrayList<>();
+        for (SeriesMetadata column : updatingDataframe.getSeriesMetadata()) {
+            if (column.isIndex()) {
+                continue;
             }
+            String seriesName = column.getName();
+            SeriesMapper<U> mapper = seriesMappers.get(seriesName);
+            ColumnUpdater<U> updater;
+            switch (column.getType()) {
+                case STRING:
+                    updater = new StringColumnUpdater<>(updatingDataframe.getStrings(seriesName), mapper);
+                    break;
+                case DOUBLE:
+                    updater = new DoubleColumnUpdater<>(updatingDataframe.getDoubles(seriesName), mapper);
+                    break;
+                case INT:
+                    updater = new IntColumnUpdater<>(updatingDataframe.getInts(seriesName), mapper);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected series type for update: " + column.getType());
+            }
+            updaters.add(updater);
+        }
+
+        for (int i = 0; i < updatingDataframe.getRowCount(); i++) {
+            U item = getItem(object, updatingDataframe, i);
+            int itemIndex = i;
+            updaters.forEach(updater -> updater.update(itemIndex, item));
         }
     }
 

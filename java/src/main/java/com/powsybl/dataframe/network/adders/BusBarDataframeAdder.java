@@ -8,12 +8,16 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BusbarSectionAdder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -34,14 +38,35 @@ public class BusBarDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class BusBarSeries extends IdentifiableSeries {
+
+        private final StringSeries voltageLevels;
+        private final IntSeries nodes;
+
+        BusBarSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.nodes = dataframe.getInts("node");
+        }
+
+        void createBusBar(Network network, int row) {
+            BusbarSectionAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+                    .getNodeBreakerView()
+                    .newBusbarSection();
+            setIdentifiableAttributes(adder, row);
+            applyIfPresent(nodes, row, adder::setNode);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        BusbarSectionAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                        .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
-                .getNodeBreakerView()
-                .newBusbarSection();
-        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, indexElement);
-        dataframe.getIntValue("node", indexElement).ifPresent(adder::setNode);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        BusBarSeries series = new BusBarSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.createBusBar(network, row);
+        }
     }
 }

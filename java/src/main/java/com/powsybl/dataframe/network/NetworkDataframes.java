@@ -315,13 +315,13 @@ public final class NetworkDataframes {
     }
 
     static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
-        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", 0, index)
+        ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new PowsyblException("id is missing")));
         if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
             throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
         } else {
             ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
-            int section = dataframe.getIntValue("section", 1, index)
+            int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
             return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
         }
@@ -676,9 +676,9 @@ public final class NetworkDataframes {
     }
 
     static Triple<String, RatioTapChanger, Integer> getRatioTapChangers(Network network, UpdatingDataframe dataframe, int index) {
-        String id = dataframe.getStringValue("id", 0, index)
+        String id = dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
-        int position = dataframe.getIntValue("position", 1, index)
+        int position = dataframe.getIntValue("position", index)
                 .orElseThrow(() -> new IllegalArgumentException("position column is missing"));
         return Triple.of(id, network.getTwoWindingsTransformer(id).getRatioTapChanger(), position);
     }
@@ -701,9 +701,9 @@ public final class NetworkDataframes {
     }
 
     static Triple<String, PhaseTapChanger, Integer> getPhaseTapChangers(Network network, UpdatingDataframe dataframe, int index) {
-        String id = dataframe.getStringValue("id", 0, index)
+        String id = dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
-        int position = dataframe.getIntValue("position", 1, index)
+        int position = dataframe.getIntValue("position", index)
                 .orElseThrow(() -> new IllegalArgumentException("position column is missing"));
         return Triple.of(id, network.getTwoWindingsTransformer(id).getPhaseTapChanger(), position);
     }
