@@ -14,6 +14,7 @@ from pypowsybl import (
     security,
     sensitivity
 )
+import logging
 
 __version__ = '0.15.0.dev1'
 
@@ -32,13 +33,9 @@ __all__ = [
 ]
 
 
-def set_debug_mode(debug: bool = True) -> None:
-    """Set or unset debug mode
-
-    :param debug: `True` to activate debug mode, `False` otherwise
-    :type debug: bool
-    """
-    _pypowsybl.set_debug_mode(debug)
+# setup a default logger that is the powsybl logger with default log level set to ERROR
+powsyblLogger = logging.getLogger('powsybl')
+_pypowsybl.set_logger(powsyblLogger)
 
 
 def set_config_read(read_config: bool = True) -> None:

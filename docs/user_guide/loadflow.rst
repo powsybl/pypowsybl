@@ -78,11 +78,12 @@ the voltage magnitudes (rounded to 2 digits here):
     Name: v_mag, dtype: float64
 
 
-If you want more logs you can set the global debug mode:
+If you want more logs you can change the log level on the existing default 'powsybl' logger :
 
 .. code-block:: python
 
-    >>> pp.set_debug_mode(True)
+    >>> import logging
+    >>> logging.getLogger('powsybl').setLevel(level=logging.INFO)
 
 
 DC Load Flow

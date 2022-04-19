@@ -592,7 +592,6 @@ def test_create_node_breaker_network_and_run_loadflow():
 
 
 def test_create_limits():
-    pypowsybl.set_debug_mode(True)
     net = pn.create_eurostag_tutorial_example1_network()
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
@@ -630,7 +629,6 @@ def test_create_limits():
 
 
 def test_delete_elements_eurostag():
-    pypowsybl.set_debug_mode(True)
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
     net.remove_elements(['GEN', 'GEN2'])
     assert net.get_generators().empty

@@ -20,7 +20,6 @@ def no_config():
 
 
 def test_config():
-    pp.set_debug_mode(True)
     assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
     pp.sensitivity.set_default_provider("provider")
     assert 'provider' == pp.sensitivity.get_default_provider()
