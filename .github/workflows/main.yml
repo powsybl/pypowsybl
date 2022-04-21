@@ -168,7 +168,10 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Build wheel
-        run: python setup.py bdist_wheel
+        run: |
+          python setup.py bdist_wheel
+          pwd
+          ls -R 
 
       - name: Install wheel
         shell: bash
