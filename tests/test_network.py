@@ -67,14 +67,14 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
 
     def test_get_export_parameters(self):
         parameters = pp.network.get_export_parameters('CGMES')
-        self.assertEqual(4, len(parameters))
-        name = 'iidm.export.cgmes.export-boundary-power-flows'
+        self.assertEqual(6, len(parameters))
+        name = 'iidm.export.cgmes.cim-version'
         self.assertEqual(name, parameters.index.tolist()[1])
         self.assertEqual(
-            'Export boundaries\' power flows',
+            'CIM version to export',
             parameters['description'][name])
-        self.assertEqual('BOOLEAN', parameters['type'][name])
-        self.assertEqual('true', parameters['default'][name])
+        self.assertEqual('STRING', parameters['type'][name])
+        self.assertEqual('', parameters['default'][name])
 
     def test_get_export_format(self):
         formats = pp.network.get_export_formats()
