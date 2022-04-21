@@ -244,8 +244,15 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static String getRegulatedElementId(Generator generator) {
-        Terminal terminal = generator.getRegulatingTerminal();
+    private static String getRegulatedElementId(Injection injection) {
+        Terminal terminal;
+        if (injection instanceof Generator) {
+            terminal = ((Generator) injection).getRegulatingTerminal();
+        } else if (injection instanceof VscConverterStation) {
+            terminal = ((VscConverterStation) injection).getRegulatingTerminal();
+        } else {
+            throw new UnsupportedOperationException(String.format("%s is neither a generator or a vsc station", injection.getId()));
+        }
         if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
             //Not supported for the moment
             return null;
@@ -253,8 +260,8 @@ public final class NetworkDataframes {
         return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
     }
 
-    private static void setRegulatedElement(Generator generator, String elementId) {
-        Network network = generator.getNetwork();
+    private static void setRegulatedElement(Injection injection, String elementId) {
+        Network network = injection.getNetwork();
         Identifiable<?> identifiable = network.getIdentifiable(elementId);
         if (identifiable instanceof Injection) {
             Terminal terminal = ((Injection<?>) identifiable).getTerminal();
@@ -262,7 +269,13 @@ public final class NetworkDataframes {
                 throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
                         ": not currently supported for bus breaker topologies.");
             }
-            generator.setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+            if (injection instanceof Generator) {
+                ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+            } else if (injection instanceof VscConverterStation) {
+                ((VscConverterStation) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+            } else {
+                throw new UnsupportedOperationException(String.format("%s is neither a generator or a vsc station", injection.getId()));
+            }
         } else {
             throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
                     ": the regulated element may only be a busbar section or an injection.");
@@ -572,6 +585,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
+                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
@@ -803,7 +817,7 @@ public final class NetworkDataframes {
                 .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
-                .enums("type",  LimitType.class, TemporaryLimitData::getType)
+                .enums("type", LimitType.class, TemporaryLimitData::getType)
                 .doubles("value", TemporaryLimitData::getValue)
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("is_fictitious", TemporaryLimitData::isFictitious)

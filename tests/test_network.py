@@ -188,18 +188,28 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     def test_vsc_data_frame(self):
         n = pp.network.create_four_substations_node_breaker_network()
         stations = n.get_vsc_converter_stations()
-        self.assertEqual(400.0, stations['target_v']['VSC1'])
-        self.assertEqual(500.0, stations['target_q']['VSC1'])
-        stations2 = pd.DataFrame(data=[[300.0, 400.0], [1.0, 2.0]],
-                                 columns=['target_v', 'target_q'], index=['VSC1', 'VSC2'])
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
+                                columns=['name', 'loss_factor', 'target_v', 'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id',
+                                         'connected'],
+                                data=[['VSC1', 1.1, 400, 500, True, 'VSC1', 10.11,  -512.081,  739.27, 'S1VL2', 'S1VL2_0', True],
+                                      ['VSC2', 1.1, 0, 120, False, 'VSC2', -9.89,  -120,  170.032, 'S2VL1', 'S2VL1_0', True]])
+        pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=10 ** -2)
+
+        stations2 = pd.DataFrame(data=[[300.0, 400.0, 'VSC2'], [1.0, 2.0, 'VSC1']],
+                                 columns=['target_v', 'target_q', 'regulated_element_id'], index=['VSC1', 'VSC2'])
         n.update_vsc_converter_stations(stations2)
         stations = n.get_vsc_converter_stations()
-        self.assertEqual(300.0, stations['target_v']['VSC1'])
-        self.assertEqual(400.0, stations['target_q']['VSC1'])
-        self.assertEqual(1.0, stations['target_v']['VSC2'])
-        self.assertEqual(2.0, stations['target_q']['VSC2'])
-        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC1'], delta=0.001)
-        self.assertAlmostEqual(1.1, stations['loss_factor']['VSC2'], delta=0.001)
+        expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
+                                columns=['name', 'loss_factor', 'target_v', 'target_q', 'voltage_regulator_on',
+                                         'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
+                                         'bus_id',
+                                         'connected'],
+                                data=[['VSC1', 1.1, 300, 400, True, 'VSC2', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
+                                       True],
+                                      ['VSC2', 1.1, 1, 2, False, 'VSC1', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
+                                       True]])
+        pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=10 ** -2)
         stations = n.get_vsc_converter_stations(attributes=['bus_breaker_bus_id', 'node'])
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['VSC1', 'VSC2']),

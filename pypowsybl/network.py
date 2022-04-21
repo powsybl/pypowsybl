@@ -1170,6 +1170,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
               - **voltage_regulator_on**: The voltage regulator status
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
@@ -1190,13 +1191,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id     p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -1205,13 +1206,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor         target_v                target_q voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -2234,6 +2235,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_vsc_converter_stations`
