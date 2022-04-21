@@ -120,13 +120,21 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-11,
+            os: macos-10.15,
           }
           - {
             name: windows,
             os: windows-2019,
           }
         python:
+          - {
+            name: cp37,
+            version: '3.7',
+          }
+          - {
+            name: cp38,
+            version: '3.8',
+          }
           - {
             name: cp39,
             version: '3.9',
