@@ -73,6 +73,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+        <powsybl-math-native.version>1.2.0</powsybl-math-native.version>
         <powsybl-dependencies.version>1.1.0</powsybl-dependencies.version>
     </properties>
 
@@ -128,6 +129,7 @@
                                 <artifactItem>
                                     <groupId>com.powsybl</groupId>
                                     <artifactId>powsybl-math-native</artifactId>
+                                    <version>${powsybl-math-native.version}</version>
                                     <destFileName>powsybl-math-native.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
@@ -305,6 +307,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-math-native</artifactId>
+            <version>${powsybl-math-native.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
