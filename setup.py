@@ -64,7 +64,7 @@ class PyPowsyblBuild(build_ext):
 
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.', '--verbose'] + build_args, cwd=self.build_temp)
 
 
 # long description from the github readme
