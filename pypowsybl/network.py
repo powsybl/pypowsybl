@@ -1252,6 +1252,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
@@ -1272,12 +1273,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max         target_v                target_q regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max         target_v                target_q regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -1286,12 +1287,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -2303,6 +2304,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_static_var_compensators`

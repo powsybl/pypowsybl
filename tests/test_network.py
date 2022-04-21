@@ -270,21 +270,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
             columns=['name', 'b_min', 'b_max', 'target_v', 'target_q',
-                     'regulation_mode', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                     'regulation_mode', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                      'connected'],
-            data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
+            data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', 'SVC', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
         n.update_static_var_compensators(pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
-            columns=['b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q'],
-            data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13]]))
+            columns=['b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q', 'regulated_element_id'],
+            data=[[-0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 'VSC1']]))
 
         svcs = n.get_static_var_compensators()
         expected = pd.DataFrame(
             index=pd.Series(name='id', data=['SVC']),
-            columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q', 'i',
+            columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id', 'p', 'q', 'i',
                      'voltage_level_id', 'bus_id', 'connected'],
-            data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
+            data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', 'VSC1', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
         pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
         svcs = n.get_static_var_compensators(attributes=['bus_breaker_bus_id', 'node'])
         expected = pd.DataFrame(

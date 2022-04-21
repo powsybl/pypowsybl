@@ -250,8 +250,10 @@ public final class NetworkDataframes {
             terminal = ((Generator) injection).getRegulatingTerminal();
         } else if (injection instanceof VscConverterStation) {
             terminal = ((VscConverterStation) injection).getRegulatingTerminal();
+        } else if (injection instanceof StaticVarCompensator) {
+            terminal = ((StaticVarCompensator) injection).getRegulatingTerminal();
         } else {
-            throw new UnsupportedOperationException(String.format("%s is neither a generator or a vsc station", injection.getId()));
+            throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
         }
         if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
             //Not supported for the moment
@@ -273,8 +275,10 @@ public final class NetworkDataframes {
                 ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
             } else if (injection instanceof VscConverterStation) {
                 ((VscConverterStation) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+            } else if (injection instanceof StaticVarCompensator) {
+                ((StaticVarCompensator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
             } else {
-                throw new UnsupportedOperationException(String.format("%s is neither a generator or a vsc station", injection.getId()));
+                throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
             }
         } else {
             throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
@@ -608,6 +612,7 @@ public final class NetworkDataframes {
                 .doubles("target_q", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
+                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
