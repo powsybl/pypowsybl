@@ -138,6 +138,50 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
+    static ToDoubleFunction<Generator> getMinQ(ToDoubleFunction<Generator> pGetter) {
+        return g -> {
+            ReactiveLimits reactiveLimits = g.getReactiveLimits();
+            return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMinQ(pGetter.applyAsDouble(g));
+        };
+    }
+
+    static ToDoubleFunction<Generator> getMaxQ(ToDoubleFunction<Generator> pGetter) {
+        return g -> {
+            ReactiveLimits reactiveLimits = g.getReactiveLimits();
+            return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMaxQ(pGetter.applyAsDouble(g));
+        };
+    }
+
+    static DoubleUpdater<Generator> setMinQ() {
+        return (g, minQ) -> {
+            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
+            if (minMaxReactiveLimits != null) {
+                g.newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(minMaxReactiveLimits.getMaxQ()).add();
+            } else {
+                throw new UnsupportedOperationException("Cannot update minQ to " + minQ +
+                        ": Min-Max reactive limits do not exist.");
+            }
+        };
+    }
+
+    static DoubleUpdater<Generator> setMaxQ() {
+        return (g, maxQ) -> {
+            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
+            if (minMaxReactiveLimits != null) {
+                g.newMinMaxReactiveLimits().setMaxQ(maxQ).setMinQ(minMaxReactiveLimits.getMinQ()).add();
+            } else {
+                throw new UnsupportedOperationException("Cannot update maxQ to " + maxQ +
+                        ": Min-Max reactive limits do not exist.");
+            }
+        };
+    }
+
+    private static String getReactiveLimitsKind(ReactiveLimitsHolder holder) {
+        ReactiveLimits reactiveLimits = holder.getReactiveLimits();
+        return (reactiveLimits == null) ? "NONE"
+                : reactiveLimits.getKind().name();
+    }
+
     private static <U extends Injection<U>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
         return (g, b) -> {
             Boolean res = b ? g.getTerminal().connect() : g.getTerminal().disconnect();
@@ -177,8 +221,13 @@ public final class NetworkDataframes {
                 .doubles("target_p", Generator::getTargetP, Generator::setTargetP)
                 .doubles("min_p", Generator::getMinP, Generator::setMinP)
                 .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
-                .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ))
-                .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ))
+                .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setMinQ())
+                .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
+                .doubles("min_q_at_target_p", getMinQ(Generator::getTargetP), false)
+                .doubles("max_q_at_target_p", getMaxQ(Generator::getTargetP), false)
+                .doubles("min_q_at_p", getMinQ(getP()), false)
+                .doubles("max_q_at_p", getMaxQ(getP()), false)
+                .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)

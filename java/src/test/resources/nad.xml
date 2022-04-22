@@ -970,35 +970,35 @@
         </g>
     </g>
     <g class="nad-text-edges">
-        <polyline id="0_text_edge" points="1.54,-7.06 2.24,-7.06"/>
-        <polyline id="2_text_edge" points="-1.15,-5.20 -0.45,-5.20"/>
-        <polyline id="4_text_edge" points="-2.22,-7.98 -1.52,-7.98"/>
-        <polyline id="6_text_edge" points="2.13,-3.36 2.83,-3.36"/>
-        <polyline id="8_text_edge" points="-0.99,-1.85 -0.29,-1.85"/>
-        <polyline id="10_text_edge" points="-2.82,5.23 -2.12,5.23"/>
-        <polyline id="12_text_edge" points="6.66,-2.01 7.36,-2.01"/>
-        <polyline id="14_text_edge" points="10.74,-3.62 11.44,-3.62"/>
-        <polyline id="16_text_edge" points="3.09,1.11 3.79,1.11"/>
-        <polyline id="18_text_edge" points="-2.80,1.60 -2.10,1.60"/>
-        <polyline id="20_text_edge" points="-6.46,3.49 -5.76,3.49"/>
-        <polyline id="22_text_edge" points="-3.09,9.49 -2.39,9.49"/>
-        <polyline id="24_text_edge" points="0.34,8.18 1.04,8.18"/>
-        <polyline id="26_text_edge" points="3.92,5.82 4.62,5.82"/>
+        <polyline id="0_edge" points="1.54,-7.06 2.24,-7.06"/>
+        <polyline id="2_edge" points="-1.15,-5.20 -0.45,-5.20"/>
+        <polyline id="4_edge" points="-2.22,-7.98 -1.52,-7.98"/>
+        <polyline id="6_edge" points="2.13,-3.36 2.83,-3.36"/>
+        <polyline id="8_edge" points="-0.99,-1.85 -0.29,-1.85"/>
+        <polyline id="10_edge" points="-2.82,5.23 -2.12,5.23"/>
+        <polyline id="12_edge" points="6.66,-2.01 7.36,-2.01"/>
+        <polyline id="14_edge" points="10.74,-3.62 11.44,-3.62"/>
+        <polyline id="16_edge" points="3.09,1.11 3.79,1.11"/>
+        <polyline id="18_edge" points="-2.80,1.60 -2.10,1.60"/>
+        <polyline id="20_edge" points="-6.46,3.49 -5.76,3.49"/>
+        <polyline id="22_edge" points="-3.09,9.49 -2.39,9.49"/>
+        <polyline id="24_edge" points="0.34,8.18 1.04,8.18"/>
+        <polyline id="26_edge" points="3.92,5.82 4.62,5.82"/>
     </g>
     <g class="nad-text-nodes">
-        <text filter="url(#textBgFilter)" x="2.24" y="-7.06" style="dominant-baseline:middle">VL1</text>
-        <text filter="url(#textBgFilter)" x="-0.45" y="-5.20" style="dominant-baseline:middle">VL2</text>
-        <text filter="url(#textBgFilter)" x="-1.52" y="-7.98" style="dominant-baseline:middle">VL3</text>
-        <text filter="url(#textBgFilter)" x="2.83" y="-3.36" style="dominant-baseline:middle">VL4</text>
-        <text filter="url(#textBgFilter)" x="-0.29" y="-1.85" style="dominant-baseline:middle">VL5</text>
-        <text filter="url(#textBgFilter)" x="-2.12" y="5.23" style="dominant-baseline:middle">VL6</text>
-        <text filter="url(#textBgFilter)" x="7.36" y="-2.01" style="dominant-baseline:middle">VL7</text>
-        <text filter="url(#textBgFilter)" x="11.44" y="-3.62" style="dominant-baseline:middle">VL8</text>
-        <text filter="url(#textBgFilter)" x="3.79" y="1.11" style="dominant-baseline:middle">VL9</text>
-        <text filter="url(#textBgFilter)" x="-2.10" y="1.60" style="dominant-baseline:middle">VL10</text>
-        <text filter="url(#textBgFilter)" x="-5.76" y="3.49" style="dominant-baseline:middle">VL11</text>
-        <text filter="url(#textBgFilter)" x="-2.39" y="9.49" style="dominant-baseline:middle">VL12</text>
-        <text filter="url(#textBgFilter)" x="1.04" y="8.18" style="dominant-baseline:middle">VL13</text>
-        <text filter="url(#textBgFilter)" x="4.62" y="5.82" style="dominant-baseline:middle">VL14</text>
+        <text filter="url(#textBgFilter)" y="-7.06" style="dominant-baseline:middle" x="2.24">S6</text>
+        <text filter="url(#textBgFilter)" y="-5.20" style="dominant-baseline:middle" x="-0.45">S8</text>
+        <text filter="url(#textBgFilter)" y="-7.98" style="dominant-baseline:middle" x="-1.52">S7</text>
+        <text filter="url(#textBgFilter)" y="-3.36" style="dominant-baseline:middle" x="2.83">S1</text>
+        <text filter="url(#textBgFilter)" y="-1.85" style="dominant-baseline:middle" x="-0.29">S2</text>
+        <text filter="url(#textBgFilter)" y="5.23" style="dominant-baseline:middle" x="-2.12">S2</text>
+        <text filter="url(#textBgFilter)" y="-2.01" style="dominant-baseline:middle" x="7.36">S1</text>
+        <text filter="url(#textBgFilter)" y="-3.62" style="dominant-baseline:middle" x="11.44">S3</text>
+        <text filter="url(#textBgFilter)" y="1.11" style="dominant-baseline:middle" x="3.79">S1</text>
+        <text filter="url(#textBgFilter)" y="1.60" style="dominant-baseline:middle" x="-2.10">S9</text>
+        <text filter="url(#textBgFilter)" y="3.49" style="dominant-baseline:middle" x="-5.76">S10</text>
+        <text filter="url(#textBgFilter)" y="9.49" style="dominant-baseline:middle" x="-2.39">S11</text>
+        <text filter="url(#textBgFilter)" y="8.18" style="dominant-baseline:middle" x="1.04">S4</text>
+        <text filter="url(#textBgFilter)" y="5.82" style="dominant-baseline:middle" x="4.62">S5</text>
     </g>
 </svg>

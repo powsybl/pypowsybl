@@ -52,7 +52,7 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.model.BusCell$Direction",
+    "name":"com.powsybl.sld.model.coordinate.Direction",
     "allDeclaredFields":true,
     "allDeclaredMethods":true
   },

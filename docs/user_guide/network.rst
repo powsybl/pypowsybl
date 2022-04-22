@@ -112,10 +112,10 @@ For example, you can retrieve generators data as follows:
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> network.get_generators() # doctest: +NORMALIZE_WHITESPACE
-         name energy_source  target_p    min_p   max_p          min_q          max_q  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id   bus_id  connected
+         name energy_source  target_p    min_p   max_p          min_q          max_q reactive_limits_kind  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id   bus_id  connected
     id
-    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
-    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN               OTHER     607.0 -9999.99  4999.0  -9.999990e+03   9.999990e+03              MIN_MAX      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
+    GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308              MIN_MAX      24.5     301.0                  True                      NaN NaN NaN            VLGEN  VLGEN_0       True
 
 Most dataframes are indexed on the ID of the elements.
 However, some more complex dataframes have a multi-index : for example,
