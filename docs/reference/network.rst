@@ -123,6 +123,8 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.add_elements_properties
+   Network.remove_elements_properties
 
 
 
@@ -171,7 +173,6 @@ Network variants may be used to manage multiple states of the network efficientl
    Network.set_working_variant
    Network.remove_variant
    Network.get_variant_ids
-
 
 Miscellaneous network functions
 -------------------------------
