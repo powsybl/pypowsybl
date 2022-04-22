@@ -329,6 +329,10 @@ void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type 
 
 void setupLoggerCallback(void *& callback);
 
+
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
+
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
 }
 
 #endif //PYPOWSYBL_H

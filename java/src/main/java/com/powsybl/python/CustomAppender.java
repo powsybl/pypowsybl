@@ -7,7 +7,10 @@
 package com.powsybl.python;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.encoder.Encoder;
 
 /**
@@ -22,8 +25,14 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(final ILoggingEvent e) {
         PyPowsyblApiLib.LoggerCallback logMessage = (PyPowsyblApiLib.LoggerCallback) PyPowsyblApiLib.loggerCallback;
+
+        String message = e.getFormattedMessage();
+        IThrowableProxy throwable = e.getThrowableProxy();
+        if (throwable != null) {
+            message = message + CoreConstants.LINE_SEPARATOR + ThrowableProxyUtil.asString(throwable);
+        }
         logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(),
-                CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(e.getFormattedMessage()));
+                CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(message));
     }
 
     public Encoder<ILoggingEvent> getEncoder() {

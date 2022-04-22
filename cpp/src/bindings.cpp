@@ -598,4 +598,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_logger", &setLogger, "Setup the logger", py::arg("logger"));
     m.def("get_logger", &getLogger, "Retrieve the logger");
     m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
+    m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
+    m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
 }

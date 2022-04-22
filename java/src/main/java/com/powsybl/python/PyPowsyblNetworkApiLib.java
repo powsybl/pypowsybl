@@ -11,14 +11,15 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
@@ -313,8 +314,8 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                  CCharPointer extensionName,
-                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                                           CCharPointer extensionName,
+                                                                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         String name = CTypeUtil.toString(extensionName);
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
@@ -546,6 +547,44 @@ public final class PyPowsyblNetworkApiLib {
             }
             UnmanagedMemory.free(cMetadata.getDataframesMetadata());
             UnmanagedMemory.free(cMetadata);
+        });
+    }
+
+    @CEntryPoint(name = "addNetworkElementProperties")
+    public static void addNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, DataframePointer properties, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UpdatingDataframe propertiesDataframe = createDataframe(properties);
+            Objects.requireNonNull(propertiesDataframe);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            StringSeries idSerie = propertiesDataframe.getStrings("id");
+            if (idSerie == null) {
+                throw new PowsyblException("id is missing");
+            }
+            for (SeriesMetadata column : propertiesDataframe.getSeriesMetadata()) {
+                if (!column.isIndex() && column.getType() == SeriesDataType.STRING) {
+                    String seriesName = column.getName();
+                    StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
+                    for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
+                        String id = idSerie.get(i);
+                        Identifiable identifiable = network.getIdentifiable(id);
+                        if (identifiable != null) {
+                            identifiable.setProperty(seriesName, columnSerie.get(i));
+                        } else {
+                            throw new PowsyblException(String.format("identifiable with id : %s does not exist", id));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "removeNetworkElementProperties")
+    public static void removeNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer idsPointer, int idsCount, CCharPointerPointer propertiesPointer, int propertiesCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> ids = CTypeUtil.toStringList(idsPointer, idsCount);
+            List<String> properties = CTypeUtil.toStringList(propertiesPointer, propertiesCount);
+            ids.forEach(id -> properties.forEach(property -> network.getIdentifiable(id).removeProperty(property)));
         });
     }
 
