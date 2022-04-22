@@ -98,7 +98,7 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q", "reactive_limits_kind",
-                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",  "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
 
         assertThat(series.get(3).getDoubles())
                 .containsExactly(607);
@@ -108,7 +108,7 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q",
                         "min_q_at_target_p", "max_q_at_target_p", "min_q_at_p", "max_q_at_p", "reactive_limits_kind",
-                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",  "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
+                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
     @Test
@@ -224,12 +224,12 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on",
+                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(VSC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on",
+                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
@@ -246,7 +246,7 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
-                        "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1",  "bus2_id", "bus_breaker_bus2_id", "node2",
+                        "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1", "bus2_id", "bus_breaker_bus2_id", "node2",
                         "connected1", "connected2");
     }
 
@@ -320,7 +320,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
     }
 
     @Test
@@ -427,7 +427,7 @@ class NetworkDataframesTest {
 
         List<Series> seriesAttributesSubset = createDataFrame(SUBSTATION, network,
                 new DataframeFilter(DataframeFilter.AttributeFilterType.INPUT_ATTRIBUTES,
-                        List.of("name",  "name", "geo_tags", "prop1")));
+                        List.of("name", "name", "geo_tags", "prop1")));
         assertThat(seriesAttributesSubset)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "geo_tags", "prop1");
