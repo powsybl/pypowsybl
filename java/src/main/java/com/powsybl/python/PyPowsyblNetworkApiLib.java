@@ -554,6 +554,7 @@ public final class PyPowsyblNetworkApiLib {
     public static void addNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, DataframePointer properties, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             UpdatingDataframe propertiesDataframe = createDataframe(properties);
+            Objects.requireNonNull(propertiesDataframe);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             StringSeries idSerie = propertiesDataframe.getStrings("id");
             if (idSerie == null) {
@@ -563,7 +564,7 @@ public final class PyPowsyblNetworkApiLib {
                 if (!column.isIndex() && column.getType() == SeriesDataType.STRING) {
                     String seriesName = column.getName();
                     StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
-                    for (int i = 0; i < Objects.requireNonNull(propertiesDataframe).getRowCount(); i++) {
+                    for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
                         String id = idSerie.get(i);
                         Identifiable identifiable = network.getIdentifiable(id);
                         if (identifiable != null) {

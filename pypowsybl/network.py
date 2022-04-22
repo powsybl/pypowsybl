@@ -3774,37 +3774,77 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
 
-
     def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Add network element properties with data provided as a :class:`~pandas.DataFrame` or as named arguments.
-
+        Add properties to network elements, provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
-            df: the properties to be created or updated. The index has to be `id`
-                    identifying the network elements.
-            kwargs: the properties to be added as string.
-                    Arguments can be single values or any type of sequence.
+            df: the properties to be created or updated. The index has to be the `id`
+                identifying the network elements.
+            kwargs: the properties to be added as named arguments.
+                    Arguments can be a single string or any type of sequence of strings.
                     In the case of sequences, all arguments must have the same length.
+
+
+        Examples:
+
+            For example, to add the properties prop1 = value1 and prop2 = value2 to a network element:
+
+            .. code-block:: python
+
+                >>> network.add_elements_properties(id='GENERATOR-1', prop1='value1', prop2='value2')
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id='GENERATOR-1')
+                         toto
+                id
+                VLEJUP7  tutu
+
+            You can also update multiple elements at once, for example with a dataframe:
+
+            .. code-block:: python
+
+                >>> properties_df = pd.Dataframe(index=pd.Series('id', ['G1', 'G2']),
+                                                 data={
+                                                     'prop1': [ 'val11', 'val12'],
+                                                     'prop2': [ 'val12', 'val22'],
+                                                 })
+                >>> network.add_elements_properties(properties_df)
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id=['G1', 'G2'])
+                         prop1  prop2
+                id
+                G1       val11  val12
+                G2       val21  val22
+
         """
         if df is None:
             df = _adapt_properties_kwargs(**kwargs)
-        if df.isnull().values.any() > 0:
+        if df.isnull().values.any():
             raise _pp.PyPowsyblError("dataframe can not contain NaN values")
         for series_name in df.columns.values:
             df[series_name] = df[series_name].astype(str)
         c_df = _create_properties_c_dataframe(df)
         _pp.add_network_element_properties(self._handle, c_df)
 
-    def remove_elements_properties(self, ids: _List[str], properties: _List[str]) -> None:
+    def remove_elements_properties(self, ids: Union[str, _List[str]], properties: Union[str, _List[str]]) -> None:
         """
-        Remove network properties from a list of network elements with data provided as a string lists
-
+        Remove properties from a list of network elements
 
         Args:
             ids: list of the network elements that will have their properties removed
             properties: list of the properties that will be removed
+
+        Examples:
+
+            To remove properties prop1 and prop2 from network elements GEN1 and GEN2:
+
+            .. code-block:: python
+
+                network.remove_elements_properties(ids=['GEN1', 'GEN2'], properties=['prop1', 'prop2'])
+
         """
+        if isinstance(ids, str):
+            ids = [ids]
+        if isinstance(properties, str):
+            properties = [properties]
         _pp.remove_network_element_properties(self._handle, ids, properties)
 
 

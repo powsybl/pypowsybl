@@ -1302,21 +1302,24 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
                                              data=[{'id': 'NHV1_NHV2_1', 'prop2': 'test_prop2', 'prop1': 'test_prop1', 'prop3': ''},
                                                    {'id': 'NHV1_NHV2_2', 'prop2': '', 'prop1': '', 'prop3': 'test_prop3'}])
         pd.testing.assert_frame_equal(network.get_lines(attributes=['prop1', 'prop2', 'prop3']), expected, check_dtype=False)
-        network.remove_elements_properties(ids=['GEN'], properties=['prop1', 'prop2'])
+        network.remove_elements_properties(ids='GEN', properties=['prop1', 'prop2'])
         columns = network.get_generators(all_attributes=True).columns
         self.assertTrue('prop1' not in columns and 'prop2' not in columns and 'prop3' not in columns)
-        network.remove_elements_properties(ids=['NHV1_NHV2_2'], properties=['prop3'])
-        network.remove_elements_properties(ids=['NHV1_NHV2_1', 'NHV1_NHV2_1'], properties=['prop2', 'prop1'])
+        network.remove_elements_properties(ids='NHV1_NHV2_2', properties='prop3')
+        network.remove_elements_properties(ids='NHV1_NHV2_1', properties=['prop2', 'prop1'])
         columns = network.get_lines(all_attributes=True).columns
         self.assertTrue('prop1' not in columns and 'prop2' not in columns and 'prop3' not in columns)
         network.add_elements_properties(id='GEN', test=1)
         self.assertEqual('1', network.get_generators(all_attributes=True).loc['GEN']['test'])
+
         properties = pd.DataFrame.from_records(index='id', data=[
             {'id': 'GEN', 'prop1': 'test_prop1', 'prop2': 'test_prop2'},
             {'id': 'NHV1_NHV2_1', 'prop1': 'test_prop1'}
         ])
-        with self.assertRaises(pp.PyPowsyblError):
+        with self.assertRaises(pp.PyPowsyblError) as exc:
             network.add_elements_properties(properties)
+        self.assertIn('dataframe can not contain NaN values', str(exc.exception))
+
 
 if __name__ == '__main__':
     unittest.main()
