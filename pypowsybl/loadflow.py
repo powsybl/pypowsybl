@@ -174,7 +174,7 @@ class Parameters:
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
-    def _init_with_default_values(self):
+    def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.LoadFlowParameters()
         self.voltage_init_mode = default_parameters.voltage_init_mode
         self.transformer_voltage_control_on = default_parameters.transformer_voltage_control_on
