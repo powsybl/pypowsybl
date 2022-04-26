@@ -31,8 +31,12 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
         if (throwable != null) {
             message = message + CoreConstants.LINE_SEPARATOR + ThrowableProxyUtil.asString(throwable);
         }
-        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(),
+
+        int status = logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(),
                 CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(message));
+        if (status != 0) {
+            throw new Error("Powsybl process interrupted.");
+        }
     }
 
     public Encoder<ILoggingEvent> getEncoder() {

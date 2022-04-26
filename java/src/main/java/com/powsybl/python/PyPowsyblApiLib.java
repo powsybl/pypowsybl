@@ -759,7 +759,7 @@ public final class PyPowsyblApiLib {
 
     interface LoggerCallback extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
+        int invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
     }
 
     @CEntryPoint(name = "setupLoggerCallback")

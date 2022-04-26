@@ -27,8 +27,10 @@ private:
     static std::mutex initMutex_;
 };
 
-void logFromJava(int level, long timestamp, char* loggerName, char* message);
+int logFromJava(int level, long timestamp, char* loggerName, char* message);
 
 void setLogger(py::object& logger);
 
 py::object getLogger();
+
+void dummyLong();
