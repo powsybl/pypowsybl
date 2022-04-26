@@ -29,11 +29,8 @@ Let's have a look at the default ones:
 
 .. doctest::
 
-    >>> lf.CParameters()
-        Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, specific_parameters={})
-
-    For more details on each parameter, please refer to the
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, specific_parameters={})
+    >>> lf.Parameters()
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
@@ -47,10 +44,6 @@ In order to run an AC loadflow, simply use the :func:`run_ac` method:
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
-        >>> results = lf.run_ac(network, parameters=lf.CParameters(distributed_slack=False))
-
-    The result is composed of a list of component results, one for each connected component of the network
-    included in the computation:
     >>> results = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
 
 The result is composed of a list of component results, one for each connected component of the network
@@ -103,10 +96,7 @@ proportional to their maximum power. We also choose to ignore transformer ratios
 
 .. doctest::
 
-    >>> parameters = lf.CParameters(dc_use_transformer_ratio=False, distributed_slack=True,
-        ...                            balance_type=lf.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
-
-    Then let's create our test network and run the DC load flow:
+    >>> parameters = lf.Parameters(dc_use_transformer_ratio=False, distributed_slack=True,
     ...                            balance_type=lf.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX)
 
 Then let's create our test network and run the DC load flow:

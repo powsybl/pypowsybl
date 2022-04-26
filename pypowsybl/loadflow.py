@@ -85,49 +85,49 @@ class ComponentResult:
 
 class Parameters:
     """
-        Parameters for a loadflow execution.
+    Parameters for a loadflow execution.
 
-        All parameters are first read from you configuration file, then overridden with
-        the constructor arguments.
+    All parameters are first read from you configuration file, then overridden with
+    the constructor arguments.
 
-        Please note that loadflow providers may not honor all parameters, according to their capabilities.
-        For example, some providers will not be able to simulate the voltage control of shunt compensators, etc.
-        The exact behaviour of some parameters may also depend on your loadflow provider.
-        Please check the documentation of your provider for that information.
+    Please note that loadflow providers may not honor all parameters, according to their capabilities.
+    For example, some providers will not be able to simulate the voltage control of shunt compensators, etc.
+    The exact behaviour of some parameters may also depend on your loadflow provider.
+    Please check the documentation of your provider for that information.
 
-        .. currentmodule:: pypowsybl.loadflow
+    .. currentmodule:: pypowsybl.loadflow
 
-        Args:
-            voltage_init_mode: The resolution starting point.
-                Use ``UNIFORM_VALUES`` for a flat start,
-                and ``DC_VALUES`` for a DC load flow based starting point.
-            transformer_voltage_control_on: Simulate transformer voltage control.
-                The initial tap position is used as starting point for the resolution.
-            no_generator_reactive_limits: Ignore generators reactive limits.
-            phase_shifter_regulation_on: Simulate phase shifters regulation.
-            twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
-                Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
-                one at each side of the serie impedance, use ``True``.
-            simul_shunt: Simulate voltage control of shunt compensators.
-            read_slack_bus: Read slack bus from the network.
-                The slack bus needs to be defined through a dedicate extension. Prefer ``False`` if you want to use
-                your loadflow provider selection mechanism, typically the most meshed bus.
-            write_slack_bus: Write selected slack bus to the network.
-                Will tag the slack bus selected by your loadflow provider with an extension.
-            distributed_slack: Distribute active power slack on the network.
-                ``True`` means that the active power slack is distributed, on loads or on generators according to ``balance_type``.
-            balance_type: How to distributed active power slack.
-                Use ``PROPORTIONAL_TO_LOAD`` to distribute slack on loads,
-                ``PROPORTIONAL_TO_GENERATION_P_MAX`` or ``PROPORTIONAL_TO_GENERATION_P`` to distribute on generators.
-            dc_use_transformer_ratio: In DC mode, take into account transformer ratio.
-                Used only for DC load flows, to include ratios in the equation system.
-            countries_to_balance: List of countries participating to slack distribution.
-                Used only if distributed_slack is ``True``.
-            connected_component_mode: Define which connected components should be computed.
-                Use ``MAIN`` to computes flows only on the main connected component,
-                or prefer ``ALL`` for a run on all connected component.
-            provider_parameters: Define parameters linked to the loadflow provider
-                the names of the existing parameters can be found with method ``get_provider_parameters_names``
+    Args:
+        voltage_init_mode: The resolution starting point.
+            Use ``UNIFORM_VALUES`` for a flat start,
+            and ``DC_VALUES`` for a DC load flow based starting point.
+        transformer_voltage_control_on: Simulate transformer voltage control.
+            The initial tap position is used as starting point for the resolution.
+        no_generator_reactive_limits: Ignore generators reactive limits.
+        phase_shifter_regulation_on: Simulate phase shifters regulation.
+        twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
+            Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
+            one at each side of the serie impedance, use ``True``.
+        simul_shunt: Simulate voltage control of shunt compensators.
+        read_slack_bus: Read slack bus from the network.
+            The slack bus needs to be defined through a dedicate extension. Prefer ``False`` if you want to use
+            your loadflow provider selection mechanism, typically the most meshed bus.
+        write_slack_bus: Write selected slack bus to the network.
+            Will tag the slack bus selected by your loadflow provider with an extension.
+        distributed_slack: Distribute active power slack on the network.
+            ``True`` means that the active power slack is distributed, on loads or on generators according to ``balance_type``.
+        balance_type: How to distributed active power slack.
+            Use ``PROPORTIONAL_TO_LOAD`` to distribute slack on loads,
+            ``PROPORTIONAL_TO_GENERATION_P_MAX`` or ``PROPORTIONAL_TO_GENERATION_P`` to distribute on generators.
+        dc_use_transformer_ratio: In DC mode, take into account transformer ratio.
+            Used only for DC load flows, to include ratios in the equation system.
+        countries_to_balance: List of countries participating to slack distribution.
+            Used only if distributed_slack is ``True``.
+        connected_component_mode: Define which connected components should be computed.
+            Use ``MAIN`` to computes flows only on the main connected component,
+            or prefer ``ALL`` for a run on all connected component.
+        provider_parameters: Define parameters linked to the loadflow provider
+            the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
     def __init__(self, voltage_init_mode: VoltageInitMode = None,
@@ -396,7 +396,7 @@ def get_default_provider() -> str:
 
 def get_provider_names() -> _List[str]:
     """
-    Get list of supported provider names
+    Get list of supported provider names.
 
     Returns:
         the list of supported provider names
@@ -406,8 +406,9 @@ def get_provider_names() -> _List[str]:
 
 def get_provider_parameters_names(provider: str = '') -> _List[str]:
     """
-    Get list of parameters of the precised loadflow provider
-    If not precised the provider will be the default one
+    Get list of parameters for the specified loadflow provider.
+
+    If not specified the provider will be the default one.
 
     Returns:
         the list of provider's parameters
