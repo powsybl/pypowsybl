@@ -10,6 +10,7 @@ from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
 import pypowsybl._pypowsybl as _pypowsybl
+
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
@@ -328,7 +329,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return DcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider),
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
@@ -366,7 +367,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return AcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider),
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,

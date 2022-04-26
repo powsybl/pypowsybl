@@ -49,6 +49,10 @@ typedef struct load_flow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
 } load_flow_parameters;
 
 typedef struct limit_violation_struct {
