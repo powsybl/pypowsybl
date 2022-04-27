@@ -3699,6 +3699,12 @@ class Network:  # pylint: disable=too-many-public-methods
         df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
+    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
+
+    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
     def get_validation_level(self) -> ValidationLevel:
         """
         The network's validation level.
