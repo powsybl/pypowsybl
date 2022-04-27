@@ -67,13 +67,13 @@ public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
         MinMaxReactiveLimitsSeries series = new MinMaxReactiveLimitsSeries(primaryTable);
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String elementId = series.getElementIds().get(i);
-            Double minQ = series.getMinQs().get(i);
-            Double maxQ = series.getMaxQs().get(i);
+            double minQ = series.getMinQs().get(i);
+            double maxQ = series.getMaxQs().get(i);
             createLimits(network, elementId, minQ, maxQ);
         }
     }
 
-    private static void createLimits(Network network, String elementId, Double minQ, Double maxQ) {
+    private static void createLimits(Network network, String elementId, double minQ, double maxQ) {
         Generator generator = network.getGenerator(elementId);
         if (generator == null) {
             throw new PowsyblException("Generator " + elementId + " does not exist.");

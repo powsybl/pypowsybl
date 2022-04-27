@@ -297,7 +297,6 @@ class NetworkElementAddersTest {
         var network = Networks.createEurostagTutorialExample1WithFixedCurrentLimits();
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(4);
         dataframe.addSeries("id", true, new TestStringSeries("GEN", "GEN", "GEN2", "GEN2"));
-        dataframe.addSeries("num", false, new TestIntSeries(0, 1, 0, 1));
         dataframe.addSeries("p", false, new TestDoubleSeries(100.0, 200.0, 100.0, 200.0));
         dataframe.addSeries("min_q", false, new TestDoubleSeries(-268.8, -556.7, -276.5, -564.9));
         dataframe.addSeries("max_q", false, new TestDoubleSeries(269.4, 557.2, 276.3, 565.0));
