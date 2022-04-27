@@ -232,12 +232,24 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
-        Save a network to a file using a specified format.
+        Save a network to a file using the specified format.
+
+        Basic compression formats are also supported:
+        for example if file name ends with '.gz', the resulting files will be gzipped.
 
         Args:
-            file (str): a file
-            format (str, optional): format to save the network, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            file:       path to the exported file
+            format:     format to save the network, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+
+        Examples:
+            Various usage examples:
+
+            .. code-block:: python
+
+                network.dump('network.xiidm')
+                network.dump('network.xiidm.gz')  # produces a gzipped file
+                network.dump('/path/to/network.uct', format='UCTE')
         """
         if parameters is None:
             parameters = {}
@@ -248,11 +260,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Save a network to a string using a specified format.
 
         Args:
-            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
 
         Returns:
-            a string representing network
+            A string representing this network
         """
         if parameters is None:
             parameters = {}
@@ -3938,6 +3950,7 @@ def create_eurostag_tutorial_example1_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1')
 
+
 def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with Power limits
@@ -3946,6 +3959,7 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
+
 
 def create_four_substations_node_breaker_network() -> Network:
     """
@@ -4046,12 +4060,26 @@ def load(file: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
+    Basic compression formats are also supported (gzip, bzip2).
+
     Args:
-       file (str): a file
-       parameters (dict, optional): a map of parameters
+       file:       path to the network file
+       parameters: a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
+
+    Examples:
+
+        Some examples of file loading, including relative or absolute paths, and compressed files:
+
+        .. code-block:: python
+
+            network = pp.network.load('network.xiidm')
+            network = pp.network.load('/path/to/network.xiidm')
+            network = pp.network.load('network.xiidm.gz')
+            network = pp.network.load('network.uct')
+            ...
     """
     if parameters is None:
         parameters = {}
@@ -4063,16 +4091,17 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name (str): file name
-       file_content (str): file content
-       parameters (dict, optional): a map of parameters
+       file_name:    file name
+       file_content: file content
+       parameters:   a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
     """
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+
 
 def get_extensions_names() -> _List[str]:
     """
