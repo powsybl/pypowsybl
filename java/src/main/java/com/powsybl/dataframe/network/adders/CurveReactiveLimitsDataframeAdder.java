@@ -33,7 +33,7 @@ import com.powsybl.iidm.network.ReactiveCapabilityCurveAdder;
 public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("element_id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.intIndex("num"),
             SeriesMetadata.doubles("p"),
             SeriesMetadata.doubles("min_q"),
@@ -49,7 +49,7 @@ public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries maxQs;
 
         CurveReactiveLimitsSeries(UpdatingDataframe dataframe) {
-            this.elementIds = getRequiredStrings(dataframe, "element_id");
+            this.elementIds = getRequiredStrings(dataframe, "id");
             this.nums = getRequiredInts(dataframe, "num");
             this.ps = getRequiredDoubles(dataframe, "p");
             this.minQs = getRequiredDoubles(dataframe, "min_q");

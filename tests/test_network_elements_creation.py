@@ -630,9 +630,9 @@ def test_create_limits():
 
 def test_create_minmax_reactive_limits():
     network = pn.create_eurostag_tutorial_example1_network()
-    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'GEN', 'min_q': -201.0, 'max_q': 201.0},
-        {'element_id': 'GEN2', 'min_q': -205.0, 'max_q': 205.0}
+    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'GEN', 'min_q': -201.0, 'max_q': 201.0},
+        {'id': 'GEN2', 'min_q': -205.0, 'max_q': 205.0}
     ]))
     expected = pd.DataFrame.from_records(
         index='id',
@@ -643,9 +643,9 @@ def test_create_minmax_reactive_limits():
 
 def test_create_curve_reactive_limits():
     network = pn.create_eurostag_tutorial_example1_network()
-    network.create_curve_reactive_limits(pd.DataFrame.from_records(index=['element_id', 'num'], data=[
-        {'element_id': 'GEN', 'num': 0, 'p': 0.0, 'min_q': -556.8, 'max_q': 557.4},
-        {'element_id': 'GEN', 'num': 1, 'p': 200.0, 'min_q': -553.514, 'max_q': 536.4}
+    network.create_curve_reactive_limits(pd.DataFrame.from_records(index=['id', 'num'], data=[
+        {'id': 'GEN', 'num': 0, 'p': 0.0, 'min_q': -556.8, 'max_q': 557.4},
+        {'id': 'GEN', 'num': 1, 'p': 200.0, 'min_q': -553.514, 'max_q': 536.4}
     ]))
     expected = pd.DataFrame(
             index=pd.MultiIndex.from_tuples([('GEN', 0), ('GEN', 1)],

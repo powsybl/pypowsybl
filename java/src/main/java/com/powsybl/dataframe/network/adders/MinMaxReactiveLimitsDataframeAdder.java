@@ -26,7 +26,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredString
 public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("element_id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("min_q"),
             SeriesMetadata.doubles("max_q")
     );
@@ -43,7 +43,7 @@ public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries maxQs;
 
         MinMaxReactiveLimitsSeries(UpdatingDataframe dataframe) {
-            this.elementIds = getRequiredStrings(dataframe, "element_id");
+            this.elementIds = getRequiredStrings(dataframe, "id");
             this.minQs = getRequiredDoubles(dataframe, "min_q");
             this.maxQs = getRequiredDoubles(dataframe, "max_q");
         }

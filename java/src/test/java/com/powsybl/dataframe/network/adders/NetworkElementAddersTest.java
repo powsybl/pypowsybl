@@ -282,7 +282,7 @@ class NetworkElementAddersTest {
     void minmaxReactiveLimits() {
         var network = Networks.createEurostagTutorialExample1WithFixedCurrentLimits();
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
-        dataframe.addSeries("element_id", true, new TestStringSeries("GEN", "GEN2"));
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "GEN2"));
         dataframe.addSeries("min_q", false, new TestDoubleSeries(-201.0, -205.0));
         dataframe.addSeries("max_q", false, new TestDoubleSeries(201.0, 205.0));
         NetworkElementAdders.addElements(DataframeElementType.MINMAX_REACTIVE_LIMITS, network, singletonList(dataframe));
@@ -296,7 +296,7 @@ class NetworkElementAddersTest {
     void curveReactiveLimits() {
         var network = Networks.createEurostagTutorialExample1WithFixedCurrentLimits();
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(4);
-        dataframe.addSeries("element_id", true, new TestStringSeries("GEN", "GEN", "GEN2", "GEN2"));
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "GEN", "GEN2", "GEN2"));
         dataframe.addSeries("num", false, new TestIntSeries(0, 1, 0, 1));
         dataframe.addSeries("p", false, new TestDoubleSeries(100.0, 200.0, 100.0, 200.0));
         dataframe.addSeries("min_q", false, new TestDoubleSeries(-268.8, -556.7, -276.5, -564.9));
