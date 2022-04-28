@@ -40,7 +40,9 @@ public final class NetworkElementAdders {
             Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder()),
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
             Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
-            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder())
+            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder()),
+            Map.entry(MINMAX_REACTIVE_LIMITS, new MinMaxReactiveLimitsDataframeAdder()),
+            Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder())
     );
 
     private NetworkElementAdders() {
