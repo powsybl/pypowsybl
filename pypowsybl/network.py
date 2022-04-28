@@ -3712,9 +3712,83 @@ class Network:  # pylint: disable=too-many-public-methods
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits of type min/max.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the generator
+            - **min_q**: minimum reactive limit, in MVAr
+            - **max_q**: maximum reactive limit, in MVAr
+
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_minmax_reactive_limits(id='GEN-1', min_q=-100, max_q=100)
+
+        See Also:
+            :meth:`create_curve_reactive_limits`
+        """
         return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
 
     def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits as "curves".
+
+        Curves are actually composed of line segments, defined by a list of points.
+        Each row of the input data actually defines 2 points:
+        one for the minimum limit, one for the maximum limit, for the given
+        active power value.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the generator
+            - **p**:     active power, in MW, for which this row defines limits
+            - **min_q**: minimum reactive limit at this active power value, in MVAr
+            - **max_q**: maximum reactive limit at this active power value, in MVAr
+
+            At least 2 rows must be defined for each generator, for 2
+            different active power values.
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Generator GEN-1 will be able to provide 150MVAr when P=0MW,
+            and only 100MVAr when it generates 100MW:
+
+            .. code-block:: python
+
+                network.create_curve_reactive_limits(id=['GEN-1', 'GEN-1'],
+                                                     p=[0, 100],
+                                                     min_q=[-150, -100],
+                                                     max_q=[150, 100])
+
+        See Also:
+            :meth:`create_minmax_reactive_limits`
+        """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
 
     def get_validation_level(self) -> ValidationLevel:
