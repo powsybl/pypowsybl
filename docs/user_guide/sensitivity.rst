@@ -115,7 +115,7 @@ Let's obtain that directly. In the following example, we create four zones based
      NL                  -0.225206            -0.225206
 
 Sensitivity to a X-Node
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 X-Nodes when imported from a UCTE or CGMES file are represented by a so called "dangling line" in the PowSyBl network model.
 The dangling line ID is taken from the line ID connecting the X-Node. So to calculate a X-Node sensitivity, we just have to
 use the dangling line ID as the injection in the zone definition.
@@ -267,8 +267,8 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
 
-Pre-contingency only or Specific post-contingencies state analysis
-------------------------
+Pre-contingency only or specific post-contingencies state analysis
+------------------------------------------------------------------
 
 You can also limit the computation of your sensitivities to the pre contingency state or to some specific post contingencies states by using add/get precontingency_branch_flow_factor_matrix
 and postcontingency_branch_flow_factor_matrix methods.

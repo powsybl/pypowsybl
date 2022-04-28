@@ -1206,7 +1206,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will output something like:
 
             ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id     p         q          i voltage_level_id  bus_id connected
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
             ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
                 VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
