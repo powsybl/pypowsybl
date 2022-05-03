@@ -7,7 +7,6 @@
 #include "pylogging.h"
 #include "pypowsybl.h"
 #include <iostream>
-#include <csignal>
 
 using namespace pybind11::literals;
 
@@ -36,16 +35,16 @@ py::object CppToPythonLogger::getLogger() {
     return logger_;
 }
 
-int logFromJava(int level, long timestamp, char* loggerName, char* message) {
+void logFromJava(int level, long timestamp, char* loggerName, char* message) {
     py::object logger = CppToPythonLogger::get()->getLogger();
     if (!logger.is_none()) {
         py::gil_scoped_acquire acquire;
-        int checkSignal = PyErr_CheckSignals();
-        if (checkSignal == 0) {
+        try {
           py::dict d("java_logger_name"_a=loggerName, "java_timestamp"_a=timestamp);
           CppToPythonLogger::get()->getLogger().attr("log")(level, message, "extra"_a=d);
+        } catch (py::error_already_set& err) {
+          err.restore();
         }
-        return checkSignal;
     }
 }
 
