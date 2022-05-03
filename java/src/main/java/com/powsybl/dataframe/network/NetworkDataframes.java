@@ -85,6 +85,10 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getP();
     }
 
+    static <U extends Injection<U>> ToDoubleFunction<U> getOppositeP() {
+        return inj -> -inj.getTerminal().getP();
+    }
+
     static <U extends Injection<U>> ToDoubleFunction<U> getQ() {
         return inj -> inj.getTerminal().getQ();
     }
@@ -225,8 +229,8 @@ public final class NetworkDataframes {
                 .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
                 .doubles("min_q_at_target_p", getMinQ(Generator::getTargetP), false)
                 .doubles("max_q_at_target_p", getMaxQ(Generator::getTargetP), false)
-                .doubles("min_q_at_p", getMinQ(getP()), false)
-                .doubles("max_q_at_p", getMaxQ(getP()), false)
+                .doubles("min_q_at_p", getMinQ(getOppositeP()), false)
+                .doubles("max_q_at_p", getMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
