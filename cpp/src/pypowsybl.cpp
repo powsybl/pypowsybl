@@ -764,4 +764,10 @@ void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::ve
     pypowsybl::callJava<>(::removeNetworkElementProperties, network, idsPtr.get(), ids.size(), propertiesPtr.get(), properties.size());
 }
 
+std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider) {
+    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getProviderParametersNames, (char*) loadFlowProvider.c_str());
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
 }

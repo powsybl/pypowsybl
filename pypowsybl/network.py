@@ -232,12 +232,24 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
-        Save a network to a file using a specified format.
+        Save a network to a file using the specified format.
+
+        Basic compression formats are also supported:
+        for example if file name ends with '.gz', the resulting files will be gzipped.
 
         Args:
-            file (str): a file
-            format (str, optional): format to save the network, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            file:       path to the exported file
+            format:     format to save the network, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+
+        Examples:
+            Various usage examples:
+
+            .. code-block:: python
+
+                network.dump('network.xiidm')
+                network.dump('network.xiidm.gz')  # produces a gzipped file
+                network.dump('/path/to/network.uct', format='UCTE')
         """
         if parameters is None:
             parameters = {}
@@ -248,11 +260,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Save a network to a string using a specified format.
 
         Args:
-            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
 
         Returns:
-            a string representing network
+            A string representing this network
         """
         if parameters is None:
             parameters = {}
@@ -1194,7 +1206,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will output something like:
 
             ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id     p         q          i voltage_level_id  bus_id connected
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
             ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
                 VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
@@ -3699,6 +3711,86 @@ class Network:  # pylint: disable=too-many-public-methods
         df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
+    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits of type min/max.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the generator
+            - **min_q**: minimum reactive limit, in MVAr
+            - **max_q**: maximum reactive limit, in MVAr
+
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_minmax_reactive_limits(id='GEN-1', min_q=-100, max_q=100)
+
+        See Also:
+            :meth:`create_curve_reactive_limits`
+        """
+        return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
+
+    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits as "curves".
+
+        Curves are actually composed of line segments, defined by a list of points.
+        Each row of the input data actually defines 2 points:
+        one for the minimum limit, one for the maximum limit, for the given
+        active power value.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the generator
+            - **p**:     active power, in MW, for which this row defines limits
+            - **min_q**: minimum reactive limit at this active power value, in MVAr
+            - **max_q**: maximum reactive limit at this active power value, in MVAr
+
+            At least 2 rows must be defined for each generator, for 2
+            different active power values.
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Generator GEN-1 will be able to provide 150MVAr when P=0MW,
+            and only 100MVAr when it generates 100MW:
+
+            .. code-block:: python
+
+                network.create_curve_reactive_limits(id=['GEN-1', 'GEN-1'],
+                                                     p=[0, 100],
+                                                     min_q=[-150, -100],
+                                                     max_q=[150, 100])
+
+        See Also:
+            :meth:`create_minmax_reactive_limits`
+        """
+        return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
     def get_validation_level(self) -> ValidationLevel:
         """
         The network's validation level.
@@ -3938,6 +4030,7 @@ def create_eurostag_tutorial_example1_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1')
 
+
 def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with Power limits
@@ -3946,6 +4039,7 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
+
 
 def create_four_substations_node_breaker_network() -> Network:
     """
@@ -4046,12 +4140,26 @@ def load(file: str, parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
+    Basic compression formats are also supported (gzip, bzip2).
+
     Args:
-       file (str): a file
-       parameters (dict, optional): a map of parameters
+       file:       path to the network file
+       parameters: a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
+
+    Examples:
+
+        Some examples of file loading, including relative or absolute paths, and compressed files:
+
+        .. code-block:: python
+
+            network = pp.network.load('network.xiidm')
+            network = pp.network.load('/path/to/network.xiidm')
+            network = pp.network.load('network.xiidm.gz')
+            network = pp.network.load('network.uct')
+            ...
     """
     if parameters is None:
         parameters = {}
@@ -4063,16 +4171,17 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name (str): file name
-       file_content (str): file content
-       parameters (dict, optional): a map of parameters
+       file_name:    file name
+       file_content: file content
+       parameters:   a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
     """
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+
 
 def get_extensions_names() -> _List[str]:
     """

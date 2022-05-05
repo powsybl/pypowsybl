@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.export.Exporters;
@@ -45,11 +46,10 @@ import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.*;
@@ -223,9 +223,7 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            return convertToLoadFlowParametersPointer(createLoadFlowParameters());
-        });
+        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(createLoadFlowParameters()));
     }
 
     private static LoadFlowParameters createLoadFlowParameters() {
@@ -267,7 +265,35 @@ public final class PyPowsyblApiLib {
         paramsPtr.setCountriesToBalance(calloc);
         paramsPtr.setCountriesToBalanceCount(countries.size());
         paramsPtr.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+        paramsPtr.setProviderParametersValuesCount(0);
+        paramsPtr.setProviderParametersKeysCount(0);
         return paramsPtr;
+    }
+
+    private static Map<String, String> createProviderParametersMap(CCharPointerPointer keysPointer, int keysCount,
+                                                                   CCharPointerPointer valuesPointer, int valuesCount) {
+        List<String> keys = CTypeUtil.toStringList(keysPointer, keysCount);
+        List<String> values = CTypeUtil.toStringList(valuesPointer, valuesCount);
+        return IntStream.range(0, keys.size()).boxed()
+                .collect(Collectors.toMap(keys::get, values::get));
+    }
+
+    @CEntryPoint(name = "getProviderParametersNames")
+    public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String providerStr = CTypeUtil.toString(provider);
+            if (providerStr.equals("")) {
+                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            }
+            LoadFlowProvider loadFlowProvider = ServiceLoader.load(LoadFlowProvider.class)
+                    .stream().map(ServiceLoader.Provider::get)
+                    .collect(Collectors.toMap(LoadFlowProvider::getName, Function.identity()))
+                    .get(providerStr);
+            if (loadFlowProvider == null) {
+                throw new PowsyblException(String.format("provider with name %s is not found. It does not exist or it is not installed", providerStr));
+            }
+            return Util.createCharPtrArray(loadFlowProvider.getSpecificParametersNames());
+        });
     }
 
     @CEntryPoint(name = "runLoadFlow")
@@ -283,7 +309,17 @@ public final class PyPowsyblApiLib {
             }
             Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
             rootLogger.info("loadflow provider used is : {}", providerStr);
+            LoadFlowProvider loadFlowProvider = ServiceLoader.load(LoadFlowProvider.class)
+                    .stream().map(ServiceLoader.Provider::get)
+                    .collect(Collectors.toMap(LoadFlowProvider::getName, Function.identity()))
+                    .get(providerStr);
             LoadFlow.Runner runner = LoadFlow.find(providerStr);
+            Optional<Extension<LoadFlowParameters>> extensionParametersOptional = loadFlowProvider.loadSpecificParameters(createProviderParametersMap(loadFlowParametersPtr.getProviderParametersKeys(),
+                    loadFlowParametersPtr.getProviderParametersKeysCount(),
+                    loadFlowParametersPtr.getProviderParametersValues(),
+                    loadFlowParametersPtr.getProviderParametersValuesCount()));
+            extensionParametersOptional.ifPresent(loadFlowParametersExtension ->
+                    parameters.addExtension((Class) loadFlowParametersExtension.getClass(), loadFlowParametersExtension));
             LoadFlowResult result = runner.run(network, parameters);
             return createLoadFlowComponentResultArrayPointer(result);
         });
@@ -603,8 +639,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "getReferenceFlows")
     public static MatrixPointer getReferenceFlows(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
-                                                    CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
-                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
@@ -749,8 +785,8 @@ public final class PyPowsyblApiLib {
 
     @CEntryPoint(name = "setMinValidationLevel")
     public static void setMinValidationLevel(IsolateThread thread, ObjectHandle networkHandle,
-                                     ValidationLevelType levelType,
-                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+                                             ValidationLevelType levelType,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             network.setMinimumAcceptableValidationLevel(Util.convert(levelType));

@@ -8,6 +8,7 @@ import unittest
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
+from pypowsybl._pypowsybl import LoadFlowComponentStatus
 from pypowsybl.loadflow import ValidationType
 
 
@@ -111,6 +112,26 @@ class LoadflowTestCase(unittest.TestCase):
 
     def test_provider_names(self):
         self.assertTrue('OpenLoadFlow' in pp.loadflow.get_provider_names())
+
+    def test_get_provider_parameters_names(self):
+        specific_parameters = pp.loadflow.get_provider_parameters_names()
+        self.assertListEqual(
+            ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl',
+             'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant',
+             'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
+             'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl',
+             'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride',
+             'transformerVoltageControlMode'], specific_parameters)
+
+    def test_provider_parameters(self):
+        parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
+        self.assertEqual('5', parameters.provider_parameters['maxIteration'])
+        parameters.provider_parameters['voltageRemoteControl'] = 'false'
+        n = pp.network.create_ieee14()
+        result = pp.loadflow.run_ac(n, parameters)
+        self.assertEqual(LoadFlowComponentStatus.MAX_ITERATION_REACHED, result[0].status)
+        self.assertEqual(6, result[0].iteration_count)
+
 
 if __name__ == '__main__':
     unittest.main()

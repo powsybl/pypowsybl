@@ -628,6 +628,34 @@ def test_create_limits():
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
 
+def test_create_minmax_reactive_limits():
+    network = pn.create_eurostag_tutorial_example1_network()
+    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'GEN', 'min_q': -201.0, 'max_q': 201.0},
+        {'id': 'GEN2', 'min_q': -205.0, 'max_q': 205.0}
+    ]))
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['GEN', -201.0, 201.0],
+              ['GEN2', -205.0, 205.0]])
+    pd.testing.assert_frame_equal(expected, network.get_generators(attributes=['min_q', 'max_q']), check_dtype=False)
+
+def test_create_curve_reactive_limits():
+    network = pn.create_eurostag_tutorial_example1_network()
+    network.create_curve_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'GEN', 'p': 0.0, 'min_q': -556.8, 'max_q': 557.4},
+        {'id': 'GEN', 'p': 200.0, 'min_q': -553.514, 'max_q': 536.4}
+    ]))
+    expected = pd.DataFrame(
+            index=pd.MultiIndex.from_tuples([('GEN', 0), ('GEN', 1)],
+                                            names=['id', 'num']),
+            columns=['p', 'min_q', 'max_q'],
+            data=[[0.0, -556.8, 557.4],
+                  [200.0, -553.514, 536.4]])
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points(), check_dtype=False)
+
+
 def test_delete_elements_eurostag():
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
     net.remove_elements(['GEN', 'GEN2'])

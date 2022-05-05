@@ -156,7 +156,7 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
 
@@ -173,7 +173,7 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True))
 
