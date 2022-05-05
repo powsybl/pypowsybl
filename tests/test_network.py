@@ -308,26 +308,27 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
         pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=10 ** -2)
 
     def test_generator_maxq_minq_reactive_limits(self):
-        n = pp.network.create_micro_grid_be_network()
-        gen1_id = '_3a3b27be-b18b-4385-b557-6735d733baf0'
-        n.update_generators(id=gen1_id, p=90, target_p=80)
+        n = pp.network.create_four_substations_node_breaker_network()
+        gen1_id = 'GH1'
+        n.update_generators(id=gen1_id, p=50, target_p=80)
         generators = n.get_generators(attributes=['reactive_limits_kind',
                                                   'min_q', 'max_q',
                                                   'min_q_at_p', 'max_q_at_p',
                                                   'min_q_at_target_p', 'max_q_at_target_p'])
-        gen1 = generators.loc['_3a3b27be-b18b-4385-b557-6735d733baf0']
+        gen1 = generators.loc[gen1_id]
         self.assertEqual('CURVE', gen1['reactive_limits_kind'])
         self.assertTrue(np.isnan(gen1['min_q']))
         self.assertTrue(np.isnan(gen1['max_q']))
-        self.assertEqual(-210, gen1['min_q_at_p'])
-        self.assertEqual(210, gen1['max_q_at_p'])
-        self.assertEqual(-220, gen1['min_q_at_target_p'])
-        self.assertEqual(220, gen1['max_q_at_target_p'])
-
-        gen2 = generators.loc['_550ebe0d-f2b2-48c1-991f-cebea43a21aa']
+        self.assertEqual(-769.3, gen1['min_q_at_p'])
+        self.assertEqual(860, gen1['max_q_at_p'])
+        self.assertEqual(-845.5, gen1['min_q_at_target_p'])
+        self.assertEqual(929.0, gen1['max_q_at_target_p'])
+        n = pp.network.create_ieee118()
+        gen2_id = 'B1-G'
+        gen2 = n.get_generators().loc[gen2_id]
         self.assertEqual('MIN_MAX', gen2['reactive_limits_kind'])
-        self.assertEqual(-200.0, gen2['min_q'])
-        self.assertEqual(200.0, gen2['max_q'])
+        self.assertEqual(-5, gen2['min_q'])
+        self.assertEqual(15, gen2['max_q'])
 
     def test_ratio_tap_changer_steps_data_frame(self):
         n = pp.network.create_eurostag_tutorial_example1_network()
