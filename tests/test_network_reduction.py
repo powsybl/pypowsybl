@@ -4,39 +4,38 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
+import pytest
+
 import pypowsybl as pp
 import pathlib
 
 TEST_DIR = pathlib.Path(__file__).parent
 
 
-class NetworkReductionTestCase(unittest.TestCase):
-
-    def setUp(self):
-        pp.set_config_read(False)
-
-    def test_reduce_by_voltage(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.get_buses()))
-        n.reduce(v_min=240, v_max=400)
-        self.assertEqual(2, len(n.get_buses()))
-
-    def test_reduce_by_ids(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.get_buses()))
-        n.reduce(ids=['P2'])
-        self.assertEqual(2, len(n.get_buses()))
-
-    def test_reduce_by_subnetwork(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        pp.loadflow.run_ac(n)
-        self.assertEqual(4, len(n.get_buses()))
-        n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
-        self.assertEqual(4, len(n.get_buses()))
+@pytest.fixture(autouse=True)
+def setUp():
+    pp.set_config_read(False)
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_reduce_by_voltage():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 4 == len(n.get_buses())
+    n.reduce(v_min=240, v_max=400)
+    assert 2 == len(n.get_buses())
+
+
+def test_reduce_by_ids():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 4 == len(n.get_buses())
+    n.reduce(ids=['P2'])
+    assert 2 == len(n.get_buses())
+
+
+def test_reduce_by_subnetwork():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 4 == len(n.get_buses())
+    n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
+    assert 4 == len(n.get_buses())

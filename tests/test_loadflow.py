@@ -10,128 +10,124 @@ import pypowsybl as pp
 import pypowsybl.loadflow as lf
 from pypowsybl._pypowsybl import LoadFlowComponentStatus
 from pypowsybl.loadflow import ValidationType
+import pytest
 
+@pytest.fixture(autouse=True)
+def setUp():
+    pp.set_config_read(False)
 
-class LoadflowTestCase(unittest.TestCase):
+def test_config():
+    assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
+    pp.loadflow.set_default_provider("provider")
+    assert 'provider' == pp.loadflow.get_default_provider()
+    n = pp.network.create_ieee14()
+    with pytest.raises(Exception, match='LoadFlowProvider \'provider\' not found'):
+        lf.run_ac(n)
+    results = lf.run_ac(n, provider='OpenLoadFlow')
+    assert lf.ComponentStatus.CONVERGED == results[0].status
+    assert 'provider' == pp.loadflow.get_default_provider()
+    pp.loadflow.set_default_provider("OpenLoadFlow")
+    assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
 
-    def setUp(self):
-        pp.set_config_read(False)
+def test_run_lf():
+    n = pp.network.create_ieee14()
+    results = lf.run_ac(n)
+    assert 1 == len(results)
+    assert lf.ComponentStatus.CONVERGED == results[0].status
+    assert 0 == results[0].connected_component_num
+    assert 0 == results[0].synchronous_component_num
+    assert 'VL1_0' == results[0].slack_bus_id
+    assert round(abs(0.5-results[0].slack_bus_active_power_mismatch), 1) == 0
+    assert 7 == results[0].iteration_count
 
-    def test_config(self):
-        self.assertEqual('OpenLoadFlow', pp.loadflow.get_default_provider())
-        pp.loadflow.set_default_provider("provider")
-        self.assertEqual('provider', pp.loadflow.get_default_provider())
-        n = pp.network.create_ieee14()
-        self.assertRaisesRegexp(Exception, 'LoadFlowProvider \'provider\' not found', lf.run_ac, n)
-        results = lf.run_ac(n, provider='OpenLoadFlow')
-        self.assertEqual(lf.ComponentStatus.CONVERGED, results[0].status)
-        self.assertEqual('provider', pp.loadflow.get_default_provider())
-        pp.loadflow.set_default_provider("OpenLoadFlow")
-        self.assertEqual('OpenLoadFlow', pp.loadflow.get_default_provider())
+    parameters = lf.Parameters(distributed_slack=False)
+    results = lf.run_dc(n, parameters)
+    assert 1 == len(results)
 
-    def test_run_lf(self):
-        n = pp.network.create_ieee14()
-        results = lf.run_ac(n)
-        self.assertEqual(1, len(results))
-        self.assertEqual(lf.ComponentStatus.CONVERGED, results[0].status)
-        self.assertEqual(0, results[0].connected_component_num)
-        self.assertEqual(0, results[0].synchronous_component_num)
-        self.assertEqual('VL1_0', results[0].slack_bus_id)
-        self.assertAlmostEqual(0.5, results[0].slack_bus_active_power_mismatch, 1)
-        self.assertEqual(7, results[0].iteration_count)
+def test_lf_parameters():
+    parameters = lf.Parameters()
+    assert parameters.dc_use_transformer_ratio
+    assert 0 == len(parameters.countries_to_balance)
+    assert lf.ConnectedComponentMode.MAIN == parameters.connected_component_mode
 
-        parameters = lf.Parameters(distributed_slack=False)
-        results = lf.run_dc(n, parameters)
-        self.assertEqual(1, len(results))
+    # Testing setting independently every attributes
+    attributes = {
+        'voltage_init_mode': [lf.VoltageInitMode.DC_VALUES, lf.VoltageInitMode.UNIFORM_VALUES],
+        'transformer_voltage_control_on': [True, False],
+        'no_generator_reactive_limits': [True, False],
+        'phase_shifter_regulation_on': [True, False],
+        'twt_split_shunt_admittance': [True, False],
+        'simul_shunt': [True, False],
+        'read_slack_bus': [True, False],
+        'write_slack_bus': [True, False],
+        'distributed_slack': [True, False],
+        'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
+        'dc_use_transformer_ratio': [True, False],
+        'countries_to_balance': [['FR'], ['BE']],
+        'connected_component_mode': [lf.ConnectedComponentMode.MAIN, lf.ConnectedComponentMode.ALL]
+    }
 
-    def test_lf_parameters(self):
-        parameters = lf.Parameters()
-        self.assertTrue(parameters.dc_use_transformer_ratio)
-        self.assertEqual(0, len(parameters.countries_to_balance))
-        self.assertEqual(lf.ConnectedComponentMode.MAIN, parameters.connected_component_mode)
+    for attribute, values in attributes.items():
+        for value in values:
+            parameters = lf.Parameters(**dict([(attribute, value)]))
+            assert value == getattr(parameters, attribute)
 
-        # Testing setting independently every attributes
-        attributes = {
-            'voltage_init_mode': [lf.VoltageInitMode.DC_VALUES, lf.VoltageInitMode.UNIFORM_VALUES],
-            'transformer_voltage_control_on': [True, False],
-            'no_generator_reactive_limits': [True, False],
-            'phase_shifter_regulation_on': [True, False],
-            'twt_split_shunt_admittance': [True, False],
-            'simul_shunt': [True, False],
-            'read_slack_bus': [True, False],
-            'write_slack_bus': [True, False],
-            'distributed_slack': [True, False],
-            'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
-            'dc_use_transformer_ratio': [True, False],
-            'countries_to_balance': [['FR'], ['BE']],
-            'connected_component_mode': [lf.ConnectedComponentMode.MAIN, lf.ConnectedComponentMode.ALL]
-        }
+            parameters = lf.Parameters()
+            setattr(parameters, attribute, value)
+            assert value == getattr(parameters, attribute)
 
-        for attribute, values in attributes.items():
-            for value in values:
-                parameters = lf.Parameters(**dict([(attribute, value)]))
-                self.assertEqual(value, getattr(parameters, attribute))
+def test_validation():
+    n = pp.network.create_ieee14()
+    pp.loadflow.run_ac(n)
+    validation = pp.loadflow.run_validation(n,
+                                            [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
+    assert abs(-232.4-validation.generators['p']['B1-G']) < 0.1
+    assert abs(-47.8-validation.buses['incoming_p']['VL4_0']) < 0.1
+    assert abs(157.8-validation.branch_flows['p1']['L1-2-1']) < 0.1
+    assert not validation.valid
+    n2 = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(n)
+    validation2 = pp.loadflow.run_validation(n2, [ValidationType.SVCS])
+    assert 1 == len(validation2.svcs)
+    assert validation2.svcs['validated']['SVC']
 
-                parameters = lf.Parameters()
-                setattr(parameters, attribute, value)
-                self.assertEqual(value, getattr(parameters, attribute))
+def test_twt_validation():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
+    assert abs(-10.421382-validation.twts['error']['NHV2_NLOAD']) < 0.00001
+    assert validation.valid
 
-    def test_validation(self):
-        n = pp.network.create_ieee14()
-        pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n,
-                                                [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
-        self.assertAlmostEqual(-232.4, validation.generators['p']['B1-G'], delta=0.1)
-        self.assertAlmostEqual(-47.8, validation.buses['incoming_p']['VL4_0'], delta=0.1)
-        self.assertAlmostEqual(157.8, validation.branch_flows['p1']['L1-2-1'], delta=0.1)
-        self.assertFalse(validation.valid)
-        n2 = pp.network.create_four_substations_node_breaker_network()
-        pp.loadflow.run_ac(n)
-        validation2 = pp.loadflow.run_validation(n2, [ValidationType.SVCS])
-        self.assertEqual(1, len(validation2.svcs))
-        self.assertTrue(validation2.svcs['validated']['SVC'])
+def test_validation_all():
+    n = pp.network.create_ieee14()
+    pp.loadflow.run_ac(n)
+    validation = pp.loadflow.run_validation(n)
+    assert validation.buses is not None
+    assert validation.generators is not None
+    assert validation.branch_flows is not None
+    assert validation.svcs is not None
+    assert validation.shunts is not None
+    assert validation.t3wts is not None
+    assert validation.twts is not None
 
-    def test_twt_validation(self):
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
-        self.assertAlmostEqual(-10.421382, validation.twts['error']['NHV2_NLOAD'], delta=0.00001)
-        self.assertTrue(validation.valid)
+def test_provider_names():
+    assert 'OpenLoadFlow' in pp.loadflow.get_provider_names()
 
-    def test_validation_all(self):
-        n = pp.network.create_ieee14()
-        pp.loadflow.run_ac(n)
-        validation = pp.loadflow.run_validation(n)
-        self.assertIsNotNone(validation.buses)
-        self.assertIsNotNone(validation.generators)
-        self.assertIsNotNone(validation.branch_flows)
-        self.assertIsNotNone(validation.svcs)
-        self.assertIsNotNone(validation.shunts)
-        self.assertIsNotNone(validation.t3wts)
-        self.assertIsNotNone(validation.twts)
+def test_get_provider_parameters_names():
+    specific_parameters = pp.loadflow.get_provider_parameters_names()
+    assert ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl',
+         'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant',
+         'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
+         'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl',
+         'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride',
+         'transformerVoltageControlMode'] == specific_parameters
 
-    def test_provider_names(self):
-        self.assertTrue('OpenLoadFlow' in pp.loadflow.get_provider_names())
+def test_provider_parameters():
+    parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
+    assert '5' == parameters.provider_parameters['maxIteration']
+    parameters.provider_parameters['voltageRemoteControl'] = 'false'
+    n = pp.network.create_ieee14()
+    result = pp.loadflow.run_ac(n, parameters)
+    assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
+    assert 6 == result[0].iteration_count
 
-    def test_get_provider_parameters_names(self):
-        specific_parameters = pp.loadflow.get_provider_parameters_names()
-        self.assertListEqual(
-            ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl',
-             'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant',
-             'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
-             'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl',
-             'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride',
-             'transformerVoltageControlMode'], specific_parameters)
-
-    def test_provider_parameters(self):
-        parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
-        self.assertEqual('5', parameters.provider_parameters['maxIteration'])
-        parameters.provider_parameters['voltageRemoteControl'] = 'false'
-        n = pp.network.create_ieee14()
-        result = pp.loadflow.run_ac(n, parameters)
-        self.assertEqual(LoadFlowComponentStatus.MAX_ITERATION_REACHED, result[0].status)
-        self.assertEqual(6, result[0].iteration_count)
-
-
-if __name__ == '__main__':
-    unittest.main()
