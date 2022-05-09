@@ -33,8 +33,10 @@ __all__ = [
 ]
 
 
-# setup a default logger that is the powsybl logger with default log level set to ERROR
+# setup a default logger that is the powsybl logger with by default no handler to avoir printing logs >= WARNING
+# to std err
 powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger.addHandler(logging.NullHandler())
 _pypowsybl.set_logger(powsyblLogger)
 
 
