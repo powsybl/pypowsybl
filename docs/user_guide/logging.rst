@@ -9,7 +9,7 @@ A simple way to see PyPowSyBl logs is to create a basic config and set log level
     .. code-block:: python
 
        import logging
-       logging.basicConfig
+       logging.basicConfig()
        logging.getLogger('powsybl').setLevel(logging.INFO)
 
 A non standard log level with value 1 can be used to get TRACE logs of Java side (logback):
@@ -18,7 +18,7 @@ A non standard log level with value 1 can be used to get TRACE logs of Java side
 
        logging.getLogger('powsybl').setLevel(1)
 
-To specifiy a prettier log format:
+To specify a more readable log format:
 
     .. code-block:: python
 
