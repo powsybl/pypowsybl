@@ -29,9 +29,8 @@ public final class PyLoggingUtil {
             case Level.DEBUG_INT:
                 return 10;
             case Level.TRACE_INT:
-                return 1;
             case Level.ALL_INT:
-                return 60;
+                return 1;
             default:
                 return 0;
         }
@@ -51,8 +50,6 @@ public final class PyLoggingUtil {
                 return Level.DEBUG;
             case 1:
                 return Level.TRACE;
-            case 60:
-                return Level.ALL;
             default:
                 return Level.OFF;
         }
