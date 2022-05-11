@@ -335,6 +335,16 @@ void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataf
 void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
 std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
 
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
+
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
+
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
+
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
+
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
+
 }
 
 #endif //PYPOWSYBL_H

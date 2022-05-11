@@ -8,14 +8,17 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
-import com.powsybl.iidm.network.LoadType;
-import com.powsybl.iidm.network.MinMaxReactiveLimits;
-import com.powsybl.iidm.network.ShuntCompensatorLinearModel;
-import com.powsybl.iidm.network.ShuntCompensatorNonLinearModel;
-import com.powsybl.iidm.network.StaticVarCompensator;
+import com.powsybl.entsoe.util.EntsoeArea;
+import com.powsybl.entsoe.util.EntsoeGeographicalCode;
+import com.powsybl.entsoe.util.MergedXnode;
+import com.powsybl.entsoe.util.Xnode;
+import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.ActivePowerControl;
+import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategory;
+import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
+import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.Networks;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +28,7 @@ import java.util.List;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.LINEAR;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.NON_LINEAR;
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -309,5 +312,175 @@ class NetworkElementAddersTest {
         assertEquals(276.3, network.getGenerator("GEN2").getReactiveLimits().getMaxQ(100.0));
         assertEquals(-564.9, network.getGenerator("GEN2").getReactiveLimits().getMinQ(200.0));
         assertEquals(565.0, network.getGenerator("GEN2").getReactiveLimits().getMaxQ(200.0));
+    }
+
+    @Test
+    void activePowerControlExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        ActivePowerControl extension = network.getExtension(ActivePowerControl.class);
+        assertNull(extension);
+        String genId = "GEN";
+        double droop = 4.0;
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", genId);
+        addDoubleColumn(dataframe, "droop", droop);
+        addIntColumn(dataframe, "participate", 1);
+        NetworkElementAdders.addExtensions("activePowerControl", network, singletonList(dataframe));
+
+        extension = network.getGenerator(genId).getExtension(ActivePowerControl.class);
+        assertNotNull(extension);
+        assertEquals(droop, extension.getDroop());
+        assertTrue(extension.isParticipate());
+    }
+
+    @Test
+    void hvdcAngleDroopActivePowerControlExtension() {
+        Network network = HvdcTestNetwork.createLcc();
+        String lId = "L";
+        double droop = 0.1f;
+        double p0 = 200;
+
+        HvdcLine l = network.getHvdcLine(lId);
+        HvdcAngleDroopActivePowerControl extension = l.getExtension(HvdcAngleDroopActivePowerControl.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", lId);
+        addDoubleColumn(dataframe, "droop", droop);
+        addDoubleColumn(dataframe, "p0", p0);
+        addIntColumn(dataframe, "enabled", 1);
+        NetworkElementAdders.addExtensions("hvdcAngleDroopActivePowerControl", network, singletonList(dataframe));
+
+        extension = l.getExtension(HvdcAngleDroopActivePowerControl.class);
+        assertNotNull(extension);
+        assertEquals(droop, extension.getDroop());
+        assertEquals(p0, extension.getP0());
+        assertTrue(extension.isEnabled());
+    }
+
+    @Test
+    void hvdcOperatorActivePowerRangeExtension() {
+        Network network = HvdcTestNetwork.createLcc();
+        String lId = "L";
+        double oprFromCS1toCS2 = 0.1f;
+        double oprFromCS2toCS1 = 0.2f;
+
+        HvdcLine l = network.getHvdcLine(lId);
+        HvdcOperatorActivePowerRange extension = l.getExtension(HvdcOperatorActivePowerRange.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", lId);
+        addDoubleColumn(dataframe, "opr_from_cs1_to_cs2", oprFromCS1toCS2);
+        addDoubleColumn(dataframe, "opr_from_cs2_to_cs1", oprFromCS2toCS1);
+        NetworkElementAdders.addExtensions("hvdcOperatorActivePowerRange", network, singletonList(dataframe));
+
+        extension = l.getExtension(HvdcOperatorActivePowerRange.class);
+        assertNotNull(extension);
+        assertEquals(oprFromCS1toCS2, extension.getOprFromCS1toCS2());
+        assertEquals(oprFromCS2toCS1, extension.getOprFromCS2toCS1());
+    }
+
+    @Test
+    void xnodeExtension() {
+        var network = DanglingLineNetworkFactory.create();
+        String lId = "DL";
+        String code = "XXXXXX11";
+
+        DanglingLine l = network.getDanglingLine(lId);
+        Xnode extension = l.getExtension(Xnode.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", lId);
+        addStringColumn(dataframe, "code", code);
+        NetworkElementAdders.addExtensions("xnode", network, singletonList(dataframe));
+
+        extension = l.getExtension(Xnode.class);
+        assertNotNull(extension);
+        assertEquals(code, extension.getCode());
+    }
+
+    @Test
+    void generatorEntsoeCategoryExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String lId = "GEN";
+        int code = 4;
+
+        Generator g = network.getGenerator(lId);
+        GeneratorEntsoeCategory extension = g.getExtension(GeneratorEntsoeCategory.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", lId);
+        addIntColumn(dataframe, "code", code);
+        NetworkElementAdders.addExtensions("entsoeCategory", network, singletonList(dataframe));
+
+        extension = g.getExtension(GeneratorEntsoeCategory.class);
+        assertNotNull(extension);
+        assertEquals(code, extension.getCode());
+    }
+
+    @Test
+    void mergedXnodeExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String lId = "NHV1_NHV2_1";
+
+        Line l = network.getLine(lId);
+        MergedXnode extension = l.getExtension(MergedXnode.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", lId);
+        addStringColumn(dataframe, "code", "XXXXXX11");
+        addStringColumn(dataframe, "line1", "");
+        addStringColumn(dataframe, "line2", "");
+        addDoubleColumn(dataframe, "r_dp", 0.5);
+        addDoubleColumn(dataframe, "x_dp", 0.75);
+        addDoubleColumn(dataframe, "g1_dp", 0.46);
+        addDoubleColumn(dataframe, "b1_dp", 0.27);
+        addDoubleColumn(dataframe, "g2_dp", 0.47);
+        addDoubleColumn(dataframe, "b2_dp", 0.44);
+        addDoubleColumn(dataframe, "p1", 1.0);
+        addDoubleColumn(dataframe, "q1", 2.0);
+        addDoubleColumn(dataframe, "p2", 1.5);
+        addDoubleColumn(dataframe, "q2", 2.5);
+        NetworkElementAdders.addExtensions("mergedXnode", network, singletonList(dataframe));
+
+        extension = l.getExtension(MergedXnode.class);
+        assertNotNull(extension);
+        assertEquals("XXXXXX11", extension.getCode());
+        assertEquals("", extension.getLine1Name());
+        assertEquals("", extension.getLine2Name());
+        assertEquals(0.5, extension.getRdp());
+        assertEquals(0.75, extension.getXdp());
+        assertEquals(0.46, extension.getG1dp());
+        assertEquals(0.27, extension.getB1dp());
+        assertEquals(0.47, extension.getG2dp());
+        assertEquals(0.44, extension.getB2dp());
+        assertEquals(1.0, extension.getXnodeP1());
+        assertEquals(2.0, extension.getXnodeQ1());
+        assertEquals(1.5, extension.getXnodeP2());
+        assertEquals(2.5, extension.getXnodeQ2());
+    }
+
+    @Test
+    void entsoeAreaExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String id = "P1";
+        String code = "D4";
+
+        Substation s = network.getSubstation(id);
+        EntsoeArea extension = s.getExtension(EntsoeArea.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", id);
+        addStringColumn(dataframe, "code", code);
+        NetworkElementAdders.addExtensions("entsoeArea", network, singletonList(dataframe));
+        extension = s.getExtension(EntsoeArea.class);
+        assertNotNull(extension);
+        assertEquals(EntsoeGeographicalCode.valueOf(code), extension.getCode());
     }
 }

@@ -770,4 +770,34 @@ std::vector<std::string> getProviderParametersNames(const std::string& loadFlowP
     return providerParameters.get();
 }
 
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe) {
+    pypowsybl::callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), dataframe);
+}
+
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids) {
+    ToCharPtrPtr idsPtr(ids);
+    pypowsybl::callJava<>(::removeExtensions, network, (char*) name.data(), idsPtr.get(), ids.size());
+}
+
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getExtensionSeriesMetadata, (char*) name.data());
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name) {
+    dataframes_metadata* allDataframesMetadata = pypowsybl::callJava<dataframes_metadata*>(::getExtensionsCreationMetadata, (char*) name.data());
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (int i =0; i < allDataframesMetadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(allDataframesMetadata->dataframes_metadata + i));
+    }
+    pypowsybl::callJava(::freeDataframesMetadata, allDataframesMetadata);
+    return res;
+}
+
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name) {
+        pypowsybl::callJava<>(::createExtensions, network, (char*) name.data(), dataframes);
+}
+
 }

@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
@@ -45,6 +46,8 @@ public final class NetworkElementAdders {
             Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder())
     );
 
+    private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();
+
     private NetworkElementAdders() {
     }
 
@@ -63,4 +66,17 @@ public final class NetworkElementAdders {
         }
         adder.addElements(network, dfs);
     }
+
+    public static NetworkElementAdder getExtensionAdder(String extensionName) {
+        return EXTENSIONS_ADDERS.get(extensionName);
+    }
+
+    public static void addExtensions(String name, Network network, List<UpdatingDataframe> dfs) {
+        NetworkElementAdder adder = EXTENSIONS_ADDERS.get(name);
+        if (adder == null) {
+            throw new PowsyblException("Creation not implemented for extension " + name);
+        }
+        adder.addElements(network, dfs);
+    }
+
 }

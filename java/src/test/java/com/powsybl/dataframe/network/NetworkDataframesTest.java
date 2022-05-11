@@ -11,6 +11,12 @@ import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.TestDoubleSeries;
+import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
@@ -23,10 +29,12 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static com.powsybl.dataframe.DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
@@ -52,6 +60,12 @@ class NetworkDataframesTest {
         assertNotNull(mapper);
         mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
+    }
+
+    private static void updateExtension(String name, Network network, UpdatingDataframe updatingDataframe) {
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+        assertNotNull(mapper);
+        mapper.updateSeries(network, updatingDataframe);
     }
 
     private DoubleIndexedSeries createInput(List<String> names, double... values) {
@@ -122,6 +136,24 @@ class NetworkDataframesTest {
                 .containsExactly(1.1f);
         assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("GEN"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(1.2));
+        updateExtension("activePowerControl", network, dataframe);
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "droop", "participate");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.2f);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true);
+
+        NetworkExtensions.removeExtensions(network, "activePowerControl",
+                network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertEquals(0, series.get(0).getStrings().length);
     }
 
     @Test
@@ -311,6 +343,30 @@ class NetworkDataframesTest {
                 .containsExactly(1.0f);
         assertThat(ext2Series.get(2).getDoubles())
                 .containsExactly(2.0f);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("L"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(0.2));
+        updateExtension("hvdcAngleDroopActivePowerControl", network, dataframe);
+        ext1Series = createExtensionDataFrame("hvdcAngleDroopActivePowerControl", network);
+        assertThat(ext1Series.get(1).getDoubles()).containsExactly(0.2f);
+
+        dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("L"));
+        dataframe.addSeries("opr_from_cs1_to_cs2", false, new TestDoubleSeries(1.2));
+        updateExtension("hvdcOperatorActivePowerRange", network, dataframe);
+        ext2Series = createExtensionDataFrame("hvdcOperatorActivePowerRange", network);
+        assertThat(ext2Series.get(1).getDoubles()).containsExactly(1.2f);
+
+        NetworkExtensions.removeExtensions(network, "hvdcAngleDroopActivePowerControl",
+                network.getHvdcLineStream().map(HvdcLine::getId).collect(Collectors.toList()));
+        List<Series> series = createExtensionDataFrame("hvdcAngleDroopActivePowerControl", network);
+        assertEquals(0, series.get(0).getStrings().length);
+
+        NetworkExtensions.removeExtensions(network, "hvdcOperatorActivePowerRange",
+                network.getHvdcLineStream().map(HvdcLine::getId).collect(Collectors.toList()));
+        series = createExtensionDataFrame("hvdcOperatorActivePowerRange", network);
+        assertEquals(0, series.get(0).getStrings().length);
     }
 
     @Test
