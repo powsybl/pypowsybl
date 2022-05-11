@@ -94,6 +94,17 @@ def create_country_zone(network: _Network, country: str,
 
     return Zone(country, shift_keys_by_id)
 
+def create_country_zone_generator(network: _Network, country: str, generator_index, shift_keys) -> Zone:
+    substations = network.get_substations()
+    voltage_levels = network.get_voltage_levels()
+    # join generators, voltage levels and substations to get generators with countries
+    generators = network.get_generators()
+    generators_with_countries = generators.join(
+        voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
+        on=['voltage_level_id'])
+    shift_keys_by_id = dict(zip(generator_index, shift_keys))
+
+    return Zone(country, shift_keys_by_id)
 
 class DcSensitivityAnalysisResult:
     """

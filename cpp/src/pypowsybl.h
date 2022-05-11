@@ -158,6 +158,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
+::zone* createZone(const std::string& id, const JavaHandle& glskImportHandle);
+
 void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
@@ -348,6 +350,18 @@ void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes
 JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
 
 std::string printReport(const JavaHandle& reporterModel);
+
+JavaHandle createGLSKimporter(std::string& filename);
+
+std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, double instant);
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
+
+std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, double instant);
+
+double getInjectionFactorStartTimestamp(const JavaHandle& importer);
+
+double getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
 }
 
