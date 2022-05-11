@@ -96,7 +96,9 @@ def create_country_zone(network: _Network, country: str,
 
 
 class DcSensitivityAnalysisResult:
-    """ Represents the result of a DC sensitivity analysis.
+    """
+    Represents the result of a DC sensitivity analysis.
+
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
@@ -110,12 +112,14 @@ class DcSensitivityAnalysisResult:
         self.branch_data_frame_index = branch_data_frame_index
 
     def get_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
-        """ Get the matrix of branch flows sensitivities on the base case or on the post contingency state depending if
-        a contingency ID has been provided.
+        """
+        Get the matrix of branch flows sensitivities on the base case or on post contingency state.
+
+        If contingency_id is None, returns the base case matrix.
 
         Args:
-            matrix_id (str, mandatory): ID of the matrix
-            contingency_id (str, optional): ID of the contingency
+            matrix_id:      ID of the matrix
+            contingency_id: ID of the contingency
         Returns:
             the matrix of branch flows sensitivities
         """
@@ -138,11 +142,12 @@ class DcSensitivityAnalysisResult:
         return df.drop([TO_REMOVE], errors='ignore')
 
     def get_reference_flows(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
-        """ The branches active power flows on the base case or on the post contingency state depending if
-        a contingency ID has been provided.
+        """
+        The branches active power flows on the base case or on post contingency state.
 
         Args:
-            contingency_id (str, optional): ID of the contingency
+            matrix_id:      ID of the matrix
+            contingency_id: ID of the contingency
         Returns:
             the branches active power flows
         """
@@ -155,7 +160,9 @@ class DcSensitivityAnalysisResult:
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
-    """ Represents the result of a AC sensitivity analysis.
+    """
+    Represents the result of a AC sensitivity analysis.
+
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
@@ -167,11 +174,11 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         self.target_voltage_ids = target_voltage_ids
 
     def get_bus_voltages_sensitivity_matrix(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
-        """ Get the matrix of bus voltages sensitivities on the base case or on the post contingency state depending if
-        a contingency ID has been provided.
+        """
+        Get the matrix of bus voltages sensitivities on the base case or on post contingency state.
 
         Args:
-            contingency_id (str, optional): ID of the contingency
+            contingency_id: ID of the contingency
         Returns:
             the matrix of sensitivities
         """
@@ -184,11 +191,11 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         return _pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
 
     def get_reference_voltages(self, contingency_id: str = None) -> _Optional[_pd.DataFrame]:
-        """ The values of bus voltages on the base case or on the post contingency state depending if
-        a contingency ID has been provided.
+        """
+        The values of bus voltages on the base case or on post contingency state.
 
         Args:
-            contingency_id (str, optional): ID of the contingency
+            contingency_id: ID of the contingency
         Returns:
             the values of bus voltages
         """
@@ -210,7 +217,9 @@ class SensitivityAnalysis(_ContingencyContainer):
         self.branch_data_frame_index: _Dict[str, _List[str]]  = {}
 
     def set_zones(self, zones: _List[Zone]) -> None:
-        """ Define zones that will be used in branch flow factor matrix.
+        """
+        Define zones that will be used in branch flow factor matrix.
+
         Args:
             zones: a list of zones
         """
@@ -328,9 +337,9 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         """ Runs the sensitivity analysis
 
         Args:
-            network (Network): The network
-            parameters (Parameters, optional): The load flow parameters
-            provider (str, optional): Name of the sensitivity analysis provider
+            network:    The network
+            parameters: The load flow parameters
+            provider:   Name of the sensitivity analysis provider
 
         Returns:
             a sensitivity analysis result
@@ -350,11 +359,11 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.target_voltage_ids: _List[str] = []
 
     def set_bus_voltage_factor_matrix(self, bus_ids: _List[str], target_voltage_ids: _List[str]) -> None:
-        """ Defines buses for which voltage sensitivities should be computed,
-        and to which regulating equipments.
+        """
+        Defines buses voltage sensitivities to be computed.
 
         Args:
-            bus_ids: IDs of buses for which voltage sensitivities should be computed
+            bus_ids:            IDs of buses for which voltage sensitivities should be computed
             target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
         """
         _pypowsybl.set_bus_voltage_factor_matrix(self._handle, bus_ids, target_voltage_ids)
@@ -363,12 +372,13 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
 
     def run(self, network: _Network, parameters: Parameters = None,
             provider: str = '') -> AcSensitivityAnalysisResult:
-        """ Runs the sensitivity analysis
+        """
+        Runs the sensitivity analysis.
 
         Args:
-            network (Network): The network
-            parameters (Parameters, optional): The load flow parameters
-            provider (str, optional): Name of the sensitivity analysis provider
+            network:    The network
+            parameters: The load flow parameters
+            provider:   Name of the sensitivity analysis provider
 
         Returns:
             a sensitivity analysis result
@@ -381,7 +391,8 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
 
 
 def create_dc_analysis() -> DcSensitivityAnalysis:
-    """ Creates a new DC sensitivity analysis.
+    """
+    Creates a new DC sensitivity analysis.
 
     Returns:
         a new DC sensitivity analysis
@@ -390,7 +401,8 @@ def create_dc_analysis() -> DcSensitivityAnalysis:
 
 
 def create_ac_analysis() -> AcSensitivityAnalysis:
-    """ Creates a new AC sensitivity analysis.
+    """
+    Creates a new AC sensitivity analysis.
 
     Returns:
         a new AC sensitivity analysis
