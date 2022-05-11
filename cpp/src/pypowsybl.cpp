@@ -78,6 +78,12 @@ void callJava(F f, ARGS... args) {
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
     }
+    {
+        py::gil_scoped_acquire acquire;
+        if (PyErr_Occurred() != nullptr) {
+            throw py::error_already_set();
+        }
+    }
 }
 
 template<typename T, typename F, typename... ARGS>
@@ -90,6 +96,12 @@ T callJava(F f, ARGS... args) {
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
+    }
+    {
+        py::gil_scoped_acquire acquire;
+        if (PyErr_Occurred() != nullptr) {
+            throw py::error_already_set();
+        }
     }
     return r;
 }
