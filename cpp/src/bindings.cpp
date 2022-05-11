@@ -114,6 +114,8 @@ std::shared_ptr<load_flow_parameters> initLoadFlowParameters() {
         parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(configCountries);
         parameters->countries_to_balance_count = configCountries.size();
         parameters->connected_component_mode = config_params->connected_component_mode;
+        parameters->provider_parameters_keys_count = config_params->provider_parameters_keys_count;
+        parameters->provider_parameters_values_count = config_params->provider_parameters_values_count;
     return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
         pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
         delete ptr;
@@ -182,7 +184,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
-            .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS);
+            .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
+            .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -353,6 +356,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return static_cast<pypowsybl::ConnectedComponentMode>(p.connected_component_mode);
             }, [](load_flow_parameters& p, pypowsybl::ConnectedComponentMode connectedComponentMode) {
                 p.connected_component_mode = connectedComponentMode;
+            })
+            .def_property("provider_parameters_keys", [](const load_flow_parameters& p) {
+                return std::vector<std::string>(p.provider_parameters_keys, p.provider_parameters_keys + p.provider_parameters_keys_count);
+            }, [](load_flow_parameters& p, const std::vector<std::string>& providerParametersKeys) {
+                pypowsybl::deleteCharPtrPtr(p.provider_parameters_keys, p.provider_parameters_keys_count);
+                p.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(providerParametersKeys);
+                p.provider_parameters_keys_count = providerParametersKeys.size();
+            })
+            .def_property("provider_parameters_values", [](const load_flow_parameters& p) {
+                return std::vector<std::string>(p.provider_parameters_values, p.provider_parameters_values + p.provider_parameters_values_count);
+            }, [](load_flow_parameters& p, const std::vector<std::string>& providerParametersValues) {
+                pypowsybl::deleteCharPtrPtr(p.provider_parameters_values, p.provider_parameters_values_count);
+                p.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(providerParametersValues);
+                p.provider_parameters_values_count = providerParametersValues.size();
             });
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
@@ -600,4 +617,5 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
     m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
     m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
+    m.def("get_provider_parameters_names", &pypowsybl::getProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
 }

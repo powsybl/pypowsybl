@@ -16,7 +16,7 @@ from pypowsybl import (
 )
 import logging
 
-__version__ = '0.15.0.dev1'
+__version__ = '0.16.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -33,8 +33,10 @@ __all__ = [
 ]
 
 
-# setup a default logger that is the powsybl logger with default log level set to ERROR
+# setup a default logger that is the powsybl logger with by default no handler to avoir printing logs >= WARNING
+# to std err
 powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger.addHandler(logging.NullHandler())
 _pypowsybl.set_logger(powsyblLogger)
 
 

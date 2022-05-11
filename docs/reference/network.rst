@@ -141,12 +141,14 @@ Network elements can be created or removed using the following methods:
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
+   Network.create_curve_reactive_limits
    Network.create_dangling_lines
    Network.create_generators
    Network.create_hvdc_lines
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
+   Network.create_minmax_reactive_limits
    Network.create_operational_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers

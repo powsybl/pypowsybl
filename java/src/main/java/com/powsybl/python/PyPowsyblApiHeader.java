@@ -234,6 +234,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CStruct("limit_violation")
@@ -343,7 +367,8 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
-        OPERATIONAL_LIMITS;
+        OPERATIONAL_LIMITS,
+        MINMAX_REACTIVE_LIMITS;
 
         @CEnumValue
         public native int getCValue();
