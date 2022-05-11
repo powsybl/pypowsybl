@@ -35,10 +35,24 @@ py::object CppToPythonLogger::getLogger() {
     return logger_;
 }
 
+/// Saves error and restores it at the end of the scope,
+/// unless another one has been set in the meantime.
+struct save_python_error {
+    PyObject *type, *value, *trace;
+    save_python_error() { PyErr_Fetch(&type, &value, &trace); }
+
+    ~save_python_error() {
+        if (PyErr_Occurred() == nullptr) {
+            PyErr_Restore(type, value, trace); 
+        }
+    }
+};
+
 void logFromJava(int level, long timestamp, char* loggerName, char* message) {
+    py::gil_scoped_acquire acquire;
+    save_python_error previousError;  // to keep and restore the previously set exception, if any
     py::object logger = CppToPythonLogger::get()->getLogger();
     if (!logger.is_none()) {
-        py::gil_scoped_acquire acquire;
         try {
           py::dict d("java_logger_name"_a=loggerName, "java_timestamp"_a=timestamp);
           CppToPythonLogger::get()->getLogger().attr("log")(level, message, "extra"_a=d);
