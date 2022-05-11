@@ -3899,7 +3899,7 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
 
-    def get_extension(self, extension_name: str) -> _DataFrame:
+    def get_extensions(self, extension_name: str) -> _DataFrame:
         """
         Get a dataframe for a specific extension
 
@@ -3907,12 +3907,16 @@ class Network:  # pylint: disable=too-many-public-methods
             extension_name: name of the extension
 
         Returns:
-            A dataframe with the extension data.
+            A dataframe with the extensions data.
 
         Notes:
-            The extra id column in the resulting dataframe provides the link to the extension's parent element
+            The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
         return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
+        return self.get_extensions(extension_name)
 
     def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
