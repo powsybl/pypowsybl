@@ -4,21 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
 from pypowsybl import *
 
+def test_star_import():
+    assert security is not None
+    assert sensitivity is not None
+    assert network is not None
+    assert loadflow is not None
 
-class PyPowsyblImportTestCase(unittest.TestCase):
-    """
-    Only here to ensure star import works
-    """
-
-    def test_star_import(self):
-        self.assertIsNotNone(security)
-        self.assertIsNotNone(sensitivity)
-        self.assertIsNotNone(network)
-        self.assertIsNotNone(loadflow)
-
-
-if __name__ == '__main__':
-    unittest.main()
