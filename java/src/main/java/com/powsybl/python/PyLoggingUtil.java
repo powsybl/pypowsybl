@@ -12,6 +12,7 @@ import ch.qos.logback.classic.Level;
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
  */
 public final class PyLoggingUtil {
+
     private PyLoggingUtil() {
     }
 
@@ -28,9 +29,8 @@ public final class PyLoggingUtil {
             case Level.DEBUG_INT:
                 return 10;
             case Level.TRACE_INT:
-                return 10;
             case Level.ALL_INT:
-                return 60;
+                return 1;
             default:
                 return 0;
         }
@@ -48,8 +48,8 @@ public final class PyLoggingUtil {
                 return Level.INFO;
             case 10:
                 return Level.DEBUG;
-            case 60:
-                return Level.ALL;
+            case 1:
+                return Level.TRACE;
             default:
                 return Level.OFF;
         }
