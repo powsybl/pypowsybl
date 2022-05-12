@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import pypowsybl._pypowsybl as _pypowsybl
+from typing import List as _List
 from datetime import datetime
 
 class GLSKImporter:
@@ -17,11 +18,11 @@ class GLSKImporter:
     def get_gsk_time_interval_end(self) -> datetime:
         return datetime.fromtimestamp(_pypowsybl.get_glsk_factors_end_timestamp(self.handle))
 
-    def get_countries(self) -> list[str]:
+    def get_countries(self) -> _List[str]:
         return _pypowsybl.get_glsk_countries(self.handle)
 
-    def get_points_for_country(self, country: str, instant: datetime) -> list[str]:
+    def get_points_for_country(self, country: str, instant: datetime) -> _List[str]:
         return _pypowsybl.get_glsk_injection_keys(self.handle, country, int(instant.timestamp()))
 
-    def get_glsk_factors(self, country: str, instant: datetime) -> list[float]:
+    def get_glsk_factors(self, country: str, instant: datetime) -> _List[float]:
         return _pypowsybl.get_glsk_factors(self.handle, country, int(instant.timestamp()))
