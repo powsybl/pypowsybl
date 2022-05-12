@@ -626,10 +626,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("dataframe"));
-    m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements", py::arg("network"), py::arg("name"), py::arg("ids"));
+    m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements", 
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("ids"));
     m.def("get_network_extensions_dataframe_metadata", &pypowsybl::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
           py::arg("name"));
     m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
-    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
+    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", 
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
 }
