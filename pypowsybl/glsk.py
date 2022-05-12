@@ -4,9 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import pypowsybl._pypowsybl as _pypowsybl
 from typing import List as _List
 from datetime import datetime
+import pypowsybl._pypowsybl as _pypowsybl
 
 class GLSKImporter:
     def __init__(self, file: str):

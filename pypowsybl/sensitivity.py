@@ -5,11 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from __future__ import annotations
+from datetime import datetime
 from typing import List as _List, Optional as _Optional, Dict as _Dict
 from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
-from datetime import datetime
 import pypowsybl._pypowsybl as _pypowsybl
 
 from pypowsybl.loadflow import Parameters
@@ -112,11 +112,11 @@ def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: date
     importer = GLSKImporter(glsk_file)
     countries = importer.get_countries()
     zones = []
-    for c in countries:
-        c_generators = importer.get_points_for_country(c, instant)
-        c_shift_keys = importer.get_glsk_factors(c, instant)
-        z = create_country_zone_generator(network, c, c_generators, c_shift_keys)
-        zones.append(z)
+    for country in countries:
+        c_generators = importer.get_points_for_country(country, instant)
+        c_shift_keys = importer.get_glsk_factors(country, instant)
+        zone = create_country_zone_generator(network, country, c_generators, c_shift_keys)
+        zones.append(zone)
     return zones
 
 class DcSensitivityAnalysisResult:
