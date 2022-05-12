@@ -31,8 +31,8 @@ public class CustomAppender extends AppenderBase<ILoggingEvent> {
         if (throwable != null) {
             message = message + CoreConstants.LINE_SEPARATOR + ThrowableProxyUtil.asString(throwable);
         }
-        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(),
-                CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(message));
+
+        logMessage.invoke(PyLoggingUtil.logbackLevelToPythonLevel(e.getLevel()), e.getTimeStamp(), CTypeUtil.toCharPtr(e.getLoggerName()), CTypeUtil.toCharPtr(message));
     }
 
     public Encoder<ILoggingEvent> getEncoder() {
