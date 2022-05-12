@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 import static com.powsybl.python.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -74,13 +74,13 @@ public final class Util {
         }
     }
 
-    public static double doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, DoubleSupplier supplier) {
+    public static long doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, LongSupplier supplier) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
-            return supplier.getAsDouble();
+            return supplier.getAsLong();
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
-            return 0.0;
+            return 0;
         }
     }
 

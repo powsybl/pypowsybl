@@ -860,10 +860,10 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "getGLSKinjectionkeys")
-    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, double instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
         GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
         String country = CTypeUtil.toString(countryPtr);
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(country, Instant.ofEpochSecond((long) instant)))));
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(country, Instant.ofEpochSecond(instant)))));
     }
 
     @CEntryPoint(name = "getGLSKcountries")
@@ -875,17 +875,17 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "getInjectionFactor")
-    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, double instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
             String country = CTypeUtil.toString(countryPtr);
-            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(country, Instant.ofEpochSecond((long) instant));
+            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(country, Instant.ofEpochSecond(instant));
             return createDoubleArray(values);
         });
     }
 
     @CEntryPoint(name = "getInjectionFactorStartTimestamp")
-    public static double getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static long getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
             return importer.getInjectionFactorStart().getEpochSecond();
@@ -893,7 +893,7 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "getInjectionFactorEndTimestamp")
-    public static double getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static long getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
             return importer.getInjectionFactorEnd().getEpochSecond();

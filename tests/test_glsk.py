@@ -20,15 +20,15 @@ class GLSKImportTestCases(unittest.TestCase):
         self.assertEqual(datetime.datetime(2019, 1, 8, 0, 0), importer.get_gsk_time_interval_start())
         self.assertEqual(datetime.datetime(2019, 1, 9, 0, 0), importer.get_gsk_time_interval_end())
         t = importer.get_gsk_time_interval_start()
-        self.assertEqual(['FFR1AA1 ', 'FFR2AA1 ', 'FFR3AA1 '], importer.get_points_for_country('10YFR-RTE------C', t.timestamp()))
-        self.assertEqual([0.0158, 0.1299, 0.1299], importer.get_glsk_factors('10YFR-RTE------C', t.timestamp()))
+        self.assertEqual(['FFR1AA1 ', 'FFR2AA1 ', 'FFR3AA1 '], importer.get_points_for_country('10YFR-RTE------C', t))
+        self.assertEqual([0.0158, 0.1299, 0.1299], importer.get_glsk_factors('10YFR-RTE------C', t))
 
     def test_zone(self):
         n = pp.network.load('../data/simple-eu.uct')
         importer = pp.glsk.GLSKImporter("../data/glsk_sample.xml")
         t = importer.get_gsk_time_interval_start()
-        de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t.timestamp())
-        de_shift_keys = importer.get_glsk_factors('10YCB-GERMANY--8', t.timestamp())
+        de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t)
+        de_shift_keys = importer.get_glsk_factors('10YCB-GERMANY--8', t)
 
         self.assertEqual(['DDE1AA1 ', 'DDE2AA1 ', 'DDE3AA1 '], de_generators)
         self.assertEqual([0.0278, 0.0062, 0.0133], de_shift_keys)

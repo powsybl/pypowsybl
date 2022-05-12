@@ -822,7 +822,7 @@ JavaHandle createGLSKimporter(std::string& filename) {
     return callJava<JavaHandle>(::createGLSKimporter, (char*) filename.c_str());
 }
 
-std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, double instant) {
+std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, long instant) {
     auto keysArrayPtr = callJava<array*>(::getGLSKinjectionkeys, importer, (char*) country.c_str(), instant);
     ToStringVector keys(keysArrayPtr);
     return keys.get();
@@ -834,18 +834,18 @@ std::vector<std::string> getGLSKcountries(const JavaHandle& importer) {
     return countries.get();
 }
 
-std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, double instant) {
+std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, long instant) {
     auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, importer, (char*) country.c_str(), instant);
     std::vector<double> values = toVector<double>(countriesArrayPtr);
     return values;
 }
 
-double getInjectionFactorStartTimestamp(const JavaHandle& importer) {
-    return callJava<double>(::getInjectionFactorStartTimestamp, importer);
+long getInjectionFactorStartTimestamp(const JavaHandle& importer) {
+    return callJava<long>(::getInjectionFactorStartTimestamp, importer);
 }
 
-double getInjectionFactorEndTimestamp(const JavaHandle& importer) {
-    return callJava<double>(::getInjectionFactorEndTimestamp, importer);
+long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
+    return callJava<long>(::getInjectionFactorEndTimestamp, importer);
 }
 
 JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName) {

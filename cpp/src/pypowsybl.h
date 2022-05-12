@@ -353,15 +353,15 @@ std::string printReport(const JavaHandle& reporterModel);
 
 JavaHandle createGLSKimporter(std::string& filename);
 
-std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, double instant);
+std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, long instant);
 
 std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
 
-std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, double instant);
+std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, long instant);
 
-double getInjectionFactorStartTimestamp(const JavaHandle& importer);
+long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
-double getInjectionFactorEndTimestamp(const JavaHandle& importer);
+long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
 }
 

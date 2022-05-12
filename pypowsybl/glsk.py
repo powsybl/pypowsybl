@@ -21,10 +21,10 @@ class GLSKImporter:
         return _pypowsybl.get_glsk_countries(self.handle)
 
     def get_points_for_country(self, country, instant):
-        return _pypowsybl.get_glsk_injection_keys(self.handle, country, instant)
+        return _pypowsybl.get_glsk_injection_keys(self.handle, country, int(instant.timestamp()))
 
     def get_glsk_factors(self, country, instant):
-        return _pypowsybl.get_glsk_factors(self.handle, country, instant)
+        return _pypowsybl.get_glsk_factors(self.handle, country, int(instant.timestamp()))
 
     def get_points_count_for_country(self, country):
         pass
