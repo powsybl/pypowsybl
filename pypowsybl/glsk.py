@@ -8,20 +8,20 @@ import pypowsybl._pypowsybl as _pypowsybl
 from datetime import datetime
 
 class GLSKImporter:
-    def __init__(self, file):
+    def __init__(self, file: str):
         self.handle = _pypowsybl.create_glsk_importer(file)
 
-    def get_gsk_time_interval_start(self):
+    def get_gsk_time_interval_start(self) -> datetime:
         return datetime.fromtimestamp(_pypowsybl.get_glsk_factors_start_timestamp(self.handle))
 
-    def get_gsk_time_interval_end(self):
+    def get_gsk_time_interval_end(self) -> datetime:
         return datetime.fromtimestamp(_pypowsybl.get_glsk_factors_end_timestamp(self.handle))
 
-    def get_countries(self):
+    def get_countries(self) -> list[str]:
         return _pypowsybl.get_glsk_countries(self.handle)
 
-    def get_points_for_country(self, country, instant):
+    def get_points_for_country(self, country: str, instant: datetime) -> list[str]:
         return _pypowsybl.get_glsk_injection_keys(self.handle, country, int(instant.timestamp()))
 
-    def get_glsk_factors(self, country, instant):
+    def get_glsk_factors(self, country: str, instant: datetime) -> list[float]:
         return _pypowsybl.get_glsk_factors(self.handle, country, int(instant.timestamp()))
