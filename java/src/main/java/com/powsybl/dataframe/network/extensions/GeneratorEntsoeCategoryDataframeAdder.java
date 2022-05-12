@@ -4,30 +4,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.dataframe.network.adders;
+package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.SeriesUtils;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.entsoe.util.EntsoeAreaAdder;
-import com.powsybl.entsoe.util.EntsoeGeographicalCode;
+import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.Substation;
+import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategoryAdder;
 
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
-
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
-public class EntsoeAreaDataframeAdder extends AbstractSimpleAdder {
+public class GeneratorEntsoeCategoryDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.strings("code")
+            SeriesMetadata.ints("code")
             );
 
     @Override
@@ -35,31 +35,31 @@ public class EntsoeAreaDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class EntsoeAreaSeries {
+    private static class GeneratorEntsoeCategorySeries {
 
         private final StringSeries id;
-        private final StringSeries code;
+        private final IntSeries code;
 
-        EntsoeAreaSeries(UpdatingDataframe dataframe) {
+        GeneratorEntsoeCategorySeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
-            this.code = dataframe.getStrings("code");
+            this.code = dataframe.getInts("code");
         }
 
         void create(Network network, int row) {
             String id = this.id.get(row);
-            Substation s = network.getSubstation(id);
-            if (s == null) {
-                throw new PowsyblException("Invalid substation id : could not find " + id);
+            Generator g = network.getGenerator(id);
+            if (g == null) {
+                throw new PowsyblException("Invalid generator id : could not find " + id);
             }
-            var adder = s.newExtension(EntsoeAreaAdder.class);
-            applyIfPresent(code, row, c -> adder.withCode(EntsoeGeographicalCode.valueOf(c)));
+            var adder = g.newExtension(GeneratorEntsoeCategoryAdder.class);
+            SeriesUtils.applyIfPresent(code, row, adder::withCode);
             adder.add();
         }
     }
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        EntsoeAreaSeries series = new EntsoeAreaSeries(dataframe);
+        GeneratorEntsoeCategorySeries series = new GeneratorEntsoeCategorySeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }

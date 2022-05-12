@@ -4,10 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.dataframe.network.adders;
+package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -17,8 +19,6 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
-
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
@@ -88,19 +88,19 @@ public class MergedXnodeDataframeAdder extends AbstractSimpleAdder {
                 throw new PowsyblException("Invalid line id : could not find " + id);
             }
             var adder = l.newExtension(MergedXnodeAdder.class);
-            applyIfPresent(code, row, adder::withCode);
-            applyIfPresent(line1, row, adder::withLine1Name);
-            applyIfPresent(line2, row, adder::withLine2Name);
-            applyIfPresent(rDp, row, adder::withRdp);
-            applyIfPresent(xDp, row, adder::withXdp);
-            applyIfPresent(g1Dp, row, adder::withG1dp);
-            applyIfPresent(b1Dp, row, adder::withB1dp);
-            applyIfPresent(g2Dp, row, adder::withG2dp);
-            applyIfPresent(b2Dp, row, adder::withB2dp);
-            applyIfPresent(p1, row, adder::withXnodeP1);
-            applyIfPresent(q1, row, adder::withXnodeQ1);
-            applyIfPresent(p2, row, adder::withXnodeP2);
-            applyIfPresent(q2, row, adder::withXnodeQ2);
+            SeriesUtils.applyIfPresent(code, row, adder::withCode);
+            SeriesUtils.applyIfPresent(line1, row, adder::withLine1Name);
+            SeriesUtils.applyIfPresent(line2, row, adder::withLine2Name);
+            SeriesUtils.applyIfPresent(rDp, row, adder::withRdp);
+            SeriesUtils.applyIfPresent(xDp, row, adder::withXdp);
+            SeriesUtils.applyIfPresent(g1Dp, row, adder::withG1dp);
+            SeriesUtils.applyIfPresent(b1Dp, row, adder::withB1dp);
+            SeriesUtils.applyIfPresent(g2Dp, row, adder::withG2dp);
+            SeriesUtils.applyIfPresent(b2Dp, row, adder::withB2dp);
+            SeriesUtils.applyIfPresent(p1, row, adder::withXnodeP1);
+            SeriesUtils.applyIfPresent(q1, row, adder::withXnodeQ1);
+            SeriesUtils.applyIfPresent(p2, row, adder::withXnodeP2);
+            SeriesUtils.applyIfPresent(q2, row, adder::withXnodeQ2);
             adder.add();
         }
     }

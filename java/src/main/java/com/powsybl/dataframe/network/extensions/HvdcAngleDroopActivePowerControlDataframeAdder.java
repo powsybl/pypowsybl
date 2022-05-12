@@ -4,33 +4,35 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.dataframe.network.adders;
+package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.ActivePowerControlAdder;
+import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 
 import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
-public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
+public class HvdcAngleDroopActivePowerControlDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("droop"),
-            SeriesMetadata.booleans("participate")
+            SeriesMetadata.doubles("p0"),
+            SeriesMetadata.booleans("enabled")
             );
 
     @Override
@@ -38,34 +40,37 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class ActivePowerControlSeries {
+    private static class HvdcAngleDroopActivePowerControlSeries {
 
         private final StringSeries id;
         private final DoubleSeries droop;
-        private final IntSeries participate;
+        private final DoubleSeries p0;
+        private final IntSeries enabled;
 
-        ActivePowerControlSeries(UpdatingDataframe dataframe) {
+        HvdcAngleDroopActivePowerControlSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
             this.droop = dataframe.getDoubles("droop");
-            this.participate = dataframe.getInts("participate");
+            this.p0 = dataframe.getDoubles("p0");
+            this.enabled = dataframe.getInts("enabled");
         }
 
         void create(Network network, int row) {
             String id = this.id.get(row);
-            Generator g = network.getGenerator(id);
-            if (g == null) {
-                throw new PowsyblException("Invalid generator id : could not find " + id);
+            HvdcLine l = network.getHvdcLine(id);
+            if (l == null) {
+                throw new PowsyblException("Invalid hvdc line id : could not find " + id);
             }
-            var adder = g.newExtension(ActivePowerControlAdder.class);
-            applyIfPresent(droop, row, x -> adder.withDroop((float) x));
-            applyBooleanIfPresent(participate, row, adder::withParticipate);
+            var adder = l.newExtension(HvdcAngleDroopActivePowerControlAdder.class);
+            SeriesUtils.applyIfPresent(droop, row, x -> adder.withDroop((float) x));
+            SeriesUtils.applyIfPresent(p0, row, x -> adder.withP0((float) x));
+            applyBooleanIfPresent(enabled, row, adder::withEnabled);
             adder.add();
         }
     }
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        ActivePowerControlSeries series = new ActivePowerControlSeries(dataframe);
+        HvdcAngleDroopActivePowerControlSeries series = new HvdcAngleDroopActivePowerControlSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }

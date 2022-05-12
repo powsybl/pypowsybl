@@ -11,7 +11,6 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
-import com.powsybl.dataframe.network.adders.XnodeDataframeAdder;
 import com.powsybl.entsoe.util.Xnode;
 import com.powsybl.iidm.network.DanglingLine;
 import com.powsybl.iidm.network.Network;

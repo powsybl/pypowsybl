@@ -4,30 +4,32 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package com.powsybl.dataframe.network.adders;
+package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.SeriesUtils;
+import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategoryAdder;
+import com.powsybl.iidm.network.extensions.ActivePowerControlAdder;
 
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
-
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
-public class GeneratorEntsoeCategoryDataframeAdder extends AbstractSimpleAdder {
+public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.ints("code")
+            SeriesMetadata.doubles("droop"),
+            SeriesMetadata.booleans("participate")
             );
 
     @Override
@@ -35,14 +37,16 @@ public class GeneratorEntsoeCategoryDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class GeneratorEntsoeCategorySeries {
+    private static class ActivePowerControlSeries {
 
         private final StringSeries id;
-        private final IntSeries code;
+        private final DoubleSeries droop;
+        private final IntSeries participate;
 
-        GeneratorEntsoeCategorySeries(UpdatingDataframe dataframe) {
+        ActivePowerControlSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
-            this.code = dataframe.getInts("code");
+            this.droop = dataframe.getDoubles("droop");
+            this.participate = dataframe.getInts("participate");
         }
 
         void create(Network network, int row) {
@@ -51,15 +55,16 @@ public class GeneratorEntsoeCategoryDataframeAdder extends AbstractSimpleAdder {
             if (g == null) {
                 throw new PowsyblException("Invalid generator id : could not find " + id);
             }
-            var adder = g.newExtension(GeneratorEntsoeCategoryAdder.class);
-            applyIfPresent(code, row, adder::withCode);
+            var adder = g.newExtension(ActivePowerControlAdder.class);
+            SeriesUtils.applyIfPresent(droop, row, x -> adder.withDroop((float) x));
+            SeriesUtils.applyBooleanIfPresent(participate, row, adder::withParticipate);
             adder.add();
         }
     }
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        GeneratorEntsoeCategorySeries series = new GeneratorEntsoeCategorySeries(dataframe);
+        ActivePowerControlSeries series = new ActivePowerControlSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }
