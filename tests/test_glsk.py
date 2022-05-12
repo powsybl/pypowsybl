@@ -6,7 +6,7 @@
 #
 import unittest
 import pypowsybl as pp
-import dateutil.parser
+from dateutil import parser
 import datetime
 
 class GLSKImportTestCases(unittest.TestCase):
@@ -17,8 +17,8 @@ class GLSKImportTestCases(unittest.TestCase):
     def test_import_glsk(self):
         importer = pp.glsk.GLSKImporter("../data/glsk_sample.xml")
         self.assertEqual(['10YFR-RTE------C', '10YNL----------L', '10YBE----------2', '10YCB-GERMANY--8'], importer.get_countries())
-        self.assertEqual(datetime.datetime(2019, 1, 8, 0, 0), importer.get_gsk_time_interval_start())
-        self.assertEqual(datetime.datetime(2019, 1, 9, 0, 0), importer.get_gsk_time_interval_end())
+        self.assertEqual(parser.parse('2019-01-07T23:00Z').timestamp(), importer.get_gsk_time_interval_start().timestamp())
+        self.assertEqual(parser.parse('2019-01-08T23:00Z').timestamp(), importer.get_gsk_time_interval_end().timestamp())
         t = importer.get_gsk_time_interval_start()
         self.assertEqual(['FFR1AA1 ', 'FFR2AA1 ', 'FFR3AA1 '], importer.get_points_for_country('10YFR-RTE------C', t))
         self.assertEqual([0.0158, 0.1299, 0.1299], importer.get_glsk_factors('10YFR-RTE------C', t))
