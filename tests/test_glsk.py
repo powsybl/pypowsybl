@@ -8,6 +8,10 @@ import unittest
 import pypowsybl as pp
 from dateutil import parser
 import datetime
+import pathlib
+
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent / 'data'
 
 class GLSKImportTestCases(unittest.TestCase):
 
@@ -15,7 +19,7 @@ class GLSKImportTestCases(unittest.TestCase):
         pp.set_config_read(False)
 
     def test_import_glsk(self):
-        importer = pp.glsk.GLSKImporter("../data/glsk_sample.xml")
+        importer = pp.glsk.GLSKImporter(str(DATA_DIR.joinpath('glsk_sample.xml')))
         self.assertEqual(['10YFR-RTE------C', '10YNL----------L', '10YBE----------2', '10YCB-GERMANY--8'], importer.get_countries())
         self.assertEqual(parser.parse('2019-01-07T23:00Z').timestamp(), importer.get_gsk_time_interval_start().timestamp())
         self.assertEqual(parser.parse('2019-01-08T23:00Z').timestamp(), importer.get_gsk_time_interval_end().timestamp())
@@ -24,8 +28,8 @@ class GLSKImportTestCases(unittest.TestCase):
         self.assertEqual([0.0158, 0.1299, 0.1299], importer.get_glsk_factors('10YFR-RTE------C', t))
 
     def test_zone(self):
-        n = pp.network.load('../data/simple-eu.uct')
-        importer = pp.glsk.GLSKImporter("../data/glsk_sample.xml")
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        importer = pp.glsk.GLSKImporter(str(DATA_DIR.joinpath('glsk_sample.xml')))
         t = importer.get_gsk_time_interval_start()
         de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t)
         de_shift_keys = importer.get_glsk_factors('10YCB-GERMANY--8', t)
@@ -36,8 +40,8 @@ class GLSKImportTestCases(unittest.TestCase):
         self.assertEqual({'DDE1AA1 ': 0.0278, 'DDE2AA1 ': 0.0062, 'DDE3AA1 ': 0.0133}, zone_de.shift_keys_by_injections_ids)
 
     def test_zones(self):
-        n = pp.network.load('../data/simple-eu.uct')
-        zones = pp.sensitivity.create_zones_from_glsk_file(n, "../data/glsk_sample.xml", datetime.datetime(2019, 1, 8, 0, 0))
+        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+        zones = pp.sensitivity.create_zones_from_glsk_file(n, str(DATA_DIR.joinpath('glsk_sample.xml')), datetime.datetime(2019, 1, 8, 0, 0))
         zone_fr = next(z for z in zones if z.id == '10YFR-RTE------C')
         zone_nl = next(z for z in zones if z.id == '10YNL----------L')
         zone_be = next(z for z in zones if z.id == '10YBE----------2')
