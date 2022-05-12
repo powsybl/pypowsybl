@@ -35,3 +35,16 @@ class GLSKImportTestCases(unittest.TestCase):
         zone_de = pp.sensitivity.create_country_zone_generator(n, 'DE', de_generators, de_shift_keys)
         self.assertEqual({'DDE1AA1 ': 0.0278, 'DDE2AA1 ': 0.0062, 'DDE3AA1 ': 0.0133}, zone_de.shift_keys_by_injections_ids)
 
+    def test_zones(self):
+        n = pp.network.load('../data/simple-eu.uct')
+        zones = pp.sensitivity.create_zones_from_glsk_file(n, "../data/glsk_sample.xml", datetime.datetime(2019, 1, 8, 0, 0))
+        zone_fr = next(z for z in zones if z.id == '10YFR-RTE------C')
+        zone_nl = next(z for z in zones if z.id == '10YNL----------L')
+        zone_be = next(z for z in zones if z.id == '10YBE----------2')
+        zone_de = next(z for z in zones if z.id == '10YCB-GERMANY--8')
+        self.assertEqual({'FFR1AA1 ': 0.0158, 'FFR2AA1 ': 0.1299, 'FFR3AA1 ': 0.1299}, zone_fr.shift_keys_by_injections_ids)
+        self.assertEqual({'NNL1AA1 ': 0.0641, 'NNL2AA1 ': 0.0184, 'NNL3AA1 ': 0.1003}, zone_nl.shift_keys_by_injections_ids)
+        self.assertEqual({'BBE1AA1 ': 0.0641, 'BBE2AA1 ': 0.0145, 'BBE3AA1 ': 0.0145}, zone_be.shift_keys_by_injections_ids)
+        self.assertEqual({'DDE1AA1 ': 0.0278, 'DDE2AA1 ': 0.0062, 'DDE3AA1 ': 0.0133}, zone_de.shift_keys_by_injections_ids)
+
+

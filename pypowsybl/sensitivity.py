@@ -15,6 +15,7 @@ from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
+from pypowsybl.glsk import GLSKImporter
 
 TO_REMOVE = 'TO_REMOVE'
 
@@ -105,6 +106,17 @@ def create_country_zone_generator(network: _Network, country: str, generator_ind
     shift_keys_by_id = dict(zip(generator_index, shift_keys))
 
     return Zone(country, shift_keys_by_id)
+
+def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: datetime):
+    importer = GLSKImporter(glsk_file)
+    countries = importer.get_countries()
+    zones = []
+    for c in countries:
+        c_generators = importer.get_points_for_country(c, instant)
+        c_shift_keys = importer.get_glsk_factors(c, instant)
+        z = create_country_zone_generator(network, c, c_generators, c_shift_keys)
+        zones.append(z)
+    return zones
 
 class DcSensitivityAnalysisResult:
     """
