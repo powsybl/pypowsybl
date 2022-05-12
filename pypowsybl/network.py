@@ -2736,15 +2736,15 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
-        The dataframe columns are mapped to IIDM extensions attributes and each row is mapped to an element using the
-        index.
-
         Args:
             extension_name: name of the extension
             df: the data to be updated
             kwargs: the data to be updated, as named arguments.
                     Arguments can be single values or any type of sequence.
                     In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
         """
         metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
@@ -2755,15 +2755,15 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
-        The dataframe columns are mapped to IIDM extensions attributes and each row is mapped to an element using the
-        index.
-
         Args:
             extension_name: name of the extension
             dfs: the data to be created
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
                     In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
         """
         self._create_extensions(extension_name, [df], **kwargs)
 
@@ -3901,7 +3901,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_extensions(self, extension_name: str) -> _DataFrame:
         """
-        Get a dataframe for a specific extension
+        Get an extension as a :class:`~pandas.DataFrame` for a specified extension name.
 
         Args:
             extension_name: name of the extension
@@ -3992,6 +3992,16 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.remove_network_element_properties(self._handle, ids, properties)
 
     def remove_extensions(self, extension_name: str, ids: Union[str, _List[str]]) -> None:
+        """
+        Removes network elements extensions, given the extension's name.
+
+        Args:
+            extension_name: name of the extension
+            ids: IDs of the elements to be removed.
+
+        Notes:
+            ids can be provided as a list of IDs or as a single ID.
+        """
         if isinstance(ids, str):
             ids = [ids]
         _pp.remove_extensions(self._handle, extension_name, ids)
