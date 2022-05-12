@@ -76,7 +76,6 @@
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <powsybl-dependencies.version>1.2.0</powsybl-dependencies.version>
         <powsybl-math-native.version>1.2.1</powsybl-math-native.version>
-        <powsybl-entsoe.version>1.4.0</powsybl-entsoe.version>
     </properties>
 
     <build>
@@ -360,7 +359,6 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-glsk-document-ucte</artifactId>
-            <version>${powsybl-entsoe.version}</version>
         </dependency>
 
         <!-- test -->
