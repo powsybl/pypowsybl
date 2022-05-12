@@ -28,7 +28,6 @@ class GLSKImportTestCases(unittest.TestCase):
         self.assertEqual([0.0158, 0.1299, 0.1299], importer.get_glsk_factors('10YFR-RTE------C', t))
 
     def test_zone(self):
-        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
         importer = pp.glsk.GLSKImporter(str(DATA_DIR.joinpath('glsk_sample.xml')))
         t = importer.get_gsk_time_interval_start()
         de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t)
@@ -36,12 +35,11 @@ class GLSKImportTestCases(unittest.TestCase):
 
         self.assertEqual(['DDE1AA1 ', 'DDE2AA1 ', 'DDE3AA1 '], de_generators)
         self.assertEqual([0.0278, 0.0062, 0.0133], de_shift_keys)
-        zone_de = pp.sensitivity.create_country_zone_generator(n, 'DE', de_generators, de_shift_keys)
+        zone_de = pp.sensitivity.create_country_zone_generator('DE', de_generators, de_shift_keys)
         self.assertEqual({'DDE1AA1 ': 0.0278, 'DDE2AA1 ': 0.0062, 'DDE3AA1 ': 0.0133}, zone_de.shift_keys_by_injections_ids)
 
     def test_zones(self):
-        n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
-        zones = pp.sensitivity.create_zones_from_glsk_file(n, str(DATA_DIR.joinpath('glsk_sample.xml')), datetime.datetime(2019, 1, 8, 0, 0))
+        zones = pp.sensitivity.create_zones_from_glsk_file(str(DATA_DIR.joinpath('glsk_sample.xml')), datetime.datetime(2019, 1, 8, 0, 0))
         zone_fr = next(z for z in zones if z.id == '10YFR-RTE------C')
         zone_nl = next(z for z in zones if z.id == '10YNL----------L')
         zone_be = next(z for z in zones if z.id == '10YBE----------2')

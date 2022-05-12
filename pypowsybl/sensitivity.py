@@ -96,26 +96,18 @@ def create_country_zone(network: _Network, country: str,
 
     return Zone(country, shift_keys_by_id)
 
-def create_country_zone_generator(network: _Network, country: str, generator_index: _List[str], shift_keys: _List[float]) -> Zone:
-    substations = network.get_substations()
-    voltage_levels = network.get_voltage_levels()
-    # join generators, voltage levels and substations to get generators with countries
-    generators = network.get_generators()
-    generators_with_countries = generators.join(
-        voltage_levels[['substation_id']].join(substations[['country']], on=['substation_id']),
-        on=['voltage_level_id'])
+def create_country_zone_generator(country: str, generator_index: _List[str], shift_keys: _List[float]) -> Zone:
     shift_keys_by_id = dict(zip(generator_index, shift_keys))
-
     return Zone(country, shift_keys_by_id)
 
-def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: datetime) -> _List[Zone]:
+def create_zones_from_glsk_file(glsk_file: str, instant: datetime) -> _List[Zone]:
     importer = GLSKImporter(glsk_file)
     countries = importer.get_countries()
     zones = []
     for country in countries:
         c_generators = importer.get_points_for_country(country, instant)
         c_shift_keys = importer.get_glsk_factors(country, instant)
-        zone = create_country_zone_generator(network, country, c_generators, c_shift_keys)
+        zone = create_country_zone_generator(country, c_generators, c_shift_keys)
         zones.append(zone)
     return zones
 
