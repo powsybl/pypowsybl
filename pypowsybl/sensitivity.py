@@ -97,10 +97,25 @@ def create_country_zone(network: _Network, country: str,
     return Zone(country, shift_keys_by_id)
 
 def create_country_zone_generator(country: str, generator_index: _List[str], shift_keys: _List[float]) -> Zone:
+    """ Create country zone with custom generator name and shift keys
+        Args:
+            country : Identifier of the country
+            generator_index : IDs of the generators
+            shift_keys : shift keys for the generators
+        Returns:
+            The zone object
+    """
     shift_keys_by_id = dict(zip(generator_index, shift_keys))
     return Zone(country, shift_keys_by_id)
 
 def create_zones_from_glsk_file(glsk_file: str, instant: datetime) -> _List[Zone]:
+    """ Create country zones from glsk file for a given datetime
+        Args:
+            glsk_file : UCTE glsk file
+            instant : timepoint at which to select glsk data
+        Returns:
+            A list of zones created from glsk file
+    """
     importer = GLSKImporter(glsk_file)
     countries = importer.get_countries()
     zones = []

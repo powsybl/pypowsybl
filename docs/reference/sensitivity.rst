@@ -60,6 +60,8 @@ In order to create, inspect and manipulate zones, you can use the following meth
 
     create_empty_zone
     create_country_zone
+    create_country_zone_generator
+    create_zones_from_glsk_file
     Zone
     Zone.id
     Zone.shift_keys_by_injections_ids
@@ -86,3 +88,20 @@ When the security analysis is completed, you can inspect its results:
     AcSensitivityAnalysisResult
     AcSensitivityAnalysisResult.get_bus_voltages_sensitivity_matrix
     AcSensitivityAnalysisResult.get_reference_voltages
+
+
+GLSK UCTE file loading
+----------------------
+
+UCTE GLSK file can be loaded using GLSKImporter, data can be used for zone creation
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+   GLSKImporter
+   GLSKImporter.get_gsk_time_interval_start
+   GLSKImporter.get_gsk_time_interval_end
+   GLSKImporter.get_countries
+   GLSKImporter.get_points_for_country
+   GLSKImporter.get_glsk_factors

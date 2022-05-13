@@ -8,6 +8,7 @@ from typing import List as _List
 from datetime import datetime
 import pypowsybl._pypowsybl as _pypowsybl
 
+#GLSKImporter helper class
 class GLSKImporter:
     def __init__(self, file: str):
         self.handle = _pypowsybl.create_glsk_importer(file)
