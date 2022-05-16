@@ -6,6 +6,7 @@
  */
 package com.powsybl.dataframe.network;
 
+import com.google.common.collect.ImmutableMap;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
@@ -23,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static com.powsybl.dataframe.DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES;
@@ -109,6 +112,23 @@ class NetworkDataframesTest {
                 .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q",
                         "min_q_at_target_p", "max_q_at_target_p", "min_q_at_p", "max_q_at_p", "reactive_limits_kind",
                         "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
+    }
+
+    @Test
+    void generatorsDisconnected() {
+        Network network = EurostagTutorialExample1Factory.create();
+        Map<String, Series> attributes =  createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        assertThat(attributes.get("bus_id").getStrings()).containsExactly("VLGEN_0");
+        assertThat(attributes.get("bus_breaker_bus_id").getStrings()).containsExactly("NGEN");
+        assertThat(attributes.get("connected").getBooleans()).containsExactly(true);
+
+        network.getGenerator("GEN").getTerminal().disconnect();
+        attributes =  createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        assertThat(attributes.get("bus_id").getStrings()).containsExactly("");
+        assertThat(attributes.get("bus_breaker_bus_id").getStrings()).containsExactly("NGEN");
+        assertThat(attributes.get("connected").getBooleans()).containsExactly(false);
     }
 
     @Test

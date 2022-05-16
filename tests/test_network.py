@@ -342,6 +342,23 @@ def test_generator_maxq_minq_reactive_limits():
     assert 15 == gen2['max_q']
 
 
+def test_generator_disconnected_bus_breaker_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    gen1_id = 'GEN'
+    generators = n.get_generators(attributes=['bus_id', 'bus_breaker_bus_id', 'connected'])
+    gen1 = generators.loc[gen1_id]
+    assert 'VLGEN_0' == gen1['bus_id']
+    assert 'NGEN' == gen1['bus_breaker_bus_id']
+    assert True == gen1['connected']
+
+    n.disconnect(gen1_id)
+    generators = n.get_generators(attributes=['bus_id', 'bus_breaker_bus_id', 'connected'])
+    gen1 = generators.loc[gen1_id]
+    assert '' == gen1['bus_id']
+    assert 'NGEN' == gen1['bus_breaker_bus_id']
+    assert False == gen1['connected']
+
+
 def test_ratio_tap_changer_steps_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     steps = n.get_ratio_tap_changer_steps()
