@@ -92,7 +92,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_switches
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
-   Network.get_extension
 
 
 Network elements update
@@ -176,6 +175,21 @@ Network variants may be used to manage multiple states of the network efficientl
    Network.remove_variant
    Network.get_variant_ids
 
+
+Network elements extensions
+---------------------------
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   get_extensions_names
+   Network.get_extensions
+   Network.create_extensions
+   Network.update_extensions
+   Network.remove_extensions
+
+
 Miscellaneous network functions
 -------------------------------
 
@@ -196,7 +210,6 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
-   get_extensions_names
 
 
 I/O

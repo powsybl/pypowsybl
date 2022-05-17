@@ -2751,6 +2751,41 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            df: the data to be updated
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.update_extensions(self._handle, extension_name, c_df)
+
+    def create_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            dfs: the data to be created
+            kwargs: the data to be created, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        self._create_extensions(extension_name, [df], **kwargs)
+
     def get_working_variant_id(self) -> str:
         """
         The current working variant ID.
@@ -2873,8 +2908,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def merge(self, *networks: Network) -> None:
         return _pp.merge(self._handle, [net._handle for net in networks])
 
-    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
-        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+    def _get_c_dataframes(self, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
         c_dfs: _List[_Optional[_pp.Dataframe]] = []
         dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
         for i, df in enumerate(dfs):
@@ -2882,7 +2916,17 @@ class Network:  # pylint: disable=too-many-public-methods
                 c_dfs.append(None)
             else:
                 c_dfs.append(_create_c_dataframe(df, metadata[i]))
+        return c_dfs
+
+    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_element(self._handle, c_dfs, element_type)
+
+    def _create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_extensions_creation_dataframes_metadata(extension_name)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
+        _pp.create_extensions(self._handle, c_dfs, extension_name)
 
     def create_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3874,20 +3918,24 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
 
-    def get_extension(self, extension_name: str) -> _DataFrame:
+    def get_extensions(self, extension_name: str) -> _DataFrame:
         """
-        Get a dataframe for a specific extension
+        Get an extension as a :class:`~pandas.DataFrame` for a specified extension name.
 
         Args:
             extension_name: name of the extension
 
         Returns:
-            A dataframe with the extension data.
+            A dataframe with the extensions data.
 
         Notes:
-            The extra id column in the resulting dataframe provides the link to the extension's parent element
+            The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
         return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
+        return self.get_extensions(extension_name)
 
     def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3961,6 +4009,21 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(properties, str):
             properties = [properties]
         _pp.remove_network_element_properties(self._handle, ids, properties)
+
+    def remove_extensions(self, extension_name: str, ids: _Union[str, _List[str]]) -> None:
+        """
+        Removes network elements extensions, given the extension's name.
+
+        Args:
+            extension_name: name of the extension
+            ids: IDs of the elements to be removed.
+
+        Notes:
+            ids can be provided as a list of IDs or as a single ID.
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        _pp.remove_extensions(self._handle, extension_name, ids)
 
 
 def _create_network(name: str, network_id: str = '') -> Network:

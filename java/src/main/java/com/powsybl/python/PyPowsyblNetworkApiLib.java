@@ -11,13 +11,15 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -331,7 +333,7 @@ public final class PyPowsyblNetworkApiLib {
     @CEntryPoint(name = "getExtensionsNames")
     public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            return createCharPtrArray(List.copyOf(NetworkDataframes.getExtensionsNames()));
+            return createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames()));
         });
     }
 
@@ -616,4 +618,87 @@ public final class PyPowsyblNetworkApiLib {
         createSeriesMetadata(metadata, res);
         return res;
     }
+
+    @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
+    public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
+                                                                 DataframePointer dataframe,
+                                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                UpdatingDataframe updatingDataframe = createDataframe(dataframe);
+                mapper.updateSeries(network, updatingDataframe);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "removeExtensions")
+    public static void removeExtensions(IsolateThread thread, ObjectHandle networkHandle,
+                                                                     CCharPointer namePtr,
+                                                                     CCharPointerPointer idsPtr, int idsCount,
+                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String name = CTypeUtil.toString(namePtr);
+            List<String> ids = CTypeUtil.toStringList(idsPtr, idsCount);
+            NetworkExtensions.removeExtensions(network, name, ids);
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionSeriesMetadata")
+    public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr,
+                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
+                return createSeriesMetadata(seriesMetadata);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "createExtensions")
+    public static void createExtensions(IsolateThread thread, ObjectHandle networkHandle,
+                                       CCharPointer namePtr,
+                                       DataframeArrayPointer cDataframes,
+                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String name = CTypeUtil.toString(namePtr);
+            List<UpdatingDataframe> dataframes = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+            }
+            NetworkElementAdders.addExtensions(name, network, dataframes);
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionsCreationMetadata")
+    public static DataframesMetadataPointer getExtensionsCreationMetadata(IsolateThread thread,
+                                                                          CCharPointer namePtr,
+                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            List<List<SeriesMetadata>> metadata = NetworkElementAdders.getExtensionAdder(name).getMetadata();
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+            int i = 0;
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                i++;
+            }
+
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
+            return res;
+        });
+    }
+
 }

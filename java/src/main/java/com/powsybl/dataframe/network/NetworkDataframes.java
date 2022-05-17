@@ -6,12 +6,11 @@
  */
 package com.powsybl.dataframe.network;
 
-import com.google.common.base.Suppliers;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
-import com.powsybl.dataframe.network.extensions.NetworkExtensionDataframeProvider;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.NetworkUtil;
@@ -24,7 +23,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
@@ -42,7 +40,7 @@ public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
 
-    private static final Map<String, NetworkDataframeMapper> EXTENSIONS_MAPPERS = createExtensionsMappers();
+    private static final Map<String, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
     private NetworkDataframes() {
     }
@@ -934,21 +932,5 @@ public final class NetworkDataframes {
         return EXTENSIONS_MAPPERS.get(extensionName);
     }
 
-    public static List<NetworkExtensionDataframeProvider> createExtensionsProviders() {
-        return Suppliers
-                .memoize(() -> ServiceLoader.load(NetworkExtensionDataframeProvider.class)
-                        .stream().map(ServiceLoader.Provider::get).collect(Collectors.toList()))
-                .get();
-    }
-
-    public static List<String> getExtensionsNames() {
-        return EXTENSIONS_MAPPERS.keySet().stream().sorted().collect(Collectors.toList());
-    }
-
-    private static Map<String, NetworkDataframeMapper> createExtensionsMappers() {
-        return createExtensionsProviders().stream()
-                .collect(Collectors.toMap(NetworkExtensionDataframeProvider::getExtensionName,
-                        NetworkExtensionDataframeProvider::createMapper));
-    }
 }
 
