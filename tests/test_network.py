@@ -8,6 +8,8 @@ import copy
 import re
 import unittest
 import datetime
+from os.path import exists
+
 import pandas as pd
 import pytest
 from numpy import NaN
@@ -340,6 +342,23 @@ def test_generator_maxq_minq_reactive_limits():
     assert 'MIN_MAX' == gen2['reactive_limits_kind']
     assert -5 == gen2['min_q']
     assert 15 == gen2['max_q']
+
+
+def test_generator_disconnected_bus_breaker_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    gen1_id = 'GEN'
+    generators = n.get_generators(attributes=['bus_id', 'bus_breaker_bus_id', 'connected'])
+    gen1 = generators.loc[gen1_id]
+    assert 'VLGEN_0' == gen1['bus_id']
+    assert 'NGEN' == gen1['bus_breaker_bus_id']
+    assert True == gen1['connected']
+
+    n.disconnect(gen1_id)
+    generators = n.get_generators(attributes=['bus_id', 'bus_breaker_bus_id', 'connected'])
+    gen1 = generators.loc[gen1_id]
+    assert '' == gen1['bus_id']
+    assert 'NGEN' == gen1['bus_breaker_bus_id']
+    assert False == gen1['connected']
 
 
 def test_ratio_tap_changer_steps_data_frame():
@@ -1346,6 +1365,25 @@ def test_properties():
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
+def test_pathlib_load_dump(tmpdir):
+    bat_path = TEST_DIR.joinpath('battery.xiidm')
+    n_path = pp.network.load(bat_path)
+    n_str = pp.network.load(str(bat_path))
+    assert n_path.dump_to_string() == n_str.dump_to_string()
+    data = tmpdir.mkdir('data')
+    n_path.dump(data.join('test.xiidm'))
+    n_path = pp.network.load(data.join('test.xiidm'))
+    assert n_path.dump_to_string() == n_str.dump_to_string()
+
+def test_write_svg_file(tmpdir):
+    data = tmpdir.mkdir('data')
+    net = pp.network.create_four_substations_node_breaker_network()
+    assert not exists(data.join('test_nad.svg'))
+    net.write_network_area_diagram_svg(data.join('test_nad.svg'))
+    assert exists(data.join('test_nad.svg'))
+    assert not exists(data.join('test_sld.svg'))
+    net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
+    assert exists(data.join('test_sld.svg'))
 
 if __name__ == '__main__':
     unittest.main()

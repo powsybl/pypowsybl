@@ -890,7 +890,7 @@ public final class NetworkDataframes {
         if (t == null) {
             return "";
         } else {
-            Bus bus = t.getBusBreakerView().getBus();
+            Bus bus = t.isConnected() ? t.getBusBreakerView().getBus() : t.getBusBreakerView().getConnectableBus();
             return bus != null ? bus.getId() : "";
         }
     }
