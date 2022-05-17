@@ -6,7 +6,7 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
-import os
+from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
 import warnings
@@ -16,6 +16,7 @@ from typing import (
     Dict as _Dict,
     Optional as _Optional,
     Union as _Union,
+    TYPE_CHECKING as _TYPE_CHECKING
 )
 
 from numpy import Inf
@@ -28,8 +29,17 @@ import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe, _create_properties_c_dataframe, \
+from pypowsybl.utils.dataframes import (
+    _adapt_df_or_kwargs,
+    _create_c_dataframe,
+    _create_properties_c_dataframe,
     _adapt_properties_kwargs
+)
+
+# Type definitions
+if _TYPE_CHECKING:
+    ParamsDict = _Optional[_Dict[str, str]]
+    PathOrStr = _Union[str, _PathLike[str]]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -39,7 +49,12 @@ def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
 
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
-ParamsDict = _Optional[_Dict[str, str]]
+
+def _path_to_str(path: PathOrStr) -> str:
+    if isinstance(path, str):
+        return path
+    return path.__fspath__()
+
 
 class Svg:
     """
@@ -231,7 +246,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def disconnect(self, id: str) -> bool:
         return _pp.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: _Union[str, os.PathLike], format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
+    def dump(self, file: _Union[str, _PathLike[str]], format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -252,8 +267,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.dump('network.xiidm.gz')  # produces a gzipped file
                 network.dump('/path/to/network.uct', format='UCTE')
         """
-        if isinstance(file, os.PathLike):
-            file = str(file.__fspath__())
+        file = _path_to_str(file)
         if parameters is None:
             parameters = {}
         _pp.dump_network(self._handle, file, format, parameters)
@@ -284,7 +298,7 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: _Union[str, os.PathLike]) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: _Union[str, _PathLike]) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -292,8 +306,7 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
         """
-        if isinstance(svg_file, os.PathLike):
-            svg_file = str(svg_file.__fspath__())
+        svg_file = _path_to_str(svg_file)
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
     def get_single_line_diagram(self, container_id: str) -> Svg:
@@ -308,7 +321,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: _Union[str, os.PathLike], voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: _Union[str, _PathLike], voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -317,8 +330,7 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
-        if isinstance(svg_file, os.PathLike):
-            svg_file = str(svg_file.__fspath__())
+        svg_file = _path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
         if type(voltage_level_ids) == str:
@@ -4143,7 +4155,7 @@ def get_export_parameters(fmt: str) -> _DataFrame:
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: _Union[str, os.PathLike], parameters: _Dict[str, str] = None) -> Network:
+def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -4168,8 +4180,7 @@ def load(file: _Union[str, os.PathLike], parameters: _Dict[str, str] = None) -> 
             network = pp.network.load('network.uct')
             ...
     """
-    if isinstance(file, os.PathLike):
-        file = str(file.__fspath__())
+    file = _path_to_str(file)
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network(file, parameters))
