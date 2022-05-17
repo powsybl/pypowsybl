@@ -4010,7 +4010,7 @@ class Network:  # pylint: disable=too-many-public-methods
             properties = [properties]
         _pp.remove_network_element_properties(self._handle, ids, properties)
 
-    def remove_extensions(self, extension_name: str, ids: Union[str, _List[str]]) -> None:
+    def remove_extensions(self, extension_name: str, ids: _Union[str, _List[str]]) -> None:
         """
         Removes network elements extensions, given the extension's name.
 
