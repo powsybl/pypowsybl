@@ -8,6 +8,8 @@ import copy
 import re
 import unittest
 import datetime
+from os.path import exists
+
 import pandas as pd
 import pytest
 from numpy import NaN
@@ -1346,6 +1348,25 @@ def test_properties():
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
+def test_pathlib_load_dump(tmpdir):
+    bat_path = TEST_DIR.joinpath('battery.xiidm')
+    n_path = pp.network.load(bat_path)
+    n_str = pp.network.load(str(bat_path))
+    assert n_path.dump_to_string() == n_str.dump_to_string()
+    data = tmpdir.mkdir('data')
+    n_path.dump(data.join('test.xiidm'))
+    n_path = pp.network.load(data.join('test.xiidm'))
+    assert n_path.dump_to_string() == n_str.dump_to_string()
+
+def test_write_svg_file(tmpdir):
+    data = tmpdir.mkdir('data')
+    net = pp.network.create_four_substations_node_breaker_network()
+    assert not exists(data.join('test_nad.svg'))
+    net.write_network_area_diagram_svg(data.join('test_nad.svg'))
+    assert exists(data.join('test_nad.svg'))
+    assert not exists(data.join('test_sld.svg'))
+    net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
+    assert exists(data.join('test_sld.svg'))
 
 if __name__ == '__main__':
     unittest.main()
