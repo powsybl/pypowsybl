@@ -10,9 +10,6 @@ Running a load flow
     import pypowsybl.network as pn
 
 You can use the module :mod:`pypowsybl.loadflow` in order to run load flows on networks.
-By default, load flows are based on the OpenLoadFlow implementation,
-fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
-OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 Start by importing the module:
 
@@ -20,6 +17,21 @@ Start by importing the module:
 
    import pypowsybl.network as pn
    import pypowsybl.loadflow as lf
+
+Providers
+---------
+We can get the list of supported load flow implementations (so called providers) and default one:
+
+.. doctest::
+
+    >>> lf.get_provider_names()
+    ['OpenLoadFlow']
+    >>> lf.get_default_provider()
+    'OpenLoadFlow'
+
+By default, load flows are based on the OpenLoadFlow implementation,
+fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 Parameters
 ----------
@@ -35,6 +47,29 @@ Let's have a look at the default ones:
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
 All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+
+Parameters specific to a provider
+---------------------------------
+
+Some parameters are not supported by all load flow providers but specific to only one. These specific
+parameters could be specified in a less typed way than common parameters using the `provider_parameters` attribute.
+
+.. warning::
+    `provider_parameters` is dictionary and all keys and values have to be a string even in case of a numeric value.
+
+We can list supported parameters specific to default provider using:
+
+.. doctest::
+
+    >>> lf.get_provider_parameters_names()
+    ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', 'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant', 'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds', 'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl', 'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride', 'transformerVoltageControlMode']
+
+For instance, OLF supports configuration of slack bus from its ID like this:
+
+.. doctest::
+
+    >>> p = lf.Parameters(provider_parameters={'slackBusSelectionMode' : 'NAME', 'slackBusesIds' : 'VLHV2_0'})
+
 
 AC Load Flow
 ------------
