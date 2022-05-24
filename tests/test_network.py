@@ -119,13 +119,18 @@ def test_get_network_element_ids():
     assert ['NGEN_NHV1', 'NHV2_NLOAD'] == n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER)
     assert ['NGEN_NHV1'] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
                                                nominal_voltages={24})
-    assert ['NGEN_NHV1', 'NHV2_NLOAD'] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
-    nominal_voltages = {24, 150})
+    assert ['NGEN_NHV1', 'NHV2_NLOAD'] == n.get_elements_ids(
+        element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+        nominal_voltages={24, 150})
     assert ['LOAD'] == n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150})
-    assert ['LOAD'] == n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries = {'BE'})
-    assert [] == n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries = {'FR'})
-    assert ['NGEN_NHV1'] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages = {24}, countries = {'FR'})
-    assert [] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages = {24}, countries = {'BE'})
+    assert ['LOAD'] == n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150},
+                                          countries={'BE'})
+    assert [] == n.get_elements_ids(element_type=pp.network.ElementType.LOAD, nominal_voltages={150}, countries={'FR'})
+    assert ['NGEN_NHV1'] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER,
+                                               nominal_voltages={24}, countries={'FR'})
+    assert [] == n.get_elements_ids(element_type=pp.network.ElementType.TWO_WINDINGS_TRANSFORMER, nominal_voltages={24},
+                                    countries={'BE'})
+
 
 def test_buses():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -344,6 +349,15 @@ def test_generator_maxq_minq_reactive_limits():
     assert 15 == gen2['max_q']
 
 
+def test_vsc_maxq_minq_reactive_limits():
+    n = pp.network.create_four_substations_node_breaker_network()
+    vsc1_id = 'VSC1'
+    n.update_vsc_converter_stations(id=vsc1_id, p=50)
+    vsc = n.get_vsc_converter_stations(attributes=['min_q_at_p', 'max_q_at_p'])
+    vsc1 = vsc.loc[vsc1_id]
+    pd.testing.assert_series_equal(pd.Series({'min_q_at_p': -550.0, 'max_q_at_p': 570.0}, name='VSC1'), vsc1)
+
+
 def test_generator_disconnected_bus_breaker_id():
     n = pp.network.create_eurostag_tutorial_example1_network()
     gen1_id = 'GEN'
@@ -468,6 +482,7 @@ def test_regulated_terminal_bus_breaker():
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='LOAD')
 
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
@@ -475,12 +490,14 @@ def test_update_unknown_data():
         n.update_generators(update)
     assert 'No column named unknown' in str(context)
 
+
 def test_update_non_modifiable_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
     with pytest.raises(pp.PyPowsyblError) as context:
         n.update_generators(update)
     assert 'Series \'voltage_level_id\' is not modifiable.' == str(context.value)
+
 
 def test_update_switches_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
@@ -494,11 +511,13 @@ def test_update_switches_data_frame():
     open_switches = switches[switches['open']].index.tolist()
     assert ['BREAKER-BB2-VL1_VL2_1'] == open_switches
 
+
 def test_update_2_windings_transformers_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = n.get_2_windings_transformers()
     assert ['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
-         'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1', 'connected2'] == df.columns.tolist()
+            'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id', 'connected1',
+            'connected2'] == df.columns.tolist()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NGEN_NHV1', 'NHV2_NLOAD']),
                             columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1',
                                      'i1', 'p2',
@@ -531,10 +550,12 @@ def test_update_2_windings_transformers_data_frame():
         data=[['S1VL1_4', 4, 'S1VL2_3', 3]])
     pd.testing.assert_frame_equal(expected, twt, check_dtype=False, atol=10 ** -2)
 
+
 def test_voltage_levels_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     voltage_levels = n.get_voltage_levels()
     assert 24.0 == voltage_levels['nominal_v']['VLGEN']
+
 
 def test_substations_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -550,6 +571,7 @@ def test_substations_data_frame():
                                   ['', 'REE', 'B', 'ES']])
     pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
 
+
 def test_reactive_capability_curve_points_data_frame():
     n = pp.network.create_four_substations_node_breaker_network()
     points = n.get_reactive_capability_curve_points()
@@ -560,11 +582,13 @@ def test_reactive_capability_curve_points_data_frame():
     assert 860 == pytest.approx(points.loc['GH1']['max_q'][0])
     assert 946.25 == pytest.approx(points.loc['GH1']['max_q'][1])
 
+
 def test_exception():
     n = pp.network.create_ieee14()
     with pytest.raises(pp.PyPowsyblError) as e:
         n.open_switch("aa")
     assert "Switch 'aa' not found" == str(e.value)
+
 
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -585,11 +609,12 @@ def test_ratio_tap_changers():
                             data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
 
+
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-                  'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
     assert 0 == twt_values.low_tap
@@ -605,13 +630,14 @@ def test_phase_tap_changers():
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-                  'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
     assert twt_values.regulating
     assert 'CURRENT_LIMITER' == twt_values.regulation_mode
     assert 1000 == pytest.approx(twt_values.regulation_value)
-    assert 100 ==  pytest.approx(twt_values.target_deadband)
+    assert 100 == pytest.approx(twt_values.target_deadband)
+
 
 def test_variant():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker.xiidm')))
@@ -628,10 +654,12 @@ def test_variant():
     assert 'InitialState' == n.get_working_variant_id()
     assert 1 == len(n.get_variant_ids())
 
+
 def test_sld_svg():
     n = pp.network.create_four_substations_node_breaker_network()
     sld = n.get_single_line_diagram('S1VL1')
     assert re.search('.*<svg.*', sld.svg)
+
 
 def test_sld_nad():
     n = pp.network.create_ieee14()
@@ -649,6 +677,7 @@ def test_sld_nad():
         n.write_network_area_diagram_svg(test_svg, ['VL1'])
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
 
+
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
     assert 9 == len(network.get_current_limits())
@@ -660,10 +689,12 @@ def test_current_limits():
                             data=[['TWO', 1200.0, 600, False]])
     pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
+
 def test_deep_copy():
     n = pp.network.create_eurostag_tutorial_example1_network()
     copy_n = copy.deepcopy(n)
     assert ['NGEN_NHV1', 'NHV2_NLOAD'] == copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER)
+
 
 def test_lines():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -702,6 +733,7 @@ def test_lines():
         data=[['S2VL1_6', 6, 'S3VL1_2', 2], ['S3VL1_8', 8, 'S4VL1_6', 6]])
     pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=10 ** -2)
 
+
 def test_dangling_lines():
     n = util.create_dangling_lines_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
@@ -728,6 +760,7 @@ def test_dangling_lines():
         data=[['BUS', -1]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -2)
 
+
 def test_batteries():
     n = util.create_battery_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
@@ -747,6 +780,7 @@ def test_batteries():
                                    True],
                                   ['', 200, -200, 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
+
 
 def test_shunt():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -782,6 +816,7 @@ def test_shunt():
         data=[['S1VL2_19', 19]])
     pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=10 ** -2)
 
+
 def test_3_windings_transformers():
     n = util.create_three_windings_transformer_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['3WT']),
@@ -806,6 +841,7 @@ def test_3_windings_transformers():
         data=[['BUS_132', -1, 'BUS_33', -1, 'BUS_11', -1]])
     pd.testing.assert_frame_equal(expected, t3wt, check_dtype=False, atol=10 ** -2)
     # test update
+
 
 def test_busbar_sections():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -837,6 +873,7 @@ def test_busbar_sections():
                                   ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
 
+
 def test_non_linear_shunt():
     n = util.create_non_linear_shunt_network()
     expected = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)],
@@ -851,6 +888,7 @@ def test_non_linear_shunt():
                                 [0.4, 0.03]])
     n.update_non_linear_shunt_compensator_sections(update)
     pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+
 
 def test_voltage_levels():
     net = pp.network.create_eurostag_tutorial_example1_network()
@@ -875,16 +913,19 @@ def test_voltage_levels():
                                   ['', 'P2', 151, 175, 125]])
     pd.testing.assert_frame_equal(expected, net.get_voltage_levels(), check_dtype=False)
 
+
 def test_update_with_keywords():
     n = util.create_non_linear_shunt_network()
     n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
     assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g']
     assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b']
 
+
 def test_update_generators_with_keywords():
     n = pp.network.create_four_substations_node_breaker_network()
     n.update_generators(id=['GTH1', 'GTH2'], target_p=[200, 300])
     assert [200, 300] == n.get_generators().loc[['GTH1', 'GTH2'], 'target_p'].to_list()
+
 
 def test_update_generators_minax_reactive_limits():
     n = pp.network.create_micro_grid_be_network()
@@ -902,6 +943,7 @@ def test_update_generators_minax_reactive_limits():
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id=[gen_with_curve_reactive_limits], min_q=[-200])
 
+
 def test_invalid_update_kwargs():
     n = pp.network.create_four_substations_node_breaker_network()
 
@@ -918,6 +960,7 @@ def test_invalid_update_kwargs():
         n.update_generators(id=np.array(0, ndmin=3))
     assert 'dimensions' in str(context)
 
+
 def test_create_network():
     n = pp.network.create_ieee9()
     assert 'ieee9cdf' == n.id
@@ -927,6 +970,7 @@ def test_create_network():
     assert 'ieee57cdf' == n.id
     n = pp.network.create_ieee118()
     assert 'ieee118cdf' == n.id
+
 
 def test_node_breaker_view():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -942,12 +986,14 @@ def test_node_breaker_view():
     assert 7 == len(nodes)
     assert topology.internal_connections.empty
 
+
 def test_graph():
     n = pp.network.create_four_substations_node_breaker_network()
     network_topology = n.get_node_breaker_topology('S4VL1')
     graph = network_topology.create_graph()
     assert 7 == len(graph.nodes)
     assert [(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)] == list(graph.edges)
+
 
 @unittest.skip("plot graph skipping")
 def test_node_breaker_view_draw_graph():
@@ -957,6 +1003,7 @@ def test_node_breaker_view_draw_graph():
     nx.draw_shell(graph, with_labels=True)
     plt.show()
 
+
 def test_network_merge():
     be = pp.network.create_micro_grid_be_network()
     assert 6 == len(be.get_voltage_levels())
@@ -964,6 +1011,7 @@ def test_network_merge():
     assert 4 == len(nl.get_voltage_levels())
     be.merge(nl)
     assert 10 == len(be.get_voltage_levels())
+
 
 def test_linear_shunt_compensator_sections():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -984,6 +1032,7 @@ def test_linear_shunt_compensator_sections():
     n.update_linear_shunt_compensator_sections(id='SHUNT', g_per_section=0.15, b_per_section=-0.02)
     assert 0.15 == n.get_linear_shunt_compensator_sections().loc['SHUNT']['g_per_section']
     assert -0.02 == n.get_linear_shunt_compensator_sections().loc['SHUNT']['b_per_section']
+
 
 def test_bus_breaker_view():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1039,6 +1088,7 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
+
 def test_not_connected_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
@@ -1054,12 +1104,14 @@ def test_not_connected_bus_breaker():
     line = topo.elements.loc['NHV1_NHV2_1']
     assert '' == line['bus_id']
 
+
 def test_graph_busbreakerview():
     n = pp.network.create_four_substations_node_breaker_network()
     network_topology = n.get_bus_breaker_topology('S4VL1')
     graph = network_topology.create_graph()
     assert 4 == len(graph.nodes)
     assert [('S4VL1_0', 'S4VL1_6'), ('S4VL1_0', 'S4VL1_2'), ('S4VL1_0', 'S4VL1_4')] == list(graph.edges)
+
 
 @unittest.skip("plot graph skipping")
 def test_bus_breaker_view_draw_graph():
@@ -1068,6 +1120,7 @@ def test_bus_breaker_view_draw_graph():
     graph = network_topology.create_graph()
     nx.draw_shell(graph, with_labels=True)
     plt.show()
+
 
 def test_dataframe_attributes_filtering():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -1100,10 +1153,12 @@ def test_dataframe_attributes_filtering():
         n.get_buses(all_attributes=True, attributes=['v_mag', 'voltage_level_id'])
     assert "parameters \"all_attributes\" and \"attributes\" are mutually exclusive" in str(e)
 
+
 def test_metadata():
     meta_gen = pp._pypowsybl.get_network_elements_dataframe_metadata(pp._pypowsybl.ElementType.GENERATOR)
     meta_gen_index_default = [x for x in meta_gen if (x.is_index == True) and (x.is_default == True)]
     assert len(meta_gen_index_default) > 0
+
 
 def test_dataframe_elements_filtering():
     network_four_subs = pp.network.create_four_substations_node_breaker_network()
@@ -1215,6 +1270,7 @@ def test_dataframe_elements_filtering():
     filtered_selection_empty = network_four_subs.get_generators(id=[])
     assert filtered_selection_empty.empty
 
+
 def test_limits():
     network = util.create_dangling_lines_network()
 
@@ -1261,6 +1317,7 @@ def test_limits():
     limits = limits[limits['name'] == '10\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
 
+
 def test_validation_level():
     n = pp.network.create_ieee14()
     vl = n.get_validation_level()
@@ -1278,6 +1335,7 @@ def test_validation_level():
     level = n.validate()
     assert ValidationLevel.STEADY_STATE_HYPOTHESIS == level
 
+
 def test_validate():
     n = pp.network.create_ieee14()
     vl = n.validate()
@@ -1290,6 +1348,7 @@ def test_validate():
         n.validate()
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
+
 def test_switches_node_breaker_connection_info():
     n = pp.network.create_four_substations_node_breaker_network()
     switches = n.get_switches(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'node1', 'node2'])
@@ -1300,6 +1359,7 @@ def test_switches_node_breaker_connection_info():
     disc = switches.loc['S1VL1_BBS_LD1_DISCONNECTOR']
     assert disc.node1 == 0
     assert disc.node2 == 1
+
 
 def test_switches_bus_breaker_connection_info():
     n = pp.network.create_empty()
@@ -1317,11 +1377,13 @@ def test_switches_bus_breaker_connection_info():
 
     pd.testing.assert_frame_equal(switches, expected, check_dtype=False)
 
+
 def test_get_empty_attributes():
     network = pp.network.create_eurostag_tutorial_example1_network()
     gens = network.get_generators(attributes=[])
     assert gens.index.tolist() == ['GEN', 'GEN2']
     assert gens.columns.empty
+
 
 def test_properties():
     network = pp.network.create_eurostag_tutorial_example1_network()
@@ -1365,6 +1427,7 @@ def test_properties():
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
+
 def test_pathlib_load_dump(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     n_path = pp.network.load(bat_path)
@@ -1375,6 +1438,7 @@ def test_pathlib_load_dump(tmpdir):
     n_path = pp.network.load(data.join('test.xiidm'))
     assert n_path.dump_to_string() == n_str.dump_to_string()
 
+
 def test_write_svg_file(tmpdir):
     data = tmpdir.mkdir('data')
     net = pp.network.create_four_substations_node_breaker_network()
@@ -1384,6 +1448,7 @@ def test_write_svg_file(tmpdir):
     assert not exists(data.join('test_sld.svg'))
     net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
     assert exists(data.join('test_sld.svg'))
+
 
 if __name__ == '__main__':
     unittest.main()
