@@ -502,16 +502,25 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_p**: the target active value for the generator (in MW)
               - **max_p**: the maximum active value for the generator  (MW)
               - **min_p**: the minimum active value for the generator  (MW)
+              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the generator for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
+              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this generator is connected
               - **bus_id**: bus where this generator is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
               - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the generator is connected to a bus
 
             This dataframe is indexed on the generator ID.
 
@@ -1202,6 +1211,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)

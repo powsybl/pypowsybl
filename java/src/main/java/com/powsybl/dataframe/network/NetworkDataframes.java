@@ -83,7 +83,7 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleFunction<U> getOppositeP() {
+    static <U extends Injection> ToDoubleFunction<U> getOppositeP() {
         return inj -> -inj.getTerminal().getP();
     }
 
@@ -140,14 +140,14 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
-    static ToDoubleFunction<Generator> getMinQ(ToDoubleFunction<Generator> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleFunction<U> getMinQ(ToDoubleFunction<U> pGetter) {
         return g -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMinQ(pGetter.applyAsDouble(g));
         };
     }
 
-    static ToDoubleFunction<Generator> getMaxQ(ToDoubleFunction<Generator> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleFunction<U> getMaxQ(ToDoubleFunction<U> pGetter) {
         return g -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMaxQ(pGetter.applyAsDouble(g));
@@ -588,6 +588,8 @@ public final class NetworkDataframes {
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
                 .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
+                .doubles("min_q_at_p", getMinQ(getOppositeP()), false)
+                .doubles("max_q_at_p", getMaxQ(getOppositeP()), false)
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)

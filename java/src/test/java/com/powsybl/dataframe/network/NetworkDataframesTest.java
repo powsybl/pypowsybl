@@ -131,14 +131,14 @@ class NetworkDataframesTest {
     @Test
     void generatorsDisconnected() {
         Network network = EurostagTutorialExample1Factory.create();
-        Map<String, Series> attributes =  createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+        Map<String, Series> attributes = createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
                 .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
         assertThat(attributes.get("bus_id").getStrings()).containsExactly("VLGEN_0");
         assertThat(attributes.get("bus_breaker_bus_id").getStrings()).containsExactly("NGEN");
         assertThat(attributes.get("connected").getBooleans()).containsExactly(true);
 
         network.getGenerator("GEN").getTerminal().disconnect();
-        attributes =  createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+        attributes = createDataFrame(GENERATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
                 .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
         assertThat(attributes.get("bus_id").getStrings()).containsExactly("");
         assertThat(attributes.get("bus_breaker_bus_id").getStrings()).containsExactly("NGEN");
@@ -281,7 +281,7 @@ class NetworkDataframesTest {
         List<Series> allAttributeSeries = createDataFrame(VSC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
+                .containsExactly("id", "name", "loss_factor", "min_q_at_p", "max_q_at_p", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
@@ -396,7 +396,14 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulated_element_id",
+                        "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+        List<Series> allAttributeSeries = createDataFrame(STATIC_VAR_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode",
+                        "regulated_element_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id",
+                        "node", "connected");
     }
 
     @Test
