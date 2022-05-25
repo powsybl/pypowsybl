@@ -11,9 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.ReactiveCapabilityCurveAdder;
+import com.powsybl.iidm.network.*;
 
 import java.util.*;
 
@@ -111,18 +109,20 @@ public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static void createLimits(Network network, String elementId, List<CurvePoint> curvePoints) {
-        Generator generator = network.getGenerator(elementId);
-        if (generator == null) {
-            throw new PowsyblException("Generator " + elementId + " does not exist.");
+        Identifiable identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof ReactiveLimitsHolder) {
+            ReactiveCapabilityCurveAdder curveAdder = ((ReactiveLimitsHolder) identifiable)
+                    .newReactiveCapabilityCurve();
+            for (CurvePoint curvePoint : curvePoints) {
+                curveAdder.beginPoint()
+                        .setP(curvePoint.getP())
+                        .setMaxQ(curvePoint.getMaxQ())
+                        .setMinQ(curvePoint.getMinQ())
+                        .endPoint();
+            }
+            curveAdder.add();
+        } else {
+            throw new PowsyblException("Element " + elementId + " does not have reactive limits.");
         }
-        ReactiveCapabilityCurveAdder curveAdder = generator.newReactiveCapabilityCurve();
-        for (CurvePoint curvePoint : curvePoints) {
-            curveAdder.beginPoint()
-                    .setP(curvePoint.getP())
-                    .setMaxQ(curvePoint.getMaxQ())
-                    .setMinQ(curvePoint.getMinQ())
-                    .endPoint();
-        }
-        curveAdder.add();
     }
 }

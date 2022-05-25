@@ -182,11 +182,11 @@ class NetworkDataframesTest {
         List<Series> series = createDataFrame(BATTERY, network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "max_p", "min_p", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "max_p", "min_p", "reactive_limits_kind", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(BATTERY, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "max_p", "min_p", "p0", "q0", "p", "q", "i", "voltage_level_id",
+                .containsExactly("id", "name", "max_p", "min_p", "reactive_limits_kind", "p0", "q0", "p", "q", "i", "voltage_level_id",
                         "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
@@ -276,12 +276,12 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
+                .containsExactly("id", "name", "loss_factor", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(VSC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "min_q_at_p", "max_q_at_p", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
+                .containsExactly("id", "name", "loss_factor", "min_q_at_p", "max_q_at_p", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
