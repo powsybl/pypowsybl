@@ -243,20 +243,21 @@ def test_vsc_converter_stations_per_unit():
     n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'loss_factor', 'target_v', 'target_q', 'voltage_regulator_on', 'regulated_element_id',
+        columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'target_v', 'target_q', 'voltage_regulator_on',
+                 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['VSC1', 'VSC1', 1.1, 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-              ['VSC2', 'VSC2', 1.1, 0, 1.2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+        data=[['VSC1', 'VSC1', 1.1, NaN, NaN, 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 0, 1.2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=10 ** -2)
     n.update_vsc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                  columns=['target_v', 'target_q'],
                                                  index=['VSC1', 'VSC2']))
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'loss_factor', 'target_v', 'target_q', 'voltage_regulator_on', 'regulated_element_id',
+        columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'target_v', 'target_q', 'voltage_regulator_on', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['VSC1', 'VSC1', 1.1, 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-              ['VSC2', 'VSC2', 1.1, 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+        data=[['VSC1', 'VSC1', 1.1, NaN, NaN, 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=10 ** -2)
 
 
@@ -359,21 +360,21 @@ def test_batteries():
     n = util.create_battery_network()
     n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['', 100, -100, 100, 100, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 2, -2, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            data=[['', 100, -100, -100, 100, 100, 100, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, NaN, NaN, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=10 ** -2)
     n.update_batteries(pd.DataFrame(data=[[50, -50, 50, 50, -7, -3]],
                                     columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q'],
                                     index=['BAT']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['', 50, -50, 50, 50, -7, -3, NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 2, -2, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            data=[['', 50, -50, -100, 100, 50, 50, -7, -3, NaN, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, NaN, NaN, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=10 ** -2)
 
 

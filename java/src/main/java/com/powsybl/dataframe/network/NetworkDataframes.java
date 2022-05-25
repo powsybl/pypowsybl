@@ -154,7 +154,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static DoubleUpdater<Generator> setMinQ() {
+    static <U extends ReactiveLimitsHolder> DoubleUpdater<U> setMinQ() {
         return (g, minQ) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -166,7 +166,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static DoubleUpdater<Generator> setMaxQ() {
+    static <U extends ReactiveLimitsHolder> DoubleUpdater<U> setMaxQ() {
         return (g, maxQ) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -327,6 +327,8 @@ public final class NetworkDataframes {
                 .strings("name", b -> b.getOptionalName().orElse(""))
                 .doubles("max_p", Battery::getMaxP, Battery::setMaxP)
                 .doubles("min_p", Battery::getMinP, Battery::setMinP)
+                .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setMinQ())
+                .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
                 .doubles("p0", Battery::getP0, Battery::setP0)
                 .doubles("q0", Battery::getQ0, Battery::setQ0)
                 .doubles("p", getP(), setP())
@@ -588,6 +590,8 @@ public final class NetworkDataframes {
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
                 .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
+                .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setMinQ())
+                .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
                 .doubles("min_q_at_p", getMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getMaxQ(getOppositeP()), false)
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
