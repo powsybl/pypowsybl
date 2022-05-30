@@ -331,3 +331,43 @@ You can now run a loadflow to check our network actually works !
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
+
+
+Creating custom columns
+-----------------------
+
+In addition to base columns created at network loading, it is possible to add and remove custom columns.
+This could be very useful to extend to network data model with user defined data. Custom columns type can only be string.
+
+By default a substation has only 3 attributes, so 3 columns in the dataframe: 'TSO', 'geo_tags' and 'country':
+
+.. doctest::
+
+   >>> network = pp.network.create_eurostag_tutorial_example1_network()
+   >>> network.get_substations(True) # doctest: +NORMALIZE_WHITESPACE
+      name  TSO geo_tags country
+   id
+   P1       RTE        A      FR
+   P2       RTE        B      BE
+
+Let's add 2 new columns 'lat' and 'lon' to store GPS location:
+
+.. doctest::
+
+   >>> network.add_elements_properties(id=['P1', 'P2'], lon=[1.5, 1.6], lat=[48.5, 48.98])
+   >>> network.get_substations(True) # doctest: +NORMALIZE_WHITESPACE
+      name  TSO geo_tags country  lon    lat
+   id
+   P1       RTE        A      FR  1.5   48.5
+   P2       RTE        B      BE  1.6  48.98
+
+We can also remove properties. For example here, we remove 'lon' column for substations 'P1' and 'P2':
+
+.. doctest::
+
+   >>> network.remove_elements_properties(ids=['P1', 'P2'], properties=['lon'])
+   >>> network.get_substations(True) # doctest: +NORMALIZE_WHITESPACE
+      name  TSO geo_tags country    lat
+   id
+   P1       RTE        A      FR   48.5
+   P2       RTE        B      BE  48.98
