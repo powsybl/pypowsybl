@@ -8,7 +8,7 @@ from typing import (
     List as _List,
     Sequence as _Sequence,
     Optional as _Optional,
-    Tuple as _Tuple
+    Dict as _Dict
 )
 from pandas import DataFrame as _DataFrame
 import pypowsybl._pypowsybl as _pypowsybl
@@ -17,11 +17,11 @@ from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
     VoltageInitMode,
-    ValidationType
+    ValidationType,
+    Report
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -31,6 +31,7 @@ BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 ComponentStatus.__name__ = 'ComponentStatus'
 ComponentStatus.__module__ = __name__
+
 
 # Pure python wrapper for C ext object
 # although it adds some boiler plate code, it integrates better with tools such as sphinx
@@ -73,17 +74,17 @@ class ComponentResult:
         return self._res.slack_bus_active_power_mismatch
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}("\
-               f"connected_component_num={self.connected_component_num!r}"\
-               f", synchronous_component_num={self.synchronous_component_num!r}"\
-               f", status={self.status.name}"\
-               f", iteration_count={self.iteration_count!r}"\
-               f", slack_bus_id={self.slack_bus_id!r}"\
-               f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}"\
+        return f"{self.__class__.__name__}(" \
+               f"connected_component_num={self.connected_component_num!r}" \
+               f", synchronous_component_num={self.synchronous_component_num!r}" \
+               f", status={self.status.name}" \
+               f", iteration_count={self.iteration_count!r}" \
+               f", slack_bus_id={self.slack_bus_id!r}" \
+               f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}" \
                f")"
 
 
-class Parameters(_pypowsybl.LoadFlowParameters):
+class Parameters:
     """
     Parameters for a loadflow execution.
 
@@ -126,10 +127,11 @@ class Parameters(_pypowsybl.LoadFlowParameters):
         connected_component_mode: Define which connected components should be computed.
             Use ``MAIN`` to computes flows only on the main connected component,
             or prefer ``ALL`` for a run on all connected component.
+        provider_parameters: Define parameters linked to the loadflow provider
+            the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self,
-                 voltage_init_mode: VoltageInitMode = None,
+    def __init__(self, voltage_init_mode: VoltageInitMode = None,
                  transformer_voltage_control_on: bool = None,
                  no_generator_reactive_limits: bool = None,
                  phase_shifter_regulation_on: bool = None,
@@ -141,8 +143,9 @@ class Parameters(_pypowsybl.LoadFlowParameters):
                  balance_type: BalanceType = None,
                  dc_use_transformer_ratio: bool = None,
                  countries_to_balance: _Sequence[str] = None,
-                 connected_component_mode: ConnectedComponentMode = None):
-        super().__init__()  # loads from platform config
+                 connected_component_mode: ConnectedComponentMode = None,
+                 provider_parameters: _Dict[str, str] = None):
+        self._init_with_default_values()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
         if transformer_voltage_control_on is not None:
@@ -169,66 +172,98 @@ class Parameters(_pypowsybl.LoadFlowParameters):
             self.countries_to_balance = countries_to_balance
         if connected_component_mode is not None:
             self.connected_component_mode = connected_component_mode
+        if provider_parameters is not None:
+            self.provider_parameters = provider_parameters
+
+    def _init_with_default_values(self) -> None:
+        default_parameters = _pypowsybl.LoadFlowParameters()
+        self.voltage_init_mode = default_parameters.voltage_init_mode
+        self.transformer_voltage_control_on = default_parameters.transformer_voltage_control_on
+        self.no_generator_reactive_limits = default_parameters.no_generator_reactive_limits
+        self.phase_shifter_regulation_on = default_parameters.phase_shifter_regulation_on
+        self.twt_split_shunt_admittance = default_parameters.twt_split_shunt_admittance
+        self.simul_shunt = default_parameters.simul_shunt
+        self.read_slack_bus = default_parameters.read_slack_bus
+        self.write_slack_bus = default_parameters.write_slack_bus
+        self.distributed_slack = default_parameters.distributed_slack
+        self.balance_type = default_parameters.balance_type
+        self.dc_use_transformer_ratio = default_parameters.dc_use_transformer_ratio
+        self.countries_to_balance = default_parameters.countries_to_balance
+        self.connected_component_mode = default_parameters.connected_component_mode
+        self.provider_parameters = dict(zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+
+    def _to_c_parameters(self) -> _pypowsybl.LoadFlowParameters:
+        c_parameters = _pypowsybl.LoadFlowParameters()
+        c_parameters.voltage_init_mode = self.voltage_init_mode
+        c_parameters.transformer_voltage_control_on = self.transformer_voltage_control_on
+        c_parameters.no_generator_reactive_limits = self.no_generator_reactive_limits
+        c_parameters.phase_shifter_regulation_on = self.phase_shifter_regulation_on
+        c_parameters.twt_split_shunt_admittance = self.twt_split_shunt_admittance
+        c_parameters.simul_shunt = self.simul_shunt
+        c_parameters.read_slack_bus = self.read_slack_bus
+        c_parameters.write_slack_bus = self.write_slack_bus
+        c_parameters.distributed_slack = self.distributed_slack
+        c_parameters.balance_type = self.balance_type
+        c_parameters.dc_use_transformer_ratio = self.dc_use_transformer_ratio
+        c_parameters.countries_to_balance = self.countries_to_balance
+        c_parameters.connected_component_mode = self.connected_component_mode
+        c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
+        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}("\
-               f"voltage_init_mode={self.voltage_init_mode.name}"\
-               f", transformer_voltage_control_on={self.transformer_voltage_control_on!r}"\
-               f", no_generator_reactive_limits={self.no_generator_reactive_limits!r}"\
-               f", phase_shifter_regulation_on={self.phase_shifter_regulation_on!r}"\
-               f", twt_split_shunt_admittance={self.twt_split_shunt_admittance!r}"\
-               f", simul_shunt={self.simul_shunt!r}"\
-               f", read_slack_bus={self.read_slack_bus!r}"\
-               f", write_slack_bus={self.write_slack_bus!r}"\
-               f", distributed_slack={self.distributed_slack!r}"\
-               f", balance_type={self.balance_type.name}"\
-               f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}"\
-               f", countries_to_balance={self.countries_to_balance}"\
-               f", connected_component_mode={self.connected_component_mode!r}"\
+        return f"{self.__class__.__name__}(" \
+               f"voltage_init_mode={self.voltage_init_mode.name}" \
+               f", transformer_voltage_control_on={self.transformer_voltage_control_on!r}" \
+               f", no_generator_reactive_limits={self.no_generator_reactive_limits!r}" \
+               f", phase_shifter_regulation_on={self.phase_shifter_regulation_on!r}" \
+               f", twt_split_shunt_admittance={self.twt_split_shunt_admittance!r}" \
+               f", simul_shunt={self.simul_shunt!r}" \
+               f", read_slack_bus={self.read_slack_bus!r}" \
+               f", write_slack_bus={self.write_slack_bus!r}" \
+               f", distributed_slack={self.distributed_slack!r}" \
+               f", balance_type={self.balance_type.name}" \
+               f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}" \
+               f", countries_to_balance={self.countries_to_balance}" \
+               f", connected_component_mode={self.connected_component_mode!r}" \
+               f", provider_parameters={self.provider_parameters!r}" \
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider : str = 'OpenLoadFlow') -> _Tuple[_List[ComponentResult], object]:
+def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', report: Report = None) -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
     Args:
         network:    a network
         parameters: the loadflow parameters
-        provider:   the loadflow implementation provider, default OpenLoadFlow
+        provider:   the loadflow implementation provider, default is the default loadflow provider
 
     Returns:
         A list of component results, one for each component of the network.
-        The loadflow execution report
     """
-    p = parameters if parameters is not None else Parameters()
-    report = _pypowsybl.Report()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, report)], \
-           report if report == None else report.message
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, report)]
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider : str ='OpenLoadFlow') -> _Tuple[_List[ComponentResult], object]:
+def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', report: Report = None) -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
     Args:
         network:    a network
         parameters: the loadflow parameters
-        provider:   the loadflow implementation provider, default OpenLoadFlow
+        provider:   the loadflow implementation provider, default is the default loadflow provider
 
     Returns:
         A list of component results, one for each component of the network.
-        The loadflow execution report
     """
-    p = parameters if parameters is not None else Parameters()
-    report = _pypowsybl.Report()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, report)], \
-           report if report == None else report.message
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, report)]
 
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,
                       ValidationType.SVCS, ValidationType.TWTS, ValidationType.TWTS3W]
-
 
 _OptionalDf = _Optional[_DataFrame]
 
@@ -338,3 +373,45 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
                             shunts=res_by_type.get(ValidationType.SHUNTS, None),
                             twts=res_by_type.get(ValidationType.TWTS, None),
                             t3wts=res_by_type.get(ValidationType.TWTS3W, None))
+
+
+def set_default_provider(provider: str) -> None:
+    """
+    Set the default loadflow provider
+
+    Args:
+        provider: name of the default loadflow provider to set
+    """
+    _pypowsybl.set_default_loadflow_provider(provider)
+
+
+def get_default_provider() -> str:
+    """
+    Get the current default loadflow provider. if nothing is set it is OpenLoadFlow
+
+    Returns:
+        the name of the current default loadflow provider
+    """
+    return _pypowsybl.get_default_loadflow_provider()
+
+
+def get_provider_names() -> _List[str]:
+    """
+    Get list of supported provider names.
+
+    Returns:
+        the list of supported provider names
+    """
+    return _pypowsybl.get_loadflow_provider_names()
+
+
+def get_provider_parameters_names(provider: str = '') -> _List[str]:
+    """
+    Get list of parameters for the specified loadflow provider.
+
+    If not specified the provider will be the default one.
+
+    Returns:
+        the list of provider's parameters
+    """
+    return _pypowsybl.get_provider_parameters_names(provider)

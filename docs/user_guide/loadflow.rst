@@ -10,9 +10,6 @@ Running a load flow
     import pypowsybl.network as pn
 
 You can use the module :mod:`pypowsybl.loadflow` in order to run load flows on networks.
-By default, load flows are based on the OpenLoadFlow implementation,
-fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
-OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 Start by importing the module:
 
@@ -20,6 +17,21 @@ Start by importing the module:
 
    import pypowsybl.network as pn
    import pypowsybl.loadflow as lf
+
+Providers
+---------
+We can get the list of supported load flow implementations (so called providers) and default one:
+
+.. doctest::
+
+    >>> lf.get_provider_names()
+    ['OpenLoadFlow']
+    >>> lf.get_default_provider()
+    'OpenLoadFlow'
+
+By default, load flows are based on the OpenLoadFlow implementation,
+fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 Parameters
 ----------
@@ -30,11 +42,34 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>)
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
 All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+
+Parameters specific to a provider
+---------------------------------
+
+Some parameters are not supported by all load flow providers but specific to only one. These specific
+parameters could be specified in a less typed way than common parameters using the `provider_parameters` attribute.
+
+.. warning::
+    `provider_parameters` is dictionary and all keys and values have to be a string even in case of a numeric value.
+
+We can list supported parameters specific to default provider using:
+
+.. doctest::
+
+    >>> lf.get_provider_parameters_names()
+    ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', 'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant', 'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds', 'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl', 'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride', 'transformerVoltageControlMode']
+
+For instance, OLF supports configuration of slack bus from its ID like this:
+
+.. doctest::
+
+    >>> p = lf.Parameters(provider_parameters={'slackBusSelectionMode' : 'NAME', 'slackBusesIds' : 'VLHV2_0'})
+
 
 AC Load Flow
 ------------
@@ -44,7 +79,7 @@ In order to run an AC loadflow, simply use the :func:`run_ac` method:
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> results, report = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
+    >>> results = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
 
 The result is composed of a list of component results, one for each connected component of the network
 included in the computation:
@@ -78,13 +113,6 @@ the voltage magnitudes (rounded to 2 digits here):
     Name: v_mag, dtype: float64
 
 
-If you want more logs you can set the global debug mode:
-
-.. code-block:: python
-
-    >>> pp.set_debug_mode(True)
-
-
 DC Load Flow
 ------------
 
@@ -103,7 +131,7 @@ Then let's create our test network and run the DC load flow:
 .. doctest::
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
-    >>> results, report = lf.run_dc(network, parameters)
+    >>> results = lf.run_dc(network, parameters)
 
 We can finally retrieve the computed flows on lines:
 

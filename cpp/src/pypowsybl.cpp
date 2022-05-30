@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #include "pypowsybl.h"
+#include "pylogging.h"
 #include "pypowsybl-java.h"
 #include <iostream>
 
@@ -56,13 +57,32 @@ private:
 //copies to string and frees memory allocated by java
 std::string toString(char* cstring);
 
+//Explicitly update log level on java side
+void setLogLevelFromPythonLogger(GraalVmGuard* guard, exception_handler* exc) {
+    py::object logger = CppToPythonLogger::get()->getLogger();
+    if (!logger.is_none()) {
+        py::gil_scoped_acquire acquire;
+        py::object level = logger.attr("level");
+        ::setLogLevel(guard->thread(), level.cast<int>(), exc);
+     }
+}
+
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    setLogLevelFromPythonLogger(&guard, &exc);
+
     f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
+    }
+    {
+        py::gil_scoped_acquire acquire;
+        if (PyErr_Occurred() != nullptr) {
+            throw py::error_already_set();
+        }
     }
 }
 
@@ -70,9 +90,18 @@ template<typename T, typename F, typename... ARGS>
 T callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
+
+    setLogLevelFromPythonLogger(&guard, &exc);
+
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
+    }
+    {
+        py::gil_scoped_acquire acquire;
+        if (PyErr_Occurred() != nullptr) {
+            throw py::error_already_set();
+        }
     }
     return r;
 }
@@ -236,12 +265,32 @@ void setJavaLibraryPath(const std::string& javaLibraryPath) {
     callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
 }
 
-void setDebugMode(bool debug) {
-    callJava<>(::setDebugMode, debug);
-}
-
 void setConfigRead(bool configRead) {
     callJava<>(::setConfigRead, configRead);
+}
+
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider) {
+    callJava<>(::setDefaultLoadFlowProvider, (char*) loadFlowProvider.data());
+}
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider) {
+    callJava<>(::setDefaultSecurityAnalysisProvider, (char*) securityAnalysisProvider.data());
+}
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider) {
+    callJava<>(::setDefaultSensitivityAnalysisProvider, (char*) sensitivityAnalysisProvider.data());
+}
+
+std::string getDefaultLoadFlowProvider() {
+    return toString(callJava<char*>(::getDefaultLoadFlowProvider));
+}
+
+std::string getDefaultSecurityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSecurityAnalysisProvider));
+}
+
+std::string getDefaultSensitivityAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultSensitivityAnalysisProvider));
 }
 
 bool isConfigRead() {
@@ -277,6 +326,24 @@ std::vector<std::string> getNetworkImportFormats() {
 
 std::vector<std::string> getNetworkExportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkExportFormats);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getLoadFlowProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getLoadFlowProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSecurityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSecurityAnalysisProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getSensitivityAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSensitivityAnalysisProviderNames);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
 }
@@ -431,8 +498,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters,
-                                            const std::string& provider) {
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data());
+                                            const std::string& provider, bool dc) {
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -488,12 +555,29 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
     callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
 }
 
-void setBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& branchesIds,
+void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                                const std::vector<std::string>& variablesIds) {
-    ToCharPtrPtr branchIdPtr(branchesIds);
-    ToCharPtrPtr variableIdPtr(variablesIds);
-    callJava(::setBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                variableIdPtr.get(), variablesIds.size());
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       callJava(::addBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                 variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
+}
+
+void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds) {
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       callJava(::addPreContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
+}
+
+void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds) {
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
+       callJava(::addPostContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), (char*) matrixId.c_str());
 }
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds,
@@ -508,9 +592,10 @@ JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, 
     return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
 }
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
+
+matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
     return callJava<matrix*>(::getBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
+                                (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
 matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
@@ -518,9 +603,9 @@ matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisRes
                                 (char*) contingencyId.c_str());
 }
 
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
+matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
     return callJava<matrix*>(::getReferenceFlows, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
+                                (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
 matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
@@ -531,6 +616,16 @@ matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext,
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
 	ToCharPtrPtr attributesPtr(attributes);
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
+}
+
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName) {
+    return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str()));
+}
+
+std::vector<std::string> getExtensionsNames() {
+    auto formatsArrayPtr = callJava<array*>(::getExtensionsNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
 }
 
 std::string getWorkingVariantId(const JavaHandle& network) {
@@ -625,7 +720,6 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
 }
 
 std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType) {
-
     dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getSeriesMetadata, elementType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
@@ -645,6 +739,77 @@ std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMeta
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType) {
     pypowsybl::callJava<>(::createElement, network, elementType, dataframes);
+}
+
+::validation_level_type getValidationLevel(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::EQUIPMENT;
+    return callJava<validation_level_type>(::getValidationLevel, network);
+}
+
+::validation_level_type validate(const JavaHandle& network) {
+    // TBD
+    //return validation_level_type::STEADY_STATE_HYPOTHESIS;
+    return callJava<validation_level_type>(::validate, network);
+}
+
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
+    pypowsybl::callJava<>(::setMinValidationLevel, network, validationLevel);
+}
+
+void setupLoggerCallback(void *& callback) {
+    pypowsybl::callJava<>(::setupLoggerCallback, callback);
+}
+
+void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    pypowsybl::callJava<>(::removeNetworkElements, network, elementIdsPtr.get(), elementIds.size());
+}
+
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe) {
+    pypowsybl::callJava<>(::addNetworkElementProperties, network, dataframe);
+}
+
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties) {
+    ToCharPtrPtr idsPtr(ids);
+    ToCharPtrPtr propertiesPtr(properties);
+    pypowsybl::callJava<>(::removeNetworkElementProperties, network, idsPtr.get(), ids.size(), propertiesPtr.get(), properties.size());
+}
+
+std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider) {
+    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getProviderParametersNames, (char*) loadFlowProvider.c_str());
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe) {
+    pypowsybl::callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), dataframe);
+}
+
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids) {
+    ToCharPtrPtr idsPtr(ids);
+    pypowsybl::callJava<>(::removeExtensions, network, (char*) name.data(), idsPtr.get(), ids.size());
+}
+
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getExtensionSeriesMetadata, (char*) name.data());
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name) {
+    dataframes_metadata* allDataframesMetadata = pypowsybl::callJava<dataframes_metadata*>(::getExtensionsCreationMetadata, (char*) name.data());
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (int i =0; i < allDataframesMetadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(allDataframesMetadata->dataframes_metadata + i));
+    }
+    pypowsybl::callJava(::freeDataframesMetadata, allDataframesMetadata);
+    return res;
+}
+
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name) {
+        pypowsybl::callJava<>(::createExtensions, network, (char*) name.data(), dataframes);
 }
 
 }

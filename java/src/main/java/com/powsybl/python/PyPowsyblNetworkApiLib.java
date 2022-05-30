@@ -7,7 +7,6 @@
 package com.powsybl.python;
 
 import com.google.common.collect.Iterables;
-import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
 import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
@@ -20,20 +19,19 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.ImportConfig;
 import com.powsybl.iidm.import_.Importers;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
-import com.powsybl.iidm.network.test.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.update.CUpdatingDataframe;
-import com.powsybl.python.update.DoubleSeries;
-import com.powsybl.python.update.IntSeries;
-import com.powsybl.python.update.StringSeries;
+import com.powsybl.python.update.CDoubleSeries;
+import com.powsybl.python.update.CIntSeries;
+import com.powsybl.python.update.CStringSeries;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -73,62 +71,10 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "createNetwork")
     public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        String networkName = CTypeUtil.toString(name);
         return doCatch(exceptionHandlerPtr, () -> {
-            Network network;
-            switch (networkName) {
-                case "four_substations_node_breaker":
-                    network = FourSubstationsNodeBreakerFactory.create();
-                    break;
-                case "eurostag_tutorial_example1":
-                    network = NetworkUtil.createEurostagTutorialExample1WithFixedCurrentLimits();
-                    break;
-                case "batteries":
-                    network = BatteryNetworkFactory.create();
-                    break;
-                case "dangling_lines":
-                    network = DanglingLineNetworkFactory.create();
-                    break;
-                case "three_windings_transformer":
-                    network = ThreeWindingsTransformerNetworkFactory.create();
-                    break;
-                case "shunt":
-                    network = ShuntTestCaseFactory.create();
-                    break;
-                case "non_linear_shunt":
-                    network = ShuntTestCaseFactory.createNonLinear();
-                    break;
-                case "ieee9":
-                    network = IeeeCdfNetworkFactory.create9();
-                    break;
-                case "ieee14":
-                    network = IeeeCdfNetworkFactory.create14();
-                    break;
-                case "ieee30":
-                    network = IeeeCdfNetworkFactory.create30();
-                    break;
-                case "ieee57":
-                    network = IeeeCdfNetworkFactory.create57();
-                    break;
-                case "ieee118":
-                    network = IeeeCdfNetworkFactory.create118();
-                    break;
-                case "ieee300":
-                    network = IeeeCdfNetworkFactory.create300();
-                    break;
-                case "empty":
-                    String networkId = CTypeUtil.toString(id);
-                    network = Network.create(networkId, "");
-                    break;
-                case "micro_grid_be":
-                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE());
-                    break;
-                case "micro_grid_nl":
-                    network = importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL());
-                    break;
-                default:
-                    throw new PowsyblException("network " + networkName + " not found");
-            }
+            String networkName = CTypeUtil.toString(name);
+            String networkId = CTypeUtil.toString(id);
+            Network network = Networks.create(networkName, networkId);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -288,9 +234,9 @@ public final class PyPowsyblNetworkApiLib {
 
     @CEntryPoint(name = "getNetworkElementsIds")
     public static ArrayPointer<CCharPointerPointer> getNetworkElementsIds(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
-                                                                                             CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
-                                                                                             CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
-                                                                                             boolean notConnectedToSameBusAtBothSides, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                          CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
+                                                                          CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
+                                                                          boolean notConnectedToSameBusAtBothSides, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
@@ -368,6 +314,29 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                                                           CCharPointer extensionName,
+                                                                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        String name = CTypeUtil.toString(extensionName);
+        return doCatch(exceptionHandlerPtr, () -> {
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return Dataframes.createCDataframe(mapper, network);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionsNames")
+    public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            return createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames()));
+        });
+    }
+
     @CEntryPoint(name = "createElement")
     public static void createElement(IsolateThread thread, ObjectHandle networkHandle,
                                      ElementType elementType,
@@ -395,35 +364,68 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "removeNetworkElements")
+    public static void removeNetworkElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer cElementIds,
+                                             int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
+            elementIds.forEach(elementId -> {
+                Identifiable identifiable = network.getIdentifiable(elementId);
+                if (identifiable == null) {
+                    throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
+                }
+                if (identifiable instanceof Connectable) {
+                    ((Connectable) identifiable).remove();
+                } else if (identifiable instanceof HvdcLine) {
+                    ((HvdcLine) identifiable).remove();
+                } else if (identifiable instanceof VoltageLevel) {
+                    ((VoltageLevel) identifiable).remove();
+                } else if (identifiable instanceof Substation) {
+                    ((Substation) identifiable).remove();
+                } else if (identifiable instanceof Switch) {
+                    VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
+                    switch (voltageLevel.getTopologyKind()) {
+                        case NODE_BREAKER:
+                            voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        case BUS_BREAKER:
+                            voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                            break;
+                        default:
+                            throw new PowsyblException("this voltage level does not have a proper topology kind");
+                    }
+                } else {
+                    throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
+                }
+            });
+        });
+    }
+
     public static UpdatingDataframe createDataframe(DataframePointer dataframe) {
         if (dataframe.isNull()) {
             return null;
         }
         int elementCount = dataframe.getSeries().addressOf(0).data().getLength();
         int columnsNumber = dataframe.getSeriesCount();
-        CUpdatingDataframe updatingDataframe = new CUpdatingDataframe(elementCount);
+        DefaultUpdatingDataframe updatingDataframe = new DefaultUpdatingDataframe(elementCount);
         for (int i = 0; i < columnsNumber; i++) {
             PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
                 case STRING_SERIES_TYPE:
-                    updatingDataframe.addSeries(new StringSeries(name, elementCount,
-                                    (CCharPointerPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.STRING, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
                     break;
                 case DOUBLE_SERIES_TYPE:
-                    updatingDataframe.addSeries(new DoubleSeries(name, elementCount,
-                                    (CDoublePointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.DOUBLE, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
                     break;
                 case INT_SERIES_TYPE:
                 case BOOLEAN_SERIES_TYPE:
-                    updatingDataframe.addSeries(new IntSeries(name, elementCount,
-                                    (CIntPointer) seriesPointer.data().getPtr()),
-                            new SeriesMetadata(seriesPointer.isIndex(), name, false, SeriesDataType.INT, true));
+                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
                     break;
+                default:
+                    throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
             }
-
         }
         return updatingDataframe;
     }
@@ -550,6 +552,44 @@ public final class PyPowsyblNetworkApiLib {
         });
     }
 
+    @CEntryPoint(name = "addNetworkElementProperties")
+    public static void addNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, DataframePointer properties, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UpdatingDataframe propertiesDataframe = createDataframe(properties);
+            Objects.requireNonNull(propertiesDataframe);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            StringSeries idSerie = propertiesDataframe.getStrings("id");
+            if (idSerie == null) {
+                throw new PowsyblException("id is missing");
+            }
+            for (SeriesMetadata column : propertiesDataframe.getSeriesMetadata()) {
+                if (!column.isIndex() && column.getType() == SeriesDataType.STRING) {
+                    String seriesName = column.getName();
+                    StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
+                    for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
+                        String id = idSerie.get(i);
+                        Identifiable identifiable = network.getIdentifiable(id);
+                        if (identifiable != null) {
+                            identifiable.setProperty(seriesName, columnSerie.get(i));
+                        } else {
+                            throw new PowsyblException(String.format("identifiable with id : %s does not exist", id));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "removeNetworkElementProperties")
+    public static void removeNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer idsPointer, int idsCount, CCharPointerPointer propertiesPointer, int propertiesCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> ids = CTypeUtil.toStringList(idsPointer, idsCount);
+            List<String> properties = CTypeUtil.toStringList(propertiesPointer, propertiesCount);
+            ids.forEach(id -> properties.forEach(property -> network.getIdentifiable(id).removeProperty(property)));
+        });
+    }
+
     private static void freeDataframeMetadataContent(DataframeMetadataPointer metadata) {
         for (int i = 0; i < metadata.getAttributesCount(); i++) {
             SeriesMetadataPointer attrMetadata = metadata.getAttributesMetadata().addressOf(i);
@@ -578,4 +618,87 @@ public final class PyPowsyblNetworkApiLib {
         createSeriesMetadata(metadata, res);
         return res;
     }
+
+    @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
+    public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
+                                                                 DataframePointer dataframe,
+                                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                UpdatingDataframe updatingDataframe = createDataframe(dataframe);
+                mapper.updateSeries(network, updatingDataframe);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "removeExtensions")
+    public static void removeExtensions(IsolateThread thread, ObjectHandle networkHandle,
+                                                                     CCharPointer namePtr,
+                                                                     CCharPointerPointer idsPtr, int idsCount,
+                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String name = CTypeUtil.toString(namePtr);
+            List<String> ids = CTypeUtil.toStringList(idsPtr, idsCount);
+            NetworkExtensions.removeExtensions(network, name, ids);
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionSeriesMetadata")
+    public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr,
+                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            if (mapper != null) {
+                List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
+                return createSeriesMetadata(seriesMetadata);
+            } else {
+                throw new PowsyblException("extension " + name + " not found");
+            }
+        });
+    }
+
+    @CEntryPoint(name = "createExtensions")
+    public static void createExtensions(IsolateThread thread, ObjectHandle networkHandle,
+                                       CCharPointer namePtr,
+                                       DataframeArrayPointer cDataframes,
+                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String name = CTypeUtil.toString(namePtr);
+            List<UpdatingDataframe> dataframes = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+            }
+            NetworkElementAdders.addExtensions(name, network, dataframes);
+        });
+    }
+
+    @CEntryPoint(name = "getExtensionsCreationMetadata")
+    public static DataframesMetadataPointer getExtensionsCreationMetadata(IsolateThread thread,
+                                                                          CCharPointer namePtr,
+                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String name = CTypeUtil.toString(namePtr);
+            List<List<SeriesMetadata>> metadata = NetworkElementAdders.getExtensionAdder(name).getMetadata();
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+            int i = 0;
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                i++;
+            }
+
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
+            return res;
+        });
+    }
+
 }

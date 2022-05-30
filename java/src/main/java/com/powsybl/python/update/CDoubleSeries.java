@@ -6,33 +6,23 @@
  */
 package com.powsybl.python.update;
 
+import com.powsybl.dataframe.update.DoubleSeries;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 
-public class DoubleSeries implements Series<CDoublePointer> {
+public class CDoubleSeries implements DoubleSeries {
 
     private final CDoublePointer values;
-    private final String name;
-    private final int size;
 
-    public DoubleSeries(String name, int size, CDoublePointer values) {
-        this.name = name;
-        this.size = size;
+    public CDoubleSeries(CDoublePointer values) {
         this.values = values;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public CDoublePointer getValues() {
-        return values;
+    @Override
+    public double get(int index) {
+        return values.read(index);
     }
 }

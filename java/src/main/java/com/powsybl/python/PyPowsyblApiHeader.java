@@ -234,6 +234,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CStruct("limit_violation")
@@ -343,7 +367,8 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
-        CURRENT_LIMITS;
+        OPERATIONAL_LIMITS,
+        MINMAX_REACTIVE_LIMITS;
 
         @CEnumValue
         public native int getCValue();
@@ -600,6 +625,18 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native FilterAttributesType fromCValue(int value);
+    }
+
+    @CEnum("validation_level_type")
+    public enum ValidationLevelType {
+        EQUIPMENT,
+        STEADY_STATE_HYPOTHESIS;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ValidationLevelType fromCValue(int value);
     }
 
     @CStruct("report_type")

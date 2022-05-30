@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
@@ -29,7 +30,7 @@ public final class NetworkElementAdders {
             Map.entry(TWO_WINDINGS_TRANSFORMER, new TwtDataframeAdder()),
             Map.entry(LOAD, new LoadDataframeAdder()),
             Map.entry(VSC_CONVERTER_STATION, new VscDataframeAdder()),
-            Map.entry(LCC_CONVERTER_STATION, new LccDataframeAdder()),
+            Map.entry(LCC_CONVERTER_STATION, new LccStationDataframeAdder()),
             Map.entry(BUSBAR_SECTION, new BusBarDataframeAdder()),
             Map.entry(DANGLING_LINE, new DanglingLineDataframeAdder()),
             Map.entry(VOLTAGE_LEVEL, new VoltageLevelDataframeAdder()),
@@ -39,8 +40,13 @@ public final class NetworkElementAdders {
             Map.entry(SWITCH, new SwitchDataframeAdder()),
             Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder()),
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
-            Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder())
+            Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
+            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder()),
+            Map.entry(MINMAX_REACTIVE_LIMITS, new MinMaxReactiveLimitsDataframeAdder()),
+            Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder())
     );
+
+    private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();
 
     private NetworkElementAdders() {
     }
@@ -58,10 +64,19 @@ public final class NetworkElementAdders {
         if (adder == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-
-        UpdatingDataframe primaryTable = dfs.get(0);
-        for (int i = 0; i < primaryTable.getLineCount(); i++) {
-            adder.addElement(network, dfs, i);
-        }
+        adder.addElements(network, dfs);
     }
+
+    public static NetworkElementAdder getExtensionAdder(String extensionName) {
+        return EXTENSIONS_ADDERS.get(extensionName);
+    }
+
+    public static void addExtensions(String name, Network network, List<UpdatingDataframe> dfs) {
+        NetworkElementAdder adder = EXTENSIONS_ADDERS.get(name);
+        if (adder == null) {
+            throw new PowsyblException("Creation not implemented for extension " + name);
+        }
+        adder.addElements(network, dfs);
+    }
+
 }

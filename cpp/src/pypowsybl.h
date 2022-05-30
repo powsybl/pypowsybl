@@ -162,11 +162,21 @@ void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
-void setDebugMode(bool debug);
-
 void setConfigRead(bool configRead);
 
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
+
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
+
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
+
 bool isConfigRead();
+
+std::string getDefaultLoadFlowProvider();
+
+std::string getDefaultSecurityAnalysisProvider();
+
+std::string getDefaultSensitivityAnalysisProvider();
 
 std::string getVersionTable();
 
@@ -185,6 +195,12 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 std::vector<std::string> getNetworkImportFormats();
 
 std::vector<std::string> getNetworkExportFormats();
+
+std::vector<std::string> getLoadFlowProviderNames();
+
+std::vector<std::string> getSecurityAnalysisProviderNames();
+
+std::vector<std::string> getSensitivityAnalysisProviderNames();
 
 SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
@@ -220,27 +236,40 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc);
 
 JavaHandle createSensitivityAnalysis();
 
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
-void setBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& branchesIds, const std::vector<std::string>& variablesIds);
+void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds);
+
+void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                                             const std::vector<std::string>& variablesIds);
+
+void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                                              const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider);
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
+matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
 matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
 
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
 matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
+
+void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
+
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
+
+std::vector<std::string> getExtensionsNames();
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
@@ -291,6 +320,30 @@ std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType
 std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
 
 void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
+
+::validation_level_type getValidationLevel(const JavaHandle& network);
+
+::validation_level_type validate(const JavaHandle& network);
+
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
+
+void setupLoggerCallback(void *& callback);
+
+
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
+
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
+std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
+
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
+
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
+
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
+
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
+
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
 }
 

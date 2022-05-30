@@ -19,6 +19,27 @@ def no_config():
     pp.set_config_read(False)
 
 
+def test_config():
+    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+    pp.sensitivity.set_default_provider("provider")
+    assert 'provider' == pp.sensitivity.get_default_provider()
+    n = pp.network.create_ieee14()
+    generators = pd.DataFrame(data=[4999.0, 4999.0, 4999.0, 4999.0, 4999.0],
+                              columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
+    n.update_generators(generators)
+    sa = pp.sensitivity.create_dc_analysis()
+    sa.add_single_element_contingency('L1-2-1')
+    sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+    with pytest.raises(Exception) as exc_info:
+        sa.run(n)
+    assert 'SensitivityAnalysisProvider \'provider\' not found' == str(exc_info.value)
+    r = sa.run(n, provider='OpenSensitivityAnalysis')
+    assert 6 == r.get_branch_flows_sensitivity_matrix().size
+    assert 'provider' == pp.sensitivity.get_default_provider()
+    pp.sensitivity.set_default_provider('OpenSensitivityAnalysis')
+    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+
+
 def test_sensitivity_analysis():
     n = pp.network.create_ieee14()
     # fix max_p to be less than olf max_p plausible value
@@ -28,10 +49,12 @@ def test_sensitivity_analysis():
     n.update_generators(generators)
     sa = pp.sensitivity.create_dc_analysis()
     sa.add_single_element_contingency('L1-2-1')
-    sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+    sa.add_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'], 'm')
+    sa.add_precontingency_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G'], 'preContingency')
+    sa.add_postcontingency_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G'], ['L1-2-1'], 'postContingency')
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix()
+    df = r.get_branch_flows_sensitivity_matrix('m')
     assert (3, 2) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.080991, abs=1e-6)
@@ -40,12 +63,12 @@ def test_sensitivity_analysis():
     assert df['L2-3-1']['B2-G'] == pytest.approx(0.013675, abs=1e-6)
     assert df['L2-3-1']['B3-G'] == pytest.approx(-0.545683, abs=1e-6)
 
-    df = r.get_reference_flows()
+    df = r.get_reference_flows('m')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['reference_flows'] == pytest.approx(72.247, abs=1e-3)
     assert df['L2-3-1']['reference_flows'] == pytest.approx(69.831, abs=1e-3)
 
-    df = r.get_branch_flows_sensitivity_matrix('L1-2-1')
+    df = r.get_branch_flows_sensitivity_matrix('m', 'L1-2-1')
     assert df.shape == (3, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.5, abs=1e-6)
@@ -54,12 +77,21 @@ def test_sensitivity_analysis():
     assert df['L2-3-1']['B2-G'] == pytest.approx(0.084423, abs=1e-6)
     assert df['L2-3-1']['B3-G'] == pytest.approx(-0.490385, abs=1e-6)
 
-    df = r.get_reference_flows('L1-2-1')
+    df = r.get_reference_flows('m', 'L1-2-1')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['reference_flows'] == pytest.approx(225.7, abs=1e-3)
     assert df['L2-3-1']['reference_flows'] == pytest.approx(43.921, abs=1e-3)
 
-    assert r.get_branch_flows_sensitivity_matrix('aaa') is None
+    assert r.get_branch_flows_sensitivity_matrix('m', 'aaa') is None
+
+    df = r.get_branch_flows_sensitivity_matrix('preContingency')
+    assert df.shape == (1, 2)
+    assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
+    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.013675, abs=1e-6)
+    df = r.get_branch_flows_sensitivity_matrix('postContingency', 'L1-2-1')
+    assert df.shape == (1, 2)
+    assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
+    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084423, abs=1e-6)
 
 
 def test_voltage_sensitivities():
@@ -117,15 +149,15 @@ def test_sensi_zone():
     zone_be = pp.sensitivity.create_country_zone(n, 'BE')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_fr, zone_be])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'])
+    sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (2, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['FFR2AA1  DDE3AA1  1']['FR'] == pytest.approx(0.370171, abs=1e-6)
     assert s['BBE2AA1  FFR3AA1  1']['BE'] == pytest.approx(0.378423, abs=1e-6)
     assert s['FFR2AA1  DDE3AA1  1']['BE'] == pytest.approx(0.128423, abs=1e-6)
-    r = result.get_reference_flows()
+    r = result.get_reference_flows('m')
     assert r.shape == (1, 2)
     assert r['BBE2AA1  FFR3AA1  1']['reference_flows'] == pytest.approx(324.666, abs=1e-3)
     assert r['FFR2AA1  DDE3AA1  1']['reference_flows'] == pytest.approx(1324.666, abs=1e-3)
@@ -139,10 +171,10 @@ def test_sensi_power_transfer():
     zone_nl = pp.sensitivity.create_country_zone(n, 'NL')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
-                                     ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'])
+    sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
+                                     ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (4, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['BBE2AA1  FFR3AA1  1']['FR -> DE'] == pytest.approx(-0.256641, abs=1e-6)
@@ -161,9 +193,9 @@ def test_xnode_sensi():
     zone_x.add_injection('NNL2AA1  XXXXXX11 1')
     sa = pp.sensitivity.create_dc_analysis()
     sa.set_zones([zone_x])
-    sa.set_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'])
+    sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix()
+    s = result.get_branch_flows_sensitivity_matrix('m')
     assert s.shape == (1, 1)
     assert s['BBE2AA1  FFR3AA1  1']['X'] == pytest.approx(0.176618, abs=1e-6)
 
@@ -176,10 +208,10 @@ def test_variant():
                               columns=['max_p'], index=['B1-G', 'B2-G', 'B3-G', 'B6-G', 'B8-G'])
     n.update_generators(generators)
     sa = pp.sensitivity.create_dc_analysis()
-    sa.set_branch_flow_factor_matrix(['L1-5-1'], ['B1-G'])
+    sa.add_branch_flow_factor_matrix(['L1-5-1'], ['B1-G'], 'm')
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix()
+    df = r.get_branch_flows_sensitivity_matrix('m')
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
 
@@ -188,6 +220,10 @@ def test_variant():
     n.update_lines(id='L2-3-1', connected1=False)
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix()
+    df = r.get_branch_flows_sensitivity_matrix('m')
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.078150, abs=1e-6)
+
+
+def test_provider_names():
+    assert 'OpenSensitivityAnalysis' in pp.sensitivity.get_provider_names()

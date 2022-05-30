@@ -6,14 +6,20 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
+from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
+import warnings
 from typing import (
     List as _List,
     Set as _Set,
     Dict as _Dict,
-    Optional as _Optional, Union,
+    Optional as _Optional,
+    Union as _Union,
+    TYPE_CHECKING as _TYPE_CHECKING
 )
+
+from numpy import Inf
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 from numpy.typing import ArrayLike as _ArrayLike
@@ -21,9 +27,19 @@ import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
-from pypowsybl._pypowsybl import ArrayStruct
+from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
+from pypowsybl.utils.dataframes import (
+    _adapt_df_or_kwargs,
+    _create_c_dataframe,
+    _create_properties_c_dataframe,
+    _adapt_properties_kwargs
+)
+
+# Type definitions
+if _TYPE_CHECKING:
+    ParamsDict = _Optional[_Dict[str, str]]
+    PathOrStr = _Union[str, _PathLike[str]]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -33,7 +49,12 @@ def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
 
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
-ParamsDict = _Optional[_Dict[str, str]]
+
+def _path_to_str(path: PathOrStr) -> str:
+    if isinstance(path, str):
+        return path
+    return path.__fspath__()
+
 
 class Svg:
     """
@@ -225,15 +246,28 @@ class Network:  # pylint: disable=too-many-public-methods
     def disconnect(self, id: str) -> bool:
         return _pp.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
+    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
         """
-        Save a network to a file using a specified format.
+        Save a network to a file using the specified format.
+
+        Basic compression formats are also supported:
+        for example if file name ends with '.gz', the resulting files will be gzipped.
 
         Args:
-            file (str): a file
-            format (str, optional): format to save the network, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            file:       path to the exported file
+            format:     format to save the network, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+
+        Examples:
+            Various usage examples:
+
+            .. code-block:: python
+
+                network.dump('network.xiidm')
+                network.dump('network.xiidm.gz')  # produces a gzipped file
+                network.dump('/path/to/network.uct', format='UCTE')
         """
+        file = _path_to_str(file)
         if parameters is None:
             parameters = {}
         _pp.dump_network(self._handle, file, format, parameters)
@@ -243,11 +277,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Save a network to a string using a specified format.
 
         Args:
-            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
 
         Returns:
-            a string representing network
+            A string representing this network
         """
         if parameters is None:
             parameters = {}
@@ -264,7 +298,7 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: str) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -272,6 +306,7 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
         """
+        svg_file = _path_to_str(svg_file)
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
     def get_single_line_diagram(self, container_id: str) -> Svg:
@@ -286,7 +321,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -295,13 +330,14 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
+        svg_file = _path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
         if type(voltage_level_ids) == str:
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
-    def get_network_area_diagram(self, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> Svg:
+    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> Svg:
         """
         Create a network area diagram.
 
@@ -333,23 +369,26 @@ class Network:  # pylint: disable=too-many-public-methods
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
         Args:
-            element_type (ElementType): the element type
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            element_type: the element type
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Keyword Args:
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            a network elements data frame for the specified element type
+            a network elements dataframe for the specified element type
         """
-        if attributes is None:
-            attributes = []
         filter_attributes = _pp.FilterAttributesType.DEFAULT_ATTRIBUTES
-        if all_attributes and len(attributes) > 0:
-            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
         if all_attributes:
             filter_attributes = _pp.FilterAttributesType.ALL_ATTRIBUTES
-        elif len(attributes) > 0:
+        elif attributes is not None:
             filter_attributes = _pp.FilterAttributesType.SELECTION_ATTRIBUTES
+        if attributes is None:
+            attributes = []
+        if all_attributes and len(attributes) > 0:
+            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
         if kwargs:
             metadata = _pp.get_network_elements_dataframe_metadata(element_type)
@@ -363,18 +402,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
-        rGet a dataframe of buses.
+        Get a dataframe of buses.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of buses.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
@@ -382,7 +422,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **synchronous_component**: the number of synchronous components that the bus is part of
               - **voltage_level_id**: at which substation the bus is connected
 
-            This dataframe is indexed by the id of the LCC converter
+            This dataframe is indexed on the bus ID.
 
         Examples:
 
@@ -447,30 +487,42 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of generators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the generator data frame.
+            the generators dataframe.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **energy_source**: the energy source used to fuel the generator
               - **target_p**: the target active value for the generator (in MW)
               - **max_p**: the maximum active value for the generator  (MW)
               - **min_p**: the minimum active value for the generator  (MW)
+              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the generator for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
+              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this generator is connected
-              - **bus_id**: at which bus this generator is computed
+              - **bus_id**: bus where this generator is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
+              - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the generator is connected to a bus
 
-            This dataframe is indexed by the id of the generators
+            This dataframe is indexed on the generator ID.
 
         Examples:
 
@@ -545,15 +597,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of loads.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the load data frame
+            the loads dataframe
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **type**: type of load
               - **p0**: the active load consumption setpoint (MW)
@@ -562,9 +615,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the result reactive load consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
               - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this load is connected
-              - **bus_id**: at which bus this load is connected
+              - **bus_id**: bus where this load is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this load is connected
+              - **node**  (optional): node where this load is connected, in node-breaker voltage levels
 
-            This dataframe is indexed by the id of the loads.
+            This dataframe is indexed on the load ID.
 
         Examples:
 
@@ -647,9 +702,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of batteries.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of batteries.
@@ -661,15 +717,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of lines data.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of lines data.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
             - **r**: the resistance of the line (in Ohm)
             - **x**: the reactance of the line (in Ohm)
@@ -683,10 +740,14 @@ class Network:  # pylint: disable=too-many-public-methods
             - **p2**: the active flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
             - **q2**: the reactive flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
             - **i2**: the current on the line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-            - **voltage_level1_id**: at which substation the "1" side of the powerline is connected
-            - **voltage_level2_id**: at which substation the "2" side of the powerline is connected
-            - **bus1_id**: at which bus the "1" side of the powerline is connected
-            - **bus2_id**: at which bus the "2" side of the powerline is connected
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
 
@@ -746,33 +807,40 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of 2 windings transformers.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 2 windings transformers.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **r**: the resistance of the transformer at its "2" side  (in Ohm)
-              - **x**: the reactance of the transformer at its "2" side (in Ohm)
-              - **b**: the susceptance of transformer at its "2" side (in Siemens)
-              - **g**: the  conductance of transformer at its "2" side (in Siemens)
-              - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
-              - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
-              - **rated_s**:
-              - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
-              - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
-              - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
-              - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-              - **voltage_level1_id**: at which substation the "1" side of the transformer is connected
-              - **voltage_level2_id**: at which substation the "2" side of the transformer is connected
-              - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
-              - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
+            - **r**: the resistance of the transformer at its "2" side  (in Ohm)
+            - **x**: the reactance of the transformer at its "2" side (in Ohm)
+            - **b**: the susceptance of transformer at its "2" side (in Siemens)
+            - **g**: the  conductance of transformer at its "2" side (in Siemens)
+            - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
+            - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
+            - **rated_s**:
+            - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+            - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+            - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
+            - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
+            - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
+            - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -833,9 +901,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of 3 windings transformers.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of 3 windings transformers.
@@ -847,15 +916,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of shunt compensators.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
@@ -864,8 +934,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
               - **voltage_level_id**: at which substation the shunt is connected
-              - **bus_id**: indicate at which bus the shunt is connected
+              - **bus_id**: bus where this shunt is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this shunt is connected
+              - **node**  (optional): node where this shunt is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the shunt is connected to a bus
+
 
             This dataframe is indexed by the id of the shunt compensators
 
@@ -920,9 +993,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators sections for non linear model.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Notes:
             The resulting dataframe will have the following columns:
@@ -942,12 +1016,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of shunt compensators sections for linear model.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **g_per_section**: the conductance per section in S
               - **b_per_section**: the susceptance per section in S
@@ -965,15 +1040,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of dangling lines.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of dangling lines.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **r**: The resistance of the dangling line (Ohm)
               - **x**: The reactance of the dangling line (Ohm)
@@ -985,7 +1061,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the dangling line is connected
-              - **bus_id**: at which bus the dangling line is connected
+              - **bus_id**: bus where this line is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
+              - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
 
             This dataframe is indexed by the id of the dangling lines
@@ -1041,15 +1119,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of LCC converter stations.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of LCC converter stations.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **power_factor**: the power factor
               - **loss_factor**: the loss factor
@@ -1057,7 +1136,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the LCC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the LCC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the LCC converter station is connected
-              - **bus_id**: at which bus the LCC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
 
             This dataframe is indexed by the id of the LCC converter
@@ -1116,25 +1197,31 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of VSC converter stations.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of VCS converter stations.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
               - **voltage_regulator_on**: The voltage regulator status
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the VSC converter station is connected
-              - **bus_id**: at which bus the VSC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
 
             This dataframe is indexed by the id of the VSC converter
@@ -1148,13 +1235,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -1163,13 +1250,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor         target_v                target_q voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -1193,26 +1280,30 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of static var compensators.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of static var compensators.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **b_min**: the minimum susceptance
               - **b_max**: the maximum susceptance
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the var compensator is connected
-              - **bus_id**: at which bus the var compensator is connected
+              - **bus_id**: bus where this SVC is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this SVC is connected
+              - **node**  (optional): node where this SVC is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the var compensator is connected to a bus
 
             This dataframe is indexed by the id of the var compensator
@@ -1226,12 +1317,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max         target_v                target_q regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max         target_v                target_q regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -1240,12 +1331,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -1268,15 +1359,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of voltage levels.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of voltage levels.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **substation_id**: at which substation the voltage level belongs
               - **nominal_v**: The nominal voltage
@@ -1348,20 +1440,24 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of busbar sections.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of busbar sections.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
               - **angle**: the voltage angle of the busbar section (in radian)
               - **voltage_level_id**: at which substation the busbar section is connected
+              - **bus_id**: bus this busbar section belongs to
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to
+              - **node**  (optional): node associated to the this busbar section, in node-breaker voltage levels
               - **connected**: ``True`` if the busbar section is connected to a bus
 
             This dataframe is indexed by the id of the busbar sections
@@ -1432,12 +1528,23 @@ class Network:  # pylint: disable=too-many-public-methods
         Get substations :class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of substations.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: the name of the substations
+              - **TSO**: the TSO which the substation belongs to
+              - **geo_tags**: additional geographical information about the substation
+              - **country**: the country which the substation belongs to
+
+            This dataframe is indexed on the substation ID.
         """
         return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
@@ -1446,15 +1553,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of HVDC lines.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of HVDC lines.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **converters_mode**:
               - **target_p**: (in MW)
@@ -1522,20 +1630,26 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of switches.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of switches.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **kind**: the kind of switch
-              - **open**: the open status of the switch
-              - **retained**: the retain status of the switch
-              - **voltage_level_id**: at which substation the switch is connected
+            - **kind**: the kind of switch
+            - **open**: the open status of the switch
+            - **retained**: the retain status of the switch
+            - **voltage_level_id**: at which substation the switch is connected
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **node1** (optional): node where this switch is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this switch is connected on side 2, in node-breaker voltage levels
+
 
             This dataframe is indexed by the id of the switches
 
@@ -1613,15 +1727,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of ratio tap changer steps.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of ratio tap changer steps.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **rho**:
               - **r**: the resistance of the ratio tap changer step (in Ohm)
@@ -1687,15 +1802,16 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of phase tap changer steps.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
             A dataframe of phase tap changer steps.
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **rho**: the voltage ratio (in per unit)
               - **alpha**: the angle difference (in degree)
@@ -1765,25 +1881,26 @@ class Network:  # pylint: disable=too-many-public-methods
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the ratio tap changers data frame
+            the ratio tap changers dataframe
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **tap**:
-              - **low_tap**:
-              - **high_tap**:
-              - **step_count**:
-              - **on_load**:
-              - **regulating**:
-              - **target_v**:
-              - **target_deadband**:
-              - **regulationg_bus_id**:
+              - **tap**: the current tap position
+              - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
+              - **high_tap**: the high tap position
+              - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **on_load**: true if the tap changer has on-load regulation capability
+              - **regulating**: true if the tap changer is in regulation
+              - **target_v**: the target voltage in kV, if the tap changer is in regulation
+              - **target_deadband**: the regulation deadband around the target voltage, in kV
+              - **regulationg_bus_id**: the bus where the tap changer regulates voltage
 
             This dataframe is indexed by the id of the transformer
 
@@ -1837,24 +1954,26 @@ class Network:  # pylint: disable=too-many-public-methods
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            **kwargs: _ArrayLike: the data to be selected, as named arguments.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
 
         Returns:
-            the phase tap changers data frame
+            the phase tap changers dataframe
 
         Notes:
-            The resulting dataframe, depending on the parameters, could have the following columns:
+            The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **tap**:
-              - **low_tap**:
-              - **high_tap**:
-              - **step_count**:
-              - **regulating**:
-              - **regulation_mode**:
-              - **target_deadband**:
-              - **regulationg_bus_id**:
+              - **tap**: the current tap position
+              - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
+              - **high_tap**: the high tap position
+              - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **regulating**: true if the phase shifter is in regulation
+              - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
+              - **regulation_value**: the target value, in A or MW, depending on regulation_mode
+              - **target_deadband**: the regulation deadband around the target value
+              - **regulationg_bus_id**: the bus where the phase shifter regulates
 
             This dataframe is indexed by the id of the transformer
 
@@ -1907,12 +2026,27 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Get a dataframe of reactive capability curve points.
 
+        For each generator, the min/max reactive capabilities can be represented as curves.
+        This dataframe describes those curves as a list of points, which associate a min and a max value of Q
+        to a given value of P.
+
         Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
 
         Returns:
             A dataframe of reactive capability curve points.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **num**: the point position in the curve description (starts 0 for a given generator)
+              - **p**: the active power of the point, in MW
+              - **min_q**: the minimum value of reactive power, in MVar, for this value of P
+              - **max_q**: the maximum value of reactive power, in MVar, for this value of P
+
+            This dataframe is indexed on the generator ID.
         """
         return self.get_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
@@ -1920,12 +2054,15 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
-        The data frame columns are mapped to IIDM element attributes and each row is mapped to an element using the
+        The dataframe columns are mapped to IIDM element attributes and each row is mapped to an element using the
         index.
 
         Args:
-            element_type (ElementType): the element type
+            element_type: the element type
             df: the data to be updated
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
         """
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
@@ -1934,21 +2071,29 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def update_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Update buses with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update buses with data provided as a dataframe or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
 
-        - `v_mag`
-        - `v_angle`
+            - `v_mag`
+            - `v_angle`
 
         See Also:
             :meth:`get_buses`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: _ArrayLike: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_buses(id='B1', v_mag=400.0)
+                network.update_buses(id=['B1', 'B2'], v_mag=[400.0, 63.5])
         """
         return self._update_elements(ElementType.BUS, df, **kwargs)
 
@@ -1956,7 +2101,14 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update switches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
 
             - `open`
             - `retained`
@@ -1964,11 +2116,13 @@ class Network:  # pylint: disable=too-many-public-methods
         See Also:
             :meth:`get_switches`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_switches(id='BREAKER-1', open=True)
+                network.update_switches(id=['BREAKER-1', 'DISC-2'], open=[True, False])
         """
         return self._update_elements(ElementType.SWITCH, df, **kwargs)
 
@@ -1976,28 +2130,37 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update generators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_p`
-        - `max_p`
-        - `min_p`
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
-           Only supported in node breaker voltage levels.
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `target_p`
+            - `max_p`
+            - `min_p`
+            - `target_v`
+            - `target_q`
+            - `voltage_regulator_on`
+            - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
+               Only supported in node breaker voltage levels.
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_generators`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_generators(id='G-1', connected=True, target_p=500)
+                network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
         """
         return self._update_elements(ElementType.GENERATOR, df, **kwargs)
 
@@ -2005,20 +2168,29 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update loads with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `p0`
-        - `q0`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `p0`
+            - `q0`
+            - `connected`
 
         See Also:
             :meth:`get_loads`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_loads(id='L-1', p0=10, q0=3)
+                network.update_loads(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.LOAD, df, **kwargs)
 
@@ -2026,20 +2198,29 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `p0`
-        - `q0`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `p0`
+            - `q0`
+            - `connected`
 
         See Also:
             :meth:`get_batteries`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_batteries(id='B-1', p0=10, q0=3)
+                network.update_batteries(id=['B-1', 'B-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.BATTERY, df, **kwargs)
 
@@ -2047,26 +2228,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `r`
-        - `x`
-        - `g`
-        - `b`
-        - `p0`
-        - `q0`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g`
+            - `b`
+            - `p0`
+            - `q0`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_dangling_lines`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dangling_lines(id='L-1', p0=10, q0=3)
+                network.update_dangling_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
 
@@ -2074,23 +2264,34 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `loss_factor`
+            - `target_v`
+            - `target_q`
+            - `voltage_regulator_on`
+            - `p`
+            - `q`
+            - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
-        Args:
-          df: the data to be updated, as a data frame.
-          **kwargs: the data to be updated, as named arguments.
-              Arguments can be single values or any type of sequence.
-              In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_vsc_converter_stations(id='S-1', target_v=400, voltage_regulator_on=True)
+                network.update_vsc_converter_stations(id=['S-1', 'S-2'], target_v=[400, 400])
         """
         return self._update_elements(ElementType.VSC_CONVERTER_STATION, df, **kwargs)
 
@@ -2098,23 +2299,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `target_v`
-        - `target_q`
-        - `voltage_regulator_on`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `power_factor`
+            - `loss_factor`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_vsc_converter_stations`
 
-        Args:
-          df: the data to be updated, as a data frame.
-          **kwargs: the data to be updated, as named arguments.
-              Arguments can be single values or any type of sequence.
-              In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_lcc_converter_stations(id='S-1', connected=True)
+                network.update_lcc_converter_stations(id=['S-1', 'S-2'], connected=[True, False])
         """
         return self._update_elements(ElementType.LCC_CONVERTER_STATION, df, **kwargs)
 
@@ -2122,24 +2331,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update static var compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
-        - `b_min`
-        - `b_max`
-        - `target_v`
-        - `target_q`
-        - `regulation_mode`
-        - `p`
-        - `q`
-        - `connected`
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `b_min`
+            - `b_max`
+            - `target_v`
+            - `target_q`
+            - `regulation_mode`
+            - `p`
+            - `q`
+            - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_static_var_compensators`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_static_var_compensators(id='SVC-1', target_v=225)
+                network.update_static_var_compensators(id=['SVC-1', 'SVC-2'], target_v=[226, 405])
         """
         return self._update_elements(ElementType.STATIC_VAR_COMPENSATOR, df, **kwargs)
 
@@ -2147,24 +2367,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update HVDC lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `converters_mode`
-        - `target_p`
-        - `max_p`
-        - `nominal_v`
-        - `r`
-        - `connected1`
-        - `connected2`
+        Notes:
+            Attributes that can be updated are:
+
+            - `converters_mode`
+            - `target_p`
+            - `max_p`
+            - `nominal_v`
+            - `r`
+            - `connected1`
+            - `connected2`
 
         See Also:
             :meth:`get_hvdc_lines`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_hvdc_lines(id='HVDC-1', target_p=800)
+                network.update_hvdc_lines(id=['HVDC-1', 'HVDC-2'], target_p=[800, 600])
         """
         return self._update_elements(ElementType.HVDC_LINE, df, **kwargs)
 
@@ -2172,26 +2401,38 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g1`
+            - `b1`
+            - `g2`
+            - `b2`
+            - `p1`
+            - `q1`
+            - `p2`
+            - `q2`
+            - `connected1`
+            - `connected2`
+
         See Also:
             :meth:`get_lines`
 
-        Args:
-            df: lines data to be updated.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
-                - `r`
-                - `x`
-                - `g1`
-                - `b1`
-                - `g2`
-                - `b2`
-                - `p1`
-                - `q1`
-                - `p2`
-                - `q2`
-                - `connected1`
-                - `connected2`
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_lines(id='L-1', connected1=False, connected2=True)
+                network.update_lines(id=['L-1', 'L-2'], r=[0.5, 2.0], x=[5, 10])
         """
         return self._update_elements(ElementType.LINE, df, **kwargs)
 
@@ -2199,30 +2440,39 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update 2 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `r`
-        - `x`
-        - `g`
-        - `b`
-        - `rated_u1`
-        - `rated_u2`
-        - `rated_s`
-        - `p1`
-        - `q1`
-        - `p2`
-        - `q2`
-        - `connected1`
-        - `connected2`
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `x`
+            - `g`
+            - `b`
+            - `rated_u1`
+            - `rated_u2`
+            - `rated_s`
+            - `p1`
+            - `q1`
+            - `p2`
+            - `q2`
+            - `connected1`
+            - `connected2`
 
         See Also:
             :meth:`get_2_windings_transformers`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_2_windings_transformers(id='T-1', connected1=False, connected2=False)
+                network.update_2_windings_transformers(id=['T-1', 'T-2'], r=[0.5, 2.0], x=[5, 10])
         """
         return self._update_elements(ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
@@ -2230,22 +2480,31 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `tap`
-        - `on_load`
-        - `regulating`
-        - `target_v`
-        - `target_deadband`
+        Notes:
+            Attributes that can be updated are:
+
+            - `tap`
+            - `on_load`
+            - `regulating`
+            - `target_v`
+            - `target_deadband`
 
         See Also:
             :meth:`get_ratio_tap_changers`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_ratio_tap_changers(id='T-1', tap=12)
+                network.update_ratio_tap_changers(id=['T-1', 'T-2'], target_v=[64, 65], regulating=[True, True])
         """
         return self._update_elements(ElementType.RATIO_TAP_CHANGER, df, **kwargs)
 
@@ -2253,22 +2512,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update ratio tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `rho`
-        - `r`
-        - `x`
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated are:
+
+            - `rho`
+            - `r`
+            - `x`
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_ratio_tap_changer_steps`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_ratio_tap_changer_steps(id='T-1', position=2, rho=1.1)
         """
         return self._update_elements(ElementType.RATIO_TAP_CHANGER_STEP, df, **kwargs)
 
@@ -2276,46 +2543,63 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update phase tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `tap`
-        - `regulating`
-        - `regulation_mode`
-        - `regulation_value`
-        - `target_deadband`
+        Notes:
+            Attributes that can be updated :
+
+            - `tap`
+            - `regulating`
+            - `regulation_mode`
+            - `regulation_value`
+            - `target_deadband`
 
         See Also:
             :meth:`get_phase_tap_changers`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
-        """
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_phase_tap_changers(id='T-1', regulation_mode=CURRENT_LIMITER, regulation_value=500)
+                network.update_phase_tap_changers(id=['T-1', 'T-2'], tap=[12, 25])
+      """
         return self._update_elements(ElementType.PHASE_TAP_CHANGER, df, **kwargs)
 
     def update_phase_tap_changer_steps(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update phase tap changer steps with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `rho`
-        - `alpha`
-        - `r`
-        - `x`
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated :
+
+            - `rho`
+            - `alpha`
+            - `r`
+            - `x`
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_phase_tap_changer_steps`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_phase_tap_changer_steps(id='T-1', position=2, rho=1.1, alpha=-12.3)
         """
         return self._update_elements(ElementType.PHASE_TAP_CHANGER_STEP, df, **kwargs)
 
@@ -2323,21 +2607,30 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `section_count`
-        - `p`
-        - `q`
-        - `connected`
+        Notes:
+            Attributes that can be updated are:
+
+            - `section_count`
+            - `p`
+            - `q`
+            - `connected`
 
         See Also:
             :meth:`get_shunt_compensators`
 
-        Args:
-           df: the data to be updated, as a data frame.
-           **kwargs: the data to be updated, as named arguments.
-               Arguments can be single values or any type of sequence.
-               In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_shunt_compensators(id='IND-1', section_count=1, connected=True)
+                network.update_shunt_compensators(id=['IND-1', 'CAP-1'], section_count=[1, 0])
         """
         return self._update_elements(ElementType.SHUNT_COMPENSATOR, df, **kwargs)
 
@@ -2345,21 +2638,28 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update shunt compensators with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are:
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `g_per_section`
-        - `b_per_section`
-        - `max_section_count`
+        Notes:
+            Attributes that can be updated are:
+
+            - `g_per_section`
+            - `b_per_section`
+            - `max_section_count`
 
         See Also:
             :meth:`get_linear_shunt_compensator_sections`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
 
+            .. code-block:: python
+
+                network.update_linear_shunt_compensator_sections(id='CAP-1', max_section_count=3)
         """
         return self._update_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
@@ -2367,30 +2667,135 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Update non linear shunt compensators sections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
-        Attributes that can be updated are :
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
-        - `g`
-        - `b`
+        Notes:
+            Attributes that can be updated are :
+
+            - `g`
+            - `b`
 
         See Also:
             :meth:`get_non_linear_shunt_compensator_sections`
 
-        Args:
-            df: the data to be updated, as a data frame.
-            **kwargs: the data to be updated, as named arguments.
-                Arguments can be single values or any type of sequence.
-                In the case of sequences, all arguments must have the same length.
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_non_linear_shunt_compensator_sections(id='CAP-1', section=1, b=1e-5)
         """
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_busbar_sections(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
-        """Update phase tap changers with a ``Pandas`` data frame.
+        """Update phase tap changers with a ``Pandas`` dataframe.
 
         Args:
-            df (DataFrame): the ``Pandas`` data frame
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
 
         """
         return self._update_elements(ElementType.BUSBAR_SECTION, df, **kwargs)
+
+    def update_voltage_levels(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update voltage levels with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `high_voltage_limit`
+            - `low_voltage_limit`
+            - `nominal_v`
+
+        See Also:
+            :meth:`get_voltage_levels`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_voltage_levels(id='VL-1', high_voltage_limit=420)
+                network.update_voltage_levels(id=['VL-1', 'VL-2'], low_voltage_limit=[385, 390])
+        """
+        return self._update_elements(ElementType.VOLTAGE_LEVEL, df, **kwargs)
+
+    def update_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update substations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `TSO`
+            - `country`
+
+        See Also:
+            :meth:`get_substations`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_substations(id='S-1', TSO='ELIA', country='BE')
+                network.update_substations(id=['S-1', 'S-2'], country=['BE', 'FR'])
+        """
+        return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
+
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            df: the data to be updated
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.update_extensions(self._handle, extension_name, c_df)
+
+    def create_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            dfs: the data to be created
+            kwargs: the data to be created, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        self._create_extensions(extension_name, [df], **kwargs)
 
     def get_working_variant_id(self) -> str:
         """
@@ -2443,6 +2848,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_current_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
         Get the list of all current limits on the network paired with their branch id.
+        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -2451,7 +2857,40 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             all current limits on the network
         """
-        return self.get_elements(ElementType.CURRENT_LIMITS, all_attributes, attributes)
+        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
+        limits = self.get_operational_limits(all_attributes, attributes)
+        current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
+        current_limits.index.rename('branch_id', inplace=True)
+        current_limits.set_index('name', append=True, inplace=True)
+        return current_limits[['side', 'value', 'acceptable_duration', 'is_fictitious']]
+
+    def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get the list of operational limits.
+
+        The resulting dataframe, depending on the parameters, will have some of the following columns:
+
+          - **element_id**: Identifier of the network element on which this limit applies (could be for example
+            a line or a transformer). This is the index column.
+          - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
+            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+          - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
+          - **name**:       The name of the limit
+          - **type**:       The type of the limit (CURRENT, ACTIVE_POWER, APPARENT_POWER)
+          - **value**:      The value of the limit
+          - **acceptable_duration**: The duration, in seconds, for which the element can securely be
+            operated under the limit value. By convention, the value -1 represents an infinite duration.
+          - **is_fictitious**: true if this limit is fictitious
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes:     attributes to include in the dataframe. The 2 parameters are mutually
+                            exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            All limits on the network
+        """
+        return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
@@ -2480,8 +2919,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def merge(self, *networks: Network) -> None:
         return _pp.merge(self._handle, [net._handle for net in networks])
 
-    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
-        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+    def _get_c_dataframes(self, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
         c_dfs: _List[_Optional[_pp.Dataframe]] = []
         dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
         for i, df in enumerate(dfs):
@@ -2489,54 +2927,102 @@ class Network:  # pylint: disable=too-many-public-methods
                 c_dfs.append(None)
             else:
                 c_dfs.append(_create_c_dataframe(df, metadata[i]))
+        return c_dfs
+
+    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_element(self._handle, c_dfs, element_type)
+
+    def _create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_extensions_creation_dataframes_metadata(extension_name)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
+        _pp.create_extensions(self._handle, c_dfs, extension_name)
 
     def create_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates substations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - name
-          - country
-          - tso
-
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            - **id**: the identifier of the substation
+            - **name**: an optional human readable name for the substation
+            - **country**: an optional country code ('DE', 'IT', ...)
+            - **TSO**: an optional TSO name
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_substations(id='S-1', country='IT', TSO='TERNA')
+
+            Or using a dataframe:
+
+           .. code-block:: python
+
+                stations = pd.DataFrame.from_records(index='id', data=[
+                    {'id': 'S1', 'country': 'BE'},
+                    {'id': 'S2', 'country': 'DE'}
+                ])
+                network.create_substations(stations)
         """
-        return self._create_elements(ElementType.SUBSTATION, [df], **kwargs)
+        self._create_elements(ElementType.SUBSTATION, [df], **kwargs)
 
     def create_generators(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates generators.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Expected attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - energy_source
-          - max_p
-          - min_p
-          - target_p
-          - target_q
-          - rated_s
-          - target_v
-          - voltage_regulator_on
-
         Args:
             df: Attributes as dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
 
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new generator
+            - **voltage_level_id**: the voltage level where the new generator will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new generator will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new generator will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new generator will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
+            - **max_p**: maximum active power in MW
+            - **min_p**: minimum active power in MW
+            - **target_p**: target active power in MW
+            - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
+            - **rated_s**: nominal power in MVA
+            - **target_v**: target voltage in kV, when the generator regulates voltage
+            - **voltage_regulator_on**: true if the generator regulates voltage
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_generators(id='GEN',
+                                          voltage_level_id='VL1',
+                                          bus_id='B1',
+                                          target_p=100,
+                                          min_p=0,
+                                          max_p=200,
+                                          target_v=400,
+                                          voltage_regulator_on=True)
         """
         self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 
@@ -2544,69 +3030,140 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates bus bar sections.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - node
-          - name
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new busbar section
+            - **voltage_level_id**: the voltage level where the new busbar section will be created.
+              The voltage level must already exist.
+            - **node**: the node where the new generator will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_busbar_sections(id='BBS', voltage_level_id='VL1', node=0)
         """
         self._create_elements(ElementType.BUSBAR_SECTION, [df], **kwargs)
 
     def create_buses(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Creates buses.
-
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - name
+        Creates buses in bus-breaker voltage levels.
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            This method can only create "configured buses", in bus-breaker voltage levels,
+            as opposed to electrical buses computed from this underlying topology.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new configured bus
+            - **voltage_level_id**: the voltage level where the new bus will be created.
+              The voltage level must already exist, and must have a bus-breaker topology kind.
+            - **name**: an optional human-readable name
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_buses(id='B1', voltage_level_id='VL1')
         """
         return self._create_elements(ElementType.BUS, [df], **kwargs)
 
     def create_loads(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create loads on a network
+        Create loads.
 
         Args:
-            df: dataframe of the loads creation data
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new load
+            - **voltage_level_id**: the voltage level where the new load will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new load will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new load will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new load will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
+            - **p0**: active power load, in MW
+            - **q0**: reactive power load, in MVar
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_loads(id='LOAD-1', voltage_level_id='VL1', bus_id='B1', p0=10, q0=3)
         """
         return self._create_elements(ElementType.LOAD, [df], **kwargs)
 
     def create_batteries(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Creates loads.
-
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - type
-          - p0
-          - q0
+        Creates batteries.
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new battery
+            - **voltage_level_id**: the voltage level where the new battery will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new battery will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new battery will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new battery will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **min_p**: minimum active power, in MW
+            - **max_p**: maximum active power, in MW
+            - **p0**: active power consumption, in MW
+            - **q0**: reactive power consumption, in MVar
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_batteries(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                                         min_p=5, max_p=50, p0=10, q0=3)
         """
         return self._create_elements(ElementType.BATTERY, [df], **kwargs)
 
@@ -2614,26 +3171,41 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates dangling lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - p0
-          - q0
-          - r
-          - x
-          - g
-          - b
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new line
+            - **voltage_level_id**: the voltage level where the new line will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new line will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new line will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new line will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **p0**: the active power consumption, in MW
+            - **q0**: the reactive power consumption, in MVar
+            - **r**: the resistance, in Ohms
+            - **x**: the reactance, in Ohms
+            - **g**: the shunt conductance, in S
+            - **b**: the shunt susceptance, in S
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                                              p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
@@ -2641,22 +3213,37 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates LCC converter stations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - power_factor
-          - loss_factor
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new station
+            - **voltage_level_id**: the voltage level where the new station will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new station will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new station will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new station will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **power_factor**: the power factor (ratio of the active power to the apparent power)
+            - **loss_factor**: the loss factor of the station
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_lcc_converter_stations(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                      power_factor=0.3, loss_factor=0.1)
         """
         return self._create_elements(ElementType.LCC_CONVERTER_STATION, [df], **kwargs)
 
@@ -2664,24 +3251,39 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates VSC converter stations.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - target_v
-          - target_q
-          - loss_factor
-          - voltage_regulator_on
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new station
+            - **voltage_level_id**: the voltage level where the new station will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new station will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new station will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new station will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **loss_factor**: the loss factor of the new station
+            - **voltage_regulator_on**: true if the station regulated voltage
+            - **target_v**: the target voltage, in kV, when the station regulates voltage
+            - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_vsc_converter_stations(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                      loss_factor=0.1, voltage_regulator_on=True, target_v=400.0)
         """
         return self._create_elements(ElementType.VSC_CONVERTER_STATION, [df], **kwargs)
 
@@ -2689,25 +3291,41 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates static var compensators.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus_id
-          - connectable_bus_id
-          - node
-          - name
-          - b_max
-          - b_min
-          - regulation_mode
-          - target_v
-          - target_q
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new SVC
+            - **voltage_level_id**: the voltage level where the new SVC will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new SVC will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new SVC will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new SVC will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **b_max**: the maximum susceptance, in S
+            - **b_min**: the minimum susceptance, in S
+            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+            - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
+            - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_static_var_compensators(id='CS-1', voltage_level_id='VL1', bus_id='B1',
+                                                       b_min=-0.01, b_max=0.01, regulation_mode='VOLTAGE',
+                                                       target_v=400.0)
         """
         return self._create_elements(ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
@@ -2715,30 +3333,51 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level1_id
-          - bus1_id
-          - connectable_bus1_id
-          - node1
-          - voltage_level2_id
-          - bus2_id
-          - connectable_bus2_id
-          - node2
-          - name
-          - b1
-          - b2
-          - g1
-          - g2
-          - r
-          - x
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new line
+            - **voltage_level1_id**: the voltage level where the new line will be connected on side 1.
+              The voltage level must already exist.
+            - **bus1_id**: the bus where the new line will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus1_id**: the bus where the new line will be connectable on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **node1**: the node where the new line will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level2_id**: the voltage level where the new line will be connected on side 2.
+              The voltage level must already exist.
+            - **bus2_id**: the bus where the new line will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus2_id**: the bus where the new line will be connectable on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **node2**: the node where the new line will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **b1**: the shunt susceptance, in S, on side 1
+            - **b2**: the shunt susceptance, in S, on side 2
+            - **g1**: the shunt conductance, in S, on side 1
+            - **g2**: the shunt conductance, in S, on side 2
+            - **r**: the resistance, in Ohm
+            - **x**: the reactance, in Ohm
+
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_lines(id='LINE-1', voltage_level1_id='VL1', bus1_id='B1',
+                                     voltage_level2_id='VL2', bus2_id='B2',
+                                     b1=1e-6, b2=1e-6, g1=0, , g2=0, r=0.5, x=10)
         """
         return self._create_elements(ElementType.LINE, [df], **kwargs)
 
@@ -2746,31 +3385,51 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates 2 windings transformers.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level1_id
-          - bus1_id
-          - connectable_bus1_id
-          - node1
-          - voltage_level2_id
-          - bus2_id
-          - connectable_bus2_id
-          - node2
-          - name
-          - rated_u1
-          - rated_u2
-          - rated_s
-          - b
-          - g
-          - r
-          - x
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new transformer
+            - **voltage_level1_id**: the voltage level where the new transformer will be connected on side 1.
+              The voltage level must already exist.
+            - **bus1_id**: the bus where the new transformer will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus1_id**: the bus where the new transformer will be connectable on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **node1**: the node where the new transformer will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
+              The voltage level must already exist.
+            - **bus2_id**: the bus where the new transformer will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus2_id**: the bus where the new transformer will be connectable on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **node2**: the node where the new transformer will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **rated_u1**: nominal voltage of the side 1 of the transformer
+            - **rated_u2**: nominal voltage of the side 2 of the transformer
+            - **rated_s**: nominal power of the transformer
+            - **b**: the shunt susceptance, in S
+            - **g**: the shunt conductance, in S
+            - **r**: the resistance, in Ohm
+            - **x**: the reactance, in Ohm
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_2_windings_transformers(id='T-1', voltage_level1_id='VL1', bus1_id='B1',
+                                                       voltage_level2_id='VL2', bus2_id='B2',
+                                                       b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=400, rated_u2=225)
         """
         return self._create_elements(ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
@@ -2779,10 +3438,94 @@ class Network:  # pylint: disable=too-many-public-methods
                                   non_linear_model_df: _Optional[_DataFrame] = None,
                                   **kwargs: _ArrayLike) -> None:
         """
-        create shunt compensators on a network
+        Create shunt compensators.
+
+        Shunt compensator sections can be described in 1 of 2 ways:
+        either with a linear model, with a maximum section count and a per-section values,
+        or with a non linear model, where each section is described individually.
+
+        For this reason, 2 or 3 dataframes need to be provided:
+        one for shunt compensators data, optionally one for linear models,
+        and optionally one for non linear models.
 
         Args:
-            df: dataframe of the shunt compensators creation data
+            shunt_df: dataframe for shunt compensators data
+            linear_model_df: dataframe for linear model sections data
+            non_linear_model_df: dataframe for sections data
+
+        Notes:
+
+            Valid attributes for the shunt compensators dataframe are:
+
+            - **id**: the identifier of the new shunt
+            - **voltage_level_id**: the voltage level where the new shunt will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new shunt will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new shunt will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new shunt will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **model_type**: either LINEAR or NON_LINEAR
+            - **section_count**: the current count of connected sections
+            - **target_v**: an optional target voltage in kV
+            - **target_v**: an optional deadband for the target voltage, in kV
+
+            Valid attributes for the linear sections models are:
+
+            - **id**: the identifier of the new shunt
+            - **g_per_section**: the conductance, in Ohm, for each section
+            - **b_per_section**: the susceptance, in Ohm, for each section
+            - **max_section_count**: the maximum number of connectable sections
+
+            This dataframe must have only one row for each shunt compensator.
+
+            Valid attributes for the non linear sections models are:
+
+            - **id**: the identifier of the new shunt
+            - **g**: the conductance, in Ohm, for this section
+            - **b**: the susceptance, in Ohm, for this section
+
+            This dataframe will have multiple rows for each shunt compensator: one by section.
+
+        Examples:
+            For example, to create linear model shunts, we need 1 dataframe for the shunts and 1 dataframe
+            for the linear model of sections:
+
+            .. code-block:: python
+
+                shunt_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                             'target_deadband', 'voltage_level_id', 'node'],
+                    data=[('SHUNT-1', '', 'LINEAR', 1, 400, 2, 'S1VL2', 2)])
+                model_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+                    data=[('SHUNT-1', 0.14, -0.01, 2)])
+                n.create_shunt_compensators(shunt_df, model_df)
+
+
+            For non linear model shunts, we need 1 dataframe for the shunts and 1 dataframe
+            for the sections:
+
+            .. code-block:: python
+
+                shunt_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                             'target_deadband', 'voltage_level_id', 'node'],
+                    data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 2),
+                          ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 10)])
+                model_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'g', 'b'],
+                    data=[('SHUNT1', 1, 2),
+                          ('SHUNT1', 3, 4),
+                          ('SHUNT2', 5, 6),
+                          ('SHUNT2', 7, 8)])
+                n.create_shunt_compensators(shunt_df, non_linear_model_df=model_df)
         """
         if linear_model_df is None:
             linear_model_df = pd.DataFrame()
@@ -2795,25 +3538,46 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates switches.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - voltage_level_id
-          - bus1_id
-          - bus2_id
-          - node1
-          - node2
-          - name
-          - kind
-          - open
-          - retained
-          - fictitious
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new switch
+            - **voltage_level1_id**: the voltage level where the new switch will be connected on side 1.
+              The voltage level must already exist.
+            - **bus1_id**: the bus where the new switch will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **bus2_id**: the bus where the new switch will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **node1**: the node where the new switch will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - **node2**: the node where the new switch will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **kind**: the kind of switch (BREAKER, DISCONNECTOR, LOAD_BREAK_SWITCH)
+            - **open**: true if the switch is open, default false
+            - **retained**: true if the switch should be retained in bus-breaker topology, default false
+            - **fictitious**: true if the switch is fictitious, default false
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                # In a bus-breaker voltage level, between configured buses B1 and B2
+                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', bus1_id='B1', bus2_id='B2',
+                                        kind='BREAKER', open=False)
+
+                # In a node-breaker voltage level, between nodes 5 and 7
+                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', node1=5, node2=7,
+                                        kind='BREAKER', open=False)
         """
         return self._create_elements(ElementType.SWITCH, [df], **kwargs)
 
@@ -2821,39 +3585,131 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates voltage levels.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
-
-        Valid attributes are:
-          - id
-          - substation_id
-          - name
-          - high_voltage_limit
-          - low_voltage_limit
-          - nominal_v
-          - topology_kind
-
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new voltage level
+            - **substation_id**: the identifier of the substation which the new voltage level belongs to.
+              It must already exist.
+            - **name**: an optional human-readable name
+            - **topology_kind**: the topology kind, BUS_BREAKER or NODE_BREAKER
+            - **nominal_v**: the nominal voltage, in kV
+            - **low_voltage_limit**: the lower operational voltage limit, in kV
+            - **high_voltage_limit**: the upper operational voltage limit, in kV
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='BUS_BREAKER',
+                                              nominal_v=400, low_voltage_limit=380, high_voltage_limit=420)
         """
         return self._create_elements(ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
     def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create ratio tap changers on a network
+        Create ratio tap changers on transformers.
+
+        Tap changers data must be provided in 2 separate dataframes:
+        one for the tap changers attributes, and another one for tap changers steps attributes.
+        The latter one will generally have multiple lines for one transformer ID.
 
         Args:
-            df: dataframe of the ratio tap changers creation data
+            rtc_df: dataframe of tap changers data
+            steps_df: dataframe of steps data
+
+        Notes:
+
+            Valid attributes for the tap changers dataframe are:
+
+            - **id**: the transformer where this tap changer will be created
+            - **tap**: the current tap position
+            - **low_tap**: the number of the lowest tap position (default 0)
+            - **on_load**: true if the transformer has on-load voltage regulation capability
+            - **target_v**: the target voltage, in kV
+            - **target_deadband**: the target voltage regulation deadband, in kV
+
+            Valid attributes for the steps dataframe are:
+
+            - **id**: the transformer where this step will be added
+            - **g**: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - **b**: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - **r**: the resistance increase compared to the transformer, for this step, in percentage
+            - **x**: the reactance increased compared to the transformer, for this step, in percentage
+            - **rho**: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
+
+        Examples:
+            We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
+
+            .. code-block:: python
+
+                rtc_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
+                    data=[('NGEN_NHV1', 2, 200, False, 0, 1)])
+                steps_df = pd.DataFrame.from_records(
+                    index='id',
+                    columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+                    data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+                network.create_ratio_tap_changers(rtc_df, steps_df)
         """
         return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df], **kwargs)
 
     def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create phase tap changers on a network
+        Create phase tap changers on transformers.
+
+        Tap changers data must be provided in 2 separate dataframes:
+        one for the tap changers attributes, and another one for tap changers steps attributes.
+        The latter one will generally have multiple lines for one transformer ID.
 
         Args:
-            df: dataframe of the phase tap changers creation data
+            ptc_df: dataframe of tap changers data
+            steps_df: dataframe of steps data
+
+        Notes:
+
+            Valid attributes for the tap changers dataframe are:
+
+            - **id**: the transformer where this tap changer will be created
+            - **tap**: the current tap position
+            - **low_tap**: the number of the lowest tap position (default 0)
+            - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
+            - **target_deadband**: the regulation deadband
+
+            Valid attributes for the steps dataframe are:
+
+            - **id**: the transformer where this step will be added
+            - **g**: the shunt conductance increase compared to the transformer, for this step, in percentage
+            - **b**: the shunt susceptance increase compared to the transformer, for this step, in percentage
+            - **r**: the resistance increase compared to the transformer, for this step, in percentage
+            - **x**: the reactance increased compared to the transformer, for this step, in percentage
+            - **rho**: the transformer ratio for this step (1 means real ratio is rated_u2/rated_u1)
+            - **alpha**: the phase shift, in degrees, for this step
+
+        Examples:
+            We need to provide 2 dataframes, 1 for tap changer basic data, and one for step-wise data:
+
+            .. code-block:: python
+
+                ptc_df = pd.DataFrame.from_records(
+                    index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap'],
+                    data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1)])
+                steps_df = pd.DataFrame.from_records(
+                    index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+                    data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+                          ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+                n.create_phase_tap_changers(ptc_df, steps_df)
         """
         return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df], **kwargs)
 
@@ -2861,25 +3717,324 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Creates HVDC lines.
 
-        Data may be provided as a dataframe or as keyword arguments.
-        In the latter case, all arguments must have the same length.
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        Valid attributes are:
-          - id
-          - name
-          - converter_station1_id
-          - converter_station2_id
-          - max_p
-          - converters_mode
-          - target_p
-          - r
-          - nominal_v
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new HVDC line
+            - **name**: an optional human-readable name
+            - **converter_station1_id**: the station where the new HVDC line will be connected on side 1.
+              It must already exist.
+            - **converter_station2_id**: the station where the new HVDC line will be connected on side 2.
+              It must already exist.
+            - **r**: the resistance of the HVDC line, in Ohm
+            - **nominal_v**: the nominal voltage of the HVDC line, in kV
+            - **max_p**: the maximum transmissible power, in MW
+            - **target_p**: the active power target, in MW
+            - **converters_mode**: SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_hvdc_lines(id='HVDC-1', converter_station1_id='CS-1', converter_station2_id='CS-2',
+                                          r=1.0, nominal_v=400, converters_mode='SIDE_1_RECTIFIER_SIDE_2_INVERTER',
+                                          max_p=1000, target_p=800)
+        """
+        return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
+
+    def create_operational_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates operational limits.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **element_id**: the ID of the network element on which we want to create new limits
+            - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
+              THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+            - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
+            - **name**: the name of the limit
+            - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
+            - **value**: the value of the limit in A, MVA or MW
+            - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
+            - **is_fictitious** : fictitious limit ?
+
+            For each location of the network defined by a couple (element_id, side):
+
+            - if operational limits already exist, they will be replaced
+            - multiple limits may be defined, typically with different acceptable_duration
+            - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
         Args:
             df: Attributes as a dataframe.
-            **kwargs: Attributes as keyword arguments.
+            kwargs: Attributes as keyword arguments.
         """
-        return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
+        df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
+    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits of type min/max.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the generator
+            - **min_q**: minimum reactive limit, in MVAr
+            - **max_q**: maximum reactive limit, in MVAr
+
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_minmax_reactive_limits(id='GEN-1', min_q=-100, max_q=100)
+
+        See Also:
+            :meth:`create_curve_reactive_limits`
+        """
+        return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
+
+    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits as "curves".
+
+        Curves are actually composed of line segments, defined by a list of points.
+        Each row of the input data actually defines 2 points:
+        one for the minimum limit, one for the maximum limit, for the given
+        active power value.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the generator
+            - **p**:     active power, in MW, for which this row defines limits
+            - **min_q**: minimum reactive limit at this active power value, in MVAr
+            - **max_q**: maximum reactive limit at this active power value, in MVAr
+
+            At least 2 rows must be defined for each generator, for 2
+            different active power values.
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Generator GEN-1 will be able to provide 150MVAr when P=0MW,
+            and only 100MVAr when it generates 100MW:
+
+            .. code-block:: python
+
+                network.create_curve_reactive_limits(id=['GEN-1', 'GEN-1'],
+                                                     p=[0, 100],
+                                                     min_q=[-150, -100],
+                                                     max_q=[150, 100])
+
+        See Also:
+            :meth:`create_minmax_reactive_limits`
+        """
+        return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
+    def get_validation_level(self) -> ValidationLevel:
+        """
+        The network's validation level.
+
+        This it the network validation level as computed by validation checks.
+
+        Returns:
+            the ValidationLevel.
+        """
+        return _pp.get_validation_level(self._handle)
+
+    def validate(self) -> ValidationLevel:
+        """
+        Validate the network.
+
+        The validation will raise an exception if any check is not consistent with the
+        configured minimum validation level.
+
+        Returns:
+            the computed ValidationLevel, which may be higher than the configured minimum level.
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the configured minimum validation level.
+        """
+        return _pp.validate(self._handle)
+
+    def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
+        """
+        Set the minimum validation level for the network.
+
+        Args:
+            validation_level (ValidationLevel): the validation level
+
+        Raises:
+            pypowsybl.PyPowsyblError: if any validation check is not consistent
+                                      with the new minimum validation level.
+        """
+        _pp.set_min_validation_level(self._handle, validation_level)
+
+    def remove_elements(self, elements_ids: _Union[str, _List[str]]) -> None:
+        """
+        Removes elements from the network.
+
+        Args:
+            elements_ids: IDs of the elements to be removed.
+
+        Notes:
+            Elements can be provided as a list of IDs or as a single ID.
+
+            Elements can be any identifiable object of the network
+            (line, generator, switch, substation ...).
+
+        Examples:
+
+            .. code-block:: python
+
+                network.remove_elements('GENERATOR-1')  # Removes only 1 element
+                network.remove_elements(['GENERATOR-1', 'BUS])
+        """
+        if isinstance(elements_ids, str):
+            elements_ids = [elements_ids]
+        _pp.remove_elements(self._handle, elements_ids)
+
+    def get_extensions(self, extension_name: str) -> _DataFrame:
+        """
+        Get an extension as a :class:`~pandas.DataFrame` for a specified extension name.
+
+        Args:
+            extension_name: name of the extension
+
+        Returns:
+            A dataframe with the extensions data.
+
+        Notes:
+            The extra id column in the resulting dataframe provides the link to the extensions parent elements
+        """
+        return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
+        return self.get_extensions(extension_name)
+
+    def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Add properties to network elements, provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the properties to be created or updated. The index has to be the `id`
+                identifying the network elements.
+            kwargs: the properties to be added as named arguments.
+                    Arguments can be a single string or any type of sequence of strings.
+                    In the case of sequences, all arguments must have the same length.
+
+
+        Examples:
+
+            For example, to add the properties prop1 = value1 and prop2 = value2 to a network element:
+
+            .. code-block:: python
+
+                >>> network.add_elements_properties(id='GENERATOR-1', prop1='value1', prop2='value2')
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id='GENERATOR-1')
+                         toto
+                id
+                VLEJUP7  tutu
+
+            You can also update multiple elements at once, for example with a dataframe:
+
+            .. code-block:: python
+
+                >>> properties_df = pd.Dataframe(index=pd.Series('id', ['G1', 'G2']),
+                                                 data={
+                                                     'prop1': [ 'val11', 'val12'],
+                                                     'prop2': [ 'val12', 'val22'],
+                                                 })
+                >>> network.add_elements_properties(properties_df)
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id=['G1', 'G2'])
+                         prop1  prop2
+                id
+                G1       val11  val12
+                G2       val21  val22
+
+        """
+        if df is None:
+            df = _adapt_properties_kwargs(**kwargs)
+        if df.isnull().values.any():
+            raise _pp.PyPowsyblError("dataframe can not contain NaN values")
+        for series_name in df.columns.values:
+            df[series_name] = df[series_name].astype(str)
+        c_df = _create_properties_c_dataframe(df)
+        _pp.add_network_element_properties(self._handle, c_df)
+
+    def remove_elements_properties(self, ids: _Union[str, _List[str]], properties: _Union[str, _List[str]]) -> None:
+        """
+        Remove properties from a list of network elements
+
+        Args:
+            ids: list of the network elements that will have their properties removed
+            properties: list of the properties that will be removed
+
+        Examples:
+
+            To remove properties prop1 and prop2 from network elements GEN1 and GEN2:
+
+            .. code-block:: python
+
+                network.remove_elements_properties(ids=['GEN1', 'GEN2'], properties=['prop1', 'prop2'])
+
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        if isinstance(properties, str):
+            properties = [properties]
+        _pp.remove_network_element_properties(self._handle, ids, properties)
+
+    def remove_extensions(self, extension_name: str, ids: _Union[str, _List[str]]) -> None:
+        """
+        Removes network elements extensions, given the extension's name.
+
+        Args:
+            extension_name: name of the extension
+            ids: IDs of the elements to be removed.
+
+        Notes:
+            ids can be provided as a list of IDs or as a single ID.
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        _pp.remove_extensions(self._handle, extension_name, ids)
 
 
 def _create_network(name: str, network_id: str = '') -> Network:
@@ -2969,6 +4124,16 @@ def create_eurostag_tutorial_example1_network() -> Network:
     return _create_network('eurostag_tutorial_example1')
 
 
+def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial with Power limits
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with Power limits
+    """
+    return _create_network('eurostag_tutorial_example1_with_power_limits')
+
+
 def create_four_substations_node_breaker_network() -> Network:
     """
     Create an instance of powsybl "4 substations" test case.
@@ -3007,8 +4172,8 @@ def get_import_formats() -> _List[str]:
     """
     Get list of supported import formats
 
-    :return: the list of supported import formats
-    :rtype: List[str]
+    Returns:
+         the list of supported import formats
     """
     return _pp.get_network_import_formats()
 
@@ -3017,8 +4182,8 @@ def get_export_formats() -> _List[str]:
     """
     Get list of supported export formats
 
-    :return: the list of supported export formats
-    :rtype: List[str]
+    Returns:
+        the list of supported export formats
     """
     return _pp.get_network_export_formats()
 
@@ -3031,7 +4196,7 @@ def get_import_parameters(fmt: str) -> _DataFrame:
        fmt (str): the format
 
     Returns:
-        import parameters data frame
+        import parameters dataframe
 
     Examples:
        .. doctest::
@@ -3058,23 +4223,38 @@ def get_export_parameters(fmt: str) -> _DataFrame:
        fmt (str): the format
 
     Returns:
-        export parameters data frame
+        export parameters dataframe
     """
     series_array = _pp.create_exporter_parameters_series_array(fmt)
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: _Dict[str, str] = None) -> Network:
+def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
+    Basic compression formats are also supported (gzip, bzip2).
+
     Args:
-       file (str): a file
-       parameters (dict, optional): a map of parameters
+       file:       path to the network file
+       parameters: a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
+
+    Examples:
+
+        Some examples of file loading, including relative or absolute paths, and compressed files:
+
+        .. code-block:: python
+
+            network = pp.network.load('network.xiidm')
+            network = pp.network.load('/path/to/network.xiidm')
+            network = pp.network.load('network.xiidm.gz')
+            network = pp.network.load('network.uct')
+            ...
     """
+    file = _path_to_str(file)
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network(file, parameters))
@@ -3085,13 +4265,23 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name (str): file name
-       file_content (str): file content
-       parameters (dict, optional): a map of parameters
+       file_name:    file name
+       file_content: file content
+       parameters:   a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
     """
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+
+
+def get_extensions_names() -> _List[str]:
+    """
+    Get the list of available extensions.
+
+    Returns:
+        the names of the available extensions
+    """
+    return _pp.get_extensions_names()

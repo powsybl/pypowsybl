@@ -19,6 +19,9 @@ You can run an AC or DC security analysis using the following methods:
     AcSensitivityAnalysis.run
     create_dc_analysis
     DcSensitivityAnalysis.run
+    set_default_provider
+    get_default_provider
+    get_provider_names
 
 Contingencies definition
 ------------------------
@@ -43,7 +46,9 @@ In AC mode, you can define voltage sensitivities, in addition to flows sensitivi
    :nosignatures:
    :toctree: api/
 
-    SensitivityAnalysis.set_branch_flow_factor_matrix
+    SensitivityAnalysis.add_branch_flow_factor_matrix
+    SensitivityAnalysis.add_precontingency_branch_flow_factor_matrix
+    SensitivityAnalysis.add_postcontingency_branch_flow_factor_matrix
     AcSensitivityAnalysis.set_bus_voltage_factor_matrix
     SensitivityAnalysis.set_zones
 

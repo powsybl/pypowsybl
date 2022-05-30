@@ -49,6 +49,10 @@ typedef struct load_flow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
 } load_flow_parameters;
 
 typedef struct limit_violation_struct {
@@ -94,7 +98,8 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
-    CURRENT_LIMITS,
+    OPERATIONAL_LIMITS,
+    MINMAX_REACTIVE_LIMITS,
 } element_type;
 
 typedef enum {
@@ -106,6 +111,11 @@ typedef enum {
     TWTS,
     TWTS3W,
 } validation_type;
+
+typedef enum {
+    EQUIPMENT = 0,
+    STEADY_STATE_HYPOTHESIS,
+} validation_level_type;
 
 typedef enum {
     ALL = 0,

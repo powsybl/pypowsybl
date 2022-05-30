@@ -107,7 +107,8 @@ autodoc_default_options = {
 
 # So that dataframes appear as pandas.DataFrame and link to pandas site
 autodoc_type_aliases = {
-    '_DataFrame': 'pandas.DataFrame'
+    '_DataFrame': 'pandas.DataFrame',
+    '_ArrayLike': 'array-like'
 }
 
 # No type hints in methods signature

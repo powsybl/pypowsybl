@@ -36,7 +36,7 @@ class SecurityAnalysisTest {
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
-        Network network = NetworkUtil.createEurostagTutorialExample1();
+        Network network = Networks.createEurostagTutorialExample1();
         SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,

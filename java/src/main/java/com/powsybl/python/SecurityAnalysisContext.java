@@ -30,7 +30,7 @@ class SecurityAnalysisContext extends AbstractContingencyContainer {
 
     SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
         SecurityAnalysis.Runner runner = SecurityAnalysis.find(provider);
-        SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisParameters.load();
+        SecurityAnalysisParameters securityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SecurityAnalysisParameters.load() : new SecurityAnalysisParameters();
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
         return runner

@@ -14,8 +14,9 @@ from pypowsybl import (
     security,
     sensitivity
 )
+import logging
 
-__version__ = '0.13.0'
+__version__ = '0.16.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -32,13 +33,11 @@ __all__ = [
 ]
 
 
-def set_debug_mode(debug: bool = True) -> None:
-    """Set or unset debug mode
-
-    :param debug: `True` to activate debug mode, `False` otherwise
-    :type debug: bool
-    """
-    _pypowsybl.set_debug_mode(debug)
+# setup a default logger that is the powsybl logger with by default no handler to avoir printing logs >= WARNING
+# to std err
+powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger.addHandler(logging.NullHandler())
+_pypowsybl.set_logger(powsyblLogger)
 
 
 def set_config_read(read_config: bool = True) -> None:
