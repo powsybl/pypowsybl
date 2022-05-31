@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import io
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +14,7 @@ import pypowsybl
 import pypowsybl.network
 import pypowsybl.network as pn
 import util
+from util import dataframe_from_string
 import pathlib
 from numpy import NaN
 from pypowsybl import PyPowsyblError
@@ -662,18 +665,47 @@ def test_create_minmax_reactive_limits():
 
 
 def test_create_curve_reactive_limits():
+    # Generators
     network = pn.create_eurostag_tutorial_example1_network()
-    network.create_curve_reactive_limits(pd.DataFrame.from_records(index='id', data=[
-        {'id': 'GEN', 'p': 0.0, 'min_q': -556.8, 'max_q': 557.4},
-        {'id': 'GEN', 'p': 200.0, 'min_q': -553.514, 'max_q': 536.4}
-    ]))
-    expected = pd.DataFrame(
-            index=pd.MultiIndex.from_tuples([('GEN', 0), ('GEN', 1)],
-                                            names=['id', 'num']),
-            columns=['p', 'min_q', 'max_q'],
-            data=[[0.0, -556.8, 557.4],
-                  [200.0, -553.514, 536.4]])
+    network.create_curve_reactive_limits(dataframe_from_string("""
+id  p    min_q    max_q
+GEN 0    -556.8   557.4
+GEN 200  -553.514 536.4
+    """))
+    expected = dataframe_from_string("""
+id  num p    min_q    max_q
+GEN   0 0    -556.8   557.4
+GEN   1 200  -553.514 536.4
+    """, index=['id', 'num'])
     pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points(), check_dtype=False)
+
+    # Batteries
+    network = util.create_battery_network()
+    network.create_curve_reactive_limits(dataframe_from_string("""
+id  p    min_q    max_q
+BAT 50    -50     100
+BAT 60  -100      50
+    """))
+    expected = dataframe_from_string("""
+num  p  min_q max_q
+0   50    -50   100
+1   60   -100    50
+    """, index='num')
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['BAT'], check_dtype=False)
+
+    # VSCs
+    network = pn.create_four_substations_node_breaker_network()
+    network.create_curve_reactive_limits(dataframe_from_string("""
+  id   p  min_q    max_q
+VSC1  50    -50      100
+VSC1  60   -100       50
+"""))
+    expected = dataframe_from_string("""
+num p    min_q    max_q
+0   50    -50     100
+1   60  -100      50
+""", index='num')
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['VSC1'], check_dtype=False)
 
 
 def test_delete_elements_eurostag():
