@@ -21,6 +21,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
+from pypowsybl.report import Reporter
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -229,7 +230,7 @@ class Parameters:
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider: str = '') -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = Reporter()) -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
@@ -242,10 +243,9 @@ def run_ac(network: _Network, parameters: Parameters = None, provider: str = '')
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, reporter.reporterModel)]
 
-
-def run_dc(network: _Network, parameters: Parameters = None, provider: str = '') -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = Reporter()) -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
@@ -258,7 +258,7 @@ def run_dc(network: _Network, parameters: Parameters = None, provider: str = '')
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider)]
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, reporter.reporterModel)]
 
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,

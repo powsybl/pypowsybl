@@ -378,7 +378,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
     m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("validation_type"));
 
@@ -634,4 +634,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", 
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
+    m.def("create_reporter_model", &pypowsybl::createReporterModel, "Create a reporter model", py::arg("task_key"), py::arg("default_name"));
+    m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
 }

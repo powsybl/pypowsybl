@@ -191,4 +191,3 @@ typedef enum {
     DEFAULT_ATTRIBUTES,
     SELECTION_ATTRIBUTES
 } filter_attributes_type;
-

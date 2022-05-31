@@ -220,7 +220,7 @@ std::string dumpNetworkToString(const JavaHandle& network, const std::string& fo
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider, const JavaHandle& reporter);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
 
@@ -344,6 +344,10 @@ std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& n
 std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
+
+JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
+
+std::string printReport(const JavaHandle& reporterModel);
 
 }
 

@@ -11,6 +11,7 @@ import pypowsybl.loadflow as lf
 from pypowsybl._pypowsybl import LoadFlowComponentStatus
 from pypowsybl.loadflow import ValidationType
 import pytest
+import pypowsybl.report as rp
 
 @pytest.fixture(autouse=True)
 def setUp():
@@ -130,4 +131,16 @@ def test_provider_parameters():
     result = pp.loadflow.run_ac(n, parameters)
     assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
     assert 6 == result[0].iteration_count
+
+def test_run_lf_with_report():
+    n = pp.network.create_ieee14()
+    reporter = rp.Reporter("test_run_lf", "test_run_lf")
+    pp.loadflow.run_ac(n, reporter = reporter)
+    report = str(reporter)
+    assert len(report) > 0
+
+    n2 = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n2, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) > len(report)
 
