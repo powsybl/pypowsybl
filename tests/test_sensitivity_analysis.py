@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -227,3 +227,21 @@ def test_variant():
 
 def test_provider_names():
     assert 'OpenSensitivityAnalysis' in pp.sensitivity.get_provider_names()
+
+
+def test_no_output_matrices_available():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.set_branch_flow_factor_matrix(network.get_lines().index.to_list(),
+                                           network.get_generators().index.to_list())
+    result = analysis.run(network)
+    df = result.get_branch_flows_sensitivity_matrix('default')
+    assert (2, 2) == df.shape
+
+    with pytest.raises(pp.PyPowsyblError) as errorContext:
+        result.get_bus_voltages_sensitivity_matrix()
+    assert 'bus voltage sensitivity matrix does not exist' == str(errorContext.value)
+
+    with pytest.raises(pp.PyPowsyblError) as errorContext:
+        result.get_branch_flows_sensitivity_matrix('')
+    assert 'Matrix \'\' not found' == str(errorContext.value)
