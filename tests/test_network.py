@@ -173,7 +173,7 @@ def test_loads_data_frame():
         index=pd.Series(name='id', data=['LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
-    pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
 
 def test_batteries_data_frame():
@@ -190,22 +190,22 @@ def test_batteries_data_frame():
         index=pd.Series(name='id', data=['BAT', 'BAT2']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['NBAT', -1], ['NBAT', -1]])
-    pd.testing.assert_frame_equal(expected, batteries, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, batteries, check_dtype=False, atol=1e-2)
 
 
 def test_vsc_data_frame():
     n = pp.network.create_four_substations_node_breaker_network()
     stations = n.get_vsc_converter_stations()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'target_v', 'target_q', 'voltage_regulator_on',
+                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN, 400, 500, True, 'VSC1', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
+                            data=[['VSC1', 1.1, NaN, NaN,  'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
                                    True],
-                                  ['VSC2', 1.1, -400, 500, 0, 120, False, 'VSC2', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
+                                  ['VSC2', 1.1, -400, 500, 'MIN_MAX', 0, 120, False, 'VSC2', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
                                    True]])
-    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
 
     stations2 = pd.DataFrame(data=[[300.0, 400.0, 'VSC2'], [1.0, 2.0, 'VSC1']],
                              columns=['target_v', 'target_q', 'regulated_element_id'], index=['VSC1', 'VSC2'])
@@ -215,21 +215,21 @@ def test_vsc_data_frame():
     n.update_vsc_converter_stations(stations3)
     stations = n.get_vsc_converter_stations()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'target_v', 'target_q', 'voltage_regulator_on',
+                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN, 300, 400, True, 'VSC2', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
+                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
                                    True],
-                                  ['VSC2', 1.1, -350, 400, 1, 2, False, 'VSC1', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
+                                  ['VSC2', 1.1, -350, 400, 'MIN_MAX', 1, 2, False, 'VSC1', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
                                    True]])
-    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
     stations = n.get_vsc_converter_stations(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['VSC1', 'VSC2']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_5', 5], ['S2VL1_4', 4]])
-    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
 
 
 def test_lcc_data_frame():
@@ -240,13 +240,13 @@ def test_lcc_data_frame():
                                      'connected'],
                             data=[['LCC1', 0.6, 1.1, 80.88, NaN, NaN, 'S1VL2', 'S1VL2_0', True],
                                   ['LCC2', 0.6, 1.1, -79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
-    pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['LCC1', 'LCC2']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_21', 21], ['S3VL1_10', 10]])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(attributes=['bus_breaker_bus_id', 'node']),
-                                  check_dtype=False, atol=10 ** -2)
+                                  check_dtype=False, atol=1e-2)
 
 
 def test_lcc_data_frame():
@@ -269,7 +269,7 @@ def test_lcc_data_frame():
                                      'bus_id', 'connected'],
                             data=[['LCC1', 0.7, 1.2, 82, 69, 154.68, 'S1VL2', 'S1VL2_0', True],
                                   ['LCC2', 0.6, 1.1, - 79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
-    pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
 def test_hvdc_data_frame():
@@ -291,7 +291,7 @@ def test_svc_data_frame():
                  'regulation_mode', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                  'connected'],
         data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', 'SVC', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
-    pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=1e-2)
     n.update_static_var_compensators(pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
         columns=['b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'p', 'q', 'regulated_element_id'],
@@ -304,14 +304,14 @@ def test_svc_data_frame():
                  'q', 'i',
                  'voltage_level_id', 'bus_id', 'connected'],
         data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', 'VSC1', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
-    pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=1e-2)
     svcs = n.get_static_var_compensators(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S4VL1_4', 4]])
     pd.testing.assert_frame_equal(expected, svcs,
-                                  check_dtype=False, atol=10 ** -2)
+                                  check_dtype=False, atol=1e-2)
 
 
 def test_create_generators_data_frame():
@@ -325,7 +325,7 @@ def test_create_generators_data_frame():
         index=pd.Series(name='id', data=['GH1', 'GH2', 'GH3', 'GTH1', 'GTH2']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_7', 7], ['S1VL2_9', 9], ['S1VL2_11', 11], ['S2VL1_2', 2], ['S3VL1_6', 6]])
-    pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=1e-2)
 
 
 def test_generator_maxq_minq_reactive_limits():
@@ -530,7 +530,7 @@ def test_update_2_windings_transformers_data_frame():
                                    NaN, 'VLGEN', 'VLHV1', 'VLGEN_0', 'VLHV1_0', True, True],
                                   ['', 0.05, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
                                    'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
-    pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=1e-2)
     n.update_2_windings_transformers(
         pd.DataFrame(index=['NGEN_NHV1'],
                      columns=['r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'connected1', 'connected2'],
@@ -544,14 +544,14 @@ def test_update_2_windings_transformers_data_frame():
                                    'VLGEN', 'VLHV1', '', '', False, False],
                                   ['', 0.047, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
                                    'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
-    pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=1e-2)
     n = pp.network.create_four_substations_node_breaker_network()
     twt = n.get_2_windings_transformers(attributes=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['TWT']),
         columns=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2'],
         data=[['S1VL1_4', 4, 'S1VL2_3', 3]])
-    pd.testing.assert_frame_equal(expected, twt, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, twt, check_dtype=False, atol=1e-2)
 
 
 def test_voltage_levels_data_frame():
@@ -566,13 +566,13 @@ def test_substations_data_frame():
                             columns=['name', 'TSO', 'geo_tags', 'country'],
                             data=[['', 'RTE', 'A', 'FR'],
                                   ['', 'RTE', 'B', 'BE']])
-    pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=1e-2)
     n.update_substations(id='P2', TSO='REE', country='ES')
     expected = pd.DataFrame(index=pd.Series(name='id', data=['P1', 'P2']),
                             columns=['name', 'TSO', 'geo_tags', 'country'],
                             data=[['', 'RTE', 'A', 'FR'],
                                   ['', 'REE', 'B', 'ES']])
-    pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_substations(), check_dtype=False, atol=1e-2)
 
 
 def test_reactive_capability_curve_points_data_frame():
@@ -600,7 +600,7 @@ def test_ratio_tap_changers():
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
                             data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, NaN]])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
                           data=[[0, False, 180]])
@@ -610,7 +610,7 @@ def test_ratio_tap_changers():
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
                             data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
 def test_phase_tap_changers():
@@ -734,7 +734,7 @@ def test_lines():
         index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
         columns=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2'],
         data=[['S2VL1_6', 6, 'S3VL1_2', 2], ['S3VL1_8', 8, 'S4VL1_6', 6]])
-    pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=1e-2)
 
 
 def test_dangling_lines():
@@ -761,28 +761,26 @@ def test_dangling_lines():
         index=pd.Series(name='id', data=['DL']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['BUS', -1]])
-    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
 
 
 def test_batteries():
     n = util.create_battery_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id',
-                                     'connected'],
-                            data=[['', 9999.99, -9999.99, -9999.99, 9999.99, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
-                                   True],
-                                  ['', 200, -200, NaN, NaN, 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 9999.99, -9999.99, -9999.99, 9999.99, 'MIN_MAX', 9999.99, 9999.99, -605, -225,
+                                   NaN, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 200, -200, NaN, NaN, 'CURVE', 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
     n.update_batteries(pd.DataFrame(index=['BAT2'], columns=['p0', 'q0'], data=[[50, 100]]))
     n.update_batteries(pd.DataFrame(index=['BAT'], columns=['min_q', 'max_q'], data=[[-500, 500]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id',
-                                     'connected'],
-                            data=[['', 9999.99, -9999.99, -500, 500, 9999.99, 9999.99, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
-                                   True],
-                                  ['', 200, -200, NaN, NaN, 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 9999.99, -9999.99, -500, 500, 'MIN_MAX', 9999.99, 9999.99, -605, -225, NaN,
+                                   'VLBAT', 'VLBAT_0', True],
+                                  ['', 200, -200, NaN, NaN, 'CURVE', 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
 
 
@@ -818,7 +816,7 @@ def test_shunt():
         index=pd.Series(name='id', data=['SHUNT']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_19', 19]])
-    pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
 
 
 def test_3_windings_transformers():
@@ -843,7 +841,7 @@ def test_3_windings_transformers():
         index=pd.Series(name='id', data=['3WT']),
         columns=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2', 'bus_breaker_bus3_id', 'node3'],
         data=[['BUS_132', -1, 'BUS_33', -1, 'BUS_11', -1]])
-    pd.testing.assert_frame_equal(expected, t3wt, check_dtype=False, atol=10 ** -2)
+    pd.testing.assert_frame_equal(expected, t3wt, check_dtype=False, atol=1e-2)
     # test update
 
 

@@ -329,6 +329,7 @@ public final class NetworkDataframes {
                 .doubles("min_p", Battery::getMinP, Battery::setMinP)
                 .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setMinQ())
                 .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
+                .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("p0", Battery::getP0, Battery::setP0)
                 .doubles("q0", Battery::getQ0, Battery::setQ0)
                 .doubles("p", getP(), setP())
@@ -594,6 +595,7 @@ public final class NetworkDataframes {
                 .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
                 .doubles("min_q_at_p", getMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getMaxQ(getOppositeP()), false)
+                .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
@@ -838,8 +840,9 @@ public final class NetworkDataframes {
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
-        return Stream.concat(network.getGeneratorStream().map(g -> Pair.of(g.getId(), g)),
-                network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g)));
+        return Stream.concat(Stream.concat(network.getGeneratorStream().map(g -> Pair.of(g.getId(), g)),
+                network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g))),
+                network.getBatteryStream().map(g -> Pair.of(g.getId(), g)));
     }
 
     private static Stream<Triple<String, ReactiveCapabilityCurve.Point, Integer>> streamPoints(Network network) {

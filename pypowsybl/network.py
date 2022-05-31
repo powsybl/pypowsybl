@@ -1237,6 +1237,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
               - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the vsc converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
