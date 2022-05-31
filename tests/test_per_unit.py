@@ -361,21 +361,19 @@ def test_batteries():
     n = util.create_battery_network()
     n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'reactive_limits_kind', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id',
-                                     'connected'],
-                            data=[['', 100, -100, 'MIN_MAX', -100, 100, 100, 100, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 2, -2, 'CURVE', NaN, NaN, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 100, -100, -100, 100, 'MIN_MAX', 100, 100, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, NaN, NaN, 'CURVE', 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=1e-2)
     n.update_batteries(pd.DataFrame(data=[[50, -50, 50, 50, -7, -3]],
                                     columns=['max_p', 'min_p', 'p0', 'q0', 'p', 'q'],
                                     index=['BAT']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'reactive_limits_kind', 'min_q', 'max_q', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id',
-                                     'connected'],
-                            data=[['', 50, -50, 'MIN_MAX', -100, 100, 50, 50, -7, -3, NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 2, -2, 'CURVE', NaN, NaN, 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 50, -50, -100, 100, 'MIN_MAX', 50, 50, -7, -3, NaN, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, NaN, NaN, 'CURVE', 1, 2, -6.05, -2.25, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=1e-2)
 
 
