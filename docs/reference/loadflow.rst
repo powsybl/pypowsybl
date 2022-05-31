@@ -19,6 +19,7 @@ Running a loadflow
     set_default_provider
     get_default_provider
     get_provider_names
+    get_provider_parameters_names
 
 Parameters
 ----------
