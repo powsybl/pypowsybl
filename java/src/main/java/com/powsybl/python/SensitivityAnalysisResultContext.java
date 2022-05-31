@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -60,14 +60,22 @@ public class SensitivityAnalysisResultContext {
         return m;
     }
 
+    private SensitivityAnalysisContext.MatrixInfo getBusVoltageFactoryMatrix() {
+        SensitivityAnalysisContext.MatrixInfo m = busVoltageFactorsMatrix;
+        if (m == null) {
+            throw new PowsyblException("bus voltage sensitivity matrix does not exist");
+        }
+        return m;
+    }
+
     public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String matrixId, String contingencyId) {
         SensitivityAnalysisContext.MatrixInfo m = getBranchFlowFactorsMatrix(matrixId);
         return createDoubleMatrix(() -> getValues(contingencyId), m.getOffsetData(), m.getRowCount(), m.getColumnCount());
     }
 
     public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
-        return createDoubleMatrix(() -> getValues(contingencyId), busVoltageFactorsMatrix.getOffsetData(),
-                busVoltageFactorsMatrix.getRowCount(), busVoltageFactorsMatrix.getColumnCount());
+        SensitivityAnalysisContext.MatrixInfo m = getBusVoltageFactoryMatrix();
+        return createDoubleMatrix(() -> getValues(contingencyId), m.getOffsetData(), m.getRowCount(), m.getColumnCount());
     }
 
     public PyPowsyblApiHeader.MatrixPointer createReferenceFlowsActivePower(String matrixId, String contingencyId) {
