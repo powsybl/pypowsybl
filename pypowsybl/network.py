@@ -618,6 +618,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_id**: bus where this load is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this load is connected
               - **node**  (optional): node where this load is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the load is connected to a bus
 
             This dataframe is indexed on the load ID.
 
@@ -709,6 +710,27 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of batteries.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: type of load
+              - **max_p**: the maximum active value for the battery  (MW)
+              - **min_p**: the minimum active value for the battery  (MW)
+              - **min_q**: the maximum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q**: the minimum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **p0**: The active power setpoint  (MVAr)
+              - **q0**: The reactive power setpoint  (MVAr)
+              - **p**: the result active battery consumption, it is ``NaN`` is not loadflow has been computed (MW)
+              - **q**: the result reactive battery consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
+              - **i**: the current on the battery, ``NaN`` if no loadflow has been computed (in A)
+              - **voltage_level_id**: at which substation this load is connected
+              - **bus_id**: bus where this load is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this battery is connected
+              - **node**  (optional): node where this battery is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the battery is connected to a bus
+
+            This dataframe is indexed on the battery ID.
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
@@ -1211,6 +1233,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
+              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
               - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
               - **voltage_regulator_on**: The voltage regulator status
@@ -2210,6 +2234,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p0`
             - `q0`
             - `connected`
+            - `max_q`
+            - `min_q`
 
         See Also:
             :meth:`get_batteries`

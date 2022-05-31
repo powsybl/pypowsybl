@@ -629,17 +629,37 @@ def test_create_limits():
 
 
 def test_create_minmax_reactive_limits():
-    network = pn.create_eurostag_tutorial_example1_network()
+    network = pn.create_four_substations_node_breaker_network()
     network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
-        {'id': 'GEN', 'min_q': -201.0, 'max_q': 201.0},
-        {'id': 'GEN2', 'min_q': -205.0, 'max_q': 205.0}
+        {'id': 'GH1', 'min_q': -201.0, 'max_q': 201.0},
+        {'id': 'GH2', 'min_q': -205.0, 'max_q': 205.0},
+        {'id': 'VSC1', 'min_q': -355.0, 'max_q': 405.0},
+        {'id': 'VSC2', 'min_q': -405.0, 'max_q': 505.0},
     ]))
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'min_q', 'max_q'],
-        data=[['GEN', -201.0, 201.0],
-              ['GEN2', -205.0, 205.0]])
-    pd.testing.assert_frame_equal(expected, network.get_generators(attributes=['min_q', 'max_q']), check_dtype=False)
+        data=[['GH1', -201.0, 201.0],
+              ['GH2', -205.0, 205.0]])
+    pd.testing.assert_frame_equal(expected, network.get_generators(id=['GH1', 'GH2'], attributes=['min_q', 'max_q']), check_dtype=False)
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['VSC1', -355.0, 405.0],
+              ['VSC2', -405.0, 505.0]])
+    pd.testing.assert_frame_equal(expected, network.get_vsc_converter_stations(id=['VSC1', 'VSC2'], attributes=['min_q', 'max_q']),
+                                  check_dtype=False)
+    network = util.create_battery_network()
+    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'BAT', 'min_q': -201.0, 'max_q': 201.0}
+    ]))
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['BAT', -201.0, 201.0]])
+    pd.testing.assert_frame_equal(expected, network.get_batteries(id='BAT', attributes=['min_q', 'max_q']),
+                                  check_dtype=False)
+
 
 def test_create_curve_reactive_limits():
     network = pn.create_eurostag_tutorial_example1_network()
