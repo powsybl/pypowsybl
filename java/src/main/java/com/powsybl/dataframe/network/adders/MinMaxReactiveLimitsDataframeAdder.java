@@ -11,8 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,10 +73,11 @@ public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static void createLimits(Network network, String elementId, double minQ, double maxQ) {
-        Generator generator = network.getGenerator(elementId);
-        if (generator == null) {
-            throw new PowsyblException("Generator " + elementId + " does not exist.");
+        Identifiable identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof ReactiveLimitsHolder) {
+            ((ReactiveLimitsHolder) identifiable).newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(maxQ).add();
+        } else {
+            throw new PowsyblException("Element " + elementId + " does not have reactive limits.");
         }
-        generator.newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(maxQ).add();
     }
 }
