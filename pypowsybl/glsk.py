@@ -7,7 +7,7 @@
 from typing import List as _List
 from datetime import datetime
 import pypowsybl._pypowsybl as _pypowsybl
-from _pypowsybl.network import Network as _Network
+from pypowsybl.network import Network as _Network
 
 #GLSKImporter helper class
 class GLSKImporter:
