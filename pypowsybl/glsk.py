@@ -7,6 +7,7 @@
 from typing import List as _List
 from datetime import datetime
 import pypowsybl._pypowsybl as _pypowsybl
+from _pypowsybl.network import Network as _Network
 
 #GLSKImporter helper class
 class GLSKImporter:
@@ -22,8 +23,8 @@ class GLSKImporter:
     def get_countries(self) -> _List[str]:
         return _pypowsybl.get_glsk_countries(self.handle)
 
-    def get_points_for_country(self, country: str, instant: datetime) -> _List[str]:
-        return _pypowsybl.get_glsk_injection_keys(self.handle, country, int(instant.timestamp()))
+    def get_points_for_country(self, network: _Network, country: str, instant: datetime) -> _List[str]:
+        return _pypowsybl.get_glsk_injection_keys(network._handle, self.handle, country, int(instant.timestamp()))
 
-    def get_glsk_factors(self, country: str, instant: datetime) -> _List[float]:
-        return _pypowsybl.get_glsk_factors(self.handle, country, int(instant.timestamp()))
+    def get_glsk_factors(self, network: _Network, country: str, instant: datetime) -> _List[float]:
+        return _pypowsybl.get_glsk_factors(network._handle, self.handle, country, int(instant.timestamp()))

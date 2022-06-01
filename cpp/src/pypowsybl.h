@@ -353,11 +353,11 @@ std::string printReport(const JavaHandle& reporterModel);
 
 JavaHandle createGLSKimporter(std::string& filename);
 
-std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, long instant);
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
 
 std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
 
-std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, long instant);
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
 
 long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 

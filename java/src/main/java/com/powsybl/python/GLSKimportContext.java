@@ -7,15 +7,15 @@
 package com.powsybl.python;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.glsk.api.AbstractGlskRegisteredResource;
 import com.powsybl.glsk.ucte.UcteGlskDocument;
-import com.powsybl.glsk.ucte.UcteGlskPoint;
+import com.powsybl.iidm.network.Network;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
@@ -32,13 +32,14 @@ public class GLSKimportContext {
         }
     }
 
-    public List<String> getInjectionIdForCountry(String country, Instant instant) {
-        UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
+    public List<String> getInjectionIdForCountry(Network n, String country, Instant instant) {
+        return new ArrayList<>(document.getZonalGlsks(n, instant).getData(country).getVariablesById().keySet());
+        /*UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
         List<String> generatorIds = new ArrayList<>();
         for (AbstractGlskRegisteredResource resource : point.getGlskShiftKeys().get(0).getRegisteredResourceArrayList()) {
             generatorIds.add(resource.getName());
         }
-        return generatorIds;
+        return generatorIds;*/
     }
 
     public Instant getInjectionFactorStart() {
@@ -49,13 +50,15 @@ public class GLSKimportContext {
         return document.getGSKTimeInterval().getEnd();
     }
 
-    public List<Double> getInjectionFactorForCountryTimeinterval(String country, Instant instant) {
-        UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
+    public List<Double> getInjectionFactorForCountryTimeinterval(Network n, String country, Instant instant) {
+        /*UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
         List<Double> factors = new ArrayList<>();
         for (AbstractGlskRegisteredResource resource : point.getGlskShiftKeys().get(0).getRegisteredResourceArrayList()) {
             factors.add(resource.getParticipationFactor());
         }
-        return factors;
+        return factors;*/
+        return document.getZonalGlsks(n, instant).getData(country).getVariablesById()
+                .values().stream().map(e -> e.getWeight()).collect(Collectors.toList());
     }
 
     public List<String> getCountries() {

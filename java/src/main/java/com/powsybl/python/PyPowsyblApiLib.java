@@ -860,10 +860,13 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "getGLSKinjectionkeys")
-    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
-        String country = CTypeUtil.toString(countryPtr);
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(country, Instant.ofEpochSecond(instant)))));
+    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String country = CTypeUtil.toString(countryPtr);
+            return  createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(network, country, Instant.ofEpochSecond(instant))));
+        });
     }
 
     @CEntryPoint(name = "getGLSKcountries")
@@ -875,11 +878,12 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "getInjectionFactor")
-    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
             GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
             String country = CTypeUtil.toString(countryPtr);
-            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(country, Instant.ofEpochSecond(instant));
+            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(network, country, Instant.ofEpochSecond(instant));
             return createDoubleArray(values);
         });
     }

@@ -653,11 +653,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
     m.def("create_glsk_importer", &pypowsybl::createGLSKimporter, "Create a glsk importer.", py::arg("filename"));
 
-    m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("importer"), py::arg("country"), py::arg("instant"));
+    m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
 
     m.def("get_glsk_countries", &pypowsybl::getGLSKcountries, "Get glsk countries", py::arg("importer"));
 
-    m.def("get_glsk_factors", &pypowsybl::getGLSKInjectionFactors, "Get glsk factors", py::arg("importer"), py::arg("country"), py::arg("instant"));
+    m.def("get_glsk_factors", &pypowsybl::getGLSKInjectionFactors, "Get glsk factors", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
 
     m.def("get_glsk_factors_start_timestamp", &pypowsybl::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
 

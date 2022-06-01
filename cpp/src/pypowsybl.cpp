@@ -822,8 +822,8 @@ JavaHandle createGLSKimporter(std::string& filename) {
     return callJava<JavaHandle>(::createGLSKimporter, (char*) filename.c_str());
 }
 
-std::vector<std::string> getGLSKinjectionkeys(const JavaHandle& importer, std::string& country, long instant) {
-    auto keysArrayPtr = callJava<array*>(::getGLSKinjectionkeys, importer, (char*) country.c_str(), instant);
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
+    auto keysArrayPtr = callJava<array*>(::getGLSKinjectionkeys, network, importer, (char*) country.c_str(), instant);
     ToStringVector keys(keysArrayPtr);
     return keys.get();
 }
@@ -834,8 +834,8 @@ std::vector<std::string> getGLSKcountries(const JavaHandle& importer) {
     return countries.get();
 }
 
-std::vector<double> getGLSKInjectionFactors(const JavaHandle& importer, std::string& country, long instant) {
-    auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, importer, (char*) country.c_str(), instant);
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
+    auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, network, importer, (char*) country.c_str(), instant);
     std::vector<double> values = toVector<double>(countriesArrayPtr);
     return values;
 }

@@ -184,7 +184,7 @@ The first one use a glsk file and create a list of Zone objects with all the are
 
 .. code-block:: python
      >>> n = pp.network.load('simple-eu.uct')
-     >>> zones = pp.sensitivity.create_zones_from_glsk_file('glsk_sample.xml', datetime.datetime(2019, 1, 8, 0, 0))
+     >>> zones = pp.sensitivity.create_zones_from_glsk_file(n, 'glsk_sample.xml', datetime.datetime(2019, 1, 8, 0, 0))
      >>> params = pp.loadflow.Parameters(distributed_slack=False)
      >>> sa = pp.sensitivity.create_dc_analysis()
      >>> sa.set_zones(zones)
@@ -194,11 +194,12 @@ The first one use a glsk file and create a list of Zone objects with all the are
 The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation :
 
 .. code-block:: python
+    >>> n = pp.network.load('simple-eu.uct')
     >>> importer = pp.glsk.GLSKImporter('glsk_sample.xml')
     >>> t_start = importer.get_gsk_time_interval_start()
     >>> t_end = importer.get_gsk_time_interval_end()
-    >>> de_generators = importer.get_points_for_country('10YCB-GERMANY--8', t_start)
-    >>> de_shift_keys = importer.get_glsk_factors('10YCB-GERMANY--8', t_start)
+    >>> de_generators = importer.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
+    >>> de_shift_keys = importer.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
     >>> zone_de = pp.sensitivity.create_country_zone_generator('10YCB-GERMANY--8', de_generators, de_shift_keys)
 
 Zone modification
