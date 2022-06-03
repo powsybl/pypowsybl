@@ -34,12 +34,6 @@ public class GLSKimportContext {
 
     public List<String> getInjectionIdForCountry(Network n, String country, Instant instant) {
         return new ArrayList<>(document.getZonalGlsks(n, instant).getData(country).getVariablesById().keySet());
-        /*UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
-        List<String> generatorIds = new ArrayList<>();
-        for (AbstractGlskRegisteredResource resource : point.getGlskShiftKeys().get(0).getRegisteredResourceArrayList()) {
-            generatorIds.add(resource.getName());
-        }
-        return generatorIds;*/
     }
 
     public Instant getInjectionFactorStart() {
@@ -51,12 +45,6 @@ public class GLSKimportContext {
     }
 
     public List<Double> getInjectionFactorForCountryTimeinterval(Network n, String country, Instant instant) {
-        /*UcteGlskPoint point = document.getGlskPointsForInstant(instant).get(country);
-        List<Double> factors = new ArrayList<>();
-        for (AbstractGlskRegisteredResource resource : point.getGlskShiftKeys().get(0).getRegisteredResourceArrayList()) {
-            factors.add(resource.getParticipationFactor());
-        }
-        return factors;*/
         return document.getZonalGlsks(n, instant).getData(country).getVariablesById()
                 .values().stream().map(e -> e.getWeight()).collect(Collectors.toList());
     }
