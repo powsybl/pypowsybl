@@ -1,4 +1,4 @@
-from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union, Final
+from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
 from logging import Logger
 
 class ArrayStruct:
@@ -421,4 +421,4 @@ def get_network_extensions_creation_dataframes_metadata(name: str) -> List[List[
 def create_extensions(network: JavaHandle, dataframes: List[Optional[Dataframe]], name: str) -> None: ...
 def create_reporter_model(task_key: str, default_name: str) -> JavaHandle: ...
 def print_report(reporter_model: JavaHandle) -> str: ...
-NULL_HANDLE: Final[JavaHandle]
+NULL_HANDLE: JavaHandle
