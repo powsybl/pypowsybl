@@ -6,14 +6,13 @@
 #
 from pypowsybl._pypowsybl import create_reporter_model, print_report, JavaHandle
 
-
 class Reporter:
     def __init__(self, task_key: str = '', default_name: str = ''):
-        self.reporterModelHandle = create_reporter_model(task_key, default_name)
+        self.reporter_model_handle = create_reporter_model(task_key, default_name)
 
     def __repr__(self) -> str:
-        return print_report(self.reporterModelHandle)
+        return print_report(self.reporter_model_handle)
 
     @property
-    def reporterModel(self) -> JavaHandle:
-        return self.reporterModelHandle
+    def reporter_model(self) -> JavaHandle:
+        return self.reporter_model_handle

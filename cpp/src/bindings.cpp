@@ -636,4 +636,5 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
     m.def("create_reporter_model", &pypowsybl::createReporterModel, "Create a reporter model", py::arg("task_key"), py::arg("default_name"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
+    m.attr("NULL_HANDLE") = pypowsybl::JavaHandle(nullptr);
 }
