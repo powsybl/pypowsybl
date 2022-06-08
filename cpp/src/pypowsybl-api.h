@@ -192,3 +192,7 @@ typedef enum {
     SELECTION_ATTRIBUTES
 } filter_attributes_type;
 
+typedef struct balance_computation_parameters_struct {
+    double threshold;
+    int max_number_iterations;
+} balance_computation_parameters;

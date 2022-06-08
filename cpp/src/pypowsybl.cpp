@@ -460,6 +460,13 @@ std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
     });
 }
 
+std::shared_ptr<balance_computation_parameters> createBalanceComputationParameters() {
+    balance_computation_parameters* parameters = callJava<balance_computation_parameters*>(::createBalanceComputationParameters);
+    return std::shared_ptr<balance_computation_parameters>(parameters, [](balance_computation_parameters* ptr){
+        callJava(::freeBalanceComputationParameters, ptr);
+    });
+}
+
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
                                           const std::string& provider) {
     return new LoadFlowComponentResultArray(

@@ -148,6 +148,21 @@ public final class PyPowsyblApiHeader {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
+    @CStruct("balance_computation_parameters")
+    interface BalanceComputationParametersPointer extends PointerBase {
+        @CField("threshold")
+        double getThreshold();
+
+        @CField("threshold")
+        void setThreshold(double threshold);
+
+        @CField("max_number_iterations")
+        int getMaxNumberIterations();
+
+        @CField("max_number_iterations")
+        void setMaxNumberIterations(int maxNumberIterations);
+    }
+
     @CStruct("load_flow_parameters")
     interface LoadFlowParametersPointer extends PointerBase {
 

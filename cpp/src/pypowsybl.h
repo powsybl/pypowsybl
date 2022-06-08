@@ -216,6 +216,8 @@ void dumpNetwork(const JavaHandle& network, const std::string& file, const std::
 
 std::shared_ptr<load_flow_parameters> createLoadFlowParameters();
 
+std::shared_ptr<balance_computation_parameters> createBalanceComputationParameters();
+
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);

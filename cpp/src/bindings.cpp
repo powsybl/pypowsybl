@@ -127,6 +127,10 @@ std::shared_ptr<load_flow_parameters> initLoadFlowParameters() {
     });
 }
 
+std::shared_ptr<balance_computation_parameters> initBalanceComputationParameters() {
+      return pypowsybl::createBalanceComputationParameters();
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -376,6 +380,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 p.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(providerParametersValues);
                 p.provider_parameters_values_count = providerParametersValues.size();
             });
+
+    py::class_<balance_computation_parameters, std::shared_ptr<balance_computation_parameters>>(m, "BalanceComputationParameters")
+        .def(py::init(&initBalanceComputationParameters))
+        .def_property("threshold", [](const balance_computation_parameters& p) {
+            return (double) p.threshold;
+        }, [](balance_computation_parameters& p, double threshold) {
+            p.threshold = threshold;
+        })
+        .def_property("max_number_iterations", [](const balance_computation_parameters& p) {
+            return (int) p.max_number_iterations;
+            }, [](balance_computation_parameters& p, int max_number_iterations) {
+                p.max_number_iterations = max_number_iterations;
+            });
+
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));

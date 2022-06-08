@@ -7,6 +7,7 @@
 package com.powsybl.python;
 
 import ch.qos.logback.classic.Logger;
+import com.powsybl.balances_adjustment.balance_computation.BalanceComputationParameters;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.util.ServiceLoaderCache;
@@ -226,6 +227,18 @@ public final class PyPowsyblApiLib {
         return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(createLoadFlowParameters()));
     }
 
+    @CEntryPoint(name = "createBalanceComputationParameters")
+    public static BalanceComputationParametersPointer createBalanceComputationParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToBalanceComputationParametersPointer(new BalanceComputationParameters()));
+    }
+
+    private static BalanceComputationParametersPointer convertToBalanceComputationParametersPointer(BalanceComputationParameters parameters) {
+        BalanceComputationParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(BalanceComputationParametersPointer.class));
+        paramsPtr.setThreshold(parameters.getThresholdNetPosition());
+        paramsPtr.setMaxNumberIterations(parameters.getMaxNumberIterations());
+        return paramsPtr;
+    }
+
     private static LoadFlowParameters createLoadFlowParameters() {
         return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
@@ -239,6 +252,14 @@ public final class PyPowsyblApiLib {
             }
             UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
             UnmanagedMemory.free(loadFlowParametersPtr);
+        });
+    }
+
+    @CEntryPoint(name = "freeBalanceComputationParameters")
+    public static void freeLoadFlowParameters(IsolateThread thread, BalanceComputationParametersPointer bacParametersPtr,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UnmanagedMemory.free(bacParametersPtr);
         });
     }
 

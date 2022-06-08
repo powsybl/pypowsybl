@@ -282,6 +282,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-balances-adjustment</artifactId>
+        </dependency>
 
         <!-- runtime -->
         <dependency>
