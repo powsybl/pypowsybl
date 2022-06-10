@@ -34,7 +34,6 @@ def test_substation_creation():
     s3 = n.get_substations().loc['S3']
     assert s3.country == 'DE'
 
-
 def test_substation_kwargs():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_substations(id='S3', country='DE')
@@ -68,10 +67,15 @@ def test_substation_exceptions():
         n.create_substations(id='test', country='ABC')
     assert exc.match('No enum constant com.powsybl.iidm.network.Country.ABC')
 
-    # TODO: we should try to have a more explicit message here
-    with pytest.raises(RuntimeError) as exc:
-        n.create_substations(id='test', country=2)
-    assert exc.match('Unable to cast Python instance to C')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_substations(id='GEN', country=2)
+    assert exc.match('data of column "country" has the wrong type should be string')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', max_p='2')
+    assert exc.match('data of column "max_p" has the wrong type should be float')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', voltage_regulator_on=31.3)
+    assert exc.match('data of column "voltage_regulator_on" has the wrong type should be int')
 
 
 def test_generators_creation():

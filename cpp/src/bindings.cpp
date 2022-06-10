@@ -51,17 +51,33 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
         int type = columnsTypes[indice];
         column->type = type;
         if (type == 0) {
-            std::vector<std::string> values = py::cast<std::vector<std::string>>(columnsValues[indice]);
-            column->data.length = values.size();
-            column->data.ptr = pypowsybl::copyVectorStringToCharPtrPtr(values);
+            try {
+                std::vector<std::string> values = py::cast<std::vector<std::string>>(columnsValues[indice]);
+                column->data.length = values.size();
+                column->data.ptr = pypowsybl::copyVectorStringToCharPtrPtr(values);
+            }
+            catch(const std::exception& e) {
+                throw pypowsybl::PyPowsyblError("data of column \"" + columnsNames[indice] + "\" has the wrong type should be string");  
+            }    
+            
         } else if (type == 1) {
-            std::vector<double> values = py::cast<std::vector<double>>(columnsValues[indice]);
-            column->data.length = values.size();
-            column->data.ptr = pypowsybl::copyVectorDouble(values);
+            try {
+                std::vector<double> values = py::cast<std::vector<double>>(columnsValues[indice]);
+                column->data.length = values.size();
+                column->data.ptr = pypowsybl::copyVectorDouble(values);
+            }
+            catch(const std::exception& e) {
+                throw pypowsybl::PyPowsyblError("data of column \"" + columnsNames[indice] + "\" has the wrong type should be float");  
+            }  
         } else if (type == 2 || type == 3) {
-            std::vector<int> values = py::cast<std::vector<int>>(columnsValues[indice]);
-            column->data.length = values.size();
-            column->data.ptr = pypowsybl::copyVectorInt(values);
+            try {
+                std::vector<int> values = py::cast<std::vector<int>>(columnsValues[indice]);
+                column->data.length = values.size();
+                column->data.ptr = pypowsybl::copyVectorInt(values);
+            }
+            catch(const std::exception& e) {
+                throw pypowsybl::PyPowsyblError("data of column \"" + columnsNames[indice] + "\" has the wrong type should be int");  
+            }  
         }
     }
     dataframe->series_count = columnsNumber;
