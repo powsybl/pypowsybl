@@ -4,15 +4,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from pypowsybl._pypowsybl import create_reporter_model, print_report, JavaHandle
+import pypowsybl._pypowsybl as _pp
 
 class Reporter:
     def __init__(self, task_key: str = '', default_name: str = ''):
-        self.reporter_model_handle = create_reporter_model(task_key, default_name)
+        self._reporter_model_handle = _pp.create_reporter_model(task_key, default_name)
 
     def __repr__(self) -> str:
-        return print_report(self.reporter_model_handle)
+        return _pp.print_report(self._reporter_model_handle)
 
     @property
-    def reporter_model(self) -> JavaHandle:
-        return self.reporter_model_handle
+    def _reporter_model(self) -> _pp.JavaHandle:
+        return self._reporter_model_handle

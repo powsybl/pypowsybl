@@ -21,7 +21,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.report import Reporter
+from pypowsybl.report import Reporter as _Reporter
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -230,7 +230,7 @@ class Parameters:
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
@@ -244,11 +244,11 @@ def run_ac(network: _Network, parameters: Parameters = None, provider: str = '',
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    r = _pypowsybl.NULL_HANDLE if reporter is None else reporter.reporter_model
+    r = None if reporter is None else reporter._reporter_model
     return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, r)]
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
@@ -262,7 +262,7 @@ def run_dc(network: _Network, parameters: Parameters = None, provider: str = '',
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    r = _pypowsybl.NULL_HANDLE if reporter is None else reporter.reporter_model
+    r = None if reporter is None else reporter._reporter_model
     return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, r)]
 
 
