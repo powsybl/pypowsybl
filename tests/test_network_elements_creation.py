@@ -34,6 +34,7 @@ def test_substation_creation():
     s3 = n.get_substations().loc['S3']
     assert s3.country == 'DE'
 
+
 def test_substation_kwargs():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_substations(id='S3', country='DE')
@@ -69,13 +70,13 @@ def test_substation_exceptions():
 
     with pytest.raises(PyPowsyblError) as exc:
         n.create_substations(id='GEN', country=2)
-    assert exc.match('data of column "country" has the wrong type should be string')
+    assert exc.match('Data of column "country" has the wrong type, expected string')
     with pytest.raises(PyPowsyblError) as exc:
         n.create_generators(id='GEN', max_p='2')
-    assert exc.match('data of column "max_p" has the wrong type should be float')
+    assert exc.match('Data of column "max_p" has the wrong type, expected float')
     with pytest.raises(PyPowsyblError) as exc:
         n.create_generators(id='GEN', voltage_regulator_on=31.3)
-    assert exc.match('data of column "voltage_regulator_on" has the wrong type should be int')
+    assert exc.match('Data of column "voltage_regulator_on" has the wrong type, expected bool')
 
 
 def test_generators_creation():
