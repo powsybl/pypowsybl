@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -53,9 +52,6 @@ public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
         VoltageLevelSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.substations = dataframe.getStrings("substation_id");
-            if (this.substations == null) {
-                throw new PowsyblException("substation_id is missing");
-            }
             this.topologyKind = dataframe.getStrings("topology_kind");
             this.nominalV = dataframe.getDoubles("nominal_v");
             this.lowVoltageLimit = dataframe.getDoubles("low_voltage_limit");
@@ -63,8 +59,13 @@ public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            VoltageLevelAdder adder = network.getSubstation(substations.get(row))
-                    .newVoltageLevel();
+            VoltageLevelAdder adder;
+            if (this.substations != null) {
+                adder = network.getSubstation(substations.get(row))
+                        .newVoltageLevel();
+            } else {
+                adder = network.newVoltageLevel();
+            }
             setIdentifiableAttributes(adder, row);
             applyIfPresent(topologyKind, row, TopologyKind.class, adder::setTopologyKind);
             applyIfPresent(nominalV, row, adder::setNominalV);
