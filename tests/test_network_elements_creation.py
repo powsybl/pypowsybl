@@ -761,9 +761,6 @@ def test_remove_elements_switches():
 
 
 def test_creating_vl_without_substation():
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('powsybl').setLevel(1)
     net = pypowsybl.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame.from_records(index='id', data=[{
         'id': 'VLTEST',
