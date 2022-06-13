@@ -786,3 +786,7 @@ def test_creating_vl_without_substation():
                               nominal_v=[225, 225],
                               topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     assert 'VLTEST2' in net.get_voltage_levels().index and 'VLTEST' in net.get_voltage_levels().index
+
+
+def test_error_messages():
+    pass
