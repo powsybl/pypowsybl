@@ -761,9 +761,6 @@ def test_remove_elements_switches():
 
 
 def test_creating_vl_without_substation():
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('powsybl').setLevel(1)
     net = pypowsybl.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame.from_records(index='id', data=[{
         'id': 'VLTEST',
@@ -807,5 +804,3 @@ def test_error_messages():
     check_unknown_voltage_level_error_message(network.create_dangling_lines)
     check_unknown_voltage_level_error_message(network.create_lcc_converter_stations)
     check_unknown_voltage_level_error_message(network.create_vsc_converter_stations)
-
-
