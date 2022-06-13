@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -59,7 +60,7 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            LccConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            LccConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newLccConverterStation();
             setInjectionAttributes(adder, row);
             applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));

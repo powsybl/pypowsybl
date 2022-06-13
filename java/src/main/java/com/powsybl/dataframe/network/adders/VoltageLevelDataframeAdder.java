@@ -61,7 +61,7 @@ public class VoltageLevelDataframeAdder extends AbstractSimpleAdder {
         void create(Network network, int row) {
             VoltageLevelAdder adder;
             if (this.substations != null) {
-                adder = network.getSubstation(substations.get(row))
+                adder = NetworkUtils.getSubstationOrThrow(network, substations.get(row))
                         .newVoltageLevel();
             } else {
                 adder = network.newVoltageLevel();
