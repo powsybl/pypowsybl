@@ -398,7 +398,10 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_array = None
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
-        return _create_data_frame_from_series_array(series_array)
+        result = _create_data_frame_from_series_array(series_array)
+        if attributes:
+            result = result[attributes]
+        return result
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""

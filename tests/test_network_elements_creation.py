@@ -68,10 +68,15 @@ def test_substation_exceptions():
         n.create_substations(id='test', country='ABC')
     assert exc.match('No enum constant com.powsybl.iidm.network.Country.ABC')
 
-    # TODO: we should try to have a more explicit message here
-    with pytest.raises(RuntimeError) as exc:
-        n.create_substations(id='test', country=2)
-    assert exc.match('Unable to cast Python instance to C')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_substations(id='GEN', country=2)
+    assert exc.match('Data of column "country" has the wrong type, expected string')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', max_p='2')
+    assert exc.match('Data of column "max_p" has the wrong type, expected float')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', voltage_regulator_on=31.3)
+    assert exc.match('Data of column "voltage_regulator_on" has the wrong type, expected bool')
 
 
 def test_generators_creation():

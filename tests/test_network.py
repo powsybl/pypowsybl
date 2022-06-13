@@ -1395,19 +1395,19 @@ def test_properties():
     ])
     network.add_elements_properties(properties)
     expected = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'NHV1_NHV2_1', 'prop2': 'test_prop2', 'prop1': 'test_prop1'},
-                                               {'id': 'NHV1_NHV2_2', 'prop2': '', 'prop1': ''}])
+                                         data=[{'id': 'NHV1_NHV2_1', 'prop1': 'test_prop1', 'prop2': 'test_prop2'},
+                                               {'id': 'NHV1_NHV2_2', 'prop1': '', 'prop2': ''}])
     pd.testing.assert_frame_equal(network.get_lines(attributes=['prop1', 'prop2']), expected, check_dtype=False)
     expected = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'GEN', 'prop2': 'test_prop2', 'prop1': 'test_prop1'},
-                                               {'id': 'GEN2', 'prop2': '', 'prop1': ''}])
+                                         data=[{'id': 'GEN', 'prop1': 'test_prop1', 'prop2': 'test_prop2'},
+                                               {'id': 'GEN2', 'prop1': '', 'prop2': ''}])
     pd.testing.assert_frame_equal(network.get_generators(attributes=['prop1', 'prop2']), expected,
                                   check_dtype=False)
     network.add_elements_properties(id='NHV1_NHV2_2', prop3='test_prop3')
     expected = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'NHV1_NHV2_1', 'prop2': 'test_prop2', 'prop1': 'test_prop1',
+                                         data=[{'id': 'NHV1_NHV2_1', 'prop1': 'test_prop1', 'prop2': 'test_prop2',
                                                 'prop3': ''},
-                                               {'id': 'NHV1_NHV2_2', 'prop2': '', 'prop1': '',
+                                               {'id': 'NHV1_NHV2_2', 'prop1': '', 'prop2': '',
                                                 'prop3': 'test_prop3'}])
     pd.testing.assert_frame_equal(network.get_lines(attributes=['prop1', 'prop2', 'prop3']), expected,
                                   check_dtype=False)
@@ -1450,6 +1450,13 @@ def test_write_svg_file(tmpdir):
     assert not exists(data.join('test_sld.svg'))
     net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
     assert exists(data.join('test_sld.svg'))
+
+def test_attributes_order():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert ['target_p', 'energy_source'] == list(n.get_generators(attributes=['target_p', 'energy_source']).columns)
+    assert ['energy_source', 'target_p'] == list(n.get_generators(attributes=['energy_source', 'target_p']).columns)
+    assert ['r', 'x', 'g1'] == list(n.get_lines(attributes=['r', 'x', 'g1']).columns)
+    assert ['g1', 'r', 'x'] == list(n.get_lines(attributes=['g1', 'r', 'x']).columns)
 
 
 if __name__ == '__main__':
