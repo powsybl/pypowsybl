@@ -722,8 +722,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_p**: the minimum active value for the battery  (MW)
               - **min_q**: the maximum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
               - **max_q**: the minimum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
-              - **p0**: The active power setpoint  (MVAr)
-              - **q0**: The reactive power setpoint  (MVAr)
+              - **target_p**: The active power setpoint  (MW)
+              - **target_q**: The reactive power setpoint  (MVAr)
               - **p**: the result active battery consumption, it is ``NaN`` is not loadflow has been computed (MW)
               - **q**: the result reactive battery consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
               - **i**: the current on the battery, ``NaN`` if no loadflow has been computed (in A)
@@ -2235,8 +2235,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are:
 
-            - `p0`
-            - `q0`
+            - `target_p`
+            - `target_q`
             - `connected`
             - `max_q`
             - `min_q`
@@ -3184,8 +3184,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **min_p**: minimum active power, in MW
             - **max_p**: maximum active power, in MW
-            - **p0**: active power consumption, in MW
-            - **q0**: reactive power consumption, in MVar
+            - **target_p**: active power consumption, in MW
+            - **target_q**: reactive power consumption, in MVar
 
         Examples:
             Using keyword arguments:
