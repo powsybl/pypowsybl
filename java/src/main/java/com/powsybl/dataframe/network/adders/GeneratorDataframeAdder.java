@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -77,7 +78,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            GeneratorAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            GeneratorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newGenerator();
             setInjectionAttributes(adder, row);
             applyIfPresent(maxP, row, adder::setMaxP);

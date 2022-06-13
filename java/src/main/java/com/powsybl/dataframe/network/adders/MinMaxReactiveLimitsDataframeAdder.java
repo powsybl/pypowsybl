@@ -11,11 +11,14 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ReactiveLimitsHolder;
 
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getIdentifiableOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredDoubles;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
@@ -73,7 +76,7 @@ public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static void createLimits(Network network, String elementId, double minQ, double maxQ) {
-        Identifiable identifiable = network.getIdentifiable(elementId);
+        Identifiable<?> identifiable = getIdentifiableOrThrow(network, elementId);
         if (identifiable instanceof ReactiveLimitsHolder) {
             ((ReactiveLimitsHolder) identifiable).newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(maxQ).add();
         } else {

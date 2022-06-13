@@ -16,6 +16,8 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -47,7 +49,7 @@ public class BusDataframeAdder extends AbstractSimpleAdder {
         }
 
         void createBus(Network network, int row) {
-            BusAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            BusAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .getBusBreakerView()
                     .newBus();
             setIdentifiableAttributes(adder, row);
