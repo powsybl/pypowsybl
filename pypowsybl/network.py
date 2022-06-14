@@ -3628,7 +3628,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - **id**: the identifier of the new voltage level
             - **substation_id**: the identifier of the substation which the new voltage level belongs to.
-              It must already exist.
+              Optional. If defined, the substation must already exist.
             - **name**: an optional human-readable name
             - **topology_kind**: the topology kind, BUS_BREAKER or NODE_BREAKER
             - **nominal_v**: the nominal voltage, in kV

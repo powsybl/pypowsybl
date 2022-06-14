@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -65,7 +66,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
         }
 
         void createBattery(Network network, int row) {
-            BatteryAdder batteryAdder = network.getVoltageLevel(voltageLevels.get(row))
+            BatteryAdder batteryAdder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newBattery();
             setInjectionAttributes(batteryAdder, row);
             applyIfPresent(maxP, row, batteryAdder::setMaxP);

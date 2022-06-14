@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -127,7 +128,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             String voltageLevelId = voltageLevels.get(row);
             String shuntId = ids.get(row);
 
-            ShuntCompensatorAdder adder = network.getVoltageLevel(voltageLevelId)
+            ShuntCompensatorAdder adder = getVoltageLevelOrThrow(network, voltageLevelId)
                     .newShuntCompensator();
             setInjectionAttributes(adder, row);
             applyIfPresent(sectionCount, row, adder::setSectionCount);

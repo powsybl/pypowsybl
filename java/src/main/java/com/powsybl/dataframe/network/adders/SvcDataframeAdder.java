@@ -16,6 +16,7 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -67,7 +68,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            StaticVarCompensatorAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            StaticVarCompensatorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newStaticVarCompensator();
             setInjectionAttributes(adder, row);
             applyIfPresent(bMin, row, adder::setBmin);
