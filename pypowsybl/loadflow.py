@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,6 +21,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
+from pypowsybl.report import Reporter as _Reporter
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -229,7 +230,7 @@ class Parameters:
                f")"
 
 
-def run_ac(network: _Network, parameters: Parameters = None, provider: str = '') -> _List[ComponentResult]:
+def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
     """
     Run an AC loadflow on a network.
 
@@ -237,15 +238,16 @@ def run_ac(network: _Network, parameters: Parameters = None, provider: str = '')
         network:    a network
         parameters: the loadflow parameters
         provider:   the loadflow implementation provider, default is the default loadflow provider
+        reporter:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider)]
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, False, p, provider, None if reporter is None else reporter._reporter_model)]
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider: str = '') -> _List[ComponentResult]:
+def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
     """
     Run a DC loadflow on a network.
 
@@ -253,12 +255,13 @@ def run_dc(network: _Network, parameters: Parameters = None, provider: str = '')
         network:    a network
         parameters: the loadflow parameters
         provider:   the loadflow implementation provider, default is the default loadflow provider
+        reporter:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider)]
+    return [ComponentResult(res) for res in _pypowsybl.run_load_flow(network._handle, True, p, provider, None if reporter is None else reporter._reporter_model)]
 
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,
