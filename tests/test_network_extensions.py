@@ -190,3 +190,28 @@ def test_hvdc_operator_active_power_range():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+def test_load_detail():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'detail'
+    element_id = 'LD1'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, fixed_active_power=200, variable_active_power=20, fixed_reactive_power=100, variable_reactive_power=10)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.fixed_active_power == 200
+    assert e.variable_active_power == 20
+    assert e.fixed_reactive_power == 100
+    assert e.variable_reactive_power == 10
+
+    n.update_extensions(extension_name, id=element_id, fixed_active_power=210, variable_active_power=25,
+                        fixed_reactive_power=110, variable_reactive_power=15)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.fixed_active_power == 210
+    assert e.variable_active_power == 25
+    assert e.fixed_reactive_power == 110
+    assert e.variable_reactive_power == 15
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
