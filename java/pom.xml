@@ -242,7 +242,6 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-conformity</artifactId>
-            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>

@@ -26,7 +26,7 @@ class SensitivityAnalysisTest {
                 .setDc(false)
                 .setDistributedSlack(false);
         SensitivityAnalysisContext sensitivityContext = new SensitivityAnalysisContext();
-        SensitivityAnalysisResultContext result = sensitivityContext.run(network, params, "OpenSensitivityAnalysis");
+        SensitivityAnalysisResultContext result = sensitivityContext.run(network, params, "OpenLoadFlow");
 
         try {
             result.createBranchFlowsSensitivityMatrix("", "");
