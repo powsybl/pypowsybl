@@ -16,6 +16,7 @@ import com.powsybl.iidm.network.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -74,7 +75,7 @@ public class SwitchDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            VoltageLevel vl = network.getVoltageLevel(voltageLevels.get(row));
+            VoltageLevel vl = getVoltageLevelOrThrow(network, voltageLevels.get(row));
             TopologyKind kind = vl.getTopologyKind();
             if (kind == TopologyKind.NODE_BREAKER) {
                 VoltageLevel.NodeBreakerView.SwitchAdder adder = vl.getNodeBreakerView().newSwitch();

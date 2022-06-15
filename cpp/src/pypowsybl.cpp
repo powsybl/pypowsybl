@@ -461,9 +461,9 @@ std::shared_ptr<load_flow_parameters> createLoadFlowParameters() {
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters,
-                                          const std::string& provider) {
+                                          const std::string& provider, JavaHandle* reporter) {
     return new LoadFlowComponentResultArray(
-            callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data()));
+            callJava<array*>(::runLoadFlow, network, dc, parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter));
 }
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {
@@ -810,6 +810,14 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name) {
         pypowsybl::callJava<>(::createExtensions, network, (char*) name.data(), dataframes);
+}
+
+JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName) {
+    return callJava<JavaHandle>(::createReporterModel, (char*) taskKey.data(), (char*) defaultName.data());
+}
+
+std::string printReport(const JavaHandle& reporterModel) {
+    return toString(callJava<char*>(::printReport, reporterModel));
 }
 
 }

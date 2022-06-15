@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,7 +9,9 @@ package com.powsybl.python;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
+import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.util.ServiceLoaderCache;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.import_.Importer;
@@ -46,6 +48,7 @@ import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import java.io.StringWriter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -299,7 +302,8 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "runLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                           CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                           CCharPointer provider, ObjectHandle reporterHandle,
+                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
@@ -320,7 +324,14 @@ public final class PyPowsyblApiLib {
                     loadFlowParametersPtr.getProviderParametersValuesCount()));
             extensionParametersOptional.ifPresent(loadFlowParametersExtension ->
                     parameters.addExtension((Class) loadFlowParametersExtension.getClass(), loadFlowParametersExtension));
-            LoadFlowResult result = runner.run(network, parameters);
+            LoadFlowResult result;
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            if (reporter == null) {
+                result = runner.run(network, parameters);
+            } else {
+                result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                        LocalComputationManager.getDefault(), parameters, reporter);
+            }
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }
@@ -810,6 +821,26 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+        });
+    }
+
+    @CEntryPoint(name = "createReporterModel")
+    public static ObjectHandle createReporterModel(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String taskKey = CTypeUtil.toString(taskKeyPtr);
+            String defaultName = CTypeUtil.toString(defaultNamePtr);
+            ReporterModel reporterModel = new ReporterModel(taskKey, defaultName);
+            return ObjectHandles.getGlobal().create(reporterModel);
+        });
+    }
+
+    @CEntryPoint(name = "printReport")
+    public static CCharPointer printReport(IsolateThread thread, ObjectHandle reporterModelHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
+            StringWriter reporterOut = new StringWriter();
+            reporterModel.export(reporterOut);
+            return CTypeUtil.toCharPtr(reporterOut.toString());
         });
     }
 }

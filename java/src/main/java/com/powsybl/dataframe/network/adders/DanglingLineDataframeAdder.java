@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -71,7 +72,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            DanglingLineAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            DanglingLineAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newDanglingLine();
             setInjectionAttributes(adder, row);
             applyIfPresent(p0, row, adder::setP0);
