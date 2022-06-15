@@ -20,18 +20,20 @@ import com.powsybl.iidm.network.extensions.LoadDetailAdder;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.extensions.LoadDetailDataframeProvider.*;
+
 /**
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 public class LoadDetailDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.doubles("fixed_active_power"),
-            SeriesMetadata.doubles("variable_active_power"),
-            SeriesMetadata.doubles("fixed_reactive_power"),
-            SeriesMetadata.doubles("variable_reactive_power")
-            );
+        SeriesMetadata.stringIndex("id"),
+        SeriesMetadata.doubles(FIXED_P),
+        SeriesMetadata.doubles(VARIABLE_P),
+        SeriesMetadata.doubles(FIXED_Q),
+        SeriesMetadata.doubles(VARIABLE_Q)
+    );
 
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
@@ -47,10 +49,10 @@ public class LoadDetailDataframeAdder extends AbstractSimpleAdder {
 
         LoadDetailSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
-            this.fixedActivePower = dataframe.getDoubles("fixed_active_power");
-            this.variableActivePower = dataframe.getDoubles("variable_active_power");
-            this.fixedReactivePower = dataframe.getDoubles("fixed_reactive_power");
-            this.variableReactivePower = dataframe.getDoubles("variable_reactive_power");
+            this.fixedActivePower = dataframe.getDoubles(FIXED_P);
+            this.variableActivePower = dataframe.getDoubles(VARIABLE_P);
+            this.fixedReactivePower = dataframe.getDoubles(FIXED_Q);
+            this.variableReactivePower = dataframe.getDoubles(VARIABLE_Q);
         }
 
         void create(Network network, int row) {

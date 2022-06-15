@@ -25,6 +25,11 @@ import java.util.stream.Stream;
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class LoadDetailDataframeProvider implements NetworkExtensionDataframeProvider {
 
+    static final String FIXED_P = "fixed_p0";
+    static final String VARIABLE_P = "variable_p0";
+    static final String FIXED_Q = "fixed_q0";
+    static final String VARIABLE_Q = "variable_q0";
+
     @Override
     public String getExtensionName() {
         return LoadDetail.NAME;
@@ -52,10 +57,10 @@ public class LoadDetailDataframeProvider implements NetworkExtensionDataframePro
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .doubles("fixed_active_power", LoadDetail::getFixedActivePower, LoadDetail::setFixedActivePower)
-                .doubles("variable_active_power", LoadDetail::getVariableActivePower, LoadDetail::setVariableActivePower)
-                .doubles("fixed_reactive_power", LoadDetail::getFixedReactivePower, LoadDetail::setFixedReactivePower)
-                .doubles("variable_reactive_power", LoadDetail::getVariableReactivePower, LoadDetail::setVariableReactivePower)
+                .doubles(FIXED_P, LoadDetail::getFixedActivePower, LoadDetail::setFixedActivePower)
+                .doubles(VARIABLE_P, LoadDetail::getVariableActivePower, LoadDetail::setVariableActivePower)
+                .doubles(FIXED_Q, LoadDetail::getFixedReactivePower, LoadDetail::setFixedReactivePower)
+                .doubles(VARIABLE_Q, LoadDetail::getVariableReactivePower, LoadDetail::setVariableReactivePower)
                 .build();
     }
 
