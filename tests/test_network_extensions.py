@@ -24,6 +24,7 @@ def test_extensions():
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.1, abs=1e-3)
     assert n.get_extensions('hvdcOperatorActivePowerRange').empty
 
+
 def test_update_extensions():
     n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
     n.update_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
@@ -39,12 +40,14 @@ def test_update_extensions():
     assert generators_extensions['participate']['GEN']
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.4, abs=1e-3)
 
+
 def test_remove_extensions():
     n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     n.remove_extensions('activePowerControl', ['GEN', 'GEN2'])
     assert n.get_extensions('activePowerControl').empty
+
 
 def test_create_extensions():
     n = pn._create_network('eurostag_tutorial_example1')
@@ -129,7 +132,6 @@ def test_entsoe_area():
     assert e.code == 'D4'
 
 
-
 def test_entsoe_category():
     network = pn._create_network('eurostag_tutorial_example1_with_entsoe_category')
     gen = network.get_extensions('entsoeCategory').loc['GEN']
@@ -170,6 +172,7 @@ def test_hvdc_angle_droop_active_power_control():
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
 
+
 def test_hvdc_operator_active_power_range():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'hvdcOperatorActivePowerRange'
@@ -187,6 +190,33 @@ def test_hvdc_operator_active_power_range():
     e = n.get_extensions(extension_name).loc[element_id]
     assert e.opr_from_cs1_to_cs2 == pytest.approx(0.15, abs=1e-3)
     assert e.opr_from_cs2_to_cs1 == pytest.approx(0.25, abs=1e-3)
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+
+def test_load_detail():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'detail'
+    element_id = 'LD1'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, fixed_p0=200, variable_p0=20,
+                        fixed_q0=100, variable_q0=10)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.fixed_p0 == 200
+    assert e.variable_p0 == 20
+    assert e.fixed_q0 == 100
+    assert e.variable_q0 == 10
+
+    n.update_extensions(extension_name, id=element_id, fixed_p0=210, variable_p0=25,
+                        fixed_q0=110, variable_q0=15)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.fixed_p0 == 210
+    assert e.variable_p0 == 25
+    assert e.fixed_q0 == 110
+    assert e.variable_q0 == 15
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
