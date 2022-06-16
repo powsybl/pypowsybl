@@ -180,11 +180,11 @@ def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
     batteries = n.get_batteries()
     assert 200.0 == batteries['max_p']['BAT2']
-    df2 = pd.DataFrame(data=[[101, 201]], columns=['p0', 'q0'], index=['BAT2'])
+    df2 = pd.DataFrame(data=[[101, 201]], columns=['target_p', 'target_q'], index=['BAT2'])
     n.update_batteries(df2)
     df3 = n.get_batteries()
-    assert 101 == df3['p0']['BAT2']
-    assert 201 == df3['q0']['BAT2']
+    assert 101 == df3['target_p']['BAT2']
+    assert 201 == df3['target_q']['BAT2']
     batteries = n.get_batteries(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['BAT', 'BAT2']),
@@ -767,16 +767,16 @@ def test_dangling_lines():
 def test_batteries():
     n = util.create_battery_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 9999.99, -9999.99, -9999.99, 9999.99, 'MIN_MAX', 9999.99, 9999.99, -605, -225,
                                    NaN, 'VLBAT', 'VLBAT_0', True],
                                   ['', 200, -200, NaN, NaN, 'CURVE', 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
-    n.update_batteries(pd.DataFrame(index=['BAT2'], columns=['p0', 'q0'], data=[[50, 100]]))
+    n.update_batteries(pd.DataFrame(index=['BAT2'], columns=['target_p', 'target_q'], data=[[50, 100]]))
     n.update_batteries(pd.DataFrame(index=['BAT'], columns=['min_q', 'max_q'], data=[[-500, 500]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'p0', 'q0',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 9999.99, -9999.99, -500, 500, 'MIN_MAX', 9999.99, 9999.99, -605, -225, NaN,
                                    'VLBAT', 'VLBAT_0', True],

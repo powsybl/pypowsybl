@@ -36,8 +36,8 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
-            SeriesMetadata.doubles("p0"),
-            SeriesMetadata.doubles("q0")
+            SeriesMetadata.doubles("target_p"),
+            SeriesMetadata.doubles("target_q")
     );
 
     @Override
@@ -50,8 +50,8 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries voltageLevels;
         private final DoubleSeries maxP;
         private final DoubleSeries minP;
-        private final DoubleSeries p0;
-        private final DoubleSeries q0;
+        private final DoubleSeries targetP;
+        private final DoubleSeries targetQ;
 
         BatterySeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -61,8 +61,8 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             }
             this.maxP = dataframe.getDoubles("max_p");
             this.minP = dataframe.getDoubles("min_p");
-            this.p0 = dataframe.getDoubles("p0");
-            this.q0 = dataframe.getDoubles("q0");
+            this.targetP = dataframe.getDoubles("target_p");
+            this.targetQ = dataframe.getDoubles("target_q");
         }
 
         void createBattery(Network network, int row) {
@@ -71,8 +71,8 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             setInjectionAttributes(batteryAdder, row);
             applyIfPresent(maxP, row, batteryAdder::setMaxP);
             applyIfPresent(minP, row, batteryAdder::setMinP);
-            applyIfPresent(p0, row, batteryAdder::setP0);
-            applyIfPresent(q0, row, batteryAdder::setQ0);
+            applyIfPresent(targetP, row, batteryAdder::setP0);
+            applyIfPresent(targetQ, row, batteryAdder::setQ0);
             batteryAdder.add();
         }
     }

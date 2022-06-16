@@ -182,11 +182,11 @@ class NetworkDataframesTest {
         List<Series> series = createDataFrame(BATTERY, network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "reactive_limits_kind", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "reactive_limits_kind", "target_p", "target_q", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(BATTERY, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "reactive_limits_kind", "p0", "q0", "p", "q", "i", "voltage_level_id",
+                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "reactive_limits_kind", "target_p", "target_q", "p", "q", "i", "voltage_level_id",
                         "bus_id", "bus_breaker_bus_id", "node", "connected");
     }
 
