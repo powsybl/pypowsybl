@@ -422,7 +422,7 @@ def set_default_provider(provider: str) -> None:
 
 def get_default_provider() -> str:
     """
-    Get the current default sensitivity analysis provider. if nothing is set it is OpenSensitivityAnalysis
+    Get the current default sensitivity analysis provider.
 
     Returns:
         the name of the current default sensitivity analysis provider

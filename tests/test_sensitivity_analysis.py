@@ -20,7 +20,7 @@ def no_config():
 
 
 def test_config():
-    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+    assert 'OpenLoadFlow' == pp.sensitivity.get_default_provider()
     pp.sensitivity.set_default_provider("provider")
     assert 'provider' == pp.sensitivity.get_default_provider()
     n = pp.network.create_ieee14()
@@ -33,11 +33,11 @@ def test_config():
     with pytest.raises(Exception) as exc_info:
         sa.run(n)
     assert 'SensitivityAnalysisProvider \'provider\' not found' == str(exc_info.value)
-    r = sa.run(n, provider='OpenSensitivityAnalysis')
+    r = sa.run(n, provider='OpenLoadFlow')
     assert 6 == r.get_branch_flows_sensitivity_matrix().size
     assert 'provider' == pp.sensitivity.get_default_provider()
-    pp.sensitivity.set_default_provider('OpenSensitivityAnalysis')
-    assert 'OpenSensitivityAnalysis' == pp.sensitivity.get_default_provider()
+    pp.sensitivity.set_default_provider('OpenLoadFlow')
+    assert 'OpenLoadFlow' == pp.sensitivity.get_default_provider()
 
 
 def test_sensitivity_analysis():
@@ -226,7 +226,7 @@ def test_variant():
 
 
 def test_provider_names():
-    assert 'OpenSensitivityAnalysis' in pp.sensitivity.get_provider_names()
+    assert 'OpenLoadFlow' in pp.sensitivity.get_provider_names()
 
 
 def test_no_output_matrices_available():

@@ -15,7 +15,7 @@ def no_config():
 
 
 def test_default_provider():
-    assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
+    assert 'OpenLoadFlow' == pp.security.get_default_provider()
     pp.security.set_default_provider("provider")
     assert 'provider' == pp.security.get_default_provider()
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -27,11 +27,11 @@ def test_default_provider():
     with pytest.raises(Exception) as exc_info:
         sa.run_dc(n)
     assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
-    sa_result = sa.run_ac(n, provider='OpenSecurityAnalysis')
+    sa_result = sa.run_ac(n, provider='OpenLoadFlow')
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
     assert 'provider' == pp.security.get_default_provider()
-    pp.security.set_default_provider('OpenSecurityAnalysis')
-    assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
+    pp.security.set_default_provider('OpenLoadFlow')
+    assert 'OpenLoadFlow' == pp.security.get_default_provider()
 
 
 def test_ac_security_analysis():
@@ -139,4 +139,4 @@ def test_dc_analysis():
 
 
 def test_provider_names():
-    assert 'OpenSecurityAnalysis' in pp.security.get_provider_names()
+    assert 'OpenLoadFlow' in pp.security.get_provider_names()

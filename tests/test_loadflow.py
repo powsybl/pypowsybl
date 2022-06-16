@@ -29,6 +29,7 @@ def test_config():
     pp.loadflow.set_default_provider("OpenLoadFlow")
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
 
+
 def test_run_lf():
     n = pp.network.create_ieee14()
     results = lf.run_ac(n)
@@ -115,12 +116,24 @@ def test_provider_names():
 
 def test_get_provider_parameters_names():
     specific_parameters = pp.loadflow.get_provider_parameters_names()
-    assert ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl',
-         'throwsExceptionInCaseOfSlackDistributionFailure', 'loadPowerFactorConstant',
-         'plausibleActivePowerLimit', 'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
-         'slackBusPMaxMismatch', 'voltagePerReactivePowerControl', 'reactivePowerRemoteControl',
-         'maxIteration', 'newtonRaphsonConvEpsPerEq', 'voltageInitModeOverride',
-         'transformerVoltageControlMode'] == specific_parameters
+    assert specific_parameters == [
+        'slackBusSelectionMode',
+        'slackBusesIds',
+        'lowImpedanceBranchMode',
+        'voltageRemoteControl',
+        'throwsExceptionInCaseOfSlackDistributionFailure',
+        'loadPowerFactorConstant',
+        'plausibleActivePowerLimit',
+        'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
+        'slackBusPMaxMismatch',
+        'voltagePerReactivePowerControl',
+        'reactivePowerRemoteControl',
+        'maxIteration',
+        'newtonRaphsonConvEpsPerEq',
+        'voltageInitModeOverride',
+        'transformerVoltageControlMode',
+        'dcPowerFactor'
+    ]
 
 def test_provider_parameters():
     parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
