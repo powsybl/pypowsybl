@@ -1,0 +1,7 @@
+[
+  {
+    "name":"com.powsybl.python.logging.CustomAppender",
+    "allPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  }
+]
