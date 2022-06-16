@@ -24,7 +24,7 @@ def test_config():
     pp.loadflow.set_default_provider("provider")
     assert 'provider' == pp.loadflow.get_default_provider()
     n = pp.network.create_ieee14()
-    with pytest.raises(Exception, match='No loadflow provider for name `provider`'):
+    with pytest.raises(Exception, match='No loadflow provider for name \'provider\''):
         lf.run_ac(n)
     results = lf.run_ac(n, provider='OpenLoadFlow')
     assert lf.ComponentStatus.CONVERGED == results[0].status
