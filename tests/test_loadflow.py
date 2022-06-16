@@ -13,16 +13,18 @@ from pypowsybl.loadflow import ValidationType
 import pytest
 import pypowsybl.report as rp
 
+
 @pytest.fixture(autouse=True)
-def setUp():
+def set_up():
     pp.set_config_read(False)
+
 
 def test_config():
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
     pp.loadflow.set_default_provider("provider")
     assert 'provider' == pp.loadflow.get_default_provider()
     n = pp.network.create_ieee14()
-    with pytest.raises(Exception, match='LoadFlowProvider \'provider\' not found'):
+    with pytest.raises(Exception, match='No loadflow provider for name \'provider\''):
         lf.run_ac(n)
     results = lf.run_ac(n, provider='OpenLoadFlow')
     assert lf.ComponentStatus.CONVERGED == results[0].status
@@ -45,6 +47,7 @@ def test_run_lf():
     parameters = lf.Parameters(distributed_slack=False)
     results = lf.run_dc(n, parameters)
     assert 1 == len(results)
+
 
 def test_lf_parameters():
     parameters = lf.Parameters()
@@ -78,6 +81,7 @@ def test_lf_parameters():
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
 
+
 def test_validation():
     n = pp.network.create_ieee14()
     pp.loadflow.run_ac(n)
@@ -93,12 +97,14 @@ def test_validation():
     assert 1 == len(validation2.svcs)
     assert validation2.svcs['validated']['SVC']
 
+
 def test_twt_validation():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
     assert abs(-10.421382-validation.twts['error']['NHV2_NLOAD']) < 0.00001
     assert validation.valid
+
 
 def test_validation_all():
     n = pp.network.create_ieee14()
@@ -112,8 +118,10 @@ def test_validation_all():
     assert validation.t3wts is not None
     assert validation.twts is not None
 
+
 def test_provider_names():
     assert 'OpenLoadFlow' in pp.loadflow.get_provider_names()
+
 
 def test_get_provider_parameters_names():
     specific_parameters = pp.loadflow.get_provider_parameters_names()
@@ -136,6 +144,7 @@ def test_get_provider_parameters_names():
         'dcPowerFactor'
     ]
 
+
 def test_provider_parameters():
     parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
     assert '5' == parameters.provider_parameters['maxIteration']
@@ -144,6 +153,7 @@ def test_provider_parameters():
     result = pp.loadflow.run_ac(n, parameters)
     assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
     assert 6 == result[0].iteration_count
+
 
 def test_run_lf_with_report():
     n = pp.network.create_ieee14()
@@ -158,4 +168,3 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n2, reporter = reporter)
     report3 = str(reporter)
     assert len(report3) > len(report2)
-

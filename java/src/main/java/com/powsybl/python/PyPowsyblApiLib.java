@@ -52,7 +52,6 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.powsybl.python.CTypeUtil.toStringList;
 import static com.powsybl.python.PyPowsyblApiHeader.*;
@@ -273,14 +272,6 @@ public final class PyPowsyblApiLib {
         return paramsPtr;
     }
 
-    private static Map<String, String> createProviderParametersMap(CCharPointerPointer keysPointer, int keysCount,
-                                                                   CCharPointerPointer valuesPointer, int valuesCount) {
-        List<String> keys = CTypeUtil.toStringList(keysPointer, keysCount);
-        List<String> values = CTypeUtil.toStringList(valuesPointer, valuesCount);
-        return IntStream.range(0, keys.size()).boxed()
-                .collect(Collectors.toMap(keys::get, values::get));
-    }
-
     @CEntryPoint(name = "getProviderParametersNames")
     public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -299,6 +290,26 @@ public final class PyPowsyblApiLib {
         });
     }
 
+    private static Map<String, String> getSpecificParameters(LoadFlowParametersPointer loadFlowParametersPtr) {
+        return CTypeUtil.toStringMap(loadFlowParametersPtr.getProviderParametersKeys(),
+                loadFlowParametersPtr.getProviderParametersKeysCount(),
+                loadFlowParametersPtr.getProviderParametersValues(),
+                loadFlowParametersPtr.getProviderParametersValuesCount());
+    }
+
+    private static LoadFlowProvider getLoadFlowProvider(String name) {
+        String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultLoadFlowProvider() : name;
+        return ServiceLoader.load(LoadFlowProvider.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(provider -> provider.getName().equals(actualName))
+                .findFirst()
+                .orElseThrow(() -> new PowsyblException("No loadflow provider for name '" + actualName + "'"));
+    }
+
+    private static org.slf4j.Logger logger() {
+        return LoggerFactory.getLogger(PyPowsyblApiLib.class);
+    }
+
     @CEntryPoint(name = "runLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
@@ -308,23 +319,24 @@ public final class PyPowsyblApiLib {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             LoadFlowParameters parameters = createLoadFlowParameters(dc, loadFlowParametersPtr);
             String providerStr = CTypeUtil.toString(provider);
-            if (providerStr.equals("")) {
-                providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
-            }
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-            rootLogger.info("loadflow provider used is : {}", providerStr);
-            LoadFlowProvider loadFlowProvider = ServiceLoader.load(LoadFlowProvider.class)
-                    .stream().map(ServiceLoader.Provider::get)
-                    .collect(Collectors.toMap(LoadFlowProvider::getName, Function.identity()))
-                    .get(providerStr);
-            LoadFlow.Runner runner = LoadFlow.find(providerStr);
-            Optional<Extension<LoadFlowParameters>> extensionParametersOptional = loadFlowProvider.loadSpecificParameters(createProviderParametersMap(loadFlowParametersPtr.getProviderParametersKeys(),
-                    loadFlowParametersPtr.getProviderParametersKeysCount(),
-                    loadFlowParametersPtr.getProviderParametersValues(),
-                    loadFlowParametersPtr.getProviderParametersValuesCount()));
-            extensionParametersOptional.ifPresent(loadFlowParametersExtension ->
-                    parameters.addExtension((Class) loadFlowParametersExtension.getClass(), loadFlowParametersExtension));
+            LoadFlowProvider loadFlowProvider = getLoadFlowProvider(providerStr);
+            logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
+
+            Map<String, String> specificParametersProperties = getSpecificParameters(loadFlowParametersPtr);
+
+            loadFlowProvider.loadSpecificParameters(specificParametersProperties).ifPresent(ext -> {
+                // Dirty trick to get the class, and reload parameters if they exist.
+                // TODO: SPI needs to be changed so that we don't need to read params to get the class
+                Extension<LoadFlowParameters> configured = parameters.getExtension(ext.getClass());
+                if (configured != null) {
+                    loadFlowProvider.updateSpecificParameters(configured, specificParametersProperties);
+                } else {
+                    parameters.addExtension((Class) ext.getClass(), ext);
+                }
+            });
+
             LoadFlowResult result;
+            LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             if (reporter == null) {
                 result = runner.run(network, parameters);
@@ -477,8 +489,7 @@ public final class PyPowsyblApiLib {
             if (providerStr.equals("")) {
                 providerStr = PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider();
             }
-            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-            logger.info("loadflow provider used for security analysis is : {}", providerStr);
+            logger().info("loadflow provider used for security analysis is : {}", providerStr);
             SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(result);
         });
@@ -619,8 +630,7 @@ public final class PyPowsyblApiLib {
             if (providerStr.equals("")) {
                 providerStr = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
             }
-            Logger logger = (Logger) LoggerFactory.getLogger(PyPowsyblApiLib.class);
-            logger.info("loadflow provider used for sensitivity analysis is : {}", providerStr);
+            logger().info("loadflow provider used for sensitivity analysis is : {}", providerStr);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
             return ObjectHandles.getGlobal().create(resultContext);
         });

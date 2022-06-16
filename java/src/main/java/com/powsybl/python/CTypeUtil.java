@@ -15,6 +15,9 @@ import org.graalvm.word.WordFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -70,4 +73,14 @@ public final class CTypeUtil {
         }
         return ints;
     }
+
+    public static Map<String, String> toStringMap(CCharPointerPointer keysPointer, int keysCount,
+                                                  CCharPointerPointer valuesPointer, int valuesCount) {
+        List<String> keys = toStringList(keysPointer, keysCount);
+        List<String> values = toStringList(valuesPointer, valuesCount);
+        return IntStream.range(0, keys.size())
+                .boxed()
+                .collect(Collectors.toMap(keys::get, values::get));
+    }
+
 }
