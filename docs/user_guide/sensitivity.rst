@@ -262,7 +262,7 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
     >>> result = analysis.run(network)
     >>> result.get_reference_flows('m', 'NHV1_NHV2_1')
                      NHV1_NHV2_1  NHV1_NHV2_2
-    reference_flows          0.0        600.0
+    reference_flows          NaN        600.0
     >>> result.get_branch_flows_sensitivity_matrix('m', 'NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0

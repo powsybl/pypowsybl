@@ -68,7 +68,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 6 == len(parameters)
+    assert 7 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -78,7 +78,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = pp.network.get_export_formats()
-    assert ['CGMES', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+    assert ['CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'] == formats
 
 
 def test_load_network():
@@ -932,7 +932,7 @@ def test_update_generators_with_keywords():
 def test_update_generators_minax_reactive_limits():
     n = pp.network.create_micro_grid_be_network()
     generators = n.get_generators()
-    gen_with_min_max_reactive_limits = '_550ebe0d-f2b2-48c1-991f-cebea43a21aa'
+    gen_with_min_max_reactive_limits = '550ebe0d-f2b2-48c1-991f-cebea43a21aa'
     assert 'MIN_MAX' == generators['reactive_limits_kind'][gen_with_min_max_reactive_limits]
     assert -200.0 == generators['min_q'][gen_with_min_max_reactive_limits]
     assert 200.0 == generators['max_q'][gen_with_min_max_reactive_limits]
@@ -941,7 +941,7 @@ def test_update_generators_minax_reactive_limits():
     assert 'MIN_MAX' == generators['reactive_limits_kind'][gen_with_min_max_reactive_limits]
     assert -205.0 == generators['min_q'][gen_with_min_max_reactive_limits]
     assert 205.0 == generators['max_q'][gen_with_min_max_reactive_limits]
-    gen_with_curve_reactive_limits = '_3a3b27be-b18b-4385-b557-6735d733baf0'
+    gen_with_curve_reactive_limits = '3a3b27be-b18b-4385-b557-6735d733baf0'
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id=[gen_with_curve_reactive_limits], min_q=[-200])
 
@@ -1172,15 +1172,14 @@ def test_dataframe_elements_filtering():
     expected_selection = network_four_subs.get_2_windings_transformers().loc[['TWT']]
     filtered_selection = network_four_subs.get_2_windings_transformers(id='TWT')
     pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
-
     expected_selection = network_micro_grid.get_3_windings_transformers().loc[
-        ['_84ed55f4-61f5-4d9d-8755-bba7b877a246']]
+        ['84ed55f4-61f5-4d9d-8755-bba7b877a246']]
     filtered_selection = network_micro_grid.get_3_windings_transformers(
-        id=['_84ed55f4-61f5-4d9d-8755-bba7b877a246'])
+        id=['84ed55f4-61f5-4d9d-8755-bba7b877a246'])
     pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
-    expected_selection = network_micro_grid.get_shunt_compensators().loc[['_002b0a40-3957-46db-b84a-30420083558f']]
-    filtered_selection = network_micro_grid.get_shunt_compensators(id=['_002b0a40-3957-46db-b84a-30420083558f'])
+    expected_selection = network_micro_grid.get_shunt_compensators().loc[['002b0a40-3957-46db-b84a-30420083558f']]
+    filtered_selection = network_micro_grid.get_shunt_compensators(id=['002b0a40-3957-46db-b84a-30420083558f'])
     pd.testing.assert_frame_equal(expected_selection, filtered_selection, check_dtype=True)
 
     expected_selection = network_with_batteries.get_batteries().loc[['BAT2']]

@@ -12,6 +12,7 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
@@ -30,6 +31,7 @@ class SecurityAnalysisTest {
 
     @Test
     void testStateMonitors() {
+        var params = new OpenLoadFlowParameters();
         SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
         analysisContext.addContingency("NHV1_NHV2_1", Collections.singletonList("NHV1_NHV2_1"));
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext("NHV1_NHV2_1", ContingencyContextType.SPECIFIC),
@@ -37,7 +39,7 @@ class SecurityAnalysisTest {
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         Network network = Networks.createEurostagTutorialExample1();
-        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
+        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenLoadFlow");
         assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
             -137.18849307164064, 488.99279636727357));
@@ -52,7 +54,7 @@ class SecurityAnalysisTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
         analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
-        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenSecurityAnalysis");
+        SecurityAnalysisResult result = analysisContext.run(network, new LoadFlowParameters(), "OpenLoadFlow");
 
         List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
         Assertions.assertThat(series)

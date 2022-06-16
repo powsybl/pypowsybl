@@ -1,7 +1,7 @@
 package com.powsybl.python;
 
 import com.google.auto.service.AutoService;
-import com.powsybl.cgmes.conformity.test.CgmesConformity1Catalog;
+import com.powsybl.cgmes.conformity.CgmesConformity1Catalog;
 import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.import_.Importers;

@@ -6,16 +6,16 @@
  */
 package com.powsybl.python;
 
-import com.powsybl.security.results.BusResults;
+import com.powsybl.security.results.BusResult;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class BusResultContext extends BusResults {
+public class BusResultContext extends BusResult {
 
     private final String contingencyId;
 
-    public BusResultContext(BusResults busResults, String contingency) {
+    public BusResultContext(BusResult busResults, String contingency) {
         super(busResults.getVoltageLevelId(), busResults.getBusId(), busResults.getV(), busResults.getAngle());
         this.contingencyId = contingency;
     }
