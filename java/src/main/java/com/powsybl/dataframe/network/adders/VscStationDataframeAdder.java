@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.VscConverterStationAdder;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -26,7 +27,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-public class VscDataframeAdder extends AbstractSimpleAdder {
+public class VscStationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
@@ -67,7 +68,7 @@ public class VscDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            VscConverterStationAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            VscConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newVscConverterStation();
             setInjectionAttributes(adder, row);
             applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));

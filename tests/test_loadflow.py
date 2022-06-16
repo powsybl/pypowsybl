@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@ import pypowsybl.loadflow as lf
 from pypowsybl._pypowsybl import LoadFlowComponentStatus
 from pypowsybl.loadflow import ValidationType
 import pytest
+import pypowsybl.report as rp
 
 @pytest.fixture(autouse=True)
 def setUp():
@@ -143,4 +144,18 @@ def test_provider_parameters():
     result = pp.loadflow.run_ac(n, parameters)
     assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
     assert 6 == result[0].iteration_count
+
+def test_run_lf_with_report():
+    n = pp.network.create_ieee14()
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    pp.loadflow.run_ac(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) > len(report1)
+
+    n2 = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n2, reporter = reporter)
+    report3 = str(reporter)
+    assert len(report3) > len(report2)
 

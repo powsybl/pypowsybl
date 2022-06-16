@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -53,7 +54,7 @@ public class BusBarDataframeAdder extends AbstractSimpleAdder {
         }
 
         void createBusBar(Network network, int row) {
-            BusbarSectionAdder adder = network.getVoltageLevel(voltageLevels.get(row))
+            BusbarSectionAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .getNodeBreakerView()
                     .newBusbarSection();
             setIdentifiableAttributes(adder, row);

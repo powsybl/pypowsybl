@@ -15,6 +15,7 @@ import com.powsybl.iidm.network.*;
 
 import java.util.*;
 
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getIdentifiableOrThrow;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredDoubles;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
@@ -109,7 +110,7 @@ public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static void createLimits(Network network, String elementId, List<CurvePoint> curvePoints) {
-        Identifiable identifiable = network.getIdentifiable(elementId);
+        Identifiable identifiable = getIdentifiableOrThrow(network, elementId);
         if (identifiable instanceof ReactiveLimitsHolder) {
             ReactiveCapabilityCurveAdder curveAdder = ((ReactiveLimitsHolder) identifiable)
                     .newReactiveCapabilityCurve();

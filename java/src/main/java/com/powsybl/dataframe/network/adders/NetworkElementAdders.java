@@ -29,7 +29,7 @@ public final class NetworkElementAdders {
             Map.entry(STATIC_VAR_COMPENSATOR, new SvcDataframeAdder()),
             Map.entry(TWO_WINDINGS_TRANSFORMER, new TwtDataframeAdder()),
             Map.entry(LOAD, new LoadDataframeAdder()),
-            Map.entry(VSC_CONVERTER_STATION, new VscDataframeAdder()),
+            Map.entry(VSC_CONVERTER_STATION, new VscStationDataframeAdder()),
             Map.entry(LCC_CONVERTER_STATION, new LccStationDataframeAdder()),
             Map.entry(BUSBAR_SECTION, new BusBarDataframeAdder()),
             Map.entry(DANGLING_LINE, new DanglingLineDataframeAdder()),

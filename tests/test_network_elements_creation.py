@@ -756,5 +756,51 @@ def test_remove_elements_switches():
     assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
     assert 'HVDC1' not in net.get_hvdc_lines().index
     assert 'TWT' not in net.get_2_windings_transformers().index
-    #assert 'S1' not in net.get_substations().index
-    #assert 'S1VL1' not in net.get_voltage_levels().index
+    # assert 'S1' not in net.get_substations().index
+    # assert 'S1VL1' not in net.get_voltage_levels().index
+
+
+def test_creating_vl_without_substation():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VLTEST',
+        'high_voltage_limit': 250,
+        'low_voltage_limit': 200,
+        'nominal_v': 225,
+        'topology_kind': 'BUS_BREAKER'
+    }])
+    net.create_voltage_levels(df)
+    assert 'VLTEST' in net.get_voltage_levels().index
+    net.create_voltage_levels(id='VLTEST2', high_voltage_limit=250,
+                              low_voltage_limit=200,
+                              nominal_v=225,
+                              topology_kind='BUS_BREAKER')
+    assert 'VLTEST2' in net.get_voltage_levels().index
+    net.remove_elements(['VLTEST', 'VLTEST2'])
+    assert 'VLTEST2' not in net.get_voltage_levels().index and 'VLTEST' not in net.get_voltage_levels().index
+    net.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                              low_voltage_limit=[200, 200],
+                              nominal_v=[225, 225],
+                              topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    assert 'VLTEST2' in net.get_voltage_levels().index and 'VLTEST' in net.get_voltage_levels().index
+
+
+def check_unknown_voltage_level_error_message(fn):
+    with pytest.raises(PyPowsyblError) as exc:
+        fn(voltage_level_id='UNKNOWN', id='S')
+    assert exc.match('Voltage level UNKNOWN does not exist')
+
+
+def test_error_messages():
+    network = pn.create_eurostag_tutorial_example1_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_voltage_levels(id='VL', substation_id='UNKNOWN', nominal_v=400)
+    assert exc.match('Substation UNKNOWN does not exist')
+
+    check_unknown_voltage_level_error_message(network.create_loads)
+    check_unknown_voltage_level_error_message(network.create_generators)
+    check_unknown_voltage_level_error_message(network.create_switches)
+    check_unknown_voltage_level_error_message(network.create_static_var_compensators)
+    check_unknown_voltage_level_error_message(network.create_dangling_lines)
+    check_unknown_voltage_level_error_message(network.create_lcc_converter_stations)
+    check_unknown_voltage_level_error_message(network.create_vsc_converter_stations)
