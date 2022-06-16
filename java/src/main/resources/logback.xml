@@ -1,5 +1,5 @@
 <configuration>
-    <appender name="custom" class="com.powsybl.python.CustomAppender">
+    <appender name="custom" class="com.powsybl.python.logging.CustomAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>

@@ -13,8 +13,8 @@ import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
-import com.powsybl.python.NetworkUtil;
-import com.powsybl.python.TemporaryLimitData;
+import com.powsybl.python.network.NetworkUtil;
+import com.powsybl.python.network.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
