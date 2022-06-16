@@ -147,7 +147,7 @@ def test_loads_creation():
 def test_batteries_creation():
     n = util.create_battery_network()
     df = pd.DataFrame.from_records(
-        columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'p0', 'q0'],
+        columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'target_p', 'target_q'],
         data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 20)],
         index='id')
     n.create_batteries(df)
@@ -155,8 +155,8 @@ def test_batteries_creation():
     assert bat3.voltage_level_id == 'VLBAT'
     assert bat3.max_p == 100
     assert bat3.min_p == 10
-    assert bat3.p0 == 90
-    assert bat3.q0 == 20
+    assert bat3.target_p == 90
+    assert bat3.target_q == 20
 
 
 def test_vsc_data_frame():

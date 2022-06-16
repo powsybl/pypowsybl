@@ -339,7 +339,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         batteries = self._network.get_batteries()
         nominal_v = self._get_indexed_nominal_v(batteries)
-        self._per_unit_p(batteries, ['p0', 'q0', 'p', 'q', 'min_p', 'max_p', 'min_q', 'max_q'])
+        self._per_unit_p(batteries, ['target_p', 'target_q', 'p', 'q', 'min_p', 'max_p', 'min_q', 'max_q'])
         self._per_unit_i(batteries, ['i'], nominal_v)
         return batteries
 
@@ -397,7 +397,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         to_update = _adapt_to_dataframe(ElementType.BATTERY, df, **kwargs).copy()
         nominal_v = self._get_indexed_nominal_v(self._network.get_batteries())
-        self._un_per_unit_p(to_update, ['p0', 'q0', 'p', 'q', 'max_p', 'min_p', 'min_q', 'max_q'])
+        self._un_per_unit_p(to_update, ['target_p', 'target_q', 'p', 'q', 'max_p', 'min_p', 'min_q', 'max_q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_batteries(to_update)
 
