@@ -20,6 +20,8 @@ import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.word.PointerBase;
 
 /**
+ * Defines java mapping with C structs defined in pypowsybl-api.h header.
+ *
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
