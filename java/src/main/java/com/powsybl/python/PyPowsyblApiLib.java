@@ -49,11 +49,8 @@ import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-<<<<<<< HEAD
 import java.io.StringWriter;
-=======
 import java.time.Instant;
->>>>>>> Introduce glsk file loading and zone creation using loaded data.
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
