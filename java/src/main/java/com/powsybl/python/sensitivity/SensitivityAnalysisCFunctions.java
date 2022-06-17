@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.sensitivity;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -13,7 +14,7 @@ import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
-import com.powsybl.python.loadflow.LoadFlowCFunctions;
+import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.security.SecurityAnalysisCFunctions;
 import com.powsybl.sensitivity.SensitivityAnalysisProvider;
 import com.powsybl.sensitivity.SensitivityVariableSet;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -159,18 +161,17 @@ public final class SensitivityAnalysisCFunctions {
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, boolean dc, PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                                      CCharPointer provider,
+                                                      CCharPointer providerName,
                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            LoadFlowParameters loadFlowParameters = LoadFlowCFunctions.createLoadFlowParameters(dc, loadFlowParametersPtr);
-            String providerStr = CTypeUtil.toString(provider);
-            if (providerStr.equals("")) {
-                providerStr = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
-            }
-            logger().info("loadflow provider used for sensitivity analysis is : {}", providerStr);
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, providerStr);
+            SensitivityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
+            logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
+            LoadFlowParameters loadFlowParameters = provider.getLoadFlowProviderName()
+                    .map(lfName -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, lfName))
+                    .orElseGet(() -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr));
+            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, provider.getName());
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }
@@ -217,5 +218,14 @@ public final class SensitivityAnalysisCFunctions {
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             return resultContext.createReferenceVoltages(contingencyId);
         });
+    }
+
+    private static SensitivityAnalysisProvider getProvider(String name) {
+        String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
+        return ServiceLoader.load(SensitivityAnalysisProvider.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(provider -> provider.getName().equals(actualName))
+                .findFirst()
+                .orElseThrow(() -> new PowsyblException("No sensitivity analysis provider for name '" + actualName + "'"));
     }
 }
