@@ -11,12 +11,12 @@ from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
 import pypowsybl._pypowsybl as _pypowsybl
+import pypowsybl.glsk as glsk
 
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
-from pypowsybl.glsk import GLSKImporter
 
 TO_REMOVE = 'TO_REMOVE'
 
@@ -116,12 +116,12 @@ def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: date
         Returns:
             A list of zones created from glsk file
     """
-    importer = GLSKImporter(glsk_file)
-    countries = importer.get_countries()
+    glsk_document = glsk.load(glsk_file)
+    countries = glsk_document.get_countries()
     zones = []
     for country in countries:
-        c_generators = importer.get_points_for_country(network, country, instant)
-        c_shift_keys = importer.get_glsk_factors(network, country, instant)
+        c_generators = glsk_document.get_points_for_country(network, country, instant)
+        c_shift_keys = glsk_document.get_glsk_factors(network, country, instant)
         zone = create_country_zone_generator(country, c_generators, c_shift_keys)
         zones.append(zone)
     return zones

@@ -20,20 +20,20 @@ class GLSKImportTestCases(unittest.TestCase):
 
     def test_import_glsk(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
-        importer = pp.glsk.GLSKImporter(str(DATA_DIR.joinpath('glsk_sample.xml')))
-        self.assertEqual(['10YFR-RTE------C', '10YNL----------L', '10YBE----------2', '10YCB-GERMANY--8'], importer.get_countries())
-        self.assertEqual(parser.parse('2019-01-07T23:00Z').timestamp(), importer.get_gsk_time_interval_start().timestamp())
-        self.assertEqual(parser.parse('2019-01-08T23:00Z').timestamp(), importer.get_gsk_time_interval_end().timestamp())
-        t = importer.get_gsk_time_interval_start()
-        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], importer.get_points_for_country(n, '10YFR-RTE------C', t))
-        self.assertEqual([0.2857142984867096, 0.2857142984867096, 0.4285714328289032], importer.get_glsk_factors(n, '10YFR-RTE------C', t))
+        glsk_document = pp.glsk.load(str(DATA_DIR.joinpath('glsk_sample.xml')))
+        self.assertEqual(['10YFR-RTE------C', '10YNL----------L', '10YBE----------2', '10YCB-GERMANY--8'], glsk_document.get_countries())
+        self.assertEqual(parser.parse('2019-01-07T23:00Z').timestamp(), glsk_document.get_gsk_time_interval_start().timestamp())
+        self.assertEqual(parser.parse('2019-01-08T23:00Z').timestamp(), glsk_document.get_gsk_time_interval_end().timestamp())
+        t = glsk_document.get_gsk_time_interval_start()
+        self.assertEqual(['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator'], glsk_document.get_points_for_country(n, '10YFR-RTE------C', t))
+        self.assertEqual([0.2857142984867096, 0.2857142984867096, 0.4285714328289032], glsk_document.get_glsk_factors(n, '10YFR-RTE------C', t))
 
     def test_zone(self):
         n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
-        importer = pp.glsk.GLSKImporter(str(DATA_DIR.joinpath('glsk_sample.xml')))
-        t = importer.get_gsk_time_interval_start()
-        de_generators = importer.get_points_for_country(n, '10YCB-GERMANY--8', t)
-        de_shift_keys = importer.get_glsk_factors(n, '10YCB-GERMANY--8', t)
+        glsk_document = pp.glsk.load(str(DATA_DIR.joinpath('glsk_sample.xml')))
+        t = glsk_document.get_gsk_time_interval_start()
+        de_generators = glsk_document.get_points_for_country(n, '10YCB-GERMANY--8', t)
+        de_shift_keys = glsk_document.get_glsk_factors(n, '10YCB-GERMANY--8', t)
 
         self.assertEqual(['DDE1AA1 _generator', 'DDE2AA1 _generator', 'DDE3AA1 _generator'], de_generators)
         self.assertEqual([0.4166666567325592, 0.3333333432674408, 0.25], de_shift_keys)
