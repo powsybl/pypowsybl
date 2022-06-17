@@ -93,15 +93,16 @@ When the security analysis is completed, you can inspect its results:
 GLSK UCTE file loading
 ----------------------
 
-UCTE GLSK file can be loaded using GLSKImporter, data can be used for zone creation
+UCTE GLSK file can be loaded using glsk.load and GLSKDocument, data can be used for zone creation
 
 .. autosummary::
    :nosignatures:
    :toctree: api/
 
-   GLSKImporter
-   GLSKImporter.get_gsk_time_interval_start
-   GLSKImporter.get_gsk_time_interval_end
-   GLSKImporter.get_countries
-   GLSKImporter.get_points_for_country
-   GLSKImporter.get_glsk_factors
+   load
+   GLSKDocument
+   GLSKDocument.get_gsk_time_interval_start
+   GLSKDocument.get_gsk_time_interval_end
+   GLSKDocument.get_countries
+   GLSKDocument.get_points_for_country
+   GLSKDocument.get_glsk_factors

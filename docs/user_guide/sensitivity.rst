@@ -195,11 +195,11 @@ The second one allows a more refined zone creation by separating the glsk file d
 
 .. code-block:: python
     >>> n = pp.network.load('simple-eu.uct')
-    >>> importer = pp.glsk.GLSKImporter('glsk_sample.xml')
-    >>> t_start = importer.get_gsk_time_interval_start()
-    >>> t_end = importer.get_gsk_time_interval_end()
-    >>> de_generators = importer.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
-    >>> de_shift_keys = importer.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
+    >>> glsk_document = pp.glsk.load('glsk_sample.xml')
+    >>> t_start = glsk_document.get_gsk_time_interval_start()
+    >>> t_end = glsk_document.get_gsk_time_interval_end()
+    >>> de_generators = glsk_document.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
+    >>> de_shift_keys = glsk_document.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
     >>> zone_de = pp.sensitivity.create_country_zone_generator('10YCB-GERMANY--8', de_generators, de_shift_keys)
 
 Zone modification
