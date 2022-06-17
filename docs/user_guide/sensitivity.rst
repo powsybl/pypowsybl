@@ -200,7 +200,7 @@ The second one allows a more refined zone creation by separating the glsk file d
     >>> t_end = glsk_document.get_gsk_time_interval_end()
     >>> de_generators = glsk_document.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
     >>> de_shift_keys = glsk_document.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
-    >>> zone_de = pp.sensitivity.create_country_zone_generator('10YCB-GERMANY--8', de_generators, de_shift_keys)
+    >>> zone_de = pp.sensitivity.create_zone_from_injections_and_shift_keys('10YCB-GERMANY--8', de_generators, de_shift_keys)
 
 Zone modification
 ^^^^^^^^^^^^^^^^^

@@ -37,7 +37,7 @@ class GLSKImportTestCases(unittest.TestCase):
 
         self.assertEqual(['DDE1AA1 _generator', 'DDE2AA1 _generator', 'DDE3AA1 _generator'], de_generators)
         self.assertEqual([0.4166666567325592, 0.3333333432674408, 0.25], de_shift_keys)
-        zone_de = pp.sensitivity.create_country_zone_generator('DE', de_generators, de_shift_keys)
+        zone_de = pp.sensitivity.create_zone_from_injections_and_shift_keys('DE', de_generators, de_shift_keys)
         self.assertEqual({'DDE1AA1 _generator': 0.4166666567325592, 'DDE2AA1 _generator': 0.3333333432674408, 'DDE3AA1 _generator': 0.25}, zone_de.shift_keys_by_injections_ids)
 
     def test_zones(self):

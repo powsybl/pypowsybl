@@ -60,7 +60,7 @@ In order to create, inspect and manipulate zones, you can use the following meth
 
     create_empty_zone
     create_country_zone
-    create_country_zone_generator
+    create_zone_from_injections_and_shift_keys
     create_zones_from_glsk_file
     Zone
     Zone.id
