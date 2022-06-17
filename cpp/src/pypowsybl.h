@@ -158,8 +158,6 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
-::zone* createZone(const std::string& id, const JavaHandle& glskImportHandle);
-
 void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);

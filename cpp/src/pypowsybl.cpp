@@ -521,11 +521,6 @@ JavaHandle createSensitivityAnalysis() {
     return z;
 }
 
-::zone* createZone(const std::string& id, const JavaHandle& glskImporterHandle) {
-    auto z = new ::zone;
-    return z;
-}
-
 void deleteZone(::zone* z) {
     delete[] z->id;
     for (int i = 0; i < z->length; i++) {

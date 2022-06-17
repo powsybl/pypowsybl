@@ -11,7 +11,7 @@ import com.powsybl.glsk.ucte.UcteGlskDocument;
 import com.powsybl.iidm.network.Network;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ public class GLSKimportContext {
     private UcteGlskDocument document;
 
     public void load(String filename) {
-        try {
-            document = UcteGlskDocument.importGlsk(new FileInputStream(filename));
-        } catch (FileNotFoundException e) {
+        try (FileInputStream fis = new FileInputStream(filename)) {
+            document = UcteGlskDocument.importGlsk(fis);
+        } catch (IOException e) {
             throw new PowsyblException(e.getMessage());
         }
     }
