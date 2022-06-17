@@ -857,9 +857,9 @@ public final class PyPowsyblApiLib {
     }
 
     @CEntryPoint(name = "createGLSKdocument")
-    public static ObjectHandle createGLSKimporter(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createGLSKdocument(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            GLSKimportContext importer = new GLSKimportContext();
+            GLSKdocumentContext importer = new GLSKdocumentContext();
             String filename = CTypeUtil.toString(fileNamePtr);
             importer.load(filename);
             return ObjectHandles.getGlobal().create(importer);
@@ -869,7 +869,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "getGLSKinjectionkeys")
     public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String country = CTypeUtil.toString(countryPtr);
             return  createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(network, country, Instant.ofEpochSecond(instant))));
@@ -879,7 +879,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "getGLSKcountries")
     public static ArrayPointer<CCharPointerPointer> getGLSKcountries(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
             return createCharPtrArray(new ArrayList<>(importer.getCountries()));
         });
     }
@@ -888,7 +888,7 @@ public final class PyPowsyblApiLib {
     public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
             String country = CTypeUtil.toString(countryPtr);
             List<Double> values = importer.getInjectionFactorForCountryTimeinterval(network, country, Instant.ofEpochSecond(instant));
             return createDoubleArray(values);
@@ -898,7 +898,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "getInjectionFactorStartTimestamp")
     public static long getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
             return importer.getInjectionFactorStart().getEpochSecond();
         });
     }
@@ -906,7 +906,7 @@ public final class PyPowsyblApiLib {
     @CEntryPoint(name = "getInjectionFactorEndTimestamp")
     public static long getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            GLSKimportContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
             return importer.getInjectionFactorEnd().getEpochSecond();
         });
     }

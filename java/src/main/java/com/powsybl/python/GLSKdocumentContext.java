@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
  */
-public class GLSKimportContext {
+public class GLSKdocumentContext {
 
     private UcteGlskDocument document;
 
