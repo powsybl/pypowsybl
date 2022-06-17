@@ -846,7 +846,7 @@ public final class PyPowsyblApiLib {
         });
     }
 
-    @CEntryPoint(name = "createGLSKimporter")
+    @CEntryPoint(name = "createGLSKdocument")
     public static ObjectHandle createGLSKimporter(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             GLSKimportContext importer = new GLSKimportContext();

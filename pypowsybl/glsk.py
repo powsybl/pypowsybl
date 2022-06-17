@@ -12,9 +12,10 @@ from os import PathLike as _PathLike
 from datetime import datetime
 import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl.network import Network as _Network
+from pypowsybl.network import _path_to_str
 
 class GLSKDocument:
-    def __init__(self, handle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
     def get_gsk_time_interval_start(self) -> datetime:
@@ -33,4 +34,5 @@ class GLSKDocument:
         return _pypowsybl.get_glsk_factors(network._handle, self._handle, country, int(instant.timestamp()))
 
 def load(file: _Union[str, _PathLike]) -> GLSKDocument:
-    return GLSKDocument(_pypowsybl.create_glsk_importer(file))
+    file = _path_to_str(file)
+    return GLSKDocument(_pypowsybl.create_glsk_document(file))

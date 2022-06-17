@@ -813,8 +813,8 @@ void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes
 
 }
 
-JavaHandle createGLSKimporter(std::string& filename) {
-    return callJava<JavaHandle>(::createGLSKimporter, (char*) filename.c_str());
+JavaHandle createGLSKdocument(std::string& filename) {
+    return callJava<JavaHandle>(::createGLSKdocument, (char*) filename.c_str());
 }
 
 std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
