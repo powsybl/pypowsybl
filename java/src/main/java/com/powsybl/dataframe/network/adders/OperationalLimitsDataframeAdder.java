@@ -7,8 +7,7 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
-import com.powsybl.python.LimitsDataframeAdderKey;
-import com.powsybl.python.TemporaryLimitData;
+import com.powsybl.python.network.TemporaryLimitData;
 import gnu.trove.list.array.TIntArrayList;
 
 import java.util.*;

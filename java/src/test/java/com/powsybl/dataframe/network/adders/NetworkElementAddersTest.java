@@ -18,7 +18,7 @@ import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategory;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 import com.powsybl.iidm.network.test.*;
-import com.powsybl.python.Networks;
+import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
