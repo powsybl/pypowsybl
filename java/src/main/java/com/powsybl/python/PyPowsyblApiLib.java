@@ -44,11 +44,13 @@ import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -851,6 +853,61 @@ public final class PyPowsyblApiLib {
             StringWriter reporterOut = new StringWriter();
             reporterModel.export(reporterOut);
             return CTypeUtil.toCharPtr(reporterOut.toString());
+        });
+    }
+
+    @CEntryPoint(name = "createGLSKdocument")
+    public static ObjectHandle createGLSKdocument(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKdocumentContext importer = new GLSKdocumentContext();
+            String filename = CTypeUtil.toString(fileNamePtr);
+            importer.load(filename);
+            return ObjectHandles.getGlobal().create(importer);
+        });
+    }
+
+    @CEntryPoint(name = "getGLSKinjectionkeys")
+    public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String country = CTypeUtil.toString(countryPtr);
+            return  createCharPtrArray(new ArrayList<>(importer.getInjectionIdForCountry(network, country, Instant.ofEpochSecond(instant))));
+        });
+    }
+
+    @CEntryPoint(name = "getGLSKcountries")
+    public static ArrayPointer<CCharPointerPointer> getGLSKcountries(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return createCharPtrArray(new ArrayList<>(importer.getCountries()));
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactor")
+    public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            String country = CTypeUtil.toString(countryPtr);
+            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(network, country, Instant.ofEpochSecond(instant));
+            return createDoubleArray(values);
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactorStartTimestamp")
+    public static long getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return importer.getInjectionFactorStart().getEpochSecond();
+        });
+    }
+
+    @CEntryPoint(name = "getInjectionFactorEndTimestamp")
+    public static long getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            GLSKdocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+            return importer.getInjectionFactorEnd().getEpochSecond();
         });
     }
 }

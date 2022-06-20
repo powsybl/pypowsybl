@@ -5,11 +5,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from __future__ import annotations
+from datetime import datetime
 from typing import List as _List, Optional as _Optional, Dict as _Dict
 from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
 import pypowsybl._pypowsybl as _pypowsybl
+import pypowsybl.glsk as glsk
 
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
@@ -94,6 +96,35 @@ def create_country_zone(network: _Network, country: str,
 
     return Zone(country, shift_keys_by_id)
 
+def create_zone_from_injections_and_shift_keys(id: str, injection_index: _List[str], shift_keys: _List[float]) -> Zone:
+    """ Create country zone with custom generator name and shift keys
+        Args:
+            country : Identifier of the zone
+            injection_index : IDs of the injection
+            shift_keys : shift keys for the generators
+        Returns:
+            The zone object
+    """
+    shift_keys_by_id = dict(zip(injection_index, shift_keys))
+    return Zone(id, shift_keys_by_id)
+
+def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: datetime) -> _List[Zone]:
+    """ Create country zones from glsk file for a given datetime
+        Args:
+            glsk_file : UCTE glsk file
+            instant : timepoint at which to select glsk data
+        Returns:
+            A list of zones created from glsk file
+    """
+    glsk_document = glsk.load(glsk_file)
+    countries = glsk_document.get_countries()
+    zones = []
+    for country in countries:
+        c_generators = glsk_document.get_points_for_country(network, country, instant)
+        c_shift_keys = glsk_document.get_glsk_factors(network, country, instant)
+        zone = create_zone_from_injections_and_shift_keys(country, c_generators, c_shift_keys)
+        zones.append(zone)
+    return zones
 
 class DcSensitivityAnalysisResult:
     """
