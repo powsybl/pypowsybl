@@ -11,6 +11,7 @@ import sys as _sys
 import datetime as _datetime
 import warnings
 from typing import (
+    Sequence as _Sequence,
     List as _List,
     Set as _Set,
     Dict as _Dict,
@@ -2946,8 +2947,25 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def merge(self, *networks: Network) -> None:
-        return _pp.merge(self._handle, [net._handle for net in networks])
+    def merge(self, networks: _Union[Network, _Sequence[Network]]) -> None:
+        """
+        Merges networks into this one.
+
+        Args:
+            networks:  List of networks to be merged into this one.
+
+        Examples:
+            If you have 3 networks, you can merge this way:
+
+            .. code-block:: python
+
+                network1.merge([network2, network3])
+
+            Note that network1 is modified: it absorbs network2 and network3.
+        """
+        if isinstance(networks, Network):
+            networks = [networks]
+        return _pp.merge(self._handle, [n._handle for n in networks])
 
     def _get_c_dataframes(self, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
         c_dfs: _List[_Optional[_pp.Dataframe]] = []
