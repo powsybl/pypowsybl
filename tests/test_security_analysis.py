@@ -23,6 +23,8 @@ def test_default_provider():
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
         sa.run_ac(n)
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
+        sa.run_dc(n)
     sa_result = sa.run_ac(n, provider='OpenLoadFlow')
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
     assert 'provider' == pp.security.get_default_provider()
