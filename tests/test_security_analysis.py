@@ -21,12 +21,10 @@ def test_default_provider():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
         sa.run_ac(n)
-    assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
         sa.run_dc(n)
-    assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
     sa_result = sa.run_ac(n, provider='OpenLoadFlow')
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
     assert 'provider' == pp.security.get_default_provider()
@@ -140,3 +138,15 @@ def test_dc_analysis():
 
 def test_provider_names():
     assert 'OpenLoadFlow' in pp.security.get_provider_names()
+
+
+def test_provider_parameters():
+    # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
+    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
+    n = pp.network.create_ieee14()
+    result = pp.security.create_analysis().run_ac(n, parameters)
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.FAILED
+
+    n = pp.network.create_ieee14()
+    result = pp.security.create_analysis().run_ac(n)
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED

@@ -30,9 +30,8 @@ def test_config():
     sa = pp.sensitivity.create_dc_analysis()
     sa.add_single_element_contingency('L1-2-1')
     sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(PyPowsyblError, match='No sensitivity analysis provider for name \'provider\''):
         sa.run(n)
-    assert 'SensitivityAnalysisProvider \'provider\' not found' == str(exc_info.value)
     r = sa.run(n, provider='OpenLoadFlow')
     assert 6 == r.get_branch_flows_sensitivity_matrix().size
     assert 'provider' == pp.sensitivity.get_default_provider()
@@ -245,3 +244,17 @@ def test_no_output_matrices_available():
     with pytest.raises(pp.PyPowsyblError) as errorContext:
         result.get_branch_flows_sensitivity_matrix('')
     assert 'Matrix \'\' not found' == str(errorContext.value)
+
+
+def test_provider_parameters():
+    # TODO: change test when handling of max iterations is fixed in OLF
+    # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
+    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '1'})
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
+    result = analysis.run(n, parameters)
+    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(303.45, abs=0.01)
+
+    result = analysis.run(n)
+    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)

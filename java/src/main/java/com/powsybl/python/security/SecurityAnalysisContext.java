@@ -8,15 +8,12 @@ package com.powsybl.python.security;
 
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
-import com.powsybl.security.LimitViolationFilter;
-import com.powsybl.security.SecurityAnalysis;
-import com.powsybl.security.SecurityAnalysisParameters;
-import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
 import com.powsybl.security.monitor.StateMonitor;
 
@@ -34,11 +31,21 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
     SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
         SecurityAnalysisParameters securityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SecurityAnalysisParameters.load() : new SecurityAnalysisParameters();
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
-        List<Contingency> contingencies = createContingencies(network);
-        return SecurityAnalysis.find(provider).run(network, network.getVariantManager().getWorkingVariantId(), n -> contingencies, securityAnalysisParameters,
-                    LocalComputationManager.getDefault(), new LimitViolationFilter(), new DefaultLimitViolationDetector(),
-                Collections.emptyList(), monitors, Reporter.NO_OP)
-            .getResult();
+        ContingenciesProvider contingencies = this::createContingencies;
+        SecurityAnalysisReport report = SecurityAnalysis.find(provider)
+                .run(
+                    network,
+                    network.getVariantManager().getWorkingVariantId(),
+                    contingencies,
+                    securityAnalysisParameters,
+                    LocalComputationManager.getDefault(),
+                    new LimitViolationFilter(),
+                    new DefaultLimitViolationDetector(),
+                    Collections.emptyList(),
+                    monitors,
+                    Reporter.NO_OP
+                );
+        return report.getResult();
     }
 
     void addMonitor(StateMonitor monitor) {
