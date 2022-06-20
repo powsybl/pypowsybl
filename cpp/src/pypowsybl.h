@@ -349,6 +349,18 @@ JavaHandle createReporterModel(const std::string& taskKey, const std::string& de
 
 std::string printReport(const JavaHandle& reporterModel);
 
+JavaHandle createGLSKdocument(std::string& filename);
+
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
+
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+
+long getInjectionFactorStartTimestamp(const JavaHandle& importer);
+
+long getInjectionFactorEndTimestamp(const JavaHandle& importer);
+
 }
 
 #endif //PYPOWSYBL_H

@@ -176,6 +176,32 @@ You can display the keys with:
 
 Note that keys are not normalized here.
 
+Shift keys from UCTE glsk files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Alternatively zones can also be created with weighted injections defined in ucte GLSK files. Two ways of creating zones are available.
+The first one use a glsk file and create a list of Zone objects with all the areas defined within :
+
+.. code-block:: python
+     >>> n = pp.network.load('simple-eu.uct')
+     >>> zones = pp.sensitivity.create_zones_from_glsk_file(n, 'glsk_sample.xml', datetime.datetime(2019, 1, 8, 0, 0))
+     >>> params = pp.loadflow.Parameters(distributed_slack=False)
+     >>> sa = pp.sensitivity.create_dc_analysis()
+     >>> sa.set_zones(zones)
+     >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['10YCB-GERMANY--8'], 'm')
+     >>> results = sa.run(n, params)
+
+The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation :
+
+.. code-block:: python
+    >>> n = pp.network.load('simple-eu.uct')
+    >>> glsk_document = pp.glsk.load('glsk_sample.xml')
+    >>> t_start = glsk_document.get_gsk_time_interval_start()
+    >>> t_end = glsk_document.get_gsk_time_interval_end()
+    >>> de_generators = glsk_document.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
+    >>> de_shift_keys = glsk_document.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
+    >>> zone_de = pp.sensitivity.create_zone_from_injections_and_shift_keys('10YCB-GERMANY--8', de_generators, de_shift_keys)
+
 Zone modification
 ^^^^^^^^^^^^^^^^^
 

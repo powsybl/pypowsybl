@@ -356,6 +356,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ucte-converter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-glsk-document-ucte</artifactId>
+        </dependency>
 
         <!-- test -->
         <dependency>

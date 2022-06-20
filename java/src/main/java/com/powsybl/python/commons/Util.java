@@ -11,10 +11,12 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.iidm.network.ValidationLevel;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -73,6 +76,16 @@ public final class Util {
         }
     }
 
+    public static long doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, LongSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsLong();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return 0;
+        }
+    }
+
     public interface PointerProvider<T extends WordBase> {
 
         T get();
@@ -88,12 +101,20 @@ public final class Util {
         }
     }
 
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
+    public static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
         CCharPointerPointer stringListPtr = UnmanagedMemory.calloc(stringList.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < stringList.size(); i++) {
             stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
         }
         return allocArrayPointer(stringListPtr, stringList.size());
+    }
+
+    public static ArrayPointer<CDoublePointer> createDoubleArray(List<Double> doubleList) {
+        CDoublePointer doubleListPtr = UnmanagedMemory.calloc(doubleList.size() * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < doubleList.size(); i++) {
+            doubleListPtr.write(i, doubleList.get(i));
+        }
+        return allocArrayPointer(doubleListPtr, doubleList.size());
     }
 
     public static int convert(SeriesDataType type) {

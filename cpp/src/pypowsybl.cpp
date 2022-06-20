@@ -810,6 +810,37 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name) {
         pypowsybl::callJava<>(::createExtensions, network, (char*) name.data(), dataframes);
+
+}
+
+JavaHandle createGLSKdocument(std::string& filename) {
+    return callJava<JavaHandle>(::createGLSKdocument, (char*) filename.c_str());
+}
+
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
+    auto keysArrayPtr = callJava<array*>(::getGLSKinjectionkeys, network, importer, (char*) country.c_str(), instant);
+    ToStringVector keys(keysArrayPtr);
+    return keys.get();
+}
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer) {
+    auto countriesArrayPtr = callJava<array*>(::getGLSKcountries, importer);
+    ToStringVector countries(countriesArrayPtr);
+    return countries.get();
+}
+
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
+    auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, network, importer, (char*) country.c_str(), instant);
+    std::vector<double> values = toVector<double>(countriesArrayPtr);
+    return values;
+}
+
+long getInjectionFactorStartTimestamp(const JavaHandle& importer) {
+    return callJava<long>(::getInjectionFactorStartTimestamp, importer);
+}
+
+long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
+    return callJava<long>(::getInjectionFactorEndTimestamp, importer);
 }
 
 JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName) {
