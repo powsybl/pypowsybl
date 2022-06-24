@@ -25,6 +25,8 @@ from pypowsybl.network import ValidationLevel
 import util
 import tempfile
 
+import pypowsybl.report as rp
+
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
 
@@ -1456,6 +1458,42 @@ def test_attributes_order():
     assert ['energy_source', 'target_p'] == list(n.get_generators(attributes=['energy_source', 'target_p']).columns)
     assert ['r', 'x', 'g1'] == list(n.get_lines(attributes=['r', 'x', 'g1']).columns)
     assert ['g1', 'r', 'x'] == list(n.get_lines(attributes=['g1', 'r', 'x']).columns)
+
+
+def test_load_network_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+
+
+def test_load_network_from_string_with_report():
+    file_content = """
+##C 2007.05.01
+##N
+##ZBE
+BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
+    """
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.load_from_string('simple-eu.uct', file_content, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) > len(report1)
+
+
+def test_dump_to_string_with_report():
+    bat_path = TEST_DIR.joinpath('battery.xiidm')
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    xml = bat_path.read_text()
+    n = pp.network.load(str(bat_path), reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+
 
 
 if __name__ == '__main__':
