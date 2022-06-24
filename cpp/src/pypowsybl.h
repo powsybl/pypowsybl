@@ -236,7 +236,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -253,7 +253,7 @@ void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnaly
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider, JavaHandle* reporter);
 
 matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 

@@ -7,6 +7,7 @@
 package com.powsybl.python.security;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
@@ -192,7 +193,8 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                                   CCharPointer providerName, boolean dc, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   CCharPointer providerName, boolean dc,  ObjectHandle reporterHandle,
+                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -202,7 +204,8 @@ public final class SecurityAnalysisCFunctions {
                     .map(lfName -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, lfName))
                     .orElseGet(() -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr));
 
-            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, provider.getName());
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, provider.getName(), reporter);
             return ObjectHandles.getGlobal().create(result);
         });
     }

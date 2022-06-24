@@ -498,8 +498,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters,
-                                            const std::string& provider, bool dc) {
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc);
+                                            const std::string& provider, bool dc, JavaHandle* reporter) {
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, &parameters, (char *) provider.data(), dc, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -588,8 +588,8 @@ void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, con
                 busIds.size(), targetVoltageIdPtr.get(), targetVoltageIds.size());
 }
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider) {
-    return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data());
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider, JavaHandle* reporter) {
+    return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, &parameters, (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
 

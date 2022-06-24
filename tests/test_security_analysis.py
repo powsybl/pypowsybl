@@ -7,7 +7,7 @@
 import pytest
 import pypowsybl as pp
 import pandas as pd
-
+import pypowsybl.report as rp
 
 @pytest.fixture(autouse=True)
 def no_config():
@@ -150,3 +150,30 @@ def test_provider_parameters():
     n = pp.network.create_ieee14()
     result = pp.security.create_analysis().run_ac(n)
     assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
+
+
+def test_ac_security_analysis_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    sa_result = sa.run_ac(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+
+
+def test_dc_analysis_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    n.update_loads(id='LOAD', p0=900)
+    n.update_generators(id='GEN', target_p=900)
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
+    sa_result = sa.run_dc(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+

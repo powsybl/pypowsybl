@@ -9,6 +9,7 @@ import pytest
 import pypowsybl as pp
 import pandas as pd
 from pypowsybl import PyPowsyblError
+import pypowsybl.report as rp
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -258,3 +259,16 @@ def test_provider_parameters():
 
     result = analysis.run(n)
     assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
+
+
+def test_voltage_sensitivities_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.sensitivity.create_ac_analysis()
+    sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+    r = sa.run(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) > len(report1)
+

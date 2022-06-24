@@ -488,7 +488,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"), py::arg("dc"));
+          py::arg("provider"), py::arg("dc"), py::arg("reporter"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
@@ -513,7 +513,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
