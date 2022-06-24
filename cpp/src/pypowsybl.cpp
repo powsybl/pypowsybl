@@ -819,4 +819,24 @@ void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes
         pypowsybl::callJava<>(::createExtensions, network, (char*) name.data(), dataframes);
 }
 
+std::shared_ptr<balance_computation_result> runBalanceComputation(std::vector<pypowsybl::JavaHandle> networks, load_flow_parameters lfParameters, balance_computation_parameters bcParameters) {
+
+    //Do a function for this
+    std::vector<void*> nPtrs;
+    nPtrs.reserve(networks.size());
+    for(int i = 0; i < networks.size(); ++i) {
+      void* ptr = networks[i];
+      nPtrs.push_back(ptr);
+    }
+    int count = nPtrs.size();
+    void** networksData = (void**)nPtrs.data();
+    std::cout<< " CPP runBalanceComputation" <<std::endl;
+    balance_computation_result* resultPtr = pypowsybl::callJava<balance_computation_result*>(::runBalanceComputation,
+        networksData, count, &lfParameters, &bcParameters);
+    return std::shared_ptr<balance_computation_result>(resultPtr, [](balance_computation_result* ptr){
+            std::cout<< " Destroy balance_computation_result" <<std::endl;
+            callJava(::freeBalanceComputationResult, ptr);
+        });
+}
+
 }

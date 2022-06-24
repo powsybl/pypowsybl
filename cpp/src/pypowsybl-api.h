@@ -196,3 +196,8 @@ typedef struct balance_computation_parameters_struct {
     double threshold;
     int max_number_iterations;
 } balance_computation_parameters;
+
+typedef struct balance_computation_result_struct {
+    int status;
+    int iteration_count;
+} balance_computation_result;

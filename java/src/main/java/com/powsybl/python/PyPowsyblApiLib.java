@@ -8,6 +8,7 @@ package com.powsybl.python;
 
 import ch.qos.logback.classic.Logger;
 import com.powsybl.balances_adjustment.balance_computation.BalanceComputationParameters;
+import com.powsybl.balances_adjustment.balance_computation.BalanceComputationResult;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.util.ServiceLoaderCache;
@@ -831,6 +832,47 @@ public final class PyPowsyblApiLib {
         doCatch(exceptionHandlerPtr, () -> {
             Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+        });
+    }
+
+    private static BalanceComputationParameters createBalanceComputationParameters(LoadFlowParameters lfParameters, BalanceComputationParametersPointer bcParametersPtr) {
+        return new BalanceComputationParameters(bcParametersPtr.getThreshold(), bcParametersPtr.getMaxNumberIterations()).setLoadFlowParameters(lfParameters);
+    }
+
+    static BalanceComputationResultPointer createBalanceComputationResultPointer(BalanceComputationResult result) {
+        BalanceComputationResultPointer resultPtr = UnmanagedMemory.calloc(SizeOf.get(BalanceComputationResultPointer.class));
+        resultPtr.setStatus(result.getStatus().ordinal());
+        resultPtr.setIterationCount(result.getIterationCount());
+        return resultPtr;
+    }
+
+    @CEntryPoint(name = "freeBalanceComputationResult")
+    public static void freeBalanceComputationResult(IsolateThread thread, BalanceComputationResultPointer bcResultPtr,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UnmanagedMemory.free(bcResultPtr);
+        });
+    }
+
+    @CEntryPoint(name = "runBalanceComputation")
+    public static BalanceComputationResultPointer runBalanceComputation(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
+                                             LoadFlowParametersPointer lfParametersPtr, BalanceComputationParametersPointer bcParametersPtr,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+
+            System.out.println("Java runBalanceComputation");
+            //List<String> netPositionKeys = CTypeUtil.toStringList(areasNamesPtrPtr, areasNamesCount);
+            //List<Double> netPositionValues = CTypeUtil.toDoubleList(netPositionsPtr, netPositionValueCount);
+            LoadFlowParameters lfParameters = createLoadFlowParameters(false, lfParametersPtr);
+            BalanceComputationParameters bcParameters = createBalanceComputationParameters(lfParameters, bcParametersPtr);
+            for (int i = 0; i < networkCount; ++i) {
+                ObjectHandle networkHandle = networkHandles.read(i);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                System.out.println(network.getNameOrId());
+            }
+
+            BalanceComputationResult result = new BalanceComputationResult(BalanceComputationResult.Status.SUCCESS, 10);
+            return createBalanceComputationResultPointer(result);
         });
     }
 }

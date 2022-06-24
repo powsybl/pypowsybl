@@ -124,6 +124,11 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+enum BalanceComputationResultStatus {
+    BC_FAILED = 0,
+    BC_SUCCESS,
+};
+
 
 class SeriesMetadata {
 public:
@@ -346,6 +351,8 @@ std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& n
 std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
+
+std::shared_ptr<balance_computation_result> runBalanceComputation(std::vector<pypowsybl::JavaHandle> networks, load_flow_parameters lfParameters, balance_computation_parameters parameters);
 
 }
 

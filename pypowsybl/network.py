@@ -4063,6 +4063,9 @@ class Network:  # pylint: disable=too-many-public-methods
             ids = [ids]
         _pp.remove_extensions(self._handle, extension_name, ids)
 
+    def get_cgmes_control_area(self):
+        return
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))

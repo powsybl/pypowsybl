@@ -652,4 +652,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", 
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
+
+    py::enum_<pypowsybl::BalanceComputationResultStatus>(m, "BalanceComputationResultStatus", "Balance computation result status.")
+                .value("FAILED", pypowsybl::BalanceComputationResultStatus::BC_FAILED, "The loadflow has converged.")
+                .value("SUCCESS", pypowsybl::BalanceComputationResultStatus::BC_SUCCESS, "The loadflow has failed.");
+
+    py::class_<balance_computation_result>(m, "BalanceComputationResult", "Balance computation run result")
+          .def_property_readonly("status", [](const balance_computation_result& r) {
+              return static_cast<pypowsybl::BalanceComputationResultStatus>(r.status);
+          })
+          .def_property_readonly("iteration_count", [](const balance_computation_result& r) {
+              return r.iteration_count;
+          });
+
+    m.def("run_balance_computation", &pypowsybl::runBalanceComputation, "Run a balance computation", py::call_guard<py::gil_scoped_release>(),
+              py::arg("networks"), py::arg("lfParameters"), py::arg("bcParameters"));
 }

@@ -654,4 +654,20 @@ public final class PyPowsyblApiHeader {
         public static native ValidationLevelType fromCValue(int value);
     }
 
+    @CStruct("balance_computation_result")
+    interface BalanceComputationResultPointer extends PointerBase {
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CField("iteration_count")
+        int getIterationCount();
+
+        @CField("iteration_count")
+        void setIterationCount(int iterationCount);
+    }
+
 }
