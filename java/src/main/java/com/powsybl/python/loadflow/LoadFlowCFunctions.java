@@ -132,6 +132,7 @@ public final class LoadFlowCFunctions {
             ptr.setIterationCount(componentResult.getIterationCount());
             ptr.setSlackBusId(CTypeUtil.toCharPtr(componentResult.getSlackBusId()));
             ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
+            ptr.setDistributedActivePower(componentResult.getDistributedActivePower());
         }
         return allocArrayPointer(componentResultPtr, componentResults.size());
     }
