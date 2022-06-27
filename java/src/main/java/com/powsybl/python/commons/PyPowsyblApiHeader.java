@@ -147,6 +147,12 @@ public final class PyPowsyblApiHeader {
         @CField("slack_bus_active_power_mismatch")
         void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
 
+        @CField("distributed_active_power")
+        double getDistributedActivePower();
+
+        @CField("distributed_active_power")
+        void setDistributedActivePower(double distributedActivePower);
+
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
