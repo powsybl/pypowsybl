@@ -14,7 +14,12 @@ import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl.network import Network as _Network
 from pypowsybl.network import _path_to_str
 
+
 class GLSKDocument:
+    """
+    Result of GLSK file parsing, provides access to underlying data.
+    """
+
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
@@ -33,6 +38,16 @@ class GLSKDocument:
     def get_glsk_factors(self, network: _Network, country: str, instant: datetime) -> _List[float]:
         return _pypowsybl.get_glsk_factors(network._handle, self._handle, country, int(instant.timestamp()))
 
+
 def load(file: _Union[str, _PathLike]) -> GLSKDocument:
+    """
+    Loads a GLSK file.
+
+    Args:
+        file: path to the GLSK file
+
+    Returns:
+        A GLSK document object.
+    """
     file = _path_to_str(file)
     return GLSKDocument(_pypowsybl.create_glsk_document(file))

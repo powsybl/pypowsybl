@@ -183,6 +183,7 @@ Alternatively zones can also be created with weighted injections defined in ucte
 The first one use a glsk file and create a list of Zone objects with all the areas defined within :
 
 .. code-block:: python
+
      >>> n = pp.network.load('simple-eu.uct')
      >>> zones = pp.sensitivity.create_zones_from_glsk_file(n, 'glsk_sample.xml', datetime.datetime(2019, 1, 8, 0, 0))
      >>> params = pp.loadflow.Parameters(distributed_slack=False)
@@ -194,6 +195,7 @@ The first one use a glsk file and create a list of Zone objects with all the are
 The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation :
 
 .. code-block:: python
+
     >>> n = pp.network.load('simple-eu.uct')
     >>> glsk_document = pp.glsk.load('glsk_sample.xml')
     >>> t_start = glsk_document.get_gsk_time_interval_start()
