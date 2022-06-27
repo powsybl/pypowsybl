@@ -84,7 +84,7 @@ class ComponentResult:
                f")"
 
 
-class Parameters:
+class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a loadflow execution.
 
