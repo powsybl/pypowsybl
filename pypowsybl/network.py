@@ -273,7 +273,7 @@ class Network:  # pylint: disable=too-many-public-methods
         file = _path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model)
+        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> str:
         """
@@ -289,7 +289,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model)
+        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -4309,7 +4309,7 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     file = _path_to_str(file)
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model))
+    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
@@ -4326,7 +4326,7 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model))
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
 
 def get_extensions_names() -> _List[str]:

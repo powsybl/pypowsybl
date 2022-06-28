@@ -159,7 +159,7 @@ class SecurityAnalysis(_ContingencyContainer):
         """
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def run_dc(self, network: _Network, parameters: Parameters = None,
                provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
@@ -176,7 +176,7 @@ class SecurityAnalysis(_ContingencyContainer):
         """
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,

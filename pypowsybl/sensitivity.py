@@ -379,7 +379,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         """
         p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return DcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider, None if reporter is None else reporter._reporter_model),
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
@@ -418,7 +418,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         """
         p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return AcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if reporter is None else reporter._reporter_model),
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
             bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
