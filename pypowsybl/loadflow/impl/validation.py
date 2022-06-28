@@ -4,16 +4,8 @@ from typing import (
 )
 import pandas as pd
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import (
-    LoadFlowComponentStatus as ComponentStatus,
-    ConnectedComponentMode,
-    BalanceType,
-    VoltageInitMode,
-    ValidationType
-)
-
+from pypowsybl._pypowsybl import ValidationType
 from pypowsybl.network import Network
-from pypowsybl.report import Reporter
 from pypowsybl.util import create_data_frame_from_series_array
 
 
