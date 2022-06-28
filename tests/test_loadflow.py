@@ -177,3 +177,8 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n2, reporter = reporter)
     report3 = str(reporter)
     assert len(report3) > len(report2)
+
+from pypowsybl.loadflow import *
+
+def test_import():
+    print(ComponentResult)
