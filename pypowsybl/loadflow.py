@@ -73,6 +73,11 @@ class ComponentResult:
         """Remaining active power slack at the end of the loadflow"""
         return self._res.slack_bus_active_power_mismatch
 
+    @property
+    def distributed_active_power(self) -> float:
+        """Active power distributed from slack bus to other buses during the loadflow"""
+        return self._res.distributed_active_power
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
                f"connected_component_num={self.connected_component_num!r}" \
@@ -81,6 +86,7 @@ class ComponentResult:
                f", iteration_count={self.iteration_count!r}" \
                f", slack_bus_id={self.slack_bus_id!r}" \
                f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}" \
+               f", distributed_active_power={self.distributed_active_power!r}" \
                f")"
 
 
