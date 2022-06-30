@@ -93,7 +93,9 @@ When the security analysis is completed, you can inspect its results:
 GLSK UCTE file loading
 ----------------------
 
-UCTE GLSK file can be loaded using glsk.load and GLSKDocument, data can be used for zone creation
+.. module:: pypowsybl.glsk
+
+UCTE GLSK files can be loaded using glsk.load and GLSKDocument, data can be used for zone creation.
 
 .. autosummary::
    :nosignatures:

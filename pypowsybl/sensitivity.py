@@ -98,6 +98,7 @@ def create_country_zone(network: _Network, country: str,
 
     return Zone(country, shift_keys_by_id)
 
+
 def create_zone_from_injections_and_shift_keys(id: str, injection_index: _List[str], shift_keys: _List[float]) -> Zone:
     """ Create country zone with custom generator name and shift keys
         Args:
@@ -109,6 +110,7 @@ def create_zone_from_injections_and_shift_keys(id: str, injection_index: _List[s
     """
     shift_keys_by_id = dict(zip(injection_index, shift_keys))
     return Zone(id, shift_keys_by_id)
+
 
 def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: datetime) -> _List[Zone]:
     """ Create country zones from glsk file for a given datetime
@@ -127,6 +129,7 @@ def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: date
         zone = create_zone_from_injections_and_shift_keys(country, c_generators, c_shift_keys)
         zones.append(zone)
     return zones
+
 
 class DcSensitivityAnalysisResult:
     """

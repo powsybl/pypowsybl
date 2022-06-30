@@ -87,7 +87,7 @@ included in the computation:
 .. doctest::
 
     >>> results
-    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763, distributed_active_power=0.0)]
 
 Component results provides general information about the loadflow: was it successful ? how many iterations did
 it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance

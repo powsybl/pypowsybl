@@ -281,6 +281,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             })
             .def_property_readonly("slack_bus_active_power_mismatch", [](const load_flow_component_result& r) {
                 return r.slack_bus_active_power_mismatch;
+            })
+            .def_property_readonly("distributed_active_power", [](const load_flow_component_result& r) {
+                return r.distributed_active_power;
             });
 
     bindArray<pypowsybl::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
