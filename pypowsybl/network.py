@@ -36,6 +36,7 @@ from pypowsybl.utils.dataframes import (
     _create_properties_c_dataframe,
     _adapt_properties_kwargs
 )
+from pypowsybl.report import Reporter as _Reporter
 
 # Type definitions
 if _TYPE_CHECKING:
@@ -233,7 +234,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {})
+        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
@@ -247,7 +248,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def disconnect(self, id: str) -> bool:
         return _pp.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
+    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -258,6 +259,7 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
+            reporter:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
             Various usage examples:
@@ -271,22 +273,23 @@ class Network:  # pylint: disable=too-many-public-methods
         file = _path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters)
+        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
+            reporter:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters)
+        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -4277,7 +4280,7 @@ def get_export_parameters(fmt: str) -> _DataFrame:
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None) -> Network:
+def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -4286,6 +4289,7 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None) -> Ne
     Args:
        file:       path to the network file
        parameters: a dictionary of import parameters
+       reporter:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         The loaded network
@@ -4305,10 +4309,10 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None) -> Ne
     file = _path_to_str(file)
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network(file, parameters))
+    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
 
-def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -4322,7 +4326,7 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
 
 def get_extensions_names() -> _List[str]:

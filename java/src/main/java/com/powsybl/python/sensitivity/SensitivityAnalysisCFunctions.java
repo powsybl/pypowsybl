@@ -7,6 +7,7 @@
 package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -161,7 +162,7 @@ public final class SensitivityAnalysisCFunctions {
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, boolean dc, PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                                      CCharPointer providerName,
+                                                      CCharPointer providerName, ObjectHandle reporterHandle,
                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
@@ -171,7 +172,8 @@ public final class SensitivityAnalysisCFunctions {
             LoadFlowParameters loadFlowParameters = provider.getLoadFlowProviderName()
                     .map(lfName -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, lfName))
                     .orElseGet(() -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr));
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, provider.getName());
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, provider.getName(), reporter);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }

@@ -183,7 +183,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         return count;
     }
 
-    SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
+    SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider, Reporter reporter) {
         SensitivityAnalysisParameters sensitivityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SensitivityAnalysisParameters.load() : new SensitivityAnalysisParameters();
         sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         List<Contingency> contingencies = createContingencies(network);
@@ -298,7 +298,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                         variableSets,
                         sensitivityAnalysisParameters,
                         LocalComputationManager.getDefault(),
-                        Reporter.NO_OP);
+                        (reporter == null) ? Reporter.NO_OP : reporter);
 
         Map<String, double[]> valuesByContingencyId = new HashMap<>(contingencies.size());
         Map<String, double[]> referencesByContingencyId = new HashMap<>(contingencies.size());

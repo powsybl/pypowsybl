@@ -28,7 +28,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<StateMonitor> monitors = new ArrayList<>();
 
-    SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider) {
+    SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider, Reporter reporter) {
         SecurityAnalysisParameters securityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SecurityAnalysisParameters.load() : new SecurityAnalysisParameters();
         securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
         ContingenciesProvider contingencies = this::createContingencies;
@@ -43,7 +43,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                     new DefaultLimitViolationDetector(),
                     Collections.emptyList(),
                     monitors,
-                    Reporter.NO_OP
+                    (reporter == null) ? Reporter.NO_OP : reporter
                 );
         return report.getResult();
     }

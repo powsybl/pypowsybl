@@ -242,16 +242,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("format"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file"), py::arg("parameters"));
+          py::arg("file"), py::arg("parameters"), py::arg("reporter"));
 
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file_name"), py::arg("file_content"),py::arg("parameters"));
+          py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("reporter"));
 
     m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"));
+          py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("reporter"));
 
     m.def("dump_network_to_string", &pypowsybl::dumpNetworkToString, "Dump network in a given format", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("format"), py::arg("parameters"));
+          py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("reporter"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("v_min"), py::arg("v_max"),
@@ -491,7 +491,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"), py::arg("dc"));
+          py::arg("provider"), py::arg("dc"), py::arg("reporter"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
@@ -516,7 +516,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {

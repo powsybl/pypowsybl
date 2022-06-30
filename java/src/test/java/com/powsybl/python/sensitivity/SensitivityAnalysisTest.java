@@ -7,6 +7,7 @@
 package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -26,7 +27,7 @@ class SensitivityAnalysisTest {
                 .setDc(false)
                 .setDistributedSlack(false);
         SensitivityAnalysisContext sensitivityContext = new SensitivityAnalysisContext();
-        SensitivityAnalysisResultContext result = sensitivityContext.run(network, params, "OpenLoadFlow");
+        SensitivityAnalysisResultContext result = sensitivityContext.run(network, params, "OpenLoadFlow", Reporter.NO_OP);
 
         try {
             result.createBranchFlowsSensitivityMatrix("", "");

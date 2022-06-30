@@ -17,6 +17,8 @@ from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
+from pypowsybl.report import Reporter as _Reporter
+
 
 TO_REMOVE = 'TO_REMOVE'
 
@@ -367,7 +369,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         SensitivityAnalysis.__init__(self, handle)
 
     def run(self, network: _Network, parameters: Parameters = None,
-            provider: str = '') -> DcSensitivityAnalysisResult:
+            provider: str = '', reporter: _Reporter = None) -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
@@ -380,7 +382,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         """
         p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return DcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider),
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
@@ -405,7 +407,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.target_voltage_ids = target_voltage_ids
 
     def run(self, network: _Network, parameters: Parameters = None,
-            provider: str = '') -> AcSensitivityAnalysisResult:
+            provider: str = '', reporter: _Reporter = None) -> AcSensitivityAnalysisResult:
         """
         Runs the sensitivity analysis.
 
@@ -419,7 +421,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         """
         p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
         return AcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider),
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
             bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 

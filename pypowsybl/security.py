@@ -15,6 +15,7 @@ from pypowsybl.util import (
     create_data_frame_from_series_array as _create_data_frame_from_series_array
 )
 from pypowsybl.loadflow import Parameters
+from pypowsybl.report import Reporter as _Reporter
 
 
 def _contingency_result_repr(self: ContingencyResult) -> str:
@@ -144,7 +145,7 @@ class SecurityAnalysis(_ContingencyContainer):
         _ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: _Network, parameters: Parameters = None,
-               provider: str = '') -> SecurityAnalysisResult:
+               provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -158,10 +159,10 @@ class SecurityAnalysis(_ContingencyContainer):
         """
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def run_dc(self, network: _Network, parameters: Parameters = None,
-               provider: str = '') -> SecurityAnalysisResult:
+               provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an DC security analysis.
 
         Args:
@@ -175,7 +176,7 @@ class SecurityAnalysis(_ContingencyContainer):
         """
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,
