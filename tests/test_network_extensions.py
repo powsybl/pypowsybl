@@ -84,7 +84,8 @@ def test_merged_xnode():
     assert (x.r_dp, x.x_dp, x.g1_dp, x.g2_dp, x.b1_dp, x.b2_dp) == (0.6, 0.6, 0.6, 0.6, 0.6, 0.6)
     assert (x.p1, x.q1, x.p2, x.q2) == (0, 0, 0, 0)
 
-    network.remove_extensions('mergedXnode', ['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1', 'BBBBBB11 XXXXXX12 1 + FFFFFF11 XXXXXX12 1'])
+    network.remove_extensions('mergedXnode', ['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1',
+                                              'BBBBBB11 XXXXXX12 1 + FFFFFF11 XXXXXX12 1'])
     assert network.get_extensions('mergedXnode').empty
 
     network.create_extensions('mergedXnode', id='BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1', code='XXXXXX11',
@@ -217,6 +218,49 @@ def test_load_detail():
     assert e.variable_p0 == 25
     assert e.fixed_q0 == 110
     assert e.variable_q0 == 15
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+
+def test_injection_observability():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'injectionObservability'
+    element_id = 'LD1'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id=element_id, observable=True, p_standard_deviation=200, p_redundant=True,
+                        q_standard_deviation=150, q_redundant=True, v_standard_deviation=400, v_redundant=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.observable
+    assert e.p_standard_deviation == 200
+    assert e.p_redundant
+    assert e.q_standard_deviation == 150
+    assert e.q_redundant
+    assert e.v_standard_deviation == 400
+    assert e.v_redundant
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_branch_observability():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'branchObservability'
+    element_id = 'TWT'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id=element_id, observable=True, p1_standard_deviation=195, p1_redundant=True,
+                        p2_standard_deviation=200, p2_redundant=True, q1_standard_deviation=190,
+                        q1_redundant=True, q2_standard_deviation=205, q2_redundant=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.p1_standard_deviation == 195
+    assert e.p1_redundant
+    assert e.p2_standard_deviation == 200
+    assert e.p2_redundant
+    assert e.q1_standard_deviation == 190
+    assert e.q1_redundant
+    assert e.q2_standard_deviation == 205
+    assert e.q2_redundant
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
