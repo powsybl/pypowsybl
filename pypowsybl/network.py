@@ -1485,7 +1485,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
-              - **angle**: the voltage angle of the busbar section (in radian)
+              - **angle**: the voltage angle of the busbar section (in degree)
               - **voltage_level_id**: at which substation the busbar section is connected
               - **bus_id**: bus this busbar section belongs to
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to
