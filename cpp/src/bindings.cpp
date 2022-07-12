@@ -654,6 +654,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
     m.def("create_reporter_model", &pypowsybl::createReporterModel, "Create a reporter model", py::arg("task_key"), py::arg("default_name"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
+	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("reporter_model"));
     m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
 
     m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));

@@ -349,6 +349,8 @@ JavaHandle createReporterModel(const std::string& taskKey, const std::string& de
 
 std::string printReport(const JavaHandle& reporterModel);
 
+std::string jsonReport(const JavaHandle& reporterModel);
+
 JavaHandle createGLSKdocument(std::string& filename);
 
 std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
