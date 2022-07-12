@@ -9,6 +9,7 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
+from datetime import timezone as _timezone
 import warnings
 from typing import (
     Sequence as _Sequence,
@@ -213,7 +214,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Date of this network case, in UTC timezone.
         """
-        return self._case_date
+        return self._case_date.replace(tzinfo=_timezone.utc)
 
     @property
     def forecast_distance(self) -> _datetime.timedelta:
