@@ -11,19 +11,14 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainer;
-import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
-import com.powsybl.security.LimitViolation;
-import com.powsybl.security.LimitViolationsResult;
-import com.powsybl.security.SecurityAnalysisProvider;
-import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.*;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import org.graalvm.nativeimage.IsolateThread;
@@ -38,10 +33,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -192,7 +184,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                   ObjectHandle networkHandle, PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                   ObjectHandle networkHandle, PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                                    CCharPointer providerName, boolean dc,  ObjectHandle reporterHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -200,12 +192,9 @@ public final class SecurityAnalysisCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             SecurityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
             logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
-            LoadFlowParameters loadFlowParameters = provider.getLoadFlowProviderName()
-                    .map(lfName -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, lfName))
-                    .orElseGet(() -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr));
-
+            SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            SecurityAnalysisResult result = analysisContext.run(network, loadFlowParameters, provider.getName(), reporter);
+            SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reporter);
             return ObjectHandles.getGlobal().create(result);
         });
     }
@@ -243,5 +232,34 @@ public final class SecurityAnalysisCFunctions {
             }
             freeArrayPointer(contingencyResultArrayPtr);
         });
+    }
+
+    @CEntryPoint(name = "freeSecurityAnalysisParameters")
+    public static void freeSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
+                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalanceCount(); i++) {
+                UnmanagedMemory.free(securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalance().read(i));
+            }
+            UnmanagedMemory.free(securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalance());
+            UnmanagedMemory.free(securityAnalysisParametersPointer);
+        });
+    }
+
+    @CEntryPoint(name = "createSecurityAnalysisParameters")
+    public static PyPowsyblApiHeader.SecurityAnalysisParametersPointer createSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToSecurityAnalysisParametersPointer(SecurityAnalysisCUtils.createSecurityAnalysisParameters()));
+    }
+
+    private static PyPowsyblApiHeader.SecurityAnalysisParametersPointer convertToSecurityAnalysisParametersPointer(SecurityAnalysisParameters parameters) {
+        PyPowsyblApiHeader.SecurityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.SecurityAnalysisParametersPointer.class));
+        paramsPtr.setFlowProportionalThreshold(parameters.getIncreasedViolationsParameters().getFlowProportionalThreshold());
+        paramsPtr.setHighVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageAbsoluteThreshold());
+        paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());
+        paramsPtr.setLowVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageAbsoluteThreshold());
+        paramsPtr.setLowVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageProportionalThreshold());
+        paramsPtr.setProviderParametersValuesCount(0);
+        paramsPtr.setProviderParametersKeysCount(0);
+        return paramsPtr;
     }
 }

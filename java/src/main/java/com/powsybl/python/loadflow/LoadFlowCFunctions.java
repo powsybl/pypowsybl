@@ -112,12 +112,16 @@ public final class LoadFlowCFunctions {
     public static void freeLoadFlowParameters(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < loadFlowParametersPtr.getCountriesToBalanceCount(); i++) {
-                UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance().read(i));
-            }
-            UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
-            UnmanagedMemory.free(loadFlowParametersPtr);
+            freeLoadFlowParametersPointer(loadFlowParametersPtr);
         });
+    }
+
+    public static void freeLoadFlowParametersPointer(LoadFlowParametersPointer loadFlowParametersPtr) {
+        for (int i = 0; i < loadFlowParametersPtr.getCountriesToBalanceCount(); i++) {
+            UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance().read(i));
+        }
+        UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
+        UnmanagedMemory.free(loadFlowParametersPtr);
     }
 
     private static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -137,7 +141,7 @@ public final class LoadFlowCFunctions {
         return allocArrayPointer(componentResultPtr, componentResults.size());
     }
 
-    private static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
+    public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
         LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
         paramsPtr.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
         paramsPtr.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());

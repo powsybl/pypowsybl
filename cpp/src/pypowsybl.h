@@ -172,6 +172,22 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class SecurityAnalysisParameters {
+public:
+    SecurityAnalysisParameters(security_analysis_parameters* src);
+    ~SecurityAnalysisParameters();
+    std::shared_ptr<security_analysis_parameters> to_c_struct() const;
+    
+    LoadFlowParameters* sa_load_flow_parameters;
+    double flow_proportional_threshold;
+    double low_voltage_proportional_threshold;
+    double low_voltage_absolute_threshold;
+    double high_voltage_proportional_threshold;
+    double high_voltage_absolute_threshold;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
@@ -240,6 +256,8 @@ void dumpNetwork(const JavaHandle& network, const std::string& file, const std::
 
 LoadFlowParameters* createLoadFlowParameters();
 
+SecurityAnalysisParameters* createSecurityAnalysisParameters();
+
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
@@ -260,7 +278,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
 JavaHandle createSensitivityAnalysis();
 
