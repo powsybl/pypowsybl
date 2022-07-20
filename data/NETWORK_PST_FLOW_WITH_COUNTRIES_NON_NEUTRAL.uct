@@ -1,0 +1,17 @@
+##C 2007.05.01
+This is a test network with 2 generators, 1 load and 1 neutral PST.
+There is a PST that connects the load and the generator as well as a line.
+Used to validate PST flow algorithm
+##N
+##ZFR
+FGEN  11              0 3 400.00 0.00000 0.00000 -100.00 0.00000 1000.00 -1000.0 1000.00 -1000.0
+##ZBE
+BLOAD 11              0 0 400.00 0.00000 0.00000 0.00000 0.00000 1000.00 -1000.0 1000.00 -1000.0
+BLOAD 12              0 2 400.00 200.000 0.00000 -100.00 0.00000 1000.00 -1000.0 1000.00 -1000.0
+##L
+FGEN  11 BLOAD 12 1 0 0.5000 1.5000 0.000000    480 LINE
+FGEN  11 BLOAD 11 1 0 1.0000 3.0000 0.000000    480 LINE
+##T
+BLOAD 11 BLOAD 12 2 0 400.0 400.0 1000. 0.5000 1.5000 150.0000 200.00   2000 PST
+##R
+BLOAD 11 BLOAD 12 2                    0.680 90.00 16   1       SYMM

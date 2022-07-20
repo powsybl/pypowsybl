@@ -361,6 +361,8 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
+SeriesArray* runFlowDecomposition(pypowsybl::JavaHandle network);
+
 }
 
 #endif //PYPOWSYBL_H

@@ -11,6 +11,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,6 +67,11 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
 
     public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
+        return (B) this;
+    }
+
+    public B doubles(Map<String, ToDoubleFunction<U>> nameValuesMap) {
+        nameValuesMap.forEach(this::doubles);
         return (B) this;
     }
 
