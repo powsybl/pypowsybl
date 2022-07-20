@@ -666,4 +666,5 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
+    m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "run flow decomposition on a network", py::arg("network"));
 }

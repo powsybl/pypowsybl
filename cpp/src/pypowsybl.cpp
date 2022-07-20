@@ -851,4 +851,8 @@ std::string printReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::printReport, reporterModel));
 }
 
+SeriesArray* runFlowDecomposition(pypowsybl::JavaHandle network) {
+    return new SeriesArray(callJava<array*>(::runFlowDecomposition, network));
+}
+
 }

@@ -11,6 +11,8 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.flow_decomposition.DecomposedFlow;
+import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
@@ -19,6 +21,7 @@ import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.python.flow_decomposition.DecomposedFlowContext;
 import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
@@ -400,5 +403,24 @@ public final class Dataframes {
                 .strings("bus_id", BusBreakerViewElementData::getBusId)
                 .strings("side", elementContext -> elementContext.getSide().isPresent() ? elementContext.getSide().get().toString() : "")
                 .build();
+    }
+
+    public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
+        return new DataframeMapperBuilder<FlowDecompositionResults, DecomposedFlowContext>()
+            .itemsProvider(Dataframes::getFlowDecompositions)
+            .stringsIndex("XNEC id", DecomposedFlowContext::getXnecId)
+            .doubles("Allocated Flow", DecomposedFlow::getAllocatedFlow)
+            .doubles("PST Flow", DecomposedFlow::getPstFlow)
+            .doubles(DecomposedFlowContext.getLoopFlowsFunctionMap(zoneSet))
+            .doubles("Reference AC Flow", DecomposedFlow::getAcReferenceFlow)
+            .doubles("Reference DC Flow", DecomposedFlow::getDcReferenceFlow)
+            .build();
+    }
+
+    private static List<DecomposedFlowContext> getFlowDecompositions(FlowDecompositionResults flowDecompositionResults) {
+        return flowDecompositionResults.getDecomposedFlowMap().entrySet().stream().map(
+            stringDecomposedFlowEntry -> new DecomposedFlowContext(
+                stringDecomposedFlowEntry.getKey(), stringDecomposedFlowEntry.getValue()))
+            .collect(Collectors.toList());
     }
 }
