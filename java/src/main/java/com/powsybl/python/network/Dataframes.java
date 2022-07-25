@@ -408,12 +408,12 @@ public final class Dataframes {
     public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
         return new DataframeMapperBuilder<FlowDecompositionResults, DecomposedFlowContext>()
             .itemsProvider(Dataframes::getFlowDecompositions)
-            .stringsIndex("XNEC id", DecomposedFlowContext::getXnecId)
-            .doubles("Allocated Flow", DecomposedFlow::getAllocatedFlow)
-            .doubles("PST Flow", DecomposedFlow::getPstFlow)
+            .stringsIndex("xnec_id", DecomposedFlowContext::getXnecId)
+            .doubles("allocated_flow", DecomposedFlow::getAllocatedFlow)
+            .doubles("pst_flow", DecomposedFlow::getPstFlow)
             .doubles(DecomposedFlowContext.getLoopFlowsFunctionMap(zoneSet))
-            .doubles("Reference AC Flow", DecomposedFlow::getAcReferenceFlow)
-            .doubles("Reference DC Flow", DecomposedFlow::getDcReferenceFlow)
+            .doubles("ac_reference_flow", DecomposedFlow::getAcReferenceFlow)
+            .doubles("dc_reference_flow", DecomposedFlow::getDcReferenceFlow)
             .build();
     }
 

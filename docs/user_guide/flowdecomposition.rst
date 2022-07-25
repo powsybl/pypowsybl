@@ -13,7 +13,7 @@ Running a flow decomposition
     import os
     cwd = os.getcwd()
     PROJECT_DIR = pathlib.Path(cwd).parent
-    DATA_DIR = PROJECT_DIR / 'data'
+    DATA_DIR = PROJECT_DIR.joinpath('data')
 
 You can use the module :mod:`pypowsybl.flowdecomposition` in order to run load flows on networks.
 Please check out the examples below.
@@ -38,8 +38,8 @@ The flow decomposition computer will return a dataframe containing the flow deco
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                   Allocated Flow  PST Flow  Loop Flow from BE  Loop Flow from FR  Reference AC Flow  Reference DC Flow
-    XNEC id                                                                                                          
+                 allocated_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    xnec_id                                                                                                          
     NHV1_NHV2_1             0.0       0.0              300.0                0.0         302.444049              300.0
     NHV1_NHV2_2             0.0       0.0              300.0                0.0         302.444049              300.0
 
@@ -48,11 +48,11 @@ Here is another example with a more complex network containing a phase-shifting 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> network = pp.network.load(str(DATA_DIR / 'NETWORK_PST_FLOW_WITH_COUNTRIES_NON_NEUTRAL.uct'))
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES_NON_NEUTRAL.uct')))
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                             Allocated Flow    PST Flow  Loop Flow from BE  Loop Flow from FR  Reference AC Flow  Reference DC Flow
-    XNEC id                                                                                                                    
+                         allocated_flow    pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    xnec_id                                                                                                          
     FGEN  11 BLOAD 11 1       29.015809  163.652703          -2.007905          -2.007905         192.390656         188.652703
     FGEN  11 BLOAD 12 1      -87.047428  163.652703           6.023714           6.023714         -76.189072         -88.652703
 
