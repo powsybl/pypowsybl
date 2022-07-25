@@ -34,7 +34,11 @@ public class DecomposedFlowContext extends DecomposedFlow {
 
     public static Map<String, ToDoubleFunction<DecomposedFlowContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {
         TreeMap<String, ToDoubleFunction<DecomposedFlowContext>> loopFlows = new TreeMap<>();
-        zoneSet.stream().sorted().forEach(country -> loopFlows.put(NetworkUtil.getLoopFlowIdFromCountry(country), decomposedFlow -> decomposedFlow.getLoopFlow(country)));
+        zoneSet.stream().sorted().forEach(country -> loopFlows.put(getColumnPep8Name(country), decomposedFlow -> decomposedFlow.getLoopFlow(country)));
         return loopFlows;
+    }
+
+    private static String getColumnPep8Name(Country country) {
+        return NetworkUtil.getLoopFlowIdFromCountry(country).replace(" ", "_").toLowerCase();
     }
 }

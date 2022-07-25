@@ -11,14 +11,14 @@ import pypowsybl as pp
 import pypowsybl.flowdecomposition as fd
 
 TEST_DIR = pathlib.Path(__file__).parent
-DATA_DIR = TEST_DIR.parent / 'data'
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 def test_run_fd():
-    net = pp.network.load(str(DATA_DIR / 'NETWORK_PST_FLOW_WITH_COUNTRIES_NON_NEUTRAL.uct'))
+    net = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES_NON_NEUTRAL.uct')))
     df=fd.run(net)
     expected = pd.DataFrame.from_records(
-        index=['XNEC id'],
-        columns=['XNEC id', 'Allocated Flow', 'PST Flow', 'Loop Flow from BE', 'Loop Flow from FR', 'Reference AC Flow', 'Reference DC Flow'],
+        index=['xnec_id'],
+        columns=['xnec_id', 'allocated_flow', 'pst_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'ac_reference_flow', 'dc_reference_flow'],
         data=[
             ['FGEN  11 BLOAD 11 1',  29.015809, 163.652703, -2.007905, -2.007905, 192.390656, 188.652703],
             ['FGEN  11 BLOAD 12 1', -87.047428, 163.652703,  6.023714,  6.023714, -76.189072, -88.652703],
