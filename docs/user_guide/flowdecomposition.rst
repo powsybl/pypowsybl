@@ -26,14 +26,13 @@ Start by importing the module:
 
    import pypowsybl as pp
 
-
-This simple version of flow decomposition will evolve with next versions of flow decomposition Java version.
-
 First example
 -------------
 
 To perform a flow decomposition, you need at least a network.
-The flow decomposition computer will return a dataframe containing the flow decomposition and the reference values.
+The flow decomposition computer returns a dataframe containing the flow decomposition and the reference values.
+The reference values are the active power flows in AC on the original network and in DC on the compensated network.
+By default, the compensated network is the same as the original network as the loss compensation is not activated by default.
 This are toy examples that do not reflect reality.
 
 .. doctest::
