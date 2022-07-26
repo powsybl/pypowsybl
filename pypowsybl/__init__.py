@@ -13,7 +13,8 @@ from pypowsybl import (
     loadflow,
     security,
     sensitivity,
-    glsk
+    glsk,
+    flowdecomposition,
 )
 import logging
 
@@ -31,7 +32,8 @@ __all__ = [
     "loadflow",
     "security",
     "sensitivity",
-    "glsk"
+    "glsk",
+    "flowdecomposition"
 ]
 
 
