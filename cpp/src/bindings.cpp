@@ -313,6 +313,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::SecurityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SecurityAnalysisParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::SensitivityAnalysisParameters>(m, "SensitivityAnalysisParameters")
+            .def(py::init(&pypowsybl::createSensitivityAnalysisParameters))
+            .def_readwrite("load_flow_parameters", &pypowsybl::SensitivityAnalysisParameters::sa_load_flow_parameters)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
+
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 

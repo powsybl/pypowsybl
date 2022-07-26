@@ -69,6 +69,14 @@ typedef struct security_analysis_parameters_struct {
     int provider_parameters_values_count;
 } security_analysis_parameters;
 
+typedef struct sensitivity_analysis_parameters_struct {
+    load_flow_parameters sa_load_flow_parameters;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} sensitivity_analysis_parameters;
+
 typedef struct limit_violation_struct {
     char* subject_id;
     char* subject_name;
