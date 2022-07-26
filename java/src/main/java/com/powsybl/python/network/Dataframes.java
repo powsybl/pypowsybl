@@ -408,8 +408,8 @@ public final class Dataframes {
     public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
         return new DataframeMapperBuilder<FlowDecompositionResults, DecomposedFlowContext>()
             .itemsProvider(Dataframes::getFlowDecompositions)
-            .stringsIndex("xnec_id", DecomposedFlowContext::getXnecId)
-            .doubles("allocated_flow", DecomposedFlow::getAllocatedFlow)
+            .stringsIndex("branch_id", DecomposedFlowContext::getXnecId)
+            .doubles("commercial_flow", DecomposedFlow::getAllocatedFlow)
             .doubles("pst_flow", DecomposedFlow::getPstFlow)
             .doubles(DecomposedFlowContext.getLoopFlowsFunctionMap(zoneSet))
             .doubles("ac_reference_flow", DecomposedFlow::getAcReferenceFlow)

@@ -41,10 +41,10 @@ This are toy examples that do not reflect reality.
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                 allocated_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
-    xnec_id                                                                                                          
-    NHV1_NHV2_1             0.0       0.0              300.0                0.0         302.444049              300.0
-    NHV1_NHV2_2             0.0       0.0              300.0                0.0         302.444049              300.0
+                     commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    branch_id                                                                                                         
+    NHV1_NHV2_1              0.0       0.0              300.0                0.0         302.444049              300.0
+    NHV1_NHV2_2              0.0       0.0              300.0                0.0         302.444049              300.0
 
 Loop flows
 ----------
@@ -60,12 +60,12 @@ This example will highlight loop flows from the peripheral areas.
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_LOOP_FLOW_WITH_COUNTRIES.uct')))
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                             allocated_flow  pst_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
-    xnec_id                                                                                                                                     
-    BLOAD 11 FLOAD 11 1            -0.0       0.0                0.0              100.0              100.0                NaN              200.0
-    EGEN  11 FGEN  11 1             0.0       0.0                0.0              100.0                0.0                NaN              100.0
-    FGEN  11 BGEN  11 1             0.0       0.0                0.0              100.0              100.0                NaN              200.0
-    FLOAD 11 ELOAD 11 1            -0.0       0.0                0.0              100.0                0.0                NaN              100.0
+                             commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    branch_id                                                                                                                                    
+    BLOAD 11 FLOAD 11 1             -0.0       0.0                0.0              100.0              100.0                NaN              200.0
+    EGEN  11 FGEN  11 1              0.0       0.0                0.0              100.0                0.0                NaN              100.0
+    FGEN  11 BGEN  11 1              0.0       0.0                0.0              100.0              100.0                NaN              200.0
+    FLOAD 11 ELOAD 11 1             -0.0       0.0                0.0              100.0                0.0                NaN              100.0
 
 On this example, the AC load flow does not converge.
 
@@ -126,12 +126,12 @@ Here are the results with neutral tap position.
 
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                             allocated_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
-    xnec_id                                                                                                                  
-    FGEN  11 BLOAD 11 1       28.999015      -0.0          -1.999508          -1.999508          29.003009               25.0
-    FGEN  11 BLOAD 12 1       86.997046       0.0          -5.998523          -5.998523          87.009112               75.0
+                             commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    branch_id                                                                                                                 
+    FGEN  11 BLOAD 11 1        28.999015      -0.0          -1.999508          -1.999508          29.003009               25.0
+    FGEN  11 BLOAD 12 1        86.997046       0.0          -5.998523          -5.998523          87.009112               75.0
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if "reference" not in c]].sum(axis=1)
-    xnec_id
+    branch_id                  
     FGEN  11 BLOAD 11 1    25.0
     FGEN  11 BLOAD 12 1    75.0
     dtype: float64
@@ -154,12 +154,12 @@ Here are the results with non-neutral tap position.
     BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                         allocated_flow    pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
-    xnec_id                                                                                                          
-    FGEN  11 BLOAD 11 1       29.015809  163.652703          -2.007905          -2.007905         192.390656         188.652703
-    FGEN  11 BLOAD 12 1      -87.047428  163.652703           6.023714           6.023714         -76.189072         -88.652703
+                             commercial_flow    pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow
+    branch_id                                                                                                                   
+    FGEN  11 BLOAD 11 1        29.015809  163.652703          -2.007905          -2.007905         192.390656         188.652703
+    FGEN  11 BLOAD 12 1       -87.047428  163.652703           6.023714           6.023714         -76.189072         -88.652703
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if "reference" not in c]].sum(axis=1)
-    xnec_id
+    branch_id                  
     FGEN  11 BLOAD 11 1    188.652703
     FGEN  11 BLOAD 12 1     88.652703
     dtype: float64
