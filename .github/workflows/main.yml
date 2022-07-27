@@ -120,7 +120,7 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-10.15,
+            os: macos-11,
           }
           - {
             name: windows,
