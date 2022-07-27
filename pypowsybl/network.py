@@ -186,6 +186,12 @@ class Network:  # pylint: disable=too-many-public-methods
         self._source_format = att.source_format
         self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
+        self.elements = {"Bus":self.get_buses().shape[0],"Busbarsections":self.get_busbar_sections().shape[0],
+                         "Gens" : self.get_generators().shape[0],"Load":self.get_loads().shape[0],
+                         "Lines":self.get_lines().shape[0],
+                         "Trafo2w":self.get_2_windings_transformers().shape[0],
+                         "Trafo3w":self.get_3_windings_transformers().shape[0],
+                         "Dangling-Lines":self.get_dangling_lines().shape[0]}
 
     @property
     def id(self) -> str:
@@ -200,6 +206,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Name of this network
         """
         return self._name
+
+    @property
+    def objects(self) -> str:
+        """
+        Elements of this Network
+        """
+        return f"This powsybl network contains :{self.elements}"
 
     @property
     def source_format(self) -> str:
@@ -224,7 +237,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __str__(self) -> str:
         return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
-               f'forecast_distance={self.forecast_distance}, source_format={self.source_format})'
+               f'forecast_distance={self.forecast_distance}, source_format={self.source_format}, elements={self.objects})'
 
     def __repr__(self) -> str:
         return str(self)
