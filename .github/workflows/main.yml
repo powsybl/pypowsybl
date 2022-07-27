@@ -51,7 +51,7 @@ jobs:
 
       - name: Build wheel
         env:
-          MACOSX_DEPLOYMENT_TARGET: "10_15"
+          MACOSX_DEPLOYMENT_TARGET: "10.15"
         run: python setup.py bdist_wheel
 
       - name: Install wheel
