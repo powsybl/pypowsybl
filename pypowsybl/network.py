@@ -186,7 +186,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._name = att.name
         self._source_format = att.source_format
         self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     @property
     def id(self) -> str:
@@ -214,7 +214,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Date of this network case, in UTC timezone.
         """
-        return self._case_date.replace(tzinfo=_timezone.utc)
+        return self._case_date
 
     @property
     def forecast_distance(self) -> _datetime.timedelta:
