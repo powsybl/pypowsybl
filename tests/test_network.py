@@ -1355,13 +1355,16 @@ def test_validate():
 def test_switches_node_breaker_connection_info():
     n = pp.network.create_four_substations_node_breaker_network()
     switches = n.get_switches(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'node1', 'node2'])
-    assert (switches['bus_breaker_bus1_id'] == '').all()
-    assert (switches['bus_breaker_bus2_id'] == '').all()
     assert (switches['node1'] >= 0).all()
     assert (switches['node2'] >= 0).all()
     disc = switches.loc['S1VL1_BBS_LD1_DISCONNECTOR']
     assert disc.node1 == 0
     assert disc.node2 == 1
+    breaker = switches.loc['S1VL1_LD1_BREAKER']
+    assert breaker.bus_breaker_bus1_id == 'S1VL1_0'
+    assert breaker.bus_breaker_bus2_id == 'S1VL1_2'
+    assert breaker.node1 == 1
+    assert breaker.node2 == 2
 
 
 def test_switches_bus_breaker_connection_info():
