@@ -635,20 +635,22 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static String getBus1Id(Switch s) {
+    private static String getBusBreakerBus1Id(Switch s) {
         VoltageLevel vl = s.getVoltageLevel();
-        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+        if (!s.isRetained()) {
             return "";
         }
-        return vl.getBusBreakerView().getBus1(s.getId()).getId();
+        Bus bus = vl.getBusBreakerView().getBus1(s.getId());
+        return bus != null ? bus.getId() : "";
     }
 
-    private static String getBus2Id(Switch s) {
+    private static String getBusBreakerBus2Id(Switch s) {
         VoltageLevel vl = s.getVoltageLevel();
-        if (vl.getTopologyKind() != TopologyKind.BUS_BREAKER) {
+        if (!s.isRetained()) {
             return "";
         }
-        return vl.getBusBreakerView().getBus2(s.getId()).getId();
+        Bus bus = vl.getBusBreakerView().getBus2(s.getId());
+        return bus != null ? bus.getId() : "";
     }
 
     private static int getNode1(Switch s) {
@@ -675,8 +677,8 @@ public final class NetworkDataframes {
                 .booleans("open", Switch::isOpen, Switch::setOpen)
                 .booleans("retained", Switch::isRetained, Switch::setRetained)
                 .strings("voltage_level_id", s -> s.getVoltageLevel().getId())
-                .strings("bus_breaker_bus1_id", NetworkDataframes::getBus1Id, false)
-                .strings("bus_breaker_bus2_id", NetworkDataframes::getBus2Id, false)
+                .strings("bus_breaker_bus1_id", NetworkDataframes::getBusBreakerBus1Id, false)
+                .strings("bus_breaker_bus2_id", NetworkDataframes::getBusBreakerBus2Id, false)
                 .ints("node1", NetworkDataframes::getNode1, false)
                 .ints("node2", NetworkDataframes::getNode2, false)
                 .addProperties()
