@@ -640,7 +640,8 @@ public final class NetworkDataframes {
         if (!s.isRetained()) {
             return "";
         }
-        return vl.getBusBreakerView().getBus1(s.getId()) != null ? vl.getBusBreakerView().getBus1(s.getId()).getId() : "";
+        Bus bus = vl.getBusBreakerView().getBus1(s.getId());
+        return bus != null ? bus.getId() : "";
     }
 
     private static String getBusBreakerBus2Id(Switch s) {
@@ -648,7 +649,8 @@ public final class NetworkDataframes {
         if (!s.isRetained()) {
             return "";
         }
-        return vl.getBusBreakerView().getBus2(s.getId()) != null ? vl.getBusBreakerView().getBus2(s.getId()).getId() : "";
+        Bus bus = vl.getBusBreakerView().getBus2(s.getId());
+        return bus != null ? bus.getId() : "";
     }
 
     private static int getNode1(Switch s) {
