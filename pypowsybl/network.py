@@ -9,6 +9,7 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
+from datetime import timezone as _timezone
 import warnings
 from typing import (
     Sequence as _Sequence,
@@ -185,7 +186,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._name = att.name
         self._source_format = att.source_format
         self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     @property
     def id(self) -> str:

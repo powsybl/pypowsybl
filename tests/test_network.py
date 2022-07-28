@@ -102,7 +102,7 @@ def test_connect_disconnect():
 def test_network_attributes():
     n = pp.network.create_eurostag_tutorial_example1_network()
     assert 'sim1' == n.id
-    assert datetime.datetime(2018, 1, 1, 10, 0) == n.case_date
+    assert datetime.datetime(2018, 1, 1, 10, 0, tzinfo=datetime.timezone.utc) == n.case_date
     assert 'sim1' == n.name
     assert datetime.timedelta(0) == n.forecast_distance
     assert 'test' == n.source_format
@@ -110,10 +110,10 @@ def test_network_attributes():
 
 def test_network_representation():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00, ' \
+    expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00+00:00, ' + \
                'forecast_distance=0:00:00, source_format=test)'
-    assert expected == str(n)
-    assert expected == repr(n)
+    assert str(n) == expected
+    assert repr(n) == expected
 
 
 def test_get_network_element_ids():
