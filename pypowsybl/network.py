@@ -22,9 +22,9 @@ from typing import (
 )
 
 from numpy import Inf
+from numpy.typing import ArrayLike as _ArrayLike
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
-from numpy.typing import ArrayLike as _ArrayLike
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
@@ -42,7 +42,7 @@ from pypowsybl.report import Reporter as _Reporter
 # Type definitions
 if _TYPE_CHECKING:
     ParamsDict = _Optional[_Dict[str, str]]
-    PathOrStr = _Union[str, _PathLike[str]]
+    PathOrStr = _Union[str, _PathLike]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -338,7 +338,7 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_file = _path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
@@ -355,7 +355,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth))
 
