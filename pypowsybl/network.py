@@ -9,6 +9,7 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
+from datetime import timezone as _timezone
 import warnings
 from typing import (
     Sequence as _Sequence,
@@ -21,9 +22,9 @@ from typing import (
 )
 
 from numpy import Inf
+from numpy.typing import ArrayLike as _ArrayLike
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
-from numpy.typing import ArrayLike as _ArrayLike
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
@@ -41,7 +42,7 @@ from pypowsybl.report import Reporter as _Reporter
 # Type definitions
 if _TYPE_CHECKING:
     ParamsDict = _Optional[_Dict[str, str]]
-    PathOrStr = _Union[str, _PathLike[str]]
+    PathOrStr = _Union[str, _PathLike]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -185,7 +186,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._name = att.name
         self._source_format = att.source_format
         self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     @property
     def id(self) -> str:
@@ -337,7 +338,7 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_file = _path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
@@ -354,7 +355,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth))
 
@@ -1485,7 +1486,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
-              - **angle**: the voltage angle of the busbar section (in radian)
+              - **angle**: the voltage angle of the busbar section (in degree)
               - **voltage_level_id**: at which substation the busbar section is connected
               - **bus_id**: bus this busbar section belongs to
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to

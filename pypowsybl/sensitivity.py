@@ -10,9 +10,9 @@ from typing import List as _List, Optional as _Optional, Dict as _Dict
 from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
-import pypowsybl._pypowsybl as _pypowsybl
-import pypowsybl.glsk as glsk
 
+from pypowsybl import _pypowsybl
+from pypowsybl import glsk
 from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
@@ -187,12 +187,11 @@ class DcSensitivityAnalysisResult:
         Returns:
             the branches active power flows
         """
-        matrix= _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
-        else:
-            data = _np.array(matrix, copy=False)
-            return _pd.DataFrame(data=data, columns=self.branches_ids[matrix_id], index=['reference_flows'])
+        data = _np.array(matrix, copy=False)
+        return _pd.DataFrame(data=data, columns=self.branches_ids[matrix_id], index=['reference_flows'])
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
