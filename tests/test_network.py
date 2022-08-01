@@ -102,7 +102,7 @@ def test_connect_disconnect():
 def test_network_attributes():
     n = pp.network.create_eurostag_tutorial_example1_network()
     assert 'sim1' == n.id
-    assert datetime.datetime(2018, 1, 1, 10, 0) == n.case_date
+    assert datetime.datetime(2018, 1, 1, 10, 0, tzinfo=datetime.timezone.utc) == n.case_date
     assert 'sim1' == n.name
     assert datetime.timedelta(0) == n.forecast_distance
     assert 'test' == n.source_format
@@ -110,10 +110,10 @@ def test_network_attributes():
 
 def test_network_representation():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00, ' \
+    expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00+00:00, ' + \
                'forecast_distance=0:00:00, source_format=test)'
-    assert expected == str(n)
-    assert expected == repr(n)
+    assert str(n) == expected
+    assert repr(n) == expected
 
 
 def test_get_network_element_ids():
@@ -1355,13 +1355,16 @@ def test_validate():
 def test_switches_node_breaker_connection_info():
     n = pp.network.create_four_substations_node_breaker_network()
     switches = n.get_switches(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'node1', 'node2'])
-    assert (switches['bus_breaker_bus1_id'] == '').all()
-    assert (switches['bus_breaker_bus2_id'] == '').all()
     assert (switches['node1'] >= 0).all()
     assert (switches['node2'] >= 0).all()
     disc = switches.loc['S1VL1_BBS_LD1_DISCONNECTOR']
     assert disc.node1 == 0
     assert disc.node2 == 1
+    breaker = switches.loc['S1VL1_LD1_BREAKER']
+    assert breaker.bus_breaker_bus1_id == 'S1VL1_0'
+    assert breaker.bus_breaker_bus2_id == 'S1VL1_2'
+    assert breaker.node1 == 1
+    assert breaker.node2 == 2
 
 
 def test_switches_bus_breaker_connection_info():

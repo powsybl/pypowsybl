@@ -11,7 +11,7 @@ from typing import (
     Dict as _Dict
 )
 from pandas import DataFrame as _DataFrame
-import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
     ConnectedComponentMode,
