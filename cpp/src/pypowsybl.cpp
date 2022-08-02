@@ -273,7 +273,7 @@ void deleteLoadFlowParameters(load_flow_parameters* ptr) {
 }
 
 LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
-    voltage_init_mode = src->voltage_init_mode;
+    voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
     no_generator_reactive_limits = (bool) src->no_generator_reactive_limits;
     phase_shifter_regulation_on = (bool) src->phase_shifter_regulation_on;
@@ -281,9 +281,9 @@ LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
     simul_shunt = (bool) src->simul_shunt;
     read_slack_bus = (bool) src->read_slack_bus;
     distributed_slack = (bool) src->distributed_slack;
-    balance_type = src->balance_type;
+    balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
-    connected_component_mode = src->connected_component_mode;
+    connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);

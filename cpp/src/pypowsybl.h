@@ -157,7 +157,7 @@ public:
 
     std::shared_ptr<load_flow_parameters> to_c_struct() const;
 
-    int voltage_init_mode;
+    VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
     bool no_generator_reactive_limits;
     bool phase_shifter_regulation_on;
@@ -166,10 +166,10 @@ public:
     bool read_slack_bus;
     bool write_slack_bus;
     bool distributed_slack;
-    int balance_type;
+    BalanceType balance_type;
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
-    int connected_component_mode;
+    ConnectedComponentMode connected_component_mode;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
