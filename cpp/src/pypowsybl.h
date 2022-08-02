@@ -150,11 +150,9 @@ private:
 };
 
 
-//c++ layer to facilitate memory management compared to C struct
 class LoadFlowParameters {
 public:
     LoadFlowParameters(load_flow_parameters* src);
-
     std::shared_ptr<load_flow_parameters> to_c_struct() const;
 
     VoltageInitMode voltage_init_mode;

@@ -308,6 +308,7 @@ std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
     res->provider_parameters_values_count = provider_parameters_values.size();
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<load_flow_parameters>(res, [](load_flow_parameters* ptr){
         deleteLoadFlowParameters(ptr);
         delete ptr;
@@ -509,7 +510,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 LoadFlowParameters* createLoadFlowParameters() {
     load_flow_parameters* parameters_ptr = callJava<load_flow_parameters*>(::createLoadFlowParameters);
     auto parameters = std::shared_ptr<load_flow_parameters>(parameters_ptr, [](load_flow_parameters* ptr){
-        callJava(::freeLoadFlowParameters, ptr);
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeLoadFlowParameters, ptr);
     });
     return new LoadFlowParameters(parameters.get());
 }
