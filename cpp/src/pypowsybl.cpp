@@ -280,6 +280,7 @@ LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
     twt_split_shunt_admittance = (bool) src->twt_split_shunt_admittance;
     simul_shunt = (bool) src->simul_shunt;
     read_slack_bus = (bool) src->read_slack_bus;
+    write_slack_bus = (bool) src->write_slack_bus;
     distributed_slack = (bool) src->distributed_slack;
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
@@ -298,6 +299,7 @@ std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
     res->twt_split_shunt_admittance = (unsigned char) twt_split_shunt_admittance;
     res->simul_shunt = (unsigned char) simul_shunt;
     res->read_slack_bus = (unsigned char) read_slack_bus;
+    res->write_slack_bus = (unsigned char) write_slack_bus;
     res->distributed_slack = (unsigned char) distributed_slack;
     res->balance_type = balance_type;
     res->dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
