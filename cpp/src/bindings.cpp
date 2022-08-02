@@ -115,34 +115,6 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
-// Reads parameters from config (if not disabled)
-std::shared_ptr<load_flow_parameters> initLoadFlowParameters() {
-        load_flow_parameters* parameters = new load_flow_parameters();
-        std::shared_ptr<load_flow_parameters> config_params = pypowsybl::createLoadFlowParameters();
-        parameters->voltage_init_mode = config_params->voltage_init_mode;
-        parameters->transformer_voltage_control_on = config_params->transformer_voltage_control_on;
-        parameters->no_generator_reactive_limits = config_params->no_generator_reactive_limits;
-        parameters->phase_shifter_regulation_on = config_params->phase_shifter_regulation_on;
-        parameters->twt_split_shunt_admittance = config_params->twt_split_shunt_admittance;
-        parameters->simul_shunt = config_params->simul_shunt;
-        parameters->read_slack_bus = config_params->read_slack_bus;
-        parameters->write_slack_bus = config_params->write_slack_bus;
-        parameters->distributed_slack = config_params->distributed_slack;
-        parameters->balance_type = config_params->balance_type;
-        parameters->dc_use_transformer_ratio = config_params->dc_use_transformer_ratio;
-        //copy from config so that ownership is not transferred
-        std::vector<std::string> configCountries(config_params->countries_to_balance, config_params->countries_to_balance + config_params->countries_to_balance_count);
-        parameters->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(configCountries);
-        parameters->countries_to_balance_count = configCountries.size();
-        parameters->connected_component_mode = config_params->connected_component_mode;
-        parameters->provider_parameters_keys_count = config_params->provider_parameters_keys_count;
-        parameters->provider_parameters_values_count = config_params->provider_parameters_values_count;
-    return std::shared_ptr<load_flow_parameters>(parameters, [](load_flow_parameters* ptr){
-        pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
-        delete ptr;
-    });
-}
-
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -312,89 +284,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<dataframe, std::shared_ptr<dataframe>>(m, "Dataframe");
 
-    py::class_<load_flow_parameters, std::shared_ptr<load_flow_parameters>>(m, "LoadFlowParameters")
-            .def(py::init(&initLoadFlowParameters))
-            .def_property("voltage_init_mode", [](const load_flow_parameters& p) {
-                return static_cast<pypowsybl::VoltageInitMode>(p.voltage_init_mode);
-            }, [](load_flow_parameters& p, pypowsybl::VoltageInitMode voltageInitMode) {
-                p.voltage_init_mode = voltageInitMode;
-            })
-            .def_property("transformer_voltage_control_on", [](const load_flow_parameters& p) {
-                return (bool) p.transformer_voltage_control_on;
-            }, [](load_flow_parameters& p, bool transformerVoltageControlOn) {
-                p.transformer_voltage_control_on = transformerVoltageControlOn;
-            })
-            .def_property("no_generator_reactive_limits", [](const load_flow_parameters& p) {
-                return (bool) p.no_generator_reactive_limits;
-            }, [](load_flow_parameters& p, bool noGeneratorReactiveLimits) {
-                p.no_generator_reactive_limits = noGeneratorReactiveLimits;
-            })
-            .def_property("phase_shifter_regulation_on", [](const load_flow_parameters& p) {
-                return (bool) p.phase_shifter_regulation_on;
-            }, [](load_flow_parameters& p, bool phaseShifterRegulationOn) {
-                p.phase_shifter_regulation_on = phaseShifterRegulationOn;
-            })
-            .def_property("twt_split_shunt_admittance", [](const load_flow_parameters& p) {
-                return (bool) p.twt_split_shunt_admittance;
-            }, [](load_flow_parameters& p, bool twtSplitShuntAdmittance) {
-                p.twt_split_shunt_admittance = twtSplitShuntAdmittance;
-            })
-            .def_property("simul_shunt", [](const load_flow_parameters& p) {
-                return (bool) p.simul_shunt;
-            }, [](load_flow_parameters& p, bool simulShunt) {
-                p.simul_shunt = simulShunt;
-            })
-            .def_property("read_slack_bus", [](const load_flow_parameters& p) {
-                return (bool) p.read_slack_bus;
-            }, [](load_flow_parameters& p, bool readSlackBus) {
-                p.read_slack_bus = readSlackBus;
-            })
-            .def_property("write_slack_bus", [](const load_flow_parameters& p) {
-                return (bool) p.write_slack_bus;
-            }, [](load_flow_parameters& p, bool writeSlackBus) {
-                p.write_slack_bus = writeSlackBus;
-            })
-            .def_property("distributed_slack", [](const load_flow_parameters& p) {
-                return (bool) p.distributed_slack;
-            }, [](load_flow_parameters& p, bool distributedSlack) {
-                p.distributed_slack = distributedSlack;
-            })
-            .def_property("balance_type", [](const load_flow_parameters& p) {
-                return static_cast<pypowsybl::BalanceType>(p.balance_type);
-            }, [](load_flow_parameters& p, pypowsybl::BalanceType balanceType) {
-                p.balance_type = balanceType;
-            })
-            .def_property("dc_use_transformer_ratio", [](const load_flow_parameters& p) {
-                return (bool) p.dc_use_transformer_ratio;
-            }, [](load_flow_parameters& p, bool dcUseTransformerRatio) {
-                p.dc_use_transformer_ratio = dcUseTransformerRatio;
-            })
-            .def_property("countries_to_balance", [](const load_flow_parameters& p) {
-                return std::vector<std::string>(p.countries_to_balance, p.countries_to_balance + p.countries_to_balance_count);
-            }, [](load_flow_parameters& p, const std::vector<std::string>& countriesToBalance) {
-                pypowsybl::deleteCharPtrPtr(p.countries_to_balance, p.countries_to_balance_count);
-                p.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countriesToBalance);
-                p.countries_to_balance_count = countriesToBalance.size();
-            })
-            .def_property("connected_component_mode", [](const load_flow_parameters& p) {
-                return static_cast<pypowsybl::ConnectedComponentMode>(p.connected_component_mode);
-            }, [](load_flow_parameters& p, pypowsybl::ConnectedComponentMode connectedComponentMode) {
-                p.connected_component_mode = connectedComponentMode;
-            })
-            .def_property("provider_parameters_keys", [](const load_flow_parameters& p) {
-                return std::vector<std::string>(p.provider_parameters_keys, p.provider_parameters_keys + p.provider_parameters_keys_count);
-            }, [](load_flow_parameters& p, const std::vector<std::string>& providerParametersKeys) {
-                pypowsybl::deleteCharPtrPtr(p.provider_parameters_keys, p.provider_parameters_keys_count);
-                p.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(providerParametersKeys);
-                p.provider_parameters_keys_count = providerParametersKeys.size();
-            })
-            .def_property("provider_parameters_values", [](const load_flow_parameters& p) {
-                return std::vector<std::string>(p.provider_parameters_values, p.provider_parameters_values + p.provider_parameters_values_count);
-            }, [](load_flow_parameters& p, const std::vector<std::string>& providerParametersValues) {
-                pypowsybl::deleteCharPtrPtr(p.provider_parameters_values, p.provider_parameters_values_count);
-                p.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(providerParametersValues);
-                p.provider_parameters_values_count = providerParametersValues.size();
-            });
+    py::class_<pypowsybl::LoadFlowParameters>(m, "LoadFlowParameters")
+            .def(py::init(&pypowsybl::createLoadFlowParameters))
+            .def_readwrite("voltage_init_mode", &pypowsybl::LoadFlowParameters::voltage_init_mode)
+            .def_readwrite("transformer_voltage_control_on", &pypowsybl::LoadFlowParameters::transformer_voltage_control_on)
+            .def_readwrite("no_generator_reactive_limits", &pypowsybl::LoadFlowParameters::no_generator_reactive_limits)
+            .def_readwrite("phase_shifter_regulation_on", &pypowsybl::LoadFlowParameters::phase_shifter_regulation_on)
+            .def_readwrite("twt_split_shunt_admittance", &pypowsybl::LoadFlowParameters::twt_split_shunt_admittance)
+            .def_readwrite("simul_shunt", &pypowsybl::LoadFlowParameters::simul_shunt)
+            .def_readwrite("read_slack_bus", &pypowsybl::LoadFlowParameters::read_slack_bus)
+            .def_readwrite("write_slack_bus", &pypowsybl::LoadFlowParameters::write_slack_bus)
+            .def_readwrite("distributed_slack", &pypowsybl::LoadFlowParameters::distributed_slack)
+            .def_readwrite("balance_type", &pypowsybl::LoadFlowParameters::balance_type)
+            .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
+            .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
+            .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
