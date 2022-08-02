@@ -24,3 +24,27 @@ You can run a flow decomposition using the following methods:
    :toctree: api/
 
     run
+
+Parameters
+----------
+
+The execution of the flowdecomposition can be customized using flowdecomposition parameters.
+
+.. autosummary::
+   :nosignatures:
+
+    Parameters
+
+.. include it in the toctree
+.. toctree::
+   :hidden:
+
+   flowdecomposition/parameters
+
+Some enum classes are used in parameters:
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_members.rst
+
+    BranchSelectionStrategy
