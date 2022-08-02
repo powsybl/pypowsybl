@@ -28,6 +28,8 @@ def run(network: _Network) -> _pd.DataFrame:
             - **loop_flow_from_XX**: the loop flow from zone XX on the line (in MW)
             - **ac_reference_flow**: the ac reference flow on the line (in MW)
             - **dc_reference_flow**: the dc reference flow on the line (in MW)
+            - **country1**: the country id of terminal 1
+            - **country2**: the country id of terminal 2
 
         This dataframe is indexed on the xnec ID **branch_id**.
 
@@ -40,13 +42,13 @@ def run(network: _Network) -> _pd.DataFrame:
 
         It outputs something like:
 
-        =========== =============== ======== ================= ================= ================= =================
-        \           commercial_flow pst_flow loop_flow_from_be loop_flow_from_fr ac_reference_flow dc_reference_flow
-        =========== =============== ======== ================= ================= ================= =================
+        =========== =============== ======== ================= ================= ================= ================= ======== ========
+        \           commercial_flow pst_flow loop_flow_from_be loop_flow_from_fr ac_reference_flow dc_reference_flow country1 country2
+        =========== =============== ======== ================= ================= ================= ================= ======== ========
         branch_id                                                                                                          
-        NHV1_NHV2_1             0.0      0.0             300.0               0.0        302.444049             300.0
-        NHV1_NHV2_2             0.0      0.0             300.0               0.0        302.444049             300.0
-        =========== =============== ======== ================= ================= ================= =================
+        NHV1_NHV2_1             0.0      0.0             300.0               0.0        302.444049             300.0       FR       BE
+        NHV1_NHV2_2             0.0      0.0             300.0               0.0        302.444049             300.0       FR       BE
+        =========== =============== ======== ================= ================= ================= ================= ======== ========
     """
     return create_data_frame_from_series_array(_pypowsybl.run_flow_decomposition(network._handle))
 
