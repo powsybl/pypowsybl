@@ -24,12 +24,20 @@ public class DecomposedFlowContext extends DecomposedFlow {
 
     public DecomposedFlowContext(String xnecId, DecomposedFlow decomposedFlow) {
         super(decomposedFlow.getLoopFlows(), decomposedFlow.getAllocatedFlow(), decomposedFlow.getPstFlow(),
-            decomposedFlow.getAcReferenceFlow(), decomposedFlow.getDcReferenceFlow());
+            decomposedFlow.getAcReferenceFlow(), decomposedFlow.getDcReferenceFlow(), decomposedFlow.getCountries());
         this.xnecId = xnecId;
     }
 
     public String getXnecId() {
         return xnecId;
+    }
+
+    public String getCountry1() {
+        return getCountries().getFirst().toString();
+    }
+
+    public String getCountry2() {
+        return getCountries().getSecond().toString();
     }
 
     public static Map<String, ToDoubleFunction<DecomposedFlowContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {

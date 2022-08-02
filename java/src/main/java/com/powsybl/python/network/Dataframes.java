@@ -414,6 +414,8 @@ public final class Dataframes {
             .doubles(DecomposedFlowContext.getLoopFlowsFunctionMap(zoneSet))
             .doubles("ac_reference_flow", DecomposedFlow::getAcReferenceFlow)
             .doubles("dc_reference_flow", DecomposedFlow::getDcReferenceFlow)
+            .strings("country1", DecomposedFlowContext::getCountry1)
+            .strings("country2", DecomposedFlowContext::getCountry2)
             .build();
     }
 
