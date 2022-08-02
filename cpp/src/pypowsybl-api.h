@@ -192,3 +192,18 @@ typedef enum {
     DEFAULT_ATTRIBUTES,
     SELECTION_ATTRIBUTES
 } filter_attributes_type;
+
+typedef struct flow_decomposition_parameters_struct {
+    unsigned char save_intermediates;
+    unsigned char enable_losses_compensation;
+    double losses_compensation_epsilon;
+    double sensitivity_epsilon;
+    unsigned char rescale_enabled;
+    int branch_selection_strategy;
+} flow_decomposition_parameters;
+
+typedef enum {
+    ONLY_INTERCONNECTIONS = 0,
+    ZONE_TO_ZONE_PTDF_CRITERIA,
+} branch_selection_strategy;
+

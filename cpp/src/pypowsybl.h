@@ -124,6 +124,11 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+enum BranchSelectionStrategy {
+    ONLY_INTERCONNECTIONS = 0,
+    ZONE_TO_ZONE_PTDF_CRITERIA,
+};
+
 
 class SeriesMetadata {
 public:
@@ -361,8 +366,9 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-SeriesArray* runFlowDecomposition(pypowsybl::JavaHandle network);
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const std::shared_ptr<flow_decomposition_parameters>& parameters);
 
+std::shared_ptr<flow_decomposition_parameters> createFlowDecompositionParameters();
 }
 
 #endif //PYPOWSYBL_H
