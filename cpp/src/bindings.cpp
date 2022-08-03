@@ -143,19 +143,6 @@ std::shared_ptr<load_flow_parameters> initLoadFlowParameters() {
     });
 }
 
-// Reads parameters from config (if not disabled)
-std::shared_ptr<flow_decomposition_parameters> initFlowDecompositionParameters() {
-        flow_decomposition_parameters* parameters = new flow_decomposition_parameters();
-        std::shared_ptr<flow_decomposition_parameters> config_params = pypowsybl::createFlowDecompositionParameters();
-        parameters->save_intermediates = config_params->save_intermediates;
-        parameters->enable_losses_compensation = config_params->enable_losses_compensation;
-        parameters->losses_compensation_epsilon = config_params->losses_compensation_epsilon;
-        parameters->sensitivity_epsilon = config_params->sensitivity_epsilon;
-        parameters->rescale_enabled = config_params->rescale_enabled;
-        parameters->branch_selection_strategy = config_params->branch_selection_strategy;
-    return std::shared_ptr<flow_decomposition_parameters>(parameters, [](flow_decomposition_parameters* ptr){});
-}
-
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -687,37 +674,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ZONE_TO_ZONE_PTDF_CRITERIA", pypowsybl::BranchSelectionStrategy::ZONE_TO_ZONE_PTDF_CRITERIA,
                    "Select branches that are interconnections or have a maximum zone to zone PTDF greater than 5%");
 
-    py::class_<flow_decomposition_parameters, std::shared_ptr<flow_decomposition_parameters>>(m, "FlowDecompositionParameters")
-            .def(py::init(&initFlowDecompositionParameters))
-            .def_property("save_intermediates", [](const flow_decomposition_parameters& p) {
-                return (bool) p.save_intermediates;
-            }, [](flow_decomposition_parameters& p, bool saveIntermediates) {
-                p.save_intermediates = saveIntermediates;
-            })
-            .def_property("enable_losses_compensation", [](const flow_decomposition_parameters& p) {
-                return (bool) p.enable_losses_compensation;
-            }, [](flow_decomposition_parameters& p, bool enableLossesCompensation) {
-                p.enable_losses_compensation = enableLossesCompensation;
-            })
-            .def_property("losses_compensation_epsilon", [](const flow_decomposition_parameters& p) {
-                return (float) p.losses_compensation_epsilon;
-            }, [](flow_decomposition_parameters& p, float lossesCompensationEpsilon) {
-                p.losses_compensation_epsilon = lossesCompensationEpsilon;
-            })
-            .def_property("sensitivity_epsilon", [](const flow_decomposition_parameters& p) {
-                return (float) p.sensitivity_epsilon;
-            }, [](flow_decomposition_parameters& p, float sensitivityEpsilon) {
-                p.sensitivity_epsilon = sensitivityEpsilon;
-            })
-            .def_property("rescale_enabled", [](const flow_decomposition_parameters& p) {
-                return (bool) p.rescale_enabled;
-            }, [](flow_decomposition_parameters& p, bool rescaleEnabled) {
-                p.rescale_enabled = rescaleEnabled;
-            })
-            .def_property("branch_selection_strategy", [](const flow_decomposition_parameters& p) {
-                return static_cast<pypowsybl::BranchSelectionStrategy>(p.branch_selection_strategy);
-            }, [](flow_decomposition_parameters& p, pypowsybl::BranchSelectionStrategy branchSelectionStrategy) {
-                p.branch_selection_strategy = branchSelectionStrategy;
-            });
+    py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
+                .def(py::init(&pypowsybl::createFlowDecompositionParameters))
+                .def_readwrite("save_intermediates", &pypowsybl::FlowDecompositionParameters::save_intermediates)
+                .def_readwrite("enable_losses_compensation", &pypowsybl::FlowDecompositionParameters::enable_losses_compensation)
+                .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
+                .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
+                .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
+                .def_readwrite("branch_selection_strategy", &pypowsybl::FlowDecompositionParameters::branch_selection_strategy);
 
 }

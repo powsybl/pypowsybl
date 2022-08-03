@@ -154,6 +154,19 @@ private:
     bool isDefault_;
 };
 
+class FlowDecompositionParameters {
+public:
+    FlowDecompositionParameters(flow_decomposition_parameters* src);
+    std::shared_ptr<flow_decomposition_parameters> to_c_struct() const;
+
+    bool save_intermediates;
+    bool enable_losses_compensation;
+    float losses_compensation_epsilon;
+    float sensitivity_epsilon;
+    bool rescale_enabled;
+    BranchSelectionStrategy branch_selection_strategy;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -366,9 +379,9 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const std::shared_ptr<flow_decomposition_parameters>& parameters);
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& parameters);
 
-std::shared_ptr<flow_decomposition_parameters> createFlowDecompositionParameters();
+FlowDecompositionParameters* createFlowDecompositionParameters();
 }
 
 #endif //PYPOWSYBL_H
