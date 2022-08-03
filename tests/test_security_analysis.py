@@ -188,6 +188,8 @@ def test_security_analysis_parameters():
     sa.add_single_element_contingency('', 'First contingency')
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
     sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='First contingency')
+
+    # default security analysis
     result = sa.run_ac(network, parameters=pp.security.Parameters())
     expected = pd.DataFrame.from_records(
         index=['contingency_id', 'subject_id'],
@@ -197,6 +199,8 @@ def test_security_analysis_parameters():
               ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 1008.93, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
+
+    # flow_proportional_threshold = 10
     result = sa.run_ac(network, parameters=pp.security.Parameters(flow_proportional_threshold=10))
     expected = pd.DataFrame.from_records(
         index=['contingency_id', 'subject_id'],
@@ -205,6 +209,11 @@ def test_security_analysis_parameters():
         data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
+
+    # loadflow parameters only and specific parameters
     result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
     assert result.limit_violations.empty
+    assert len(result.post_contingency_results) == 0
+    assert result.pre_contingency_result.status.name == 'FAILED'
+
 
