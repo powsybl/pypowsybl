@@ -33,16 +33,18 @@ class Parameters:  # pylint: disable=too-few-public-methods
             Use ``True`` to enable AC losses compensation on the DC network.
         losses_compensation_epsilon: Filter loads from the losses compensation.
             The loads with a too small absolute active power will be not be connected to the network.
-            Use ``-1`` to disable filtering.
+            Use ``pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON = -1`` to disable filtering.
         sensitivity_epsilon: Filter sensitivity values
             The absolute small sensitivity values will be ignored.
-            Use ``-1`` to disable filtering.
+            Use ``pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON = -1`` to disable filtering.
         rescale_enabled: Rescale the flow decomposition to the AC reference.
             Use``True`` to rescale flow decomposition to the AC reference.
         branch_selection_strategy: Defines how to select branches.
             Use ``ONLY_INTERCONNECTIONS`` to select only interconnections.
             Use ``ZONE_TO_ZONE_PTDF_CRITERIA`` to select interconnections and branches that have at least a zone to zone PTDF greater than 5%.
     """
+    DISABLE_LOSSES_COMPENSATION_EPSILON = -1
+    DISABLE_SENSITIVITY_EPSILON = -1
 
     def __init__(self, 
                  save_intermediates: bool = None,

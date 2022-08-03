@@ -184,3 +184,21 @@ Here are the available parameters and their default values:
         losses-compensation-epsilon: 1e-5
         sensitivity-epsilon: 1e-5
         rescale-enabled: False
+
+The parameters can be overwriten in Python
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True, losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON, sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON, rescale_enabled=True, branch_selection_strategy=pp.flowdecomposition.BranchSelectionStrategy.ZONE_TO_ZONE_PTDF_CRITERIA)
+    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, parameters)
+    >>> flow_decomposition_dataframe
+                         commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
+    branch_id                                                                                                                                   
+    BLOAD 11 BLOAD 12 2         3.008332      -0.0          -0.001333          -0.001333           3.005666          -28.99635       BE       BE
+    FGEN  11 BLOAD 11 1        29.005675       0.0          -0.001333          -0.001333          29.003009           28.99635       FR       BE
+    FGEN  11 BLOAD 12 1        87.017108       0.0          -0.003998          -0.003998          87.009112           86.98905       FR       BE
+
+
+
