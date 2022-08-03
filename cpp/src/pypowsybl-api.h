@@ -57,7 +57,7 @@ typedef struct load_flow_parameters_struct {
 } load_flow_parameters;
 
 typedef struct security_analysis_parameters_struct {
-    load_flow_parameters* sa_load_flow_parameters;
+    load_flow_parameters sa_load_flow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;

@@ -154,6 +154,7 @@ class LoadFlowParameters {
 public:
     LoadFlowParameters(load_flow_parameters* src);
     std::shared_ptr<load_flow_parameters> to_c_struct() const;
+    void load_to_c_struct(load_flow_parameters& params) const;
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
@@ -178,7 +179,7 @@ public:
     ~SecurityAnalysisParameters();
     std::shared_ptr<security_analysis_parameters> to_c_struct() const;
     
-    LoadFlowParameters* sa_load_flow_parameters;
+    LoadFlowParameters sa_load_flow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
@@ -278,7 +279,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
 JavaHandle createSensitivityAnalysis();
 

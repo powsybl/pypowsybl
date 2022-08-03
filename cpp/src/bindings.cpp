@@ -304,7 +304,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
             .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
-            .def_readwrite("sa_load_flow_parameters", &pypowsybl::SecurityAnalysisParameters::sa_load_flow_parameters)
+            .def_readwrite("load_flow_parameters", &pypowsybl::SecurityAnalysisParameters::sa_load_flow_parameters)
             .def_readwrite("flow_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::flow_proportional_threshold)
             .def_readwrite("low_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_proportional_threshold)
             .def_readwrite("low_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_absolute_threshold)

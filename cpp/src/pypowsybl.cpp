@@ -290,26 +290,30 @@ LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
 }
 
+void LoadFlowParameters::load_to_c_struct(load_flow_parameters& res) const {
+    res.voltage_init_mode = voltage_init_mode;
+    res.transformer_voltage_control_on = (unsigned char) transformer_voltage_control_on;
+    res.no_generator_reactive_limits = (unsigned char) no_generator_reactive_limits;
+    res.phase_shifter_regulation_on = (unsigned char) phase_shifter_regulation_on;
+    res.twt_split_shunt_admittance = (unsigned char) twt_split_shunt_admittance;
+    res.simul_shunt = (unsigned char) simul_shunt;
+    res.read_slack_bus = (unsigned char) read_slack_bus;
+    res.write_slack_bus = (unsigned char) write_slack_bus;
+    res.distributed_slack = (unsigned char) distributed_slack;
+    res.balance_type = balance_type;
+    res.dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
+    res.connected_component_mode = connected_component_mode;
+    res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
+    res.countries_to_balance_count = countries_to_balance.size();
+    res.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+    res.provider_parameters_keys_count = provider_parameters_keys.size();
+    res.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+    res.provider_parameters_values_count = provider_parameters_values.size();
+}
+
 std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
     load_flow_parameters* res = new load_flow_parameters();
-    res->voltage_init_mode = voltage_init_mode;
-    res->transformer_voltage_control_on = (unsigned char) transformer_voltage_control_on;
-    res->no_generator_reactive_limits = (unsigned char) no_generator_reactive_limits;
-    res->phase_shifter_regulation_on = (unsigned char) phase_shifter_regulation_on;
-    res->twt_split_shunt_admittance = (unsigned char) twt_split_shunt_admittance;
-    res->simul_shunt = (unsigned char) simul_shunt;
-    res->read_slack_bus = (unsigned char) read_slack_bus;
-    res->write_slack_bus = (unsigned char) write_slack_bus;
-    res->distributed_slack = (unsigned char) distributed_slack;
-    res->balance_type = balance_type;
-    res->dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
-    res->connected_component_mode = connected_component_mode;
-    res->countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
-    res->countries_to_balance_count = countries_to_balance.size();
-    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->provider_parameters_keys_count = provider_parameters_keys.size();
-    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->provider_parameters_values_count = provider_parameters_values.size();
+    load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<load_flow_parameters>(res, [](load_flow_parameters* ptr){
         deleteLoadFlowParameters(ptr);
@@ -318,13 +322,14 @@ std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
 }
 
 void deleteSecurityAnalysisParameters(security_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(ptr->sa_load_flow_parameters);
+    deleteLoadFlowParameters(&ptr->sa_load_flow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
-SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_parameters* src) {
-    sa_load_flow_parameters = new LoadFlowParameters(src->sa_load_flow_parameters);
+SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_parameters* src):
+    sa_load_flow_parameters(&src->sa_load_flow_parameters)
+{
     flow_proportional_threshold = (double) src->flow_proportional_threshold;
     low_voltage_proportional_threshold = (double) src->low_voltage_proportional_threshold;
     low_voltage_absolute_threshold = (double) src->low_voltage_absolute_threshold;
@@ -335,12 +340,11 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
 }
 
 SecurityAnalysisParameters::~SecurityAnalysisParameters() {
-    delete sa_load_flow_parameters;
 }
 
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
     security_analysis_parameters* res = new security_analysis_parameters();
-    res->sa_load_flow_parameters = sa_load_flow_parameters->to_c_struct();
+    sa_load_flow_parameters.load_to_c_struct(res->sa_load_flow_parameters);
     res->flow_proportional_threshold = (double) flow_proportional_threshold;
     res->low_voltage_proportional_threshold = (double) low_voltage_proportional_threshold;
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
@@ -564,7 +568,7 @@ SecurityAnalysisParameters* createSecurityAnalysisParameters() {
     auto parameters = std::shared_ptr<security_analysis_parameters>(parameters_ptr, [](security_analysis_parameters* ptr){
         callJava(::freeSecurityAnalysisParameters, ptr);
     });
-    return new LoadFlowParameters(parameters.get());
+    return new SecurityAnalysisParameters(parameters.get());
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
@@ -605,8 +609,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
     callJava(::addContingency, analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
 }
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, SecurityAnalysisParameters& parameters,
-                                            const std::string& provider, bool dc, JavaHandle* reporter) {
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
+                               const std::string& provider, bool dc, JavaHandle* reporter) {
     auto c_parameters = parameters.to_c_struct();
     return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reporter == nullptr) ? nullptr : *reporter);
 }
