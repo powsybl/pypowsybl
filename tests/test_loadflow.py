@@ -164,7 +164,8 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n, reporter = reporter)
     report2 = str(reporter)
     assert len(report2) > len(report1)
-    json_report = reporter.json
+    json_report = reporter.to_json()
+    assert len(json_report) > 0
     json.loads(json_report)
 
     n2 = pp.network.create_eurostag_tutorial_example1_network()

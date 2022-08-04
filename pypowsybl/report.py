@@ -17,6 +17,5 @@ class Reporter:  # pylint: disable=too-few-public-methods
     def _reporter_model(self) -> _pp.JavaHandle:
         return self._reporter_model_handle
 
-    @property
-    def json(self) -> str:
+    def to_json(self) -> str:
         return _pp.json_report(self._reporter_model_handle)
