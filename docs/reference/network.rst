@@ -92,7 +92,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_switches
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
-   Network.get_extension
 
 
 Network elements update
@@ -123,6 +122,8 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.add_elements_properties
+   Network.remove_elements_properties
 
 
 
@@ -139,12 +140,14 @@ Network elements can be created or removed using the following methods:
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
+   Network.create_curve_reactive_limits
    Network.create_dangling_lines
    Network.create_generators
    Network.create_hvdc_lines
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
+   Network.create_minmax_reactive_limits
    Network.create_operational_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
@@ -173,6 +176,20 @@ Network variants may be used to manage multiple states of the network efficientl
    Network.get_variant_ids
 
 
+Network elements extensions
+---------------------------
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   get_extensions_names
+   Network.get_extensions
+   Network.create_extensions
+   Network.update_extensions
+   Network.remove_extensions
+
+
 Miscellaneous network functions
 -------------------------------
 
@@ -193,7 +210,6 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
-   get_extensions_names
 
 
 I/O

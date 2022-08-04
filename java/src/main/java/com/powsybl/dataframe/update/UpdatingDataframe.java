@@ -6,12 +6,10 @@
  */
 package com.powsybl.dataframe.update;
 
-import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 /**
@@ -19,47 +17,23 @@ import java.util.OptionalInt;
  */
 public interface UpdatingDataframe {
 
-    int getIndex(String column, String value);
-
     List<SeriesMetadata> getSeriesMetadata();
 
-    OptionalDouble getDoubleValue(String column, int index);
+    DoubleSeries getDoubles(String column);
 
-    OptionalDouble getDoubleValue(int column, int index);
+    IntSeries getInts(String column);
 
-    OptionalDouble getDoubleValue(String columnName, int column, int index);
+    StringSeries getStrings(String column);
 
-    Optional<String> getStringValue(String column, int index);
+    default Optional<String> getStringValue(String column, int row) {
+        StringSeries series = getStrings(column);
+        return series != null ? Optional.of(series.get(row)) : Optional.empty();
+    }
 
-    Optional<String> getStringValue(int column, int index);
+    default OptionalInt getIntValue(String column, int row) {
+        IntSeries series = getInts(column);
+        return series != null ? OptionalInt.of(series.get(row)) : OptionalInt.empty();
+    }
 
-    /**
-     * get a string value in the dataframe according to the column name and the index.
-     * If the column name is not present in the map of the string series it gets the column indice in the ordered column names
-     * example:
-     * string_series1   int_series1   string_series2   double_series1
-     * 0               a              3            d               1.1
-     * 1               b              4            e               1.2
-     * 2               c              8            f               1.3
-     * <p>
-     * getStringValue("string_series1", 0, 1) gives "b"
-     * getStringValue("random", 0, 1) gives also "b"
-     * getStringValue("random", 1, 2) gives "f"
-     *
-     * @param columnName
-     * @param column
-     * @param index
-     * @return
-     */
-    Optional<String> getStringValue(String columnName, int column, int index);
-
-    OptionalInt getIntValue(String column, int index);
-
-    OptionalInt getIntValue(int column, int index);
-
-    OptionalInt getIntValue(String columnName, int column, int index);
-
-    int getLineCount();
-
-    boolean containsColumnName(String columnName, SeriesDataType type);
+    int getRowCount();
 }

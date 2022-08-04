@@ -2,13 +2,17 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
-import com.powsybl.python.LimitsDataframeAdderKey;
-import com.powsybl.python.TemporaryLimitData;
+import com.powsybl.python.network.TemporaryLimitData;
 import gnu.trove.list.array.TIntArrayList;
 
 import java.util.*;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
 
 public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
@@ -28,63 +32,107 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static final class OperationalLimitsSeries {
+
+        private final StringSeries elementIds;
+        private final StringSeries names;
+        private final StringSeries elementTypes;
+        private final StringSeries sides;
+        private final StringSeries types;
+        private final DoubleSeries values;
+        private final IntSeries acceptableDurations;
+        private final IntSeries fictitious;
+
+        OperationalLimitsSeries(UpdatingDataframe dataframe) {
+            this.elementIds = getRequiredStrings(dataframe, "element_id");
+            this.names = dataframe.getStrings("name");
+            this.elementTypes = getRequiredStrings(dataframe, "element_type");
+            this.sides = getRequiredStrings(dataframe, "side");
+            this.types = getRequiredStrings(dataframe, "type");
+            this.values = getRequiredDoubles(dataframe, "value");
+            this.acceptableDurations = getRequiredInts(dataframe, "acceptable_duration");
+            this.fictitious = dataframe.getInts("is_fictitious");
+        }
+
+        public StringSeries getElementIds() {
+            return elementIds;
+        }
+
+        public StringSeries getNames() {
+            return names;
+        }
+
+        public StringSeries getElementTypes() {
+            return elementTypes;
+        }
+
+        public StringSeries getSides() {
+            return sides;
+        }
+
+        public StringSeries getTypes() {
+            return types;
+        }
+
+        public DoubleSeries getValues() {
+            return values;
+        }
+
+        public IntSeries getAcceptableDurations() {
+            return acceptableDurations;
+        }
+
+        public IntSeries getFictitious() {
+            return fictitious;
+        }
+    }
+
     @Override
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe primaryTable = dataframes.get(0);
+        OperationalLimitsSeries series = new OperationalLimitsSeries(primaryTable);
+
         Map<LimitsDataframeAdderKey, TIntArrayList> indexMap = new HashMap<>();
-        for (int i = 0; i < primaryTable.getLineCount(); i++) {
-            String elementId = primaryTable.getStringValue("element_id", i)
-                    .orElseThrow(() -> new PowsyblException("element_id is missing"));
-            String side = primaryTable.getStringValue("side", i)
-                    .orElseThrow(() -> new PowsyblException("side is missing"));
-            String limitType = primaryTable.getStringValue("type", i)
-                    .orElseThrow(() -> new PowsyblException("type is missing"));
+        for (int i = 0; i < primaryTable.getRowCount(); i++) {
+            String elementId = series.getElementIds().get(i);
+            String side = series.getSides().get(i);
+            String limitType = series.getTypes().get(i);
             LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
             indexMap.computeIfAbsent(key, k -> new TIntArrayList()).add(i);
         }
 
-        addElements(network, primaryTable, indexMap);
+        addElements(network, series, indexMap);
     }
 
-    private static void addElements(Network network, UpdatingDataframe dataframe, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
-        indexMap.forEach((key, indexList) -> createLimits(network, dataframe, key.getElementId(),
+    private static void addElements(Network network, OperationalLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
+        indexMap.forEach((key, indexList) -> createLimits(network, series, key.getElementId(),
                 key.getSide(), key.getLimitType(), indexList));
     }
 
-    private static void createLimits(Network network, UpdatingDataframe dataframe, String elementId, String side, String type,
+    private static void createLimits(Network network, OperationalLimitsSeries series, String elementId, String side, String type,
                                      TIntArrayList indexList) {
-        IdentifiableType elementType = dataframe.getStringValue("element_type", indexList.get(0))
-                .map(IdentifiableType::valueOf)
-                .orElseThrow(() -> new PowsyblException("element_type is not set"));
+        IdentifiableType elementType = IdentifiableType.valueOf(series.getElementTypes().get(indexList.get(0)));
         LimitType limitType = LimitType.valueOf(type);
         TemporaryLimitData.Side limitSide = TemporaryLimitData.Side.valueOf(side);
 
         LoadingLimitsAdder adder = getAdder(network, elementType, elementId, limitType, limitSide);
         for (int index : indexList.toArray()) {
-            int acceptableDuration = dataframe.getIntValue("acceptable_duration", index)
-                    .orElseThrow(() -> new PowsyblException("acceptable duration is missing"));
-            double value = dataframe.getDoubleValue("value", index)
-                    .orElseThrow(() -> new PowsyblException("value is missing"));
-            OptionalInt isFictitious = dataframe.getIntValue("is_fictitious", index);
-            adder = createLimits(adder, acceptableDuration, value, isFictitious,
-                    dataframe.getStringValue("name", index)
-                            .orElseThrow(() -> new PowsyblException("name is missing")));
+            createLimits(adder, index, series);
         }
         adder.add();
     }
 
-    private static LoadingLimitsAdder createLimits(LoadingLimitsAdder adder, int acceptableDuration, double value, OptionalInt isFictitious, String name) {
+    private static void createLimits(LoadingLimitsAdder adder, int row, OperationalLimitsSeries series) {
+        int acceptableDuration = series.getAcceptableDurations().get(row);
         if (acceptableDuration == -1) {
-            adder.setPermanentLimit(value);
-            return adder;
+            applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
         } else {
-            LoadingLimitsAdder.TemporaryLimitAdder temporaryLimitAdder = adder.beginTemporaryLimit().setName(name)
-                    .setAcceptableDuration(acceptableDuration)
-                    .setValue(value);
-            if (isFictitious.isPresent()) {
-                temporaryLimitAdder.setFictitious(isFictitious.getAsInt() == 1);
-            }
-            return (LoadingLimitsAdder) temporaryLimitAdder.endTemporaryLimit();
+            LoadingLimitsAdder.TemporaryLimitAdder temporaryLimitAdder = adder.beginTemporaryLimit()
+                            .setAcceptableDuration(acceptableDuration);
+            applyIfPresent(series.getNames(), row, temporaryLimitAdder::setName);
+            applyIfPresent(series.getValues(), row, temporaryLimitAdder::setValue);
+            applyBooleanIfPresent(series.getFictitious(), row, temporaryLimitAdder::setFictitious);
+            temporaryLimitAdder.endTemporaryLimit();
         }
     }
 

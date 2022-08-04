@@ -7,7 +7,7 @@
 import pytest
 import pypowsybl as pp
 import pandas as pd
-
+import pypowsybl.report as rp
 
 @pytest.fixture(autouse=True)
 def no_config():
@@ -15,24 +15,21 @@ def no_config():
 
 
 def test_default_provider():
-    pp.set_debug_mode(True)
-    assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
+    assert 'OpenLoadFlow' == pp.security.get_default_provider()
     pp.security.set_default_provider("provider")
     assert 'provider' == pp.security.get_default_provider()
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
         sa.run_ac(n)
-    assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'provider\''):
         sa.run_dc(n)
-    assert 'SecurityAnalysisProvider \'provider\' not found' == str(exc_info.value)
-    sa_result = sa.run_ac(n, provider='OpenSecurityAnalysis')
+    sa_result = sa.run_ac(n, provider='OpenLoadFlow')
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
     assert 'provider' == pp.security.get_default_provider()
-    pp.security.set_default_provider('OpenSecurityAnalysis')
-    assert 'OpenSecurityAnalysis' == pp.security.get_default_provider()
+    pp.security.set_default_provider('OpenLoadFlow')
+    assert 'OpenLoadFlow' == pp.security.get_default_provider()
 
 
 def test_ac_security_analysis():
@@ -102,12 +99,23 @@ def test_monitored_elements():
     pd.testing.assert_frame_equal(expected, bus_results)
 
     assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'branch_id']
-    assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2']
+    assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
     assert len(branch_results) == 4
     assert branch_results.loc['', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
     assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.06, abs=1e-2)
     assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.06, abs=1e-2)
+
+
+def test_flow_transfer():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingencies(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    sa_result = sa.run_ac(n)
+    branch_results = sa_result.branch_results
+    assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
+    assert branch_results.loc['NHV1_NHV2_2', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
 
 
 def test_dc_analysis():
@@ -129,4 +137,43 @@ def test_dc_analysis():
 
 
 def test_provider_names():
-    assert 'OpenSecurityAnalysis' in pp.security.get_provider_names()
+    assert 'OpenLoadFlow' in pp.security.get_provider_names()
+
+
+def test_provider_parameters():
+    # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
+    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
+    n = pp.network.create_ieee14()
+    result = pp.security.create_analysis().run_ac(n, parameters)
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.FAILED
+
+    n = pp.network.create_ieee14()
+    result = pp.security.create_analysis().run_ac(n)
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
+
+
+def test_ac_security_analysis_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    sa_result = sa.run_ac(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+
+
+def test_dc_analysis_with_report():
+    reporter = rp.Reporter()
+    report1 = str(reporter)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    n.update_loads(id='LOAD', p0=900)
+    n.update_generators(id='GEN', target_p=900)
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
+    sa_result = sa.run_dc(n, reporter = reporter)
+    report2 = str(reporter)
+    assert len(report2) >= len(report1)
+

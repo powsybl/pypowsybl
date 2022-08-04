@@ -8,11 +8,16 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -40,18 +45,46 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class StaticVarCompensatorSeries extends InjectionSeries {
+
+        private final StringSeries voltageLevels;
+        private final DoubleSeries bMin;
+        private final DoubleSeries bMax;
+        private final StringSeries regulationModes;
+        private final DoubleSeries targetV;
+        private final DoubleSeries targetQ;
+
+        StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.bMin = dataframe.getDoubles("b_min");
+            this.bMax = dataframe.getDoubles("b_max");
+            this.targetQ = dataframe.getDoubles("target_q");
+            this.targetV = dataframe.getDoubles("target_v");
+            this.regulationModes = dataframe.getStrings("regulation_mode");
+        }
+
+        void create(Network network, int row) {
+            StaticVarCompensatorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+                    .newStaticVarCompensator();
+            setInjectionAttributes(adder, row);
+            applyIfPresent(bMin, row, adder::setBmin);
+            applyIfPresent(bMax, row, adder::setBmax);
+            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+            applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        StaticVarCompensatorAdder adder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                        .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
-                .newStaticVarCompensator();
-        NetworkElementCreationUtils.createInjection(adder, dataframe, indexElement);
-        dataframe.getDoubleValue("b_max", indexElement).ifPresent(adder::setBmax);
-        dataframe.getDoubleValue("b_min", indexElement).ifPresent(adder::setBmin);
-        dataframe.getStringValue("regulation_mode", indexElement)
-                .ifPresent(rm -> adder.setRegulationMode(StaticVarCompensator.RegulationMode.valueOf(rm)));
-        dataframe.getDoubleValue("target_v", indexElement).ifPresent(adder::setVoltageSetpoint);
-        dataframe.getDoubleValue("target_q", indexElement).ifPresent(adder::setReactivePowerSetpoint);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        StaticVarCompensatorSeries series = new StaticVarCompensatorSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

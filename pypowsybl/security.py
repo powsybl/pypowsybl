@@ -7,7 +7,7 @@
 from typing import Union as _Union, Dict as _Dict, List as _List
 import pandas as _pd
 from prettytable import PrettyTable as _PrettyTable
-import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import (
@@ -15,6 +15,7 @@ from pypowsybl.util import (
     create_data_frame_from_series_array as _create_data_frame_from_series_array
 )
 from pypowsybl.loadflow import Parameters
+from pypowsybl.report import Reporter as _Reporter
 
 
 def _contingency_result_repr(self: ContingencyResult) -> str:
@@ -144,7 +145,7 @@ class SecurityAnalysis(_ContingencyContainer):
         _ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: _Network, parameters: Parameters = None,
-               provider: str = '') -> SecurityAnalysisResult:
+               provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -156,12 +157,12 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def run_dc(self, network: _Network, parameters: Parameters = None,
-               provider: str = '') -> SecurityAnalysisResult:
+               provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an DC security analysis.
 
         Args:
@@ -173,9 +174,9 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p: Parameters = Parameters() if parameters is None else parameters
+        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True))
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,
@@ -261,23 +262,26 @@ def create_analysis() -> SecurityAnalysis:
     """
     return SecurityAnalysis(_pypowsybl.create_security_analysis())
 
+
 def set_default_provider(provider: str) -> None:
     """
-    Set the default security analysis provider
+    Set the default security analysis provider.
 
     Args:
         provider: name of the default security analysis provider to set
     """
     _pypowsybl.set_default_security_analysis_provider(provider)
 
+
 def get_default_provider() -> str:
     """
-    Get the current default security analysis provider. if nothing is set it is OpenSecurityAnalysis
+    Get the current default security analysis provider.
 
     Returns:
         the name of the current default security analysis provider
     """
     return _pypowsybl.get_default_security_analysis_provider()
+
 
 def get_provider_names() -> _List[str]:
     """

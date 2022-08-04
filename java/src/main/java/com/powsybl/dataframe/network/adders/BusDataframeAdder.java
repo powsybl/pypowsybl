@@ -8,13 +8,15 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BusAdder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -34,12 +36,32 @@ public class BusDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class BusSeries extends IdentifiableSeries {
+
+        private final StringSeries voltageLevels;
+
+        BusSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+        }
+
+        void createBus(Network network, int row) {
+            BusAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+                    .getBusBreakerView()
+                    .newBus();
+            setIdentifiableAttributes(adder, row);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int index) {
-        VoltageLevel vl = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", index)
-                .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")));
-        BusAdder adder = vl.getBusBreakerView().newBus();
-        NetworkElementCreationUtils.createIdentifiable(adder, dataframe, index);
-        adder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        BusSeries series = new BusSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.createBus(network, row);
+        }
     }
 }

@@ -45,7 +45,7 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
             return getItems(network);
         } else {
             UpdatingDataframe selectedDataframe = dataframeFilter.getSelectingDataframe().get();
-            return IntStream.range(0, selectedDataframe.getLineCount()).mapToObj(i -> getItem(network, selectedDataframe, i)).collect(Collectors.toList());
+            return IntStream.range(0, selectedDataframe.getRowCount()).mapToObj(i -> getItem(network, selectedDataframe, i)).collect(Collectors.toList());
         }
     }
 

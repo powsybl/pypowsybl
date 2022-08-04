@@ -115,7 +115,7 @@ Let's obtain that directly. In the following example, we create four zones based
      NL                  -0.225206            -0.225206
 
 Sensitivity to a X-Node
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 X-Nodes when imported from a UCTE or CGMES file are represented by a so called "dangling line" in the PowSyBl network model.
 The dangling line ID is taken from the line ID connecting the X-Node. So to calculate a X-Node sensitivity, we just have to
 use the dangling line ID as the injection in the zone definition.
@@ -175,6 +175,34 @@ You can display the keys with:
       'DDE3AA1 _generator': 1500.0}
 
 Note that keys are not normalized here.
+
+Shift keys from UCTE glsk files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Alternatively zones can also be created with weighted injections defined in ucte GLSK files. Two ways of creating zones are available.
+The first one use a glsk file and create a list of Zone objects with all the areas defined within :
+
+.. code-block:: python
+
+     >>> n = pp.network.load('simple-eu.uct')
+     >>> zones = pp.sensitivity.create_zones_from_glsk_file(n, 'glsk_sample.xml', datetime.datetime(2019, 1, 8, 0, 0))
+     >>> params = pp.loadflow.Parameters(distributed_slack=False)
+     >>> sa = pp.sensitivity.create_dc_analysis()
+     >>> sa.set_zones(zones)
+     >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['10YCB-GERMANY--8'], 'm')
+     >>> results = sa.run(n, params)
+
+The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation :
+
+.. code-block:: python
+
+    >>> n = pp.network.load('simple-eu.uct')
+    >>> glsk_document = pp.glsk.load('glsk_sample.xml')
+    >>> t_start = glsk_document.get_gsk_time_interval_start()
+    >>> t_end = glsk_document.get_gsk_time_interval_end()
+    >>> de_generators = glsk_document.get_points_for_country(n, '10YCB-GERMANY--8', t_start)
+    >>> de_shift_keys = glsk_document.get_glsk_factors(n, '10YCB-GERMANY--8', t_start)
+    >>> zone_de = pp.sensitivity.create_zone_from_injections_and_shift_keys('10YCB-GERMANY--8', de_generators, de_shift_keys)
 
 Zone modification
 ^^^^^^^^^^^^^^^^^
@@ -262,13 +290,13 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
     >>> result = analysis.run(network)
     >>> result.get_reference_flows('m', 'NHV1_NHV2_1')
                      NHV1_NHV2_1  NHV1_NHV2_2
-    reference_flows          0.0        600.0
+    reference_flows          NaN        600.0
     >>> result.get_branch_flows_sensitivity_matrix('m', 'NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
 
-Pre-contingency only or Specific post-contingencies state analysis
-------------------------
+Pre-contingency only or specific post-contingencies state analysis
+------------------------------------------------------------------
 
 You can also limit the computation of your sensitivities to the pre contingency state or to some specific post contingencies states by using add/get precontingency_branch_flow_factor_matrix
 and postcontingency_branch_flow_factor_matrix methods.

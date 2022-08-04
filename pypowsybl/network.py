@@ -6,28 +6,44 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
+from os import PathLike as _PathLike
 import sys as _sys
 import datetime as _datetime
+from datetime import timezone as _timezone
 import warnings
 from typing import (
+    Sequence as _Sequence,
     List as _List,
     Set as _Set,
     Dict as _Dict,
-    Optional as _Optional, Union,
+    Optional as _Optional,
+    Union as _Union,
+    TYPE_CHECKING as _TYPE_CHECKING
 )
 
 from numpy import Inf
+from numpy.typing import ArrayLike as _ArrayLike
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
-from numpy.typing import ArrayLike as _ArrayLike
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
-from pypowsybl._pypowsybl import ArrayStruct
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _create_c_dataframe
+from pypowsybl.utils.dataframes import (
+    _adapt_df_or_kwargs,
+    _create_c_dataframe,
+    _create_properties_c_dataframe,
+    _adapt_properties_kwargs
+)
+from pypowsybl.report import Reporter as _Reporter
+
+# Type definitions
+if _TYPE_CHECKING:
+    ParamsDict = _Optional[_Dict[str, str]]
+    PathOrStr = _Union[str, _PathLike]
+
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
     return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
@@ -36,7 +52,12 @@ def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
 
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
-ParamsDict = _Optional[_Dict[str, str]]
+
+def _path_to_str(path: PathOrStr) -> str:
+    if isinstance(path, str):
+        return path
+    return path.__fspath__()
+
 
 class Svg:
     """
@@ -165,7 +186,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._name = att.name
         self._source_format = att.source_format
         self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.utcfromtimestamp(att.case_date)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     @property
     def id(self) -> str:
@@ -214,7 +235,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {})
+        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
@@ -228,33 +249,48 @@ class Network:  # pylint: disable=too-many-public-methods
     def disconnect(self, id: str) -> bool:
         return _pp.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: str, format: str = 'XIIDM', parameters: ParamsDict = None) -> None:
+    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> None:
         """
-        Save a network to a file using a specified format.
+        Save a network to a file using the specified format.
+
+        Basic compression formats are also supported:
+        for example if file name ends with '.gz', the resulting files will be gzipped.
 
         Args:
-            file (str): a file
-            format (str, optional): format to save the network, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            file:       path to the exported file
+            format:     format to save the network, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+            reporter:   the reporter to be used to create an execution report, default is None (no report)
+
+        Examples:
+            Various usage examples:
+
+            .. code-block:: python
+
+                network.dump('network.xiidm')
+                network.dump('network.xiidm.gz')  # produces a gzipped file
+                network.dump('/path/to/network.uct', format='UCTE')
         """
+        file = _path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters)
+        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
-            format (str, optional): format to export, only support mono file type, defaults to 'XIIDM'
-            parameters (dict, optional): a map of parameters
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+            reporter:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
-            a string representing network
+            A string representing this network
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters)
+        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -267,7 +303,7 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: str) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -275,6 +311,7 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
         """
+        svg_file = _path_to_str(svg_file)
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
     def get_single_line_diagram(self, container_id: str) -> Svg:
@@ -289,7 +326,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: str, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -298,13 +335,14 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
+        svg_file = _path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
-    def get_network_area_diagram(self, voltage_level_ids: Union[str, _List[str]]=None, depth: int = 0) -> Svg:
+    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> Svg:
         """
         Create a network area diagram.
 
@@ -317,7 +355,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if voltage_level_ids is None:
             voltage_level_ids = []
-        if type(voltage_level_ids) == str:
+        if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth))
 
@@ -347,15 +385,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             a network elements dataframe for the specified element type
         """
-        if attributes is None:
-            attributes = []
         filter_attributes = _pp.FilterAttributesType.DEFAULT_ATTRIBUTES
-        if all_attributes and len(attributes) > 0:
-            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
         if all_attributes:
             filter_attributes = _pp.FilterAttributesType.ALL_ATTRIBUTES
-        elif len(attributes) > 0:
+        elif attributes is not None:
             filter_attributes = _pp.FilterAttributesType.SELECTION_ATTRIBUTES
+        if attributes is None:
+            attributes = []
+        if all_attributes and len(attributes) > 0:
+            raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
         if kwargs:
             metadata = _pp.get_network_elements_dataframe_metadata(element_type)
@@ -365,7 +403,10 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_array = None
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
-        return _create_data_frame_from_series_array(series_array)
+        result = _create_data_frame_from_series_array(series_array)
+        if attributes:
+            result = result[attributes]
+        return result
 
     def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
         r"""
@@ -469,14 +510,25 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_p**: the target active value for the generator (in MW)
               - **max_p**: the maximum active value for the generator  (MW)
               - **min_p**: the minimum active value for the generator  (MW)
+              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the generator for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
+              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this generator is connected
-              - **bus_id**: at which bus this generator is computed
+              - **bus_id**: bus where this generator is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
+              - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the generator is connected to a bus
 
             This dataframe is indexed on the generator ID.
 
@@ -571,7 +623,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the result reactive load consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
               - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this load is connected
-              - **bus_id**: at which bus this load is connected
+              - **bus_id**: bus where this load is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this load is connected
+              - **node**  (optional): node where this load is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the load is connected to a bus
 
             This dataframe is indexed on the load ID.
 
@@ -663,6 +718,27 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of batteries.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: type of load
+              - **max_p**: the maximum active value for the battery  (MW)
+              - **min_p**: the minimum active value for the battery  (MW)
+              - **min_q**: the maximum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q**: the minimum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **target_p**: The active power setpoint  (MW)
+              - **target_q**: The reactive power setpoint  (MVAr)
+              - **p**: the result active battery consumption, it is ``NaN`` is not loadflow has been computed (MW)
+              - **q**: the result reactive battery consumption, it is ``NaN`` is not loadflow has been computed (MVAr)
+              - **i**: the current on the battery, ``NaN`` if no loadflow has been computed (in A)
+              - **voltage_level_id**: at which substation this load is connected
+              - **bus_id**: bus where this load is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this battery is connected
+              - **node**  (optional): node where this battery is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the battery is connected to a bus
+
+            This dataframe is indexed on the battery ID.
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
@@ -694,10 +770,14 @@ class Network:  # pylint: disable=too-many-public-methods
             - **p2**: the active flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
             - **q2**: the reactive flow on the line at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
             - **i2**: the current on the line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-            - **voltage_level1_id**: at which substation the "1" side of the powerline is connected
-            - **voltage_level2_id**: at which substation the "2" side of the powerline is connected
-            - **bus1_id**: at which bus the "1" side of the powerline is connected
-            - **bus2_id**: at which bus the "2" side of the powerline is connected
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
 
@@ -768,23 +848,29 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **r**: the resistance of the transformer at its "2" side  (in Ohm)
-              - **x**: the reactance of the transformer at its "2" side (in Ohm)
-              - **b**: the susceptance of transformer at its "2" side (in Siemens)
-              - **g**: the  conductance of transformer at its "2" side (in Siemens)
-              - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
-              - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
-              - **rated_s**:
-              - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
-              - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
-              - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
-              - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-              - **voltage_level1_id**: at which substation the "1" side of the transformer is connected
-              - **voltage_level2_id**: at which substation the "2" side of the transformer is connected
-              - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
-              - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
+            - **r**: the resistance of the transformer at its "2" side  (in Ohm)
+            - **x**: the reactance of the transformer at its "2" side (in Ohm)
+            - **b**: the susceptance of transformer at its "2" side (in Siemens)
+            - **g**: the  conductance of transformer at its "2" side (in Siemens)
+            - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
+            - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
+            - **rated_s**:
+            - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+            - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+            - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
+            - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level1_id**: voltage level where the line is connected, on side 1
+            - **voltage_level2_id**: voltage level where the line is connected, on side 2
+            - **bus1_id**: bus where this line is connected, on side 1
+            - **bus2_id**: bus where this line is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
+            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
+            - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
+            - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -878,8 +964,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
               - **voltage_level_id**: at which substation the shunt is connected
-              - **bus_id**: indicate at which bus the shunt is connected
+              - **bus_id**: bus where this shunt is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this shunt is connected
+              - **node**  (optional): node where this shunt is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the shunt is connected to a bus
+
 
             This dataframe is indexed by the id of the shunt compensators
 
@@ -1002,7 +1091,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the dangling line is connected
-              - **bus_id**: at which bus the dangling line is connected
+              - **bus_id**: bus where this line is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
+              - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
 
             This dataframe is indexed by the id of the dangling lines
@@ -1075,7 +1166,9 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q**: the reactive flow on the LCC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the LCC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the LCC converter station is connected
-              - **bus_id**: at which bus the LCC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
 
             This dataframe is indexed by the id of the LCC converter
@@ -1148,12 +1241,20 @@ class Network:  # pylint: disable=too-many-public-methods
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
+              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the vsc converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the VSC converter station is connected
-              - **bus_id**: at which bus the VSC converter station is connected
+              - **bus_id**: bus where this station is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
+              - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
 
             This dataframe is indexed by the id of the VSC converter
@@ -1167,13 +1268,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -1182,13 +1283,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor         target_v                target_q voltage_regulator_on      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
             id
-                VSC1         1.1            400.0                   500.0                 True  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
 
             .. code-block:: python
 
@@ -1228,11 +1329,14 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
+              - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation the var compensator is connected
-              - **bus_id**: at which bus the var compensator is connected
+              - **bus_id**: bus where this SVC is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this SVC is connected
+              - **node**  (optional): node where this SVC is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the var compensator is connected to a bus
 
             This dataframe is indexed by the id of the var compensator
@@ -1246,12 +1350,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max         target_v                target_q regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max         target_v                target_q regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -1260,12 +1364,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
-            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode  p        q   i  voltage_level_id  bus_id connected
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
+            \        b_min b_max voltage_setpoint reactive_power_setpoint regulation_mode regulated_element_id  p        q   i  voltage_level_id  bus_id connected
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
             id
-                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE NaN -12.5415 NaN            S4VL1 S4VL1_0      True
-            ======== ===== ===== ================ ======================= =============== === ======== === ================ ======= =========
+                 SVC -0.05  0.05            400.0                     NaN         VOLTAGE                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
+            ======== ===== ===== ================ ======================= =============== ==================== === ======== === ================ ======= =========
 
             .. code-block:: python
 
@@ -1382,8 +1486,11 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
-              - **angle**: the voltage angle of the busbar section (in radian)
+              - **angle**: the voltage angle of the busbar section (in degree)
               - **voltage_level_id**: at which substation the busbar section is connected
+              - **bus_id**: bus this busbar section belongs to
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to
+              - **node**  (optional): node associated to the this busbar section, in node-breaker voltage levels
               - **connected**: ``True`` if the busbar section is connected to a bus
 
             This dataframe is indexed by the id of the busbar sections
@@ -1567,10 +1674,15 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **kind**: the kind of switch
-              - **open**: the open status of the switch
-              - **retained**: the retain status of the switch
-              - **voltage_level_id**: at which substation the switch is connected
+            - **kind**: the kind of switch
+            - **open**: the open status of the switch
+            - **retained**: the retain status of the switch
+            - **voltage_level_id**: at which substation the switch is connected
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
+            - **node1** (optional): node where this switch is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this switch is connected on side 2, in node-breaker voltage levels
+
 
             This dataframe is indexed by the id of the switches
 
@@ -2128,9 +2240,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are:
 
-            - `p0`
-            - `q0`
+            - `target_p`
+            - `target_q`
             - `connected`
+            - `max_q`
+            - `min_q`
 
         See Also:
             :meth:`get_batteries`
@@ -2201,6 +2315,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_vsc_converter_stations`
@@ -2268,6 +2383,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `regulated_element_id`
 
         See Also:
             :meth:`get_static_var_compensators`
@@ -2681,6 +2797,41 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            df: the data to be updated
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.update_extensions(self._handle, extension_name, c_df)
+
+    def create_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
+
+        Args:
+            extension_name: name of the extension
+            dfs: the data to be created
+            kwargs: the data to be created, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            The id column in the dataframe provides the link to the extensions parent elements
+        """
+        self._create_extensions(extension_name, [df], **kwargs)
+
     def get_working_variant_id(self) -> str:
         """
         The current working variant ID.
@@ -2800,11 +2951,27 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def merge(self, *networks: Network) -> None:
-        return _pp.merge(self._handle, [net._handle for net in networks])
+    def merge(self, networks: _Union[Network, _Sequence[Network]]) -> None:
+        """
+        Merges networks into this one.
 
-    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
-        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+        Args:
+            networks:  List of networks to be merged into this one.
+
+        Examples:
+            If you have 3 networks, you can merge this way:
+
+            .. code-block:: python
+
+                network1.merge([network2, network3])
+
+            Note that network1 is modified: it absorbs network2 and network3.
+        """
+        if isinstance(networks, Network):
+            networks = [networks]
+        return _pp.merge(self._handle, [n._handle for n in networks])
+
+    def _get_c_dataframes(self, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
         c_dfs: _List[_Optional[_pp.Dataframe]] = []
         dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
         for i, df in enumerate(dfs):
@@ -2812,7 +2979,17 @@ class Network:  # pylint: disable=too-many-public-methods
                 c_dfs.append(None)
             else:
                 c_dfs.append(_create_c_dataframe(df, metadata[i]))
+        return c_dfs
+
+    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_element(self._handle, c_dfs, element_type)
+
+    def _create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+        metadata = _pp.get_network_extensions_creation_dataframes_metadata(extension_name)
+        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
+        _pp.create_extensions(self._handle, c_dfs, extension_name)
 
     def create_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3029,8 +3206,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **min_p**: minimum active power, in MW
             - **max_p**: maximum active power, in MW
-            - **p0**: active power consumption, in MW
-            - **q0**: reactive power consumption, in MVar
+            - **target_p**: active power consumption, in MW
+            - **target_q**: reactive power consumption, in MVar
 
         Examples:
             Using keyword arguments:
@@ -3473,7 +3650,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - **id**: the identifier of the new voltage level
             - **substation_id**: the identifier of the substation which the new voltage level belongs to.
-              It must already exist.
+              Optional. If defined, the substation must already exist.
             - **name**: an optional human-readable name
             - **topology_kind**: the topology kind, BUS_BREAKER or NODE_BREAKER
             - **nominal_v**: the nominal voltage, in kV
@@ -3660,6 +3837,86 @@ class Network:  # pylint: disable=too-many-public-methods
         df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
+    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits of type min/max.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the generator
+            - **min_q**: minimum reactive limit, in MVAr
+            - **max_q**: maximum reactive limit, in MVAr
+
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_minmax_reactive_limits(id='GEN-1', min_q=-100, max_q=100)
+
+        See Also:
+            :meth:`create_curve_reactive_limits`
+        """
+        return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
+
+    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+        """
+        Creates reactive limits as "curves".
+
+        Curves are actually composed of line segments, defined by a list of points.
+        Each row of the input data actually defines 2 points:
+        one for the minimum limit, one for the maximum limit, for the given
+        active power value.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the generator
+            - **p**:     active power, in MW, for which this row defines limits
+            - **min_q**: minimum reactive limit at this active power value, in MVAr
+            - **max_q**: maximum reactive limit at this active power value, in MVAr
+
+            At least 2 rows must be defined for each generator, for 2
+            different active power values.
+            Previously defined limits for a given generator, if present,
+            will be replaced by the new ones.
+
+        Examples:
+            Generator GEN-1 will be able to provide 150MVAr when P=0MW,
+            and only 100MVAr when it generates 100MW:
+
+            .. code-block:: python
+
+                network.create_curve_reactive_limits(id=['GEN-1', 'GEN-1'],
+                                                     p=[0, 100],
+                                                     min_q=[-150, -100],
+                                                     max_q=[150, 100])
+
+        See Also:
+            :meth:`create_minmax_reactive_limits`
+        """
+        return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
     def get_validation_level(self) -> ValidationLevel:
         """
         The network's validation level.
@@ -3700,7 +3957,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         _pp.set_min_validation_level(self._handle, validation_level)
 
-    def remove_elements(self, elements_ids: Union[str, _List[str]]) -> None:
+    def remove_elements(self, elements_ids: _Union[str, _List[str]]) -> None:
         """
         Removes elements from the network.
 
@@ -3724,20 +3981,113 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
 
-    def get_extension(self, extension_name: str) -> _DataFrame:
+    def get_extensions(self, extension_name: str) -> _DataFrame:
         """
-        Get a dataframe for a specific extension
+        Get an extension as a :class:`~pandas.DataFrame` for a specified extension name.
 
         Args:
             extension_name: name of the extension
 
         Returns:
-            A dataframe with the extension data.
+            A dataframe with the extensions data.
 
         Notes:
-            The extra id column in the resulting dataframe provides the link to the extension's parent element
+            The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
         return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+    def get_extension(self, extension_name: str) -> _DataFrame:
+        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
+        return self.get_extensions(extension_name)
+
+    def add_elements_properties(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Add properties to network elements, provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the properties to be created or updated. The index has to be the `id`
+                identifying the network elements.
+            kwargs: the properties to be added as named arguments.
+                    Arguments can be a single string or any type of sequence of strings.
+                    In the case of sequences, all arguments must have the same length.
+
+
+        Examples:
+
+            For example, to add the properties prop1 = value1 and prop2 = value2 to a network element:
+
+            .. code-block:: python
+
+                >>> network.add_elements_properties(id='GENERATOR-1', prop1='value1', prop2='value2')
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id='GENERATOR-1')
+                         toto
+                id
+                VLEJUP7  tutu
+
+            You can also update multiple elements at once, for example with a dataframe:
+
+            .. code-block:: python
+
+                >>> properties_df = pd.Dataframe(index=pd.Series('id', ['G1', 'G2']),
+                                                 data={
+                                                     'prop1': [ 'val11', 'val12'],
+                                                     'prop2': [ 'val12', 'val22'],
+                                                 })
+                >>> network.add_elements_properties(properties_df)
+                >>> network.get_generators(attributes=['prop1', 'prop2'], id=['G1', 'G2'])
+                         prop1  prop2
+                id
+                G1       val11  val12
+                G2       val21  val22
+
+        """
+        if df is None:
+            df = _adapt_properties_kwargs(**kwargs)
+        if df.isnull().values.any():
+            raise _pp.PyPowsyblError("dataframe can not contain NaN values")
+        for series_name in df.columns.values:
+            df[series_name] = df[series_name].astype(str)
+        c_df = _create_properties_c_dataframe(df)
+        _pp.add_network_element_properties(self._handle, c_df)
+
+    def remove_elements_properties(self, ids: _Union[str, _List[str]], properties: _Union[str, _List[str]]) -> None:
+        """
+        Remove properties from a list of network elements
+
+        Args:
+            ids: list of the network elements that will have their properties removed
+            properties: list of the properties that will be removed
+
+        Examples:
+
+            To remove properties prop1 and prop2 from network elements GEN1 and GEN2:
+
+            .. code-block:: python
+
+                network.remove_elements_properties(ids=['GEN1', 'GEN2'], properties=['prop1', 'prop2'])
+
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        if isinstance(properties, str):
+            properties = [properties]
+        _pp.remove_network_element_properties(self._handle, ids, properties)
+
+    def remove_extensions(self, extension_name: str, ids: _Union[str, _List[str]]) -> None:
+        """
+        Removes network elements extensions, given the extension's name.
+
+        Args:
+            extension_name: name of the extension
+            ids: IDs of the elements to be removed.
+
+        Notes:
+            ids can be provided as a list of IDs or as a single ID.
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        _pp.remove_extensions(self._handle, extension_name, ids)
+
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
@@ -3825,6 +4175,7 @@ def create_eurostag_tutorial_example1_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1')
 
+
 def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with Power limits
@@ -3833,6 +4184,7 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
+
 
 def create_four_substations_node_breaker_network() -> Network:
     """
@@ -3929,37 +4281,54 @@ def get_export_parameters(fmt: str) -> _DataFrame:
     return _create_data_frame_from_series_array(series_array)
 
 
-def load(file: str, parameters: _Dict[str, str] = None) -> Network:
+def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
+    Basic compression formats are also supported (gzip, bzip2).
+
     Args:
-       file (str): a file
-       parameters (dict, optional): a map of parameters
+       file:       path to the network file
+       parameters: a dictionary of import parameters
+       reporter:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
-        a network
+        The loaded network
+
+    Examples:
+
+        Some examples of file loading, including relative or absolute paths, and compressed files:
+
+        .. code-block:: python
+
+            network = pp.network.load('network.xiidm')
+            network = pp.network.load('/path/to/network.xiidm')
+            network = pp.network.load('network.xiidm.gz')
+            network = pp.network.load('network.uct')
+            ...
     """
+    file = _path_to_str(file)
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network(file, parameters))
+    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
 
-def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name (str): file name
-       file_content (str): file content
-       parameters (dict, optional): a map of parameters
+       file_name:    file name
+       file_content: file content
+       parameters:   a dictionary of import parameters
 
     Returns:
-        a network
+        The loaded network
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters))
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
+
 
 def get_extensions_names() -> _List[str]:
     """

@@ -4,6 +4,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import io
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +14,7 @@ import pypowsybl
 import pypowsybl.network
 import pypowsybl.network as pn
 import util
+from util import dataframe_from_string
 import pathlib
 from numpy import NaN
 from pypowsybl import PyPowsyblError
@@ -65,10 +68,15 @@ def test_substation_exceptions():
         n.create_substations(id='test', country='ABC')
     assert exc.match('No enum constant com.powsybl.iidm.network.Country.ABC')
 
-    # TODO: we should try to have a more explicit message here
-    with pytest.raises(RuntimeError) as exc:
-        n.create_substations(id='test', country=2)
-    assert exc.match('Unable to cast Python instance to C')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_substations(id='GEN', country=2)
+    assert exc.match('Data of column "country" has the wrong type, expected string')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', max_p='2')
+    assert exc.match('Data of column "max_p" has the wrong type, expected float')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_generators(id='GEN', voltage_regulator_on=31.3)
+    assert exc.match('Data of column "voltage_regulator_on" has the wrong type, expected bool')
 
 
 def test_generators_creation():
@@ -139,7 +147,7 @@ def test_loads_creation():
 def test_batteries_creation():
     n = util.create_battery_network()
     df = pd.DataFrame.from_records(
-        columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'p0', 'q0'],
+        columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'target_p', 'target_q'],
         data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 20)],
         index='id')
     n.create_batteries(df)
@@ -147,8 +155,8 @@ def test_batteries_creation():
     assert bat3.voltage_level_id == 'VLBAT'
     assert bat3.max_p == 100
     assert bat3.min_p == 10
-    assert bat3.p0 == 90
-    assert bat3.q0 == 20
+    assert bat3.target_p == 90
+    assert bat3.target_q == 20
 
 
 def test_vsc_data_frame():
@@ -592,7 +600,6 @@ def test_create_node_breaker_network_and_run_loadflow():
 
 
 def test_create_limits():
-    pypowsybl.set_debug_mode(True)
     net = pn.create_eurostag_tutorial_example1_network()
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
@@ -629,8 +636,84 @@ def test_create_limits():
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
 
+def test_create_minmax_reactive_limits():
+    network = pn.create_four_substations_node_breaker_network()
+    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'GH1', 'min_q': -201.0, 'max_q': 201.0},
+        {'id': 'GH2', 'min_q': -205.0, 'max_q': 205.0},
+        {'id': 'VSC1', 'min_q': -355.0, 'max_q': 405.0},
+        {'id': 'VSC2', 'min_q': -405.0, 'max_q': 505.0},
+    ]))
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['GH1', -201.0, 201.0],
+              ['GH2', -205.0, 205.0]])
+    pd.testing.assert_frame_equal(expected, network.get_generators(id=['GH1', 'GH2'], attributes=['min_q', 'max_q']), check_dtype=False)
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['VSC1', -355.0, 405.0],
+              ['VSC2', -405.0, 505.0]])
+    pd.testing.assert_frame_equal(expected, network.get_vsc_converter_stations(id=['VSC1', 'VSC2'], attributes=['min_q', 'max_q']),
+                                  check_dtype=False)
+    network = util.create_battery_network()
+    network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'BAT', 'min_q': -201.0, 'max_q': 201.0}
+    ]))
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'min_q', 'max_q'],
+        data=[['BAT', -201.0, 201.0]])
+    pd.testing.assert_frame_equal(expected, network.get_batteries(id='BAT', attributes=['min_q', 'max_q']),
+                                  check_dtype=False)
+
+
+def test_create_curve_reactive_limits():
+    # Generators
+    network = pn.create_eurostag_tutorial_example1_network()
+    network.create_curve_reactive_limits(dataframe_from_string("""
+id  p    min_q    max_q
+GEN 0    -556.8   557.4
+GEN 200  -553.514 536.4
+    """))
+    expected = dataframe_from_string("""
+id  num p    min_q    max_q
+GEN   0 0    -556.8   557.4
+GEN   1 200  -553.514 536.4
+    """, index=['id', 'num'])
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points(), check_dtype=False)
+
+    # Batteries
+    network = util.create_battery_network()
+    network.create_curve_reactive_limits(dataframe_from_string("""
+id  p    min_q    max_q
+BAT 50    -50     100
+BAT 60  -100      50
+    """))
+    expected = dataframe_from_string("""
+num  p  min_q max_q
+0   50    -50   100
+1   60   -100    50
+    """, index='num')
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['BAT'], check_dtype=False)
+
+    # VSCs
+    network = pn.create_four_substations_node_breaker_network()
+    network.create_curve_reactive_limits(dataframe_from_string("""
+  id   p  min_q    max_q
+VSC1  50    -50      100
+VSC1  60   -100       50
+"""))
+    expected = dataframe_from_string("""
+num p    min_q    max_q
+0   50    -50     100
+1   60  -100      50
+""", index='num')
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['VSC1'], check_dtype=False)
+
+
 def test_delete_elements_eurostag():
-    pypowsybl.set_debug_mode(True)
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
     net.remove_elements(['GEN', 'GEN2'])
     assert net.get_generators().empty
@@ -673,5 +756,51 @@ def test_remove_elements_switches():
     assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
     assert 'HVDC1' not in net.get_hvdc_lines().index
     assert 'TWT' not in net.get_2_windings_transformers().index
-    #assert 'S1' not in net.get_substations().index
-    #assert 'S1VL1' not in net.get_voltage_levels().index
+    # assert 'S1' not in net.get_substations().index
+    # assert 'S1VL1' not in net.get_voltage_levels().index
+
+
+def test_creating_vl_without_substation():
+    net = pypowsybl.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VLTEST',
+        'high_voltage_limit': 250,
+        'low_voltage_limit': 200,
+        'nominal_v': 225,
+        'topology_kind': 'BUS_BREAKER'
+    }])
+    net.create_voltage_levels(df)
+    assert 'VLTEST' in net.get_voltage_levels().index
+    net.create_voltage_levels(id='VLTEST2', high_voltage_limit=250,
+                              low_voltage_limit=200,
+                              nominal_v=225,
+                              topology_kind='BUS_BREAKER')
+    assert 'VLTEST2' in net.get_voltage_levels().index
+    net.remove_elements(['VLTEST', 'VLTEST2'])
+    assert 'VLTEST2' not in net.get_voltage_levels().index and 'VLTEST' not in net.get_voltage_levels().index
+    net.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                              low_voltage_limit=[200, 200],
+                              nominal_v=[225, 225],
+                              topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    assert 'VLTEST2' in net.get_voltage_levels().index and 'VLTEST' in net.get_voltage_levels().index
+
+
+def check_unknown_voltage_level_error_message(fn):
+    with pytest.raises(PyPowsyblError) as exc:
+        fn(voltage_level_id='UNKNOWN', id='S')
+    assert exc.match('Voltage level UNKNOWN does not exist')
+
+
+def test_error_messages():
+    network = pn.create_eurostag_tutorial_example1_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_voltage_levels(id='VL', substation_id='UNKNOWN', nominal_v=400)
+    assert exc.match('Substation UNKNOWN does not exist')
+
+    check_unknown_voltage_level_error_message(network.create_loads)
+    check_unknown_voltage_level_error_message(network.create_generators)
+    check_unknown_voltage_level_error_message(network.create_switches)
+    check_unknown_voltage_level_error_message(network.create_static_var_compensators)
+    check_unknown_voltage_level_error_message(network.create_dangling_lines)
+    check_unknown_voltage_level_error_message(network.create_lcc_converter_stations)
+    check_unknown_voltage_level_error_message(network.create_vsc_converter_stations)

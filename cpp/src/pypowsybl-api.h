@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -32,6 +32,7 @@ typedef struct load_flow_component_result_struct {
     int iteration_count;
     char* slack_bus_id;
     double slack_bus_active_power_mismatch;
+    double distributed_active_power;
 } load_flow_component_result;
 
 typedef struct load_flow_parameters_struct {
@@ -49,6 +50,10 @@ typedef struct load_flow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
 } load_flow_parameters;
 
 typedef struct limit_violation_struct {
@@ -95,6 +100,7 @@ typedef enum {
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
+    MINMAX_REACTIVE_LIMITS,
 } element_type;
 
 typedef enum {
@@ -186,4 +192,3 @@ typedef enum {
     DEFAULT_ATTRIBUTES,
     SELECTION_ATTRIBUTES
 } filter_attributes_type;
-

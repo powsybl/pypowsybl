@@ -6,16 +6,18 @@
 #
 import os as _os
 import inspect as _inspect
+import logging
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
     loadflow,
     security,
-    sensitivity
+    sensitivity,
+    glsk
 )
 
-__version__ = '0.15.0.dev1'
+__version__ = '0.17.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -28,17 +30,16 @@ __all__ = [
     "network",
     "loadflow",
     "security",
-    "sensitivity"
+    "sensitivity",
+    "glsk"
 ]
 
 
-def set_debug_mode(debug: bool = True) -> None:
-    """Set or unset debug mode
-
-    :param debug: `True` to activate debug mode, `False` otherwise
-    :type debug: bool
-    """
-    _pypowsybl.set_debug_mode(debug)
+# setup a default logger that is the powsybl logger with by default no handler to avoir printing logs >= WARNING
+# to std err
+powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger.addHandler(logging.NullHandler())
+_pypowsybl.set_logger(powsyblLogger)
 
 
 def set_config_read(read_config: bool = True) -> None:

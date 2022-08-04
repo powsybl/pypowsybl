@@ -149,6 +149,30 @@ private:
     bool isDefault_;
 };
 
+
+class LoadFlowParameters {
+public:
+    LoadFlowParameters(load_flow_parameters* src);
+    std::shared_ptr<load_flow_parameters> to_c_struct() const;
+
+    VoltageInitMode voltage_init_mode;
+    bool transformer_voltage_control_on;
+    bool no_generator_reactive_limits;
+    bool phase_shifter_regulation_on;
+    bool twt_split_shunt_admittance;
+    bool simul_shunt;
+    bool read_slack_bus;
+    bool write_slack_bus;
+    bool distributed_slack;
+    BalanceType balance_type;
+    bool dc_use_transformer_ratio;
+    std::vector<std::string> countries_to_balance;
+    ConnectedComponentMode connected_component_mode;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -161,8 +185,6 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 void init();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
-
-void setDebugMode(bool debug);
 
 void setConfigRead(bool configRead);
 
@@ -210,19 +232,19 @@ SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters);
+void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-std::shared_ptr<load_flow_parameters> createLoadFlowParameters();
+LoadFlowParameters* createLoadFlowParameters();
 
-std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters);
+std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const std::shared_ptr<load_flow_parameters>& parameters, const std::string& provider);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
 
@@ -238,7 +260,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, load_flow_parameters& parameters, const std::string& provider, bool dc);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -255,7 +277,7 @@ void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnaly
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, load_flow_parameters& parameters, const std::string& provider);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
 matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
@@ -328,6 +350,41 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 ::validation_level_type validate(const JavaHandle& network);
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
+
+void setupLoggerCallback(void *& callback);
+
+
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
+
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
+std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
+
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
+
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
+
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
+
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
+
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
+
+JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
+
+std::string printReport(const JavaHandle& reporterModel);
+
+JavaHandle createGLSKdocument(std::string& filename);
+
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
+
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+
+long getInjectionFactorStartTimestamp(const JavaHandle& importer);
+
+long getInjectionFactorEndTimestamp(const JavaHandle& importer);
+
 }
 
 #endif //PYPOWSYBL_H

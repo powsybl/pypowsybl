@@ -11,6 +11,7 @@ Provides utility methods for dataframes handling:
  - ...
 """
 from typing import List
+
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
@@ -100,3 +101,49 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         columns_values.append(series.values)
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
+
+
+def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
+    """
+       Creates the C representation of a dataframe of properties.
+    """
+    is_index = []
+    columns_names = []
+    columns_values = []
+    columns_types = []
+    # index
+    for _, index_name in enumerate(df.index.names):
+        columns_names.append(index_name)
+        columns_types.append(0)
+        columns_values.append(df.index.values)
+        is_index.append(True)
+    # data
+    for series_name in df.columns.values:
+        columns_names.append(series_name)
+        columns_types.append(0)
+        columns_values.append(df[series_name].values)
+        is_index.append(False)
+    return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
+
+def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
+    """
+    Converts named arguments to a dataframe.
+    """
+
+    columns = {}
+    expected_size = None
+    for key, value in kwargs.items():
+        col = _to_array(value)
+        size = col.shape[0]
+        if expected_size is None:
+            expected_size = size
+        elif size != expected_size:
+            raise ValueError(f'properties creation/update : all arguments must have the same size, '
+                             f'got size {size} for series {key}, expected {expected_size}')
+        columns[key] = col
+    index_name = 'id'
+    if index_name not in columns:
+        raise ValueError('No data provided for index: ' + index_name)
+    index = Index(name=index_name, data=columns[index_name])
+    data = dict((k, v) for k, v in columns.items() if k != 'id')
+    return DataFrame(index=index, data=data)

@@ -60,6 +60,8 @@ In order to create, inspect and manipulate zones, you can use the following meth
 
     create_empty_zone
     create_country_zone
+    create_zone_from_injections_and_shift_keys
+    create_zones_from_glsk_file
     Zone
     Zone.id
     Zone.shift_keys_by_injections_ids
@@ -86,3 +88,23 @@ When the security analysis is completed, you can inspect its results:
     AcSensitivityAnalysisResult
     AcSensitivityAnalysisResult.get_bus_voltages_sensitivity_matrix
     AcSensitivityAnalysisResult.get_reference_voltages
+
+
+GLSK UCTE file loading
+----------------------
+
+.. module:: pypowsybl.glsk
+
+UCTE GLSK files can be loaded using glsk.load and GLSKDocument, data can be used for zone creation.
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+   load
+   GLSKDocument
+   GLSKDocument.get_gsk_time_interval_start
+   GLSKDocument.get_gsk_time_interval_end
+   GLSKDocument.get_countries
+   GLSKDocument.get_points_for_country
+   GLSKDocument.get_glsk_factors

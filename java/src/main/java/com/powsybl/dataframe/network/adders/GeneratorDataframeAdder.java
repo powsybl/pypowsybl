@@ -8,11 +8,18 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -42,21 +49,55 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
+    private static class GeneratorSeries extends InjectionSeries {
+
+        private final StringSeries voltageLevels;
+        private final DoubleSeries maxP;
+        private final DoubleSeries minP;
+        private final DoubleSeries targetP;
+        private final DoubleSeries targetQ;
+        private final DoubleSeries targetV;
+        private final DoubleSeries ratedS;
+        private final IntSeries voltageRegulatorOn;
+        private final StringSeries energySource;
+
+        GeneratorSeries(UpdatingDataframe dataframe) {
+            super(dataframe);
+            this.voltageLevels = dataframe.getStrings("voltage_level_id");
+            if (voltageLevels == null) {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+            this.maxP = dataframe.getDoubles("max_p");
+            this.minP = dataframe.getDoubles("min_p");
+            this.targetP = dataframe.getDoubles("target_p");
+            this.targetQ = dataframe.getDoubles("target_q");
+            this.targetV = dataframe.getDoubles("target_v");
+            this.ratedS = dataframe.getDoubles("rated_s");
+            this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
+            this.energySource = dataframe.getStrings("energy_source");
+        }
+
+        void create(Network network, int row) {
+            GeneratorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+                    .newGenerator();
+            setInjectionAttributes(adder, row);
+            applyIfPresent(maxP, row, adder::setMaxP);
+            applyIfPresent(minP, row, adder::setMinP);
+            applyIfPresent(targetP, row, adder::setTargetP);
+            applyIfPresent(targetQ, row, adder::setTargetQ);
+            applyIfPresent(targetV, row, adder::setTargetV);
+            applyIfPresent(ratedS, row, adder::setRatedS);
+            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
+            adder.add();
+        }
+    }
+
     @Override
-    public void addElement(Network network, UpdatingDataframe dataframe, int indexElement) {
-        GeneratorAdder generatorAdder = network.getVoltageLevel(dataframe.getStringValue("voltage_level_id", indexElement)
-                        .orElseThrow(() -> new PowsyblException("voltage_level_id is missing")))
-                .newGenerator();
-        NetworkElementCreationUtils.createInjection(generatorAdder, dataframe, indexElement);
-        dataframe.getDoubleValue("max_p", indexElement).ifPresent(generatorAdder::setMaxP);
-        dataframe.getDoubleValue("min_p", indexElement).ifPresent(generatorAdder::setMinP);
-        dataframe.getDoubleValue("target_p", indexElement).ifPresent(generatorAdder::setTargetP);
-        dataframe.getDoubleValue("target_q", indexElement).ifPresent(generatorAdder::setTargetQ);
-        dataframe.getDoubleValue("target_v", indexElement).ifPresent(generatorAdder::setTargetV);
-        dataframe.getDoubleValue("rated_s", indexElement).ifPresent(generatorAdder::setRatedS);
-        generatorAdder.setVoltageRegulatorOn(dataframe.getIntValue("voltage_regulator_on", indexElement).orElse(0) == 1);
-        dataframe.getStringValue("energy_source", indexElement)
-                .ifPresent(v -> generatorAdder.setEnergySource(EnergySource.valueOf(v)));
-        generatorAdder.add();
+    public void addElements(Network network, UpdatingDataframe dataframe) {
+        GeneratorSeries series = new GeneratorSeries(dataframe);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(network, row);
+        }
     }
 }

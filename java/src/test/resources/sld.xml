@@ -96,13 +96,14 @@
 .sld-disconnector {stroke-width: 3; stroke: black; fill: none}
 /* Stroke blue */
 .sld-breaker {stroke-width: 2; stroke: blue; fill:white}
+.sld-load-break-switch {stroke: blue; fill: white}
 /* Stroke --sld-vl-color with fallback black */
-.sld-bus-connection {stroke: var(--sld-vl-color, black); stroke-width: 4; fill: none}
+.sld-bus-connection {fill: var(--sld-vl-color, black)}
+.sld-cell-shape-flat .sld-bus-connection {visibility: hidden}
 .sld-busbar-section {stroke: var(--sld-vl-color, black); stroke-width: 3; fill: none}
 /* Stroke --sld-vl-color with fallback red */
 .sld-wire {stroke: var(--sld-vl-color, #c80000); fill: none}
 /* Stroke --sld-vl-color with fallback blue */
-.sld-load-break-switch {stroke: var(--sld-vl-color, blue); fill: none}
 .sld-load {stroke: var(--sld-vl-color, blue); fill: none}
 .sld-generator {stroke: var(--sld-vl-color, blue); fill: none}
 .sld-two-wt {stroke: var(--sld-vl-color, blue); fill: none}
@@ -127,6 +128,11 @@
 .sld-arrow-p {fill:black}
 .sld-arrow-q {fill:blue}
 .sld-frame {fill: var(--sld-background-color, transparent)}
+/* Stroke maroon for fictitious switch */
+.sld-breaker.sld-fictitious {stroke: maroon}
+.sld-disconnector.sld-fictitious {stroke: maroon}
+.sld-load-break-switch.sld-fictitious {stroke: maroon}
+.sld-busbar-section.sld-fictitious {stroke: var(--sld-vl-color, #c80000); stroke-width: 1}
 
 ]]></style>
     <rect class="sld-frame" height="100%" width="100%"/>
@@ -135,11 +141,11 @@
             <line x1="0" x2="75.0" y1="0" y2="0"/>
             <text class="sld-label" id="S1VL1_BBS_NW_LABEL" x="-5.0" y="-5.0">S1VL1_BBS</text>
         </g>
-        <g class="cell idEXTERN_32_0" id="idEXTERN_32_0">
-            <g class="sld-node sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,218.0)">
+        <g class="sld-extern-cell" id="idEXTERN_32_0">
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,218.0)">
                 <circle cx="4" cy="4" r="4"/>
             </g>
-            <g class="sld-node sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
                 <circle cx="4" cy="4" r="4"/>
             </g>
             <g class="sld-load sld-top-feeder sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
@@ -179,11 +185,11 @@
                 <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
             </g>
         </g>
-        <g class="cell idEXTERN_32_1" id="idEXTERN_32_1">
-            <g class="sld-node sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,278.0)">
+        <g class="sld-extern-cell" id="idEXTERN_32_1">
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,278.0)">
                 <circle cx="4" cy="4" r="4"/>
             </g>
-            <g class="sld-node sld-hidden-node sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
                 <circle cx="4" cy="4" r="4"/>
             </g>
             <g class="sld-pst sld-bottom-feeder" id="idTWT_95_ONE" transform="translate(108.0,416.5)">
