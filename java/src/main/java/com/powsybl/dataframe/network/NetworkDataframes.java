@@ -242,6 +242,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", g -> getNode(g.getTerminal()), false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -298,6 +299,7 @@ public final class NetworkDataframes {
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
                 .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
                 .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -317,6 +319,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", l -> getNode(l.getTerminal()), false)
                 .booleans("connected", l -> l.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -340,6 +343,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -365,6 +369,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", sc -> getNode(sc.getTerminal()), false)
                 .booleans("connected", sc -> sc.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -453,6 +458,7 @@ public final class NetworkDataframes {
                 .ints("node2", l -> getNode(l.getTerminal2()), false)
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -484,6 +490,7 @@ public final class NetworkDataframes {
                 .ints("node2", twt -> getNode(twt.getTerminal2()), false)
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -541,6 +548,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
                 .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -564,6 +572,7 @@ public final class NetworkDataframes {
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -582,6 +591,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -608,6 +618,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -631,6 +642,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", svc -> getNode(svc.getTerminal()), false)
                 .booleans("connected", svc -> svc.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -681,6 +693,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus2_id", NetworkDataframes::getBusBreakerBus2Id, false)
                 .ints("node1", NetworkDataframes::getNode1, false)
                 .ints("node2", NetworkDataframes::getNode2, false)
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -693,6 +706,7 @@ public final class NetworkDataframes {
                 .doubles("nominal_v", VoltageLevel::getNominalV, VoltageLevel::setNominalV)
                 .doubles("high_voltage_limit", VoltageLevel::getHighVoltageLimit, VoltageLevel::setHighVoltageLimit)
                 .doubles("low_voltage_limit", VoltageLevel::getLowVoltageLimit, VoltageLevel::setLowVoltageLimit)
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -704,6 +718,7 @@ public final class NetworkDataframes {
                 .strings("TSO", Substation::getTso, Substation::setTso)
                 .strings("geo_tags", substation -> String.join(",", substation.getGeographicalTags()))
                 .enums("country", Country.class, s -> s.getCountry().orElse(null), Substation::setCountry)
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -712,7 +727,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getBusbarSectionStream, getOrThrow(Network::getBusbarSection, "Bus bar section"))
                 .stringsIndex("id", BusbarSection::getId)
                 .strings("name", bbs -> bbs.getOptionalName().orElse(""))
-                .booleans("fictitious", BusbarSection::isFictitious, BusbarSection::setFictitious)
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .doubles("v", BusbarSection::getV)
                 .doubles("angle", BusbarSection::getAngle)
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
@@ -735,6 +750,7 @@ public final class NetworkDataframes {
                 .strings("converter_station2_id", l -> l.getConverterStation2().getId())
                 .booleans("connected1", l -> l.getConverterStation1().getTerminal().isConnected(), connectHvdcStation1())
                 .booleans("connected2", l -> l.getConverterStation2().getTerminal().isConnected(), connectHvdcStation2())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -803,6 +819,7 @@ public final class NetworkDataframes {
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
                 .doubles("rho", NetworkDataframes::computeRho)
                 .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .build();
     }
 
@@ -825,6 +842,7 @@ public final class NetworkDataframes {
                 .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .build();
     }
 
@@ -837,7 +855,7 @@ public final class NetworkDataframes {
                 .enums("type", LimitType.class, TemporaryLimitData::getType)
                 .doubles("value", TemporaryLimitData::getValue)
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
-                .booleans("is_fictitious", TemporaryLimitData::isFictitious)
+                .booleans("fictitious", TemporaryLimitData::isFictitious, false)
                 .build();
     }
 

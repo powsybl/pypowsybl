@@ -529,6 +529,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
               - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the generator is connected to a bus
+              - **fictitious** (optional): ``True`` if the generator is part of the model and not of the actual network
 
             This dataframe is indexed on the generator ID.
 
@@ -627,6 +628,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this load is connected
               - **node**  (optional): node where this load is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the load is connected to a bus
+              - **fictitious** (optional): ``True`` if the load is part of the model and not of the actual network
 
             This dataframe is indexed on the load ID.
 
@@ -737,6 +739,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this battery is connected
               - **node**  (optional): node where this battery is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the battery is connected to a bus
+              - **fictitious** (optional): ``True`` if the battery is part of the model and not of the actual network
 
             This dataframe is indexed on the battery ID.
         """
@@ -780,6 +783,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
+              - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the lines.
 
@@ -871,6 +875,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
             - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
+            - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -968,6 +973,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this shunt is connected
               - **node**  (optional): node where this shunt is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the shunt is connected to a bus
+              - **fictitious** (optional): ``True`` if the shunt is part of the model and not of the actual network
 
 
             This dataframe is indexed by the id of the shunt compensators
@@ -1095,6 +1101,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
+              - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the dangling lines
 
@@ -1170,6 +1177,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
+              - **fictitious** (optional): ``True`` if the LCC converter is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the LCC converter
 
@@ -1256,6 +1264,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this station is connected
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
+              - **fictitious** (optional): ``True`` if the VSC converter is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the VSC converter
 
@@ -1338,6 +1347,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this SVC is connected
               - **node**  (optional): node where this SVC is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the var compensator is connected to a bus
+              - **fictitious** (optional): ``True`` if the var compensator is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the var compensator
 
@@ -1407,6 +1417,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **nominal_v**: The nominal voltage
               - **high_voltage_limit**: the high voltage limit
               - **low_voltage_limit**: the low voltage limit
+              - **fictitious** (optional): ``True`` if the voltage level is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the voltage levels
 
@@ -1484,7 +1495,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **fictitious**: ``True`` if the busbar section is part of the model and not of the actual network
+              - **fictitious** (optional): ``True`` if the busbar section is part of the model and not of the actual network
               - **v**: The voltage magnitude of the busbar section (in kV)
               - **angle**: the voltage angle of the busbar section (in degree)
               - **voltage_level_id**: at which substation the busbar section is connected
@@ -1576,6 +1587,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **TSO**: the TSO which the substation belongs to
               - **geo_tags**: additional geographical information about the substation
               - **country**: the country which the substation belongs to
+              - **fictitious** (optional): ``True`` if the substation is part of the model and not of the actual network
 
             This dataframe is indexed on the substation ID.
         """
@@ -1606,6 +1618,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **converter_station2_id**: at which converter station the hvdc line is connected on side "2"
               - **connected1**: ``True`` if the busbar section on side "1" is connected to a bus
               - **connected2**: ``True`` if the busbar section on side "2" is connected to a bus
+              - **fictitious** (optional): ``True`` if the hvdc is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the hvdc lines
 
@@ -1682,6 +1695,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus_breaker_bus1_id** (optional): bus where this switch is connected on side 1, in bus-breaker voltage levels
             - **node1** (optional): node where this switch is connected on side 1, in node-breaker voltage levels
             - **node2** (optional): node where this switch is connected on side 2, in node-breaker voltage levels
+            - **fictitious** (optional): ``True`` if the switch is part of the model and not of the actual network
 
 
             This dataframe is indexed by the id of the switches
@@ -1934,6 +1948,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_v**: the target voltage in kV, if the tap changer is in regulation
               - **target_deadband**: the regulation deadband around the target voltage, in kV
               - **regulationg_bus_id**: the bus where the tap changer regulates voltage
+              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2007,6 +2022,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
               - **target_deadband**: the regulation deadband around the target value
               - **regulationg_bus_id**: the bus where the phase shifter regulates
+              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2116,6 +2132,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - `v_mag`
             - `v_angle`
+            - `fictitious`
 
         See Also:
             :meth:`get_buses`
@@ -2145,6 +2162,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - `open`
             - `retained`
+            - `fictitious`
 
         See Also:
             :meth:`get_switches`
@@ -2183,6 +2201,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `fictitious`
 
         See Also:
             :meth:`get_generators`
@@ -2213,6 +2232,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p0`
             - `q0`
             - `connected`
+            - `fictitious`
 
         See Also:
             :meth:`get_loads`
@@ -2245,6 +2265,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected`
             - `max_q`
             - `min_q`
+            - `fictitious`
 
         See Also:
             :meth:`get_batteries`
@@ -2281,6 +2302,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `fictitious`
 
         See Also:
             :meth:`get_dangling_lines`
@@ -2316,6 +2338,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `regulated_element_id`
+            - `fictitious`
 
         See Also:
             :meth:`get_vsc_converter_stations`
@@ -2348,6 +2371,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `fictitious`
 
         See Also:
             :meth:`get_vsc_converter_stations`
@@ -2384,6 +2408,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `regulated_element_id`
+            - `fictitious`
 
         See Also:
             :meth:`get_static_var_compensators`
@@ -2418,6 +2443,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `r`
             - `connected1`
             - `connected2`
+            - `fictitious`
 
         See Also:
             :meth:`get_hvdc_lines`
@@ -2457,6 +2483,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q2`
             - `connected1`
             - `connected2`
+            - `fictitious`
 
         See Also:
             :meth:`get_lines`
@@ -2497,6 +2524,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q2`
             - `connected1`
             - `connected2`
+            - `fictitious`
 
         See Also:
             :meth:`get_2_windings_transformers`
@@ -2529,6 +2557,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulating`
             - `target_v`
             - `target_deadband`
+            - `fictitious`
 
         See Also:
             :meth:`get_ratio_tap_changers`
@@ -2592,6 +2621,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulation_mode`
             - `regulation_value`
             - `target_deadband`
+            - `fictitious`
 
         See Also:
             :meth:`get_phase_tap_changers`
@@ -2655,6 +2685,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p`
             - `q`
             - `connected`
+            - `fictitious`
 
         See Also:
             :meth:`get_shunt_compensators`
@@ -2754,6 +2785,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `high_voltage_limit`
             - `low_voltage_limit`
             - `nominal_v`
+            - `fictitious`
 
         See Also:
             :meth:`get_voltage_levels`
@@ -2783,6 +2815,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - `TSO`
             - `country`
+            - `fictitious`
 
         See Also:
             :meth:`get_substations`
@@ -2897,7 +2930,10 @@ class Network:  # pylint: disable=too-many-public-methods
         current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
         current_limits.index.rename('branch_id', inplace=True)
         current_limits.set_index('name', append=True, inplace=True)
-        return current_limits[['side', 'value', 'acceptable_duration', 'is_fictitious']]
+        if 'fictitious' in current_limits.columns:
+            return current_limits[['side', 'value', 'acceptable_duration', 'fictitious']]
+        else :
+            return current_limits[['side', 'value', 'acceptable_duration']]
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
         """
