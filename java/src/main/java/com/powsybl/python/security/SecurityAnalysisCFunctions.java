@@ -16,6 +16,7 @@ import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SecurityAnalysisParametersPointer;
 import com.powsybl.python.contingency.ContingencyContainer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
+import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.monitor.StateMonitor;
@@ -237,14 +238,11 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "freeSecurityAnalysisParameters")
-    public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
+    public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer parameters,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalanceCount(); i++) {
-                UnmanagedMemory.free(securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalance().read(i));
-            }
-            UnmanagedMemory.free(securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalance());
-            UnmanagedMemory.free(securityAnalysisParametersPointer);
+            LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
+            UnmanagedMemory.free(parameters);
         });
     }
 

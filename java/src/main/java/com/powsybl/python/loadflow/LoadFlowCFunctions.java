@@ -117,10 +117,7 @@ public final class LoadFlowCFunctions {
     }
 
     public static void freeLoadFlowParametersPointer(LoadFlowParametersPointer loadFlowParametersPtr) {
-        for (int i = 0; i < loadFlowParametersPtr.getCountriesToBalanceCount(); i++) {
-            UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance().read(i));
-        }
-        UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
+        LoadFlowCUtils.freeLoadFlowParametersContent(loadFlowParametersPtr);
         UnmanagedMemory.free(loadFlowParametersPtr);
     }
 

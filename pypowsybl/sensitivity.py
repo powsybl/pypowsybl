@@ -145,7 +145,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.sensitivity
 
     Args:
-        provider_parameters: Define parameters linked to the loadflow provider
+        provider_parameters: Define parameters linked to the sensitivity analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
@@ -159,7 +159,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        self.load_flow_parameters = pypowsybl.loadflow.Parameters()
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
@@ -537,3 +537,15 @@ def get_provider_names() -> _List[str]:
         the list of supported provider names
     """
     return _pypowsybl.get_sensitivity_analysis_provider_names()
+
+
+def get_provider_parameters_names(provider: str = '') -> _List[str]:
+    """
+    Get list of parameters for the specified sensitivity analysis provider.
+
+    If not specified the provider will be the default one.
+
+    Returns:
+        the list of provider's parameters
+    """
+    return _pypowsybl.get_sensitivity_analysis_provider_parameters_names(provider)
