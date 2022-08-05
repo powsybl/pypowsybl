@@ -27,7 +27,7 @@ You can run an AC or DC security analysis using the following methods:
 Parameters
 ----------
 
-The execution of the sensitivity analysis can be customized using security analysis parameters.
+The execution of the sensitivity analysis can be customized using sensitivity analysis parameters.
 
 .. autosummary::
    :nosignatures:
