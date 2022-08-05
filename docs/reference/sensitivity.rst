@@ -23,6 +23,20 @@ You can run an AC or DC security analysis using the following methods:
     get_default_provider
     get_provider_names
 
+
+Parameters
+----------
+
+The execution of the sensitivity analysis can be customized using security analysis parameters.
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+    Parameters
+    get_provider_parameters_names
+
+
 Contingencies definition
 ------------------------
 

@@ -145,6 +145,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.sensitivity
 
     Args:
+        load_flow_parameters: parameters that are common to loadflow and sensitivity analysis
         provider_parameters: Define parameters linked to the sensitivity analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
