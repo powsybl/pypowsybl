@@ -6,6 +6,7 @@
 #
 from typing import Union as _Union, Dict as _Dict, List as _List
 import pandas as _pd
+import pypowsybl.loadflow
 from prettytable import PrettyTable as _PrettyTable
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
@@ -14,7 +15,6 @@ from pypowsybl.util import (
     ContingencyContainer as _ContingencyContainer,
     create_data_frame_from_series_array as _create_data_frame_from_series_array
 )
-from pypowsybl.loadflow import Parameters
 from pypowsybl.report import Reporter as _Reporter
 
 
@@ -44,6 +44,112 @@ def _limit_violation_repr(self: LimitViolation) -> str:
 
 
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
+
+
+class IncreasedViolationsParameters:
+    """
+    Parameters which define what violations should be considered as "increased" between N and post-contingency situations
+
+    Args:
+        flow_proportional_threshold: for current and flow violations, if equal to 0.1, the violations which value
+                                     have increased of more than 10% between N and post-contingency are considered "increased"
+        low_voltage_proportional_threshold: for low voltage violations, if equal to 0.1, the violations which value
+                                            have reduced of more than 10% between N and post-contingency are considered "increased"
+        low_voltage_absolute_threshold: for low voltage violations, if equal to 1, the violations which value
+                                        have reduced of more than 1 kV between N and post-contingency are considered "increased"
+        high_voltage_proportional_threshold: for high voltage violations, if equal to 0.1, the violations which value
+                                             have increased of more than 10% between N and post-contingency are considered "increased"
+        high_voltage_absolute_threshold: for high voltage violations, if equal to 1, the violations which value
+                                         have increased of more than 1 kV between N and post-contingency are considered "increased"
+    """
+
+    def __init__(self, flow_proportional_threshold: float, low_voltage_proportional_threshold: float,
+                 low_voltage_absolute_threshold: float, high_voltage_proportional_threshold: float,
+                 high_voltage_absolute_threshold: float):
+        self.flow_proportional_threshold = flow_proportional_threshold
+        self.low_voltage_proportional_threshold = low_voltage_proportional_threshold
+        self.low_voltage_absolute_threshold = low_voltage_absolute_threshold
+        self.high_voltage_proportional_threshold = high_voltage_proportional_threshold
+        self.high_voltage_absolute_threshold = high_voltage_absolute_threshold
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f", flow_proportional_threshold={self.flow_proportional_threshold!r}" \
+               f", low_voltage_proportional_threshold={self.low_voltage_proportional_threshold!r}" \
+               f", low_voltage_absolute_threshold={self.low_voltage_absolute_threshold!r}" \
+               f", high_voltage_proportional_threshold={self.high_voltage_proportional_threshold!r}" \
+               f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}" \
+               f")"
+
+
+class Parameters:  # pylint: disable=too-few-public-methods
+    """
+    Parameters for a security analysis execution.
+
+    All parameters are first read from you configuration file, then overridden with
+    the constructor arguments.
+
+    Please note that security analysis providers may not honor all parameters, according to their capabilities.
+    For example, some providers will not be able to simulate the voltage control of shunt compensators, etc.
+    The exact behaviour of some parameters may also depend on your security analysis provider.
+    Please check the documentation of your provider for that information.
+
+    .. currentmodule:: pypowsybl.security
+
+    Args:
+        load_flow_parameters: parameters that are common to loadflow and security analysis
+        increased_violations_parameters: Define what violations should be considered increased between N and contingency situations
+        provider_parameters: Define parameters linked to the security analysis provider
+            the names of the existing parameters can be found with method ``get_provider_parameters_names``
+    """
+
+    def __init__(self,
+                 load_flow_parameters: pypowsybl.loadflow.Parameters = None,
+                 increased_violations_parameters: IncreasedViolationsParameters = None,
+                 provider_parameters: _Dict[str, str] = None):
+        self._init_with_default_values()
+        if load_flow_parameters is not None:
+            self.load_flow_parameters = load_flow_parameters
+        if increased_violations_parameters:
+            self._increased_violations = increased_violations_parameters
+        if provider_parameters is not None:
+            self.provider_parameters = provider_parameters
+
+    @property
+    def increased_violations(self) -> IncreasedViolationsParameters:
+        """
+        Define what violations should be considered increased between N and post-contingency situations
+        """
+        return self._increased_violations
+
+    def _init_with_default_values(self) -> None:
+        default_parameters = _pypowsybl.SecurityAnalysisParameters()
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
+        self._increased_violations = IncreasedViolationsParameters(default_parameters.flow_proportional_threshold,
+                                                                   default_parameters.low_voltage_proportional_threshold,
+                                                                   default_parameters.low_voltage_absolute_threshold,
+                                                                   default_parameters.high_voltage_proportional_threshold,
+                                                                   default_parameters.high_voltage_absolute_threshold)
+        self.provider_parameters = dict(zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+
+    def _to_c_parameters(self) -> _pypowsybl.SecurityAnalysisParameters:
+        c_parameters = _pypowsybl.SecurityAnalysisParameters()
+        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.flow_proportional_threshold = self.increased_violations.flow_proportional_threshold
+        c_parameters.low_voltage_proportional_threshold = self.increased_violations.low_voltage_proportional_threshold
+        c_parameters.low_voltage_absolute_threshold = self.increased_violations.low_voltage_absolute_threshold
+        c_parameters.high_voltage_proportional_threshold = self.increased_violations.high_voltage_proportional_threshold
+        c_parameters.high_voltage_absolute_threshold = self.increased_violations.high_voltage_absolute_threshold
+        c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
+        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        return c_parameters
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f", load_flow_parameters={self.load_flow_parameters!r}" \
+               f", increased_violations={self.increased_violations!r}" \
+               f", provider_parameters={self.provider_parameters!r}" \
+               f")"
 
 
 class SecurityAnalysisResult:
@@ -144,7 +250,7 @@ class SecurityAnalysis(_ContingencyContainer):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         _ContingencyContainer.__init__(self, handle)
 
-    def run_ac(self, network: _Network, parameters: Parameters = None,
+    def run_ac(self, network: _Network, parameters: _Union[Parameters, pypowsybl.loadflow.Parameters] = None,
                provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
@@ -157,11 +263,12 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
-    def run_dc(self, network: _Network, parameters: Parameters = None,
+    def run_dc(self, network: _Network, parameters: _Union[Parameters, pypowsybl.loadflow.Parameters] = None,
                provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
         """ Runs an DC security analysis.
 
@@ -174,7 +281,8 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
 
@@ -291,3 +399,15 @@ def get_provider_names() -> _List[str]:
         the list of supported provider names
     """
     return _pypowsybl.get_security_analysis_provider_names()
+
+
+def get_provider_parameters_names(provider: str = '') -> _List[str]:
+    """
+    Get list of parameters for the specified security analysis provider.
+
+    If not specified the provider will be the default one.
+
+    Returns:
+        the list of provider's parameters
+    """
+    return _pypowsybl.get_security_analysis_provider_parameters_names(provider)

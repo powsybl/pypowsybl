@@ -56,6 +56,19 @@ typedef struct load_flow_parameters_struct {
     int provider_parameters_values_count;
 } load_flow_parameters;
 
+typedef struct security_analysis_parameters_struct {
+    load_flow_parameters sa_load_flow_parameters;
+    double flow_proportional_threshold;
+    double low_voltage_proportional_threshold;
+    double low_voltage_absolute_threshold;
+    double high_voltage_proportional_threshold;
+    double high_voltage_absolute_threshold;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} security_analysis_parameters;
+
 typedef struct limit_violation_struct {
     char* subject_id;
     char* subject_name;

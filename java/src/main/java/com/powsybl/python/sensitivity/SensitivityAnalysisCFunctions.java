@@ -171,7 +171,7 @@ public final class SensitivityAnalysisCFunctions {
             logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
             LoadFlowParameters loadFlowParameters = provider.getLoadFlowProviderName()
                     .map(lfName -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, lfName))
-                    .orElseGet(() -> LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr));
+                    .orElseGet(() -> LoadFlowCUtils.convertLoadFlowParameters(dc, loadFlowParametersPtr));
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, loadFlowParameters, provider.getName(), reporter);
             return ObjectHandles.getGlobal().create(resultContext);

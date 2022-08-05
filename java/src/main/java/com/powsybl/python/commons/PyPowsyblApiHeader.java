@@ -268,6 +268,67 @@ public final class PyPowsyblApiHeader {
         void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
+    @CStruct("security_analysis_parameters")
+    public interface SecurityAnalysisParametersPointer extends PointerBase {
+
+        @CFieldAddress("sa_load_flow_parameters")
+        LoadFlowParametersPointer getLoadFlowParameters();
+
+        @CField("flow_proportional_threshold")
+        double getFlowProportionalThreshold();
+
+        @CField("flow_proportional_threshold")
+        void setFlowProportionalThreshold(double flowProportionalThreshold);
+
+        @CField("low_voltage_proportional_threshold")
+        double getLowVoltageProportionalThreshold();
+
+        @CField("low_voltage_proportional_threshold")
+        void setLowVoltageProportionalThreshold(double lowVoltageProportionalThreshold);
+
+        @CField("low_voltage_absolute_threshold")
+        double getLowVoltageAbsoluteThreshold();
+
+        @CField("low_voltage_absolute_threshold")
+        void setLowVoltageAbsoluteThreshold(double lowVoltageAbsoluteThreshold);
+
+        @CField("high_voltage_proportional_threshold")
+        double getHighVoltageProportionalThreshold();
+
+        @CField("high_voltage_proportional_threshold")
+        void setHighVoltageProportionalThreshold(double highVoltageProportionalThreshold);
+
+        @CField("high_voltage_absolute_threshold")
+        double getHighVoltageAbsoluteThreshold();
+
+        @CField("high_voltage_absolute_threshold")
+        void setHighVoltageAbsoluteThreshold(double highVoltageAbsoluteThreshold);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
     @CStruct("limit_violation")
     public interface LimitViolationPointer extends PointerBase {
 

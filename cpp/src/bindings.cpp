@@ -302,6 +302,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
+            .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
+            .def_readwrite("load_flow_parameters", &pypowsybl::SecurityAnalysisParameters::sa_load_flow_parameters)
+            .def_readwrite("flow_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::flow_proportional_threshold)
+            .def_readwrite("low_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_proportional_threshold)
+            .def_readwrite("low_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_absolute_threshold)
+            .def_readwrite("high_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::high_voltage_proportional_threshold)
+            .def_readwrite("high_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::high_voltage_absolute_threshold)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::SecurityAnalysisParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::SecurityAnalysisParameters::provider_parameters_values);
+
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
@@ -547,7 +558,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
     m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
     m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
-    m.def("get_provider_parameters_names", &pypowsybl::getProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("get_loadflow_provider_parameters_names", &pypowsybl::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("dataframe"));
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements", 

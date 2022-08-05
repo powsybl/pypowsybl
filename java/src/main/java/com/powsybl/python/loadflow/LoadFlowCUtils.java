@@ -47,8 +47,8 @@ public final class LoadFlowCUtils {
         return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
 
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc,
-                                                              LoadFlowParametersPointer loadFlowParametersPtr) {
+    public static LoadFlowParameters convertLoadFlowParameters(boolean dc,
+                                                               LoadFlowParametersPointer loadFlowParametersPtr) {
         return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
@@ -73,7 +73,7 @@ public final class LoadFlowCUtils {
      */
     public static LoadFlowParameters createLoadFlowParameters(boolean dc,  LoadFlowParametersPointer cParameters,
                                                               LoadFlowProvider provider) {
-        LoadFlowParameters parameters = createLoadFlowParameters(dc, cParameters);
+        LoadFlowParameters parameters = convertLoadFlowParameters(dc, cParameters);
         Map<String, String> specificParametersProperties = getSpecificParameters(cParameters);
 
         provider.loadSpecificParameters(specificParametersProperties).ifPresent(ext -> {
