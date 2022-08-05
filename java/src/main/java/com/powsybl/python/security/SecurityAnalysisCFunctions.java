@@ -15,8 +15,10 @@ import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SecurityAnalysisParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainer;
+import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.monitor.StateMonitor;
@@ -184,7 +186,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                   ObjectHandle networkHandle, PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
+                                                   ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                                    CCharPointer providerName, boolean dc,  ObjectHandle reporterHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -235,7 +237,7 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "freeSecurityAnalysisParameters")
-    public static void freeSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
+    public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             for (int i = 0; i < securityAnalysisParametersPointer.getLoadFlowParameters().getCountriesToBalanceCount(); i++) {
@@ -247,12 +249,13 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "createSecurityAnalysisParameters")
-    public static PyPowsyblApiHeader.SecurityAnalysisParametersPointer createSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static SecurityAnalysisParametersPointer createSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> convertToSecurityAnalysisParametersPointer(SecurityAnalysisCUtils.createSecurityAnalysisParameters()));
     }
 
-    private static PyPowsyblApiHeader.SecurityAnalysisParametersPointer convertToSecurityAnalysisParametersPointer(SecurityAnalysisParameters parameters) {
-        PyPowsyblApiHeader.SecurityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.SecurityAnalysisParametersPointer.class));
+    private static SecurityAnalysisParametersPointer convertToSecurityAnalysisParametersPointer(SecurityAnalysisParameters parameters) {
+        SecurityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SecurityAnalysisParametersPointer.class));
+        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
         paramsPtr.setFlowProportionalThreshold(parameters.getIncreasedViolationsParameters().getFlowProportionalThreshold());
         paramsPtr.setHighVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageAbsoluteThreshold());
         paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());

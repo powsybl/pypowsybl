@@ -45,6 +45,7 @@ def _limit_violation_repr(self: LimitViolation) -> str:
 
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
 
+
 class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a security analysis execution.
@@ -90,7 +91,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SecurityAnalysisParameters()
-        self.load_flow_parameters = pypowsybl.loadflow.Parameters()
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
         self.flow_proportional_threshold = default_parameters.flow_proportional_threshold
         self.low_voltage_proportional_threshold = default_parameters.low_voltage_proportional_threshold
         self.low_voltage_absolute_threshold = default_parameters.low_voltage_absolute_threshold
@@ -120,6 +121,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
+
 
 class SecurityAnalysisResult:
     """

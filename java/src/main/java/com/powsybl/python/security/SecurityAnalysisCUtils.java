@@ -48,7 +48,7 @@ public final class SecurityAnalysisCUtils {
         return parameters;
     }
 
-    public static SecurityAnalysisParameters createSecurityAnalysisParameters(PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer) {
+    private static SecurityAnalysisParameters createSecurityAnalysisParameters(PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer) {
         return createSecurityAnalysisParameters()
                 .setIncreasedViolationsParameters(new SecurityAnalysisParameters.IncreasedViolationsParameters()
                         .setFlowProportionalThreshold(securityAnalysisParametersPointer.getFlowProportionalThreshold())

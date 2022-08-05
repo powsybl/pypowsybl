@@ -178,6 +178,20 @@ def test_dc_analysis_with_report():
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
+
+def test_loadflow_parameters():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    parameters = pp.security.Parameters()
+    parameters.load_flow_parameters.countries_to_balance = ['UNKNOWN']
+    with pytest.raises(pp.PyPowsyblError, match='No enum constant com.powsybl.iidm.network.Country.UNKNOWN'):
+        sa.run_ac(network, parameters=parameters)
+
+    parameters.load_flow_parameters.countries_to_balance = ['FR']
+    res = sa.run_ac(network, parameters=parameters)
+    assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
+
+
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
     network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[

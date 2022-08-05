@@ -11,6 +11,7 @@ from typing import (
     Dict as _Dict
 )
 from pandas import DataFrame as _DataFrame
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     LoadFlowComponentStatus as ComponentStatus,
@@ -181,22 +182,24 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
+    def _init_from_c(self, c_parameters: _pypowsybl.LoadFlowParameters) -> None:
+        self.voltage_init_mode = c_parameters.voltage_init_mode
+        self.transformer_voltage_control_on = c_parameters.transformer_voltage_control_on
+        self.no_generator_reactive_limits = c_parameters.no_generator_reactive_limits
+        self.phase_shifter_regulation_on = c_parameters.phase_shifter_regulation_on
+        self.twt_split_shunt_admittance = c_parameters.twt_split_shunt_admittance
+        self.simul_shunt = c_parameters.simul_shunt
+        self.read_slack_bus = c_parameters.read_slack_bus
+        self.write_slack_bus = c_parameters.write_slack_bus
+        self.distributed_slack = c_parameters.distributed_slack
+        self.balance_type = c_parameters.balance_type
+        self.dc_use_transformer_ratio = c_parameters.dc_use_transformer_ratio
+        self.countries_to_balance = c_parameters.countries_to_balance
+        self.connected_component_mode = c_parameters.connected_component_mode
+        self.provider_parameters = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+
     def _init_with_default_values(self) -> None:
-        default_parameters = _pypowsybl.LoadFlowParameters()
-        self.voltage_init_mode = default_parameters.voltage_init_mode
-        self.transformer_voltage_control_on = default_parameters.transformer_voltage_control_on
-        self.no_generator_reactive_limits = default_parameters.no_generator_reactive_limits
-        self.phase_shifter_regulation_on = default_parameters.phase_shifter_regulation_on
-        self.twt_split_shunt_admittance = default_parameters.twt_split_shunt_admittance
-        self.simul_shunt = default_parameters.simul_shunt
-        self.read_slack_bus = default_parameters.read_slack_bus
-        self.write_slack_bus = default_parameters.write_slack_bus
-        self.distributed_slack = default_parameters.distributed_slack
-        self.balance_type = default_parameters.balance_type
-        self.dc_use_transformer_ratio = default_parameters.dc_use_transformer_ratio
-        self.countries_to_balance = default_parameters.countries_to_balance
-        self.connected_component_mode = default_parameters.connected_component_mode
-        self.provider_parameters = dict(zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+        self._init_from_c(_pypowsybl.LoadFlowParameters())
 
     def _to_c_parameters(self) -> _pypowsybl.LoadFlowParameters:
         c_parameters = _pypowsybl.LoadFlowParameters()
@@ -234,6 +237,15 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", connected_component_mode={self.connected_component_mode!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
+
+
+def _parameters_from_c(c_parameters: _pypowsybl.LoadFlowParameters) -> Parameters:
+    """
+    Converts C struct to python parameters (bypassing python constructor)
+    """
+    res = Parameters.__new__(Parameters)
+    res._init_from_c(c_parameters)
+    return res
 
 
 def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
