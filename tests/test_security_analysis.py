@@ -215,7 +215,9 @@ def test_security_analysis_parameters():
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
     # flow_proportional_threshold = 10
-    result = sa.run_ac(network, parameters=pp.security.Parameters(flow_proportional_threshold=10))
+    parameters = pp.security.Parameters()
+    parameters.increased_violations.flow_proportional_threshold = 10
+    result = sa.run_ac(network, parameters)
     expected = pd.DataFrame.from_records(
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',

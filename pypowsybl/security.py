@@ -46,6 +46,42 @@ def _limit_violation_repr(self: LimitViolation) -> str:
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
 
 
+class IncreasedViolationsParameters:
+    """
+    Parameters which define what violations should be considered as "increased" between N and post-contingency situations
+
+    Args:
+        flow_proportional_threshold: for current and flow violations, if equal to 0.1, the violations which value
+                                     have increased of more than 10% between N and post-contingency are considered "increased"
+        low_voltage_proportional_threshold: for low voltage violations, if equal to 0.1, the violations which value
+                                            have reduced of more than 10% between N and post-contingency are considered "increased"
+        low_voltage_absolute_threshold: for low voltage violations, if equal to 1, the violations which value
+                                        have reduced of more than 1 kV between N and post-contingency are considered "increased"
+        high_voltage_proportional_threshold: for high voltage violations, if equal to 0.1, the violations which value
+                                             have increased of more than 10% between N and post-contingency are considered "increased"
+        high_voltage_absolute_threshold: for high voltage violations, if equal to 1, the violations which value
+                                         have increased of more than 1 kV between N and post-contingency are considered "increased"
+    """
+
+    def __init__(self, flow_proportional_threshold: float, low_voltage_proportional_threshold: float,
+                 low_voltage_absolute_threshold: float, high_voltage_proportional_threshold: float,
+                 high_voltage_absolute_threshold: float):
+        self.flow_proportional_threshold = flow_proportional_threshold
+        self.low_voltage_proportional_threshold = low_voltage_proportional_threshold
+        self.low_voltage_absolute_threshold = low_voltage_absolute_threshold
+        self.high_voltage_proportional_threshold = high_voltage_proportional_threshold
+        self.high_voltage_absolute_threshold = high_voltage_absolute_threshold
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f", flow_proportional_threshold={self.flow_proportional_threshold!r}" \
+               f", low_voltage_proportional_threshold={self.low_voltage_proportional_threshold!r}" \
+               f", low_voltage_absolute_threshold={self.low_voltage_absolute_threshold!r}" \
+               f", high_voltage_proportional_threshold={self.high_voltage_proportional_threshold!r}" \
+               f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}" \
+               f")"
+
+
 class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a security analysis execution.
@@ -61,52 +97,49 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.security
 
     Args:
+        load_flow_parameters: parameters that are common to loadflow and security analysis
+        increased_violations_parameters: Define what violations should be considered increased between N and contingency situations
         provider_parameters: Define parameters linked to the security analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
     def __init__(self,
                  load_flow_parameters: pypowsybl.loadflow.Parameters = None,
-                 flow_proportional_threshold: float = None,
-                 low_voltage_proportional_threshold: float = None,
-                 low_voltage_absolute_threshold: float = None,
-                 high_voltage_proportional_threshold: float = None,
-                 high_voltage_absolute_threshold: float = None,
+                 increased_violations_parameters: IncreasedViolationsParameters = None,
                  provider_parameters: _Dict[str, str] = None):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters
-        if flow_proportional_threshold is not None:
-            self.flow_proportional_threshold = flow_proportional_threshold
-        if low_voltage_proportional_threshold is not None:
-            self.low_voltage_proportional_threshold = low_voltage_proportional_threshold
-        if low_voltage_absolute_threshold is not None:
-            self.low_voltage_absolute_threshold = low_voltage_absolute_threshold
-        if high_voltage_proportional_threshold is not None:
-            self.high_voltage_proportional_threshold = high_voltage_proportional_threshold
-        if high_voltage_absolute_threshold is not None:
-            self.high_voltage_absolute_threshold = high_voltage_absolute_threshold
+        if increased_violations_parameters:
+            self._increased_violations = increased_violations_parameters
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
+
+    @property
+    def increased_violations(self) -> IncreasedViolationsParameters:
+        """
+        Define what violations should be considered increased between N and post-contingency situations
+        """
+        return self._increased_violations
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SecurityAnalysisParameters()
         self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
-        self.flow_proportional_threshold = default_parameters.flow_proportional_threshold
-        self.low_voltage_proportional_threshold = default_parameters.low_voltage_proportional_threshold
-        self.low_voltage_absolute_threshold = default_parameters.low_voltage_absolute_threshold
-        self.high_voltage_proportional_threshold = default_parameters.high_voltage_proportional_threshold
-        self.high_voltage_absolute_threshold = default_parameters.high_voltage_absolute_threshold
+        self._increased_violations = IncreasedViolationsParameters(default_parameters.flow_proportional_threshold,
+                                                                   default_parameters.low_voltage_proportional_threshold,
+                                                                   default_parameters.low_voltage_absolute_threshold,
+                                                                   default_parameters.high_voltage_proportional_threshold,
+                                                                   default_parameters.high_voltage_absolute_threshold)
         self.provider_parameters = dict(zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SecurityAnalysisParameters:
         c_parameters = _pypowsybl.SecurityAnalysisParameters()
         c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
-        c_parameters.flow_proportional_threshold = self.flow_proportional_threshold
-        c_parameters.low_voltage_proportional_threshold = self.low_voltage_proportional_threshold
-        c_parameters.low_voltage_absolute_threshold = self.low_voltage_absolute_threshold
-        c_parameters.high_voltage_proportional_threshold = self.high_voltage_proportional_threshold
-        c_parameters.high_voltage_absolute_threshold = self.high_voltage_absolute_threshold
+        c_parameters.flow_proportional_threshold = self.increased_violations.flow_proportional_threshold
+        c_parameters.low_voltage_proportional_threshold = self.increased_violations.low_voltage_proportional_threshold
+        c_parameters.low_voltage_absolute_threshold = self.increased_violations.low_voltage_absolute_threshold
+        c_parameters.high_voltage_proportional_threshold = self.increased_violations.high_voltage_proportional_threshold
+        c_parameters.high_voltage_absolute_threshold = self.increased_violations.high_voltage_absolute_threshold
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
@@ -114,11 +147,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
                f", load_flow_parameters={self.load_flow_parameters!r}" \
-               f", flow_proportional_threshold={self.flow_proportional_threshold!r}" \
-               f", low_voltage_proportional_threshold={self.low_voltage_proportional_threshold!r}" \
-               f", low_voltage_absolute_threshold={self.low_voltage_absolute_threshold!r}" \
-               f", high_voltage_proportional_threshold={self.high_voltage_proportional_threshold!r}" \
-               f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}" \
+               f", increased_violations={self.increased_violations!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
 
