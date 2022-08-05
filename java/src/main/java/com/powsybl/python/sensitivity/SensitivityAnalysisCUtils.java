@@ -32,7 +32,7 @@ public final class SensitivityAnalysisCUtils {
                 .map(ServiceLoader.Provider::get)
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
-                .orElseThrow(() -> new PowsyblException("No security analysis provider for name '" + actualName + "'"));
+                .orElseThrow(() -> new PowsyblException("No sensitivity analysis provider for name '" + actualName + "'"));
     }
 
     public static SensitivityAnalysisParameters createSensitivityAnalysisParameters() {

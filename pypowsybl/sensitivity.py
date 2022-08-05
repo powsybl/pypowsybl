@@ -150,7 +150,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, load_flow_parameters: pypowsybl.loadflow.Parameters=None,
+    def __init__(self, load_flow_parameters: pypowsybl.loadflow.Parameters = None,
                  provider_parameters: _Dict[str, str] = None):
         self._init_with_default_values()
         if load_flow_parameters is not None:

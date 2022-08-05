@@ -274,12 +274,27 @@ def test_voltage_sensitivities_with_report():
 
 
 def test_sensitivity_parameters():
-    parameters = pp.sensitivity.Parameters(
-        load_flow_parameters=pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '1'}))
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
+
+    # 1. distributing on generators
+    parameters = pp.sensitivity.Parameters()
+    parameters.load_flow_parameters.distributed_slack = True
+    parameters.load_flow_parameters.balance_type = pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P
     result = analysis.run(n, parameters)
-    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(303.45, abs=0.01)
-    result = analysis.run(n)
     assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
+    assert result.get_branch_flows_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == 0
+
+    # 2. distributing on loads
+    parameters.load_flow_parameters.balance_type = pp.loadflow.BalanceType.PROPORTIONAL_TO_LOAD
+    result = analysis.run(n, parameters)
+    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(605.35, abs=0.01)
+    assert result.get_branch_flows_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == pytest.approx(0.53, abs=0.01)
+
+
+def test_provider_parameters_names():
+    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir']
+    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir']
+    with pytest.raises(pp.PyPowsyblError, match='No sensitivity analysis provider for name \'unknown\''):
+        pp.sensitivity.get_provider_parameters_names('unknown')
