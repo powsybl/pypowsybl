@@ -10,8 +10,6 @@ import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
@@ -28,9 +26,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<StateMonitor> monitors = new ArrayList<>();
 
-    SecurityAnalysisResult run(Network network, LoadFlowParameters loadFlowParameters, String provider, Reporter reporter) {
-        SecurityAnalysisParameters securityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SecurityAnalysisParameters.load() : new SecurityAnalysisParameters();
-        securityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
+    SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, Reporter reporter) {
         ContingenciesProvider contingencies = this::createContingencies;
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(
