@@ -178,7 +178,7 @@ public:
     SecurityAnalysisParameters(security_analysis_parameters* src);
     std::shared_ptr<security_analysis_parameters> to_c_struct() const;
     
-    LoadFlowParameters sa_load_flow_parameters;
+    LoadFlowParameters load_flow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
@@ -193,7 +193,7 @@ public:
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     
-    LoadFlowParameters sa_load_flow_parameters;
+    LoadFlowParameters load_flow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };

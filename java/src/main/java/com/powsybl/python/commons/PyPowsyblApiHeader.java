@@ -271,7 +271,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("sa_load_flow_parameters")
+        @CFieldAddress("load_flow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("flow_proportional_threshold")
@@ -332,7 +332,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("sa_load_flow_parameters")
+        @CFieldAddress("load_flow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("provider_parameters_keys")

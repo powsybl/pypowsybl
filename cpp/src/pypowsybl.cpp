@@ -322,13 +322,13 @@ std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
 }
 
 void deleteSecurityAnalysisParameters(security_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->sa_load_flow_parameters);
+    deleteLoadFlowParameters(&ptr->load_flow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
 SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_parameters* src):
-    sa_load_flow_parameters(&src->sa_load_flow_parameters)
+    load_flow_parameters(&src->load_flow_parameters)
 {
     flow_proportional_threshold = (double) src->flow_proportional_threshold;
     low_voltage_proportional_threshold = (double) src->low_voltage_proportional_threshold;
@@ -341,7 +341,7 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
 
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
     security_analysis_parameters* res = new security_analysis_parameters();
-    sa_load_flow_parameters.load_to_c_struct(res->sa_load_flow_parameters);
+    load_flow_parameters.load_to_c_struct(res->load_flow_parameters);
     res->flow_proportional_threshold = (double) flow_proportional_threshold;
     res->low_voltage_proportional_threshold = (double) low_voltage_proportional_threshold;
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
@@ -359,13 +359,13 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
 }
 
 void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->sa_load_flow_parameters);
+    deleteLoadFlowParameters(&ptr->load_flow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
-    sa_load_flow_parameters(&src->sa_load_flow_parameters)
+    load_flow_parameters(&src->load_flow_parameters)
 {
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -373,7 +373,7 @@ SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysi
 
 std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::to_c_struct() const {
     sensitivity_analysis_parameters* res = new sensitivity_analysis_parameters();
-    sa_load_flow_parameters.load_to_c_struct(res->sa_load_flow_parameters);
+    load_flow_parameters.load_to_c_struct(res->load_flow_parameters);
     res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
