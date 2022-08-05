@@ -434,4 +434,4 @@ def get_provider_parameters_names(provider: str = '') -> _List[str]:
     Returns:
         the list of provider's parameters
     """
-    return _pypowsybl.get_provider_parameters_names(provider)
+    return _pypowsybl.get_loadflow_provider_parameters_names(provider)

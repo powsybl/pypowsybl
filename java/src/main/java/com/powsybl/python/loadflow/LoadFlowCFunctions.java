@@ -173,7 +173,7 @@ public final class LoadFlowCFunctions {
         return paramsPtr;
     }
 
-    @CEntryPoint(name = "getProviderParametersNames")
+    @CEntryPoint(name = "getLoadFlowProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);

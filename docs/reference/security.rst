@@ -34,7 +34,7 @@ The execution of the security analysis can be customized using security analysis
 
     Parameters
     IncreasedViolationsParameters
-
+    get_provider_parameters_names
 
 Define contingencies and monitored elements
 -------------------------------------------

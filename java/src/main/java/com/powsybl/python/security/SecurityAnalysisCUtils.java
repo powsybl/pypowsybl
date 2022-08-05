@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.security;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -15,6 +16,7 @@ import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisProvider;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
@@ -22,6 +24,15 @@ import java.util.Map;
 public final class SecurityAnalysisCUtils {
 
     private SecurityAnalysisCUtils() {
+    }
+
+    public static SecurityAnalysisProvider getSecurityAnalysisProvider(String name) {
+        String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider() : name;
+        return ServiceLoader.load(SecurityAnalysisProvider.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(provider -> provider.getName().equals(actualName))
+                .findFirst()
+                .orElseThrow(() -> new PowsyblException("No security analysis provider for name '" + actualName + "'"));
     }
 
     public static SecurityAnalysisParameters createSecurityAnalysisParameters() {

@@ -339,9 +339,6 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
 }
 
-SecurityAnalysisParameters::~SecurityAnalysisParameters() {
-}
-
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
     security_analysis_parameters* res = new security_analysis_parameters();
     sa_load_flow_parameters.load_to_c_struct(res->sa_load_flow_parameters);
@@ -889,8 +886,14 @@ void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::ve
     pypowsybl::callJava<>(::removeNetworkElementProperties, network, idsPtr.get(), ids.size(), propertiesPtr.get(), properties.size());
 }
 
-std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider) {
-    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getProviderParametersNames, (char*) loadFlowProvider.c_str());
+std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider) {
+    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getLoadFlowProviderParametersNames, (char*) loadFlowProvider.c_str());
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
+std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider) {
+    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getSecurityAnalysisProviderParametersNames, (char*) securityAnalysisProvider.c_str());
     ToStringVector providerParameters(providerParametersArrayPtr);
     return providerParameters.get();
 }

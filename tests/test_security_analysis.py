@@ -233,3 +233,8 @@ def test_security_analysis_parameters():
     assert result.pre_contingency_result.status.name == 'FAILED'
 
 
+def test_provider_parameters_names():
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension']
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
+        pp.security.get_provider_parameters_names('unknown')

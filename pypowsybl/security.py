@@ -399,3 +399,15 @@ def get_provider_names() -> _List[str]:
         the list of supported provider names
     """
     return _pypowsybl.get_security_analysis_provider_names()
+
+
+def get_provider_parameters_names(provider: str = '') -> _List[str]:
+    """
+    Get list of parameters for the specified security analysis provider.
+
+    If not specified the provider will be the default one.
+
+    Returns:
+        the list of provider's parameters
+    """
+    return _pypowsybl.get_security_analysis_provider_parameters_names(provider)

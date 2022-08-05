@@ -12,11 +12,8 @@ import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowResult;
-import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SecurityAnalysisParametersPointer;
-import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.network.Dataframes;
@@ -35,7 +32,10 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -264,5 +264,13 @@ public final class SecurityAnalysisCFunctions {
         paramsPtr.setProviderParametersValuesCount(0);
         paramsPtr.setProviderParametersKeysCount(0);
         return paramsPtr;
+    }
+
+    @CEntryPoint(name = "getSecurityAnalysisProviderParametersNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String providerStr = CTypeUtil.toString(provider);
+            return Util.createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
+        });
     }
 }

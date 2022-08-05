@@ -176,7 +176,6 @@ public:
 class SecurityAnalysisParameters {
 public:
     SecurityAnalysisParameters(security_analysis_parameters* src);
-    ~SecurityAnalysisParameters();
     std::shared_ptr<security_analysis_parameters> to_c_struct() const;
     
     LoadFlowParameters sa_load_flow_parameters;
@@ -257,7 +256,11 @@ void dumpNetwork(const JavaHandle& network, const std::string& file, const std::
 
 LoadFlowParameters* createLoadFlowParameters();
 
+std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
+
 SecurityAnalysisParameters* createSecurityAnalysisParameters();
+
+std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
 
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
@@ -372,11 +375,9 @@ void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type 
 
 void setupLoggerCallback(void *& callback);
 
-
 void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
-std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
 
 void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
 
