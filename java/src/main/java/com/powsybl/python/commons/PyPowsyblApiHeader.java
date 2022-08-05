@@ -271,7 +271,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("sa_load_flow_parameters")
+        @CFieldAddress("load_flow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("flow_proportional_threshold")
@@ -303,6 +303,37 @@ public final class PyPowsyblApiHeader {
 
         @CField("high_voltage_absolute_threshold")
         void setHighVoltageAbsoluteThreshold(double highVoltageAbsoluteThreshold);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
+    @CStruct("sensitivity_analysis_parameters")
+    public interface SensitivityAnalysisParametersPointer extends PointerBase {
+
+        @CFieldAddress("load_flow_parameters")
+        LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
