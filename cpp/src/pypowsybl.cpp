@@ -967,4 +967,8 @@ std::string printReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::printReport, reporterModel));
 }
 
+std::string jsonReport(const JavaHandle& reporterModel) {
+    return toString(callJava<char*>(::jsonReport, reporterModel));
+}
+
 }
