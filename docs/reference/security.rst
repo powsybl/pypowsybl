@@ -22,6 +22,20 @@ You can run a security analysis using the following methods:
     get_default_provider
     get_provider_names
 
+
+Parameters
+----------
+
+The execution of the security analysis can be customized using security analysis parameters.
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+    Parameters
+    IncreasedViolationsParameters
+    get_provider_parameters_names
+
 Define contingencies and monitored elements
 -------------------------------------------
 

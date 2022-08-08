@@ -14,6 +14,7 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
+import org.graalvm.nativeimage.UnmanagedMemory;
 
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -47,8 +48,8 @@ public final class LoadFlowCUtils {
         return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
 
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc,
-                                                              LoadFlowParametersPointer loadFlowParametersPtr) {
+    public static LoadFlowParameters convertLoadFlowParameters(boolean dc,
+                                                               LoadFlowParametersPointer loadFlowParametersPtr) {
         return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
@@ -73,7 +74,7 @@ public final class LoadFlowCUtils {
      */
     public static LoadFlowParameters createLoadFlowParameters(boolean dc,  LoadFlowParametersPointer cParameters,
                                                               LoadFlowProvider provider) {
-        LoadFlowParameters parameters = createLoadFlowParameters(dc, cParameters);
+        LoadFlowParameters parameters = convertLoadFlowParameters(dc, cParameters);
         Map<String, String> specificParametersProperties = getSpecificParameters(cParameters);
 
         provider.loadSpecificParameters(specificParametersProperties).ifPresent(ext -> {
@@ -92,5 +93,15 @@ public final class LoadFlowCUtils {
     public static LoadFlowParameters createLoadFlowParameters(boolean dc,  LoadFlowParametersPointer cParameters,
                                                               String providerName) {
         return createLoadFlowParameters(dc, cParameters, getLoadFlowProvider(providerName));
+    }
+
+    /**
+     * Frees inner memory, but not the pointer itself.
+     */
+    public static void freeLoadFlowParametersContent(LoadFlowParametersPointer parameters) {
+        for (int i = 0; i < parameters.getCountriesToBalanceCount(); i++) {
+            UnmanagedMemory.free(parameters.getCountriesToBalance().read(i));
+        }
+        UnmanagedMemory.free(parameters.getCountriesToBalance());
     }
 }

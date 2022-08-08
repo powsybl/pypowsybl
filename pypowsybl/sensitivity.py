@@ -6,19 +6,19 @@
 #
 from __future__ import annotations
 from datetime import datetime
-from typing import List as _List, Optional as _Optional, Dict as _Dict
+from typing import List as _List, Optional as _Optional, Dict as _Dict, Union as _Union
 from enum import Enum as _Enum
 import numpy as _np
 import pandas as _pd
+import pypowsybl._pypowsybl as _pypowsybl
+import pypowsybl.loadflow
 
 from pypowsybl import _pypowsybl
 from pypowsybl import glsk
-from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import ContingencyContainer as _ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError as _PyPowsyblError
 from pypowsybl.report import Reporter as _Reporter
-
 
 TO_REMOVE = 'TO_REMOVE'
 
@@ -131,6 +131,53 @@ def create_zones_from_glsk_file(network: _Network, glsk_file: str, instant: date
     return zones
 
 
+class Parameters:  # pylint: disable=too-few-public-methods
+    """
+    Parameters for a sensitivity analysis execution.
+
+    All parameters are first read from you configuration file, then overridden with
+    the constructor arguments.
+
+    Please note that sensitivity providers may not honor all parameters, according to their capabilities.
+    The exact behaviour of some parameters may also depend on your sensitivity provider.
+    Please check the documentation of your provider for that information.
+
+    .. currentmodule:: pypowsybl.sensitivity
+
+    Args:
+        load_flow_parameters: parameters that are common to loadflow and sensitivity analysis
+        provider_parameters: Define parameters linked to the sensitivity analysis provider
+            the names of the existing parameters can be found with method ``get_provider_parameters_names``
+    """
+
+    def __init__(self, load_flow_parameters: pypowsybl.loadflow.Parameters = None,
+                 provider_parameters: _Dict[str, str] = None):
+        self._init_with_default_values()
+        if load_flow_parameters is not None:
+            self.load_flow_parameters = load_flow_parameters
+        if provider_parameters is not None:
+            self.provider_parameters = provider_parameters
+
+    def _init_with_default_values(self) -> None:
+        default_parameters = _pypowsybl.SensitivityAnalysisParameters()
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
+        self.provider_parameters = dict(
+            zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+
+    def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
+        c_parameters = _pypowsybl.SensitivityAnalysisParameters()
+        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
+        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        return c_parameters
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f"load_flow_parameters={self.load_flow_parameters}" \
+               f", provider_parameters={self.provider_parameters!r}" \
+               f")"
+
+
 class DcSensitivityAnalysisResult:
     """
     Represents the result of a DC sensitivity analysis.
@@ -138,6 +185,7 @@ class DcSensitivityAnalysisResult:
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
+
     def __init__(self,
                  result_context_ptr: _pypowsybl.JavaHandle,
                  branches_ids: _Dict[str, _List[str]],
@@ -147,7 +195,8 @@ class DcSensitivityAnalysisResult:
         self.branches_ids = branches_ids
         self.branch_data_frame_index = branch_data_frame_index
 
-    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[_pd.DataFrame]:
+    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> _Optional[
+        _pd.DataFrame]:
         """
         Get the matrix of branch flows sensitivities on the base case or on post contingency state.
 
@@ -159,13 +208,15 @@ class DcSensitivityAnalysisResult:
         Returns:
             the matrix of branch flows sensitivities
         """
-        matrix = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr, matrix_id,
+                                                                '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
         data = _np.array(matrix, copy=False)
 
-        df = _pd.DataFrame(data=data, columns=self.branches_ids[matrix_id], index=self.branch_data_frame_index[matrix_id])
+        df = _pd.DataFrame(data=data, columns=self.branches_ids[matrix_id],
+                           index=self.branch_data_frame_index[matrix_id])
 
         # substract second power transfer zone to first one
         i = 0
@@ -187,7 +238,7 @@ class DcSensitivityAnalysisResult:
         Returns:
             the branches active power flows
         """
-        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
+        matrix= _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
         data = _np.array(matrix, copy=False)
@@ -201,6 +252,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     The result contains computed values (so called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
+
     def __init__(self, result_context_ptr: _pypowsybl.JavaHandle, branches_ids: _Dict[str, _List[str]],
                  branch_data_frame_index: _Dict[str, _List[str]],
                  bus_ids: _List[str], target_voltage_ids: _List[str]):
@@ -249,7 +301,7 @@ class SensitivityAnalysis(_ContingencyContainer):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         _ContingencyContainer.__init__(self, handle)
         self.branches_ids: _Dict[str, _List[str]] = {}
-        self.branch_data_frame_index: _Dict[str, _List[str]]  = {}
+        self.branch_data_frame_index: _Dict[str, _List[str]] = {}
 
     def set_zones(self, zones: _List[Zone]) -> None:
         """
@@ -268,7 +320,7 @@ class SensitivityAnalysis(_ContingencyContainer):
         flatten_variables_ids = []
         branch_data_frame_index = []
         for variable_id in variables_ids:
-            if isinstance(variable_id, str): # this is an ID
+            if isinstance(variable_id, str):  # this is an ID
                 flatten_variables_ids.append(variable_id)
                 branch_data_frame_index.append(variable_id)
             elif isinstance(variable_id, tuple):  # this is a power transfer
@@ -300,7 +352,8 @@ class SensitivityAnalysis(_ContingencyContainer):
         """
         self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
 
-    def add_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str], matrix_id: str = 'default') -> None:
+    def add_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str],
+                                      matrix_id: str = 'default') -> None:
         """
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 
@@ -319,7 +372,8 @@ class SensitivityAnalysis(_ContingencyContainer):
         self.branches_ids[matrix_id] = branches_ids
         self.branch_data_frame_index[matrix_id] = branch_data_frame_index
 
-    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str], matrix_id: str = 'default') -> None:
+    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str],
+                                                     matrix_id: str = 'default') -> None:
         """
         Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
 
@@ -335,11 +389,14 @@ class SensitivityAnalysis(_ContingencyContainer):
         """
         (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
 
-        _pypowsybl.add_precontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids, flatten_variables_ids)
+        _pypowsybl.add_precontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids,
+                                                                flatten_variables_ids)
         self.branches_ids[matrix_id] = branches_ids
         self.branch_data_frame_index[matrix_id] = branch_data_frame_index
 
-    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str], contingencies_ids: _List[str], matrix_id: str = 'default') -> None:
+    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: _List[str], variables_ids: _List[str],
+                                                      contingencies_ids: _List[str],
+                                                      matrix_id: str = 'default') -> None:
         """
         Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
 
@@ -356,7 +413,8 @@ class SensitivityAnalysis(_ContingencyContainer):
         """
         (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
 
-        _pypowsybl.add_postcontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids, flatten_variables_ids, contingencies_ids)
+        _pypowsybl.add_postcontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids,
+                                                                 flatten_variables_ids, contingencies_ids)
         self.branches_ids[matrix_id] = branches_ids
         self.branch_data_frame_index[matrix_id] = branch_data_frame_index
 
@@ -367,21 +425,24 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         SensitivityAnalysis.__init__(self, handle)
 
-    def run(self, network: _Network, parameters: Parameters = None,
+    def run(self, network: _Network, parameters: _Union[Parameters, pypowsybl.loadflow.Parameters] = None,
             provider: str = '', reporter: _Reporter = None) -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:
             network:    The network
-            parameters: The load flow parameters
+            parameters: The sensitivity parameters
             provider:   Name of the sensitivity analysis provider
 
         Returns:
             a sensitivity analysis result
         """
-        p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
+        sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()
         return DcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider,
+                                                None if reporter is None else reporter._reporter_model),
+            # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
 
 
@@ -405,22 +466,26 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run(self, network: _Network, parameters: Parameters = None,
+    def run(self, network: _Network, parameters: _Union[Parameters, pypowsybl.loadflow.Parameters] = None,
             provider: str = '', reporter: _Reporter = None) -> AcSensitivityAnalysisResult:
         """
         Runs the sensitivity analysis.
 
         Args:
             network:    The network
-            parameters: The load flow parameters
+            parameters: The sensitivity parameters
             provider:   Name of the sensitivity analysis provider
 
         Returns:
             a sensitivity analysis result
         """
-        p: _pypowsybl.LoadFlowParameters = _pypowsybl.LoadFlowParameters() if parameters is None else parameters._to_c_parameters()
+        sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
+                                                                                                       pypowsybl.loadflow.Parameters) else parameters
+        p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()
         return AcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider,
+                                                None if reporter is None else reporter._reporter_model),
+            # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
             bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
 
@@ -473,3 +538,15 @@ def get_provider_names() -> _List[str]:
         the list of supported provider names
     """
     return _pypowsybl.get_sensitivity_analysis_provider_names()
+
+
+def get_provider_parameters_names(provider: str = '') -> _List[str]:
+    """
+    Get list of parameters for the specified sensitivity analysis provider.
+
+    If not specified the provider will be the default one.
+
+    Returns:
+        the list of provider's parameters
+    """
+    return _pypowsybl.get_sensitivity_analysis_provider_parameters_names(provider)
