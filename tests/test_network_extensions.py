@@ -220,3 +220,29 @@ def test_load_detail():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+def test_measurements():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'measurements'
+    element_id = 'LD1'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id='measurement1', element_id=element_id, type='CURRENT', value=100, standard_deviation=2, valid=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.id == 'measurement1'
+    assert e.type == 'CURRENT'
+    assert e.side == ''
+    assert e.standard_deviation == 100.0
+    assert e.value == 2.0
+    assert e.valid
+    n.create_extensions(extension_name, id=['measurement2', 'measurement3'], element_id=[element_id, element_id],
+                        type=['REACTIVE_POWER', 'ACTIVE_POWER'], value=[200, 180], standard_deviation=[21, 23], valid=[True, True])
+    e = n.get_extensions(extension_name).loc[element_id]
+    expected = pd.DataFrame(index=pd.Series(name='element_id', data=['LD1', 'LD1']),
+                            columns=['id', 'type', 'side', 'standard_deviation', 'value', 'valid'],
+                            data=[['measurement2', 'REACTIVE_POWER', '', 200, 21, True],
+                                  ['measurement3', 'ACTIVE_POWER', '', 180, 23, True]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
