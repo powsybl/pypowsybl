@@ -136,6 +136,10 @@
   "allDeclaredMethods":true
 },
 {
+  "name":"java.util.HashSet",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"java.util.List",
   "allDeclaredMethods":true
 },

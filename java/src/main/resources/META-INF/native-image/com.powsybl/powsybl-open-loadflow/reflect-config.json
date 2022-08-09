@@ -6,10 +6,16 @@
   },
   {
     "name":"com.powsybl.openloadflow.OpenLoadFlowParameters",
-    "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true,
-    "queryAllDeclaredConstructors":true,
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
     "methods":[
+      {"name":"<init>","parameterTypes":[] },
+      {"name":"getDcPowerFactor","parameterTypes":[] },
       {"name":"getLowImpedanceBranchMode","parameterTypes":[] },
       {"name":"getMaxIteration","parameterTypes":[] },
       {"name":"getNewtonRaphsonConvEpsPerEq","parameterTypes":[] },
@@ -17,11 +23,26 @@
       {"name":"getSlackBusPMaxMismatch","parameterTypes":[] },
       {"name":"getSlackBusSelectionMode","parameterTypes":[] },
       {"name":"getSlackBusesIds","parameterTypes":[] },
+      {"name":"getTransformerVoltageControlMode","parameterTypes":[] },
       {"name":"getVoltageInitModeOverride","parameterTypes":[] },
       {"name":"isAddRatioToLinesWithDifferentNominalVoltageAtBothEnds","parameterTypes":[] },
       {"name":"isLoadPowerFactorConstant","parameterTypes":[] },
       {"name":"isThrowsExceptionInCaseOfSlackDistributionFailure","parameterTypes":[] },
-      {"name":"isVoltagePerReactivePowerControl","parameterTypes":[] }
+      {"name":"isVoltagePerReactivePowerControl","parameterTypes":[] },
+      {"name":"setAddRatioToLinesWithDifferentNominalVoltageAtBothEnds", "parameterTypes":["boolean"] },
+      {"name":"setDcPowerFactor", "parameterTypes":["double"] },
+      {"name":"setLoadPowerFactorConstant","parameterTypes":["boolean"] },
+      {"name":"setLowImpedanceBranchMode","parameterTypes":["com.powsybl.openloadflow.OpenLoadFlowParameters$LowImpedanceBranchMode"] },
+      {"name":"setMaxIteration", "parameterTypes":["int"] },
+      {"name":"setNewtonRaphsonConvEpsPerEq", "parameterTypes":["double"] },
+      {"name":"setPlausibleActivePowerLimit","parameterTypes":["double"] },
+      {"name":"setSlackBusesIds", "parameterTypes":["java.util.List"] },
+      {"name":"setSlackBusPMaxMismatch", "parameterTypes":["double"] },
+      {"name":"setSlackBusSelectionMode","parameterTypes":["com.powsybl.openloadflow.network.SlackBusSelectionMode"] },
+      {"name":"setThrowsExceptionInCaseOfSlackDistributionFailure","parameterTypes":["boolean"] },
+      {"name":"setTransformerVoltageControlMode", "parameterTypes":["com.powsybl.openloadflow.OpenLoadFlowParameters$TransformerVoltageControlMode"] },
+      {"name":"setVoltageInitModeOverride", "parameterTypes":["com.powsybl.openloadflow.OpenLoadFlowParameters$VoltageInitModeOverride"] },
+      {"name":"setVoltagePerReactivePowerControl", "parameterTypes":["boolean"] }
     ]
   },
   {
@@ -31,6 +52,11 @@
   },
   {
     "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$VoltageInitModeOverride",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"com.powsybl.openloadflow.OpenLoadFlowParameters$TransformerVoltageControlMode",
     "allDeclaredFields":true,
     "queryAllDeclaredMethods":true
   },
