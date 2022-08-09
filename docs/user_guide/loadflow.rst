@@ -25,7 +25,7 @@ We can get the list of supported load flow implementations (so called providers)
 .. doctest::
 
     >>> lf.get_provider_names()
-    ['OpenLoadFlow']
+    ['DynaFlow', 'OpenLoadFlow']
     >>> lf.get_default_provider()
     'OpenLoadFlow'
 
