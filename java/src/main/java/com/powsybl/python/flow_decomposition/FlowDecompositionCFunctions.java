@@ -66,7 +66,7 @@ public final class FlowDecompositionCFunctions {
         paramsPtr.setLossesCompensationEpsilon(parameters.getLossesCompensationEpsilon());
         paramsPtr.setSensitivityEpsilon(parameters.getSensitivityEpsilon());
         paramsPtr.setRescaleEnabled(parameters.isRescaleEnabled());
-        paramsPtr.setXnecSelectionStrategy(parameters.getXnecSelectionStrategy().ordinal());
+        paramsPtr.setBranchSelectionStrategy(parameters.getBranchSelectionStrategy().ordinal());
         return paramsPtr;
     }
 }

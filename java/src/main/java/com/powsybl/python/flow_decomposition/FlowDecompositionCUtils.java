@@ -29,6 +29,6 @@ public final class FlowDecompositionCUtils {
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
             .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
-            .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()]);
+            .setBranchSelectionStrategy(FlowDecompositionParameters.BranchSelectionStrategy.values()[loadFlowParametersPtr.getBranchSelectionStrategy()]);
     }
 }

@@ -11,8 +11,8 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.flow_decomposition.DecomposedFlow;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
+import com.powsybl.flow_decomposition.XnecWithDecomposition;
 import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
@@ -21,7 +21,7 @@ import com.powsybl.iidm.parameters.ParameterType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
-import com.powsybl.python.flow_decomposition.DecomposedFlowContext;
+import com.powsybl.python.flow_decomposition.XnecWithDecompositionContext;
 import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
@@ -406,23 +406,24 @@ public final class Dataframes {
     }
 
     public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
-        return new DataframeMapperBuilder<FlowDecompositionResults, DecomposedFlowContext>()
+        return new DataframeMapperBuilder<FlowDecompositionResults, XnecWithDecompositionContext>()
             .itemsProvider(Dataframes::getFlowDecompositions)
-            .stringsIndex("branch_id", DecomposedFlowContext::getXnecId)
-            .doubles("commercial_flow", DecomposedFlow::getAllocatedFlow)
-            .doubles("pst_flow", DecomposedFlow::getPstFlow)
-            .doubles(DecomposedFlowContext.getLoopFlowsFunctionMap(zoneSet))
-            .doubles("ac_reference_flow", DecomposedFlow::getAcReferenceFlow)
-            .doubles("dc_reference_flow", DecomposedFlow::getDcReferenceFlow)
-            .strings("country1", DecomposedFlowContext::getCountry1)
-            .strings("country2", DecomposedFlowContext::getCountry2)
+            .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
+            .strings("branch_id", XnecWithDecompositionContext::getBranchId)
+            .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
+            .doubles("commercial_flow", XnecWithDecomposition::getAllocatedFlow)
+            .doubles("pst_flow", XnecWithDecomposition::getPstFlow)
+            .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
+            .doubles("ac_reference_flow", XnecWithDecomposition::getAcReferenceFlow)
+            .doubles("dc_reference_flow", XnecWithDecomposition::getDcReferenceFlow)
+            .strings("country1", XnecWithDecompositionContext::getCountry1)
+            .strings("country2", XnecWithDecompositionContext::getCountry2)
             .build();
     }
 
-    private static List<DecomposedFlowContext> getFlowDecompositions(FlowDecompositionResults flowDecompositionResults) {
-        return flowDecompositionResults.getDecomposedFlowMap().entrySet().stream().map(
-            stringDecomposedFlowEntry -> new DecomposedFlowContext(
-                stringDecomposedFlowEntry.getKey(), stringDecomposedFlowEntry.getValue()))
+    private static List<XnecWithDecompositionContext> getFlowDecompositions(FlowDecompositionResults flowDecompositionResults) {
+        return flowDecompositionResults.getXnecsWithDecomposition().stream()
+            .map(XnecWithDecompositionContext::new)
             .collect(Collectors.toList());
     }
 }

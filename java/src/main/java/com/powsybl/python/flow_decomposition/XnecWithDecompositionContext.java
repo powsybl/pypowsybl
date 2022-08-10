@@ -6,7 +6,7 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.DecomposedFlow;
+import com.powsybl.flow_decomposition.XnecWithDecomposition;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.flow_decomposition.NetworkUtil;
 
@@ -18,30 +18,29 @@ import java.util.function.ToDoubleFunction;
 /**
  * @author Hugo Schindler {@literal <hugo.schindler at rte-france.com>}
  */
-public class DecomposedFlowContext extends DecomposedFlow {
-
-    private final String xnecId;
-
-    public DecomposedFlowContext(String xnecId, DecomposedFlow decomposedFlow) {
-        super(decomposedFlow.getLoopFlows(), decomposedFlow.getAllocatedFlow(), decomposedFlow.getPstFlow(),
-            decomposedFlow.getAcReferenceFlow(), decomposedFlow.getDcReferenceFlow(), decomposedFlow.getCountries());
-        this.xnecId = xnecId;
+public class XnecWithDecompositionContext extends XnecWithDecomposition {
+    public XnecWithDecompositionContext(XnecWithDecomposition xnecWithDecomposition) {
+        super(xnecWithDecomposition);
     }
 
-    public String getXnecId() {
-        return xnecId;
+    public String getBranchId() {
+        return getBranch().getId();
+    }
+
+    public String getContingencyId() {
+        return getContingency().getId();
     }
 
     public String getCountry1() {
-        return getCountries().getFirst().toString();
+        return getCountryTerminal1().toString();
     }
 
     public String getCountry2() {
-        return getCountries().getSecond().toString();
+        return getCountryTerminal2().toString();
     }
 
-    public static Map<String, ToDoubleFunction<DecomposedFlowContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {
-        TreeMap<String, ToDoubleFunction<DecomposedFlowContext>> loopFlows = new TreeMap<>();
+    public static Map<String, ToDoubleFunction<XnecWithDecompositionContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {
+        TreeMap<String, ToDoubleFunction<XnecWithDecompositionContext>> loopFlows = new TreeMap<>();
         zoneSet.stream().sorted().forEach(country -> loopFlows.put(getColumnPep8Name(country), decomposedFlow -> decomposedFlow.getLoopFlow(country)));
         return loopFlows;
     }
