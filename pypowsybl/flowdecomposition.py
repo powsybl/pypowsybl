@@ -122,6 +122,8 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
     Notes:
         The resulting dataframe, depending on the number of countries, will include the following columns:
 
+            - **branch_id**: the id of the branch
+            - **contingency_id**: the id of the contingency
             - **commercial_flow**: the commercial (or allocated) flow on the line (in MW)
             - **pst_flow**: the PST flow on the line (in MW)
             - **loop_flow_from_XX**: the loop flow from zone XX on the line (in MW)
@@ -130,7 +132,7 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
             - **country1**: the country id of terminal 1
             - **country2**: the country id of terminal 2
 
-        This dataframe is indexed on the xnec ID **branch_id**.
+        This dataframe is indexed on the xnec ID **xnec_id**.
 
     Examples:
 
@@ -142,13 +144,13 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
 
         It outputs something like:
 
-        =========== =============== ======== ================= ================= ================= ================= ======== ========
-        \           commercial_flow pst_flow loop_flow_from_be loop_flow_from_fr ac_reference_flow dc_reference_flow country1 country2
-        =========== =============== ======== ================= ================= ================= ================= ======== ========
-        branch_id                                                                                                          
-        NHV1_NHV2_1             0.0      0.0             300.0               0.0        302.444049             300.0       FR       BE
-        NHV1_NHV2_2             0.0      0.0             300.0               0.0        302.444049             300.0       FR       BE
-        =========== =============== ======== ================= ================= ================= ================= ======== ========
+        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
+        \                           branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
+        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
+        xnec_id                                                                                                                                                                      
+        NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
+        NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
+        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.FlowDecompositionParameters()
     res = _pypowsybl.run_flow_decomposition(network._handle, p)
