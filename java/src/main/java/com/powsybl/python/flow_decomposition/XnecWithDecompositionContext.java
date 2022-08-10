@@ -27,10 +27,6 @@ public class XnecWithDecompositionContext extends XnecWithDecomposition {
         return getBranch().getId();
     }
 
-    public String getContingencyId() {
-        return getContingency().getId();
-    }
-
     public String getCountry1() {
         return getCountryTerminal1().toString();
     }

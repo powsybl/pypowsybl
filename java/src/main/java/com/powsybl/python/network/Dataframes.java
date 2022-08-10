@@ -407,10 +407,10 @@ public final class Dataframes {
 
     public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
         return new DataframeMapperBuilder<FlowDecompositionResults, XnecWithDecompositionContext>()
-            .itemsProvider(Dataframes::getFlowDecompositions)
+            .itemsProvider(Dataframes::getXnecWithDecompositions)
             .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
             .strings("branch_id", XnecWithDecompositionContext::getBranchId)
-            .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
+            .strings("contingency_id", XnecWithDecompositionContext::getVariantId)
             .doubles("commercial_flow", XnecWithDecomposition::getAllocatedFlow)
             .doubles("pst_flow", XnecWithDecomposition::getPstFlow)
             .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
@@ -421,9 +421,10 @@ public final class Dataframes {
             .build();
     }
 
-    private static List<XnecWithDecompositionContext> getFlowDecompositions(FlowDecompositionResults flowDecompositionResults) {
+    private static List<XnecWithDecompositionContext> getXnecWithDecompositions(FlowDecompositionResults flowDecompositionResults) {
         return flowDecompositionResults.getXnecsWithDecomposition().stream()
             .map(XnecWithDecompositionContext::new)
+            .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
             .collect(Collectors.toList());
     }
 }

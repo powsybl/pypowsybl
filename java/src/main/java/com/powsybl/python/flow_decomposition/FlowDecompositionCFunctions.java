@@ -28,6 +28,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  */
 @CContext(Directives.class)
 public final class FlowDecompositionCFunctions {
+
     private FlowDecompositionCFunctions() {
     }
 
@@ -67,6 +68,7 @@ public final class FlowDecompositionCFunctions {
         paramsPtr.setSensitivityEpsilon(parameters.getSensitivityEpsilon());
         paramsPtr.setRescaleEnabled(parameters.isRescaleEnabled());
         paramsPtr.setBranchSelectionStrategy(parameters.getBranchSelectionStrategy().ordinal());
+        paramsPtr.setContingencyStrategy(parameters.getContingencyStrategy().ordinal());
         return paramsPtr;
     }
 }

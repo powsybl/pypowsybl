@@ -685,5 +685,11 @@ public final class PyPowsyblApiHeader {
 
         @CField("branch_selection_strategy")
         void setBranchSelectionStrategy(int branchSelectionStrategy);
+
+        @CField("contingency_strategy")
+        int getContingencyStrategy();
+
+        @CField("contingency_strategy")
+        void setContingencyStrategy(int contingencyStrategy);
     }
 }
