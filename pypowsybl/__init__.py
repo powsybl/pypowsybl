@@ -6,6 +6,7 @@
 #
 import os as _os
 import inspect as _inspect
+import logging
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
@@ -16,7 +17,6 @@ from pypowsybl import (
     glsk,
     flowdecomposition,
 )
-import logging
 
 __version__ = '0.17.0.dev1'
 

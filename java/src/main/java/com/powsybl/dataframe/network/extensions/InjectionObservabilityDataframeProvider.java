@@ -1,0 +1,104 @@
+/**
+ * Copyright (c) 2022, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package com.powsybl.dataframe.network.extensions;
+
+import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.NetworkDataframeMapper;
+import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
+import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Injection;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.InjectionObservability;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+/**
+ * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ */
+@AutoService(NetworkExtensionDataframeProvider.class)
+public class InjectionObservabilityDataframeProvider implements NetworkExtensionDataframeProvider {
+
+    private Stream<InjectionObservability> itemsStream(Network network) {
+        return network.getIdentifiables().stream().filter(Objects::nonNull)
+                .filter(identifiable -> identifiable instanceof Injection)
+                .map(inj -> (InjectionObservability) inj.getExtension(InjectionObservability.class))
+                .filter(Objects::nonNull);
+    }
+
+    private InjectionObservability getOrThrow(Network network, String id) {
+        Identifiable identifiable = network.getIdentifiable(id);
+        if (identifiable == null) {
+            throw new PowsyblException("Invalid injection id : could not find " + id);
+        }
+        if (!(identifiable instanceof Injection)) {
+            throw new PowsyblException(id + " is not an injection");
+        }
+        Injection injection = (Injection) identifiable;
+        return (InjectionObservability) injection.getExtension(InjectionObservability.class);
+    }
+
+    @Override
+    public String getExtensionName() {
+        return InjectionObservability.NAME;
+    }
+
+    @Override
+    public NetworkDataframeMapper createMapper() {
+        return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
+                .stringsIndex("id", injectionObservability -> ((Injection) injectionObservability.getExtendable()).getId())
+                .booleans("observable", InjectionObservability::isObservable)
+                .doubles("p_standard_deviation", injectionObservability -> injectionObservability.getQualityP() != null ? injectionObservability.getQualityP().getStandardDeviation() : null,
+                    (injectionObservability, standardDeviation) -> {
+                        if (injectionObservability.getQualityP() != null) {
+                            injectionObservability.getQualityP().setStandardDeviation(standardDeviation);
+                        } else {
+                            injectionObservability.setQualityP(standardDeviation);
+                        }
+                    })
+                .booleans("p_redundant", injectionObservability -> injectionObservability.getQualityP() != null && injectionObservability.getQualityP().isRedundant(),
+                    (injectionObservability, redundant) -> injectionObservability.getQualityP().setRedundant(redundant))
+                .doubles("q_standard_deviation", injectionObservability -> injectionObservability.getQualityQ() != null ? injectionObservability.getQualityQ().getStandardDeviation() : null,
+                    (injectionObservability, standardDeviation) -> {
+                        if (injectionObservability.getQualityQ() != null) {
+                            injectionObservability.getQualityQ().setStandardDeviation(standardDeviation);
+                        } else {
+                            injectionObservability.setQualityQ(standardDeviation);
+                        }
+                    })
+                .booleans("q_redundant", injectionObservability -> injectionObservability.getQualityQ() != null && injectionObservability.getQualityQ().isRedundant(),
+                    (injectionObservability, redundant) -> injectionObservability.getQualityQ().setRedundant(redundant))
+                .doubles("v_standard_deviation", injectionObservability -> injectionObservability.getQualityV() != null ? injectionObservability.getQualityV().getStandardDeviation() : null,
+                    (injectionObservability, standardDeviation) -> {
+                        if (injectionObservability.getQualityV() != null) {
+                            injectionObservability.getQualityV().setStandardDeviation(standardDeviation);
+                        } else {
+                            injectionObservability.setQualityV(standardDeviation);
+                        }
+                    })
+                .booleans("v_redundant", injectionObservability -> injectionObservability.getQualityV() != null && injectionObservability.getQualityV().isRedundant(),
+                    (injectionObservability, redundant) -> injectionObservability.getQualityV().setRedundant(redundant))
+                .build();
+    }
+
+    @Override
+    public void removeExtensions(Network network, List<String> ids) {
+        ids.stream().filter(Objects::nonNull)
+                .map(network::getIdentifiable)
+                .filter(Objects::nonNull)
+                .filter(identifiable -> identifiable instanceof Injection)
+                .forEach(inj -> inj.removeExtension(InjectionObservability.class));
+    }
+
+    @Override
+    public NetworkElementAdder createAdder() {
+        return new InjectionObservabilityDataframeAdder();
+    }
+}

@@ -6,7 +6,9 @@
  */
 package com.powsybl.python.report;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.reporter.ReporterModelJsonModule;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -17,7 +19,9 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 
 import static com.powsybl.python.commons.Util.doCatch;
 
@@ -46,6 +50,21 @@ public final class ReportCFunctions {
             ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
             StringWriter reporterOut = new StringWriter();
             reporterModel.export(reporterOut);
+            return CTypeUtil.toCharPtr(reporterOut.toString());
+        });
+    }
+
+    @CEntryPoint(name = "jsonReport")
+    public static CCharPointer jsonReport(IsolateThread thread, ObjectHandle reporterModelHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
+            StringWriter reporterOut = new StringWriter();
+            ObjectMapper objectMapper = new ObjectMapper().registerModule(new ReporterModelJsonModule());
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(reporterOut, reporterModel);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             return CTypeUtil.toCharPtr(reporterOut.toString());
         });
     }
