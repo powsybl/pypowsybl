@@ -145,7 +145,7 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
         It outputs something like:
 
         ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
-        \                           branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
+        /                           branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
         ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
         xnec_id                                                                                                                                                                      
         NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
