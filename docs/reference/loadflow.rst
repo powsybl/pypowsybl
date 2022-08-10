@@ -30,6 +30,7 @@ The execution of the loadflow can be customized using loadflow parameters.
    :nosignatures:
 
     Parameters
+    get_provider_parameters_names
 
 .. include it in the toctree
 .. toctree::

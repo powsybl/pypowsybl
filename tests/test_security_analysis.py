@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import numpy as np
 import pytest
 import pypowsybl as pp
 import pandas as pd
@@ -159,7 +160,7 @@ def test_ac_security_analysis_with_report():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    sa_result = sa.run_ac(n, reporter = reporter)
+    sa_result = sa.run_ac(n, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
@@ -173,7 +174,67 @@ def test_dc_analysis_with_report():
     n.update_generators(id='GEN', target_p=900)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
-    sa_result = sa.run_dc(n, reporter = reporter)
+    sa_result = sa.run_dc(n, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
+
+def test_loadflow_parameters():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    parameters = pp.security.Parameters()
+    parameters.load_flow_parameters.countries_to_balance = ['UNKNOWN']
+    with pytest.raises(pp.PyPowsyblError, match='No enum constant com.powsybl.iidm.network.Country.UNKNOWN'):
+        sa.run_ac(network, parameters=parameters)
+
+    parameters.load_flow_parameters.countries_to_balance = ['FR']
+    res = sa.run_ac(network, parameters=parameters)
+    assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
+
+
+def test_security_analysis_parameters():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'type': 'CURRENT', 'value': 400,
+         'acceptable_duration': np.Inf, 'is_fictitious': False}]))
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('', 'First contingency')
+    sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
+    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='First contingency')
+
+    # default security analysis
+    result = sa.run_ac(network, parameters=pp.security.Parameters())
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
+              ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 1008.93, 'ONE'],
+              ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
+    pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
+
+    # flow_proportional_threshold = 10
+    parameters = pp.security.Parameters()
+    parameters.increased_violations.flow_proportional_threshold = 10
+    result = sa.run_ac(network, parameters)
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
+              ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
+    pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
+
+    # loadflow parameters only and specific parameters
+    result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
+    assert result.limit_violations.empty
+    assert len(result.post_contingency_results) == 0
+    assert result.pre_contingency_result.status.name == 'FAILED'
+
+
+def test_provider_parameters_names():
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension']
+    with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
+        pp.security.get_provider_parameters_names('unknown')
