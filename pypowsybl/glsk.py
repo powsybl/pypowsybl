@@ -10,7 +10,7 @@ from typing import (
 )
 from os import PathLike as _PathLike
 from datetime import datetime
-import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl import _pypowsybl
 from pypowsybl.network import Network as _Network
 from pypowsybl.network import _path_to_str
 
