@@ -112,7 +112,7 @@ def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
     columns_values = []
     columns_types = []
     # index
-    for idx, index_name in enumerate(df.index.names):
+    for _, index_name in enumerate(df.index.names):
         columns_names.append(index_name)
         columns_types.append(0)
         columns_values.append(df.index.values)
