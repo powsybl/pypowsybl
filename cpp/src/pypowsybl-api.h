@@ -200,6 +200,7 @@ typedef struct flow_decomposition_parameters_struct {
     double sensitivity_epsilon;
     unsigned char rescale_enabled;
     int branch_selection_strategy;
+    int contingency_strategy;
 } flow_decomposition_parameters;
 
 typedef enum {
@@ -207,3 +208,7 @@ typedef enum {
     ZONE_TO_ZONE_PTDF_CRITERIA,
 } branch_selection_strategy;
 
+typedef enum {
+    ONLY_N_STATE = 0,
+    AUTO_CONTINGENCY,
+} contingency_strategy;

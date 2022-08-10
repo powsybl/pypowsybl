@@ -7,6 +7,7 @@
 import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import (
     BranchSelectionStrategy,
+    ContingencyStrategy,
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
@@ -16,6 +17,7 @@ import pandas as _pd
 # in particular for sphinx documentation to work correctly,
 # and add some documentation
 BranchSelectionStrategy.__module__ = __name__
+ContingencyStrategy.__module__ = __name__
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
@@ -42,6 +44,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         branch_selection_strategy: Defines how to select branches.
             Use ``ONLY_INTERCONNECTIONS`` to select only interconnections.
             Use ``ZONE_TO_ZONE_PTDF_CRITERIA`` to select interconnections and branches that have at least a zone to zone PTDF greater than 5%.
+        contingency_strategy: Defines how to select contingencies.
+            Use ``ONLY_N_STATE`` to only work in state N.
+            Use ``AUTO_CONTINGENCY`` to create automatic contingencies based on the 10 most congested lines.
     """
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
@@ -52,7 +57,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  losses_compensation_epsilon: float = None,
                  sensitivity_epsilon: float = None,
                  rescale_enabled: bool = None,
-                 branch_selection_strategy: BranchSelectionStrategy = None):
+                 branch_selection_strategy: BranchSelectionStrategy = None,
+                 contingency_strategy: ContingencyStrategy = None):
     
         self._init_with_default_values()
         if save_intermediates is not None:
@@ -67,6 +73,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.rescale_enabled = rescale_enabled
         if branch_selection_strategy is not None:
             self.branch_selection_strategy = branch_selection_strategy
+        if contingency_strategy is not None:
+            self.contingency_strategy = contingency_strategy
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -76,6 +84,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
         self.rescale_enabled = default_parameters.rescale_enabled
         self.branch_selection_strategy = default_parameters.branch_selection_strategy
+        self.contingency_strategy = default_parameters.contingency_strategy
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
         c_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -85,6 +94,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
         c_parameters.rescale_enabled = self.rescale_enabled
         c_parameters.branch_selection_strategy = self.branch_selection_strategy
+        c_parameters.contingency_strategy = self.contingency_strategy
         return c_parameters
 
     def __repr__(self) -> str:
@@ -95,6 +105,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
                f", rescale_enabled={self.rescale_enabled!r}" \
                f", branch_selection_strategy={self.branch_selection_strategy.name}" \
+               f", contingency_strategy={self.contingency_strategy.name}" \
                f")"
 
 def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
@@ -140,5 +151,6 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
         =========== =============== ======== ================= ================= ================= ================= ======== ========
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.FlowDecompositionParameters()
-    return create_data_frame_from_series_array(_pypowsybl.run_flow_decomposition(network._handle, p))
+    res = _pypowsybl.run_flow_decomposition(network._handle, p)
+    return create_data_frame_from_series_array(res)
 

@@ -129,6 +129,10 @@ enum BranchSelectionStrategy {
     ZONE_TO_ZONE_PTDF_CRITERIA,
 };
 
+enum ContingencyStrategy {
+    ONLY_N_STATE = 0,
+    AUTO_CONTINGENCY,
+};
 
 class SeriesMetadata {
 public:
@@ -165,6 +169,7 @@ public:
     float sensitivity_epsilon;
     bool rescale_enabled;
     BranchSelectionStrategy branch_selection_strategy;
+    ContingencyStrategy contingency_strategy;
 };
 
 char* copyStringToCharPtr(const std::string& str);

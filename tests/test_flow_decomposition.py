@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import pathlib
+import logging
 import pandas as pd 
 
 import pypowsybl as pp
@@ -17,11 +18,11 @@ def test_flow_decomposition_run_no_parameters():
     net.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     df=pp.flowdecomposition.run(net)
     expected = pd.DataFrame.from_records(
-        index=['branch_id'],
-        columns=['branch_id', 'commercial_flow', 'pst_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'ac_reference_flow', 'dc_reference_flow', 'country1', 'country2'],
+        index=['xnec_id'],
+        columns=['xnec_id', 'branch_id', 'contingency_id', 'commercial_flow', 'pst_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'ac_reference_flow', 'dc_reference_flow', 'country1', 'country2'],
         data=[
-            ['FGEN  11 BLOAD 11 1',  29.015809, 163.652703, -2.007905, -2.007905, 192.390656, 188.652703, 'FR', 'BE'],
-            ['FGEN  11 BLOAD 12 1', -87.047428, 163.652703,  6.023714,  6.023714, -76.189072, -88.652703, 'FR', 'BE'],
+            ['FGEN  11 BLOAD 11 1_InitialState', 'FGEN  11 BLOAD 11 1', 'InitialState',  29.015809, 163.652703, -2.007905, -2.007905, 192.390656, 188.652703, 'FR', 'BE'],
+            ['FGEN  11 BLOAD 12 1_InitialState', 'FGEN  11 BLOAD 12 1', 'InitialState', -87.047428, 163.652703,  6.023714,  6.023714, -76.189072, -88.652703, 'FR', 'BE'],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
     
@@ -38,6 +39,7 @@ def test_flow_decomposition_parameters():
         'sensitivity_epsilon': [-1, 1e-3, 1e-5],
         'rescale_enabled': [True, False],
         'branch_selection_strategy': [pp.flowdecomposition.BranchSelectionStrategy.ONLY_INTERCONNECTIONS, pp.flowdecomposition.BranchSelectionStrategy.ZONE_TO_ZONE_PTDF_CRITERIA],
+        'contingency_strategy': [pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE, pp.flowdecomposition.ContingencyStrategy.AUTO_CONTINGENCY],
     }
 
     for attribute, values in attributes.items():
@@ -54,5 +56,7 @@ def test_flow_decomposition_parameters():
             print(df)
 
 if __name__ == "__main__":
-    test_flow_decomposition_parameters()
+    #logging.basicConfig(level=logging.DEBUG)
+    #logging.getLogger('powsybl').setLevel(logging.DEBUG) # If logging is enable, it freezes your terminal with `python test/test_flow_decomposition.py`, sigterm the python process...
     test_flow_decomposition_run_no_parameters()
+    test_flow_decomposition_parameters()
