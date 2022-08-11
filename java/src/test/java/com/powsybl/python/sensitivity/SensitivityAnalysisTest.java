@@ -11,6 +11,7 @@ import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.sensitivity.SensitivityAnalysisParameters;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -23,11 +24,13 @@ class SensitivityAnalysisTest {
     @Test
     void testNoOutputMatricesAvailableErrors() {
         Network network = EurostagTutorialExample1Factory.create();
-        LoadFlowParameters params = new LoadFlowParameters()
+        LoadFlowParameters lfParams = new LoadFlowParameters()
                 .setDc(false)
                 .setDistributedSlack(false);
+        SensitivityAnalysisParameters parameters = new SensitivityAnalysisParameters();
+        parameters.setLoadFlowParameters(lfParams);
         SensitivityAnalysisContext sensitivityContext = new SensitivityAnalysisContext();
-        SensitivityAnalysisResultContext result = sensitivityContext.run(network, params, "OpenLoadFlow", Reporter.NO_OP);
+        SensitivityAnalysisResultContext result = sensitivityContext.run(network, parameters, "OpenLoadFlow", Reporter.NO_OP);
 
         try {
             result.createBranchFlowsSensitivityMatrix("", "");

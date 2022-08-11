@@ -154,6 +154,7 @@ class LoadFlowParameters {
 public:
     LoadFlowParameters(load_flow_parameters* src);
     std::shared_ptr<load_flow_parameters> to_c_struct() const;
+    void load_to_c_struct(load_flow_parameters& params) const;
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
@@ -168,6 +169,31 @@ public:
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
     ConnectedComponentMode connected_component_mode;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+class SecurityAnalysisParameters {
+public:
+    SecurityAnalysisParameters(security_analysis_parameters* src);
+    std::shared_ptr<security_analysis_parameters> to_c_struct() const;
+    
+    LoadFlowParameters load_flow_parameters;
+    double flow_proportional_threshold;
+    double low_voltage_proportional_threshold;
+    double low_voltage_absolute_threshold;
+    double high_voltage_proportional_threshold;
+    double high_voltage_absolute_threshold;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+class SensitivityAnalysisParameters {
+public:
+    SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
+    std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
+    
+    LoadFlowParameters load_flow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -240,6 +266,16 @@ void dumpNetwork(const JavaHandle& network, const std::string& file, const std::
 
 LoadFlowParameters* createLoadFlowParameters();
 
+std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
+
+SecurityAnalysisParameters* createSecurityAnalysisParameters();
+
+std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
+
+SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
+
+std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
+
 std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
@@ -260,7 +296,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -277,7 +313,7 @@ void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnaly
 
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
 matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
@@ -353,11 +389,9 @@ void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type 
 
 void setupLoggerCallback(void *& callback);
 
-
 void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
-std::vector<std::string> getProviderParametersNames(const std::string& loadFlowProvider);
 
 void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
 
