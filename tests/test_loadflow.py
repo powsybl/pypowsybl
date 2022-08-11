@@ -122,6 +122,7 @@ def test_validation_all():
 
 def test_provider_names():
     assert 'OpenLoadFlow' in pp.loadflow.get_provider_names()
+    assert 'DynaFlow' in pp.loadflow.get_provider_names()
 
 
 def test_get_provider_parameters_names():
