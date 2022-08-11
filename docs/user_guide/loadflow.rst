@@ -33,6 +33,12 @@ By default, load flows are based on the OpenLoadFlow implementation,
 fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
 OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
+You may also use DynaFlow, provided by the `Dynawo <https://dynawo.github.io>`_ project.
+DynaFlow is a new steady-state simulation tool that aims at calculating the steady-state point by using
+a simplified time-domain simulation.
+Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`_.
+
+
 Parameters
 ----------
 
