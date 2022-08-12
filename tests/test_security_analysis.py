@@ -10,6 +10,7 @@ import pypowsybl as pp
 import pandas as pd
 import pypowsybl.report as rp
 
+
 @pytest.fixture(autouse=True)
 def no_config():
     pp.set_config_read(False)
@@ -234,7 +235,7 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
