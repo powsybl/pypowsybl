@@ -74,8 +74,7 @@
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-        <powsybl-dependencies.version>1.2.0</powsybl-dependencies.version>
-        <powsybl-math-native.version>1.2.1</powsybl-math-native.version>
+        <powsybl-dependencies.version>1.2.2</powsybl-dependencies.version>
     </properties>
 
     <build>
@@ -176,16 +175,6 @@
                 <version>${powsybl-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!--
-               To remove in next release, core 4.8.0 depends on math native 1.2.0 which has a MacOS
-               amd64 library compiled on MacOS 11 instead of 10. Problem has been fixed in math native
-               1.2.1
-            -->
-            <dependency>
-                <groupId>com.powsybl</groupId>
-                <artifactId>powsybl-math-native</artifactId>
-                <version>${powsybl-math-native.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
