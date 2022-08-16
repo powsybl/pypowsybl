@@ -6,6 +6,7 @@
 #
 import os as _os
 import inspect as _inspect
+import logging
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
@@ -15,9 +16,8 @@ from pypowsybl import (
     sensitivity,
     glsk
 )
-import logging
 
-__version__ = '0.17.0.dev1'
+__version__ = '0.18.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))

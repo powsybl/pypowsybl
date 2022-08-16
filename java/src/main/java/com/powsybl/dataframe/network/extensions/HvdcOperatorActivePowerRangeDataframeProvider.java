@@ -60,7 +60,7 @@ public class HvdcOperatorActivePowerRangeDataframeProvider implements NetworkExt
     @Override
     public void removeExtensions(Network network, List<String> ids) {
         ids.stream().filter(Objects::nonNull)
-                .map(id -> network.getHvdcLine(id))
+                .map(network::getHvdcLine)
                 .filter(Objects::nonNull)
                 .forEach(g -> g.removeExtension(HvdcOperatorActivePowerRange.class));
     }

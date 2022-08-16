@@ -112,12 +112,13 @@ public final class LoadFlowCFunctions {
     public static void freeLoadFlowParameters(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < loadFlowParametersPtr.getCountriesToBalanceCount(); i++) {
-                UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance().read(i));
-            }
-            UnmanagedMemory.free(loadFlowParametersPtr.getCountriesToBalance());
-            UnmanagedMemory.free(loadFlowParametersPtr);
+            freeLoadFlowParametersPointer(loadFlowParametersPtr);
         });
+    }
+
+    public static void freeLoadFlowParametersPointer(LoadFlowParametersPointer loadFlowParametersPtr) {
+        LoadFlowCUtils.freeLoadFlowParametersContent(loadFlowParametersPtr);
+        UnmanagedMemory.free(loadFlowParametersPtr);
     }
 
     private static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
@@ -137,35 +138,39 @@ public final class LoadFlowCFunctions {
         return allocArrayPointer(componentResultPtr, componentResults.size());
     }
 
-    private static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
-        LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
-        paramsPtr.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
-        paramsPtr.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
-        paramsPtr.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
-        paramsPtr.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
-        paramsPtr.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
-        paramsPtr.setSimulShunt(parameters.isSimulShunt());
-        paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
-        paramsPtr.setWriteSlackBus(parameters.isWriteSlackBus());
-        paramsPtr.setDistributedSlack(parameters.isDistributedSlack());
-        paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
-        paramsPtr.setReadSlackBus(parameters.isReadSlackBus());
-        paramsPtr.setBalanceType(parameters.getBalanceType().ordinal());
-        paramsPtr.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
+    public static void copyToCLoadFlowParameters(LoadFlowParameters parameters, LoadFlowParametersPointer cParameters) {
+        cParameters.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
+        cParameters.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
+        cParameters.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
+        cParameters.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
+        cParameters.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
+        cParameters.setSimulShunt(parameters.isSimulShunt());
+        cParameters.setReadSlackBus(parameters.isReadSlackBus());
+        cParameters.setWriteSlackBus(parameters.isWriteSlackBus());
+        cParameters.setDistributedSlack(parameters.isDistributedSlack());
+        cParameters.setBalanceType(parameters.getBalanceType().ordinal());
+        cParameters.setReadSlackBus(parameters.isReadSlackBus());
+        cParameters.setBalanceType(parameters.getBalanceType().ordinal());
+        cParameters.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
         CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
         ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
         for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {
             calloc.write(i, CTypeUtil.toCharPtr(countries.get(i).toString()));
         }
-        paramsPtr.setCountriesToBalance(calloc);
-        paramsPtr.setCountriesToBalanceCount(countries.size());
-        paramsPtr.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        cParameters.setCountriesToBalance(calloc);
+        cParameters.setCountriesToBalanceCount(countries.size());
+        cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+        cParameters.setProviderParametersValuesCount(0);
+        cParameters.setProviderParametersKeysCount(0);
+    }
+
+    public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
+        LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
+        copyToCLoadFlowParameters(parameters, paramsPtr);
         return paramsPtr;
     }
 
-    @CEntryPoint(name = "getProviderParametersNames")
+    @CEntryPoint(name = "getLoadFlowProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);

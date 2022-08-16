@@ -16,8 +16,6 @@ import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoWindingsTransformer;
 import com.powsybl.contingency.ContingencyContextType;
-import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.python.commons.PyPowsyblConfiguration;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.sensitivity.*;
 
@@ -183,9 +181,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         return count;
     }
 
-    SensitivityAnalysisResultContext run(Network network, LoadFlowParameters loadFlowParameters, String provider, Reporter reporter) {
-        SensitivityAnalysisParameters sensitivityAnalysisParameters = PyPowsyblConfiguration.isReadConfig() ? SensitivityAnalysisParameters.load() : new SensitivityAnalysisParameters();
-        sensitivityAnalysisParameters.setLoadFlowParameters(loadFlowParameters);
+    SensitivityAnalysisResultContext run(Network network, SensitivityAnalysisParameters sensitivityAnalysisParameters, String provider, Reporter reporter) {
         List<Contingency> contingencies = createContingencies(network);
 
         List<MatrixInfo> matrices = prepareMatrices();

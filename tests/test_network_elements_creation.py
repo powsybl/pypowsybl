@@ -470,7 +470,7 @@ def test_busbar_sections():
                                   ['S3VL1_BBS', False, 400.0000, 0.0000, 'S3VL1', True],
                                   ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True],
                                   ['S_TEST', False, NaN, NaN, 'S1VL1', True]])
-    pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
+    pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
 def test_hvdc_creation():
@@ -617,18 +617,18 @@ def test_create_limits():
     ]))
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
         data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False],
               ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False],
               ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False],
               ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False]])
-    limits = net.get_operational_limits().loc['NHV1_NHV2_1']
+    limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
 
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'is_fictitious'],
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
         data=[['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False],
               ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False],
               ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])

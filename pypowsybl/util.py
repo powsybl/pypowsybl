@@ -6,7 +6,7 @@
 #
 from typing import List as _List, Callable as _Callable
 import pandas as _pd
-import pypowsybl._pypowsybl as _pypowsybl
+from pypowsybl import _pypowsybl
 
 
 class ContingencyContainer:
