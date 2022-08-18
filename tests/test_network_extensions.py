@@ -293,6 +293,7 @@ def test_branch_observability():
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
 
+
 def test_connectable_position():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'position'
@@ -333,3 +334,29 @@ def test_busbar_section_position():
     assert e.section_index == 1
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+
+def test_identifiable_short_circuit():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'identifiableShortCircuit'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    element_id = 'S1VL1'
+    n.create_extensions(extension_name, id=element_id, ip_min=3.2, ip_max=5.1)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.ip_min == 3.2
+    assert e.ip_max == 5.1
+    assert e.equipment_type == 'VOLTAGE_LEVEL'
+
+
+def test_generator_short_circuit():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'generatorShortCircuit'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    element_id = 'GH1'
+    n.create_extensions(extension_name, id=element_id, direct_sub_trans_x=9.2, direct_trans_x=2.1, step_up_transformer_x=5)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.direct_sub_trans_x == 9.2
+    assert e.direct_trans_x == 2.1
+    assert e.step_up_transformer_x == 5
