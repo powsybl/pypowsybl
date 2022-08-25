@@ -369,6 +369,8 @@ SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network
 
 std::vector<std::string> getExtensionsNames();
 
+SeriesArray* getExtensionsInformation();
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
