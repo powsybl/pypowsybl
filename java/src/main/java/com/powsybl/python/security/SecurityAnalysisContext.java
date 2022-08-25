@@ -30,16 +30,18 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
         ContingenciesProvider contingencies = this::createContingencies;
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(
-                    network,
-                    network.getVariantManager().getWorkingVariantId(),
-                    contingencies,
-                    securityAnalysisParameters,
-                    LocalComputationManager.getDefault(),
-                    new LimitViolationFilter(),
-                    new DefaultLimitViolationDetector(),
-                    Collections.emptyList(),
-                    monitors,
-                    (reporter == null) ? Reporter.NO_OP : reporter
+                        network,
+                        network.getVariantManager().getWorkingVariantId(),
+                        contingencies,
+                        securityAnalysisParameters,
+                        LocalComputationManager.getDefault(),
+                        new LimitViolationFilter(),
+                        new DefaultLimitViolationDetector(),
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        monitors,
+                        (reporter == null) ? Reporter.NO_OP : reporter
                 );
         return report.getResult();
     }

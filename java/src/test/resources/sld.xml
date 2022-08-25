@@ -142,18 +142,6 @@
             <text class="sld-label" id="S1VL1_BBS_NW_LABEL" x="-5.0" y="-5.0">S1VL1_BBS</text>
         </g>
         <g class="sld-extern-cell" id="idEXTERN_32_0">
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER" transform="translate(61.0,218.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-load sld-top-feeder sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
-                <rect height="9" width="16"/>
-                <line x1="0" x2="16" y1="0" y2="9"/>
-                <line x1="16" x2="0" y1="0" y2="9"/>
-                <text class="sld-label" id="LD1_N_LABEL" x="-5.0" y="-5.0">LD1</text>
-            </g>
             <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER">
                 <polyline points="65.0,252.0,65.0,222.0"/>
             </g>
@@ -180,24 +168,24 @@
                 <path class="sld-sw-closed" d="M0,0 8,8 M8,0 0,8"/>
                 <path class="sld-sw-open" d="M8,0 0,8"/>
             </g>
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER" transform="translate(61.0,218.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
             <g class="sld-breaker sld-closed sld-vl180to300-0" id="idS1VL1_95_LD1_95_BREAKER" transform="translate(55.0,172.0)">
                 <path class="sld-sw-closed" d="M1,1 V19 H19 V1z M10,5 V15"/>
                 <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
             </g>
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-load sld-top-feeder sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
+                <rect height="9" width="16"/>
+                <line x1="0" x2="16" y1="0" y2="9"/>
+                <line x1="16" x2="0" y1="0" y2="9"/>
+                <text class="sld-label" id="LD1_N_LABEL" x="-5.0" y="-5.0">LD1</text>
+            </g>
         </g>
         <g class="sld-extern-cell" id="idEXTERN_32_1">
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER" transform="translate(111.0,278.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-pst sld-bottom-feeder" id="idTWT_95_ONE" transform="translate(108.0,416.5)">
-                <path class="sld-pst-arrow" d="M14,0 0,14 M11,0 14,0 14,3" transform="rotate(180.0,7.0,7.5)"/>
-                <circle class="sld-vl180to300-0 sld-winding" cx="7" cy="10" r="5" transform="rotate(180.0,7.0,7.5)"/>
-                <circle class="sld-vl300to500-0 sld-winding" cx="7" cy="5" r="5" transform="rotate(180.0,7.0,7.5)"/>
-                <text class="sld-label" id="TWT_ONE_S_LABEL" x="-5.0" y="20.0">TWT</text>
-            </g>
             <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER">
                 <polyline points="115.0,252.0,115.0,282.0"/>
             </g>
@@ -224,9 +212,21 @@
                 <path class="sld-sw-closed" d="M0,0 8,8 M8,0 0,8"/>
                 <path class="sld-sw-open" d="M8,0 0,8"/>
             </g>
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER" transform="translate(111.0,278.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
             <g class="sld-breaker sld-closed sld-vl180to300-0" id="idS1VL1_95_TWT_95_BREAKER" transform="translate(105.0,312.0)">
                 <path class="sld-sw-closed" d="M1,1 V19 H19 V1z M10,5 V15"/>
                 <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
+            </g>
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
+                <circle cx="4" cy="4" r="4"/>
+            </g>
+            <g class="sld-pst sld-bottom-feeder" id="idTWT_95_ONE" transform="translate(108.0,416.5)">
+                <path class="sld-pst-arrow" d="M14,0 0,14 M11,0 14,0 14,3" transform="rotate(180.0,7.0,7.5)"/>
+                <circle class="sld-vl180to300-0 sld-winding" cx="7" cy="10" r="5" transform="rotate(180.0,7.0,7.5)"/>
+                <circle class="sld-vl300to500-0 sld-winding" cx="7" cy="5" r="5" transform="rotate(180.0,7.0,7.5)"/>
+                <text class="sld-label" id="TWT_ONE_S_LABEL" x="-5.0" y="20.0">TWT</text>
             </g>
         </g>
     </g>

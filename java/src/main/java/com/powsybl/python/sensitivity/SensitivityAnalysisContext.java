@@ -271,17 +271,25 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
             factorIndexMatrixMap.put(m.getOffsetData(), m);
         }
 
-        SensitivityValueWriter valueWriter = (factorContext, contingencyIndex, value, functionReference) -> {
-            int factorIndex = factorContext;
-            MatrixInfo m = factorIndexMatrixMap.floorEntry(factorIndex).getValue();
+        SensitivityResultWriter valueWriter = new SensitivityResultWriter() {
+            @Override
+            public void writeSensitivityValue(int factorContext, int contingencyIndex, double value, double functionReference) {
+                int factorIndex = factorContext;
+                MatrixInfo m = factorIndexMatrixMap.floorEntry(factorIndex).getValue();
 
-            int columnIdx = m.getOffsetColumn() + (factorIndex - m.getOffsetData()) % m.getColumnCount();
-            if (contingencyIndex != -1) {
-                valuesByContingencyIndex[contingencyIndex][factorIndex] = value;
-                referencesByContingencyIndex[contingencyIndex][columnIdx] = functionReference;
-            } else {
-                baseCaseValues[factorIndex] = value;
-                baseCaseReferences[columnIdx] = functionReference;
+                int columnIdx = m.getOffsetColumn() + (factorIndex - m.getOffsetData()) % m.getColumnCount();
+                if (contingencyIndex != -1) {
+                    valuesByContingencyIndex[contingencyIndex][factorIndex] = value;
+                    referencesByContingencyIndex[contingencyIndex][columnIdx] = functionReference;
+                } else {
+                    baseCaseValues[factorIndex] = value;
+                    baseCaseReferences[columnIdx] = functionReference;
+                }
+            }
+
+            @Override
+            public void writeContingencyStatus(int i, SensitivityAnalysisResult.Status status) {
+
             }
         };
 
@@ -305,11 +313,11 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         }
 
         return new SensitivityAnalysisResultContext(branchFlowFactorsMatrix,
-                                                    busVoltageFactorsMatrix,
-                                                    baseCaseValues,
-                                                    valuesByContingencyId,
-                                                    baseCaseReferences,
-                                                    referencesByContingencyId);
+                busVoltageFactorsMatrix,
+                baseCaseValues,
+                valuesByContingencyId,
+                baseCaseReferences,
+                referencesByContingencyId);
     }
 
 }
