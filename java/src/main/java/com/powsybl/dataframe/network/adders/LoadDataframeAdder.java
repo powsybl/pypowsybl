@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -37,7 +38,10 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("type"),
             SeriesMetadata.doubles("p0"),
-            SeriesMetadata.doubles("q0")
+            SeriesMetadata.doubles("q0"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     @Override
@@ -64,22 +68,23 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
 
         }
 
-        void create(Network network, int row) {
+        LoadAdder createAdder(Network network, int row) {
             LoadAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newLoad();
             setInjectionAttributes(adder, row);
             applyIfPresent(p0, row, adder::setP0);
             applyIfPresent(q0, row, adder::setQ0);
             applyIfPresent(type, row, LoadType.class, adder::setLoadType);
-            adder.add();
+            return adder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         LoadSeries series = new LoadSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row);
+            LoadAdder adder = series.createAdder(network, row);
+            addition.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
 }

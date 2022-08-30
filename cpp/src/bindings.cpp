@@ -104,6 +104,11 @@ void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>&
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
+void createFeederBay(pypowsybl::JavaHandle network, bool throwException, pypowsybl::JavaHandle* reporter, const std::vector<dataframe*>& dataframes, element_type elementType) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::createFeederBay(network, throwException, reporter, dataframeArray.get(), elementType);
+}
+
 void createExtensions(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
@@ -592,7 +597,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
-    m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network", 
+    m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
 
     py::enum_<pypowsybl::XnecSelectionStrategy>(m, "XnecSelectionStrategy", "Define how to select branches")
@@ -610,11 +615,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
                 .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence);
 
-    m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),  
-            py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"), 
+    m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),
+            py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"),
             py::arg("line_id"), py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"),
             py::arg("create_fictitious_substation"), py::arg("fictitious_voltage_level_id"), py::arg("fictitious_voltage_level_name"), py::arg("fictitious_substation_id"), py::arg("fictitious_substation_name"));
 
     m.def("connect_voltage_level_on_line", &pypowsybl::connectVoltageLevelOnLine, "connect a voltage level on a line", py::arg("network"), py::arg("bbs_or_bus_id"), py::arg("line_id"),
             py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"));
+    m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
+
 }

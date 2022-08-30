@@ -7,12 +7,16 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.modification.topology.CreateFeederBay;
+import com.powsybl.iidm.modification.topology.CreateFeederBayBuilder;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -41,7 +45,10 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.ints("section_count"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.strings("model_type")
+            SeriesMetadata.strings("model_type"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     private static final List<SeriesMetadata> LINEAR_SECTIONS_METADATA = List.of(
@@ -70,6 +77,31 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         ShuntCompensatorSeries series = new ShuntCompensatorSeries(shuntsDf, linearModelsDf, sectionsDf);
         for (int row = 0; row < shuntsDf.getRowCount(); row++) {
             series.create(network, row);
+        }
+    }
+
+    @Override
+    public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, Reporter reporter) {
+        UpdatingDataframe shuntsDf = dataframes.get(0);
+        UpdatingDataframe linearModelsDf = dataframes.get(1);
+        UpdatingDataframe sectionsDf = dataframes.get(2);
+        ShuntCompensatorSeries series = new ShuntCompensatorSeries(shuntsDf, linearModelsDf, sectionsDf);
+        for (int row = 0; row < shuntsDf.getRowCount(); row++) {
+            ShuntCompensatorAdder adder = series.createAdder(network, row);
+            String busbarSectionId = shuntsDf.getStrings("busbar_section_id").get(row);
+            int injectionPositionOrder = shuntsDf.getInts("shunt_compensator_position_order").get(row);
+            String directionStr = shuntsDf.getStrings("shunt_compensator_direction").get(row);
+            ConnectablePosition.Direction direction = ConnectablePosition.Direction.BOTTOM;
+            if (directionStr != null) {
+                direction = ConnectablePosition.Direction.valueOf(directionStr);
+            }
+            CreateFeederBay modification = new CreateFeederBayBuilder()
+                    .withInjectionAdder(adder)
+                    .withBbsId(busbarSectionId)
+                    .withInjectionPositionOrder(injectionPositionOrder)
+                    .withInjectionDirection(direction)
+                    .build();
+            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         }
     }
 
@@ -124,7 +156,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             }
         }
 
-        void create(Network network, int row) {
+        ShuntCompensatorAdder createAdder(Network network, int row) {
             String voltageLevelId = voltageLevels.get(row);
             String shuntId = ids.get(row);
 
@@ -164,6 +196,11 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             } else {
                 throw new PowsyblException("shunt model type non valid");
             }
+            return adder;
+        }
+
+        void create(Network network, int row) {
+            ShuntCompensatorAdder adder = createAdder(network, row);
             adder.add();
         }
     }

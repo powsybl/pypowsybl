@@ -158,6 +158,7 @@ Network elements can be created or removed using the following methods:
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
    Network.remove_elements
+   Network.create_feeder_bay
 
 
 Network variants management

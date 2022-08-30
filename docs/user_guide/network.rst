@@ -331,3 +331,31 @@ You can now run a loadflow to check our network actually works !
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
+
+
+Modify an existing network
+--------------------------
+
+If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
+Let's take an example. First it is possible to load a node/breaker network with:
+
+.. testcode::
+
+    network = pp.network.create_four_substations_node_breaker_network()
+
+Then you need to create a dataframe with the attributes of the injection that you want to add to the network. Let's say
+that we want to add a load, with the id "new_load". The load will have a p0 of 100 and a q0 of 50:
+
+.. testcode::
+
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0"], data=[["new_load", 100.0, 50.0]])
+
+You can then create the load and connect it to a busbar section:
+
+.. testcode::
+
+    network.create_feeder_bay(busbar_section_id="S1VL2_BBS1", injection_position_order=0, df=df, element_type=ElementType.LOAD)
+
+The load is then added to the network and connected to S1VL2_BBS1 with an breaker and a closed disconnector.
+If your network contains position extensions, then the injection will be connected to every busbar that is parallel to
+the specified busbar section with an open disconnector.
