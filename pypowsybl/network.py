@@ -274,7 +274,7 @@ class Network:  # pylint: disable=too-many-public-methods
         file = _path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> str:
         """
@@ -290,7 +290,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -326,7 +326,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -342,7 +342,7 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
 
-    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]]=None, depth: int = 0) -> Svg:
+    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0) -> Svg:
         """
         Create a network area diagram.
 
@@ -2932,7 +2932,7 @@ class Network:  # pylint: disable=too-many-public-methods
         current_limits.set_index('name', append=True, inplace=True)
         if 'fictitious' in current_limits.columns:
             return current_limits[['side', 'value', 'acceptable_duration', 'fictitious']]
-        else :
+        else:
             return current_limits[['side', 'value', 'acceptable_duration']]
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
@@ -4124,6 +4124,7 @@ class Network:  # pylint: disable=too-many-public-methods
             ids = [ids]
         _pp.remove_extensions(self._handle, extension_name, ids)
 
+
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
 
@@ -4345,7 +4346,7 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     file = _path_to_str(file)
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
+    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
@@ -4362,7 +4363,7 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 
 def get_extensions_names() -> _List[str]:
@@ -4438,3 +4439,388 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
         line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
+
+
+def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a load, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the load
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology. The load is
+        connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
+        the load will also be connected to every parallel busbar section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments.
+        Valid attributes are:
+        - **id**: the identifier of the new load
+        - **voltage_level_id**: the voltage level where the new load will be created.
+          The voltage level must already exist.
+        - **name**: an optional human-readable name
+        - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
+        - **p0**: active power load, in MW
+        - **q0**: reactive power load, in MVar
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **load_position_order**: the order of the load, will fill the ConnectablePosition extension
+        - **load_direction**: optionally, the direction of the load, will fill the ConnectablePosition extension,
+         default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
+
+def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a battery, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the battery
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology. The battery is
+        connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
+        the battery will also be connected to every parallel busbar section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        - **id**: the identifier of the new battery
+        - **voltage_level_id**: the voltage level where the new battery will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new battery will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new battery will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new battery will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **min_p**: minimum active power, in MW
+        - **max_p**: maximum active power, in MW
+        - **target_p**: active power consumption, in MW
+        - **target_q**: reactive power consumption, in MVar
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **battery_position_order**: the order of the battery, will fill the ConnectablePosition extension
+        - **battery_direction**: optionally, the direction of the battery, will fill the ConnectablePosition
+        extension, default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
+
+def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a generator, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the generator
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology. The generator
+        is connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
+        the generator will also be connected to every parallel busbar section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        - **id**: the identifier of the new generator
+        - **voltage_level_id**: the voltage level where the new generator will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new generator will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new generator will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new generator will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
+        - **max_p**: maximum active power in MW
+        - **min_p**: minimum active power in MW
+        - **target_p**: target active power in MW
+        - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
+        - **rated_s**: nominal power in MVA
+        - **target_v**: target voltage in kV, when the generator regulates voltage
+        - **voltage_regulator_on**: true if the generator regulates voltage
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **generator_position_order**: the order of the generator, will fill the ConnectablePosition extension
+        - **generator_direction**: optionally, the direction of the generator, will fill the ConnectablePosition
+        extension, default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
+
+def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a dangling line, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the dangling line
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The dangling line is connected to the busbar with a breaker and a closed disconnector. If the network
+        has position extensions, the dangling line will also be connected to every parallel busbar section with
+        an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+                    - **id**: the identifier of the new line
+        - **voltage_level_id**: the voltage level where the new line will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new line will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new line will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new line will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **p0**: the active power consumption, in MW
+        - **q0**: the reactive power consumption, in MVar
+        - **r**: the resistance, in Ohms
+        - **x**: the reactance, in Ohms
+        - **g**: the shunt conductance, in S
+        - **b**: the shunt susceptance, in S
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **dangling_line_position_order**: the order of the dangling line, will fill the ConnectablePosition extension
+        - **dangling_line_direction**: the direction of the dangling line, will fill the ConnectablePosition
+        extension, default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, **kwargs)
+
+def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
+                                 linear_model_df: _Optional[_DataFrame] = None,
+                                 non_linear_model_df: _Optional[_DataFrame] = None,
+                                 raise_exception: bool = False, reporter: _Reporter = None) -> None:
+    """
+    Creates a shunt compensator, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the shunt compensator
+        shunt_df: dataframe for shunt compensators data
+        linear_model_df: dataframe for linear model sections data
+        non_linear_model_df: dataframe for sections data
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The shunt compensator is connected to the busbar with a breaker and a closed disconnector. If the network
+        has position extensions, the shunt compensator will also be connected to every parallel busbar section with
+        an open disconnector.
+
+        Valid attributes for the shunt compensators dataframe are:
+
+        - **id**: the identifier of the new shunt
+        - **voltage_level_id**: the voltage level where the new shunt will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new shunt will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new shunt will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new shunt will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **model_type**: either LINEAR or NON_LINEAR
+        - **section_count**: the current count of connected sections
+        - **target_v**: an optional target voltage in kV
+        - **target_v**: an optional deadband for the target voltage, in kV
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **shunt_compensator_position_order**: the order of the shunt compensator, will fill the
+        ConnectablePosition extension
+        - **shunt_compensator_direction**: the direction of the shunt compensator, will fill the
+        ConnectablePosition extension, default is BOTTOM.
+
+        Valid attributes for the linear sections models are:
+
+        - **id**: the identifier of the new shunt
+        - **g_per_section**: the conductance, in Ohm, for each section
+        - **b_per_section**: the susceptance, in Ohm, for each section
+        - **max_section_count**: the maximum number of connectable sections
+
+        This dataframe must have only one row for each shunt compensator.
+
+        Valid attributes for the non-linear sections models are:
+
+        - **id**: the identifier of the new shunt
+        - **g**: the conductance, in Ohm, for this section
+        - **b**: the susceptance, in Ohm, for this section
+
+
+    """
+    if linear_model_df is None:
+        linear_model_df = pd.DataFrame()
+    if non_linear_model_df is None:
+        non_linear_model_df = pd.DataFrame()
+    dfs: _List[_Optional[_DataFrame]] = [shunt_df, linear_model_df, non_linear_model_df]
+    return create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter)
+
+def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None,
+                                      **kwargs: _ArrayLike) -> None:
+    """
+    Creates a static var compensator, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the static var compensator
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The static var compensator is connected to the busbar with a breaker and a closed disconnector. If the
+        network has position extensions, the static var compensator will also be connected to every parallel busbar
+        section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+
+        - **id**: the identifier of the new SVC
+        - **voltage_level_id**: the voltage level where the new SVC will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new SVC will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new SVC will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new SVC will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **b_max**: the maximum susceptance, in S
+        - **b_min**: the minimum susceptance, in S
+        - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+        - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
+        - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **static_var_compensator_position_order**: the order of the static var compensator, will fill the
+        ConnectablePosition extension
+        - **static_var_compensator_direction**: the direction of the static var compensator, will fill the
+        ConnectablePosition extension, default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
+
+def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a lcc converter station, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the lcc converter station
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The lcc converter station is connected to the busbar with a breaker and a closed disconnector. If the
+        network has position extensions, the lcc converter station will also be connected to every parallel busbar
+        section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+
+        - **id**: the identifier of the new station
+        - **voltage_level_id**: the voltage level where the new station will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new station will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new station will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new station will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **power_factor**: the power factor (ratio of the active power to the apparent power)
+        - **loss_factor**: the loss factor of the station
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **lcc_converter_station_position_order**: the order of the lcc converter station, will fill the
+        ConnectablePosition extension
+        - **lcc_converter_station_direction**: the direction of the lcc converter station, will fill the
+        ConnectablePosition extension, default is BOTTOM.
+
+    """
+    return create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+
+def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a vsc converter station, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the vsc converter station
+        df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The vsc converter station is connected to the busbar with a breaker and a closed disconnector. If the
+        network has position extensions, the vsc converter station will also be connected to every parallel busbar
+        section with an open disconnector.
+        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+
+        - **id**: the identifier of the new station
+        - **voltage_level_id**: the voltage level where the new station will be created.
+          The voltage level must already exist.
+        - **bus_id**: the bus where the new station will be connected,
+          if the voltage level has a bus-breaker topology kind.
+        - **connectable_bus_id**: the bus where the new station will be connectable,
+          if the voltage level has a bus-breaker topology kind.
+        - **node**: the node where the new station will be connected,
+          if the voltage level has a node-breaker topology kind.
+        - **name**: an optional human-readable name
+        - **loss_factor**: the loss factor of the new station
+        - **voltage_regulator_on**: true if the station regulated voltage
+        - **target_v**: the target voltage, in kV, when the station regulates voltage
+        - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
+        disconnector.
+        - **vsc_converter_station_position_order**: the order of the vsc converter station, will fill the
+        ConnectablePosition extension
+        - **vsc_converter_station_direction**: the direction of the vsc converter station, will fill the
+        ConnectablePosition extension, default is BOTTOM.
+
+
+    """
+    return create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+
+def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Reporter, **kwargs: _ArrayLike) -> None:
+    """
+    Creates an injection, connects it to the network on a given busbar section and creates the associated topology.
+
+    Args:
+        network: the network to which we want to add the feeder
+        dfs: Attributes as a dataframe.
+        element_type: the type of the element to be added.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+        The injection is connected to the busbar with a breaker and a closed disconnector.
+        If the network has position extensions, the injection will also be connected to every parallel busbar
+        section with an open disconnector.
+
+    """
+    metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+    c_dfs = network._get_c_dataframes(dfs, metadata, **kwargs)
+    _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model, c_dfs, element_type)
+
