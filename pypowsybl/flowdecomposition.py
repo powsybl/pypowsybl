@@ -6,7 +6,7 @@
 #
 import pypowsybl._pypowsybl as _pypowsybl
 from pypowsybl._pypowsybl import (
-    BranchSelectionStrategy,
+    XnecSelectionStrategy,
     ContingencyStrategy,
 )
 from pypowsybl.network import Network as _Network
@@ -16,7 +16,7 @@ import pandas as _pd
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
 # and add some documentation
-BranchSelectionStrategy.__module__ = __name__
+XnecSelectionStrategy.__module__ = __name__
 ContingencyStrategy.__module__ = __name__
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -41,12 +41,11 @@ class Parameters:  # pylint: disable=too-few-public-methods
             Use ``pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON = -1`` to disable filtering.
         rescale_enabled: Rescale the flow decomposition to the AC reference.
             Use``True`` to rescale flow decomposition to the AC reference.
-        branch_selection_strategy: Defines how to select branches.
+        xnec_selection_strategy: Defines how to select branches.
             Use ``ONLY_INTERCONNECTIONS`` to select only interconnections.
-            Use ``ZONE_TO_ZONE_PTDF_CRITERIA`` to select interconnections and branches that have at least a zone to zone PTDF greater than 5%.
+            Use ``INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC`` to select interconnections and branches that have at least a zone to zone PTDF greater than 5%.
         contingency_strategy: Defines how to select contingencies.
             Use ``ONLY_N_STATE`` to only work in state N.
-            Use ``AUTO_CONTINGENCY`` to create automatic contingencies based on the 10 most congested lines.
     """
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
@@ -57,7 +56,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  losses_compensation_epsilon: float = None,
                  sensitivity_epsilon: float = None,
                  rescale_enabled: bool = None,
-                 branch_selection_strategy: BranchSelectionStrategy = None,
+                 xnec_selection_strategy: XnecSelectionStrategy = None,
                  contingency_strategy: ContingencyStrategy = None):
     
         self._init_with_default_values()
@@ -71,8 +70,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.sensitivity_epsilon = sensitivity_epsilon
         if rescale_enabled is not None:
             self.rescale_enabled = rescale_enabled
-        if branch_selection_strategy is not None:
-            self.branch_selection_strategy = branch_selection_strategy
+        if xnec_selection_strategy is not None:
+            self.xnec_selection_strategy = xnec_selection_strategy
         if contingency_strategy is not None:
             self.contingency_strategy = contingency_strategy
 
@@ -83,7 +82,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.losses_compensation_epsilon = default_parameters.losses_compensation_epsilon
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
         self.rescale_enabled = default_parameters.rescale_enabled
-        self.branch_selection_strategy = default_parameters.branch_selection_strategy
+        self.xnec_selection_strategy = default_parameters.xnec_selection_strategy
         self.contingency_strategy = default_parameters.contingency_strategy
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
@@ -93,7 +92,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.losses_compensation_epsilon = self.losses_compensation_epsilon
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
         c_parameters.rescale_enabled = self.rescale_enabled
-        c_parameters.branch_selection_strategy = self.branch_selection_strategy
+        c_parameters.xnec_selection_strategy = self.xnec_selection_strategy
         c_parameters.contingency_strategy = self.contingency_strategy
         return c_parameters
 
@@ -104,7 +103,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}" \
                f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
                f", rescale_enabled={self.rescale_enabled!r}" \
-               f", branch_selection_strategy={self.branch_selection_strategy.name}" \
+               f", xnec_selection_strategy={self.xnec_selection_strategy.name}" \
                f", contingency_strategy={self.contingency_strategy.name}" \
                f")"
 
@@ -144,13 +143,13 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
 
         It outputs something like:
 
-        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
-        /                           branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
-        xnec_id                                                                                                                                                                      
-        NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
-        NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
-        ======================== ============ ==============  ===============  ========  =================  =================  =================  ================= ======== ========
+        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
+        /                           branch_id contingency_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow internal_flow loop_flow_from_be loop_flow_from_fr pst_flow
+        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
+        xnec_id                                                                                                                                                                                
+        NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
+        NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
+        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.FlowDecompositionParameters()
     res = _pypowsybl.run_flow_decomposition(network._handle, p)

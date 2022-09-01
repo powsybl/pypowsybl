@@ -1,5 +1,5 @@
 pypowsybl.flowdecomposition.Parameters
-=============================
+======================================
 
 .. currentmodule:: pypowsybl.flowdecomposition
 

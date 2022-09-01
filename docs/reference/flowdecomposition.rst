@@ -47,5 +47,5 @@ Some enum classes are used in parameters:
    :toctree: api/
    :template: autosummary/class_without_members.rst
 
-    BranchSelectionStrategy
+    XnecSelectionStrategy
     ContingencyStrategy

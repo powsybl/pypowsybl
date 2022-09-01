@@ -772,11 +772,11 @@ public final class PyPowsyblApiHeader {
         @CField("rescale_enabled")
         void setRescaleEnabled(boolean rescaleEnabled);
 
-        @CField("branch_selection_strategy")
-        int getBranchSelectionStrategy();
+        @CField("xnec_selection_strategy")
+        int getXnecSelectionStrategy();
 
-        @CField("branch_selection_strategy")
-        void setBranchSelectionStrategy(int branchSelectionStrategy);
+        @CField("xnec_selection_strategy")
+        void setXnecSelectionStrategy(int xnecSelectionStrategy);
 
         @CField("contingency_strategy")
         int getContingencyStrategy();

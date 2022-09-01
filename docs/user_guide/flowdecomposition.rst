@@ -41,10 +41,10 @@ This are toy examples that do not reflect reality.
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                                branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-    xnec_id                                                                                                                                                                      
-    NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
-    NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState              0.0       0.0              300.0                0.0         302.444049              300.0       FR       BE
+                                    branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
+    xnec_id                                                                                                                                                                                     
+    NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState       FR       BE         302.444049              300.0              0.0            0.0              300.0                0.0       0.0
+    NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE         302.444049              300.0              0.0            0.0              300.0                0.0       0.0
 
 Loop flows
 ----------
@@ -60,12 +60,12 @@ This example will highlight loop flows from the peripheral areas.
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_LOOP_FLOW_WITH_COUNTRIES.uct')))
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                                                    branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-    xnec_id                                                                                                                                                                                                         
-    BLOAD 11 FLOAD 11 1_InitialState  BLOAD 11 FLOAD 11 1   InitialState             -0.0       0.0                0.0              100.0              100.0                NaN              200.0       BE       FR
-    EGEN  11 FGEN  11 1_InitialState  EGEN  11 FGEN  11 1   InitialState              0.0       0.0                0.0              100.0                0.0                NaN              100.0       ES       FR
-    FGEN  11 BGEN  11 1_InitialState  FGEN  11 BGEN  11 1   InitialState              0.0       0.0                0.0              100.0              100.0                NaN              200.0       FR       BE
-    FLOAD 11 ELOAD 11 1_InitialState  FLOAD 11 ELOAD 11 1   InitialState             -0.0       0.0                0.0              100.0                0.0                NaN              100.0       FR       ES
+                                                branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  pst_flow
+    xnec_id                                                                                                                                                                                                                        
+    BLOAD 11 FLOAD 11 1_InitialState  BLOAD 11 FLOAD 11 1   InitialState       BE       FR                NaN              200.0             -0.0            0.0                0.0              100.0              100.0       0.0
+    EGEN  11 FGEN  11 1_InitialState  EGEN  11 FGEN  11 1   InitialState       ES       FR                NaN              100.0              0.0            0.0                0.0              100.0                0.0       0.0
+    FGEN  11 BGEN  11 1_InitialState  FGEN  11 BGEN  11 1   InitialState       FR       BE                NaN              200.0              0.0            0.0                0.0              100.0              100.0       0.0
+    FLOAD 11 ELOAD 11 1_InitialState  FLOAD 11 ELOAD 11 1   InitialState       FR       ES                NaN              100.0             -0.0            0.0                0.0              100.0                0.0       0.0
 
 On this example, the AC load flow does not converge.
 
@@ -126,10 +126,10 @@ Here are the results with neutral tap position.
 
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                                                    branch_id contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-    xnec_id                                                                                                                                                                                      
-    FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState        28.999015      -0.0          -1.999508          -1.999508          29.003009               25.0       FR       BE
-    FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState        86.997046       0.0          -5.998523          -5.998523          87.009112               75.0       FR       BE
+                                                    branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
+    xnec_id                                                                                                                                                                                                     
+    FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState       FR       BE          29.003009               25.0        28.999015            0.0          -1.999508          -1.999508      -0.0
+    FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState       FR       BE          87.009112               75.0        86.997046            0.0          -5.998523          -5.998523       0.0
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if ("flow" in c and "reference" not in c)]].sum(axis=1)
     xnec_id
     FGEN  11 BLOAD 11 1_InitialState    25.0
@@ -154,10 +154,10 @@ Here are the results with non-neutral tap position.
     BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
     >>> flow_decomposition_dataframe
-                                                branch_id contingency_id  commercial_flow    pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-    xnec_id                                                                                                                                                                                        
-    FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState        29.015809  163.652703          -2.007905          -2.007905         192.390656         188.652703       FR       BE
-    FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState       -87.047428  163.652703           6.023714           6.023714         -76.189072         -88.652703       FR       BE
+                                                branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr    pst_flow
+    xnec_id                                                                                                                                                                                                       
+    FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState       FR       BE         192.390656         188.652703        29.015809            0.0          -2.007905          -2.007905  163.652703
+    FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState       FR       BE         -76.189072         -88.652703       -87.047428            0.0           6.023714           6.023714  163.652703
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if ("flow" in c and "reference" not in c)]].sum(axis=1)
     xnec_id
     FGEN  11 BLOAD 11 1_InitialState    188.652703
@@ -197,18 +197,13 @@ The parameters can be overwriten in Python
     ... losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON, 
     ... sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON, 
     ... rescale_enabled=True, 
-    ... branch_selection_strategy=pp.flowdecomposition.BranchSelectionStrategy.ZONE_TO_ZONE_PTDF_CRITERIA, 
-    ... contingency_strategy=pp.flowdecomposition.ContingencyStrategy.AUTO_CONTINGENCY)
+    ... xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC, 
+    ... contingency_strategy=pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE)
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, parameters)
     >>> flow_decomposition_dataframe
-                                                       branch_id       contingency_id  commercial_flow  pst_flow  loop_flow_from_be  loop_flow_from_fr  ac_reference_flow  dc_reference_flow country1 country2
-    xnec_id                                                                                                                                                                                                   
-    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 12 1  BLOAD 11 BLOAD 12 2  FGEN  11 BLOAD 12 1       107.950561       0.0         -24.038123          -0.003094         -83.909345         -83.929942       BE       BE
-    BLOAD 11 BLOAD 12 2_InitialState         BLOAD 11 BLOAD 12 2         InitialState         3.008332      -0.0          -0.001333          -0.001333           3.005666         -28.996350       BE       BE
-    FGEN  11 BLOAD 11 1_FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 12 1        90.938189       0.0          25.113007          -0.003094         116.048103         115.976647       FR       BE
-    FGEN  11 BLOAD 11 1_InitialState         FGEN  11 BLOAD 11 1         InitialState        29.005675       0.0          -0.001333          -0.001333          29.003009          28.996350       FR       BE
-    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1       116.028313       0.0          -0.006067          -0.006067         116.016179         115.976642       FR       BE
-    FGEN  11 BLOAD 12 1_InitialState         FGEN  11 BLOAD 12 1         InitialState        87.017108       0.0          -0.003998          -0.003998          87.009112          86.989050       FR       BE
-
-
+                                                branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
+    xnec_id                                                                                                                                                                                                     
+    BLOAD 11 BLOAD 12 2_InitialState  BLOAD 11 BLOAD 12 2   InitialState       BE       BE           3.005666          -28.99635         3.008332      -0.001333           0.000000          -0.001333      -0.0
+    FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState       FR       BE          29.003009           28.99635        29.005675       0.000000          -0.001333          -0.001333       0.0
+    FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState       FR       BE          87.009112           86.98905        87.017108       0.000000          -0.003998          -0.003998       0.0
 

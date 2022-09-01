@@ -595,17 +595,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network", 
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("parameters"));
 
-    py::enum_<pypowsybl::BranchSelectionStrategy>(m, "BranchSelectionStrategy", "Define how to select branches")
-            .value("ONLY_INTERCONNECTIONS", pypowsybl::BranchSelectionStrategy::ONLY_INTERCONNECTIONS,
+    py::enum_<pypowsybl::XnecSelectionStrategy>(m, "XnecSelectionStrategy", "Define how to select branches")
+            .value("ONLY_INTERCONNECTIONS", pypowsybl::XnecSelectionStrategy::ONLY_INTERCONNECTIONS,
                    "Select only branches that connect two different countries")
-            .value("ZONE_TO_ZONE_PTDF_CRITERIA", pypowsybl::BranchSelectionStrategy::ZONE_TO_ZONE_PTDF_CRITERIA,
+            .value("INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC", pypowsybl::XnecSelectionStrategy::INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
                    "Select branches that are interconnections or have a maximum zone to zone PTDF greater than 5%");
 
     py::enum_<pypowsybl::ContingencyStrategy>(m, "ContingencyStrategy", "Define how to select contingencies")
             .value("ONLY_N_STATE", pypowsybl::ContingencyStrategy::ONLY_N_STATE,
-                   "Does not select extra contingencies. All XNECs are created with N state and the selected branches.")
-            .value("AUTO_CONTINGENCY", pypowsybl::ContingencyStrategy::AUTO_CONTINGENCY,
-                   "Select the 10 most congested lines and create contingencies. XNECs will be created with those contingenies and the selected branches.");
+                   "Does not select extra contingencies. All XNECs are created with N state and the selected branches.");
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
@@ -614,7 +612,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
                 .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
-                .def_readwrite("branch_selection_strategy", &pypowsybl::FlowDecompositionParameters::branch_selection_strategy)
+                .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
                 .def_readwrite("contingency_strategy", &pypowsybl::FlowDecompositionParameters::contingency_strategy);
 
 }

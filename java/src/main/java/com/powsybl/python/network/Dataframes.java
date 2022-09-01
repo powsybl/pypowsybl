@@ -12,7 +12,6 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
-import com.powsybl.flow_decomposition.XnecWithDecomposition;
 import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
@@ -411,18 +410,19 @@ public final class Dataframes {
             .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
             .strings("branch_id", XnecWithDecompositionContext::getBranchId)
             .strings("contingency_id", XnecWithDecompositionContext::getVariantId)
-            .doubles("commercial_flow", XnecWithDecomposition::getAllocatedFlow)
-            .doubles("pst_flow", XnecWithDecomposition::getPstFlow)
+            .strings("country1", XnecWithDecompositionContext::getCountry1String)
+            .strings("country2", XnecWithDecompositionContext::getCountry2String)
+            .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
+            .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
+            .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
+            .doubles("internal_flow", XnecWithDecompositionContext::getInternalFlow)
             .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
-            .doubles("ac_reference_flow", XnecWithDecomposition::getAcReferenceFlow)
-            .doubles("dc_reference_flow", XnecWithDecomposition::getDcReferenceFlow)
-            .strings("country1", XnecWithDecompositionContext::getCountry1)
-            .strings("country2", XnecWithDecompositionContext::getCountry2)
+            .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
             .build();
     }
 
     private static List<XnecWithDecompositionContext> getXnecWithDecompositions(FlowDecompositionResults flowDecompositionResults) {
-        return flowDecompositionResults.getXnecsWithDecomposition().stream()
+        return flowDecompositionResults.getDecomposedFlowMap().entrySet().stream()
             .map(XnecWithDecompositionContext::new)
             .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
             .collect(Collectors.toList());

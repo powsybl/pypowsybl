@@ -220,16 +220,15 @@ typedef struct flow_decomposition_parameters_struct {
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
     unsigned char rescale_enabled;
-    int branch_selection_strategy;
+    int xnec_selection_strategy;
     int contingency_strategy;
 } flow_decomposition_parameters;
 
 typedef enum {
     ONLY_INTERCONNECTIONS = 0,
-    ZONE_TO_ZONE_PTDF_CRITERIA,
-} branch_selection_strategy;
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+} xnec_selection_strategy;
 
 typedef enum {
     ONLY_N_STATE = 0,
-    AUTO_CONTINGENCY,
 } contingency_strategy;

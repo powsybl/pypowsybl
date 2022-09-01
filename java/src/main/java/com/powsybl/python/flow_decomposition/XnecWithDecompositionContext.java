@@ -6,7 +6,7 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.XnecWithDecomposition;
+import com.powsybl.flow_decomposition.DecomposedFlow;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.flow_decomposition.NetworkUtil;
 
@@ -18,21 +18,39 @@ import java.util.function.ToDoubleFunction;
 /**
  * @author Hugo Schindler {@literal <hugo.schindler at rte-france.com>}
  */
-public class XnecWithDecompositionContext extends XnecWithDecomposition {
-    public XnecWithDecompositionContext(XnecWithDecomposition xnecWithDecomposition) {
-        super(xnecWithDecomposition);
+public class XnecWithDecompositionContext extends DecomposedFlow {
+    private final String branchId;
+
+    public XnecWithDecompositionContext(Map.Entry<String, DecomposedFlow> entry) {
+        super(entry.getValue().getLoopFlows(),
+            entry.getValue().getInternalFlow(),
+            entry.getValue().getAllocatedFlow(),
+            entry.getValue().getPstFlow(),
+            entry.getValue().getAcReferenceFlow(),
+            entry.getValue().getDcReferenceFlow(),
+            entry.getValue().getCountry1(),
+            entry.getValue().getCountry2());
+        this.branchId = entry.getKey();
+    }
+
+    public String getId() {
+        return getBranchId() + "_" + getVariantId();
     }
 
     public String getBranchId() {
-        return getBranch().getId();
+        return branchId;
     }
 
-    public String getCountry1() {
-        return getCountryTerminal1().toString();
+    public String getVariantId() {
+        return "InitialState"; //TODO replace this. Done like this now as we do not manage contingencies for V1.0 of flow decomposition.
     }
 
-    public String getCountry2() {
-        return getCountryTerminal2().toString();
+    public String getCountry1String() {
+        return super.getCountry1().toString();
+    }
+
+    public String getCountry2String() {
+        return super.getCountry2().toString();
     }
 
     public static Map<String, ToDoubleFunction<XnecWithDecompositionContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {

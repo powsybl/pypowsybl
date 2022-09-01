@@ -124,14 +124,13 @@ enum ConnectedComponentMode {
     ALL,
 };
 
-enum BranchSelectionStrategy {
+enum XnecSelectionStrategy {
     ONLY_INTERCONNECTIONS = 0,
-    ZONE_TO_ZONE_PTDF_CRITERIA,
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
 };
 
 enum ContingencyStrategy {
     ONLY_N_STATE = 0,
-    AUTO_CONTINGENCY,
 };
 
 class SeriesMetadata {
@@ -217,7 +216,7 @@ public:
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
     bool rescale_enabled;
-    BranchSelectionStrategy branch_selection_strategy;
+    XnecSelectionStrategy xnec_selection_strategy;
     ContingencyStrategy contingency_strategy;
 };
 
