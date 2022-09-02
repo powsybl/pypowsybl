@@ -91,7 +91,7 @@ def test_flow_decomposition_parameters():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('powsybl').setLevel(logging.INFO) # If logging is enable, it freezes your terminal with `python test/test_flow_decomposition.py`, sigterm the python process...
+    logging.getLogger('powsybl').setLevel(logging.INFO)
     test_demo()
     print('\n\n\n\n')
     test_flow_decomposition_parameters()
