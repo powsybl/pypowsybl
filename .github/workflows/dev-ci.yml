@@ -142,7 +142,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-entsoe
-          ref: refs/heads/main
+          ref: refs/heads/addLoadFlowParameters
 
       - name: Build and install powsybl-entsoe with Maven
         run: mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install
@@ -152,6 +152,9 @@ jobs:
         with:
           repository: powsybl/powsybl-dependencies
           ref: refs/heads/entsoe_1.6.0_integration
+
+      - name: Build and install powsybl-dependencies with Maven
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-dependencies/pom.xml install
 
       - name: Setup Python
         uses: actions/setup-python@v2
