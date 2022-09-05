@@ -4374,40 +4374,66 @@ def get_extensions_names() -> _List[str]:
     """
     return _pp.get_extensions_names()
 
-def attach_new_line_on_line(n: Network, voltage_level_id: str, bbs_or_bus_id: str, line_id: str, percent: float = 50.0, df_new_line: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_line_on_line(n: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
+                        new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
+                        position_percent: float = 50.0, create_fictitious_substation: bool = False, fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
+                        fictitious_substation_id: str = '', fictitious_substation_name: str = '') -> None:
     """
-    Connect an existing voltage level (in practice a voltage level where we have some loads or generations) to a point of an
-    existing line. This method cuts an existing line in two, creating a fictitious voltage level between them. Then it links
-    an existing voltage level to this fictitious voltage level in creating a new line created from the given dataframe.
+    Connect an existing voltage level to an existing line through a tee point.
+
+    Connect an existing voltage level (in practice a voltage level where we have some loads or generations) to an existing
+    line through a tee point. This method cuts an existing line in two, creating a fictitious voltage level between them (an a fictitious substation if asked).
+    Then it links an existing voltage level to this fictitious voltage level by creating a new line described in the given dataframe.
+
     Args:
-           n: The network
-           voltage_level_id: The voltage level with the given ID that we want to connect to the initial line.
-           bbs_or_bus_id: The ID of the existing bus or bus bar section of the voltage level voltage_level_id where we want to connect the line
-                          that will be between this voltage level and the fictitious voltage level.
-           line_id:  The id on of the line on which to attache the new line
-           percent: When the existing line is cut, percent is equal to the ratio between the parameters of the first line
+           - **n** : the network
+           - **voltage_level_id** : the voltage level with the given ID where we want to connect to the new line.
+           - **bbs_or_bus_id** : the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+           - **new_line_id** : name of the new line
+           - **new_line_r** :
+           - **new_line_x** :
+           - **new_line_b1** :
+           - **new_line_b2** :
+           - **new_line_g1** :
+           - **new_line_g2** :
+           - **line_id** :  the id on of the line on which we want to create a tee point.
+           - **line1_id** : when the initial line is cut, the line segment at side 1 has a given ID (optional).
+           - **line1_name** : when the initial line is cut, the line segment at side 1 has a given name (optional).
+           - **line2_id** : when the initial line is cut, the line segment at side 2 has a given ID (optional).
+           - **line2_name** : when the initial line is cut, the line segment at side 2 has a given name (optional).
+           - **percent** : when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
                     and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
                     between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-           df_new_line: The new line attributes as a dataframe
-    """
-    metadata = _pp.get_network_elements_creation_dataframes_metadata(ElementType.LINE)
-    df_new_line = _adapt_df_or_kwargs(metadata[0], df_new_line, **kwargs)
-    c_df = _create_c_dataframe(df_new_line, metadata[0])
-    _pp.attach_new_line_on_line(n._handle, voltage_level_id, bbs_or_bus_id, line_id, percent, c_df)
+           - **create_fictitious_substation** : True to create the fictitious voltage level inside a fictitious substation (false by default).
+           - **fictitious_voltage_level_id** : the ID of the fictitious voltage level (optional) containing the tee point.
+           - **fictitious_voltage_level_name** : the name of the fictitious voltage level (optional) containing the tee point.
+           - **fictitious_substation_id** : the ID of the fictitious substation (optional).
+           - **fictitious_substation_name** : the name of the fictitious substation (optional).
 
-def attach_voltage_level_on_line(n: Network, voltage_level_id: str, bbs_or_bus_id: str, line_id: str, percent: float = 50.0) -> None:
     """
-    This method cuts an existing line in two lines that will be created and attach an existing voltage level at the
-    attachment point. The voltage level should be added to the network just before calling this method, and should contains
-    at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
+    _pp.create_line_on_line(n._handle, bbs_or_bus_id, new_line_id, new_line_r, new_line_x, new_line_b1,
+                            new_line_b2, new_line_g1, new_line_g2, line_id, line1_id, line1_name, line2_id, line2_name, position_percent,
+                            create_fictitious_substation, fictitious_voltage_level_id, fictitious_voltage_level_name, fictitious_substation_id,
+                            fictitious_substation_name)
 
+def connect_voltage_level_on_line(n: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
+                                  line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '') -> None:
+    """
+    Cuts an existing line in two lines and connect an existing voltage level between them.
+
+    This method cuts an existing line in two lines and connect an existing voltage level between them. The voltage level should
+    be added to the network just before calling this method, and should contains at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
     Args:
-    n: The network
-    voltage_level_id: The ID of the existing voltage level to be attached on the existing line.
-    bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be linked to at the attachment point.
-    line_id: The line id on which the voltage level is to be attached.
-    percent: When the existing line is cut, percent is equal to the ratio between the parameters of the first line
-             and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-             between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+           - **n** : the network
+           - **voltage_level_id** : the ID of the existing voltage level to be connected on the existing line.
+           - **bbs_or_bus_id** : The ID of the configured bus or bus bar section to which the lines will be connected.
+           - **line_id** : the line id on which the voltage level is to be connected.
+           - **percent** : when the existing line is cut, percent is equal to the ratio between the parameters of the first line
+                     and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+                    between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+           - **line1_id** : when the initial line is cut, the line segment at side 1 has a given ID (optional).
+           - **line1_name** : when the initial line is cut, the line segment at side 1 has a given name (optional).
+           - **line2_id** : when the initial line is cut, the line segment at side 2 has a given ID (optional).
+           - **line2_name** : when the initial line is cut, the line segment at side 2 has a given name (optional).
     """
-    _pp.attach_voltage_level_on_line(n._handle, voltage_level_id, bbs_or_bus_id, line_id, percent)
+    _pp.connect_voltage_level_on_line(n._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)

@@ -142,23 +142,11 @@
             <text class="sld-label" id="S1VL1_BBS_NW_LABEL" x="-5.0" y="-5.0">S1VL1_BBS</text>
         </g>
         <g class="sld-extern-cell" id="idEXTERN_32_0">
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,218.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-load sld-top-feeder sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
-                <rect height="9" width="16"/>
-                <line x1="0" x2="16" y1="0" y2="9"/>
-                <line x1="16" x2="0" y1="0" y2="9"/>
-                <text class="sld-label" id="LD1_N_LABEL" x="-5.0" y="-5.0">LD1</text>
-            </g>
-            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR">
+            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER">
                 <polyline points="65.0,252.0,65.0,222.0"/>
             </g>
-            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_LD1_95_DISCONNECTOR">
-                <polyline points="65.0,192.0,65.0,222.0"/>
+            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_INTERNAL_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER_95_S1VL1_95_LD1_95_BREAKER">
+                <polyline points="65.0,222.0,65.0,192.0"/>
             </g>
             <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_LD1_95_BREAKER_95_INTERNAL_95_S1VL1_95_LD1">
                 <polyline points="65.0,172.0,65.0,142.0"/>
@@ -187,12 +175,7 @@
                 <path class="sld-sw-closed" d="M1,1 V19 H19 V1z M10,5 V15"/>
                 <path class="sld-sw-open" d="M1,1 V19 H19 V1z M5,10 H15"/>
             </g>
-        </g>
-        <g class="sld-extern-cell" id="idEXTERN_32_1">
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,278.0)">
-                <circle cx="4" cy="4" r="4"/>
-            </g>
-            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_TWT_95_ONE" transform="translate(111.0,358.0)">
+            <g class="sld-node sld-hidden-node sld-fictitious sld-vl180to300-0" id="idINTERNAL_95_S1VL1_95_LD1" transform="translate(61.0,138.0)">
                 <circle cx="4" cy="4" r="4"/>
             </g>
             <g class="sld-load sld-top-feeder sld-vl180to300-0" id="idLD1" transform="translate(57.0,75.5)">
@@ -201,11 +184,13 @@
                 <line x1="16" x2="0" y1="0" y2="9"/>
                 <text class="sld-label" id="LD1_N_LABEL" x="-5.0" y="-5.0">LD1</text>
             </g>
-            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR">
+        </g>
+        <g class="sld-extern-cell" id="idEXTERN_32_1">
+            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR_95_INTERNAL_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER">
                 <polyline points="115.0,252.0,115.0,282.0"/>
             </g>
-            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER_95_INTERNAL_95_S1VL1_95_S1VL1_95_BBS_95_TWT_95_DISCONNECTOR">
-                <polyline points="115.0,312.0,115.0,282.0"/>
+            <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_INTERNAL_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER_95_S1VL1_95_TWT_95_BREAKER">
+                <polyline points="115.0,282.0,115.0,312.0"/>
             </g>
             <g class="sld-wire sld-vl180to300-0" id="_95_S1VL1_95_S1VL1_95_TWT_95_BREAKER_95_INTERNAL_95_S1VL1_95_TWT_95_ONE">
                 <polyline points="115.0,332.0,115.0,362.0"/>

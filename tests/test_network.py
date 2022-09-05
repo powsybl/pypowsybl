@@ -206,13 +206,16 @@ def test_vsc_data_frame():
     assert 'S1VL2_5' == stations['bus_breaker_bus_id']['VSC1']
     stations = n.get_vsc_converter_stations()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on',
+                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v',
+                                     'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN,  'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
+                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27,
+                                   'S1VL2', 'S1VL2_0',
                                    True],
-                                  ['VSC2', 1.1, -400, 500, 'MIN_MAX', 0, 120, False, 'VSC2', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
+                                  ['VSC2', 1.1, -400, 500, 'MIN_MAX', 0, 120, False, 'VSC2', -9.89, -120, 170.032,
+                                   'S2VL1', 'S2VL1_0',
                                    True]])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
 
@@ -224,13 +227,16 @@ def test_vsc_data_frame():
     n.update_vsc_converter_stations(stations3)
     stations = n.get_vsc_converter_stations()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VSC1', 'VSC2']),
-                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on',
+                            columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v',
+                                     'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27, 'S1VL2', 'S1VL2_0',
+                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27,
+                                   'S1VL2', 'S1VL2_0',
                                    True],
-                                  ['VSC2', 1.1, -350, 400, 'MIN_MAX', 1, 2, False, 'VSC1', -9.89, -120, 170.032, 'S2VL1', 'S2VL1_0',
+                                  ['VSC2', 1.1, -350, 400, 'MIN_MAX', 1, 2, False, 'VSC1', -9.89, -120, 170.032,
+                                   'S2VL1', 'S2VL1_0',
                                    True]])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
     stations = n.get_vsc_converter_stations(attributes=['bus_breaker_bus_id', 'node'])
@@ -786,20 +792,24 @@ def test_batteries():
     df = n.get_batteries(all_attributes=True)
     assert not df['fictitious']['BAT']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p',
+                                     'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 9999.99, -9999.99, -9999.99, 9999.99, 'MIN_MAX', 9999.99, 9999.99, -605, -225,
                                    NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 200, -200, NaN, NaN, 'CURVE', 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
+                                  ['', 200, -200, NaN, NaN, 'CURVE', 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
+                                   True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
     n.update_batteries(pd.DataFrame(index=['BAT2'], columns=['target_p', 'target_q'], data=[[50, 100]]))
     n.update_batteries(pd.DataFrame(index=['BAT'], columns=['min_q', 'max_q'], data=[[-500, 500]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
-                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',
+                            columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p',
+                                     'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 9999.99, -9999.99, -500, 500, 'MIN_MAX', 9999.99, 9999.99, -605, -225, NaN,
                                    'VLBAT', 'VLBAT_0', True],
-                                  ['', 200, -200, NaN, NaN, 'CURVE', 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0', True]])
+                                  ['', 200, -200, NaN, NaN, 'CURVE', 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
+                                   True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
 
 
@@ -929,7 +939,7 @@ def test_voltage_levels():
                                   ['', 'P2', 150, NaN, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_voltage_levels(), check_dtype=False)
     n.update_voltage_levels(id=['VLGEN', 'VLLOAD'], nominal_v=[25, 151], high_voltage_limit=[50, 175],
-                              low_voltage_limit=[20, 125])
+                            low_voltage_limit=[20, 125])
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
                             columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
@@ -1174,7 +1184,7 @@ def test_dataframe_attributes_filtering():
     pd.testing.assert_frame_equal(expected_empty, buses_empty, check_dtype=False)
 
     buses_all_attributes = n.get_buses(all_attributes=True)
-    expected_all_attributes =  pd.DataFrame(
+    expected_all_attributes = pd.DataFrame(
         index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                  'voltage_level_id', 'fictitious'],
@@ -1485,6 +1495,7 @@ def test_write_svg_file(tmpdir):
     net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
     assert exists(data.join('test_sld.svg'))
 
+
 def test_attributes_order():
     n = pp.network.create_four_substations_node_breaker_network()
     assert ['target_p', 'energy_source'] == list(n.get_generators(attributes=['target_p', 'energy_source']).columns)
@@ -1497,7 +1508,7 @@ def test_load_network_with_report():
     reporter = rp.Reporter()
     report1 = str(reporter)
     assert len(report1) > 0
-    n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter = reporter)
+    n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
@@ -1512,7 +1523,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     reporter = rp.Reporter()
     report1 = str(reporter)
     assert len(report1) > 0
-    n = pp.network.load_from_string('simple-eu.uct', file_content, reporter = reporter)
+    n = pp.network.load_from_string('simple-eu.uct', file_content, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) > len(report1)
 
@@ -1523,47 +1534,78 @@ def test_dump_to_string_with_report():
     report1 = str(reporter)
     assert len(report1) > 0
     xml = bat_path.read_text()
-    n = pp.network.load(str(bat_path), reporter = reporter)
+    n = pp.network.load(str(bat_path), reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
-def test_attach_line_on_line():
+
+def test_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    df = pd.DataFrame(index=['new_line'], columns=['id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
-                      data=[['new_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0]])
-    pp.network.attach_new_line_on_line(n, "VLHV1", "NHV1", "NHV1_NHV2_1", 75.0, df)
-    retrieved_newline = n.get_lines(id=['new_line'])
-    assert retrieved_newline.loc['new_line', "r"] == 5.0
-    assert retrieved_newline.loc['new_line', "x"] == 50.0
-    assert retrieved_newline.loc['new_line', "g1"] == 2.0
-    assert retrieved_newline.loc['new_line', "g2"] == 3.0
-    assert retrieved_newline.loc['new_line', "b1"] == 4.0
-    assert retrieved_newline.loc['new_line', "b2"] == 5.0
-    assert retrieved_newline.loc['new_line', "connected1"]
-    assert retrieved_newline.loc['new_line', "connected2"]
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VLTEST',
+        'substation_id': 'P3',
+        'high_voltage_limit': 400,
+        'low_voltage_limit': 370,
+        'nominal_v': 380,
+        'topology_kind': 'BUS_BREAKER'
+    }]))
+    assert 'VLTEST' in n.get_voltage_levels().index
+    assert n.get_voltage_levels().loc['VLTEST']['substation_id'] == 'P3'
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    assert 'VLTEST_0' in n.get_bus_breaker_topology('VLTEST').buses.index
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    generators = n.get_generators(all_attributes=True)
+    assert 'GEN3' in generators.index
+    gen3 = generators.loc['GEN3']
+    assert gen3['voltage_level_id'] == 'VLTEST'
+    assert gen3['bus_breaker_bus_id'] == 'VLTEST_0'
+    assert gen3['target_p'] == 100
+    assert gen3['bus_id'] == ''
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0)
+    retrieved_newline = n.get_lines().loc['test_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["b1"] == 2.0
+    assert retrieved_newline["b2"] == 3.0
+    assert retrieved_newline["g1"] == 4.0
+    assert retrieved_newline["g2"] == 5.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
 
     #Check splitted line percent
-    retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
-    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "r"] == 2.25
+    retrieved_splittedline1 = n.get_lines().loc['NHV1_NHV2_1_1']
+    assert retrieved_splittedline1["r"] == 2.25
 
-    retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
-    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+    retrieved_splittedline2 = n.get_lines().loc['NHV1_NHV2_1_2']
+    assert retrieved_splittedline2["r"] == 0.75
 
-def test_attach_voltage_level_on_line():
+    generators = n.get_generators(all_attributes=True)
+    assert 'GEN3' in generators.index
+    assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
+
+def test_connect_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
     n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
-    pp.network.attach_voltage_level_on_line(n, "N_VL", "BBS", "NHV1_NHV2_1", 75.0)
+    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
 
     retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
-    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"voltage_level1_id"] == "VLHV1"
-    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"voltage_level2_id"] == "N_VL"
-    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"r"] == 2.25
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level2_id"] == "N_VL"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "r"] == 2.25
 
     retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
-    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"voltage_level1_id"] == "N_VL"
-    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"voltage_level2_id"] == "VLHV2"
-    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"r"] == 0.75
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
 
 if __name__ == '__main__':
     unittest.main()

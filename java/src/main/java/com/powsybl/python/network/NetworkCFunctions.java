@@ -30,8 +30,10 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.export.ExportersLoader;
 import com.powsybl.iidm.export.ExportersServiceLoader;
 import com.powsybl.iidm.import_.*;
-import com.powsybl.iidm.modification.topology.AttachNewLineOnLine;
-import com.powsybl.iidm.modification.topology.AttachVoltageLevelOnLine;
+import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLine;
+import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLineBuilder;
+import com.powsybl.iidm.modification.topology.CreateLineOnLine;
+import com.powsybl.iidm.modification.topology.CreateLineOnLineBuilder;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.CTypeUtil;
@@ -60,7 +62,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -680,9 +681,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "removeExtensions")
     public static void removeExtensions(IsolateThread thread, ObjectHandle networkHandle,
-                                                                     CCharPointer namePtr,
-                                                                     CCharPointerPointer idsPtr, int idsCount,
-                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                        CCharPointer namePtr,
+                                        CCharPointerPointer idsPtr, int idsCount,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String name = CTypeUtil.toString(namePtr);
@@ -708,9 +709,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "createExtensions")
     public static void createExtensions(IsolateThread thread, ObjectHandle networkHandle,
-                                       CCharPointer namePtr,
-                                       DataframeArrayPointer cDataframes,
-                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+                                        CCharPointer namePtr,
+                                        DataframeArrayPointer cDataframes,
+                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String name = CTypeUtil.toString(namePtr);
@@ -867,50 +868,118 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "attachNewLineOnLine")
-    public static void attachNewLineOnLine(IsolateThread thread, ObjectHandle networkHandle,
-                                           CCharPointer voltageLevelId,
-                                           CCharPointer bbsIdBusId,
-                                           CCharPointer lineId,
-                                           double percent,
-                                           DataframePointer cDataframeLine,
-                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createLineOnLine")
+    public static void createLineOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                        CCharPointer bbsIdBusId,
+                                        CCharPointer newLineId,
+                                        double newLineR,
+                                        double newLineX,
+                                        double newLineB1,
+                                        double newLineB2,
+                                        double newLineG1,
+                                        double newLineG2,
+                                        CCharPointer lineId,
+                                        CCharPointer line1Id,
+                                        CCharPointer line1Name,
+                                        CCharPointer line2Id,
+                                        CCharPointer line2Name,
+                                        double positionPercent,
+                                        boolean createFictitiousSubstation,
+                                        CCharPointer fictitiousVoltageLevelId,
+                                        CCharPointer fictitiousVoltageLevelName,
+                                        CCharPointer fictitiousSubstationId,
+                                        CCharPointer fictitiousSubstationName,
+                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
             String bbsIdBusIdStr = CTypeUtil.toString(bbsIdBusId);
+
             String lineIdStr = CTypeUtil.toString(lineId);
+            String fictitiousVoltageLevelIdStr = CTypeUtil.toString(fictitiousVoltageLevelId).equals("") ? null : CTypeUtil.toString(fictitiousVoltageLevelId);
+            String fictitiousVoltageLevelNameStr = CTypeUtil.toString(fictitiousVoltageLevelName).equals("") ? null : CTypeUtil.toString(fictitiousVoltageLevelName);
+            String fictitiousSubstationIdStr = CTypeUtil.toString(fictitiousSubstationId).equals("") ? null : CTypeUtil.toString(fictitiousSubstationId);
+            String fictitiousSubstationNameStr = CTypeUtil.toString(fictitiousSubstationName).equals("") ? null : CTypeUtil.toString(fictitiousSubstationName);
+            String line1IdStr = CTypeUtil.toString(line1Id).equals("") ? null : CTypeUtil.toString(line1Id);
+            String line1NameStr = CTypeUtil.toString(line1Name).equals("") ? null : CTypeUtil.toString(line1Name);
+            String line2IdStr = CTypeUtil.toString(line2Id).equals("") ? null : CTypeUtil.toString(line2Id);
+            String line2NameStr = CTypeUtil.toString(line2Name).equals("") ? null : CTypeUtil.toString(line2Name);
+            String newLineIdStr = CTypeUtil.toString(newLineId);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String voltageLevelIdStr;
+            Identifiable identifiable = network.getIdentifiable(bbsIdBusIdStr);
+            if (identifiable instanceof Bus) {
+                voltageLevelIdStr = ((Bus) identifiable).getVoltageLevel().getId();
+            } else if (identifiable instanceof BusbarSection) {
+                voltageLevelIdStr = ((BusbarSection) identifiable).getTerminal().getVoltageLevel().getId();
+            } else {
+                throw new PowsyblException("bbs_id_bus_id must be a busbar or a bus");
+            }
             Line line = network.getLine(lineIdStr);
-            UpdatingDataframe df = createDataframe(cDataframeLine);
-            LineAdder adder = network.newLine();
-            applyIfPresent(df.getStrings("id"), 0, adder::setId);
-            applyIfPresent(df.getDoubles("b1"), 0, adder::setB1);
-            applyIfPresent(df.getDoubles("b2"), 0, adder::setB2);
-            applyIfPresent(df.getDoubles("g1"), 0, adder::setG1);
-            applyIfPresent(df.getDoubles("g2"), 0, adder::setG2);
-            applyIfPresent(df.getDoubles("r"), 0, adder::setR);
-            applyIfPresent(df.getDoubles("x"), 0, adder::setX);
-            AttachNewLineOnLine modification = new AttachNewLineOnLine(voltageLevelIdStr, bbsIdBusIdStr, line, adder);
-            modification.setPercent(percent);
-            modification.apply(network);
+            LineAdder adder = network.newLine()
+                    .setId(newLineIdStr)
+                    .setR(newLineR)
+                    .setB1(newLineB1)
+                    .setB2(newLineB2)
+                    .setX(newLineX)
+                    .setG1(newLineG1)
+                    .setG2(newLineG2);
+            CreateLineOnLine createLineOnLine = new CreateLineOnLineBuilder()
+                    .withPercent(positionPercent)
+                    .withVoltageLevelId(voltageLevelIdStr)
+                    .withBusbarSectionOrBusId(bbsIdBusIdStr)
+                    .withFictitiousVoltageLevelId(fictitiousVoltageLevelIdStr)
+                    .withFictitiousVoltageLevelName(fictitiousVoltageLevelNameStr)
+                    .withCreateFictitiousSubstation(createFictitiousSubstation)
+                    .withFictitiousSubstationId(fictitiousSubstationIdStr)
+                    .withFictitiousSubstationName(fictitiousSubstationNameStr)
+                    .withLine1Id(line1IdStr)
+                    .withLine1Name(line1NameStr)
+                    .withLine2Id(line2IdStr)
+                    .withLine2Name(line2NameStr)
+                    .withLine(line)
+                    .withLineAdder(adder)
+                    .build();
+            createLineOnLine.apply(network);
         });
     }
 
-    @CEntryPoint(name = "attachVoltageLevelOnLine")
-    public static void attachVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
-                                           CCharPointer voltageLevelId,
-                                           CCharPointer bbsIdBusId,
-                                           CCharPointer lineId,
-                                           double percent,
-                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "connectVoltageLevelOnLine")
+    public static void connectVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                                 CCharPointer bbsIdBusId,
+                                                 CCharPointer lineId,
+                                                 CCharPointer line1Id,
+                                                 CCharPointer line1Name,
+                                                 CCharPointer line2Id,
+                                                 CCharPointer line2Name,
+                                                 double positionPercent,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
             String bbsIdBusIdStr = CTypeUtil.toString(bbsIdBusId);
             String lineIdStr = CTypeUtil.toString(lineId);
+            String line1IdStr = CTypeUtil.toString(line1Id).equals("") ? null : CTypeUtil.toString(line1Id);
+            String line1NameStr = CTypeUtil.toString(line1Name).equals("") ? null : CTypeUtil.toString(line1Name);
+            String line2IdStr = CTypeUtil.toString(line2Id).equals("") ? null : CTypeUtil.toString(line2Id);
+            String line2NameStr = CTypeUtil.toString(line2Name).equals("") ? null : CTypeUtil.toString(line2Name);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Identifiable identifiable = network.getIdentifiable(bbsIdBusIdStr);
+            String voltageLevelIdStr;
+            if (identifiable instanceof Bus) {
+                voltageLevelIdStr = ((Bus) identifiable).getVoltageLevel().getId();
+            } else if (identifiable instanceof BusbarSection) {
+                voltageLevelIdStr = ((BusbarSection) identifiable).getTerminal().getVoltageLevel().getId();
+            } else {
+                throw new PowsyblException("bbs_id_bus_id must be a busbar or a bus");
+            }
             Line line = network.getLine(lineIdStr);
-            AttachVoltageLevelOnLine modification = new AttachVoltageLevelOnLine(voltageLevelIdStr, bbsIdBusIdStr, line);
-            modification.setPercent(percent);
+            ConnectVoltageLevelOnLine modification = new ConnectVoltageLevelOnLineBuilder()
+                    .withLine1Id(line1IdStr)
+                    .withLine1Name(line1NameStr)
+                    .withLine2Id(line2IdStr)
+                    .withLine2Name(line2NameStr)
+                    .withLine(line)
+                    .withBusbarSectionOrBusId(bbsIdBusIdStr)
+                    .withVoltageLevelId(voltageLevelIdStr)
+                    .withPercent(positionPercent)
+                    .build();
             modification.apply(network);
         });
     }

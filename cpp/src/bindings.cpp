@@ -592,8 +592,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
-    m.def("attach_new_line_on_line", &pypowsybl::attachNewLineOnLine, "attach new line on line", py::arg("network"), py::arg("voltage_level_id"), py::arg("bbs_or_bus_id"), py::arg("line_id"), py::arg("percent"), py::arg("dataframe"));
+    m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),  
+            py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"), 
+            py::arg("line_id"), py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"),
+            py::arg("create_fictitious_substation"), py::arg("fictitious_voltage_level_id"), py::arg("fictitious_voltage_level_name"), py::arg("fictitious_substation_id"), py::arg("fictitious_substation_name"));
 
-    m.def("attach_voltage_level_on_line", &pypowsybl::attachVoltageLevelOnLine, "attach new line on line", py::arg("network"), py::arg("voltage_level_id"), py::arg("bbs_or_bus_id"), py::arg("line_id"), py::arg("percent"));
+    m.def("connect_voltage_level_on_line", &pypowsybl::connectVoltageLevelOnLine, "connect a voltage level on a line", py::arg("network"), py::arg("bbs_or_bus_id"), py::arg("line_id"),
+            py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"));
 
 }
