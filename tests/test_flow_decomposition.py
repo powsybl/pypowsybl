@@ -84,10 +84,6 @@ def test_flow_decomposition_parameters():
             parameters = pp.flowdecomposition.Parameters()
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
-            print(parameters)
-
-            df = pp.flowdecomposition.run(net, parameters)
-            print(df)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
