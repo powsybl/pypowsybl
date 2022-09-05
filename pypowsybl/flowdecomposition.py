@@ -11,6 +11,7 @@ from pypowsybl._pypowsybl import (
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
+import pypowsybl.loadflow
 import pandas as _pd
 
 # enforcing some class metadata on classes imported from C extension,
@@ -107,13 +108,14 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", contingency_strategy={self.contingency_strategy.name}" \
                f")"
 
-def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
+def run(network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
     """
     Runs a flow decomposition.
     
     Args:
-        network:    Network on which the flow decomposition will be computed
-        parameter:  Flow decomposition parameters
+        network:                        Network on which the flow decomposition will be computed
+        flow_decomposition_parameters:  Flow decomposition parameters
+        load_flow_parameters:           Load flow parameters
     
     Returns:
         A dataframe with decomposed flow for each relevant line
@@ -151,7 +153,8 @@ def run(network: _Network, parameters: Parameters = None) -> _pd.DataFrame:
         NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
         ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
     """
-    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.FlowDecompositionParameters()
-    res = _pypowsybl.run_flow_decomposition(network._handle, p)
+    fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()
+    lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
+    res = _pypowsybl.run_flow_decomposition(network._handle, fd_p, lf_p)
     return create_data_frame_from_series_array(res)
 

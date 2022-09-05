@@ -443,7 +443,7 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& parameters);
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 }

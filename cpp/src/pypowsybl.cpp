@@ -1037,9 +1037,10 @@ std::string jsonReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::jsonReport, reporterModel));
 }
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& parameters) {
-    auto c_parameters = parameters.to_c_struct();
-    return new SeriesArray(callJava<array*>(::runFlowDecomposition, network, c_parameters.get()));
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
+    auto c_flow_decomposition_parameters = flow_decomposition_parameters.to_c_struct();
+    auto c_load_flow_parameters  = load_flow_parameters.to_c_struct();
+    return new SeriesArray(callJava<array*>(::runFlowDecomposition, network, c_flow_decomposition_parameters.get(), c_load_flow_parameters.get()));
 }
 
 FlowDecompositionParameters* createFlowDecompositionParameters() {

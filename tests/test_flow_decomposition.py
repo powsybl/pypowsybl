@@ -49,7 +49,7 @@ def test_flow_decomposition_run_full_integration():
         rescale_enabled=True,
         xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
         contingency_strategy=pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE)
-    df = pp.flowdecomposition.run(net, parameters=parameters)
+    df = pp.flowdecomposition.run(net, flow_decomposition_parameters=parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
@@ -87,7 +87,7 @@ def test_flow_decomposition_parameters():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('powsybl').setLevel(logging.INFO)
+    logging.getLogger('powsybl').setLevel(logging.DEBUG)
     test_demo()
     print('\n\n\n\n')
     test_flow_decomposition_parameters()

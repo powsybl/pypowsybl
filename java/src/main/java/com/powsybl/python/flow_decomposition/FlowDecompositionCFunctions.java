@@ -10,8 +10,10 @@ import com.powsybl.flow_decomposition.FlowDecompositionComputer;
 import com.powsybl.flow_decomposition.FlowDecompositionParameters;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.LoadFlowProvider;
+import com.powsybl.python.commons.*;
+import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -20,6 +22,8 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.powsybl.python.commons.Util.doCatch;
 
@@ -29,6 +33,8 @@ import static com.powsybl.python.commons.Util.doCatch;
 @CContext(Directives.class)
 public final class FlowDecompositionCFunctions {
 
+    public static final boolean DC = true;
+
     private FlowDecompositionCFunctions() {
     }
 
@@ -36,13 +42,20 @@ public final class FlowDecompositionCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> runFlowDecomposition(IsolateThread thread,
                                                                                                          ObjectHandle networkHandle,
                                                                                                          PyPowsyblApiHeader.FlowDecompositionParametersPointer flowDecompositionParametersPtr,
+                                                                                                         PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            FlowDecompositionParameters parameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
 
-            FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(parameters);
+            String providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+            logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
+            LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(DC, loadFlowParametersPtr, loadFlowProvider);
+
+            FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
+            FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(flowDecompositionParameters, loadFlowParameters);
             FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(network);
+
             return Dataframes.createCDataframe(Dataframes.flowDecompositionMapper(flowDecompositionResults.getZoneSet()), flowDecompositionResults);
         });
     }
@@ -70,5 +83,9 @@ public final class FlowDecompositionCFunctions {
         paramsPtr.setXnecSelectionStrategy(parameters.getXnecSelectionStrategy().ordinal());
         paramsPtr.setContingencyStrategy(0);
         return paramsPtr;
+    }
+
+    private static Logger logger() {
+        return LoggerFactory.getLogger(CommonCFunctions.class);
     }
 }

@@ -593,7 +593,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network", 
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("parameters"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
 
     py::enum_<pypowsybl::XnecSelectionStrategy>(m, "XnecSelectionStrategy", "Define how to select branches")
             .value("ONLY_INTERCONNECTIONS", pypowsybl::XnecSelectionStrategy::ONLY_INTERCONNECTIONS,
