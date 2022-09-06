@@ -221,6 +221,7 @@ typedef struct flow_decomposition_parameters_struct {
     double sensitivity_epsilon;
     unsigned char rescale_enabled;
     int xnec_selection_strategy;
+    unsigned char dc_fallback_enabled_after_ac_divergence;
     int contingency_strategy;
 } flow_decomposition_parameters;
 

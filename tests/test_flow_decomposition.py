@@ -73,6 +73,7 @@ def test_flow_decomposition_parameters():
         'sensitivity_epsilon': [-1, 1e-3, 1e-5],
         'rescale_enabled': [True, False],
         'xnec_selection_strategy': [pp.flowdecomposition.XnecSelectionStrategy.ONLY_INTERCONNECTIONS, pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC],
+        'dc_fallback_enabled_after_ac_divergence': [True, False],
         'contingency_strategy': [pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE],
     }
 

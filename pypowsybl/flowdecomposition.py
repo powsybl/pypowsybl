@@ -31,8 +31,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.flowdecomposition
 
     Args:
-        save_intermediates: Parameter only implemented in Java.
-            Use``True`` to save intermediates results in the Java flow decomposition object.
+        save_intermediates: Parameter only implemented in Java. This will not work in Python.
+            Use ``True`` to save intermediates results in the Java flow decomposition object.
         enable_losses_compensation: Enable losses compensation.
             Use ``True`` to enable AC losses compensation on the DC network.
         losses_compensation_epsilon: Filter loads from the losses compensation.
@@ -46,6 +46,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         xnec_selection_strategy: Defines how to select branches.
             Use ``ONLY_INTERCONNECTIONS`` to select only interconnections.
             Use ``INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC`` to select interconnections and branches that have at least a zone to zone PTDF greater than 5%.
+        dc_fallback_enabled_after_ac_divergence: Defines the fallback bahavior after an AC divergence
+            Use ``True`` to run DC loadflow if an AC loadflow diverges (default).
+            Use ``False`` to throw an exception if an AC loadflow diverges.
         contingency_strategy: Defines how to select contingencies.
             Use ``ONLY_N_STATE`` to only work in state N.
     """
@@ -59,6 +62,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  sensitivity_epsilon: float = None,
                  rescale_enabled: bool = None,
                  xnec_selection_strategy: XnecSelectionStrategy = None,
+                 dc_fallback_enabled_after_ac_divergence: bool = None,
                  contingency_strategy: ContingencyStrategy = None):
 
         self._init_with_default_values()
@@ -74,6 +78,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.rescale_enabled = rescale_enabled
         if xnec_selection_strategy is not None:
             self.xnec_selection_strategy = xnec_selection_strategy
+        if dc_fallback_enabled_after_ac_divergence:
+            self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
         if contingency_strategy is not None:
             self.contingency_strategy = contingency_strategy
 
@@ -85,6 +91,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
         self.rescale_enabled = default_parameters.rescale_enabled
         self.xnec_selection_strategy = default_parameters.xnec_selection_strategy
+        self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
         self.contingency_strategy = default_parameters.contingency_strategy
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
@@ -95,6 +102,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
         c_parameters.rescale_enabled = self.rescale_enabled
         c_parameters.xnec_selection_strategy = self.xnec_selection_strategy
+        c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
         c_parameters.contingency_strategy = self.contingency_strategy
         return c_parameters
 
@@ -106,6 +114,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
                f", rescale_enabled={self.rescale_enabled!r}" \
                f", xnec_selection_strategy={self.xnec_selection_strategy.name}" \
+               f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
                f", contingency_strategy={self.contingency_strategy.name}" \
                f")"
 

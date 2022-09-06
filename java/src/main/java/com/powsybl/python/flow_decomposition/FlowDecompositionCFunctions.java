@@ -81,6 +81,7 @@ public final class FlowDecompositionCFunctions {
         paramsPtr.setSensitivityEpsilon(parameters.getSensitivityEpsilon());
         paramsPtr.setRescaleEnabled(parameters.isRescaleEnabled());
         paramsPtr.setXnecSelectionStrategy(parameters.getXnecSelectionStrategy().ordinal());
+        paramsPtr.setDcFallbackEnabledAfterAcDivergence(parameters.isDcFallbackEnabledAfterAcDivergence());
         paramsPtr.setContingencyStrategy(0);
         return paramsPtr;
     }

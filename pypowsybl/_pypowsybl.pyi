@@ -386,6 +386,7 @@ class FlowDecompositionParameters:
     sensitivity_epsilon: float
     rescale_enabled: bool
     xnec_selection_strategy: XnecSelectionStrategy
+    dc_fallback_enabled_after_ac_divergence: bool
     contingency_strategy: ContingencyStrategy
     def __init__(self) -> None: ...
 

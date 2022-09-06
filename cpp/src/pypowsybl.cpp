@@ -392,6 +392,7 @@ FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_para
     sensitivity_epsilon = (float) src->sensitivity_epsilon;
     rescale_enabled = (bool) src->rescale_enabled;
     xnec_selection_strategy = static_cast<XnecSelectionStrategy>(src->xnec_selection_strategy);
+    dc_fallback_enabled_after_ac_divergence = (bool) src->dc_fallback_enabled_after_ac_divergence;
     contingency_strategy = static_cast<ContingencyStrategy>(src->contingency_strategy);
 }
 
@@ -403,6 +404,7 @@ std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c
     res->sensitivity_epsilon = sensitivity_epsilon;
     res->rescale_enabled = (unsigned char) rescale_enabled;
     res->xnec_selection_strategy = xnec_selection_strategy;
+    res->dc_fallback_enabled_after_ac_divergence = (unsigned char) dc_fallback_enabled_after_ac_divergence;
     res->contingency_strategy = contingency_strategy;
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<flow_decomposition_parameters>(res, [](flow_decomposition_parameters* ptr){

@@ -778,6 +778,12 @@ public final class PyPowsyblApiHeader {
         @CField("xnec_selection_strategy")
         void setXnecSelectionStrategy(int xnecSelectionStrategy);
 
+        @CField("dc_fallback_enabled_after_ac_divergence")
+        boolean isDcFallbackEnabledAfterAcDivergence();
+
+        @CField("dc_fallback_enabled_after_ac_divergence")
+        void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
+
         @CField("contingency_strategy")
         int getContingencyStrategy();
 

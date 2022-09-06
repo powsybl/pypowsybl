@@ -613,6 +613,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
                 .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
                 .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
+                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence)
                 .def_readwrite("contingency_strategy", &pypowsybl::FlowDecompositionParameters::contingency_strategy);
 
 }
