@@ -4,7 +4,9 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import pypowsybl._pypowsybl as _pypowsybl
+import pandas as _pd
+
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     XnecSelectionStrategy,
     ContingencyStrategy,
@@ -12,7 +14,6 @@ from pypowsybl._pypowsybl import (
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
 import pypowsybl.loadflow
-import pandas as _pd
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -51,7 +52,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
 
-    def __init__(self, 
+    def __init__(self,
                  save_intermediates: bool = None,
                  enable_losses_compensation: bool = None,
                  losses_compensation_epsilon: float = None,
@@ -59,7 +60,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  rescale_enabled: bool = None,
                  xnec_selection_strategy: XnecSelectionStrategy = None,
                  contingency_strategy: ContingencyStrategy = None):
-    
+
         self._init_with_default_values()
         if save_intermediates is not None:
             self.save_intermediates = save_intermediates
@@ -111,12 +112,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
 def run(network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
     """
     Runs a flow decomposition.
-    
+
     Args:
         network:                        Network on which the flow decomposition will be computed
         flow_decomposition_parameters:  Flow decomposition parameters
         load_flow_parameters:           Load flow parameters
-    
+
     Returns:
         A dataframe with decomposed flow for each relevant line
 
@@ -148,7 +149,7 @@ def run(network: _Network, flow_decomposition_parameters: Parameters = None, loa
         ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
         /                           branch_id contingency_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow internal_flow loop_flow_from_be loop_flow_from_fr pst_flow
         ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
-        xnec_id                                                                                                                                                                                
+        xnec_id
         NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
         NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
         ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
@@ -157,4 +158,3 @@ def run(network: _Network, flow_decomposition_parameters: Parameters = None, loa
     lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
     res = _pypowsybl.run_flow_decomposition(network._handle, fd_p, lf_p)
     return create_data_frame_from_series_array(res)
-
