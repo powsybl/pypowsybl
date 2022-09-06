@@ -29,7 +29,7 @@ public final class FlowDecompositionCUtils {
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
             .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
-            .setDcFallbackEnableAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
+            .setDcFallbackEnabledAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
             .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()]);
     }
 }
