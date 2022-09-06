@@ -90,7 +90,8 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.14
 - C++11 compiler
-- Python >= 3.7
+- Python >= 3.7 for Linux, Windows and MacOS amd64
+- Python >= 3.8 for MacOS arm64
 - [GraalVM 22.2.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-22.2.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 To build from sources and install PyPowSyBl package:
