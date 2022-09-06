@@ -78,7 +78,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.rescale_enabled = rescale_enabled
         if xnec_selection_strategy is not None:
             self.xnec_selection_strategy = xnec_selection_strategy
-        if dc_fallback_enabled_after_ac_divergence:
+        if dc_fallback_enabled_after_ac_divergence is not None:
             self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
         if contingency_strategy is not None:
             self.contingency_strategy = contingency_strategy
