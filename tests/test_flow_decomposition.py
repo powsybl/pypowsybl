@@ -48,6 +48,7 @@ def test_flow_decomposition_run_full_integration():
         sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON,
         rescale_enabled=True,
         xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+        dc_fallback_enabled_after_ac_divergence=True,
         contingency_strategy=pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE)
     df = pp.flowdecomposition.run(net, flow_decomposition_parameters=parameters)
     expected = pd.DataFrame.from_records(
