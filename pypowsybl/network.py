@@ -4438,3 +4438,82 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
         line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
+
+
+def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
+    """
+    Gets the order positions of every connectable of a given voltage level in a dataframe.
+
+    Args:
+        network: the network containing the voltage level.
+        voltage_level_id: id of the voltage level for which we want to get the order positions.
+
+    Note:
+        About order positions: order positions represent the relative positions of every connectable
+        compared to each other on a busbar section. It is filled in the ConnectablePosition extension
+        under Order. Each connectable has as many positions as it has feeders. In this method, we get all the
+        taken order positions by every connectable at the scale of a voltage level.
+    """
+    series_array = _pp.get_connectables_order_positions(network._handle, voltage_level_id)
+    return _create_data_frame_from_series_array(series_array).sort_values(by=['order_position'])
+
+
+def get_unused_order_positions_before(network: Network, busbar_section_id: str) -> _Optional[pd.Interval]:
+    """
+    Gets all the available order positions before a busbar section.
+
+    Args:
+        network: the network in which the busbar section is.
+        busbar_section_id: the id of the busbar section from which we want to get all the available positions before.
+
+    Notes:
+        Gets all the available positions between the lowest used position of a given busbar section and the
+        highest used position of the busbar section with the section index equal to the section index of the given
+        busbar section minus one. The result is an interval that includes the lowest available value and the
+        highest available value.
+        About order positions: order positions represent the relative positions of every connectable
+        compared to each other on a busbar section. It is filled in the ConnectablePosition extension
+        under Order. Each connectable has as many positions as it has feeders.
+
+    Examples:
+        Let's take two busbar sections. The first one, bbs1, has 3 feeders with taken order positions 5,6,7. The
+        second, bbs2 has two feeder with taken order positions 11 and 12.
+        Then, get_unused_order_positions_before(bbs1) will return [-infinity, 4] as an interval and
+        get_unused_order_positions_before(bbs2) will return [8,10] as an interval.
+
+    """
+    positions = _pp.get_unused_order_positions(network._handle, busbar_section_id, 'BEFORE')
+    if len(positions) == 0:
+        return None
+    else:
+        return pd.Interval(left=positions[0], right=positions[1], closed='both')
+
+
+def get_unused_order_positions_after(network: Network, busbar_section_id: str) -> _Optional[pd.Interval]:
+    """
+    Gets all the available order positions after a busbar section.
+
+    Args:
+        network: the network in which the busbar section is.
+        busbar_section_id: the id of the busbar section from which we want to get all the available positions after.
+
+    Notes:
+        Gets all the available positions between the highest used position of a given busbar section and the
+        lowest used position of the busbar section with the section index equal to the section index of the given
+        busbar section plus one. The result is a list with the lowest available value as the first integer and the
+        highest available value as the second integer.
+        About order positions: order positions represent the relative positions of every connectable
+        compared to each other on a busbar section. It is filled in the ConnectablePosition extension
+        under Order. Each connectable has as many positions as it has feeders.
+
+    Examples:
+        Let's take two busbar sections. The first one, bbs1, has 3 feeders with taken order positions 5,6,7. The
+        second, bbs2 has two feeder with taken order positions 11 and 12.
+        Then, get_unused_order_positions_after(bbs1) will return [8, 10] as an interval and
+        get_unused_order_positions_before(bbs2) will return [13, +infinity] as an interval.
+    """
+    positions = _pp.get_unused_order_positions(network._handle, busbar_section_id, 'AFTER')
+    if len(positions) == 0:
+        return None
+    else:
+        return pd.Interval(left=positions[0], right=positions[1], closed='both')

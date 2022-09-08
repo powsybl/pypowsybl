@@ -1600,3 +1600,22 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
+
+def test_get_order_positions_connectables():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    df = pp.network.get_connectables_order_positions(n, 'vl1')
+    assert df.shape[0] == 13
+    assert df.loc['line1']['order_position'] == 70
+    assert df.loc['trf2']['order_position'] == 110
+
+
+def test_get_unused_order_positions():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    positions_before = pp.network.get_unused_order_positions_before(n, 'bbs4')
+    assert positions_before.left == 71
+    assert positions_before.right == 79
+
+
+if __name__ == '__main__':
+    unittest.main()

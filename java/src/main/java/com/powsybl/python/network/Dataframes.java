@@ -6,6 +6,8 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.parameters.Parameter;
+import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
@@ -15,8 +17,7 @@ import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
-import com.powsybl.commons.parameters.Parameter;
-import com.powsybl.commons.parameters.ParameterType;
+import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
@@ -29,6 +30,7 @@ import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -67,6 +69,8 @@ public final class Dataframes {
     private static final DataframeMapper<VoltageLevel.BusBreakerView> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
     private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
     private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
+
+    private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
     private Dataframes() {
     }
@@ -142,6 +146,10 @@ public final class Dataframes {
 
     public static DataframeMapper<VoltageLevel> busBreakerViewElements() {
         return BUS_BREAKER_VIEW_ELEMENTS_MAPPER;
+    }
+
+    public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> feederMapMapper() {
+        return FEEDER_MAP_MAPPER;
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
@@ -348,6 +356,22 @@ public final class Dataframes {
                 .stringsIndex("id", BusBreakerViewBusData::getId)
                 .strings("name", BusBreakerViewBusData::getName)
                 .strings("bus_id", BusBreakerViewBusData::getBusViewBusId)
+                .build();
+    }
+
+    private static List<Pair<String, ConnectablePosition.Feeder>> getPositions(Map<String, List<ConnectablePosition.Feeder>> map) {
+        Set<Map.Entry<String, List<ConnectablePosition.Feeder>>> entriesSet = map.entrySet();
+        List<Pair<String, ConnectablePosition.Feeder>> entriesList = new ArrayList<>(entriesSet.size());
+        entriesSet.forEach(e -> e.getValue().forEach(feeder -> entriesList.add(Pair.of(e.getKey(), feeder))));
+        return entriesList;
+    }
+
+    private static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> createFeederMapDataframe() {
+        return new DataframeMapperBuilder<Map<String, List<ConnectablePosition.Feeder>>, Pair<String, ConnectablePosition.Feeder>>()
+                .itemsProvider(Dataframes::getPositions)
+                .stringsIndex("connectable_id", Pair::getLeft)
+                .ints("order_position", pair -> pair.getRight().getOrder().orElse(null))
+                .strings("extension_name", pair -> pair.getRight().getName())
                 .build();
     }
 

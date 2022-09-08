@@ -1050,21 +1050,30 @@ FlowDecompositionParameters* createFlowDecompositionParameters() {
     return new FlowDecompositionParameters(parameters.get());
 }
 
-void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, 
-        std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2, 
+void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
+        std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
         std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
         std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName) {
-    pypowsybl::callJava(::createLineOnLine, network, (char*) bbsIdBusId.c_str(), 
-                        (char*) newLineId.c_str(), newLineR, newLineX, newLineB1, newLineB2, newLineG1, newLineG2, 
+    pypowsybl::callJava(::createLineOnLine, network, (char*) bbsIdBusId.c_str(),
+                        (char*) newLineId.c_str(), newLineR, newLineX, newLineB1, newLineB2, newLineG1, newLineG2,
                         (char*) lineId.c_str(), (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(),
-                        positionPercent, createFictitiousSubstation, (char*) fictitiousVoltageLevelId.c_str(), (char*) fictitiousVoltageLevelName.c_str(), 
+                        positionPercent, createFictitiousSubstation, (char*) fictitiousVoltageLevelId.c_str(), (char*) fictitiousVoltageLevelName.c_str(),
                         (char*) fictitiousSubstationId.c_str(), (char*) fictitiousSubstationName.c_str());
 }
 
-void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId, 
+void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
         std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent) {
-    pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(), 
+    pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(),
                         (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
+}
+
+SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
+    return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
+}
+
+std::vector<int> getUnusedConnectableOrderPositions(const pypowsybl::JavaHandle network, const std::string busbarSectionId, const std::string beforeOrAfter) {
+    auto positionsArrayPtr = callJava<array*>(::getUnusedConnectableOrderPositions, network, (char*) busbarSectionId.c_str(), (char*) beforeOrAfter.c_str());
+    return toVector<int>(positionsArrayPtr);
 }
 
 }
