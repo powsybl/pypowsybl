@@ -29,11 +29,11 @@ Start by importing the module:
 First example
 -------------
 
-To perform a flow decomposition, you need at least a network.
-The flow decomposition computer returns a dataframe containing the flow decomposition and the reference values.
-The reference values are the active power flows in AC on the original network and in DC on the compensated network.
-By default, the compensated network is the same as the original network as the loss compensation is not activated by default.
-This are toy examples that do not reflect reality.
+To perform a flow decomposition, you need at least a network.  
+The flow decomposition computer returns a dataframe containing the flow decomposition and the reference values.  
+The reference values are the active power flows in AC on the original network and in DC on the compensated network.  
+By default, the compensated network is the same as the original network as the loss compensation is not activated by default.  
+This are toy examples that do not reflect reality.  
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -49,8 +49,8 @@ This are toy examples that do not reflect reality.
 Loop flows
 ----------
 
-Here is another example with imbricated zones.
-This example will highlight loop flows from the peripheral areas.
+Here is another example with imbricated zones.  
+This example will highlight loop flows from the peripheral areas.  
 
 .. image:: ../_static/images/flow_decomposition_Loop_Flow.svg
     
@@ -67,9 +67,9 @@ This example will highlight loop flows from the peripheral areas.
     FGEN  11 BGEN  11 1_InitialState  FGEN  11 BGEN  11 1   InitialState       FR       BE              200.0              200.0    -1.421085e-13            0.0       9.947598e-14              100.0       1.000000e+02       0.0
     FLOAD 11 ELOAD 11 1_InitialState  FLOAD 11 ELOAD 11 1   InitialState       FR       ES              100.0              100.0     0.000000e+00            0.0       0.000000e+00              100.0       0.000000e+00       0.0
 
-On this example, the AC load flow does not converge.
-This example does not converge in AC, the fallback to DC load flow is activated by default.
-This means that the AC and DC reference flows are equal.
+On this example, the AC load flow does not converge.  
+This example does not converge in AC, the fallback to DC load flow is activated by default.  
+This means that the AC and DC reference flows are equal.  
 
 PST flows
 ---------
@@ -77,9 +77,9 @@ PST flows
 Network details
 ^^^^^^^^^^^^^^^
 
-Here is another example with a more complex network containing a phase-shifting transformer (PST).
-This PST has a non neutral tap position, thus forcing the flows in a certain direction.
-This example illustrates the flow decomposition with such network element.
+Here is another example with a more complex network containing a phase-shifting transformer (PST).  
+This PST has a non neutral tap position, thus forcing the flows in a certain direction.  
+This example illustrates the flow decomposition with such network element.  
 
 .. image:: ../_static/images/flow_decomposition_PST.svg
 
@@ -168,13 +168,13 @@ Here are the results with non-neutral tap position.
 
 
 
-Note that the reference flow on the 2d branch has change of sign. 
-As we use it as reference, all the decomposed flows have also changed of sign.
+Note that the reference flow on the 2d branch has change of sign.  
+As we use it as reference, all the decomposed flows have also changed of sign.  
 
 Configuration file 
 ------------------
 
-Inside your config.yml file, you can change the default Configuration of the flow decomposition.
+Inside your config.yml file, you can change the default Configuration of the flow decomposition.  
 Here are the available parameters and their default values:
 
 .. doctest::
@@ -190,7 +190,7 @@ Here are the available parameters and their default values:
         dc-fallback-enabled-after-ac-divergence: True
         contingency-strategy: ONLY_N_STATE
 
-The parameters can be overwriten in Python
+The flow decomposition parameters can be overwriten in Python
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -211,3 +211,17 @@ The parameters can be overwriten in Python
     FGEN  11 BLOAD 11 1_InitialState  FGEN  11 BLOAD 11 1   InitialState       FR       BE          29.003009           28.99635        29.005675       0.000000          -0.001333          -0.001333       0.0
     FGEN  11 BLOAD 12 1_InitialState  FGEN  11 BLOAD 12 1   InitialState       FR       BE          87.009112           86.98905        87.017108       0.000000          -0.003998          -0.003998       0.0
 
+You can also overwrite the Load flow parameters.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
+    >>> load_flow_parameters = pp.loadflow.Parameters()
+    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
+    >>> flow_decomposition_dataframe
+                                    branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
+    xnec_id                                                                                                                                                                                     
+    NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState       FR       BE         302.444049              300.0              0.0            0.0              300.0                0.0       0.0
+    NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE         302.444049              300.0              0.0            0.0              300.0                0.0       0.0

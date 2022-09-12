@@ -150,8 +150,9 @@ def run(network: _Network, flow_decomposition_parameters: Parameters = None, loa
         .. code-block:: python
 
             network = pp.network.create_eurostag_tutorial_example1_network()
-            parameters = pp.flowdecomposition.Parameters()
-            pp.flowdecomposition.run(network, parameters)
+            flow_decomposition_parameters = pp.flowdecomposition.Parameters()
+            load_flow_parameters = pp.loadflow.Parameters()
+            pp.flowdecomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
 
         It outputs something like:
 
