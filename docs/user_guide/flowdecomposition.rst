@@ -62,14 +62,14 @@ This example will highlight loop flows from the peripheral areas.
     >>> flow_decomposition_dataframe
                                                 branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                                                                                        
-    BLOAD 11 FLOAD 11 1_InitialState  BLOAD 11 FLOAD 11 1   InitialState       BE       FR              200.0              200.0     0.000000e+00            0.0       0.000000e+00              100.0       1.000000e+02       0.0
-    EGEN  11 FGEN  11 1_InitialState  EGEN  11 FGEN  11 1   InitialState       ES       FR              100.0              100.0    -8.526513e-14            0.0       4.973799e-14              100.0      -1.421085e-14       0.0
-    FGEN  11 BGEN  11 1_InitialState  FGEN  11 BGEN  11 1   InitialState       FR       BE              200.0              200.0    -1.421085e-13            0.0       9.947598e-14              100.0       1.000000e+02       0.0
-    FLOAD 11 ELOAD 11 1_InitialState  FLOAD 11 ELOAD 11 1   InitialState       FR       ES              100.0              100.0     0.000000e+00            0.0       0.000000e+00              100.0       0.000000e+00       0.0
+    BLOAD 11 FLOAD 11 1_InitialState  BLOAD 11 FLOAD 11 1   InitialState       BE       FR                NaN              200.0     0.000000e+00            0.0       0.000000e+00              100.0       1.000000e+02       0.0
+    EGEN  11 FGEN  11 1_InitialState  EGEN  11 FGEN  11 1   InitialState       ES       FR                NaN              100.0    -8.526513e-14            0.0       4.973799e-14              100.0      -1.421085e-14       0.0
+    FGEN  11 BGEN  11 1_InitialState  FGEN  11 BGEN  11 1   InitialState       FR       BE                NaN              200.0    -1.421085e-13            0.0       9.947598e-14              100.0       1.000000e+02       0.0
+    FLOAD 11 ELOAD 11 1_InitialState  FLOAD 11 ELOAD 11 1   InitialState       FR       ES                NaN              100.0     0.000000e+00            0.0       0.000000e+00              100.0       0.000000e+00       0.0
 
-On this example, the AC load flow does not converge.  
-This example does not converge in AC, the fallback to DC load flow is activated by default.  
-This means that the AC and DC reference flows are equal.  
+On this example, the AC load flow does not converge, the fallback to DC load flow is activated by default.  
+This means that the AC reference values are NaNs.  
+For each line where the AC reference is not a number, the rescaling is disabled to prevent NaN propagation.  
 
 PST flows
 ---------
