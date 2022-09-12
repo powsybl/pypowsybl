@@ -49,4 +49,3 @@ Some enum classes are used in parameters:
    :template: autosummary/class_without_members.rst
 
     XnecSelectionStrategy
-    ContingencyStrategy

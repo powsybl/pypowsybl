@@ -601,10 +601,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC", pypowsybl::XnecSelectionStrategy::INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
                    "Select branches that are interconnections or have a maximum zone to zone PTDF greater than 5%");
 
-    py::enum_<pypowsybl::ContingencyStrategy>(m, "ContingencyStrategy", "Define how to select contingencies")
-            .value("ONLY_N_STATE", pypowsybl::ContingencyStrategy::ONLY_N_STATE,
-                   "Does not select extra contingencies. All XNECs are created with N state and the selected branches.");
-
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
                 .def_readwrite("save_intermediates", &pypowsybl::FlowDecompositionParameters::save_intermediates)
@@ -613,7 +609,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
                 .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
                 .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
-                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence)
-                .def_readwrite("contingency_strategy", &pypowsybl::FlowDecompositionParameters::contingency_strategy);
+                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence);
 
 }

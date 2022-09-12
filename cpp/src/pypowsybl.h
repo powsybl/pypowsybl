@@ -129,10 +129,6 @@ enum XnecSelectionStrategy {
     INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
 };
 
-enum ContingencyStrategy {
-    ONLY_N_STATE = 0,
-};
-
 class SeriesMetadata {
 public:
     SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
@@ -218,7 +214,6 @@ public:
     bool rescale_enabled;
     XnecSelectionStrategy xnec_selection_strategy;
     bool dc_fallback_enabled_after_ac_divergence;
-    ContingencyStrategy contingency_strategy;
 };
 
 

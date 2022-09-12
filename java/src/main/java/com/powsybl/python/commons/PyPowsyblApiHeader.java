@@ -783,11 +783,5 @@ public final class PyPowsyblApiHeader {
 
         @CField("dc_fallback_enabled_after_ac_divergence")
         void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
-
-        @CField("contingency_strategy")
-        int getContingencyStrategy();
-
-        @CField("contingency_strategy")
-        void setContingencyStrategy(int contingencyStrategy);
     }
 }

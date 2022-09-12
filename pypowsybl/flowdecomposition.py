@@ -9,7 +9,6 @@ import pandas as _pd
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     XnecSelectionStrategy,
-    ContingencyStrategy,
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
@@ -19,7 +18,6 @@ import pypowsybl.loadflow
 # in particular for sphinx documentation to work correctly,
 # and add some documentation
 XnecSelectionStrategy.__module__ = __name__
-ContingencyStrategy.__module__ = __name__
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
@@ -49,8 +47,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
         dc_fallback_enabled_after_ac_divergence: Defines the fallback bahavior after an AC divergence
             Use ``True`` to run DC loadflow if an AC loadflow diverges (default).
             Use ``False`` to throw an exception if an AC loadflow diverges.
-        contingency_strategy: Defines how to select contingencies.
-            Use ``ONLY_N_STATE`` to only work in state N.
     """
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
@@ -62,8 +58,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  sensitivity_epsilon: float = None,
                  rescale_enabled: bool = None,
                  xnec_selection_strategy: XnecSelectionStrategy = None,
-                 dc_fallback_enabled_after_ac_divergence: bool = None,
-                 contingency_strategy: ContingencyStrategy = None):
+                 dc_fallback_enabled_after_ac_divergence: bool = None):
 
         self._init_with_default_values()
         if save_intermediates is not None:
@@ -80,8 +75,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.xnec_selection_strategy = xnec_selection_strategy
         if dc_fallback_enabled_after_ac_divergence is not None:
             self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
-        if contingency_strategy is not None:
-            self.contingency_strategy = contingency_strategy
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -92,7 +85,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.rescale_enabled = default_parameters.rescale_enabled
         self.xnec_selection_strategy = default_parameters.xnec_selection_strategy
         self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
-        self.contingency_strategy = default_parameters.contingency_strategy
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
         c_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -103,7 +95,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.rescale_enabled = self.rescale_enabled
         c_parameters.xnec_selection_strategy = self.xnec_selection_strategy
         c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
-        c_parameters.contingency_strategy = self.contingency_strategy
         return c_parameters
 
     def __repr__(self) -> str:

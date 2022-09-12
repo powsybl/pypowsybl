@@ -188,7 +188,6 @@ Here are the available parameters and their default values:
         rescale-enabled: False
         branch-selection-strategy: ONLY_INTERCONNECTIONS
         dc-fallback-enabled-after-ac-divergence: True
-        contingency-strategy: ONLY_N_STATE
 
 The flow decomposition parameters can be overwriten in Python
 
@@ -201,8 +200,7 @@ The flow decomposition parameters can be overwriten in Python
     ... sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON, 
     ... rescale_enabled=True, 
     ... xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC, 
-    ... dc_fallback_enabled_after_ac_divergence=True,
-    ... contingency_strategy=pp.flowdecomposition.ContingencyStrategy.ONLY_N_STATE)
+    ... dc_fallback_enabled_after_ac_divergence=True)
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, parameters)
     >>> flow_decomposition_dataframe
                                                 branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow

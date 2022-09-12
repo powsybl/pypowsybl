@@ -222,14 +222,9 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char rescale_enabled;
     int xnec_selection_strategy;
     unsigned char dc_fallback_enabled_after_ac_divergence;
-    int contingency_strategy;
 } flow_decomposition_parameters;
 
 typedef enum {
     ONLY_INTERCONNECTIONS = 0,
     INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
 } xnec_selection_strategy;
-
-typedef enum {
-    ONLY_N_STATE = 0,
-} contingency_strategy;
