@@ -106,7 +106,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", rescale_enabled={self.rescale_enabled!r}" \
                f", xnec_selection_strategy={self.xnec_selection_strategy.name}" \
                f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
-               f", contingency_strategy={self.contingency_strategy.name}" \
                f")"
 
 def run(network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
