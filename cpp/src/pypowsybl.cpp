@@ -1071,4 +1071,12 @@ void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHan
     pypowsybl::callJava(::createFeederBay, network, throwException, (reporter == nullptr) ? nullptr : *reporter, dataframes, elementType);
 }
 
+void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe) {
+  pypowsybl::callJava(::createBranchFeederBaysLine, network, dataframe);
+}
+
+void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe) {
+  pypowsybl::callJava(::createBranchFeederBaysTwt, network, dataframe);
+}
+
 }

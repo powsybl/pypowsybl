@@ -4366,7 +4366,6 @@ def get_extensions_names() -> _List[str]:
     """
     return _pp.get_extensions_names()
 
-
 def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
                         new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
                         position_percent: float = 50.0, create_fictitious_substation: bool = False, fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
@@ -4430,7 +4429,6 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
         line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
-
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
@@ -4751,3 +4749,26 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
         else:
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
+
+def get_branch_feeder_bays_metadata(element_type: ElementType) -> _List[_List[_pp.SeriesMetadata]]:
+    metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
+    metadata[0].append(_pp.SeriesMetadata('bus_bar_section_id_1', 0, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('bus_bar_section_id_2', 0, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('position_order_1', 2, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('position_order_2', 2, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('direction_1', 0, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('direction_2', 0, True, True, True))
+    return metadata
+
+def create_branch_feeder_bays_line(network: Network, df_new_line: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    metadata = get_branch_feeder_bays_metadata(ElementType.LINE)
+    df_new_line = _adapt_df_or_kwargs(metadata[0], df_new_line, **kwargs)
+    c_df = _create_c_dataframe(df_new_line, metadata[0])
+    _pp.create_branch_feeder_bays_line(network._handle, c_df)
+
+def create_branch_feeder_bays_twt(network: Network, df_new_twt: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    metadata = get_branch_feeder_bays_metadata(ElementType.TWO_WINDINGS_TRANSFORMER)
+    df_new_twt = _adapt_df_or_kwargs(metadata[0], df_new_twt, **kwargs)
+    c_df = _create_c_dataframe(df_new_twt, metadata[0])
+    _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+

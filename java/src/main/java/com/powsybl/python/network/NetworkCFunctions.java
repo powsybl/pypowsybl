@@ -20,6 +20,8 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
+import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
@@ -30,6 +32,7 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.export.ExportersLoader;
 import com.powsybl.iidm.export.ExportersServiceLoader;
 import com.powsybl.iidm.import_.*;
+import com.powsybl.iidm.modification.NetworkModification;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.CTypeUtil;
@@ -52,6 +55,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.WordFactory;
+import com.powsybl.iidm.modification.topology.CreateBranchFeederBaysBuilder;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -866,4 +870,31 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "createBranchFeederBaysLine")
+    public static void createBranchFeederBaysLine(IsolateThread thread, ObjectHandle networkHandle,
+                                        DataframePointer cDataframeLine,
+                                        ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe df = createDataframe(cDataframeLine);
+            FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
+            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df);
+            NetworkModification modification = builder.build();
+            modification.apply(network);
+        });
+    }
+
+    @CEntryPoint(name = "createBranchFeederBaysTwt")
+    public static void createBranchFeederBaysTwt(IsolateThread thread, ObjectHandle networkHandle,
+                                                 DataframePointer cDataframeLine, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+
+            UpdatingDataframe df = createDataframe(cDataframeLine);
+            FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
+            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df);
+            NetworkModification modification = builder.build();
+            modification.apply(network);
+        });
+    }
 }
