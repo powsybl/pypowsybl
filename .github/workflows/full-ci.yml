@@ -45,7 +45,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
+          version: '22.2.0'
           java-version: '11'
           components: 'native-image'
 
@@ -61,6 +61,8 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: Build wheel
+        env:
+          USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM: false
         run: |
           python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
@@ -170,6 +172,7 @@ jobs:
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+          USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM: false
         run: python setup.py bdist_wheel
 
       - name: Install wheel

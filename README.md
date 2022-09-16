@@ -90,8 +90,9 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.14
 - C++11 compiler
-- Python >= 3.7
-- [GraalVM 21.3.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-21.3.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
+- Python >= 3.7 for Linux, Windows and MacOS amd64
+- Python >= 3.8 for MacOS arm64
+- [GraalVM 22.2.0](https://github.com/graalvm/graalvm-ce-builds/releases/tag/vm-22.2.0) with [native image](https://www.graalvm.org/reference-manual/native-image/#install-native-image)
 
 To build from sources and install PyPowSyBl package:
 
@@ -107,9 +108,9 @@ While developing, you may find it convenient to use the developer (or editable)
 mode of installation:
 
 ```bash
-pip install -e .
+USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false pip install -e .
 # or, to build the C extension with debug symbols:
-python setup.py build --debug develop --user
+USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false python setup.py build --debug develop --user
 ```
 
 Please refer to pip and setuptools documentations for more information.
