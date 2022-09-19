@@ -1012,4 +1012,12 @@ std::string jsonReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::jsonReport, reporterModel));
 }
 
+void attachNewLineOnLine(pypowsybl::JavaHandle network, std::string voltageLevelIds, std::string bbsIdBusId, std::string lineId, float percent, dataframe* dataframe) {
+  pypowsybl::callJava(::attachNewLineOnLine, network, (char*) voltageLevelIds.c_str(), (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(), percent, dataframe);
+}
+
+void attachVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string voltageLevelIds, std::string bbsIdBusId, std::string lineId, float percent) {
+  pypowsybl::callJava(::attachVoltageLevelOnLine, network, (char*) voltageLevelIds.c_str(), (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(), percent);
+}
+
 }

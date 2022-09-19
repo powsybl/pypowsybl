@@ -592,4 +592,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
+    m.def("attach_new_line_on_line", &pypowsybl::attachNewLineOnLine, "attach new line on line", py::arg("network"), py::arg("voltage_level_id"), py::arg("bbs_or_bus_id"), py::arg("line_id"), py::arg("percent"), py::arg("dataframe"));
+
+    m.def("attach_voltage_level_on_line", &pypowsybl::attachVoltageLevelOnLine, "attach new line on line", py::arg("network"), py::arg("voltage_level_id"), py::arg("bbs_or_bus_id"), py::arg("line_id"), py::arg("percent"));
+
 }

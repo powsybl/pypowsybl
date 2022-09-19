@@ -1527,7 +1527,43 @@ def test_dump_to_string_with_report():
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
+def test_attach_line_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame(index=['new_line'], columns=['id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0]])
+    pp.network.attach_new_line_on_line(n, "VLHV1", "NHV1", "NHV1_NHV2_1", 75.0, df)
+    retrieved_newline = n.get_lines(id=['new_line'])
+    assert retrieved_newline.loc['new_line', "r"] == 5.0
+    assert retrieved_newline.loc['new_line', "x"] == 50.0
+    assert retrieved_newline.loc['new_line', "g1"] == 2.0
+    assert retrieved_newline.loc['new_line', "g2"] == 3.0
+    assert retrieved_newline.loc['new_line', "b1"] == 4.0
+    assert retrieved_newline.loc['new_line', "b2"] == 5.0
+    assert retrieved_newline.loc['new_line', "connected1"]
+    assert retrieved_newline.loc['new_line', "connected2"]
 
+    #Check splitted line percent
+    retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "r"] == 2.25
+
+    retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
+def test_attach_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+    pp.network.attach_voltage_level_on_line(n, "N_VL", "BBS", "NHV1_NHV2_1", 75.0)
+
+    retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"voltage_level1_id"] == "VLHV1"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"voltage_level2_id"] == "N_VL"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1',"r"] == 2.25
+
+    retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"voltage_level1_id"] == "N_VL"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"voltage_level2_id"] == "VLHV2"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2',"r"] == 0.75
 
 if __name__ == '__main__':
     unittest.main()

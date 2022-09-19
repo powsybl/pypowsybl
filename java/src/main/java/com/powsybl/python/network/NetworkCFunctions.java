@@ -30,6 +30,8 @@ import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.export.ExportersLoader;
 import com.powsybl.iidm.export.ExportersServiceLoader;
 import com.powsybl.iidm.import_.*;
+import com.powsybl.iidm.modification.topology.AttachNewLineOnLine;
+import com.powsybl.iidm.modification.topology.AttachVoltageLevelOnLine;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.CTypeUtil;
@@ -58,6 +60,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -861,6 +864,54 @@ public final class NetworkCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        });
+    }
+
+    @CEntryPoint(name = "attachNewLineOnLine")
+    public static void attachNewLineOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                           CCharPointer voltageLevelId,
+                                           CCharPointer bbsIdBusId,
+                                           CCharPointer lineId,
+                                           double percent,
+                                           DataframePointer cDataframeLine,
+                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String bbsIdBusIdStr = CTypeUtil.toString(bbsIdBusId);
+            String lineIdStr = CTypeUtil.toString(lineId);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Line line = network.getLine(lineIdStr);
+            UpdatingDataframe df = createDataframe(cDataframeLine);
+            LineAdder adder = network.newLine();
+            applyIfPresent(df.getStrings("id"), 0, adder::setId);
+            applyIfPresent(df.getDoubles("b1"), 0, adder::setB1);
+            applyIfPresent(df.getDoubles("b2"), 0, adder::setB2);
+            applyIfPresent(df.getDoubles("g1"), 0, adder::setG1);
+            applyIfPresent(df.getDoubles("g2"), 0, adder::setG2);
+            applyIfPresent(df.getDoubles("r"), 0, adder::setR);
+            applyIfPresent(df.getDoubles("x"), 0, adder::setX);
+            AttachNewLineOnLine modification = new AttachNewLineOnLine(voltageLevelIdStr, bbsIdBusIdStr, line, adder);
+            modification.setPercent(percent);
+            modification.apply(network);
+        });
+    }
+
+    @CEntryPoint(name = "attachVoltageLevelOnLine")
+    public static void attachVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                           CCharPointer voltageLevelId,
+                                           CCharPointer bbsIdBusId,
+                                           CCharPointer lineId,
+                                           double percent,
+                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
+            String bbsIdBusIdStr = CTypeUtil.toString(bbsIdBusId);
+            String lineIdStr = CTypeUtil.toString(lineId);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Line line = network.getLine(lineIdStr);
+            AttachVoltageLevelOnLine modification = new AttachVoltageLevelOnLine(voltageLevelIdStr, bbsIdBusIdStr, line);
+            modification.setPercent(percent);
+            modification.apply(network);
         });
     }
 

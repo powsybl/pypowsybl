@@ -421,6 +421,10 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
+void attachNewLineOnLine(pypowsybl::JavaHandle network, std::string voltageLevelIds, std::string bbsIdBusId, std::string lineId, float percent, dataframe* dataframe);
+
+void attachVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string voltageLevelIds, std::string bbsIdBusId, std::string lineId, float percent);
+
 }
 
 #endif //PYPOWSYBL_H

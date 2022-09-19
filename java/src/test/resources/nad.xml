@@ -976,19 +976,19 @@
         <polyline id="26_edge" points="0.06,4.17 0.76,4.17"/>
     </g>
     <g class="nad-text-nodes">
-        <text filter="url(#textBgFilter)" y="-6.42" x="6.17">VL1</text>
-        <text filter="url(#textBgFilter)" y="5.16" x="-4.19">VL10</text>
-        <text filter="url(#textBgFilter)" y="1.19" x="-6.21">VL11</text>
-        <text filter="url(#textBgFilter)" y="-6.63" x="-5.36">VL12</text>
-        <text filter="url(#textBgFilter)" y="-2.98" x="-5.30">VL13</text>
-        <text filter="url(#textBgFilter)" y="0.92" x="-2.08">VL14</text>
-        <text filter="url(#textBgFilter)" y="-2.63" x="6.96">VL2</text>
-        <text filter="url(#textBgFilter)" y="0.25" x="9.28">VL3</text>
-        <text filter="url(#textBgFilter)" y="1.23" x="5.06">VL4</text>
-        <text filter="url(#textBgFilter)" y="-3.50" x="3.25">VL5</text>
-        <text filter="url(#textBgFilter)" y="-3.79" x="-2.36">VL6</text>
-        <text filter="url(#textBgFilter)" y="6.00" x="4.69">VL7</text>
-        <text filter="url(#textBgFilter)" y="9.75" x="6.69">VL8</text>
-        <text filter="url(#textBgFilter)" y="4.17" x="0.76">VL9</text>
+        <text filter="url(#textBgFilter)" y="-7.06" style="dominant-baseline:middle" x="2.24">S1</text>
+        <text filter="url(#textBgFilter)" y="-5.20" style="dominant-baseline:middle" x="-0.45">S2</text>
+        <text filter="url(#textBgFilter)" y="-7.98" style="dominant-baseline:middle" x="-1.52">S3</text>
+        <text filter="url(#textBgFilter)" y="-3.36" style="dominant-baseline:middle" x="2.83">S4</text>
+        <text filter="url(#textBgFilter)" y="-1.85" style="dominant-baseline:middle" x="-0.29">S5</text>
+        <text filter="url(#textBgFilter)" y="5.23" style="dominant-baseline:middle" x="-2.12">S5</text>
+        <text filter="url(#textBgFilter)" y="-2.01" style="dominant-baseline:middle" x="7.36">S4</text>
+        <text filter="url(#textBgFilter)" y="-3.62" style="dominant-baseline:middle" x="11.44">S8</text>
+        <text filter="url(#textBgFilter)" y="1.11" style="dominant-baseline:middle" x="3.79">S4</text>
+        <text filter="url(#textBgFilter)" y="1.60" style="dominant-baseline:middle" x="-2.10">S10</text>
+        <text filter="url(#textBgFilter)" y="3.49" style="dominant-baseline:middle" x="-5.76">S11</text>
+        <text filter="url(#textBgFilter)" y="9.49" style="dominant-baseline:middle" x="-2.39">S12</text>
+        <text filter="url(#textBgFilter)" y="8.18" style="dominant-baseline:middle" x="1.04">S13</text>
+        <text filter="url(#textBgFilter)" y="5.82" style="dominant-baseline:middle" x="4.62">S14</text>
     </g>
 </svg>
