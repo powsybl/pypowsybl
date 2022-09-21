@@ -173,28 +173,28 @@ public final class NetworkUtil {
     public static Stream<TemporaryLimitData> getLimits(Network network) {
         Stream.Builder<TemporaryLimitData> limits = Stream.builder();
         network.getBranchStream().forEach(branch -> {
-            addLimit(limits, branch,  branch.getCurrentLimits1(), ONE);
-            addLimit(limits, branch,  branch.getCurrentLimits2(), TWO);
-            addLimit(limits, branch,  branch.getActivePowerLimits1(), ONE);
-            addLimit(limits, branch,  branch.getActivePowerLimits2(), TWO);
-            addLimit(limits, branch,  branch.getApparentPowerLimits1(), ONE);
-            addLimit(limits, branch,  branch.getApparentPowerLimits2(), TWO);
+            addLimit(limits, branch, (LoadingLimits) branch.getCurrentLimits1().orElse(null), ONE);
+            addLimit(limits, branch, (LoadingLimits) branch.getCurrentLimits2().orElse(null), TWO);
+            addLimit(limits, branch, (LoadingLimits) branch.getActivePowerLimits1().orElse(null), ONE);
+            addLimit(limits, branch, (LoadingLimits) branch.getActivePowerLimits2().orElse(null), TWO);
+            addLimit(limits, branch, (LoadingLimits) branch.getApparentPowerLimits1().orElse(null), ONE);
+            addLimit(limits, branch, (LoadingLimits) branch.getApparentPowerLimits2().orElse(null), TWO);
         });
         network.getDanglingLineStream().forEach(danglingLine -> {
-            addLimit(limits, danglingLine, danglingLine.getCurrentLimits(), NONE);
-            addLimit(limits, danglingLine, danglingLine.getActivePowerLimits(), NONE);
-            addLimit(limits, danglingLine, danglingLine.getApparentPowerLimits(), NONE);
+            addLimit(limits, danglingLine, danglingLine.getCurrentLimits().orElse(null), NONE);
+            addLimit(limits, danglingLine, danglingLine.getActivePowerLimits().orElse(null), NONE);
+            addLimit(limits, danglingLine, danglingLine.getApparentPowerLimits().orElse(null), NONE);
         });
         network.getThreeWindingsTransformerStream().forEach(threeWindingsTransformer -> {
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getCurrentLimits(), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getActivePowerLimits(), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getApparentPowerLimits(), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getCurrentLimits(), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getActivePowerLimits(), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getApparentPowerLimits(), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getCurrentLimits(), THREE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getActivePowerLimits(), THREE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getApparentPowerLimits(), THREE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getCurrentLimits().orElse(null), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getActivePowerLimits().orElse(null), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getApparentPowerLimits().orElse(null), ONE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getCurrentLimits().orElse(null), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getActivePowerLimits().orElse(null), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getApparentPowerLimits().orElse(null), TWO);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getCurrentLimits().orElse(null), THREE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getActivePowerLimits().orElse(null), THREE);
+            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getApparentPowerLimits().orElse(null), THREE);
         });
         return limits.build();
     }

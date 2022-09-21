@@ -14,8 +14,8 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.parameters.Parameter;
-import com.powsybl.iidm.parameters.ParameterType;
+import com.powsybl.commons.parameters.Parameter;
+import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
@@ -143,12 +143,12 @@ public final class Dataframes {
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
-        List<BranchResultContext> branchResults = result.getPreContingencyResult()
-                .getPreContingencyBranchResults().stream()
+        List<BranchResultContext> branchResults = result.getPreContingencyResult().getNetworkResult()
+                .getBranchResults().stream()
                 .map(branchResult -> new BranchResultContext(branchResult, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getBranchResults()
+            postContingencyResult.getNetworkResult().getBranchResults()
                     .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
         });
         return branchResults;
@@ -171,11 +171,12 @@ public final class Dataframes {
 
     private static List<BusResultContext> getBusResults(SecurityAnalysisResult result) {
         List<BusResultContext> busResults = result.getPreContingencyResult()
-                .getPreContingencyBusResults().stream()
+                .getNetworkResult()
+                .getBusResults().stream()
                 .map(busResult -> new BusResultContext(busResult, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getBusResults()
+            postContingencyResult.getNetworkResult().getBusResults()
                     .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
         });
         return busResults;
@@ -194,11 +195,11 @@ public final class Dataframes {
 
     private static List<ThreeWindingsTransformerResultContext> getThreeWindingsTransformerResults(SecurityAnalysisResult result) {
         List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
-                .getPreContingencyThreeWindingsTransformerResults().stream()
+                .getNetworkResult().getThreeWindingsTransformerResults().stream()
                 .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getThreeWindingsTransformerResult()
+            postContingencyResult.getNetworkResult().getThreeWindingsTransformerResults()
                     .forEach(threeWindingsTransformerResult ->
                             threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
                                     postContingencyResult.getContingency().getId())));

@@ -128,7 +128,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
         } else {
             LoadingLimitsAdder.TemporaryLimitAdder temporaryLimitAdder = adder.beginTemporaryLimit()
-                            .setAcceptableDuration(acceptableDuration);
+                    .setAcceptableDuration(acceptableDuration);
             applyIfPresent(series.getNames(), row, temporaryLimitAdder::setName);
             applyIfPresent(series.getValues(), row, temporaryLimitAdder::setValue);
             applyBooleanIfPresent(series.getFictitious(), row, temporaryLimitAdder::setFictitious);
@@ -148,18 +148,33 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
-            public CurrentLimits getCurrentLimits() {
+            public Optional<CurrentLimits> getCurrentLimits() {
                 return branch.getCurrentLimits(side);
             }
 
             @Override
-            public ActivePowerLimits getActivePowerLimits() {
+            public CurrentLimits getNullableCurrentLimits() {
+                return side == Branch.Side.ONE ? branch.getNullableCurrentLimits1() : branch.getNullableCurrentLimits2();
+            }
+
+            @Override
+            public Optional<ActivePowerLimits> getActivePowerLimits() {
                 return branch.getActivePowerLimits(side);
             }
 
             @Override
-            public ApparentPowerLimits getApparentPowerLimits() {
+            public ActivePowerLimits getNullableActivePowerLimits() {
+                return side == Branch.Side.ONE ? branch.getNullableActivePowerLimits1() : branch.getNullableActivePowerLimits2();
+            }
+
+            @Override
+            public Optional<ApparentPowerLimits> getApparentPowerLimits() {
                 return branch.getApparentPowerLimits(side);
+            }
+
+            @Override
+            public ApparentPowerLimits getNullableApparentPowerLimits() {
+                return getApparentPowerLimits().orElse(null);
             }
 
             @Override

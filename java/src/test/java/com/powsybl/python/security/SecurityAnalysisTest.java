@@ -43,11 +43,11 @@ class SecurityAnalysisTest {
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         Network network = Networks.createEurostagTutorialExample1();
         SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", Reporter.NO_OP);
-        assertThat(result.getPreContingencyResult().getPreContingencyBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
+        assertThat(result.getPreContingencyResult().getNetworkResult().getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             302.44404914466014, 98.74027438014933, 456.7689759899916, -300.43389523337316,
             -137.18849307164064, 488.99279636727357));
         assertThat(result.getPostContingencyResults()).hasSize(1);
-        assertThat(result.getPostContingencyResults().get(0).getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
+        assertThat(result.getPostContingencyResults().get(0).getNetworkResult().getBranchResults()).containsExactly(new BranchResult("NHV1_NHV2_2",
             610.5621535433198, 334.0562715296571, 1008.9287882269945, -600.9961559564284,
             -285.3791465506596, 1047.8257691455574));
     }
