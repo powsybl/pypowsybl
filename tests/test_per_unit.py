@@ -9,7 +9,7 @@ import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 import util
-from pypowsybl.perunit import per_unit_view
+from network.impl.perunit import per_unit_view
 
 
 def test_bus_per_unit():
@@ -196,7 +196,7 @@ def test_shunt_compensators_per_unit():
 
 
 def test_dangling_lines_per_unit():
-    n = util.create_dangling_lines_network()
+    n = pp.network.create_dangling_lines_network()
     pp.loadflow.run_ac(n)
     n = per_unit_view(n, 100)
 
@@ -312,7 +312,7 @@ def test_reactive_capability_curve_points_per_unit():
 
 
 def test_three_windings_transformer_per_unit():
-    n = util.create_three_windings_transformer_network()
+    n = pp.network.create_three_windings_transformer_network()
     n = per_unit_view(n, 100)
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['3WT']),
@@ -358,7 +358,7 @@ def test_three_windings_transformer_per_unit():
 
 
 def test_batteries():
-    n = util.create_battery_network()
+    n = pp.network.create_battery_network()
     n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                             columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',

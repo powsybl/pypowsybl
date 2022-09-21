@@ -753,7 +753,7 @@ def test_lines():
 
 
 def test_dangling_lines():
-    n = util.create_dangling_lines_network()
+    n = pp.network.create_dangling_lines_network()
     df = n.get_dangling_lines(all_attributes=True)
     assert not df['fictitious']['DL']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
@@ -772,7 +772,7 @@ def test_dangling_lines():
                                     'connected', 'ucte-x-node-code'],
                            data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
-    n = util.create_dangling_lines_network()
+    n = pp.network.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['DL']),
@@ -782,7 +782,7 @@ def test_dangling_lines():
 
 
 def test_batteries():
-    n = util.create_battery_network()
+    n = pp.network.create_battery_network()
     df = n.get_batteries(all_attributes=True)
     assert not df['fictitious']['BAT']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
@@ -841,7 +841,7 @@ def test_shunt():
 
 
 def test_3_windings_transformers():
-    n = util.create_three_windings_transformer_network()
+    n = pp.network.create_three_windings_transformer_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['3WT']),
                             columns=['name', 'rated_u0', 'r1', 'x1', 'g1', 'b1', 'rated_u1', 'rated_s1',
                                      'ratio_tap_position1', 'phase_tap_position1', 'p1', 'q1', 'i1',
@@ -900,7 +900,7 @@ def test_busbar_sections():
 
 
 def test_non_linear_shunt():
-    n = util.create_non_linear_shunt_network()
+    n = pp.network.create_non_linear_shunt_network()
     expected = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)],
                                                             names=['id', 'section']),
                             columns=['g', 'b'],
@@ -942,7 +942,7 @@ def test_voltage_levels():
 
 
 def test_update_with_keywords():
-    n = util.create_non_linear_shunt_network()
+    n = pp.network.create_non_linear_shunt_network()
     n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
     assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g']
     assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b']
@@ -1198,7 +1198,7 @@ def test_dataframe_elements_filtering():
     network_four_subs = pp.network.create_four_substations_node_breaker_network()
     network_micro_grid = pp.network.create_micro_grid_be_network()
     network_eurostag = pp.network.create_eurostag_tutorial_example1_network()
-    network_non_linear_shunt = util.create_non_linear_shunt_network()
+    network_non_linear_shunt = pp.network.create_non_linear_shunt_network()
     network_with_batteries = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
 
     expected_selection = network_four_subs.get_2_windings_transformers().loc[['TWT']]
@@ -1305,7 +1305,7 @@ def test_dataframe_elements_filtering():
 
 
 def test_limits():
-    network = util.create_dangling_lines_network()
+    network = pp.network.create_dangling_lines_network()
 
     expected = pd.DataFrame.from_records(
         index='element_id',
@@ -1338,7 +1338,7 @@ def test_limits():
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_2']
     limits = limits[limits['name'] == '20\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
-    network = util.create_three_windings_transformer_with_current_limits_network()
+    network = pp.network.create_three_windings_transformer_with_current_limits_network()
     expected = pd.DataFrame.from_records(
         index='element_id',
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',

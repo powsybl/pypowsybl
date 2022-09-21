@@ -145,7 +145,7 @@ def test_loads_creation():
 
 
 def test_batteries_creation():
-    n = util.create_battery_network()
+    n = pn.create_battery_network()
     df = pd.DataFrame.from_records(
         columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'target_p', 'target_q'],
         data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 20)],
@@ -356,7 +356,7 @@ def test_lines_creation():
 
 
 def test_dangling_lines():
-    n = util.create_dangling_lines_network()
+    n = pn.create_dangling_lines_network()
     df = pd.DataFrame.from_records(index='id', data=[{
         'id': 'DL_TEST',
         'name': '',
@@ -657,7 +657,7 @@ def test_create_minmax_reactive_limits():
               ['VSC2', -405.0, 505.0]])
     pd.testing.assert_frame_equal(expected, network.get_vsc_converter_stations(id=['VSC1', 'VSC2'], attributes=['min_q', 'max_q']),
                                   check_dtype=False)
-    network = util.create_battery_network()
+    network = pn.create_battery_network()
     network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
         {'id': 'BAT', 'min_q': -201.0, 'max_q': 201.0}
     ]))
@@ -685,7 +685,7 @@ GEN   1 200  -553.514 536.4
     pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points(), check_dtype=False)
 
     # Batteries
-    network = util.create_battery_network()
+    network = pn.create_battery_network()
     network.create_curve_reactive_limits(dataframe_from_string("""
 id  p    min_q    max_q
 BAT 50    -50     100

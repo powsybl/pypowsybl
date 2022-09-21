@@ -6,8 +6,6 @@
 from typing import Union, List
 import io
 import pandas as pd
-from pypowsybl.network import Network
-import pypowsybl as pp
 
 
 def dataframe_from_string(df_str: str, index: Union[str, List[str]] = 'id') -> pd.DataFrame:
@@ -15,22 +13,3 @@ def dataframe_from_string(df_str: str, index: Union[str, List[str]] = 'id') -> p
     Creates a dataframe from a table provided as a fixed-width formatted string.
     """
     return pd.read_fwf(io.StringIO(df_str)).set_index(index)
-
-
-def create_battery_network() -> Network:
-    return pp.network._create_network('batteries')
-
-
-def create_dangling_lines_network() -> Network:
-    return pp.network._create_network('dangling_lines')
-
-
-def create_three_windings_transformer_network() -> Network:
-    return pp.network._create_network('three_windings_transformer')
-
-
-def create_non_linear_shunt_network() -> Network:
-    return pp.network._create_network('non_linear_shunt')
-
-def create_three_windings_transformer_with_current_limits_network() -> Network:
-    return pp.network._create_network('three_windings_transformer_with_current_limits')

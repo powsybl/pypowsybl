@@ -17,7 +17,7 @@ def test_extensions():
     assert 'activePowerControl' in pn.get_extensions_names()
     no_extensions_network = pn.create_eurostag_tutorial_example1_network()
     assert no_extensions_network.get_extensions('activePowerControl').empty
-    n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
+    n = pn.impl.util._create_network('eurostag_tutorial_example1_with_apc_extension')
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     assert generators_extensions['participate']['GEN']
@@ -26,7 +26,7 @@ def test_extensions():
 
 
 def test_update_extensions():
-    n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
+    n = pn.impl.util._create_network('eurostag_tutorial_example1_with_apc_extension')
     n.update_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
         {'id': 'GEN', 'droop': 1.2}
     ]))
@@ -42,7 +42,7 @@ def test_update_extensions():
 
 
 def test_remove_extensions():
-    n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
+    n = pn.impl.util._create_network('eurostag_tutorial_example1_with_apc_extension')
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     n.remove_extensions('activePowerControl', ['GEN', 'GEN2'])
@@ -50,7 +50,7 @@ def test_remove_extensions():
 
 
 def test_create_extensions():
-    n = pn._create_network('eurostag_tutorial_example1')
+    n = pn.create_eurostag_tutorial_example1_network()
     n.create_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
         {'id': 'GEN', 'droop': 1.2, 'participate': True}
     ]))
@@ -134,7 +134,7 @@ def test_entsoe_area():
 
 
 def test_entsoe_category():
-    network = pn._create_network('eurostag_tutorial_example1_with_entsoe_category')
+    network = pn.impl.util._create_network('eurostag_tutorial_example1_with_entsoe_category')
     gen = network.get_extensions('entsoeCategory').loc['GEN']
     assert gen.code == 5
 
@@ -162,13 +162,13 @@ def test_hvdc_angle_droop_active_power_control():
     e = n.get_extensions(extension_name).loc[element_id]
     assert e.droop == pytest.approx(0.1, abs=1e-3)
     assert e.p0 == pytest.approx(200, abs=1e-3)
-    assert e.enabled == True
+    assert e.enabled
 
     n.update_extensions(extension_name, id=element_id, droop=0.15, p0=210, enabled=False)
     e = n.get_extensions(extension_name).loc[element_id]
     assert e.droop == pytest.approx(0.15, abs=1e-3)
     assert e.p0 == pytest.approx(210, abs=1e-3)
-    assert e.enabled == False
+    assert not e.enabled
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
