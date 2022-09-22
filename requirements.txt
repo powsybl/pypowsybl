@@ -13,6 +13,6 @@ pydata-sphinx-theme==0.6.3
 wheel==0.37.1
 coverage==5.5
 pytest>=6.2.5
-mypy==0.931
+mypy==0.971
 pandas-stubs==1.2.0.47
 pylint==2.12.2
