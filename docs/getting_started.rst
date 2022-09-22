@@ -47,11 +47,12 @@ for example in order to get lines data:
     >>> network.get_lines()
            name     r      x   g1        b1   g2        b2  p1  q1  i1  p2  q2  i2 voltage_level1_id voltage_level2_id bus1_id bus2_id  connected1  connected2
     id
-    L7-8-0       0.85   7.20  0.0  0.000745  0.0  0.000745 NaN NaN NaN NaN NaN NaN               VL7               VL8   VL7_0   VL8_0        True        True
-    L9-8-0       1.19  10.08  0.0  0.001045  0.0  0.001045 NaN NaN NaN NaN NaN NaN               VL9               VL8   VL9_0   VL8_0        True        True
-    ...
-    ...
-    L6-4-0       1.70   9.20  0.0  0.000790  0.0  0.000790 NaN NaN NaN NaN NaN NaN               VL6               VL4   VL6_0   VL4_0        True        True
+    L7-8-0       0.85   7.20  0.0  0.000745  0.0  0.000745 NaN NaN NaN NaN NaN NaN               VL2               VL8   VL2_1   VL8_0        True        True
+    L9-8-0       1.19  10.08  0.0  0.001045  0.0  0.001045 NaN NaN NaN NaN NaN NaN               VL3               VL8   VL3_1   VL8_0        True        True
+    L7-5-0       3.20  16.10  0.0  0.001530  0.0  0.001530 NaN NaN NaN NaN NaN NaN               VL2               VL5   VL2_1   VL5_0        True        True
+    L9-6-0       3.90  17.00  0.0  0.001790  0.0  0.001790 NaN NaN NaN NaN NaN NaN               VL3               VL6   VL3_1   VL6_0        True        True
+    L5-4-0       1.00   8.50  0.0  0.000880  0.0  0.000880 NaN NaN NaN NaN NaN NaN               VL5               VL1   VL5_0   VL1_1        True        True
+    L6-4-0       1.70   9.20  0.0  0.000790  0.0  0.000790 NaN NaN NaN NaN NaN NaN               VL6               VL1   VL6_0   VL1_1        True        True
 
 Each row of the obtained dataframe represents a line of the network.
 

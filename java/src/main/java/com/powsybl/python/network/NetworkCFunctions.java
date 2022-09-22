@@ -25,6 +25,7 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.export.Exporter;
 import com.powsybl.iidm.export.Exporters;
 import com.powsybl.iidm.export.ExportersLoader;
 import com.powsybl.iidm.export.ExportersServiceLoader;
@@ -76,12 +77,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkImportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Importers.getFormats())));
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Importer.getFormats())));
     }
 
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporters.getFormats())));
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporter.getFormats())));
     }
 
     @CEntryPoint(name = "createNetwork")
@@ -197,9 +198,9 @@ public final class NetworkCFunctions {
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             MemDataSource dataSource = new MemDataSource();
-            var exporter = Exporters.getExporter(formatStr);
+            var exporter = Exporter.find(formatStr);
             if (exporter == null) {
-                throw new PowsyblException("No expoxter found for '" + formatStr + "' to export as a string");
+                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
             }
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             if (reporter == null) {
@@ -744,7 +745,7 @@ public final class NetworkCFunctions {
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String format = CTypeUtil.toString(formatPtr);
-            Importer importer = Importers.getImporter(format);
+            Importer importer = Importer.find(format);
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
@@ -757,7 +758,7 @@ public final class NetworkCFunctions {
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String format = CTypeUtil.toString(formatPtr);
-            var exporter = Exporters.getExporter(format);
+            var exporter = Exporter.find(format);
             if (exporter == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }

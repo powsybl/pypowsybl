@@ -90,23 +90,17 @@ def test_monitored_elements():
     bus_results = sa_result.bus_results
     branch_results = sa_result.branch_results
 
-    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['contingency_id', 'voltage_level_id', 'bus_id'],
-                                                            tuples=[('', 'VLHV2', 'NHV2'),
-                                                                    ('NGEN_NHV1', 'VLHV2', 'NHV2'),
-                                                                    ('NHV1_NHV2_1', 'VLHV2', 'NHV2')]),
-                            columns=['v_mag', 'v_angle'],
-                            data=[[389.952654, -3.506358],
-                                  [569.038987, -1.709471],
-                                  [366.584814, -7.499211]])
-    pd.testing.assert_frame_equal(expected, bus_results)
+    assert bus_results.index.to_frame().columns.tolist() == ['contingency_id', 'voltage_level_id', 'bus_id']
+    assert bus_results.columns.tolist() == ['v_mag', 'v_angle']
+    assert len(bus_results) == 2
+    assert bus_results.loc['', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(389.95, abs=1e-2)
+    assert bus_results.loc['NHV1_NHV2_1', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(366.58, abs=1e-2)
 
     assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'branch_id']
     assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
-    assert len(branch_results) == 4
+    assert len(branch_results) == 2
     assert branch_results.loc['', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
     assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.06, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.06, abs=1e-2)
 
 
 def test_flow_transfer():

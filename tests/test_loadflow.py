@@ -143,7 +143,11 @@ def test_get_provider_parameters_names():
         'newtonRaphsonConvEpsPerEq',
         'voltageInitModeOverride',
         'transformerVoltageControlMode',
-        'dcPowerFactor'
+        'dcPowerFactor',
+        'minPlausibleTargetVoltage',
+        'maxPlausibleTargetVoltage',
+        'minRealisticVoltage',
+        'maxRealisticVoltage'
     ]
 
 

@@ -4,7 +4,7 @@ import com.google.auto.service.AutoService;
 import com.powsybl.cgmes.conformity.CgmesConformity1Catalog;
 import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
-import com.powsybl.iidm.import_.Importers;
+import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
@@ -50,7 +50,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
     }
 
     private static Network importCgmes(TestGridModelResources modelResources) {
-        return Importers.getImporter("CGMES")
+        return Importer.find("CGMES")
                 .importData(modelResources.dataSource(), new NetworkFactoryImpl(), null);
     }
 }
