@@ -45,45 +45,7 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Build wheel
-        run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-
-      - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
-
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
       - name: Type checking
         run: mypy -p pypowsybl
 
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v1.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make doctest
 
