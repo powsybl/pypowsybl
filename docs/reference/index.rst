@@ -11,3 +11,4 @@ of pypowsybl classes and methods.
    loadflow
    security
    sensitivity
+   flowdecomposition

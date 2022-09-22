@@ -14,3 +14,4 @@ relying as much as possible on practical examples.
    security
    sensitivity
    logging
+   flowdecomposition

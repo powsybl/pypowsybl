@@ -385,6 +385,29 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
     });
 }
 
+FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
+    enable_losses_compensation = (bool) src->enable_losses_compensation;
+    losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
+    sensitivity_epsilon = (float) src->sensitivity_epsilon;
+    rescale_enabled = (bool) src->rescale_enabled;
+    xnec_selection_strategy = static_cast<XnecSelectionStrategy>(src->xnec_selection_strategy);
+    dc_fallback_enabled_after_ac_divergence = (bool) src->dc_fallback_enabled_after_ac_divergence;
+}
+
+std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c_struct() const {
+    flow_decomposition_parameters* res = new flow_decomposition_parameters();
+    res->enable_losses_compensation = (unsigned char) enable_losses_compensation;
+    res->losses_compensation_epsilon = losses_compensation_epsilon;
+    res->sensitivity_epsilon = sensitivity_epsilon;
+    res->rescale_enabled = (unsigned char) rescale_enabled;
+    res->xnec_selection_strategy = xnec_selection_strategy;
+    res->dc_fallback_enabled_after_ac_divergence = (unsigned char) dc_fallback_enabled_after_ac_divergence;
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<flow_decomposition_parameters>(res, [](flow_decomposition_parameters* ptr){
+        delete ptr;
+    });
+}
+
 void setJavaLibraryPath(const std::string& javaLibraryPath) {
     callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
 }
@@ -1012,4 +1035,18 @@ std::string jsonReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::jsonReport, reporterModel));
 }
 
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
+    auto c_flow_decomposition_parameters = flow_decomposition_parameters.to_c_struct();
+    auto c_load_flow_parameters  = load_flow_parameters.to_c_struct();
+    return new SeriesArray(callJava<array*>(::runFlowDecomposition, network, c_flow_decomposition_parameters.get(), c_load_flow_parameters.get()));
+}
+
+FlowDecompositionParameters* createFlowDecompositionParameters() {
+    flow_decomposition_parameters* parameters_ptr = callJava<flow_decomposition_parameters*>(::createFlowDecompositionParameters);
+    auto parameters = std::shared_ptr<flow_decomposition_parameters>(parameters_ptr, [](flow_decomposition_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeFlowDecompositionParameters, ptr);
+    });
+    return new FlowDecompositionParameters(parameters.get());
+}
 }

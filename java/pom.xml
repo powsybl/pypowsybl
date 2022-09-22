@@ -275,6 +275,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-tools</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-flow-decomposition</artifactId>
+        </dependency>
 
         <!-- runtime -->
         <dependency>

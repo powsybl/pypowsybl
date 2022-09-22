@@ -14,7 +14,8 @@ from pypowsybl import (
     loadflow,
     security,
     sensitivity,
-    glsk
+    glsk,
+    flowdecomposition,
 )
 
 __version__ = '0.18.0.dev1'
@@ -31,7 +32,8 @@ __all__ = [
     "loadflow",
     "security",
     "sensitivity",
-    "glsk"
+    "glsk",
+    "flowdecomposition"
 ]
 
 

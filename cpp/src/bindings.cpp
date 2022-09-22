@@ -592,4 +592,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
+    m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network", 
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
+
+    py::enum_<pypowsybl::XnecSelectionStrategy>(m, "XnecSelectionStrategy", "Define how to select branches")
+            .value("ONLY_INTERCONNECTIONS", pypowsybl::XnecSelectionStrategy::ONLY_INTERCONNECTIONS,
+                   "Select only branches that connect two different countries")
+            .value("INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC", pypowsybl::XnecSelectionStrategy::INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+                   "Select branches that are interconnections or have a maximum zone to zone PTDF greater than 5%");
+
+    py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
+                .def(py::init(&pypowsybl::createFlowDecompositionParameters))
+                .def_readwrite("enable_losses_compensation", &pypowsybl::FlowDecompositionParameters::enable_losses_compensation)
+                .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
+                .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
+                .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
+                .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
+                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence);
+
 }
