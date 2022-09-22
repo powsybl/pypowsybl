@@ -16,24 +16,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp37,
-            abi: cp37m,
-            version: '3.7',
-          }
-          - {
             name: cp38,
             abi: cp38,
             version: '3.8',
-          }
-          - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9',
-          }
-          - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10',
           }
 
     steps:
@@ -77,23 +62,19 @@ jobs:
         run: mypy -p pypowsybl
 
       - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        if: matrix.python.name == 'cp39'
         run: |
           pip3 uninstall -y pypowsybl
           python3 setup.py develop
 
       - name: Generate coverage
-        if: matrix.python.name == 'cp39'
         run: |
           coverage run -m pytest tests/
           coverage xml
 
       - name: Linting
-        if: matrix.python.name == 'cp39'
         run: pylint pypowsybl
 
       - name: Sonar analysis
-        if: matrix.python.name == 'cp39'
         uses: sonarsource/sonarcloud-github-action@v1.6
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
@@ -105,12 +86,6 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v2
-        with:
-          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
-          path: wheelhouse/*.whl
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -128,20 +103,8 @@ jobs:
           }
         python:
           - {
-            name: cp37,
-            version: '3.7',
-          }
-          - {
             name: cp38,
             version: '3.8',
-          }
-          - {
-            name: cp39,
-            version: '3.9',
-          }
-          - {
-            name: cp310,
-            version: '3.10.1',
           }
 
     steps:
@@ -186,34 +149,3 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v2
-        with:
-          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
-
-  package:
-    name: Package wheels
-    runs-on: ubuntu-latest
-    needs: [manylinux_build, macos_windows_build]
-
-    steps:
-      - name: Download wheels
-        uses: actions/download-artifact@v2
-        with:
-          path: download
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v2
-        with:
-          name: pypowsybl-wheels
-          path: |
-            download/**/*.whl
-
-      - name: Release on PyPi
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: |
-          python -m pip install --user --upgrade twine
-          python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} download/*/*.whl
