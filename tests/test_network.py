@@ -1542,14 +1542,8 @@ def test_dump_to_string_with_report():
 def test_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
-    n.create_voltage_levels(pd.DataFrame.from_records(index='id', data=[{
-        'id': 'VLTEST',
-        'substation_id': 'P3',
-        'high_voltage_limit': 400,
-        'low_voltage_limit': 370,
-        'nominal_v': 380,
-        'topology_kind': 'BUS_BREAKER'
-    }]))
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
     assert 'VLTEST' in n.get_voltage_levels().index
     assert n.get_voltage_levels().loc['VLTEST']['substation_id'] == 'P3'
     n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
@@ -1590,6 +1584,7 @@ def test_create_line_on_line():
     assert 'GEN3' in generators.index
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
 
+
 def test_connect_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
@@ -1605,7 +1600,3 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
-
-
-if __name__ == '__main__':
-    unittest.main()

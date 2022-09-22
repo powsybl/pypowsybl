@@ -4374,66 +4374,67 @@ def get_extensions_names() -> _List[str]:
     """
     return _pp.get_extensions_names()
 
-def create_line_on_line(n: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
+
+def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
                         new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
                         position_percent: float = 50.0, create_fictitious_substation: bool = False, fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
                         fictitious_substation_id: str = '', fictitious_substation_name: str = '') -> None:
     """
-    Connect an existing voltage level to an existing line through a tee point.
+    Connects an existing voltage level to an existing line through a tee point.
 
-    Connect an existing voltage level (in practice a voltage level where we have some loads or generations) to an existing
-    line through a tee point. This method cuts an existing line in two, creating a fictitious voltage level between them (an a fictitious substation if asked).
-    Then it links an existing voltage level to this fictitious voltage level by creating a new line described in the given dataframe.
+    Connects an existing voltage level (in practice a voltage level where we have some loads or generations)
+    to an existing line through a tee point. This method cuts an existing line in two, creating a fictitious
+    voltage level between them (an a fictitious substation if asked).
+    Then it links an existing voltage level to this fictitious voltage level by creating a new line
+    described in the provided dataframe.
 
     Args:
-           - **n** : the network
-           - **voltage_level_id** : the voltage level with the given ID where we want to connect to the new line.
-           - **bbs_or_bus_id** : the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-           - **new_line_id** : name of the new line
-           - **new_line_r** :
-           - **new_line_x** :
-           - **new_line_b1** :
-           - **new_line_b2** :
-           - **new_line_g1** :
-           - **new_line_g2** :
-           - **line_id** :  the id on of the line on which we want to create a tee point.
-           - **line1_id** : when the initial line is cut, the line segment at side 1 has a given ID (optional).
-           - **line1_name** : when the initial line is cut, the line segment at side 1 has a given name (optional).
-           - **line2_id** : when the initial line is cut, the line segment at side 2 has a given ID (optional).
-           - **line2_name** : when the initial line is cut, the line segment at side 2 has a given name (optional).
-           - **percent** : when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
+        network: the network
+        bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+        new_line_id: ID of the new line
+        new_line_r: resistance of the new line, in ohms
+        new_line_x: reactance of the new line, in ohms
+        new_line_b1: shunt susceptance on side 1 of the new line
+        new_line_b2: shunt susceptance on side 2 of the new line
+        new_line_g1: shunt conductance on side 1 of the new line
+        new_line_g2: shunt conductance on side 2 of the new line
+        line_id: the id on of the line on which we want to create a tee point.
+        line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
+        line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
+        line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
+        line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
+        position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
                     and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
                     between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-           - **create_fictitious_substation** : True to create the fictitious voltage level inside a fictitious substation (false by default).
-           - **fictitious_voltage_level_id** : the ID of the fictitious voltage level (optional) containing the tee point.
-           - **fictitious_voltage_level_name** : the name of the fictitious voltage level (optional) containing the tee point.
-           - **fictitious_substation_id** : the ID of the fictitious substation (optional).
-           - **fictitious_substation_name** : the name of the fictitious substation (optional).
-
+        create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
+        fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
+        fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
+        fictitious_substation_id: the ID of the fictitious substation (optional).
+        fictitious_substation_name: the name of the fictitious substation (optional).
     """
-    _pp.create_line_on_line(n._handle, bbs_or_bus_id, new_line_id, new_line_r, new_line_x, new_line_b1,
+    _pp.create_line_on_line(network._handle, bbs_or_bus_id, new_line_id, new_line_r, new_line_x, new_line_b1,
                             new_line_b2, new_line_g1, new_line_g2, line_id, line1_id, line1_name, line2_id, line2_name, position_percent,
                             create_fictitious_substation, fictitious_voltage_level_id, fictitious_voltage_level_name, fictitious_substation_id,
                             fictitious_substation_name)
 
-def connect_voltage_level_on_line(n: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
+
+def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '') -> None:
     """
-    Cuts an existing line in two lines and connect an existing voltage level between them.
+    Cuts an existing line in two lines and connects an existing voltage level between them.
 
     This method cuts an existing line in two lines and connect an existing voltage level between them. The voltage level should
     be added to the network just before calling this method, and should contains at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
     Args:
-           - **n** : the network
-           - **voltage_level_id** : the ID of the existing voltage level to be connected on the existing line.
-           - **bbs_or_bus_id** : The ID of the configured bus or bus bar section to which the lines will be connected.
-           - **line_id** : the line id on which the voltage level is to be connected.
-           - **percent** : when the existing line is cut, percent is equal to the ratio between the parameters of the first line
+        network: the network
+        bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
+        line_id: the ID ot the line on which the voltage level should be connected.
+        position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
                      and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
                     between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-           - **line1_id** : when the initial line is cut, the line segment at side 1 has a given ID (optional).
-           - **line1_name** : when the initial line is cut, the line segment at side 1 has a given name (optional).
-           - **line2_id** : when the initial line is cut, the line segment at side 2 has a given ID (optional).
-           - **line2_name** : when the initial line is cut, the line segment at side 2 has a given name (optional).
+        line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
+        line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
+        line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
+        line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
-    _pp.connect_voltage_level_on_line(n._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
+    _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
