@@ -207,7 +207,6 @@ public:
     FlowDecompositionParameters(flow_decomposition_parameters* src);
     std::shared_ptr<flow_decomposition_parameters> to_c_struct() const;
 
-    bool save_intermediates;
     bool enable_losses_compensation;
     float losses_compensation_epsilon;
     float sensitivity_epsilon;

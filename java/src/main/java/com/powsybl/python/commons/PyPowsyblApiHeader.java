@@ -741,13 +741,6 @@ public final class PyPowsyblApiHeader {
 
     @CStruct("flow_decomposition_parameters")
     public interface FlowDecompositionParametersPointer extends PointerBase {
-
-        @CField("save_intermediates")
-        boolean doesSaveIntermediates();
-
-        @CField("save_intermediates")
-        void setSaveIntermediates(boolean saveIntermediates);
-
         @CField("enable_losses_compensation")
         boolean isLossesCompensationEnabled();
 

@@ -24,7 +24,7 @@ public final class FlowDecompositionCUtils {
 
     public static FlowDecompositionParameters createFlowDecompositionParameters(PyPowsyblApiHeader.FlowDecompositionParametersPointer loadFlowParametersPtr) {
         return createFlowDecompositionParameters()
-            .setSaveIntermediates(loadFlowParametersPtr.doesSaveIntermediates())
+            .setSaveIntermediates(FlowDecompositionParameters.DO_NOT_SAVE_INTERMEDIATES)
             .setEnableLossesCompensation(loadFlowParametersPtr.isLossesCompensationEnabled())
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())

@@ -215,7 +215,6 @@ typedef enum {
 } filter_attributes_type;
 
 typedef struct flow_decomposition_parameters_struct {
-    unsigned char save_intermediates;
     unsigned char enable_losses_compensation;
     double losses_compensation_epsilon;
     double sensitivity_epsilon;

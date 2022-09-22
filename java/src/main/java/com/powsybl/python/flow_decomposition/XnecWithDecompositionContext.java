@@ -34,15 +34,11 @@ public class XnecWithDecompositionContext extends DecomposedFlow {
     }
 
     public String getId() {
-        return getBranchId() + "_" + getVariantId();
+        return getBranchId();
     }
 
     public String getBranchId() {
         return branchId;
-    }
-
-    public String getVariantId() {
-        return "InitialState"; //TODO replace this. Done like this now as we do not manage contingencies for V1.0 of flow decomposition.
     }
 
     public String getCountry1String() {
@@ -55,7 +51,7 @@ public class XnecWithDecompositionContext extends DecomposedFlow {
 
     public static Map<String, ToDoubleFunction<XnecWithDecompositionContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {
         TreeMap<String, ToDoubleFunction<XnecWithDecompositionContext>> loopFlows = new TreeMap<>();
-        zoneSet.stream().sorted().forEach(country -> loopFlows.put(getColumnPep8Name(country), decomposedFlow -> decomposedFlow.getLoopFlow(country)));
+        zoneSet.forEach(country -> loopFlows.put(getColumnPep8Name(country), decomposedFlow -> decomposedFlow.getLoopFlow(country)));
         return loopFlows;
     }
 

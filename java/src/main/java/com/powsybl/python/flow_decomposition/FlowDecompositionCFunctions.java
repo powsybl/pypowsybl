@@ -75,7 +75,6 @@ public final class FlowDecompositionCFunctions {
 
     private static PyPowsyblApiHeader.FlowDecompositionParametersPointer convertToFlowDecompositionParametersPointer(FlowDecompositionParameters parameters) {
         PyPowsyblApiHeader.FlowDecompositionParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.FlowDecompositionParametersPointer.class));
-        paramsPtr.setSaveIntermediates(parameters.doesSaveIntermediates());
         paramsPtr.setEnableLossesCompensation(parameters.isLossesCompensationEnabled());
         paramsPtr.setLossesCompensationEpsilon(parameters.getLossesCompensationEpsilon());
         paramsPtr.setSensitivityEpsilon(parameters.getSensitivityEpsilon());

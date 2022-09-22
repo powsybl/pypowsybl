@@ -410,7 +410,6 @@ public final class Dataframes {
             .itemsProvider(Dataframes::getXnecWithDecompositions)
             .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
             .strings("branch_id", XnecWithDecompositionContext::getBranchId)
-            .strings("contingency_id", XnecWithDecompositionContext::getVariantId)
             .strings("country1", XnecWithDecompositionContext::getCountry1String)
             .strings("country2", XnecWithDecompositionContext::getCountry2String)
             .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)

@@ -10,7 +10,7 @@ This simple version of flow decomposition will evolve with next versions of flow
 Here are the assumptions that we made:
 
 - no contingency management  
-- XNEC = interconnexion branch or 5% zonal PTDF method  
+- XNEC = interconnection branch or 5% zonal PTDF method  
 - zone = country  
 - country GSK  
 - no HVDC management  

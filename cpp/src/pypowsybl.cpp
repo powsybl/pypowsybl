@@ -386,7 +386,6 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
 }
 
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
-    save_intermediates = (bool) src->save_intermediates;
     enable_losses_compensation = (bool) src->enable_losses_compensation;
     losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
     sensitivity_epsilon = (float) src->sensitivity_epsilon;
@@ -397,7 +396,6 @@ FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_para
 
 std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c_struct() const {
     flow_decomposition_parameters* res = new flow_decomposition_parameters();
-    res->save_intermediates = (unsigned char) save_intermediates;
     res->enable_losses_compensation = (unsigned char) enable_losses_compensation;
     res->losses_compensation_epsilon = losses_compensation_epsilon;
     res->sensitivity_epsilon = sensitivity_epsilon;

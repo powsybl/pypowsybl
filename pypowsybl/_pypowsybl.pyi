@@ -366,7 +366,6 @@ class XnecSelectionStrategy:
     def name(self) -> str: ...
 
 class FlowDecompositionParameters:
-    save_intermediates: bool
     enable_losses_compensation: bool
     losses_compensation_epsilon: float
     sensitivity_epsilon: float

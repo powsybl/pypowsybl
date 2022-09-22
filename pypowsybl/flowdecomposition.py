@@ -29,8 +29,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.flowdecomposition
 
     Args:
-        save_intermediates: Parameter only implemented in Java. This will not work in Python.
-            Use ``True`` to save intermediates results in the Java flow decomposition object.
         enable_losses_compensation: Enable losses compensation.
             Use ``True`` to enable AC losses compensation on the DC network.
         losses_compensation_epsilon: Filter loads from the losses compensation.
@@ -52,7 +50,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
     DISABLE_SENSITIVITY_EPSILON = -1
 
     def __init__(self,
-                 save_intermediates: bool = None,
                  enable_losses_compensation: bool = None,
                  losses_compensation_epsilon: float = None,
                  sensitivity_epsilon: float = None,
@@ -61,8 +58,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  dc_fallback_enabled_after_ac_divergence: bool = None):
 
         self._init_with_default_values()
-        if save_intermediates is not None:
-            self.save_intermediates = save_intermediates
         if enable_losses_compensation is not None:
             self.enable_losses_compensation = enable_losses_compensation
         if losses_compensation_epsilon is not None:
@@ -78,7 +73,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.FlowDecompositionParameters()
-        self.save_intermediates = default_parameters.save_intermediates
         self.enable_losses_compensation = default_parameters.enable_losses_compensation
         self.losses_compensation_epsilon = default_parameters.losses_compensation_epsilon
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
@@ -88,7 +82,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
         c_parameters = _pypowsybl.FlowDecompositionParameters()
-        c_parameters.save_intermediates = self.save_intermediates
         c_parameters.enable_losses_compensation = self.enable_losses_compensation
         c_parameters.losses_compensation_epsilon = self.losses_compensation_epsilon
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
@@ -99,8 +92,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
-               f"save_intermediates={self.save_intermediates!r}" \
-               f", enable_losses_compensation={self.enable_losses_compensation!r}" \
+               f"enable_losses_compensation={self.enable_losses_compensation!r}" \
                f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}" \
                f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
                f", rescale_enabled={self.rescale_enabled!r}" \
@@ -124,14 +116,14 @@ def run(network: _Network, flow_decomposition_parameters: Parameters = None, loa
         The resulting dataframe, depending on the number of countries, will include the following columns:
 
             - **branch_id**: the id of the branch
-            - **contingency_id**: the id of the contingency
-            - **commercial_flow**: the commercial (or allocated) flow on the line (in MW)
-            - **pst_flow**: the PST flow on the line (in MW)
-            - **loop_flow_from_XX**: the loop flow from zone XX on the line (in MW)
-            - **ac_reference_flow**: the ac reference flow on the line (in MW)
-            - **dc_reference_flow**: the dc reference flow on the line (in MW)
             - **country1**: the country id of terminal 1
             - **country2**: the country id of terminal 2
+            - **ac_reference_flow**: the ac reference flow on the line (in MW)
+            - **dc_reference_flow**: the dc reference flow on the line (in MW)
+            - **commercial_flow**: the commercial (or allocated) flow on the line (in MW)
+            - **internal_flow**: the internal flow on the line (in MW)
+            - **loop_flow_from_XX**: the loop flow from zone XX on the line (in MW). One column per country
+            - **pst_flow**: the PST flow on the line (in MW)
 
         This dataframe is indexed on the xnec ID **xnec_id**.
 
@@ -146,13 +138,13 @@ def run(network: _Network, flow_decomposition_parameters: Parameters = None, loa
 
         It outputs something like:
 
-        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
-        /                           branch_id contingency_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow internal_flow loop_flow_from_be loop_flow_from_fr pst_flow
-        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
+        =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
+        /             branch_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow internal_flow loop_flow_from_be loop_flow_from_fr pst_flow
+        =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
         xnec_id
-        NHV1_NHV2_1_InitialState  NHV1_NHV2_1   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
-        NHV1_NHV2_2_InitialState  NHV1_NHV2_2   InitialState       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
-        ======================== ============ ============== ======== ======== ================= ================= =============== ============= ================= ================= ========
+        NHV1_NHV2_1 NHV1_NHV2_1       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
+        NHV1_NHV2_2 NHV1_NHV2_2       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
+        =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
     """
     fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()
     lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
