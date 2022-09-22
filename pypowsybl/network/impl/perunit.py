@@ -4,17 +4,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 from typing import List as _List
-import math as _math
-import pandas as _pd
-import numpy as _np
-from numpy.typing import ArrayLike as _ArrayLike
+import math
+import pandas as pd
+import numpy as np
+from numpy.typing import ArrayLike
 from pypowsybl import _pypowsybl
-import pypowsybl.network as _net
+import pypowsybl.network as net
 from pypowsybl.network import ElementType
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs
 
 
-def _adapt_to_dataframe(element_type: ElementType, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> _pd.DataFrame:
+def _adapt_to_dataframe(element_type: ElementType, df: pd.DataFrame = None, **kwargs: ArrayLike) -> pd.DataFrame:
     metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
     return _adapt_df_or_kwargs(metadata, df, **kwargs)
 
@@ -25,7 +25,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
     network tables.
     """
 
-    def __init__(self, network: _net.Network, sn: float = 100):
+    def __init__(self, network: net.Network, sn: float = 100):
         """
         Creates a per unit view of the provided network, using SN as base power.
 
@@ -35,10 +35,10 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         self._network = network
         self._sn = sn
-        self.sqrt3 = _math.sqrt(3)
+        self.sqrt3 = math.sqrt(3)
 
     @property
-    def network(self) -> _net.Network:
+    def network(self) -> net.Network:
         """
         The underlying network
         """
@@ -51,83 +51,83 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         return self._sn
 
-    def _get_nominal_v(self) -> _pd.Series:
+    def _get_nominal_v(self) -> pd.Series:
         """ A series of nominal voltages for all voltage levels
         """
         return self._network.get_voltage_levels()['nominal_v']
 
-    def _get_indexed_nominal_v(self, df: _pd.DataFrame, vl_attr: str = 'voltage_level_id') -> _pd.Series:
+    def _get_indexed_nominal_v(self, df: pd.DataFrame, vl_attr: str = 'voltage_level_id') -> pd.Series:
         """ A series of nominal voltages indexed on the provided dataframe index.
         """
-        return _pd.merge(df, self._get_nominal_v(), left_on=vl_attr, right_index=True)['nominal_v']
+        return pd.merge(df, self._get_nominal_v(), left_on=vl_attr, right_index=True)['nominal_v']
 
-    def _per_unit_p(self, df: _pd.DataFrame, columns: _List[str]) -> None:
+    def _per_unit_p(self, df: pd.DataFrame, columns: _List[str]) -> None:
         df[columns] /= self.sn
 
-    def _per_unit_v(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _per_unit_v(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         for col in columns:
             df[col] /= nominal_v
 
-    def _per_unit_angle(self, df: _pd.DataFrame, columns: _List[str]) -> None:
+    def _per_unit_angle(self, df: pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
-            df[col] = _np.deg2rad(df[col])
+            df[col] = np.deg2rad(df[col])
 
-    def _per_unit_r(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _per_unit_r(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             df[col] /= factor
 
-    def _per_unit_g(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _per_unit_g(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             df[col] *= factor
 
-    def _per_unit_i(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _per_unit_i(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
             df[col] /= factor
 
-    def _un_per_unit_p(self, df: _pd.DataFrame, columns: _List[str]) -> None:
+    def _un_per_unit_p(self, df: pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
             if col in df.columns:
                 df[col] *= self.sn
 
-    def _un_per_unit_v(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _un_per_unit_v(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         for col in columns:
             if col in df.columns:
                 df[col] *= nominal_v
 
-    def _un_per_unit_angle(self, df: _pd.DataFrame, columns: _List[str]) -> None:
+    def _un_per_unit_angle(self, df: pd.DataFrame, columns: _List[str]) -> None:
         for col in columns:
             if col in df.columns:
-                df[col] = _np.rad2deg(df[col])
+                df[col] = np.rad2deg(df[col])
 
-    def _un_per_unit_r(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _un_per_unit_r(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
                 df[col] *= factor
 
-    def _un_per_unit_g(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _un_per_unit_g(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = nominal_v ** 2 / self.sn
         for col in columns:
             if col in df.columns:
                 df[col] /= factor
 
-    def _un_per_unit_i(self, df: _pd.DataFrame, columns: _List[str], nominal_v: _pd.Series) -> None:
+    def _un_per_unit_i(self, df: pd.DataFrame, columns: _List[str], nominal_v: pd.Series) -> None:
         factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
         for col in columns:
             if col in df.columns:
                 df[col] *= factor
 
-    def get_buses(self) -> _pd.DataFrame:
+    def get_buses(self) -> pd.DataFrame:
         buses = self._network.get_buses()
         nominal_v = self._get_indexed_nominal_v(buses)
         self._per_unit_v(buses, ['v_mag'], nominal_v)
         self._per_unit_angle(buses, ['v_angle'])
         return buses
 
-    def get_generators(self) -> _pd.DataFrame:
+    def get_generators(self) -> pd.DataFrame:
         """
         A per-united dataframe of generators.
 
@@ -141,7 +141,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_i(generators, ['i'], nominal_v)
         return generators
 
-    def get_loads(self) -> _pd.DataFrame:
+    def get_loads(self) -> pd.DataFrame:
         """
         A per-united dataframe of loads.
 
@@ -150,12 +150,12 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         loads = self._network.get_loads()
         self._per_unit_p(loads, ['p0', 'q0', 'p', 'q'])
-        nominal_v = _pd.merge(loads, self._get_nominal_v(),
-                              left_on='voltage_level_id', right_index=True)['nominal_v']
+        nominal_v = pd.merge(loads, self._get_nominal_v(),
+                             left_on='voltage_level_id', right_index=True)['nominal_v']
         self._per_unit_i(loads, ['i'], nominal_v)
         return loads
 
-    def get_lines(self) -> _pd.DataFrame:
+    def get_lines(self) -> pd.DataFrame:
         """
         A per-united dataframe of lines.
 
@@ -170,7 +170,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_g(lines, ['g1', 'g2', 'b1', 'b2'], nominal_v)
         return lines
 
-    def get_2_windings_transformers(self) -> _pd.DataFrame:
+    def get_2_windings_transformers(self) -> pd.DataFrame:
         """
         A per-united dataframe of 2 windings transformers.
 
@@ -189,7 +189,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         two_windings_transformers['rated_u2'] /= nominal_v2
         return two_windings_transformers
 
-    def get_3_windings_transformers(self) -> _pd.DataFrame:
+    def get_3_windings_transformers(self) -> pd.DataFrame:
         """
         A per-united dataframe of 3 windings transformers.
 
@@ -213,7 +213,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         three_windings_transformers['rated_u0'] = 1
         return three_windings_transformers
 
-    def get_shunt_compensators(self) -> _pd.DataFrame:
+    def get_shunt_compensators(self) -> pd.DataFrame:
         """
         A per-united dataframe of shunt compensators.
 
@@ -227,7 +227,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_i(shunt_compensators, ['i'], nominal_v)
         return shunt_compensators
 
-    def get_dangling_lines(self) -> _pd.DataFrame:
+    def get_dangling_lines(self) -> pd.DataFrame:
         """
         A per-united dataframe of dangling lines.
 
@@ -242,7 +242,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_g(dangling_lines, ['g', 'b'], nominal_v)
         return dangling_lines
 
-    def get_lcc_converter_stations(self) -> _pd.DataFrame:
+    def get_lcc_converter_stations(self) -> pd.DataFrame:
         """
         A per-united dataframe of LCC converter stations.
 
@@ -255,7 +255,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_i(lcc_converter_stations, ['i'], nominal_v)
         return lcc_converter_stations
 
-    def get_vsc_converter_stations(self) -> _pd.DataFrame:
+    def get_vsc_converter_stations(self) -> pd.DataFrame:
         """
         A per-united dataframe of VSC converter stations.
 
@@ -269,7 +269,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_v(vsc_converter_stations, ['target_v'], nominal_v)
         return vsc_converter_stations
 
-    def get_static_var_compensators(self) -> _pd.DataFrame:
+    def get_static_var_compensators(self) -> pd.DataFrame:
         """
         A per-united dataframe of static var compensators.
 
@@ -283,7 +283,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_v(static_var_compensators, ['target_v'], nominal_v)
         return static_var_compensators
 
-    def get_voltage_levels(self) -> _pd.DataFrame:
+    def get_voltage_levels(self) -> pd.DataFrame:
         """
         A per-united dataframe of voltage levels.
 
@@ -294,7 +294,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_v(voltage_levels, ['low_voltage_limit', 'high_voltage_limit'], voltage_levels['nominal_v'])
         return voltage_levels
 
-    def get_busbar_sections(self) -> _pd.DataFrame:
+    def get_busbar_sections(self) -> pd.DataFrame:
         """
         A per-united dataframe of busbar sections.
 
@@ -307,7 +307,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_angle(busbar_sections, ['angle'])
         return busbar_sections
 
-    def get_hvdc_lines(self) -> _pd.DataFrame:
+    def get_hvdc_lines(self) -> pd.DataFrame:
         """
         A per-united dataframe of HVDC lines.
 
@@ -319,7 +319,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_r(hvdc_lines, ['r'], hvdc_lines['nominal_v'])
         return hvdc_lines
 
-    def get_reactive_capability_curve_points(self) -> _pd.DataFrame:
+    def get_reactive_capability_curve_points(self) -> pd.DataFrame:
         """
         A per-united dataframe of reactive capability curves.
 
@@ -330,7 +330,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_p(reactive_capability_curve_points, ['p', 'min_q', 'max_q'])
         return reactive_capability_curve_points
 
-    def get_batteries(self) -> _pd.DataFrame:
+    def get_batteries(self) -> pd.DataFrame:
         """
         A per-united dataframe of batteries.
 
@@ -343,7 +343,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_i(batteries, ['i'], nominal_v)
         return batteries
 
-    def get_ratio_tap_changers(self) -> _pd.DataFrame:
+    def get_ratio_tap_changers(self) -> pd.DataFrame:
         """
         A per-united dataframe of ratio tap changers.
 
@@ -360,7 +360,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_angle(ratio_tap_changers, ['alpha'])
         return ratio_tap_changers
 
-    def update_buses(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_buses(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update buses from per-united data.
         """
@@ -370,7 +370,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_angle(to_update, ['v_angle'])
         self._network.update_buses(to_update)
 
-    def update_generators(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_generators(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update generators from per-united data.
         """
@@ -381,7 +381,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_generators(to_update)
 
-    def update_loads(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_loads(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update loads from per-united data.
         """
@@ -391,7 +391,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_loads(to_update)
 
-    def update_batteries(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_batteries(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update batteries from per-united data.
         """
@@ -401,7 +401,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_batteries(to_update)
 
-    def update_dangling_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_dangling_lines(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update dangling lines from per-united data.
         """
@@ -413,7 +413,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_g(to_update, ['g', 'b'], nominal_v)
         self._network.update_dangling_lines(to_update)
 
-    def update_vsc_converter_stations(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_vsc_converter_stations(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update VSC converter stations from per-united data.
         """
@@ -424,7 +424,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_vsc_converter_stations(to_update)
 
-    def update_static_var_compensators(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_static_var_compensators(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update static var compensators from per-united data.
         """
@@ -435,7 +435,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_v(to_update, ['target_v'], nominal_v)
         self._network.update_static_var_compensators(to_update)
 
-    def update_hvdc_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_hvdc_lines(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update HVDC lines from per-united data.
         """
@@ -445,7 +445,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_r(to_update, ['r'], nominal_v)
         self._network.update_hvdc_lines(to_update)
 
-    def update_lines(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_lines(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update lines from per-united data.
         """
@@ -456,7 +456,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_g(to_update, ['g1', 'g2', 'b1', 'b2'], nominal_v)
         self._network.update_lines(to_update)
 
-    def update_2_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_2_windings_transformers(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update 2 windings transformers from per-united data.
         """
@@ -471,7 +471,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_v(to_update, ['rated_u2'], nominal_v2)
         self._network.update_2_windings_transformers(to_update)
 
-    def update_3_windings_transformers(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_3_windings_transformers(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update 3 windings transformers from per-united data.
         """
@@ -489,7 +489,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_v(to_update, ['rated_u3'], nominal_v3)
         self._network._update_elements(_pypowsybl.ElementType.THREE_WINDINGS_TRANSFORMER, to_update)
 
-    def update_lcc_converter_station(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_lcc_converter_station(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update LCC converter stations from per-united data.
         """
@@ -500,7 +500,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._network._update_elements(_pypowsybl.ElementType.LCC_CONVERTER_STATION, to_update)
 
 
-def per_unit_view(network: _net.Network, sn: float = 100) -> PerUnitView:
+def per_unit_view(network: net.Network, sn: float = 100) -> PerUnitView:
     """
     Creates a per unit view of the provided network, using SN as base power.
 

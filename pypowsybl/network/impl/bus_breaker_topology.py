@@ -1,6 +1,6 @@
-import networkx as _nx
+import networkx as nx
 import pypowsybl._pypowsybl as _pp
-from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
+from pypowsybl.util import create_data_frame_from_series_array
 from pandas import DataFrame
 
 class BusBreakerTopology:
@@ -14,11 +14,11 @@ class BusBreakerTopology:
     """
 
     def __init__(self, network_handle: _pp.JavaHandle, voltage_level_id: str):
-        self._elements = _create_data_frame_from_series_array(
+        self._elements = create_data_frame_from_series_array(
             _pp.get_bus_breaker_view_elements(network_handle, voltage_level_id))
-        self._switchs = _create_data_frame_from_series_array(
+        self._switchs = create_data_frame_from_series_array(
             _pp.get_bus_breaker_view_switches(network_handle, voltage_level_id))
-        self._buses = _create_data_frame_from_series_array(
+        self._buses = create_data_frame_from_series_array(
             _pp.get_bus_breaker_view_buses(network_handle, voltage_level_id))
 
     @property
@@ -43,11 +43,11 @@ class BusBreakerTopology:
         """
         return self._elements
 
-    def create_graph(self) -> _nx.Graph:
+    def create_graph(self) -> nx.Graph:
         """
         Representation of the topology as a networkx graph.
         """
-        graph = _nx.Graph()
+        graph = nx.Graph()
         graph.add_nodes_from(self._buses.index.tolist())
         graph.add_edges_from(self._switchs[['bus1_id', 'bus2_id']].values.tolist())
         return graph
