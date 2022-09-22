@@ -441,6 +441,14 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
+
+void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, 
+    std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2, 
+    std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
+    std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
+
+void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId, 
+    std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
 }
 
 #endif //PYPOWSYBL_H

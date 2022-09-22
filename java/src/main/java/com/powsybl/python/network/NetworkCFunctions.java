@@ -64,6 +64,8 @@ import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.dataframe.CDataframeHandler.*;
 
 /**
+ * Defines the basic C functions for a network.
+ *
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
 @CContext(Directives.class)
@@ -677,9 +679,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "removeExtensions")
     public static void removeExtensions(IsolateThread thread, ObjectHandle networkHandle,
-                                                                     CCharPointer namePtr,
-                                                                     CCharPointerPointer idsPtr, int idsCount,
-                                                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                        CCharPointer namePtr,
+                                        CCharPointerPointer idsPtr, int idsCount,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String name = CTypeUtil.toString(namePtr);
@@ -705,9 +707,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "createExtensions")
     public static void createExtensions(IsolateThread thread, ObjectHandle networkHandle,
-                                       CCharPointer namePtr,
-                                       DataframeArrayPointer cDataframes,
-                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+                                        CCharPointer namePtr,
+                                        DataframeArrayPointer cDataframes,
+                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String name = CTypeUtil.toString(namePtr);
