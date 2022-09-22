@@ -124,6 +124,10 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+enum XnecSelectionStrategy {
+    ONLY_INTERCONNECTIONS = 0,
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+};
 
 class SeriesMetadata {
 public:
@@ -177,7 +181,7 @@ class SecurityAnalysisParameters {
 public:
     SecurityAnalysisParameters(security_analysis_parameters* src);
     std::shared_ptr<security_analysis_parameters> to_c_struct() const;
-    
+
     LoadFlowParameters load_flow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
@@ -192,10 +196,23 @@ class SensitivityAnalysisParameters {
 public:
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
-    
+
     LoadFlowParameters load_flow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+};
+
+class FlowDecompositionParameters {
+public:
+    FlowDecompositionParameters(flow_decomposition_parameters* src);
+    std::shared_ptr<flow_decomposition_parameters> to_c_struct() const;
+
+    bool enable_losses_compensation;
+    float losses_compensation_epsilon;
+    float sensitivity_epsilon;
+    bool rescale_enabled;
+    XnecSelectionStrategy xnec_selection_strategy;
+    bool dc_fallback_enabled_after_ac_divergence;
 };
 
 
@@ -421,14 +438,17 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
+SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
+
+FlowDecompositionParameters* createFlowDecompositionParameters();
+
 void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, 
-std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2, 
-std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
-std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
+    std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2, 
+    std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
+    std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
 
 void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId, 
- std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
-
+    std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
 }
 
 #endif //PYPOWSYBL_H
