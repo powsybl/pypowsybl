@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.powsybl.python.network.NetworkModificationCFunctions.getFeedersByConnectable;
+import static com.powsybl.python.network.NetworkModificationsCFunctions.getFeedersByConnectable;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
