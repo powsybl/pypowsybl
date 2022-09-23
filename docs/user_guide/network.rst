@@ -337,25 +337,42 @@ Modify an existing network
 --------------------------
 
 If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
-Let's take an example. First it is possible to load a node/breaker network with:
+Let's take an example. First you can create a node/breaker simple network with:
 
 .. testcode::
 
     network = pp.network.create_four_substations_node_breaker_network()
 
-Then you need to create a dataframe with the attributes of the injection that you want to add to the network. Let's say
-that we want to add a load, with the id "new_load". The load will have a p0 of 100 and a q0 of 50:
+You can display the voltage level 'S1VL2' with a single line diagram:
 
 .. testcode::
 
-    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0"], data=[["new_load", 100.0, 50.0]])
+    network.get_single_line_diagram('S1VL2')
+
+.. image:: ../_static/images/four_substation_node_breaker_s1vl2.svg
+
+Then you need to create a dataframe with the attributes of the injection that you want to add to the network. Let's say
+that we want to add a load, with the id "new_load" on the voltage level S1VL2. The load will have a p0 of 100 and a
+q0 of 50. It is also necessary to put in the dataframe the id of the busbar section where we want to put the load and
+the order position.
+
+.. testcode::
+
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "voltage_level_id", "busbar_section_id", "position_order"], data=[["new_load", 100.0, 50.0, "S1VL2", "S1VL2_BBS1", 10]])
 
 You can then create the load and connect it to a busbar section:
 
 .. testcode::
 
-    network.create_feeder_bay(busbar_section_id="S1VL2_BBS1", injection_position_order=0, df=df, element_type=ElementType.LOAD)
+    pp.network.create_load_bay(network, df)
 
-The load is then added to the network and connected to S1VL2_BBS1 with an breaker and a closed disconnector.
+The load is then added to the network and connected to S1VL2_BBS1 with a breaker and a closed disconnector.
 If your network contains position extensions, then the injection will be connected to every busbar that is parallel to
-the specified busbar section with an open disconnector.
+the specified busbar section with an open disconnector. You can check that the load is well connected by drawing the
+single line diagram:
+
+.. testcode::
+
+    network.get_single_line_diagram('S1VL2')
+
+.. image:: ../_static/images/four_substation_node_breaker_s1vl2_with_new_load.svg
