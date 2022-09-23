@@ -36,6 +36,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static java.lang.Integer.MIN_VALUE;
+
 /**
  * Mappers to dataframes.
  *
@@ -370,7 +372,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<Map<String, List<ConnectablePosition.Feeder>>, Pair<String, ConnectablePosition.Feeder>>()
                 .itemsProvider(Dataframes::getPositions)
                 .stringsIndex("connectable_id", Pair::getLeft)
-                .ints("order_position", pair -> pair.getRight().getOrder().orElse(null))
+                .ints("order_position", pair -> pair.getRight().getOrder().orElse(MIN_VALUE))
                 .strings("extension_name", pair -> pair.getRight().getName())
                 .build();
     }
