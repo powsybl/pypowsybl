@@ -464,7 +464,7 @@ def test_update_generators_data_frame():
     generators = n.get_generators()
     assert 607 == generators['target_p']['GEN']
     assert generators['voltage_regulator_on']['GEN']
-    assert '' == generators['regulated_element_id']['GEN']
+    assert 'GEN' == generators['regulated_element_id']['GEN']
     generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
                                columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
     n.update_generators(generators2)
@@ -491,7 +491,7 @@ def test_regulated_terminal_node_breaker():
 def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
-    assert '' == generators['regulated_element_id']['GEN']
+    assert 'GEN' == generators['regulated_element_id']['GEN']
 
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='NHV1')
@@ -614,9 +614,9 @@ def test_ratio_tap_changers():
     assert not df['fictitious']['NHV2_NLOAD']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'regulated_element_id', 'rho',
                                      'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, NaN]])
+                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 'NHV2_NLOAD', 0.4, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
@@ -624,9 +624,9 @@ def test_ratio_tap_changers():
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'regulated_element_id', 'rho',
                                      'alpha'],
-                            data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
+                            data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 'NHV2_NLOAD', 0.34, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -636,7 +636,7 @@ def test_phase_tap_changers():
     assert not df['fictitious']['TWT']
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+            'regulation_value', 'target_deadband', 'regulating_bus_id', 'regulated_element_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
     assert 0 == twt_values.low_tap
@@ -646,19 +646,22 @@ def test_phase_tap_changers():
     assert 'FIXED_TAP' == twt_values.regulation_mode
     assert pd.isna(twt_values.regulation_value)
     assert pd.isna(twt_values.target_deadband)
+    assert n.get_phase_tap_changers().loc['TWT']['regulated_element_id'] == 'TWT'
     update = pd.DataFrame(index=['TWT'],
-                          columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
-                          data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
+                          columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating',
+                                   'regulated_element_id'],
+                          data=[[10, 100, 1000, 'CURRENT_LIMITER', True, 'GH1']])
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+            'regulation_value', 'target_deadband', 'regulating_bus_id', 'regulated_element_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
     assert twt_values.regulating
     assert 'CURRENT_LIMITER' == twt_values.regulation_mode
     assert 1000 == pytest.approx(twt_values.regulation_value)
     assert 100 == pytest.approx(twt_values.target_deadband)
+    assert n.get_phase_tap_changers().loc['TWT']['regulated_element_id'] == 'GH1'
 
 
 def test_variant():
@@ -1573,7 +1576,7 @@ def test_create_line_on_line():
     assert retrieved_newline["connected1"]
     assert retrieved_newline["connected2"]
 
-    #Check splitted line percent
+    # Check splitted line percent
     retrieved_splittedline1 = n.get_lines().loc['NHV1_NHV2_1_1']
     assert retrieved_splittedline1["r"] == 2.25
 

@@ -31,8 +31,6 @@ def test_flow_decomposition_run_no_parameters():
     net = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     net.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     df = pp.flowdecomposition.run(net)
-    print(pp.flowdecomposition.Parameters())
-    print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
@@ -52,7 +50,6 @@ def test_flow_decomposition_run_full_integration():
         xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
         dc_fallback_enabled_after_ac_divergence=True)
     df = pp.flowdecomposition.run(net, flow_decomposition_parameters=parameters)
-    print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
@@ -66,7 +63,6 @@ def test_flow_decomposition_run_full_integration():
 def test_flow_decomposition_parameters():
     net = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     net.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
-    parameters = pp.flowdecomposition.Parameters()
 
     # Testing setting independently every attributes
     attributes = {

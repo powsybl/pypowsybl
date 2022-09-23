@@ -90,10 +90,10 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
 
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     >>> network.get_generators()
-                           name energy_source  target_p   min_p   max_p   min_q   max_q reactive_limits_kind  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id     bus_id  connected
+                           name energy_source  target_p   min_p   max_p   min_q   max_q reactive_limits_kind  target_v  target_q  voltage_regulator_on regulated_element_id  p   q   i  voltage_level_id     bus_id  connected
     id                                                                                                                                                                                                                    
-    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0              MIN_MAX     400.0       0.0                  True                      NaN NaN NaN          FGEN  1  FGEN  1_0       True
-    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0              MIN_MAX     400.0       0.0                  True                      NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
+    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0              MIN_MAX     400.0       0.0                  True       FGEN  11_generator NaN NaN NaN          FGEN  1  FGEN  1_0       True
+    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0              MIN_MAX     400.0       0.0                  True       BLOAD 12_generator NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
     >>> network.get_loads()
                       name       type     p0   q0   p   q   i voltage_level_id     bus_id  connected
     id                                                                                          
@@ -114,7 +114,7 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
     id                                                                                                                                                                                        
     BLOAD 11 BLOAD 12 2       0.5  1.5  0.0002  0.00015     400.0     400.0      NaN NaN NaN NaN NaN NaN NaN           BLOAD 1           BLOAD 1  BLOAD 1_1  BLOAD 1_0        True        True
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id regulated_element_id
     id                                                                                                                                      
     BLOAD 11 BLOAD 12 2    0      -16        16          33       False       FIXED_TAP               NaN              NaN  
     
@@ -151,7 +151,7 @@ Here are the results with non-neutral tap position.
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     >>> network.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id regulated_element_id
     id                                                                                                                                      
     BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
     >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)

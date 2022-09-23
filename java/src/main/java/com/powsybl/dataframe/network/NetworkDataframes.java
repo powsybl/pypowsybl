@@ -258,11 +258,17 @@ public final class NetworkDataframes {
         } else {
             throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
         }
-        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-            //Not supported for the moment
-            return null;
-        }
-        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+        return terminal != null && terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private static String getRatioTapChangerRegulatedElementId(TwoWindingsTransformer transformer) {
+        Terminal terminal = transformer.getRatioTapChanger().getRegulationTerminal();
+        return terminal != null && terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private static String getPhaseTapChangerRegulatedElementId(TwoWindingsTransformer transformer) {
+        Terminal terminal = transformer.getPhaseTapChanger().getRegulationTerminal();
+        return terminal != null && terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
     }
 
     private static void setRegulatedElement(Injection injection, String elementId) {
@@ -275,17 +281,43 @@ public final class NetworkDataframes {
                         ": not currently supported for bus breaker topologies.");
             }
             if (injection instanceof Generator) {
-                ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+                ((Generator) injection).setRegulatingTerminal(terminal);
             } else if (injection instanceof VscConverterStation) {
-                ((VscConverterStation) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+                ((VscConverterStation) injection).setRegulatingTerminal(terminal);
             } else if (injection instanceof StaticVarCompensator) {
-                ((StaticVarCompensator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
+                ((StaticVarCompensator) injection).setRegulatingTerminal(terminal);
             } else {
                 throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
             }
         } else {
             throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
                     ": the regulated element may only be a busbar section or an injection.");
+        }
+    }
+
+    private static void setRatioTapChangerRegulatedElement(TwoWindingsTransformer transformer, String elementId) {
+        Network network = transformer.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            transformer.getRatioTapChanger().setRegulationTerminal(terminal);
+        }
+    }
+
+    private static void setPhaseTapChangerRegulatedElement(TwoWindingsTransformer transformer, String elementId) {
+        Network network = transformer.getNetwork();
+        Identifiable<?> identifiable = network.getIdentifiable(elementId);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            transformer.getPhaseTapChanger().setRegulationTerminal(terminal);
         }
     }
 
@@ -817,6 +849,7 @@ public final class NetworkDataframes {
                 .doubles("target_v", t -> t.getRatioTapChanger().getTargetV(), (t, v) -> t.getRatioTapChanger().setTargetV(v))
                 .doubles("target_deadband", t -> t.getRatioTapChanger().getTargetDeadband(), (t, v) -> t.getRatioTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
+                .strings("regulated_element_id", NetworkDataframes::getRatioTapChangerRegulatedElementId, NetworkDataframes::setRatioTapChangerRegulatedElement)
                 .doubles("rho", NetworkDataframes::computeRho)
                 .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -842,6 +875,7 @@ public final class NetworkDataframes {
                 .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
+                .strings("regulated_element_id", NetworkDataframes::getPhaseTapChangerRegulatedElementId, NetworkDataframes::setPhaseTapChangerRegulatedElement)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .build();
     }
