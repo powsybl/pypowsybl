@@ -4441,7 +4441,7 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
 
 
-def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_load_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a load, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4451,13 +4451,11 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology. The load is
         connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the load will also be connected to every parallel busbar section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments.
         Valid attributes are:
         - **id**: the identifier of the new load
         - **voltage_level_id**: the voltage level where the new load will be created.
@@ -4474,12 +4472,11 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter)
 
 
-def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a battery, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4489,13 +4486,12 @@ def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool =
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology. The battery is
         connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the battery will also be connected to every parallel busbar section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        Valid attributes are:
         - **id**: the identifier of the new battery
         - **voltage_level_id**: the voltage level where the new battery will be created.
           The voltage level must already exist.
@@ -4518,12 +4514,11 @@ def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool =
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter)
 
 
-def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a generator, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4539,7 +4534,7 @@ def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool
         The voltage level containing the busbar section should be described in node/breaker topology. The generator
         is connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the generator will also be connected to every parallel busbar section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        Valid attributes are:
         - **id**: the identifier of the new generator
         - **voltage_level_id**: the voltage level where the new generator will be created.
           The voltage level must already exist.
@@ -4565,12 +4560,11 @@ def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter)
 
 
-def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a dangling line, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4580,15 +4574,14 @@ def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
         The dangling line is connected to the busbar with a breaker and a closed disconnector. If the network
         has position extensions, the dangling line will also be connected to every parallel busbar section with
         an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
-                    - **id**: the identifier of the new line
+        Valid attributes are:
+        - **id**: the identifier of the new line
         - **voltage_level_id**: the voltage level where the new line will be created.
           The voltage level must already exist.
         - **bus_id**: the bus where the new line will be connected,
@@ -4612,9 +4605,8 @@ def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: 
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter)
 
 
 def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
@@ -4680,8 +4672,7 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
 
     """
     if shunt_df is not None:
-        if 'voltage_level_id' not in shunt_df.columns:
-            shunt_df['voltage_level_id'] = shunt_df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+        shunt_df['voltage_level_id'] = shunt_df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
     if linear_model_df is None:
         linear_model_df = pd.DataFrame()
     if non_linear_model_df is None:
@@ -4690,8 +4681,7 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
     return create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter)
 
 
-def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None,
-                                      **kwargs: _ArrayLike) -> None:
+def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a static var compensator, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4701,14 +4691,13 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_ex
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
         The static var compensator is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the static var compensator will also be connected to every parallel busbar
         section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        Valid attributes are:
 
         - **id**: the identifier of the new SVC
         - **voltage_level_id**: the voltage level where the new SVC will be created.
@@ -4734,12 +4723,11 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_ex
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter)
 
 
-def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4749,14 +4737,13 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
         The lcc converter station is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the lcc converter station will also be connected to every parallel busbar
         section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        Valid attributes are:
 
         - **id**: the identifier of the new station
         - **voltage_level_id**: the voltage level where the new station will be created.
@@ -4779,12 +4766,11 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter)
 
 
-def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exception: bool = False, reporter: _Reporter = None) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4794,14 +4780,13 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
         The vsc converter station is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the vsc converter station will also be connected to every parallel busbar
         section with an open disconnector.
-        Data may be provided as a dataframe or as keyword arguments. Valid attributes are:
+        Valid attributes are:
 
         - **id**: the identifier of the new station
         - **voltage_level_id**: the voltage level where the new station will be created.
@@ -4827,12 +4812,11 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
 
     """
     if df is not None:
-        if 'voltage_level_id' not in df.columns:
-            df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
-    return create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+        df['voltage_level_id'] = df.apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    return create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter)
 
 
-def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Optional[_Reporter], **kwargs: _ArrayLike) -> None:
+def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Optional[_Reporter]) -> None:
     """
     Creates an injection, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4843,7 +4827,6 @@ def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], eleme
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        kwargs: Attributes as keyword arguments.
 
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
@@ -4853,6 +4836,5 @@ def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], eleme
 
     """
     metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    c_dfs = network._get_c_dataframes(dfs, metadata, **kwargs)
+    c_dfs = network._get_c_dataframes(dfs, metadata)
     _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model, c_dfs, element_type)
-
