@@ -25,14 +25,12 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
-import static com.powsybl.python.commons.Util.doCatch;
 import java.util.*;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
-import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.commons.Util.createIntegerArray;
-import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
+import static com.powsybl.python.commons.Util.doCatch;
 
 /**
  * Defines the C functions for network modifications.
