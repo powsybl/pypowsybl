@@ -35,7 +35,8 @@ from pypowsybl.utils.dataframes import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
     _create_properties_c_dataframe,
-    _adapt_properties_kwargs
+    _adapt_properties_kwargs,
+    _get_c_dataframes
 )
 from pypowsybl.report import Reporter as _Reporter
 
@@ -3007,24 +3008,14 @@ class Network:  # pylint: disable=too-many-public-methods
             networks = [networks]
         return _pp.merge(self._handle, [n._handle for n in networks])
 
-    def _get_c_dataframes(self, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
-        c_dfs: _List[_Optional[_pp.Dataframe]] = []
-        dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
-        for i, df in enumerate(dfs):
-            if df is None:
-                c_dfs.append(None)
-            else:
-                c_dfs.append(_create_c_dataframe(df, metadata[i]))
-        return c_dfs
-
     def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
         metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
+        c_dfs = _get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_element(self._handle, c_dfs, element_type)
 
     def _create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
         metadata = _pp.get_network_extensions_creation_dataframes_metadata(extension_name)
-        c_dfs = self._get_c_dataframes(dfs, metadata, **kwargs)
+        c_dfs = _get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_extensions(self._handle, c_dfs, extension_name)
 
     def create_substations(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
@@ -4836,5 +4827,5 @@ def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], eleme
 
     """
     metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    c_dfs = network._get_c_dataframes(dfs, metadata)
+    c_dfs = _get_c_dataframes(dfs, metadata)
     _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model, c_dfs, element_type)

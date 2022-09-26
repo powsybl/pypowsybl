@@ -16,6 +16,10 @@ from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
 import pypowsybl._pypowsybl as _pp
+from typing import (
+    List as _List,
+    Optional as _Optional,
+)
 
 
 def _to_array(value: _ArrayLike) -> np.ndarray:
@@ -147,3 +151,14 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     index = Index(name=index_name, data=columns[index_name])
     data = dict((k, v) for k, v in columns.items() if k != 'id')
     return DataFrame(index=index, data=data)
+
+
+def _get_c_dataframes(dfs: _List[_Optional[DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+    c_dfs: _List[_Optional[_pp.Dataframe]] = []
+    dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
+    for i, df in enumerate(dfs):
+        if df is None:
+            c_dfs.append(None)
+        else:
+            c_dfs.append(_create_c_dataframe(df, metadata[i]))
+    return c_dfs
