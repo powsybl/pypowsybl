@@ -739,4 +739,42 @@ public final class PyPowsyblApiHeader {
         public static native ValidationLevelType fromCValue(int value);
     }
 
+    @CStruct("flow_decomposition_parameters")
+    public interface FlowDecompositionParametersPointer extends PointerBase {
+        @CField("enable_losses_compensation")
+        boolean isLossesCompensationEnabled();
+
+        @CField("enable_losses_compensation")
+        void setEnableLossesCompensation(boolean enableLossesCompensation);
+
+        @CField("losses_compensation_epsilon")
+        double getLossesCompensationEpsilon();
+
+        @CField("losses_compensation_epsilon")
+        void setLossesCompensationEpsilon(double lossesCompensationEpsilon);
+
+        @CField("sensitivity_epsilon")
+        double getSensitivityEpsilon();
+
+        @CField("sensitivity_epsilon")
+        void setSensitivityEpsilon(double sensitivityEpsilon);
+
+        @CField("rescale_enabled")
+        boolean isRescaleEnabled();
+
+        @CField("rescale_enabled")
+        void setRescaleEnabled(boolean rescaleEnabled);
+
+        @CField("xnec_selection_strategy")
+        int getXnecSelectionStrategy();
+
+        @CField("xnec_selection_strategy")
+        void setXnecSelectionStrategy(int xnecSelectionStrategy);
+
+        @CField("dc_fallback_enabled_after_ac_divergence")
+        boolean isDcFallbackEnabledAfterAcDivergence();
+
+        @CField("dc_fallback_enabled_after_ac_divergence")
+        void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
+    }
 }
