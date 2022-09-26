@@ -11,15 +11,12 @@ Provides utility methods for dataframes handling:
  - ...
 """
 from typing import List
+from typing import Optional as _Optional
 
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
 import pypowsybl._pypowsybl as _pp
-from typing import (
-    List as _List,
-    Optional as _Optional,
-)
 
 
 def _to_array(value: _ArrayLike) -> np.ndarray:
@@ -129,6 +126,7 @@ def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
+
 def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
@@ -153,8 +151,8 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     return DataFrame(index=index, data=data)
 
 
-def _get_c_dataframes(dfs: _List[_Optional[DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
-    c_dfs: _List[_Optional[_pp.Dataframe]] = []
+def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
+    c_dfs: List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     for i, df in enumerate(dfs):
         if df is None:
