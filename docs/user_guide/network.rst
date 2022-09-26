@@ -336,6 +336,8 @@ please refer to the API reference :doc:`documentation </reference/network>`.
 Modify an existing network
 --------------------------
 
+.. TODO: Enhance documentation when extensions are available
+
 If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
 Let's take an example. First you can create a node/breaker simple network with:
 

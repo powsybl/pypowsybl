@@ -1602,6 +1602,7 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
 
 
+# TODO: add checks of extensions everywhere once that they are interfaced.
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"], data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
@@ -1795,8 +1796,6 @@ def test_add_vsc_bay():
     assert vsc.voltage_regulator_on == True
     assert vsc.loss_factor == 1
     assert vsc.target_v == 400
-
-
 
 
 if __name__ == '__main__':
