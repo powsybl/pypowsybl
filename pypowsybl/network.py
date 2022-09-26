@@ -4449,8 +4449,6 @@ def create_load_bay(network: Network, df: _DataFrame, raise_exception: bool = Fa
         the load will also be connected to every parallel busbar section with an open disconnector.
         Valid attributes are:
         - **id**: the identifier of the new load
-        - **voltage_level_id**: the voltage level where the new load will be created.
-          The voltage level must already exist.
         - **name**: an optional human-readable name
         - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
         - **p0**: active power load, in MW
@@ -4484,14 +4482,6 @@ def create_battery_bay(network: Network, df: _DataFrame, raise_exception: bool =
         the battery will also be connected to every parallel busbar section with an open disconnector.
         Valid attributes are:
         - **id**: the identifier of the new battery
-        - **voltage_level_id**: the voltage level where the new battery will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new battery will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new battery will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new battery will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **min_p**: minimum active power, in MW
         - **max_p**: maximum active power, in MW
@@ -4527,14 +4517,6 @@ def create_generator_bay(network: Network, df: _DataFrame, raise_exception: bool
         the generator will also be connected to every parallel busbar section with an open disconnector.
         Valid attributes are:
         - **id**: the identifier of the new generator
-        - **voltage_level_id**: the voltage level where the new generator will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new generator will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new generator will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new generator will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
         - **max_p**: maximum active power in MW
         - **min_p**: minimum active power in MW
@@ -4573,14 +4555,6 @@ def create_dangling_line_bay(network: Network, df: _DataFrame, raise_exception: 
         an open disconnector.
         Valid attributes are:
         - **id**: the identifier of the new line
-        - **voltage_level_id**: the voltage level where the new line will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new line will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new line will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new line will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **p0**: the active power consumption, in MW
         - **q0**: the reactive power consumption, in MVar
@@ -4625,14 +4599,6 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
         Valid attributes for the shunt compensators dataframe are:
 
         - **id**: the identifier of the new shunt
-        - **voltage_level_id**: the voltage level where the new shunt will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new shunt will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new shunt will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new shunt will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **model_type**: either LINEAR or NON_LINEAR
         - **section_count**: the current count of connected sections
@@ -4691,14 +4657,6 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame, raise_ex
         Valid attributes are:
 
         - **id**: the identifier of the new SVC
-        - **voltage_level_id**: the voltage level where the new SVC will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new SVC will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new SVC will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new SVC will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **b_max**: the maximum susceptance, in S
         - **b_min**: the minimum susceptance, in S
@@ -4737,14 +4695,6 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
         Valid attributes are:
 
         - **id**: the identifier of the new station
-        - **voltage_level_id**: the voltage level where the new station will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new station will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new station will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new station will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **power_factor**: the power factor (ratio of the active power to the apparent power)
         - **loss_factor**: the loss factor of the station
@@ -4780,14 +4730,6 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
         Valid attributes are:
 
         - **id**: the identifier of the new station
-        - **voltage_level_id**: the voltage level where the new station will be created.
-          The voltage level must already exist.
-        - **bus_id**: the bus where the new station will be connected,
-          if the voltage level has a bus-breaker topology kind.
-        - **connectable_bus_id**: the bus where the new station will be connectable,
-          if the voltage level has a bus-breaker topology kind.
-        - **node**: the node where the new station will be connected,
-          if the voltage level has a node-breaker topology kind.
         - **name**: an optional human-readable name
         - **loss_factor**: the loss factor of the new station
         - **voltage_regulator_on**: true if the station regulated voltage

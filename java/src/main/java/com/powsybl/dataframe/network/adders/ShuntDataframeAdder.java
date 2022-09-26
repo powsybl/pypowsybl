@@ -20,6 +20,8 @@ import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,12 +91,8 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         for (int row = 0; row < shuntsDf.getRowCount(); row++) {
             ShuntCompensatorAdder adder = series.createAdder(network, row);
             String busbarSectionId = shuntsDf.getStrings("busbar_section_id").get(row);
-            int injectionPositionOrder = shuntsDf.getInts("shunt_compensator_position_order").get(row);
-            String directionStr = shuntsDf.getStrings("shunt_compensator_direction").get(row);
-            ConnectablePosition.Direction direction = ConnectablePosition.Direction.BOTTOM;
-            if (directionStr != null) {
-                direction = ConnectablePosition.Direction.valueOf(directionStr);
-            }
+            int injectionPositionOrder = shuntsDf.getInts("position_order").get(row);
+            ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(shuntsDf.getStringValue("direction", row).orElse("BOTTOM"));
             CreateFeederBay modification = new CreateFeederBayBuilder()
                     .withInjectionAdder(adder)
                     .withBbsId(busbarSectionId)
