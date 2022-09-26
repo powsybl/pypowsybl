@@ -1616,6 +1616,11 @@ def test_get_unused_order_positions():
     assert positions_before.left == 71
     assert positions_before.right == 79
 
+    positions_after = pp.network.get_unused_order_positions_after(n, 'bbs4')
+    assert positions_after.left == 121
+    assert positions_after.right == 2147483647
+
+
 
 if __name__ == '__main__':
     unittest.main()
