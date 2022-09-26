@@ -309,3 +309,17 @@ def test_connectable_position():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+
+def test_busbar_section_position():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'busbarSectionPosition'
+    element_id = 'S1VL1_BBS'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id=element_id, busbar_index=1, section_index=2)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.busbar_index == 1
+    assert e.section_index == 1
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
