@@ -4832,7 +4832,7 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame, raise_exc
     return create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
 
 
-def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Reporter, **kwargs: _ArrayLike) -> None:
+def create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Optional[_Reporter], **kwargs: _ArrayLike) -> None:
     """
     Creates an injection, connects it to the network on a given busbar section and creates the associated topology.
 

@@ -1604,7 +1604,7 @@ def test_connect_voltage_level_on_line():
 
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network()
-    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "voltage_level_id", "position_order"], data=[["new_load", 10.0, 3.0, "S1VL1_BBS", "S1VL1", 0]])
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"], data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
     pp.network.create_load_bay(network=n, df=df, raise_exception=True)
     load = n.get_loads().loc["new_load"]
     assert load.p0 == 10.0
