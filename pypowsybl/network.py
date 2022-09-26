@@ -4485,8 +4485,7 @@ def get_unused_order_positions_before(network: Network, busbar_section_id: str) 
     positions = _pp.get_unused_order_positions(network._handle, busbar_section_id, 'BEFORE')
     if len(positions) == 0:
         return None
-    else:
-        return pd.Interval(left=positions[0], right=positions[1], closed='both')
+    return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
 def get_unused_order_positions_after(network: Network, busbar_section_id: str) -> _Optional[pd.Interval]:
@@ -4515,5 +4514,4 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     positions = _pp.get_unused_order_positions(network._handle, busbar_section_id, 'AFTER')
     if len(positions) == 0:
         return None
-    else:
-        return pd.Interval(left=positions[0], right=positions[1], closed='both')
+    return pd.Interval(left=positions[0], right=positions[1], closed='both')
