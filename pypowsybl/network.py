@@ -4761,12 +4761,30 @@ def get_branch_feeder_bays_metadata(element_type: ElementType) -> _List[_List[_p
     return metadata
 
 def create_branch_feeder_bays_line(network: Network, df_new_line: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    """
+    Add new branch feeder bays of type line on existing bus bar section
+
+    Args:
+        network: the network to which we want to add the new line branch feeder
+        df_new_line: Attributes as a dataframe.
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+    """
     metadata = get_branch_feeder_bays_metadata(ElementType.LINE)
     df_new_line = _adapt_df_or_kwargs(metadata[0], df_new_line, **kwargs)
     c_df = _create_c_dataframe(df_new_line, metadata[0])
     _pp.create_branch_feeder_bays_line(network._handle, c_df)
 
 def create_branch_feeder_bays_twt(network: Network, df_new_twt: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    """
+    Add new branch feeder bays of type two windings transformer on existing bus bar sections
+
+    Args:
+        network: the network to which we want to add the new two windings transformer branch feeder
+        df_new_twt: Attributes as a dataframe.
+    Notes:
+        The voltage level containing the busbar section should be described in node/breaker topology.
+    """
     metadata = get_branch_feeder_bays_metadata(ElementType.TWO_WINDINGS_TRANSFORMER)
     df_new_twt = _adapt_df_or_kwargs(metadata[0], df_new_twt, **kwargs)
     c_df = _create_c_dataframe(df_new_twt, metadata[0])

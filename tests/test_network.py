@@ -1542,9 +1542,17 @@ def test_create_branch_feeder_bays_line():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_line'], columns=['id', 'bus_bar_section_id_1', 'bus_bar_section_id_2', 'position_order_1',
          'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
-         data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0]])
+         data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
     pp.network.create_branch_feeder_bays_line(n, df)
-    retrieved_newline = n.get_lines(id=['new_line'])
+    retrieved_newline = n.get_lines().loc['new_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["g1"] == 20.0
+    assert retrieved_newline["g2"] == 30.0
+    assert retrieved_newline["b1"] == 40.0
+    assert retrieved_newline["b2"] == 50.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
 
 def test_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -1596,7 +1604,14 @@ def test_create_branch_feeder_bays_twt():
          'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
          data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0, 'S1VL1', 'S1VL2']])
     pp.network.create_branch_feeder_bays_twt(n, df)
-    retrieved_newtwt= n.get_2_windings_transformers(id=['new_twt'])
+    retrieved_newtwt= n.get_2_windings_transformers().loc['new_twt']
+    assert retrieved_newtwt["r"] == 5.0
+    assert retrieved_newtwt["x"] == 50.0
+    assert retrieved_newtwt["g"] == 2.0
+    assert retrieved_newtwt["b"] == 4.0
+    assert retrieved_newtwt["rated_u1"] == 225.0
+    assert retrieved_newtwt["rated_u2"] == 400.0
+    assert retrieved_newtwt["rated_s"] == 1.0
 
 def test_connect_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
