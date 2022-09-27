@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -37,7 +38,11 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q")
+            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
+
     );
 
     @Override
@@ -65,23 +70,24 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             this.targetQ = dataframe.getDoubles("target_q");
         }
 
-        void createBattery(Network network, int row) {
+        BatteryAdder createAdder(Network network, int row) {
             BatteryAdder batteryAdder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newBattery();
             setInjectionAttributes(batteryAdder, row);
             applyIfPresent(maxP, row, batteryAdder::setMaxP);
             applyIfPresent(minP, row, batteryAdder::setMinP);
-            applyIfPresent(targetP, row, batteryAdder::setP0);
-            applyIfPresent(targetQ, row, batteryAdder::setQ0);
-            batteryAdder.add();
+            applyIfPresent(targetP, row, batteryAdder::setTargetP);
+            applyIfPresent(targetQ, row, batteryAdder::setTargetQ);
+            return batteryAdder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         BatterySeries series = new BatterySeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.createBattery(network, row);
+            BatteryAdder adder = series.createAdder(network, row);
+            addition.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
 }

@@ -11,6 +11,7 @@ Provides utility methods for dataframes handling:
  - ...
 """
 from typing import List
+from typing import Optional as _Optional
 
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
@@ -125,6 +126,7 @@ def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
+
 def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
@@ -147,3 +149,14 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     index = Index(name=index_name, data=columns[index_name])
     data = dict((k, v) for k, v in columns.items() if k != 'id')
     return DataFrame(index=index, data=data)
+
+
+def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
+    c_dfs: List[_Optional[_pp.Dataframe]] = []
+    dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
+    for i, df in enumerate(dfs):
+        if df is None:
+            c_dfs.append(None)
+        else:
+            c_dfs.append(_create_c_dataframe(df, metadata[i]))
+    return c_dfs

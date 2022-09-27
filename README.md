@@ -108,9 +108,9 @@ While developing, you may find it convenient to use the developer (or editable)
 mode of installation:
 
 ```bash
-USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false pip install -e .
+pip install -e .
 # or, to build the C extension with debug symbols:
-USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false python setup.py build --debug develop --user
+python setup.py build --debug develop --user
 ```
 
 Please refer to pip and setuptools documentations for more information.

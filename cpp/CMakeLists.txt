@@ -60,7 +60,7 @@ ExternalProject_Add(mvn
 )
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1 ")
+    set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1" "-Ob")
 endif()
 
 
