@@ -41,9 +41,20 @@ public final class CTypeUtil {
         return charPtr;
     }
 
+    /**
+     * Creates a string from a UTF-8 encoded char*
+     */
     public static String toString(CCharPointer charPtr) {
         // pybind11 convert std::string and char* to python utf-8 string
         return CTypeConversion.toJavaString(charPtr, SubstrateUtil.strlen(charPtr), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Creates a string from a UTF-8 encoded char*, or {@code null} if it's empty.
+     */
+    public static String toStringOrNull(CCharPointer charPtr) {
+        String str = toString(charPtr);
+        return str.isEmpty() ? null : str;
     }
 
     public static List<String> toStringList(CCharPointerPointer charPtrPtr, int length) {

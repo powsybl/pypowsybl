@@ -25,7 +25,10 @@
   {
     "name":"com.powsybl.commons.extensions.AbstractExtension",
     "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true
+    "queryAllDeclaredMethods":true,
+    "methods":[
+      {"name":"getExtendable","parameterTypes":[] }
+    ]
   },
   {
     "name":"com.powsybl.commons.extensions.Extension",
