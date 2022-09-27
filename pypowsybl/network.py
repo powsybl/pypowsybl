@@ -4453,11 +4453,9 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
         - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
         - **p0**: active power load, in MW
         - **q0**: reactive power load, in MVar
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
         - **load_position_order**: the order of the load, will fill the ConnectablePosition extension
-        - **load_direction**: optionally, the direction of the load, will fill the ConnectablePosition extension,
-         default is BOTTOM.
+        - **load_direction**: optionally, the direction of the load, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
@@ -4485,11 +4483,9 @@ def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception:
         - **max_p**: maximum active power, in MW
         - **target_p**: active power consumption, in MW
         - **target_q**: reactive power consumption, in MVar
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
         - **battery_position_order**: the order of the battery, will fill the ConnectablePosition extension
-        - **battery_direction**: optionally, the direction of the battery, will fill the ConnectablePosition
-        extension, default is BOTTOM.
+        - **battery_direction**: optionally, the direction of the battery, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
@@ -4521,11 +4517,9 @@ def create_generator_bay(network: Network, df: _DataFrame = None, raise_exceptio
         - **rated_s**: nominal power in MVA
         - **target_v**: target voltage in kV, when the generator regulates voltage
         - **voltage_regulator_on**: true if the generator regulates voltage
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
         - **generator_position_order**: the order of the generator, will fill the ConnectablePosition extension
-        - **generator_direction**: optionally, the direction of the generator, will fill the ConnectablePosition
-        extension, default is BOTTOM.
+        - **generator_direction**: optionally, the direction of the generator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
@@ -4557,11 +4551,9 @@ def create_dangling_line_bay(network: Network, df: _DataFrame = None, raise_exce
         - **x**: the reactance, in Ohms
         - **g**: the shunt conductance, in S
         - **b**: the shunt susceptance, in S
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
         - **dangling_line_position_order**: the order of the dangling line, will fill the ConnectablePosition extension
-        - **dangling_line_direction**: the direction of the dangling line, will fill the ConnectablePosition
-        extension, default is BOTTOM.
+        - **dangling_line_direction**: the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, **kwargs)
@@ -4597,12 +4589,9 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
         - **section_count**: the current count of connected sections
         - **target_v**: an optional target voltage in kV
         - **target_v**: an optional deadband for the target voltage, in kV
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
-        - **shunt_compensator_position_order**: the order of the shunt compensator, will fill the
-        ConnectablePosition extension
-        - **shunt_compensator_direction**: the direction of the shunt compensator, will fill the
-        ConnectablePosition extension, default is BOTTOM.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
+        - **shunt_compensator_position_order**: the order of the shunt compensator, will fill the ConnectablePosition extension
+        - **shunt_compensator_direction**: the direction of the shunt compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
         Valid attributes for the linear sections models are:
 
@@ -4618,7 +4607,6 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
         - **id**: the identifier of the new shunt
         - **g**: the conductance, in Ohm, for this section
         - **b**: the susceptance, in Ohm, for this section
-
 
     """
     if linear_model_df is None:
@@ -4655,12 +4643,9 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, r
         - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
         - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
         - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
-        - **static_var_compensator_position_order**: the order of the static var compensator, will fill the
-        ConnectablePosition extension
-        - **static_var_compensator_direction**: the direction of the static var compensator, will fill the
-        ConnectablePosition extension, default is BOTTOM.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
+        - **static_var_compensator_position_order**: the order of the static var compensator, will fill the ConnectablePosition extension
+        - **static_var_compensator_direction**: the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
@@ -4689,12 +4674,9 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         - **name**: an optional human-readable name
         - **power_factor**: the power factor (ratio of the active power to the apparent power)
         - **loss_factor**: the loss factor of the station
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
-        - **lcc_converter_station_position_order**: the order of the lcc converter station, will fill the
-        ConnectablePosition extension
-        - **lcc_converter_station_direction**: the direction of the lcc converter station, will fill the
-        ConnectablePosition extension, default is BOTTOM.
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
+        - **lcc_converter_station_position_order**: the order of the lcc converter station, will fill the ConnectablePosition extension
+        - **lcc_converter_station_direction**: the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
@@ -4725,13 +4707,9 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         - **voltage_regulator_on**: true if the station regulated voltage
         - **target_v**: the target voltage, in kV, when the station regulates voltage
         - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
-        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed
-        disconnector.
-        - **vsc_converter_station_position_order**: the order of the vsc converter station, will fill the
-        ConnectablePosition extension
-        - **vsc_converter_station_direction**: the direction of the vsc converter station, will fill the
-        ConnectablePosition extension, default is BOTTOM.
-
+        - **busbar_section_id**: id of the busbar section to which the injection will be connected with a closed disconnector.
+        - **vsc_converter_station_position_order**: the order of the vsc converter station, will fill the ConnectablePosition extension
+        - **vsc_converter_station_direction**: the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)

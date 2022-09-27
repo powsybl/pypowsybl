@@ -40,6 +40,10 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
         addElements(network, dataframe, (n, df, adder, row, throwException, reporter) -> add(adder), false, Reporter.NO_OP);
     }
 
+    void addElements(Network network, UpdatingDataframe dataframe, AbstractSimpleAdder.AdditionStrategy addition, boolean throwException, Reporter reporter) {
+        //do nothing
+    }
+
     private void add(InjectionAdder<?> injectionAdder) {
         if (injectionAdder instanceof LoadAdder) {
             ((LoadAdder) injectionAdder).add();

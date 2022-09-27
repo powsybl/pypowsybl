@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
@@ -15,7 +14,9 @@ import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Injection;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.InjectionObservabilityAdder;
 
 import java.util.Collections;
@@ -87,7 +88,7 @@ public class InjectionObservabilityDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe) {
         InjectionObservabilitySeries series = new InjectionObservabilitySeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);

@@ -235,4 +235,3 @@ I/O
    create_static_var_compensator_bay
    create_lcc_converter_station_bay
    create_vsc_converter_station_bay
-   create_feeder_bay

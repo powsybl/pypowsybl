@@ -360,7 +360,7 @@ You can then create the load and connect it to a busbar section:
 
 .. testcode::
 
-        pp.network.create_load_bay(network=n, id="new_load", p0=100.0, q0=50.0, busbar_section_id="S1VL2_BBS1", position_order=10)
+    pp.network.create_load_bay(network=network, id="new_load", p0=100.0, q0=50.0, busbar_section_id="S1VL2_BBS1", position_order=10)
 
 The load is then added to the network and connected to S1VL2_BBS1 with a breaker and a closed disconnector.
 If your network contains position extensions, then the injection will be connected to every busbar that is parallel to

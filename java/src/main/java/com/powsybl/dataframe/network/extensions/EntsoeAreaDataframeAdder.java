@@ -7,7 +7,6 @@
 package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
@@ -59,7 +58,7 @@ public class EntsoeAreaDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe) {
         EntsoeAreaSeries series = new EntsoeAreaSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);

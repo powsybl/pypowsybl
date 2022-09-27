@@ -33,10 +33,4 @@ public interface NetworkElementAdder {
     default void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, Reporter reporter) {
         throw new UnsupportedOperationException();
     }
-
-    default void addElements(Network network, UpdatingDataframe dataframe) {
-    }
-
-    default void addElements(Network network, UpdatingDataframe dataframe, AbstractSimpleAdder.AdditionStrategy addition, boolean throwException, Reporter reporter) {
-    }
 }
