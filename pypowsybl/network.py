@@ -4768,7 +4768,9 @@ def get_connectables_order_positions(network: Network, voltage_level_id: str) ->
         taken order positions by every connectable at the scale of a voltage level.
     """
     series_array = _pp.get_connectables_order_positions(network._handle, voltage_level_id)
-    return _create_data_frame_from_series_array(series_array).sort_values(by=['order_position'])
+    position_df = _create_data_frame_from_series_array(series_array).sort_values(by=['order_position'])
+    position_df['extension_name'] = position_df.apply(lambda row: row['extension_name'].rstrip(), axis=1)
+    return position_df
 
 
 def get_unused_order_positions_before(network: Network, busbar_section_id: str) -> _Optional[pd.Interval]:
