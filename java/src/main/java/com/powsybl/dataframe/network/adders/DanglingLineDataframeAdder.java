@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -39,7 +40,10 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("r"),
             SeriesMetadata.doubles("x"),
             SeriesMetadata.doubles("g"),
-            SeriesMetadata.doubles("b")
+            SeriesMetadata.doubles("b"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     @Override
@@ -71,7 +75,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             this.b = dataframe.getDoubles("b");
         }
 
-        void create(Network network, int row) {
+        DanglingLineAdder createAdder(Network network, int row) {
             DanglingLineAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newDanglingLine();
             setInjectionAttributes(adder, row);
@@ -81,15 +85,16 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(x, row, adder::setX);
             applyIfPresent(g, row, adder::setG);
             applyIfPresent(b, row, adder::setB);
-            adder.add();
+            return adder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         DanglingLineSeries series = new DanglingLineSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row);
+            DanglingLineAdder adder = series.createAdder(network, row);
+            additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
 }

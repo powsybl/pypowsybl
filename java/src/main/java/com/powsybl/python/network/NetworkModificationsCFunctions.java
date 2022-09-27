@@ -7,6 +7,10 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLine;
 import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLineBuilder;
 import com.powsybl.iidm.modification.topology.CreateLineOnLine;
@@ -22,7 +26,12 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.powsybl.python.commons.Util.convert;
 import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
 /**
  * Defines the C functions for network modifications.
@@ -142,6 +151,24 @@ public final class NetworkModificationsCFunctions {
                     .withPercent(positionPercent)
                     .build();
             modification.apply(network);
+        });
+    }
+
+    @CEntryPoint(name = "createFeederBay")
+    public static void createFeederBay(IsolateThread thread, ObjectHandle networkHandle, boolean throwException,
+                                       ObjectHandle reporterHandle, PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
+                                       PyPowsyblApiHeader.ElementType elementType,
+                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            DataframeElementType type = convert(elementType);
+            List<UpdatingDataframe> dataframes = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+            }
+            NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reporter);
         });
     }
 }

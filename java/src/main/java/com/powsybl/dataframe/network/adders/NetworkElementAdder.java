@@ -6,6 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -28,4 +29,8 @@ public interface NetworkElementAdder {
      * can provide additional data (think steps for the tap changers).
      */
     void addElements(Network network, List<UpdatingDataframe> dataframes);
+
+    default void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, Reporter reporter) {
+        throw new UnsupportedOperationException();
+    }
 }

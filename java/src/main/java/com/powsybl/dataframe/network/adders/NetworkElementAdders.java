@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -65,6 +66,14 @@ public final class NetworkElementAdders {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
         adder.addElements(network, dfs);
+    }
+
+    public static void addElementsWithBay(DataframeElementType type, Network network, List<UpdatingDataframe> df, boolean throwException, Reporter reporter) {
+        NetworkElementAdder adder = ADDERS.get(type);
+        if (adder == null) {
+            throw new PowsyblException("Creation not implemented for type " + type.name());
+        }
+        adder.addElementsWithBay(network, df, throwException, reporter);
     }
 
     public static NetworkElementAdder getExtensionAdder(String extensionName) {
