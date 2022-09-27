@@ -1612,13 +1612,16 @@ def test_get_order_positions_connectables():
 
 def test_get_unused_order_positions():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
-    positions_before = pp.network.get_unused_order_positions_before(n, 'bbs4')
-    assert positions_before.left == 71
-    assert positions_before.right == 79
-
     positions_after = pp.network.get_unused_order_positions_after(n, 'bbs4')
     assert positions_after.left == 121
     assert positions_after.right == 2147483647
+    positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
+    assert positions_before.right == -1
+
+    positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
+    assert positions_before_no_space is None
+    positions_after_no_space = pp.network.get_unused_order_positions_after(n, 'bbs1')
+    assert positions_after_no_space is None
 
 
 
