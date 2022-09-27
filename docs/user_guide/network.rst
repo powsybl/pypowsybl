@@ -331,3 +331,44 @@ You can now run a loadflow to check our network actually works !
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
+
+
+Modify an existing network
+--------------------------
+
+.. TODO: Enhance documentation when extensions are available/other hypothesis
+
+If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
+Let's take an example. First you can create a node/breaker simple network with:
+
+.. testcode::
+
+    network = pp.network.create_four_substations_node_breaker_network()
+
+You can display the voltage level 'S1VL2' with a single line diagram:
+
+.. testcode::
+
+    network.get_single_line_diagram('S1VL2')
+
+.. image:: ../_static/images/four_substation_node_breaker_s1vl2.svg
+
+Let's say that we want to add a load, with the id "new_load" on the voltage level S1VL2. The load will have a p0 of 100 and a
+q0 of 50. Then you need to call create_load_bay with the right arguments. It is also necessary to specify the id of the busbar section where we want to put the load and
+the order position.
+You can then create the load and connect it to a busbar section:
+
+.. testcode::
+
+    pp.network.create_load_bay(network=network, id="new_load", p0=100.0, q0=50.0, busbar_section_id="S1VL2_BBS1", position_order=10)
+
+The load is then added to the network and connected to S1VL2_BBS1 with a breaker and a closed disconnector.
+If your network contains position extensions, then the injection will be connected to every busbar that is parallel to
+the specified busbar section with an open disconnector. You can check that the load is well connected by drawing the
+single line diagram:
+
+.. testcode::
+
+    network.get_single_line_diagram('S1VL2')
+
+.. image:: ../_static/images/four_substation_node_breaker_s1vl2_with_new_load.svg

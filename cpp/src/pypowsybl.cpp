@@ -1067,6 +1067,10 @@ void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdB
                         (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
 }
 
+void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType) {
+    pypowsybl::callJava(::createFeederBay, network, throwException, (reporter == nullptr) ? nullptr : *reporter, dataframes, elementType);
+}
+
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
     return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
 }

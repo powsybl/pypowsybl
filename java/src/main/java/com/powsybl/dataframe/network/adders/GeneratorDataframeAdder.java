@@ -7,12 +7,15 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.EnergySource;
+import com.powsybl.iidm.network.GeneratorAdder;
+import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +44,10 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.booleans("voltage_regulator_on")
+            SeriesMetadata.booleans("voltage_regulator_on"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     @Override
@@ -77,7 +83,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.energySource = dataframe.getStrings("energy_source");
         }
 
-        void create(Network network, int row) {
+        GeneratorAdder createAdder(Network network, int row) {
             GeneratorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newGenerator();
             setInjectionAttributes(adder, row);
@@ -89,15 +95,17 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(ratedS, row, adder::setRatedS);
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
             applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
-            adder.add();
+            return adder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         GeneratorSeries series = new GeneratorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row);
+            GeneratorAdder adder = series.createAdder(network, row);
+            addition.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
+
 }

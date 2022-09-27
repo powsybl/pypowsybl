@@ -104,6 +104,11 @@ void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>&
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
+void createFeederBay(pypowsybl::JavaHandle network, bool throwException, pypowsybl::JavaHandle* reporter, const std::vector<dataframe*>& dataframes, element_type elementType) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::createFeederBay(network, throwException, reporter, dataframeArray.get(), elementType);
+}
+
 void createExtensions(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
@@ -617,6 +622,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("connect_voltage_level_on_line", &pypowsybl::connectVoltageLevelOnLine, "connect a voltage level on a line", py::arg("network"), py::arg("bbs_or_bus_id"), py::arg("line_id"),
             py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"));
+
+    m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
+
 
     m.def("get_connectables_order_positions", &pypowsybl::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
 
