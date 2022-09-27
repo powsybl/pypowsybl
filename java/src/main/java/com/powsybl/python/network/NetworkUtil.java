@@ -7,7 +7,9 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.List;
@@ -208,6 +210,32 @@ public final class NetworkUtil {
                             limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
                     .forEach(temporaryLimitContexts::add);
         }
+    }
+
+    public static Stream<ConnectablePositionFeederData> getFeeders(Network network) {
+        Stream.Builder<ConnectablePositionFeederData> feeders = Stream.builder();
+        network.getConnectableStream().forEach(connectable -> {
+            ConnectablePosition connectablePosition = (ConnectablePosition) connectable.getExtension(ConnectablePosition.class);
+            if (connectablePosition != null) {
+                if (connectablePosition.getFeeder() != null) {
+                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                            connectablePosition.getFeeder(), null));
+                }
+                if (connectablePosition.getFeeder1() != null) {
+                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                            connectablePosition.getFeeder1(), SideEnum.ONE));
+                }
+                if (connectablePosition.getFeeder2() != null) {
+                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                            connectablePosition.getFeeder2(), SideEnum.TWO));
+                }
+                if (connectablePosition.getFeeder3() != null) {
+                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                            connectablePosition.getFeeder3(), SideEnum.THREE));
+                }
+            }
+        });
+        return feeders.build();
     }
 
 }
