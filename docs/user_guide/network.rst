@@ -336,7 +336,7 @@ please refer to the API reference :doc:`documentation </reference/network>`.
 Modify an existing network
 --------------------------
 
-.. TODO: Enhance documentation when extensions are available
+.. TODO: Enhance documentation when extensions are available/other hypothesis
 
 If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
 Let's take an example. First you can create a node/breaker simple network with:
@@ -353,20 +353,14 @@ You can display the voltage level 'S1VL2' with a single line diagram:
 
 .. image:: ../_static/images/four_substation_node_breaker_s1vl2.svg
 
-Then you need to create a dataframe with the attributes of the injection that you want to add to the network. Let's say
-that we want to add a load, with the id "new_load" on the voltage level S1VL2. The load will have a p0 of 100 and a
-q0 of 50. It is also necessary to put in the dataframe the id of the busbar section where we want to put the load and
+Let's say that we want to add a load, with the id "new_load" on the voltage level S1VL2. The load will have a p0 of 100 and a
+q0 of 50. Then you need to call create_load_bay with the right arguments. It is also necessary to specify the id of the busbar section where we want to put the load and
 the order position.
-
-.. testcode::
-
-    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "voltage_level_id", "busbar_section_id", "position_order"], data=[["new_load", 100.0, 50.0, "S1VL2", "S1VL2_BBS1", 10]])
-
 You can then create the load and connect it to a busbar section:
 
 .. testcode::
 
-    pp.network.create_load_bay(network, df)
+        pp.network.create_load_bay(network=n, id="new_load", p0=100.0, q0=50.0, busbar_section_id="S1VL2_BBS1", position_order=10)
 
 The load is then added to the network and connected to S1VL2_BBS1 with a breaker and a closed disconnector.
 If your network contains position extensions, then the injection will be connected to every busbar that is parallel to

@@ -1612,6 +1612,14 @@ def test_add_load_bay():
     assert load.q0 == 3.0
 
 
+def test_add_load_bay_from_kwargs():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, busbar_section_id="S1VL1_BBS", position_order=10)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+
+
 def test_add_generator_bay():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.network.create_generator_bay(n, pd.DataFrame.from_records(
