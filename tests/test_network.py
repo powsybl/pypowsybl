@@ -1603,3 +1603,211 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
+
+# TODO: add checks of extensions everywhere once that they are interfaced.
+def test_add_load_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"], data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+
+
+def test_add_load_bay_from_kwargs():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, busbar_section_id="S1VL1_BBS", position_order=10)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+
+
+def test_add_generator_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.network.create_generator_bay(n, pd.DataFrame.from_records(
+        data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 10)],
+        columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'busbar_section_id', 'position_order'],
+        index='id'))
+    generator = n.get_generators().loc['new_gen']
+    assert generator.target_p == 100.0
+    assert generator.target_q == 150.0
+    assert generator.voltage_level_id == 'S1VL1'
+
+
+def test_add_battery_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        columns=['id', 'busbar_section_id', 'max_p', 'min_p', 'target_p', 'target_q', 'position_order'],
+        data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 10)],
+        index='id')
+    pp.network.create_battery_bay(n, df)
+    battery = n.get_batteries().loc['new_battery']
+    assert battery.voltage_level_id == 'S1VL1'
+    assert battery.max_p == 100
+    assert battery.min_p == 10
+    assert battery.target_p == 90
+    assert battery.target_q == 20
+
+
+def test_add_dangling_line_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'new_dangling_line',
+        'name': 'dangling_line',
+        'p0': 100,
+        'q0': 101,
+        'r': 2,
+        'x': 2,
+        'g': 1,
+        'b': 1,
+        'position_order': 0,
+        'busbar_section_id': 'S1VL1_BBS'
+    }])
+    pp.network.create_dangling_line_bay(n, df)
+    dangling_line = n.get_dangling_lines().loc['new_dangling_line']
+    assert dangling_line.voltage_level_id == 'S1VL1'
+    assert dangling_line.r == 2
+    assert dangling_line.x == 2
+    assert dangling_line.g == 1
+    assert dangling_line.b == 1
+    assert dangling_line.p0 == 100
+    assert dangling_line.q0 == 101
+
+
+def test_add_linear_shunt_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                 'target_deadband', 'busbar_section_id', 'position_order'],
+        data=[('shunt_test', '', 'LINEAR', 1, 400, 2, 'S1VL1_BBS', 20)])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+        data=[('shunt_test', 0.14, -0.01, 2)])
+    pp.network.create_shunt_compensator_bay(n, shunt_df=shunt_df, linear_model_df=model_df, raise_exception=True)
+
+    shunt = n.get_shunt_compensators().loc['shunt_test']
+    assert shunt.max_section_count == 2
+    assert shunt.section_count == 1
+    assert shunt.target_v == 400
+    assert shunt.target_deadband == 2
+    assert not shunt.voltage_regulation_on
+    assert shunt.model_type == 'LINEAR'
+    assert shunt.g == 0.14
+    assert shunt.b == -0.01
+
+    model = n.get_linear_shunt_compensator_sections().loc['shunt_test']
+    assert model.g_per_section == 0.14
+    assert model.b_per_section == -0.01
+    assert model.max_section_count == 2
+
+
+def test_non_linear_shunt():
+    n = pp.network.create_four_substations_node_breaker_network()
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+                 'target_deadband', 'busbar_section_id', 'position_order'],
+        data=[('shunt1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 20),
+              ('shunt2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 100)])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g', 'b'],
+        data=[('shunt1', 1, 2),
+              ('shunt1', 3, 4),
+              ('shunt2', 5, 6),
+              ('shunt2', 7, 8)])
+    pp.network.create_shunt_compensator_bay(n, shunt_df=shunt_df, non_linear_model_df=model_df)
+
+    shunt = n.get_shunt_compensators().loc['shunt1']
+    assert shunt.max_section_count == 2
+    assert shunt.section_count == 1
+    assert shunt.target_v == 400
+    assert shunt.target_deadband == 2
+    assert not shunt.voltage_regulation_on
+    assert shunt.model_type == 'NON_LINEAR'
+    assert shunt.g == 1
+    assert shunt.b == 2
+
+    model1 = n.get_non_linear_shunt_compensator_sections().loc['shunt1']
+    section1 = model1.loc[0]
+    section2 = model1.loc[1]
+    assert section1.g == 1
+    assert section1.b == 2
+    assert section2.g == 3
+    assert section2.b == 4
+
+    model2 = n.get_non_linear_shunt_compensator_sections().loc['shunt2']
+    section1 = model2.loc[0]
+    section2 = model2.loc[1]
+    assert section1.g == 5
+    assert section1.b == 6
+    assert section2.g == 7
+    assert section2.b == 8
+
+
+def test_add_svc_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'svc_test',
+               'name': '',
+               'busbar_section_id': 'S1VL1_BBS',
+               'position_order': 10,
+               'target_q': 200,
+               'regulation_mode': 'REACTIVE_POWER',
+               'target_v': 400,
+               'b_min': 0,
+               'b_max': 2}])
+    pp.network.create_static_var_compensator_bay(n, df)
+    svc = n.get_static_var_compensators().loc['svc_test']
+    assert svc.voltage_level_id == 'S1VL1'
+    assert svc.target_q == 200
+    assert svc.regulation_mode == 'REACTIVE_POWER'
+    assert svc.target_v == 400
+    assert svc.b_min == 0
+    assert svc.b_max == 2
+
+
+def test_lcc_creation():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'lcc_test',
+               'name': '',
+               'busbar_section_id': 'S1VL1_BBS',
+               'position_order': 10,
+               'loss_factor': 0.1,
+               'power_factor': 0.2}])
+    pp.network.create_lcc_converter_station_bay(n, df)
+    lcc = n.get_lcc_converter_stations().loc['lcc_test']
+    assert lcc.voltage_level_id == 'S1VL1'
+    assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
+    assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
+
+
+def test_add_vsc_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'vsc_test',
+               'name': '',
+               'busbar_section_id': 'S1VL1_BBS',
+               'position_order': 10,
+               'target_q': 200,
+               'voltage_regulator_on': True,
+               'loss_factor': 1.0,
+               'target_v': 400}])
+    pp.network.create_vsc_converter_station_bay(n, df)
+    vsc = n.get_vsc_converter_stations().loc['vsc_test']
+    assert vsc.voltage_level_id == 'S1VL1'
+    assert vsc.target_q == 200
+    assert vsc.voltage_regulator_on == True
+    assert vsc.loss_factor == 1
+    assert vsc.target_v == 400
+
+
+if __name__ == '__main__':
+    unittest.main()

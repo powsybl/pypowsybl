@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -35,7 +36,10 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("power_factor"),
-            SeriesMetadata.doubles("loss_factor")
+            SeriesMetadata.doubles("loss_factor"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     @Override
@@ -59,21 +63,22 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
             this.lossFactors = dataframe.getDoubles("loss_factor");
         }
 
-        void create(Network network, int row) {
+        LccConverterStationAdder createAdder(Network network, int row) {
             LccConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newLccConverterStation();
             setInjectionAttributes(adder, row);
             applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
             applyIfPresent(powerFactors, row, f -> adder.setPowerFactor((float) f));
-            adder.add();
+            return adder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         LccStationSeries series = new LccStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row);
+            LccConverterStationAdder adder = series.createAdder(network, row);
+            additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
 }

@@ -292,3 +292,34 @@ def test_branch_observability():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+def test_connectable_position():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'position'
+    element_id = 'TWT'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id=[element_id, element_id, element_id], side=['ONE', 'TWO', 'THREE'],
+                        order=[1, 2, 3], feeder_name=['test', 'test1', 'test2'], direction=['TOP', 'BOTTOM', 'UNDEFINED'])
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert all([a == b for a, b in zip(e.side.values, ['ONE', 'TWO', 'THREE'])])
+    assert all([a == b for a, b in zip(e.feeder_name.values, ['test', 'test1', 'test2'])])
+    assert all([a == b for a, b in zip(e.direction.values, ['TOP', 'BOTTOM', 'UNDEFINED'])])
+    assert all([a == b for a, b in zip(e.order.values, [1, 2, 3])])
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+
+def test_busbar_section_position():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'busbarSectionPosition'
+    element_id = 'S1VL1_BBS'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id=element_id, busbar_index=1, section_index=2)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.busbar_index == 1
+    assert e.section_index == 1
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty

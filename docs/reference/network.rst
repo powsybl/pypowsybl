@@ -227,3 +227,11 @@ I/O
    get_import_parameters
    get_export_formats
    get_export_parameters
+   create_load_bay
+   create_battery_bay
+   create_dangling_line_bay
+   create_generator_bay
+   create_shunt_compensator_bay
+   create_static_var_compensator_bay
+   create_lcc_converter_station_bay
+   create_vsc_converter_station_bay

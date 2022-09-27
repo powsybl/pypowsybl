@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
@@ -39,7 +40,10 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.booleans("voltage_regulator_on")
+            SeriesMetadata.booleans("voltage_regulator_on"),
+            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.ints("position_order"),
+            SeriesMetadata.strings("direction")
     );
 
     @Override
@@ -67,7 +71,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
         }
 
-        void create(Network network, int row) {
+        VscConverterStationAdder createAdder(Network network, int row) {
             VscConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
                     .newVscConverterStation();
             setInjectionAttributes(adder, row);
@@ -75,15 +79,16 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(targetV, row, adder::setVoltageSetpoint);
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-            adder.add();
+            return adder;
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         VscStationSeries series = new VscStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row);
+            VscConverterStationAdder adder = series.createAdder(network, row);
+            additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
         }
     }
 }
