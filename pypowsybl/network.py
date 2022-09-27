@@ -4765,7 +4765,8 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
 def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
-    dfs[0]['voltage_level_id'] = dfs[0].apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+    if dfs[0] is not None:
+        dfs[0]['voltage_level_id'] = dfs[0].apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
     for i, df in enumerate(dfs):
         if df is None:
             c_dfs.append(None)

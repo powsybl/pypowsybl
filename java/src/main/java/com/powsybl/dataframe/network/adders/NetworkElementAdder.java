@@ -28,10 +28,10 @@ public interface NetworkElementAdder {
      * The first dataframe is considered the "primary" dataframe, other dataframes
      * can provide additional data (think steps for the tap changers).
      */
-    default void addElements(Network network, List<UpdatingDataframe> dataframes) {
-    }
+    void addElements(Network network, List<UpdatingDataframe> dataframes);
 
     default void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, Reporter reporter) {
+        throw new UnsupportedOperationException();
     }
 
     default void addElements(Network network, UpdatingDataframe dataframe) {
