@@ -37,7 +37,7 @@ public class ConnectablePositionDataframeProvider implements NetworkExtensionDat
         String id = dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
         String side = dataframe.getStringValue("side", index)
-                .orElseThrow(() -> new IllegalArgumentException("side column is missing"));
+                .orElse("");
         Identifiable identifiable = network.getIdentifiable(id);
         Connectable connectable;
         if (identifiable instanceof Connectable) {

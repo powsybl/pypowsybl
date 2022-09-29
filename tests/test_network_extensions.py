@@ -296,6 +296,8 @@ def test_branch_observability():
 def test_connectable_position():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'position'
+
+    # twt
     element_id = 'TWT'
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
@@ -309,6 +311,14 @@ def test_connectable_position():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+    # load
+    n.create_extensions(extension_name, id="LD1", order=3, feeder_name='test', direction='UNDEFINED')
+    e = n.get_extensions(extension_name).loc["LD1"]
+    assert e.order == 3
+    assert e.feeder_name == 'test'
+    assert e.direction == 'UNDEFINED'
+    assert e.side == ''
 
 
 def test_busbar_section_position():
