@@ -38,9 +38,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: |
-          apt-get update
-          apt install -y maven zlib1g-dev
+        run: yum install -y rh-maven33-maven zlib-devel.x86_64
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -62,7 +60,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          python3 setup.py bdist_wheel
+          scl enable rh-maven33 'python3 setup.py bdist_wheel'
           auditwheel repair dist/*.whl
 
       - name: Install wheel
@@ -102,77 +100,77 @@ jobs:
         working-directory: ./docs
         run: make doctest
 
-  macos_windows_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-11,
-          }
-          - {
-            name: windows,
-            os: windows-2019,
-          }
-        python:
-          - {
-            name: cp37,
-            version: '3.7',
-          }
-          - {
-            name: cp38,
-            version: '3.8',
-          }
-          - {
-            name: cp39,
-            version: '3.9',
-          }
-          - {
-            name: cp310,
-            version: '3.10.1',
-          }
-
-    steps:
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          version: '22.2.0'
-          java-version: '11'
-          components: 'native-image'
-
-      - name: Checkout sources
-        uses: actions/checkout@v1
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python.version }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-        run: python setup.py bdist_wheel
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make doctest
+#  macos_windows_build:
+#    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+#    runs-on: ${{ matrix.config.os }}
+#    strategy:
+#      matrix:
+#        config:
+#          - {
+#            name: darwin,
+#            os: macos-11,
+#          }
+#          - {
+#            name: windows,
+#            os: windows-2019,
+#          }
+#        python:
+#          - {
+#            name: cp37,
+#            version: '3.7',
+#          }
+#          - {
+#            name: cp38,
+#            version: '3.8',
+#          }
+#          - {
+#            name: cp39,
+#            version: '3.9',
+#          }
+#          - {
+#            name: cp310,
+#            version: '3.10.1',
+#          }
+#
+#    steps:
+#      - name: Setup GraalVM
+#        uses: graalvm/setup-graalvm@v1
+#        with:
+#          version: '22.2.0'
+#          java-version: '11'
+#          components: 'native-image'
+#
+#      - name: Checkout sources
+#        uses: actions/checkout@v1
+#        with:
+#          submodules: true
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python.version }}
+#
+#      - name: Install Python dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          python -m pip install -r requirements.txt
+#
+#      - name: Build wheel
+#        env:
+#          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+#        run: python setup.py bdist_wheel
+#
+#      - name: Install wheel
+#        shell: bash
+#        run: python -m pip install dist/*.whl --user
+#
+#      - name: Run tests
+#        working-directory: ./tests
+#        run: python3 -m pytest
+#
+#      - name: Type checking
+#        run: mypy -p pypowsybl
+#
+#      - name: Run doc examples
+#        working-directory: ./docs
+#        run: make doctest
