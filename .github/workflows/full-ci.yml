@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_24_x86_64:2022-09-04-870f6a2
+    container: quay.io/pypa/manylinux2014_x86_64
     strategy:
       matrix:
         python:
@@ -148,7 +148,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
+          version: '22.2.0'
           java-version: '11'
           components: 'native-image'
 
