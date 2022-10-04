@@ -15,6 +15,8 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
+import com.powsybl.python.sensitivity.SensitivityAnalysisCUtils;
+import com.powsybl.sensitivity.SensitivityAnalysisProvider;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -47,13 +49,15 @@ public final class FlowDecompositionCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
 
-            String providerStr = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
+            String lfProviderName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(lfProviderName);
+            String sensiProviderName = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
+            logger().debug("Loadflow provider used is : {}", loadFlowProvider.getName());
+            logger().debug("Sensitivity analysis provider used is : {}", sensiProviderName);
             LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(DC, loadFlowParametersPtr, loadFlowProvider);
 
             FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
-            FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(flowDecompositionParameters, loadFlowParameters, providerStr, providerStr);
+            FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(flowDecompositionParameters, loadFlowParameters, lfProviderName, sensiProviderName);
             FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(network);
 
             return Dataframes.createCDataframe(Dataframes.flowDecompositionMapper(flowDecompositionResults.getZoneSet()), flowDecompositionResults);
