@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_24_x86_64:2022-09-04-870f6a2
+    container: quay.io/pypa/manylinux2014_x86_64:2022-10-02-69a0972
     strategy:
       matrix:
         python:
@@ -23,9 +23,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: |
-          apt-get update
-          apt install -y maven zlib1g-dev
+        run: yum install -y rh-maven33-maven zlib-devel.x86_64
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -47,7 +45,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          python3 setup.py bdist_wheel
+          scl enable rh-maven33 'python3 setup.py bdist_wheel'
           auditwheel repair dist/*.whl
 
       - name: Install wheel
@@ -111,7 +109,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
+          version: '22.2.0'
           java-version: '11'
           components: 'native-image'
 
