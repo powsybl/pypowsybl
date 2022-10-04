@@ -337,14 +337,14 @@ Creating a node/breaker network
 -----------------------------
 
 Pypowsybl gives you all the tools to create a network with voltage levels in node/breaker topology from scratch, or to
-modify an existing network. Let's see how it works by creating a network from scratch. First, you need to create an
+modify an existing network in node/breaker topology. Let's see how it works by creating a network from scratch. First, you need to create an
 empty network:
 
 .. testcode::
 
     n = pp.network.create_empty()
 
-Then you can add substations on the network. Below, two substations are added, called S1 and S2.
+Then you can add substations on the network. Below, two substations are added from a dataframe, called S1 and S2.
 
 .. testcode::
 
@@ -354,7 +354,7 @@ Then you can add substations on the network. Below, two substations are added, c
     ])
     n.create_substations(stations)
 
-On each of these substations, you can create a node/breaker voltage level:
+On each of these substations, you can create a node/breaker voltage level, here called VL1 and VL2:
 
 .. testcode::
 
@@ -377,10 +377,26 @@ VL1 and one busbar section in voltage level VL2.
     ])
     n.create_busbar_sections(busbars)
 
-You can also add position extensions on these busbar sections. The busbarSectionPosition extension allows you to specify the
-position of every busbar section relative to the other ones. Here, the three busbar sections of VL1 are actually
-parallel so they have the same section_index. They belong to three distinct busbar sections so their busbar_index is
-different.
+You can draw the single line diagrams for both the voltage levels to check that the busbar sections were added
+correctly. For more information about single line diagrams, check the :doc:`related documentation </user_guide/network_visualization>`.
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_only_bbs_without_extensions.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/test_network_vl2_only_bbs.svg
+
+As you can see on the diagram for VL1, the busbar sections are not positioned in any particular way.
+It is possible to add position extensions on these busbar sections to show the topology. The busbarSectionPosition extension allows
+you to specify the position of every busbar section relative to the other ones.
+If you want to put the three busbar sections of VL1 parallel to each other, then they need to have the same section_index.
+As they belong to three distinct busbar sections, their busbar_index is going to be different:
 
 .. testcode::
 
@@ -389,9 +405,15 @@ different.
     n.create_extensions('busbarSectionPosition', id='BBS3', busbar_index=3, section_index=1)
     n.create_extensions('busbarSectionPosition', id='BBS4', busbar_index=1, section_index=1)
 
-.. TODO: Add an image once the empty busbar section has a length on SLD.
+You can draw the single line diagram of VL1 again to check that the busbar sections are at the right positions.
 
-Now you can add a load. The first thing to do is to add switches. To add a load on VL1, you need to add a disconnector
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_parallel_bbs.svg
+
+Now let's add a load. The first thing to do is to create the switches. To add a load on VL1, you need to add a disconnector
 on each busbar sections, two open ones and one closed one, and a breaker between the disconnectors and the load.
 You can add the switches with: (the switch on BBS1 will be closed)
 
@@ -411,7 +433,7 @@ Now you can add the load on node 4:
     n.create_loads(id='load1', voltage_level_id='VL1', node=4, p0=100, q0=10)
 
 Now let's add a line between VL1 and VL2. You need to add the switches first, three disconnectors and one breaker on VL1
-and one disconnector and one breaker on VL2:
+and one closed disconnector and one breaker on VL2:
 
 .. testcode::
 
@@ -430,7 +452,7 @@ Then you can add the line with:
 
     n.create_lines(id='line1', voltage_level1_id='VL1', voltage_level2_id='VL2', node1=6, node2=2, r=0.1, x=1.0, g1=0, b1=1e-6, g2=0, b2=1e-6)
 
-Now you can draw a single line diagram of VL1 and VL2 to check that the load and the line have been added correctly:
+Now you can draw the single line diagram of VL1 and VL2 to check that the load and the line have been added correctly:
 
 .. code-block:: python
 
@@ -444,7 +466,8 @@ Now you can draw a single line diagram of VL1 and VL2 to check that the load and
 
 .. image:: ../_static/images/test_network_vl2_before_adding_extensions.svg
 
-Now you can add extensions on the line and on the load to specify where the should be on the busbar section and if they
+Here, exactly like for the busbar sections, the load and the line are randomly placed on the diagram.
+You can add extensions on the line and on the load to specify where they should be on the busbar sections and if they
 should be drawn on the top or on the bottom. We can decide that the load load1 should be the first feeder on the busbar
 section and on the bottom of VL1. The line line1 could be second one and directed to the top on VL1. On VL2, the line
 will also be on top. The relative position between the load and the line is specified with the order in the position
@@ -472,10 +495,12 @@ correctly positioned.
 .. image:: ../_static/images/test_network_vl2_after_adding_extensions.svg
 
 Some methods also exist to create an injection and its bay in one line. With these you don't need to create by hand the
-switches. The methods take as an argument a busbar section, which will be the open on which the disconnector will be
-closed and the switches on parallel busbar sections will be open.
+switches. The methods take as an argument a busbar section, which will be the one on which the disconnector will be
+closed and the switches on parallel busbar sections will be open. You also need to fill the position of the injection
+as well as its characteristics. Optionnally, you can indicate the direction of the injection - by default, on the bottom -,
+if an exception should be raised in case of problem - by default, False - and a reporter to get the information of what happened.
 
-You can add a load and connect it to BBS3 a place it between the line and the load1 with:
+You can add a load and connect it to BBS3 and place it between the line and the load1 (order position between 10 and 20) with:
 
 .. testcode::
 
