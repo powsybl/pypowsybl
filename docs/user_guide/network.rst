@@ -333,42 +333,196 @@ For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
 
 
-Modify an existing network
---------------------------
+Creating a node/breaker network
+-----------------------------
 
-.. TODO: Enhance documentation when extensions are available/other hypothesis
-
-If you have a network in node/breaker topology, you can use pypowsybl to add injections with the associated topology.
-Let's take an example. First you can create a node/breaker simple network with:
-
-.. testcode::
-
-    network = pp.network.create_four_substations_node_breaker_network()
-
-You can display the voltage level 'S1VL2' with a single line diagram:
+Pypowsybl gives you all the tools to create a network with voltage levels in node/breaker topology from scratch, or to
+modify an existing network. Let's see how it works by creating a network from scratch. First, you need to create an
+empty network:
 
 .. testcode::
 
-    network.get_single_line_diagram('S1VL2')
+    n = pp.network.create_empty()
 
-.. image:: ../_static/images/four_substation_node_breaker_s1vl2.svg
-
-Let's say that we want to add a load, with the id "new_load" on the voltage level S1VL2. The load will have a p0 of 100 and a
-q0 of 50. Then you need to call create_load_bay with the right arguments. It is also necessary to specify the id of the busbar section where we want to put the load and
-the order position.
-You can then create the load and connect it to a busbar section:
+Then you can add substations on the network. Below, two substations are added, called S1 and S2.
 
 .. testcode::
 
-    pp.network.create_load_bay(network=network, id="new_load", p0=100.0, q0=50.0, busbar_section_id="S1VL2_BBS1", position_order=10)
+    stations = pd.DataFrame.from_records(index='id', data=[
+       {'id': 'S1'},
+       {'id': 'S2'}
+    ])
+    n.create_substations(stations)
 
-The load is then added to the network and connected to S1VL2_BBS1 with a breaker and a closed disconnector.
-If your network contains position extensions, then the injection will be connected to every busbar that is parallel to
-the specified busbar section with an open disconnector. You can check that the load is well connected by drawing the
-single line diagram:
+On each of these substations, you can create a node/breaker voltage level:
 
 .. testcode::
 
-    network.get_single_line_diagram('S1VL2')
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225},
+        {'substation_id': 'S2', 'id': 'VL2', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225},
+    ])
+    n.create_voltage_levels(voltage_levels)
 
-.. image:: ../_static/images/four_substation_node_breaker_s1vl2_with_new_load.svg
+Now, you can create busbar sections on every voltage level. Here, there will be three busbar sections in voltage level
+VL1 and one busbar section in voltage level VL2.
+
+.. testcode::
+
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+        {'voltage_level_id': 'VL2', 'id': 'BBS4', 'node': 0},
+    ])
+    n.create_busbar_sections(busbars)
+
+You can also add position extensions on these busbar sections. The busbarSectionPosition extension allows you to specify the
+position of every busbar section relative to the other ones. Here, the three busbar sections of VL1 are actually
+parallel so they have the same section_index. They belong to three distinct busbar sections so their busbar_index is
+different.
+
+.. testcode::
+
+    n.create_extensions('busbarSectionPosition', id='BBS1', busbar_index=1, section_index=1)
+    n.create_extensions('busbarSectionPosition', id='BBS2', busbar_index=2, section_index=1)
+    n.create_extensions('busbarSectionPosition', id='BBS3', busbar_index=3, section_index=1)
+    n.create_extensions('busbarSectionPosition', id='BBS4', busbar_index=1, section_index=1)
+
+.. TODO: Add an image once the empty busbar section has a length on SLD.
+
+Now you can add a load. The first thing to do is to add switches. To add a load on VL1, you need to add a disconnector
+on each busbar sections, two open ones and one closed one, and a breaker between the disconnectors and the load.
+You can add the switches with: (the switch on BBS1 will be closed)
+
+.. testcode::
+
+    n.create_switches(pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS1-LOAD', 'kind': 'DISCONNECTOR', 'node1': 0, 'node2': 3, 'open':True},
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS2-LOAD', 'kind': 'DISCONNECTOR', 'node1': 1, 'node2': 3, 'open':False},
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS3-LOAD', 'kind': 'DISCONNECTOR', 'node1': 2, 'node2': 3, 'open':True},
+        {'voltage_level_id': 'VL1', 'id': 'BREAKER-BBS1-LOAD', 'kind': 'BREAKER', 'node1': 3, 'node2': 4, 'open':False},
+    ]))
+
+Now you can add the load on node 4:
+
+.. testcode::
+
+    n.create_loads(id='load1', voltage_level_id='VL1', node=4, p0=100, q0=10)
+
+Now let's add a line between VL1 and VL2. You need to add the switches first, three disconnectors and one breaker on VL1
+and one disconnector and one breaker on VL2:
+
+.. testcode::
+
+    n.create_switches(pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS1-LINE', 'kind': 'DISCONNECTOR', 'node1': 0, 'node2': 5, 'open':False},
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS2-LINE', 'kind': 'DISCONNECTOR', 'node1': 1, 'node2': 5, 'open':True},
+        {'voltage_level_id': 'VL1', 'id': 'DISC-BBS3-LINE', 'kind': 'DISCONNECTOR', 'node1': 2, 'node2': 5, 'open':True},
+        {'voltage_level_id': 'VL2', 'id': 'DISC-BBS4-LINE', 'kind': 'DISCONNECTOR', 'node1': 0, 'node2': 1, 'open':False},
+        {'voltage_level_id': 'VL1', 'id': 'BREAKER-BBS1-LINE', 'kind': 'BREAKER', 'node1': 5, 'node2': 6, 'open':False},
+        {'voltage_level_id': 'VL2', 'id': 'BREAKER-BBS4-LINE', 'kind': 'BREAKER', 'node1': 1, 'node2': 2, 'open':False},
+    ]))
+
+Then you can add the line with:
+
+.. testcode::
+
+    n.create_lines(id='line1', voltage_level1_id='VL1', voltage_level2_id='VL2', node1=6, node2=2, r=0.1, x=1.0, g1=0, b1=1e-6, g2=0, b2=1e-6)
+
+Now you can draw a single line diagram of VL1 and VL2 to check that the load and the line have been added correctly:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_before_adding_extensions.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/test_network_vl2_before_adding_extensions.svg
+
+Now you can add extensions on the line and on the load to specify where the should be on the busbar section and if they
+should be drawn on the top or on the bottom. We can decide that the load load1 should be the first feeder on the busbar
+section and on the bottom of VL1. The line line1 could be second one and directed to the top on VL1. On VL2, the line
+will also be on top. The relative position between the load and the line is specified with the order in the position
+extension. The order of the load must be lower than the order of the line. You can use orders than do not follow each
+other to be able to add feeder later on.
+
+.. testcode::
+
+    n.create_extensions('position', id="load1", side="", order=10, feeder_name='load1', direction='BOTTOM')
+    n.create_extensions('position', id=["line1", "line1"], side=['ONE', 'TWO'], order= [20, 10], feeder_name=['line1VL1', 'line1VL2'], direction=['TOP', 'TOP'])
+
+Now you can draw the single line diagrams for both voltage levels again and see that the line and the load are now
+correctly positioned.
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_after_adding_extensions.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/test_network_vl2_after_adding_extensions.svg
+
+Some methods also exist to create an injection and its bay in one line. With these you don't need to create by hand the
+switches. The methods take as an argument a busbar section, which will be the open on which the disconnector will be
+closed and the switches on parallel busbar sections will be open.
+
+You can add a load and connect it to BBS3 a place it between the line and the load1 with:
+
+.. testcode::
+
+    pp.network.create_load_bay(n, id="load2", p0=10.0, q0=3.0, busbar_section_id='BBS3', position_order=15)
+
+You can check that the load was added correctly by drawing a single line diagram of VL1:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_after_adding_load.svg
+
+Like that, you can add every type of injection. Now let's add a generator connected to BBS1 on the left of load1, a
+dangling line on the right of line1 on BBS3 and a shunt and a vsc converting station on BBS4:
+
+.. testcode::
+
+    pp.network.create_generator_bay(n, id='generator1', max_p=4999, min_p=-9999.99, voltage_regulator_on=True,
+                               target_p=100, target_q=150, target_v=300, busbar_section_id='BBS1',
+                               position_order=5)
+    pp.network.create_dangling_line_bay(n, id='dangling_line1', p0=100, q0=150, r=2, x=2, g=1, b=1, position_order=30, busbar_section_id='BBS3', direction='TOP')
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'model_type', 'section_count', 'target_v',
+                 'target_deadband', 'busbar_section_id', 'position_order'],
+        data=[('shunt1', 'LINEAR', 1, 400, 2, 'BBS4', 20)])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+        data=[('shunt1', 0.14, -0.01, 2)])
+    pp.network.create_shunt_compensator_bay(n, shunt_df=shunt_df, linear_model_df=model_df)
+    pp.network.create_vsc_converter_station_bay(n, id='VSC1', target_q=200, voltage_regulator_on=True, loss_factor=1.0, target_v=400, busbar_section_id='BBS4', position_order=30)
+
+You can draw the new single line diagrams:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/test_network_vl1_after_adding_everything.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/test_network_vl2_after_adding_everything.svg
+
+There are methods allowing you to add every type of injection to the network.
+To see them all, please refer to the reference API :doc:`documentation </reference/network>`.
