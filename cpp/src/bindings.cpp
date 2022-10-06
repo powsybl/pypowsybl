@@ -658,6 +658,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("revert_connect_voltage_level_on_line", &pypowsybl::revertConnectVoltageLevelOnLine, "reverses the action done in connect_voltage_level_on_line", py::arg("network"), py::arg("line1_id"), py::arg("line2_id"), py::arg("line_id"), py::arg("line_name"));
 
     m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
+    m.def("replace_tee_point_by_voltage_level_on_line", &pypowsybl::replaceTeePointByVoltageLevelOnLine, "Replace tee point by voltage level on line", py::arg("network"), py::arg("line1ZId"), py::arg("lineZ2Id"), py::arg("lineZPId"), py::arg("voltageLevelId"),
+     py::arg("bbsOrBusId"), py::arg("line1CId"), py::arg("line1CName"), py::arg("lineC2Id"), py::arg("lineC2Name"));
 
     m.def("get_line_feeder_bays_metadata", &pypowsybl::getLineFeederBaysMetadata, "Get metadata for line branch feeder bay creation dataframe.");
     m.def("create_branch_feeder_bays_line", &pypowsybl::createBranchFeederBaysLine, "Create branch feeder bays", py::arg("network"), py::arg("dataframe"));

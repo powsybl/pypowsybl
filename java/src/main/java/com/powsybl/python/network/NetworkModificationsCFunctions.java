@@ -327,4 +327,40 @@ public final class NetworkModificationsCFunctions {
         }
         return feeders;
     }
+
+    @CEntryPoint(name = "replaceTeePointByVoltageLevelOnLine")
+    public static void replaceTeePointByVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                                           CCharPointer line1ZId,
+                                                           CCharPointer lineZ2Id,
+                                                           CCharPointer lineZPId,
+                                                           CCharPointer voltageLevelId,
+                                                           CCharPointer bbsOrBusId,
+                                                           CCharPointer line1CId,
+                                                           CCharPointer line1CName,
+                                                           CCharPointer lineC2Id,
+                                                           CCharPointer lineC2Name,
+                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+
+        String line1ZIdStr = CTypeUtil.toString(line1ZId);
+        String lineZ2IdStr = CTypeUtil.toString(lineZ2Id);
+        String lineZPIdStr = CTypeUtil.toStringOrNull(lineZPId);
+        String voltageLevelIdStr = CTypeUtil.toStringOrNull(voltageLevelId);
+        String bbsOrBusIdStr = CTypeUtil.toStringOrNull(bbsOrBusId);
+        String line1CIdStr = CTypeUtil.toStringOrNull(line1CId);
+        String line1CNameStr = CTypeUtil.toStringOrNull(line1CName);
+        String lineC2IdStr = CTypeUtil.toStringOrNull(lineC2Id);
+        String lineC2NameStr = CTypeUtil.toStringOrNull(lineC2Name);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        NetworkModification modification = new ReplaceTeePointByVoltageLevelOnLineBuilder()
+                .withLine1ZId(line1ZIdStr)
+                .withLineZ2Id(lineZ2IdStr)
+                .withLineZPId(lineZPIdStr)
+                .withVoltageLevelId(voltageLevelIdStr)
+                .withBbsOrBusId(bbsOrBusIdStr)
+                .withLine1CId(line1CIdStr)
+                .withLine1CName(line1CNameStr)
+                .withLineC2Id(lineC2IdStr)
+                .withLineC2Name(lineC2NameStr).build();
+        modification.apply(network);
+    }
 }

@@ -1977,6 +1977,40 @@ def test_add_vsc_bay():
     assert position.feeder_name == 'vsc_test'
     assert position.direction == 'BOTTOM'
 
+def test_replace_tee_point_by_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    generators = n.get_generators(all_attributes=True)
+    gen3 = generators.loc['GEN3']
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                               line_id='NHV1_NHV2_1', position_percent=75.0)
+
+    assert len(n.get_lines()) == 4
+
+    pp.network.replace_tee_point_by_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'VLTEST',
+     'VLTEST_0', 'NewLine1', 'NewLine1', 'NewLine2', 'NewLine2')
+
+    #Remove test_line and replace NHV1_NHV2_1_1 and NHV1_NHV2_1_2 by NewLine1 and NewLine2
+    assert len(n.get_lines()) == 3
+
+    retrieved_newline1 = n.get_lines().loc['NewLine1']
+    assert retrieved_newline1["connected1"]
+    assert retrieved_newline1["connected2"]
+
+    retrieved_newline2 = n.get_lines().loc['NewLine1']
+    assert retrieved_newline2["connected1"]
+    assert retrieved_newline2["connected2"]
+
+    assert 'test_line' not in n.get_lines().index
 
 def test_no_extensions_created_if_none_in_the_voltage_level():
     n = pp.network.create_four_substations_node_breaker_network()

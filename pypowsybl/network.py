@@ -5096,7 +5096,6 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
 
-
 def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a line and connects it to busbar sections through standard feeder bays.
@@ -5297,3 +5296,14 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     if len(positions) == 0:
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
+
+def replace_tee_point_by_voltage_level_on_line(network: Network, line1ZId: str, lineZ2Id: str, lineZPId: str,
+                                  voltageLevelId: str, bbsOrBusId: str, line1CId: str, line1CName: str,
+                                  lineC2Id: str, lineC2Name: str) -> None:
+    """
+    This method transform the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line class :
+    it replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
+    and removes the tee point
+    """
+    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, line1ZId, lineZ2Id, lineZPId, voltageLevelId, bbsOrBusId, line1CId, line1CName, lineC2Id, lineC2Name)
+
