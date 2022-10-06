@@ -4340,6 +4340,15 @@ def create_four_substations_node_breaker_network() -> Network:
     return _create_network('four_substations_node_breaker')
 
 
+def create_four_substations_node_breaker_network_with_extensions() -> Network:
+    """
+    Create an instance of powsybl "4 substations" test case with ConnectablePosition and BusbarSectionPosition extensions.
+
+    The topology is in node-breaker representation.
+    """
+    return _create_network('four_substations_node_breaker_with_extensions')
+
+
 def create_micro_grid_be_network() -> Network:
     """
     Create an instance of micro grid BE CGMES test case

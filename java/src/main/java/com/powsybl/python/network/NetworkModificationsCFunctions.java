@@ -104,8 +104,7 @@ public final class NetworkModificationsCFunctions {
                     .setG1(newLineG1)
                     .setG2(newLineG2);
             CreateLineOnLine createLineOnLine = new CreateLineOnLineBuilder()
-                    .withPercent(positionPercent)
-                    .withVoltageLevelId(voltageLevelIdStr)
+                    .withPositionPercent(positionPercent)
                     .withBusbarSectionOrBusId(bbsIdBusIdStr)
                     .withFictitiousVoltageLevelId(fictitiousVoltageLevelIdStr)
                     .withFictitiousVoltageLevelName(fictitiousVoltageLevelNameStr)
@@ -150,8 +149,7 @@ public final class NetworkModificationsCFunctions {
                     .withLine2Name(line2NameStr)
                     .withLine(line)
                     .withBusbarSectionOrBusId(bbsIdBusIdStr)
-                    .withVoltageLevelId(voltageLevelIdStr)
-                    .withPercent(positionPercent)
+                    .withPositionPercent(positionPercent)
                     .build();
             modification.apply(network);
         });
