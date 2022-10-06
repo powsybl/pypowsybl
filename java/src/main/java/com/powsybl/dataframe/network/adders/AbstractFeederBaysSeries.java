@@ -18,8 +18,8 @@ public abstract class AbstractFeederBaysSeries {
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             BranchAdder<?> lAdder = series.create(n, row);
             builder.withBranchAdder(lAdder);
-            applyIfPresent(dataframe.getStrings("bus_bar_section_id_1"), row, builder::withBbsId1);
-            applyIfPresent(dataframe.getStrings("bus_bar_section_id_2"), row, builder::withBbsId2);
+            applyIfPresent(dataframe.getStrings("busbar_section_id_1"), row, builder::withBbsId1);
+            applyIfPresent(dataframe.getStrings("busbar_section_id_2"), row, builder::withBbsId2);
             applyIfPresent(dataframe.getInts("position_order_1"), row, builder::withPositionOrder1);
             applyIfPresent(dataframe.getInts("position_order_2"), row, builder::withPositionOrder2);
             applyIfPresent(dataframe.getStrings("direction_1"), row, ConnectablePosition.Direction.class, builder::withDirection1);

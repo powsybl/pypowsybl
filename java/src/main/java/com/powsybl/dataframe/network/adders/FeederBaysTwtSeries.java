@@ -8,8 +8,8 @@ import java.util.List;
 public class FeederBaysTwtSeries extends AbstractFeederBaysSeries {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.strings("bus_bar_section_id_1"),
-            SeriesMetadata.strings("bus_bar_section_id_2"),
+            SeriesMetadata.strings("busbar_section_id_1"),
+            SeriesMetadata.strings("busbar_section_id_2"),
             SeriesMetadata.ints("position_order_1"),
             SeriesMetadata.ints("position_order_2"),
             SeriesMetadata.strings("direction_1"),

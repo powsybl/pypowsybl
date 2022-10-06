@@ -4752,8 +4752,8 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
 
 def get_branch_feeder_bays_metadata(element_type: ElementType) -> _List[_List[_pp.SeriesMetadata]]:
     metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    metadata[0].append(_pp.SeriesMetadata('bus_bar_section_id_1', 0, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('bus_bar_section_id_2', 0, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('busbar_section_id_1', 0, True, True, True))
+    metadata[0].append(_pp.SeriesMetadata('busbar_section_id_2', 0, True, True, True))
     metadata[0].append(_pp.SeriesMetadata('position_order_1', 2, True, True, True))
     metadata[0].append(_pp.SeriesMetadata('position_order_2', 2, True, True, True))
     metadata[0].append(_pp.SeriesMetadata('direction_1', 0, True, True, True))
