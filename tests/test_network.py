@@ -70,7 +70,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 7 == len(parameters)
+    assert 6 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -1559,7 +1559,7 @@ def test_create_line_on_line():
     assert gen3['voltage_level_id'] == 'VLTEST'
     assert gen3['bus_breaker_bus_id'] == 'VLTEST_0'
     assert gen3['target_p'] == 100
-    assert gen3['bus_id'] == ''
+    assert gen3['bus_id'] == 'VLTEST_0#0'
 
     pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
