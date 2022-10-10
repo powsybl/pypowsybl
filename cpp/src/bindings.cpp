@@ -625,7 +625,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
 
+    m.def("get_line_feeder_bays_metadata", &pypowsybl::getLineFeederBaysMetadata, "Get metadata for line branch feeder bay creation dataframe.");
     m.def("create_branch_feeder_bays_line", &pypowsybl::createBranchFeederBaysLine, "Create branch feeder bays", py::arg("network"), py::arg("dataframe"));
 
+    m.def("get_twt_feeder_bays_metadata", &pypowsybl::getTwtFeederBaysMetadata, "Get metadata for twt branch feeder bay creation dataframe.");
     m.def("create_branch_feeder_bays_twt", &pypowsybl::createBranchFeederBaysTwt, "Create branch feeder bays", py::arg("network"), py::arg("dataframe"));
 }

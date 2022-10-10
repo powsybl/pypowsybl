@@ -456,6 +456,10 @@ void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* datafr
 
 void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
 
+std::vector<SeriesMetadata> getLineFeederBaysMetadata();
+
+std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
+
 }
 
 #endif //PYPOWSYBL_H

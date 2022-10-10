@@ -18,12 +18,18 @@ public class FeederBaysTwtSeries extends AbstractFeederBaysSeries {
             SeriesMetadata.strings("voltage_level2_id"),
             SeriesMetadata.doubles("r"),
             SeriesMetadata.doubles("x"),
+            SeriesMetadata.doubles("g"),
+            SeriesMetadata.doubles("b"),
             SeriesMetadata.doubles("rated_u1"),
             SeriesMetadata.doubles("rated_u2"),
             SeriesMetadata.doubles("rated_s")
     );
 
     public FeederBaysTwtSeries() {
+    }
+
+    public static List<SeriesMetadata> getSeriesMetadata() {
+        return METADATA;
     }
 
     @Override

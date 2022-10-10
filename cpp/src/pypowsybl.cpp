@@ -1079,4 +1079,20 @@ void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* datafra
   pypowsybl::callJava(::createBranchFeederBaysTwt, network, dataframe);
 }
 
+std::vector<SeriesMetadata> getLineFeederBaysMetadata() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getLineFeederBaysMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<SeriesMetadata> getTwtFeederBaysMetadata() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getTwtFeederBaysMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+
+
 }

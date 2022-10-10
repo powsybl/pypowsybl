@@ -26,6 +26,10 @@ public class FeederBaysLineSeries extends AbstractFeederBaysSeries {
     public FeederBaysLineSeries() {
     }
 
+    public static List<SeriesMetadata> getSeriesMetadata() {
+        return METADATA;
+    }
+
     @Override
     AbstractBranchSeries createTypedSeries(UpdatingDataframe dataframe) {
         return new LineSeries(dataframe);

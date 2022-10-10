@@ -20,6 +20,8 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
+import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
@@ -863,6 +865,22 @@ public final class NetworkCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        });
+    }
+
+    @CEntryPoint(name = "getTwtFeederBaysMetadata")
+    public static DataframeMetadataPointer getTwtFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            List<SeriesMetadata> seriesMetadata = FeederBaysTwtSeries.getSeriesMetadata();
+            return createSeriesMetadata(seriesMetadata);
+        });
+    }
+
+    @CEntryPoint(name = "getLineFeederBaysMetadata")
+    public static DataframeMetadataPointer getLineFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            List<SeriesMetadata> seriesMetadata = FeederBaysLineSeries.getSeriesMetadata();
+            return createSeriesMetadata(seriesMetadata);
         });
     }
 

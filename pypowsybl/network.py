@@ -4750,16 +4750,6 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
 
-def get_branch_feeder_bays_metadata(element_type: ElementType) -> _List[_List[_pp.SeriesMetadata]]:
-    metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    metadata[0].append(_pp.SeriesMetadata('busbar_section_id_1', 0, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('busbar_section_id_2', 0, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('position_order_1', 2, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('position_order_2', 2, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('direction_1', 0, True, True, True))
-    metadata[0].append(_pp.SeriesMetadata('direction_2', 0, True, True, True))
-    return metadata
-
 def create_branch_feeder_bays_line(network: Network, df_new_line: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
     Add new branch feeder bays of type line on existing bus bar section
@@ -4770,9 +4760,9 @@ def create_branch_feeder_bays_line(network: Network, df_new_line: _DataFrame = N
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
     """
-    metadata = get_branch_feeder_bays_metadata(ElementType.LINE)
-    df_new_line = _adapt_df_or_kwargs(metadata[0], df_new_line, **kwargs)
-    c_df = _create_c_dataframe(df_new_line, metadata[0])
+    metadata = _pp.get_line_feeder_bays_metadata()
+    df_new_line = _adapt_df_or_kwargs(metadata, df_new_line, **kwargs)
+    c_df = _create_c_dataframe(df_new_line, metadata)
     _pp.create_branch_feeder_bays_line(network._handle, c_df)
 
 def create_branch_feeder_bays_twt(network: Network, df_new_twt: _DataFrame = None, **kwargs: _ArrayLike) -> None:
@@ -4785,8 +4775,8 @@ def create_branch_feeder_bays_twt(network: Network, df_new_twt: _DataFrame = Non
     Notes:
         The voltage level containing the busbar section should be described in node/breaker topology.
     """
-    metadata = get_branch_feeder_bays_metadata(ElementType.TWO_WINDINGS_TRANSFORMER)
-    df_new_twt = _adapt_df_or_kwargs(metadata[0], df_new_twt, **kwargs)
-    c_df = _create_c_dataframe(df_new_twt, metadata[0])
+    metadata = _pp.get_twt_feeder_bays_metadata()
+    df_new_twt = _adapt_df_or_kwargs(metadata, df_new_twt, **kwargs)
+    c_df = _create_c_dataframe(df_new_twt, metadata)
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
 
