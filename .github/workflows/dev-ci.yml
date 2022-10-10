@@ -16,9 +16,24 @@ jobs:
       matrix:
         python:
           - {
+            name: cp37,
+            abi: cp37m,
+            version: '3.7',
+          }
+          - {
             name: cp38,
             abi: cp38,
             version: '3.8',
+          }
+          - {
+            name: cp39,
+            abi: cp39,
+            version: '3.9',
+          }
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
           }
 
     steps:
@@ -110,8 +125,20 @@ jobs:
           }
         python:
           - {
+            name: cp37,
+            version: '3.7',
+          }
+          - {
             name: cp38,
             version: '3.8',
+          }
+          - {
+            name: cp39,
+            version: '3.9',
+          }
+          - {
+            name: cp310,
+            version: '3.10.1',
           }
 
     steps:
@@ -121,6 +148,15 @@ jobs:
           version: '22.2.0'
           java-version: '11'
           components: 'native-image'
+
+      - name: Checkout powsybl core sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-core
+          ref: refs/heads/main
+
+      - name: Build and install powsybl core with Maven
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-core/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v1
