@@ -171,6 +171,13 @@
         <dependencies>
             <dependency>
                 <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-core</artifactId>
+                <version>4.11.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.powsybl</groupId>
                 <artifactId>powsybl-dependencies</artifactId>
                 <version>${powsybl-dependencies.version}</version>
                 <type>pom</type>
