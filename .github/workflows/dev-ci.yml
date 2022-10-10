@@ -156,7 +156,7 @@ jobs:
           ref: refs/heads/main
 
       - name: Build and install powsybl core with Maven
-        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-core/pom.xml install'
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-core/pom.xml install
 
       - name: Checkout sources
         uses: actions/checkout@v1
