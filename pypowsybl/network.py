@@ -5297,23 +5297,24 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, line1ZId: str, lineZ2Id: str, lineZPId: str,
-                                  voltageLevelId: str, bbsOrBusId: str, line1CId: str, lineC2Id: str, line1CName: str = None, lineC2Name: str = None) -> None:
+def replace_tee_point_by_voltage_level_on_line(network: Network, line1z_id: str, linez2_Id: str, linezp_id: str,
+                                  voltage_level_id: str, bbs_or_bus_id: str, line1c_id: str, linec2_id: str,
+                                  line1c_name: str = None, linec2_name: str = None) -> None:
     """
     This method transform the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line class :
     it replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
     and removes the tee point
     Args:
-        line1ZId : The ID of the existing line connecting the first voltage level to the tee point
-        lineZ2Id : The ID of the existing line connecting the tee point to the second voltage level
-        lineZPId : The ID of the existing line connecting the tee point to the attached voltage level
-        voltageLevelId : The ID of the existing attached voltage level
-        bbsOrBusId : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
+        line1z_id : The ID of the existing line connecting the first voltage level to the tee point
+        linez2_Id : The ID of the existing line connecting the tee point to the second voltage level
+        linezp_id : The ID of the existing line connecting the tee point to the attached voltage level
+        voltage_level_id : The ID of the existing attached voltage level
+        bbs_or_bus_id : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
           where we want to connect the new lines line1C and lineC2
-        line1CId : The ID of the new line connecting the first voltage level to the attached voltage level
-        lineC2Id : The ID of the new line connecting the second voltage level to the attached voltage level
-        line1CName : The optional name of the new line connecting the first voltage level to the attached voltage level
-        lineC2Name : The optional name of the new line connecting the second voltage level to the attached voltage level
+        line1c_id : The ID of the new line connecting the first voltage level to the attached voltage level
+        linec2_id : The ID of the new line connecting the second voltage level to the attached voltage level
+        line1c_name : The optional name of the new line connecting the first voltage level to the attached voltage level
+        linec2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
 
         VL1 ---------- tee point ---------- VL2                            VL1 ---------- attached voltage level ---------- VL2
              (line1Z)       |     (lineZ2)                                      (line1C)                          (lineC2)
@@ -5324,10 +5325,10 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, line1ZId: str, 
              attached voltage level (voltageLevelId)
                    (contains bbsOrBusId)
     """
-    if line1CName is None:
-        line1CName = line1CId
-    if lineC2Name is None:
-        lineC2Name = lineC2Id
+    if line1c_name is None:
+        line1c_name = line1c_id
+    if linec2_name is None:
+        linec2_name = linec2_id
 
-    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, line1ZId, lineZ2Id, lineZPId, voltageLevelId, bbsOrBusId, line1CId, line1CName, lineC2Id, lineC2Name)
-
+    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, line1z_id, linez2_Id, linezp_id, voltage_level_id,
+        bbs_or_bus_id, line1c_id, line1c_name, linec2_id, linec2_name)
