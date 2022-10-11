@@ -5298,12 +5298,36 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 def replace_tee_point_by_voltage_level_on_line(network: Network, line1ZId: str, lineZ2Id: str, lineZPId: str,
-                                  voltageLevelId: str, bbsOrBusId: str, line1CId: str, line1CName: str,
-                                  lineC2Id: str, lineC2Name: str) -> None:
+                                  voltageLevelId: str, bbsOrBusId: str, line1CId: str, lineC2Id: str, line1CName: str = None, lineC2Name: str = None) -> None:
     """
     This method transform the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line class :
     it replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
     and removes the tee point
+    Args:
+        line1ZId : The ID of the existing line connecting the first voltage level to the tee point
+        lineZ2Id : The ID of the existing line connecting the tee point to the second voltage level
+        lineZPId : The ID of the existing line connecting the tee point to the attached voltage level
+        voltageLevelId : The ID of the existing attached voltage level
+        bbsOrBusId : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
+          where we want to connect the new lines line1C and lineC2
+        line1CId : The ID of the new line connecting the first voltage level to the attached voltage level
+        lineC2Id : The ID of the new line connecting the second voltage level to the attached voltage level
+        line1CName : The optional name of the new line connecting the first voltage level to the attached voltage level
+        lineC2Name : The optional name of the new line connecting the second voltage level to the attached voltage level
+
+        VL1 ---------- tee point ---------- VL2                            VL1 ---------- attached voltage level ---------- VL2
+             (line1Z)       |     (lineZ2)                                      (line1C)                          (lineC2)
+                            |
+                            | (lineZP)                       =========>
+                            |
+                            |
+             attached voltage level (voltageLevelId)
+                   (contains bbsOrBusId)
     """
+    if line1CName is None:
+        line1CName = line1CId
+    if lineC2Name is None:
+        lineC2Name = lineC2Id
+
     _pp.replace_tee_point_by_voltage_level_on_line(network._handle, line1ZId, lineZ2Id, lineZPId, voltageLevelId, bbsOrBusId, line1CId, line1CName, lineC2Id, lineC2Name)
 

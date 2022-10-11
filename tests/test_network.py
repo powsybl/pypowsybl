@@ -1997,7 +1997,7 @@ def test_replace_tee_point_by_voltage_level_on_line():
     assert len(n.get_lines()) == 4
 
     pp.network.replace_tee_point_by_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'VLTEST',
-     'VLTEST_0', 'NewLine1', 'NewLine1', 'NewLine2', 'NewLine2')
+     'VLTEST_0', 'NewLine1', 'NewLine2')
 
     #Remove test_line and replace NHV1_NHV2_1_1 and NHV1_NHV2_1_2 by NewLine1 and NewLine2
     assert len(n.get_lines()) == 3
