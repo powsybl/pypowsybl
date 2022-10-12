@@ -461,7 +461,7 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
 
 .. image:: ../_static/images/test_network_vl2_before_adding_extensions.svg
 
-Here, similary to busbar sections, the load and the line are randomly localized on the diagram.
+Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
 You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
 drawn on the top or on the bottom. We choose that the load *load1* is the first feeder of the busbar
 section and on the bottom of *VL1*. The line *line1* is the second one and directed to the top on *VL1*. On *VL2*, the line
@@ -489,9 +489,9 @@ correctly positioned.
 
 .. image:: ../_static/images/test_network_vl2_after_adding_extensions.svg
 
-Done but fastidious ! That is why Pypowsybl provides ready for use methods to create an injection and its bay with a single line. 
-The switches are created implicitly. The methods take as an argument a busbar section, the one on which the disconnector is
-closed (note that switches on the other parallel busbar sections are open). You also need to fill the position of the injection
+Done but fastidious! That is why Pypowsybl provides ready-for-use methods to create an injection and its bay with a single line.
+The switches are created implicitly. The methods take a busbar section on which the disconnector is
+closed as an argument (note that switches on the other parallel busbar sections are open). You also need to fill the position of the injection
 as well as its characteristics. Optionnally, you can indicate the direction of the injection drawing - by default, on the bottom -,
 if an exception should be raised in case of problem - by default, False - and a reporter to get logs.
 
@@ -509,7 +509,7 @@ You can check that the load was added correctly by drawing a single line diagram
 
 .. image:: ../_static/images/test_network_vl1_after_adding_load.svg
 
-This kind of method is available for every injection type. Now let's connect a generator on *BBS1* on the left of *load1*, a
+Now let's connect a generator on *BBS1* on the left of *load1*, a
 dangling line on the right of *line1* on *BBS3* and a shunt and a VSC converter station on *BBS4*:
 
 .. testcode::
@@ -544,5 +544,5 @@ You can draw the new single line diagrams:
 
 .. image:: ../_static/images/test_network_vl2_after_adding_everything.svg
 
-Methods exist for every type of injections.
+These methods exist for every type of injections.
 To see them all, please refer to the reference API :doc:`documentation </reference/network>`.
