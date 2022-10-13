@@ -1542,6 +1542,23 @@ def test_dump_to_string_with_report():
     assert len(report2) >= len(report1)
 
 
+def test_create_branch_feeder_bays_line():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'], columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+         'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+         data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
+    pp.network.create_line_bays(n, df)
+    retrieved_newline = n.get_lines().loc['new_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["g1"] == 20.0
+    assert retrieved_newline["g2"] == 30.0
+    assert retrieved_newline["b1"] == 40.0
+    assert retrieved_newline["b2"] == 50.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
+
+
 def test_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
@@ -1582,10 +1599,25 @@ def test_create_line_on_line():
 
     retrieved_splittedline2 = n.get_lines().loc['NHV1_NHV2_1_2']
     assert retrieved_splittedline2["r"] == 0.75
-
     generators = n.get_generators(all_attributes=True)
     assert 'GEN3' in generators.index
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
+
+
+def test_create_branch_feeder_bays_twt():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_twt'], columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+         'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
+         data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0, 'S1VL1', 'S1VL2']])
+    pp.network.create_2_windings_transformer_bays(n, df)
+    retrieved_newtwt= n.get_2_windings_transformers().loc['new_twt']
+    assert retrieved_newtwt["r"] == 5.0
+    assert retrieved_newtwt["x"] == 50.0
+    assert retrieved_newtwt["g"] == 2.0
+    assert retrieved_newtwt["b"] == 4.0
+    assert retrieved_newtwt["rated_u1"] == 225.0
+    assert retrieved_newtwt["rated_u2"] == 400.0
+    assert retrieved_newtwt["rated_s"] == 1.0
 
 
 def test_connect_voltage_level_on_line():
@@ -1807,6 +1839,33 @@ def test_add_vsc_bay():
     assert vsc.voltage_regulator_on == True
     assert vsc.loss_factor == 1
     assert vsc.target_v == 400
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+def test_get_order_positions_connectables():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    df = pp.network.get_connectables_order_positions(n, 'vl1')
+    assert df.shape[0] == 13
+    assert df.loc['line1']['order_position'] == 70
+    assert df.loc['trf2']['order_position'] == 110
+
+
+def test_get_unused_order_positions():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    positions_after = pp.network.get_unused_order_positions_after(n, 'bbs4')
+    assert positions_after.left == 121
+    assert positions_after.right == 2147483647
+    positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
+    assert positions_before.right == -1
+
+    positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
+    assert positions_before_no_space is None
+    positions_after_no_space = pp.network.get_unused_order_positions_after(n, 'bbs1')
+    assert positions_after_no_space is None
+
 
 
 if __name__ == '__main__':

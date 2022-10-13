@@ -227,6 +227,17 @@ I/O
    get_import_parameters
    get_export_formats
    get_export_parameters
+
+
+Advanced network modifications
+------------------------------
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   create_2_windings_transformer_bays
+   create_line_bays
    create_load_bay
    create_battery_bay
    create_dangling_line_bay
@@ -235,3 +246,17 @@ I/O
    create_static_var_compensator_bay
    create_lcc_converter_station_bay
    create_vsc_converter_station_bay
+   create_line_on_line
+   connect_voltage_level_on_line
+
+
+Utility functions
+-----------------
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+    get_connectables_order_positions
+    get_unused_order_positions_before
+    get_unused_order_positions_after
