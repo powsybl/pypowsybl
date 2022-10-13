@@ -4,6 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+import numpy as np
 import pandas as pd
 import pathlib
 import pytest
@@ -256,6 +257,17 @@ def test_injection_observability():
     element_id = 'LD1'
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, observable=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert not e.observable
+    assert np.isnan(e.p_standard_deviation)
+    assert not e.p_redundant
+    assert np.isnan(e.q_standard_deviation)
+    assert not e.q_redundant
+    assert np.isnan(e.v_standard_deviation)
+    assert not e.v_redundant
+
     n.create_extensions(extension_name, id=element_id, observable=True, p_standard_deviation=200, p_redundant=True,
                         q_standard_deviation=150, q_redundant=True, v_standard_deviation=400, v_redundant=True)
     e = n.get_extensions(extension_name).loc[element_id]
@@ -277,6 +289,18 @@ def test_branch_observability():
     element_id = 'TWT'
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, observable=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert np.isnan(e.p1_standard_deviation)
+    assert not e.p1_redundant
+    assert np.isnan(e.p2_standard_deviation)
+    assert not e.p2_redundant
+    assert np.isnan(e.q1_standard_deviation)
+    assert not e.q1_redundant
+    assert np.isnan(e.q2_standard_deviation)
+    assert not e.q2_redundant
+
     n.create_extensions(extension_name, id=element_id, observable=True, p1_standard_deviation=195, p1_redundant=True,
                         p2_standard_deviation=200, p2_redundant=True, q1_standard_deviation=190,
                         q1_redundant=True, q2_standard_deviation=205, q2_redundant=True)

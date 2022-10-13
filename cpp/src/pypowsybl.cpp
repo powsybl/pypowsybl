@@ -216,6 +216,26 @@ private:
     array* arrayPtr_;
 };
 
+template<typename T>
+class ToPrimitiveVector {
+public:
+    ToPrimitiveVector(array* arrayPtr)
+        : arrayPtr_(arrayPtr) {
+    }
+
+    ~ToPrimitiveVector() {
+        callJava<>(::freeArray, arrayPtr_);
+    }
+
+    std::vector<T> get() {
+        return toVector<T>(arrayPtr_);
+    }
+
+private:
+    array* arrayPtr_;
+};
+
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1011,8 +1031,8 @@ std::vector<std::string> getGLSKcountries(const JavaHandle& importer) {
 
 std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
     auto countriesArrayPtr = callJava<array*>(::getInjectionFactor, network, importer, (char*) country.c_str(), instant);
-    std::vector<double> values = toVector<double>(countriesArrayPtr);
-    return values;
+    ToPrimitiveVector<double> values(countriesArrayPtr);
+    return values.get();
 }
 
 long getInjectionFactorStartTimestamp(const JavaHandle& importer) {
@@ -1069,6 +1089,38 @@ void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdB
 
 void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType) {
     pypowsybl::callJava(::createFeederBay, network, throwException, (reporter == nullptr) ? nullptr : *reporter, dataframes, elementType);
+}
+
+void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe) {
+  pypowsybl::callJava(::createBranchFeederBaysLine, network, dataframe);
+}
+
+void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe) {
+  pypowsybl::callJava(::createBranchFeederBaysTwt, network, dataframe);
+}
+
+std::vector<SeriesMetadata> getLineFeederBaysMetadata() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getLineFeederBaysMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+std::vector<SeriesMetadata> getTwtFeederBaysMetadata() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getTwtFeederBaysMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
+    return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
+}
+
+std::vector<int> getUnusedConnectableOrderPositions(const pypowsybl::JavaHandle network, const std::string busbarSectionId, const std::string beforeOrAfter) {
+    auto positionsArrayPtr = callJava<array*>(::getUnusedConnectableOrderPositions, network, (char*) busbarSectionId.c_str(), (char*) beforeOrAfter.c_str());
+    ToPrimitiveVector<int> res(positionsArrayPtr);
+    return res.get();
 }
 
 }
