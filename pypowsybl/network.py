@@ -4366,6 +4366,7 @@ def get_extensions_names() -> _List[str]:
     """
     return _pp.get_extensions_names()
 
+
 def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
                         new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
                         position_percent: float = 50.0, create_fictitious_substation: bool = False, fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
@@ -4416,19 +4417,21 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
 
     This method cuts an existing line in two lines and connect an existing voltage level between them. The voltage level should
     be added to the network just before calling this method, and should contains at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
+
     Args:
         network: the network
         bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
         line_id: the ID ot the line on which the voltage level should be connected.
         position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
-                     and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-                    between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+                          and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+                          between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
         line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
         line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
         line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
         line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
+
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
@@ -4445,7 +4448,9 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
         The voltage level containing the busbar section should be described in node/breaker topology. The load is
         connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the load will also be connected to every parallel busbar section with an open disconnector.
+
         Valid attributes are:
+
         - **id**: the identifier of the new load
         - **name**: an optional human-readable name
         - **type**: optionally, the type of load (UNDEFINED, AUXILIARY, FICTITIOUS)
@@ -4474,7 +4479,9 @@ def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception:
         The voltage level containing the busbar section should be described in node/breaker topology. The battery is
         connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the battery will also be connected to every parallel busbar section with an open disconnector.
+
         Valid attributes are:
+
         - **id**: the identifier of the new battery
         - **name**: an optional human-readable name
         - **min_p**: minimum active power, in MW
@@ -4505,7 +4512,9 @@ def create_generator_bay(network: Network, df: _DataFrame = None, raise_exceptio
         The voltage level containing the busbar section should be described in node/breaker topology. The generator
         is connected to the busbar with a breaker and a closed disconnector. If the network has position extensions,
         the generator will also be connected to every parallel busbar section with an open disconnector.
+
         Valid attributes are:
+
         - **id**: the identifier of the new generator
         - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
         - **max_p**: maximum active power in MW
@@ -4540,7 +4549,9 @@ def create_dangling_line_bay(network: Network, df: _DataFrame = None, raise_exce
         The dangling line is connected to the busbar with a breaker and a closed disconnector. If the network
         has position extensions, the dangling line will also be connected to every parallel busbar section with
         an open disconnector.
+
         Valid attributes are:
+
         - **id**: the identifier of the new line
         - **name**: an optional human-readable name
         - **p0**: the active power consumption, in MW
@@ -4632,6 +4643,7 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, r
         The static var compensator is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the static var compensator will also be connected to every parallel busbar
         section with an open disconnector.
+
         Valid attributes are:
 
         - **id**: the identifier of the new SVC
@@ -4666,6 +4678,7 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         The lcc converter station is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the lcc converter station will also be connected to every parallel busbar
         section with an open disconnector.
+
         Valid attributes are:
 
         - **id**: the identifier of the new station
@@ -4697,6 +4710,7 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         The vsc converter station is connected to the busbar with a breaker and a closed disconnector. If the
         network has position extensions, the vsc converter station will also be connected to every parallel busbar
         section with an open disconnector.
+
         Valid attributes are:
 
         - **id**: the identifier of the new station
@@ -4750,33 +4764,97 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
 
-def create_branch_feeder_bays_line(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+
+def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
-    Add new branch feeder bays of type line on existing bus bar section
+    Creates a line and connects it to busbar sections through standard feeder bays.
+
+    The created bays are composed of one breaker, and one disconnector for each busbar section
+    parallel to the section specified in arguments. Only the disconnector on the specified
+    section is closed, others are left open.
 
     Args:
-        network: the network to which we want to add the new line branch feeder
+        network: the network to which we want to add the new line
         df: Attributes as a dataframe.
+        kwargs: Attributes as keyword arguments.
+
     Notes:
-        The voltage level containing the busbar section should be described in node/breaker topology.
+        The voltage level containing the busbar section must be described in node/breaker topology.
+
+        The input dataframe expects same attributes as :meth:`Network.create_lines`, except for the
+        additional following attributes:
+
+        - **busbar_section_id_1**: the identifier of the busbars section on side 1
+        - **position_order_1**: the position of the feeder on side 1
+        - **direction_1**: the direction, TOP or BOTTOM, of the feeder on side 1
+        - **busbar_section_id_2**: the identifier of the busbars section on side 2
+        - **position_order_2**: the position of the feeder on side 2
+        - **direction_2**: the direction, TOP or BOTTOM, of the feeder on side 2
+
+    Examples:
+
+        .. code-block:: python
+
+            pp.network.create_line_bays(network, id='L', r=0.1, x=10, g1=0, b1=0, g2=0, b2=0,
+                                        busbar_section_id_1='BBS1',
+                                        position_order_1=115,
+                                        direction_1='TOP',
+                                        busbar_section_id_2='BBS2',
+                                        position_order_2=121,
+                                        direction_2='BOTTOM')
+
+    See Also:
+        :meth:`Network.create_lines`
     """
     metadata = _pp.get_line_feeder_bays_metadata()
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_branch_feeder_bays_line(network._handle, c_df)
 
-def create_branch_feeder_bays_twt(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+
+def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
-    Add new branch feeder bays of type two windings transformer on existing bus bar sections
+    Creates a transformer and connects it to busbar sections through standard feeder bays.
+
+    The created bays are composed of one breaker, and one disconnector for each busbar section
+    parallel to the section specified in arguments. Only the disconnector on the specified
+    section is closed, others are left open.
 
     Args:
-        network: the network to which we want to add the new two windings transformer branch feeder
+        network: the network to which we want to add the new line
         df: Attributes as a dataframe.
+        kwargs: Attributes as keyword arguments.
+
     Notes:
-        The voltage level containing the busbar section should be described in node/breaker topology.
+        The voltage level containing the busbar section must be described in node/breaker topology.
+
+        The input dataframe expects same attributes as :meth:`Network.create_2_windings_transformers`, except for the
+        additional following attributes:
+
+        - **busbar_section_id_1**: the identifier of the busbars section on side 1
+        - **position_order_1**: the position of the feeder on side 1
+        - **direction_1**: the direction, TOP or BOTTOM, of the feeder on side 1
+        - **busbar_section_id_2**: the identifier of the busbars section on side 2
+        - **position_order_2**: the position of the feeder on side 2
+        - **direction_2**: the direction, TOP or BOTTOM, of the feeder on side 2
+
+    Examples:
+
+        .. code-block:: python
+
+            pp.network.create_2_windings_transformers_bays(
+                            network, id='L', b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=400, rated_u2=225,
+                            busbar_section_id_1='BBS1',
+                            position_order_1=115,
+                            direction_1='TOP',
+                            busbar_section_id_2='BBS2',
+                            position_order_2=121,
+                            direction_2='BOTTOM')
+
+    See Also:
+        :meth:`Network.create_2_windings_transformers`
     """
     metadata = _pp.get_twt_feeder_bays_metadata()
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
-
