@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,47 +14,47 @@ import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
+import com.powsybl.iidm.network.extensions.GeneratorShortCircuit;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class ActivePowerControlDataframeProvider implements NetworkExtensionDataframeProvider {
-
+public class GeneratorShortCircuitDataframeProvider implements NetworkExtensionDataframeProvider {
     @Override
     public String getExtensionName() {
-        return ActivePowerControl.NAME;
+        return GeneratorShortCircuit.NAME;
     }
 
-    private Stream<ActivePowerControl> itemsStream(Network network) {
+    private Stream<GeneratorShortCircuit> itemsStream(Network network) {
         return network.getGeneratorStream()
-                .map(g -> (ActivePowerControl) g.getExtension(ActivePowerControl.class))
+                .map(g -> (GeneratorShortCircuit) g.getExtension(GeneratorShortCircuit.class))
                 .filter(Objects::nonNull);
     }
 
-    private ActivePowerControl getOrThrow(Network network, String id) {
+    private GeneratorShortCircuit getOrThrow(Network network, String id) {
         Generator gen = network.getGenerator(id);
         if (gen == null) {
             throw new PowsyblException("Generator '" + id + "' not found");
         }
-        ActivePowerControl apc = gen.getExtension(ActivePowerControl.class);
-        if (apc == null) {
-            throw new PowsyblException("Generator '" + id + "' has no ActivePowerControl extension");
+        GeneratorShortCircuit gsc = gen.getExtension(GeneratorShortCircuit.class);
+        if (gsc == null) {
+            throw new PowsyblException("Generator '" + id + "' has no GeneratorShortCircuit extension");
         }
-        return apc;
+        return gsc;
     }
 
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ((Identifiable) ext.getExtendable()).getId())
-                .doubles("droop", ActivePowerControl::getDroop, (c, d) -> c.setDroop((float) d))
-                .booleans("participate", ActivePowerControl::isParticipate, ActivePowerControl::setParticipate)
+                .doubles("direct_sub_trans_x", GeneratorShortCircuit::getDirectSubtransX, GeneratorShortCircuit::setDirectSubtransX)
+                .doubles("direct_trans_x", GeneratorShortCircuit::getDirectTransX, GeneratorShortCircuit::setDirectTransX)
+                .doubles("step_up_transformer_x", GeneratorShortCircuit::getStepUpTransformerX, GeneratorShortCircuit::setStepUpTransformerX)
                 .build();
     }
 
@@ -63,12 +63,11 @@ public class ActivePowerControlDataframeProvider implements NetworkExtensionData
         ids.stream().filter(Objects::nonNull)
                 .map(network::getGenerator)
                 .filter(Objects::nonNull)
-                .forEach(g -> g.removeExtension(ActivePowerControl.class));
+                .forEach(g -> g.removeExtension(GeneratorShortCircuit.class));
     }
 
     @Override
     public NetworkElementAdder createAdder() {
-        return new ActivePowerControlDataframeAdder();
+        return new GeneratorShortCircuitDataframeAdder();
     }
-
 }
