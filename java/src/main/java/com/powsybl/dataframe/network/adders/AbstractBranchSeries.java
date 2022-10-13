@@ -10,6 +10,7 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BranchAdder;
+import com.powsybl.iidm.network.Network;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -18,7 +19,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  *
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
-class BranchSeries extends IdentifiableSeries {
+abstract class AbstractBranchSeries extends IdentifiableSeries {
 
     protected final StringSeries voltageLevels1;
     protected final StringSeries connectableBuses1;
@@ -29,7 +30,7 @@ class BranchSeries extends IdentifiableSeries {
     protected final StringSeries buses2;
     protected final IntSeries nodes2;
 
-    BranchSeries(UpdatingDataframe dataframe) {
+    AbstractBranchSeries(UpdatingDataframe dataframe) {
         super(dataframe);
         this.voltageLevels1 = dataframe.getStrings("voltage_level1_id");
         this.connectableBuses1 = dataframe.getStrings("connectable_bus1_id");
@@ -52,5 +53,7 @@ class BranchSeries extends IdentifiableSeries {
         applyIfPresent(buses2, row, adder::setBus2);
         applyIfPresent(nodes2, row, adder::setNode2);
     }
+
+    abstract BranchAdder create(Network network, int row);
 
 }

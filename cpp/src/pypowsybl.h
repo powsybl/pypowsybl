@@ -452,6 +452,14 @@ void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdB
 
 void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType);
 
+void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe);
+
+void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
+
+std::vector<SeriesMetadata> getLineFeederBaysMetadata();
+
+std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
+
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
 
 std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
