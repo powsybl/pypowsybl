@@ -235,3 +235,24 @@ I/O
    create_static_var_compensator_bay
    create_lcc_converter_station_bay
    create_vsc_converter_station_bay
+
+
+Advanced network modifications
+------------------------------
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   create_2_windings_transformer_bays
+   create_line_bays
+   create_load_bay
+   create_battery_bay
+   create_dangling_line_bay
+   create_generator_bay
+   create_shunt_compensator_bay
+   create_static_var_compensator_bay
+   create_lcc_converter_station_bay
+   create_vsc_converter_station_bay
+   create_line_on_line
+   connect_voltage_level_on_line

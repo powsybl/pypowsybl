@@ -9,12 +9,12 @@ package com.powsybl.python.network;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
+import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLine;
-import com.powsybl.iidm.modification.topology.ConnectVoltageLevelOnLineBuilder;
-import com.powsybl.iidm.modification.topology.CreateLineOnLine;
-import com.powsybl.iidm.modification.topology.CreateLineOnLineBuilder;
+import com.powsybl.iidm.modification.NetworkModification;
+import com.powsybl.iidm.modification.topology.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
@@ -169,6 +169,34 @@ public final class NetworkModificationsCFunctions {
                 dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reporter);
+        });
+    }
+
+    @CEntryPoint(name = "createBranchFeederBaysLine")
+    public static void createBranchFeederBaysLine(IsolateThread thread, ObjectHandle networkHandle,
+                                                  PyPowsyblApiHeader.DataframePointer cDataframeLine,
+                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe df = createDataframe(cDataframeLine);
+            FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
+            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df);
+            NetworkModification modification = builder.build();
+            modification.apply(network);
+        });
+    }
+
+    @CEntryPoint(name = "createBranchFeederBaysTwt")
+    public static void createBranchFeederBaysTwt(IsolateThread thread, ObjectHandle networkHandle,
+                                                 PyPowsyblApiHeader.DataframePointer cDataframeLine, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+
+            UpdatingDataframe df = createDataframe(cDataframeLine);
+            FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
+            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df);
+            NetworkModification modification = builder.build();
+            modification.apply(network);
         });
     }
 }
