@@ -1840,3 +1840,30 @@ def test_add_vsc_bay():
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def test_get_order_positions_connectables():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    df = pp.network.get_connectables_order_positions(n, 'vl1')
+    assert df.shape[0] == 13
+    assert df.loc['line1']['order_position'] == 70
+    assert df.loc['trf2']['order_position'] == 110
+
+
+def test_get_unused_order_positions():
+    n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
+    positions_after = pp.network.get_unused_order_positions_after(n, 'bbs4')
+    assert positions_after.left == 121
+    assert positions_after.right == 2147483647
+    positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
+    assert positions_before.right == -1
+
+    positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
+    assert positions_before_no_space is None
+    positions_after_no_space = pp.network.get_unused_order_positions_after(n, 'bbs1')
+    assert positions_after_no_space is None
+
+
+
+if __name__ == '__main__':
+    unittest.main()

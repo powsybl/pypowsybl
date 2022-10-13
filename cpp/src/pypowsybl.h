@@ -460,6 +460,10 @@ std::vector<SeriesMetadata> getLineFeederBaysMetadata();
 
 std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
 
+SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
+
+std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
+
 }
 
 #endif //PYPOWSYBL_H

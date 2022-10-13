@@ -17,6 +17,7 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
@@ -115,6 +116,14 @@ public final class Util {
             doubleListPtr.write(i, doubleList.get(i));
         }
         return allocArrayPointer(doubleListPtr, doubleList.size());
+    }
+
+    public static ArrayPointer<CIntPointer> createIntegerArray(List<Integer> integerList) {
+        CIntPointer intListPtr = UnmanagedMemory.calloc(integerList.size() * SizeOf.get(CIntPointer.class));
+        for (int i = 0; i < integerList.size(); i++) {
+            intListPtr.write(i, integerList.get(i));
+        }
+        return allocArrayPointer(intListPtr, integerList.size());
     }
 
     public static int convert(SeriesDataType type) {
