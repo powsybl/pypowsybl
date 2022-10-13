@@ -55,7 +55,8 @@ public class InjectionObservabilityDataframeProvider implements NetworkExtension
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", injectionObservability -> ((Injection) injectionObservability.getExtendable()).getId())
                 .booleans("observable", InjectionObservability::isObservable)
-                .doubles("p_standard_deviation", injectionObservability -> injectionObservability.getQualityP() != null ? injectionObservability.getQualityP().getStandardDeviation() : null,
+                .doubles("p_standard_deviation", injectionObservability -> injectionObservability.getQualityP() != null ?
+                                injectionObservability.getQualityP().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation) -> {
                         if (injectionObservability.getQualityP() != null) {
                             injectionObservability.getQualityP().setStandardDeviation(standardDeviation);
@@ -63,10 +64,13 @@ public class InjectionObservabilityDataframeProvider implements NetworkExtension
                             injectionObservability.setQualityP(standardDeviation);
                         }
                     })
-                .booleans("p_redundant", injectionObservability -> injectionObservability.getQualityP() != null && (boolean) injectionObservability.getQualityP().isRedundant().orElse(false),
+                .booleans("p_redundant", injectionObservability -> injectionObservability.getQualityP() != null &&
+                                (boolean) injectionObservability.getQualityP().isRedundant().orElse(false),
                     (injectionObservability, redundant) -> injectionObservability.getQualityP().setRedundant(redundant))
-                .booleans("p_redundant_null", injectionObservability -> injectionObservability.getQualityP() == null || injectionObservability.getQualityP().isRedundant().isEmpty())
-                .doubles("q_standard_deviation", injectionObservability -> injectionObservability.getQualityQ() != null ? injectionObservability.getQualityQ().getStandardDeviation() : null,
+                .booleans("p_redundant_null", injectionObservability -> injectionObservability.getQualityP() == null ||
+                        injectionObservability.getQualityP().isRedundant().isEmpty())
+                .doubles("q_standard_deviation", injectionObservability -> injectionObservability.getQualityQ() != null ?
+                                injectionObservability.getQualityQ().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation) -> {
                         if (injectionObservability.getQualityQ() != null) {
                             injectionObservability.getQualityQ().setStandardDeviation(standardDeviation);
@@ -74,10 +78,13 @@ public class InjectionObservabilityDataframeProvider implements NetworkExtension
                             injectionObservability.setQualityQ(standardDeviation);
                         }
                     })
-                .booleans("q_redundant", injectionObservability -> injectionObservability.getQualityQ() != null && (boolean) injectionObservability.getQualityQ().isRedundant().orElse(false),
+                .booleans("q_redundant", injectionObservability -> injectionObservability.getQualityQ() != null &&
+                                (boolean) injectionObservability.getQualityQ().isRedundant().orElse(false),
                     (injectionObservability, redundant) -> injectionObservability.getQualityQ().setRedundant(redundant))
-                .booleans("q_redundant_null", injectionObservability -> injectionObservability.getQualityQ() == null || injectionObservability.getQualityQ().isRedundant().isEmpty())
-                .doubles("v_standard_deviation", injectionObservability -> injectionObservability.getQualityV() != null ? injectionObservability.getQualityV().getStandardDeviation() : null,
+                .booleans("q_redundant_null", injectionObservability -> injectionObservability.getQualityQ() == null ||
+                        injectionObservability.getQualityQ().isRedundant().isEmpty())
+                .doubles("v_standard_deviation", injectionObservability -> injectionObservability.getQualityV() != null ?
+                                injectionObservability.getQualityV().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation) -> {
                         if (injectionObservability.getQualityV() != null) {
                             injectionObservability.getQualityV().setStandardDeviation(standardDeviation);
@@ -85,9 +92,11 @@ public class InjectionObservabilityDataframeProvider implements NetworkExtension
                             injectionObservability.setQualityV(standardDeviation);
                         }
                     })
-                .booleans("v_redundant", injectionObservability -> injectionObservability.getQualityV() != null && (boolean) injectionObservability.getQualityV().isRedundant().orElse(false),
+                .booleans("v_redundant", injectionObservability -> injectionObservability.getQualityV() != null &&
+                                (boolean) injectionObservability.getQualityV().isRedundant().orElse(false),
                     (injectionObservability, redundant) -> injectionObservability.getQualityV().setRedundant(redundant))
-                .booleans("v_redundant_null", injectionObservability -> injectionObservability.getQualityV() == null || injectionObservability.getQualityV().isRedundant().isEmpty())
+                .booleans("v_redundant_null", injectionObservability -> injectionObservability.getQualityV() == null ||
+                        injectionObservability.getQualityV().isRedundant().isEmpty())
                 .build();
     }
 
