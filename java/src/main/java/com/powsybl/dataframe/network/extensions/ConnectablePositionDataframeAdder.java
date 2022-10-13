@@ -73,7 +73,7 @@ public class ConnectablePositionDataframeAdder extends AbstractSimpleAdder {
                 adder = (ConnectablePositionAdder) connectable.newExtension(ConnectablePositionAdder.class);
                 adderMap.put(this.id.get(row), adder);
             }
-            if (this.side.get(row).equals("")) {
+            if (this.side == null || this.side.get(row).equals("")) {
                 createFeeder(adder.newFeeder(), row);
             } else {
                 switch (SideEnum.valueOf(this.side.get(row))) {
