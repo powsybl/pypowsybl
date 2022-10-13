@@ -820,7 +820,22 @@ public final class NetworkDataframes {
                 .doubles("rho", NetworkDataframes::computeRho)
                 .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("regulating_side", NetworkDataframes::getRatioTapChangerRegulatedSide, NetworkDataframes::setRatioTapChangerRegulatedSide, false)
                 .build();
+    }
+
+    static String getRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
+        return transformer.getSide(transformer.getRatioTapChanger().getRegulationTerminal()).toString();
+    }
+
+    static void setRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
+        if (side.equals("ONE")) {
+            transformer.getRatioTapChanger().setRegulationTerminal(transformer.getTerminal1());
+        } else if (side.equals("TWO")) {
+            transformer.getRatioTapChanger().setRegulationTerminal(transformer.getTerminal2());
+        } else {
+            throw new PowsyblException("side to regulate the transformer must be ONE or TWO");
+        }
     }
 
     private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
@@ -843,7 +858,22 @@ public final class NetworkDataframes {
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("regulating_side", NetworkDataframes::getPhaseTapChangerRegulatedSide, NetworkDataframes::setPhaseTapChangerRegulatedSide, false)
                 .build();
+    }
+
+    static String getPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
+        return transformer.getSide(transformer.getPhaseTapChanger().getRegulationTerminal()).toString();
+    }
+
+    static void setPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
+        if (side.equals("ONE")) {
+            transformer.getPhaseTapChanger().setRegulationTerminal(transformer.getTerminal1());
+        } else if (side.equals("TWO")) {
+            transformer.getPhaseTapChanger().setRegulationTerminal(transformer.getTerminal2());
+        } else {
+            throw new PowsyblException("side to regulate the transformer must be ONE or TWO");
+        }
     }
 
     private static NetworkDataframeMapper operationalLimits() {

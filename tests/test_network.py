@@ -1864,6 +1864,12 @@ def test_get_unused_order_positions():
     assert positions_after_no_space is None
 
 
+def test_2_windings_transformers_regulating_side():
+    n = pp.network.create_four_substations_node_breaker_network()
+    print(n.get_ratio_tap_changers(attributes=["regulating_side"]))
+    print(n.get_ratio_tap_changers(all_attributes=True))
+
+
 
 if __name__ == '__main__':
     unittest.main()
