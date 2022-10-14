@@ -5301,9 +5301,8 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, line1z_id: str,
                                   voltage_level_id: str, bbs_or_bus_id: str, line1c_id: str, linec2_id: str,
                                   line1c_name: str = None, linec2_name: str = None) -> None:
     """
-    This method transform the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line class :
-    it replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
-    and removes the tee point
+    This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
+
     Args:
         line1z_id : The ID of the existing line connecting the first voltage level to the tee point
         linez2_Id : The ID of the existing line connecting the tee point to the second voltage level
@@ -5316,14 +5315,9 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, line1z_id: str,
         line1c_name : The optional name of the new line connecting the first voltage level to the attached voltage level
         linec2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
 
-        VL1 ---------- tee point ---------- VL2                            VL1 ---------- attached voltage level ---------- VL2
-             (line1Z)       |     (lineZ2)                                      (line1C)                          (lineC2)
-                            |
-                            | (lineZP)                       =========>
-                            |
-                            |
-             attached voltage level (voltageLevelId)
-                   (contains bbsOrBusId)
+    Notes:
+        It replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
+        and removes the tee point.
     """
     if line1c_name is None:
         line1c_name = line1c_id
