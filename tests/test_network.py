@@ -1838,10 +1838,6 @@ def test_add_vsc_bay():
     assert vsc.target_v == 400
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 def test_get_order_positions_connectables():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
     df = pp.network.get_connectables_order_positions(n, 'vl1')
@@ -1864,11 +1860,22 @@ def test_get_unused_order_positions():
     assert positions_after_no_space is None
 
 
-def test_2_windings_transformers_regulating_side():
-    n = pp.network.create_four_substations_node_breaker_network()
-    print(n.get_ratio_tap_changers(attributes=["regulating_side"]))
-    print(n.get_ratio_tap_changers(all_attributes=True))
+def test_2_windings_transformers_regulated_side():
+    n = pp.network.create_ieee9()
+    tap_changer = n.get_ratio_tap_changers(attributes=['regulated_side', 'regulating']).loc['T4-1-0']
+    assert not tap_changer.regulating
+    assert tap_changer.regulated_side == ''
 
+    with pytest.raises(pp.PyPowsyblError, match='a regulation terminal has to be set'):
+        n.update_ratio_tap_changers(id='T4-1-0', target_v=100, regulating=True)
+
+    with pytest.raises(pp.PyPowsyblError, match='must be ONE or TWO'):
+        n.update_ratio_tap_changers(id='T4-1-0', regulated_side='INVALID', target_v=100, regulating=True)
+
+    n.update_ratio_tap_changers(id='T4-1-0', regulated_side='TWO', target_v=100, target_deadband=0, regulating=True)
+    tap_changer = n.get_ratio_tap_changers(attributes=['regulated_side', 'regulating']).loc['T4-1-0']
+    assert tap_changer.regulating
+    assert tap_changer.regulated_side == 'TWO'
 
 
 if __name__ == '__main__':

@@ -1948,7 +1948,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulating**: true if the tap changer is in regulation
               - **target_v**: the target voltage in kV, if the tap changer is in regulation
               - **target_deadband**: the regulation deadband around the target voltage, in kV
-              - **regulationg_bus_id**: the bus where the tap changer regulates voltage
+              - **regulating_bus_id**: the bus where the tap changer regulates voltage
+              - **regulated_side** (optional): the side where the tap changer regulates voltage (redundant with regulating_bus_id)
               - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
@@ -2555,7 +2556,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - `tap`
             - `on_load`
-            - `regulating`
+            - `regulating`,
+            - `regulated_side`,
             - `target_v`
             - `target_deadband`
             - `fictitious`

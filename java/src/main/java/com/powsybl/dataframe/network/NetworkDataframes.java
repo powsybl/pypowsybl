@@ -820,18 +820,24 @@ public final class NetworkDataframes {
                 .doubles("rho", NetworkDataframes::computeRho)
                 .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                .strings("regulating_side", NetworkDataframes::getRatioTapChangerRegulatedSide, NetworkDataframes::setRatioTapChangerRegulatedSide, false)
+                .strings("regulated_side", NetworkDataframes::getRatioTapChangerRegulatedSide, NetworkDataframes::setRatioTapChangerRegulatedSide, false)
                 .build();
     }
 
     static String getRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
-        return transformer.getSide(transformer.getRatioTapChanger().getRegulationTerminal()).toString();
+        Terminal regulatedTerminal = transformer.getRatioTapChanger().getRegulationTerminal();
+        if (regulatedTerminal == transformer.getTerminal1()) {
+            return Branch.Side.ONE.name();
+        } else if (regulatedTerminal == transformer.getTerminal2()) {
+            return Branch.Side.TWO.name();
+        }
+        return "";
     }
 
     static void setRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
-        if (side.equals("ONE")) {
+        if (side.equals(Branch.Side.ONE.name())) {
             transformer.getRatioTapChanger().setRegulationTerminal(transformer.getTerminal1());
-        } else if (side.equals("TWO")) {
+        } else if (side.equals(Branch.Side.TWO.name())) {
             transformer.getRatioTapChanger().setRegulationTerminal(transformer.getTerminal2());
         } else {
             throw new PowsyblException("side to regulate the transformer must be ONE or TWO");
