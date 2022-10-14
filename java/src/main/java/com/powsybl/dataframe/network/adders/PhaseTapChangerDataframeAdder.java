@@ -6,10 +6,7 @@ import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.PhaseTapChanger;
-import com.powsybl.iidm.network.PhaseTapChangerAdder;
-import com.powsybl.iidm.network.TwoWindingsTransformer;
+import com.powsybl.iidm.network.*;
 import gnu.trove.list.array.TIntArrayList;
 
 import java.util.HashMap;
@@ -17,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -31,6 +29,8 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_value"),
             SeriesMetadata.doubles("target_deadband"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulated_side"),
             SeriesMetadata.ints("low_tap"),
             SeriesMetadata.ints("tap")
     );
@@ -69,6 +69,8 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
         private final IntSeries lowTaps;
         private final DoubleSeries targetDeadband;
         private final DoubleSeries targetValues;
+        private final IntSeries regulating;
+        private final StringSeries regulatedSide;
 
         private final Map<String, TIntArrayList> stepsIndexes;
         private final DoubleSeries g;
@@ -85,6 +87,8 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             this.lowTaps = tapChangersDf.getInts("low_tap");
             this.targetDeadband = tapChangersDf.getDoubles("target_deadband");
             this.targetValues = tapChangersDf.getDoubles("target_value");
+            this.regulating = tapChangersDf.getInts("regulating");
+            this.regulatedSide = tapChangersDf.getStrings("regulated_side");
 
             this.stepsIndexes = getStepsIndexes(stepsDf);
             this.g = stepsDf.getDoubles("g");
@@ -107,6 +111,10 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             applyIfPresent(targetValues, row, adder::setRegulationValue);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
+            applyBooleanIfPresent(regulating, row, adder::setRegulating);
+            if (regulatedSide != null) {
+                setRegulatedSide(transformer, adder, regulatedSide.get(row));
+            }
 
             TIntArrayList steps = stepsIndexes.get(transformerId);
             if (steps != null) {
@@ -124,6 +132,14 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             }
             adder.add();
         }
+    }
+
+    private static void setRegulatedSide(TwoWindingsTransformer transformer, PhaseTapChangerAdder adder, String regulatedSideStr) {
+        if (regulatedSideStr.isEmpty()) {
+            return;
+        }
+        Branch.Side regulatedSide = Branch.Side.valueOf(regulatedSideStr);
+        adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
     }
 
     /**

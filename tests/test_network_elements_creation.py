@@ -312,24 +312,27 @@ NGEN_NHV1  2  2  1  1  0.5
 
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
-    n.create_2_windings_transformers(pd.DataFrame.from_records(
-        index='id',
-        columns=['id', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'voltage_level1_id', 'voltage_level2_id', 'node1',
-                 'node2'],
-        data=[['TWT_TEST', 0.1, 10, 1, 0.1, 400, 158, 'S1VL1', 'S1VL2', 1, 2]]))
-
-    ptc_df = pd.DataFrame.from_records(
-        index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap'],
-        data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1)])
-    steps_df = pd.DataFrame.from_records(
-        index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
-        data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
-              ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+    n.create_2_windings_transformers(dataframe_from_string("""
+id          r   x  g    b  rated_u1  rated_u2 voltage_level1_id voltage_level2_id  node1  node2                                                                                         
+TWT_TEST  0.1  10  1  0.1       400       158             S1VL1             S1VL2      1      2
+"""))
+    ptc_df = dataframe_from_string("""
+id        target_deadband  regulation_mode  target_value  low_tap  tap  regulating  regulated_side                                                  
+TWT_TEST                2  CURRENT_LIMITER           300        0    1        True             TWO
+""")
+    steps_df = dataframe_from_string("""
+id        b  g  r  x  rho  alpha                          
+TWT_TEST  2  2  1  1  0.5    0.1
+TWT_TEST  2  2  1  1  0.5    0.1
+""")
     n.create_phase_tap_changers(ptc_df, steps_df)
 
-    ptc = n.get_phase_tap_changers().loc['TWT_TEST']
+    ptc = n.get_phase_tap_changers(all_attributes=True).loc['TWT_TEST']
     assert ptc.target_deadband == 2
     assert ptc.regulation_mode == 'CURRENT_LIMITER'
+    assert ptc.regulation_value == 300
+    assert ptc.regulating
+    assert ptc.regulated_side == 'TWO'
     assert ptc.low_tap == 0
     assert ptc.tap == 1
     steps = n.get_phase_tap_changer_steps().loc['TWT_TEST']

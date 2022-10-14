@@ -2024,6 +2024,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
               - **target_deadband**: the regulation deadband around the target value
               - **regulationg_bus_id**: the bus where the phase shifter regulates
+              - **regulated_side** (optional): the side bus where the phase shifter regulates current or active power
               - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
@@ -2623,6 +2624,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulating`
             - `regulation_mode`
             - `regulation_value`
+            - `regulated_side`
             - `target_deadband`
             - `fictitious`
 
@@ -3718,6 +3720,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **on_load**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
+            - **regulating**: true if the tap changer should regulate voltage
+            - **regulated_side**: the side where voltage is regulated (ONE or TWO)
 
             Valid attributes for the steps dataframe are:
 
@@ -3767,6 +3771,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **low_tap**: the number of the lowest tap position (default 0)
             - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
             - **target_deadband**: the regulation deadband
+            - **regulating**: true if the tap changer should regulate
+            - **regulated_side**: the side where the current or active power is regulated (ONE or TWO)
 
             Valid attributes for the steps dataframe are:
 
