@@ -820,7 +820,16 @@ public final class NetworkDataframes {
                 .doubles("rho", NetworkDataframes::computeRho)
                 .doubles("alpha", ifExistsDouble(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("regulated_side", NetworkDataframes::getRatioTapChangerRegulatedSide, NetworkDataframes::setRatioTapChangerRegulatedSide, false)
                 .build();
+    }
+
+    private static String getRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
+        return getTerminalSideStr(transformer, transformer.getRatioTapChanger().getRegulationTerminal());
+    }
+
+    private static void setRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
+        transformer.getRatioTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
     private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
@@ -842,8 +851,38 @@ public final class NetworkDataframes {
                 .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
                 .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
+                .strings("regulated_side", NetworkDataframes::getPhaseTapChangerRegulatedSide, NetworkDataframes::setPhaseTapChangerRegulatedSide, false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .build();
+    }
+
+    static String getPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
+        return getTerminalSideStr(transformer, transformer.getPhaseTapChanger().getRegulationTerminal());
+    }
+
+    private static Terminal getBranchTerminal(Branch<?> branch, String side) {
+        if (side.isEmpty()) {
+            return null;
+        } else if (side.equals(Branch.Side.ONE.name())) {
+            return branch.getTerminal1();
+        } else if (side.equals(Branch.Side.TWO.name())) {
+            return branch.getTerminal2();
+        } else {
+            throw new PowsyblException("Transformer side must be ONE or TWO");
+        }
+    }
+
+    private static String getTerminalSideStr(Branch<?> branch, Terminal terminal) {
+        if (terminal == branch.getTerminal1()) {
+            return Branch.Side.ONE.name();
+        } else if (terminal == branch.getTerminal2()) {
+            return Branch.Side.TWO.name();
+        }
+        return "";
+    }
+
+    static void setPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
+        transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
     private static NetworkDataframeMapper operationalLimits() {

@@ -30,7 +30,9 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.ints("low_tap"),
             SeriesMetadata.booleans("on_load"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_deadband")
+            SeriesMetadata.doubles("target_deadband"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulated_side")
     );
 
     private static final List<SeriesMetadata> STEPS_METADATA = List.of(
@@ -54,6 +56,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
         private final IntSeries onLoad;
         private final DoubleSeries targetV;
         private final DoubleSeries targetDeadband;
+        private final IntSeries regulating;
+        private final StringSeries regulatedSide;
 
         private final Map<String, TIntArrayList> stepsIndexes;
         private final DoubleSeries g;
@@ -69,6 +73,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             this.onLoad = tapChangersDf.getInts("on_load");
             this.targetV = tapChangersDf.getDoubles("target_v");
             this.targetDeadband = tapChangersDf.getDoubles("target_deadband");
+            this.regulating = tapChangersDf.getInts("regulating");
+            this.regulatedSide = tapChangersDf.getStrings("regulated_side");
 
             this.stepsIndexes = getStepsIndexes(stepsDf);
             this.g = stepsDf.getDoubles("g");
@@ -90,6 +96,10 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             applyBooleanIfPresent(onLoad, row, adder::setLoadTapChangingCapabilities);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
+            applyBooleanIfPresent(regulating, row, adder::setRegulating);
+            if (regulatedSide != null) {
+                setRegulatedSide(transformer, adder, regulatedSide.get(row));
+            }
 
             TIntArrayList steps = stepsIndexes.get(transformerId);
             if (steps != null) {
@@ -106,6 +116,14 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             }
             adder.add();
         }
+    }
+
+    private static void setRegulatedSide(TwoWindingsTransformer transformer, RatioTapChangerAdder adder, String regulatedSideStr) {
+        if (regulatedSideStr.isEmpty()) {
+            return;
+        }
+        Branch.Side regulatedSide = Branch.Side.valueOf(regulatedSideStr);
+        adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
     }
 
     @Override
