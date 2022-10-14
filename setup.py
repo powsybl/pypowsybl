@@ -105,7 +105,9 @@ setup(
     python_requires='>=3.7',
     install_requires=[
         'prettytable',
-        'pandas',
+        'numpy>=1.20.0',
+        'pandas>=1.4.4; sys_platform == "darwin" and platform_machine == "arm64"',
+        'pandas>=1.3.5; sys_platform != "darwin" or platform_machine != "arm64"',
         'networkx'
     ],
 )
