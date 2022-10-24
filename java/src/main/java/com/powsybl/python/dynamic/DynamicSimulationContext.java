@@ -14,6 +14,10 @@ public class DynamicSimulationContext {
             EventModelsSupplier eventModelsSupplier,
             CurvesSupplier curvesSupplier,
             DynamicSimulationParameters parameters) {
-        return DynamicSimulation.run(network, dynamicModelsSupplier);
+        return DynamicSimulation.run(network,
+                dynamicModelsSupplier,
+                eventModelsSupplier,
+                curvesSupplier,
+                parameters);
     }
 }
