@@ -35,7 +35,7 @@ public final class DynamicSimulationCFuntions {
             ObjectHandle dynamicMappingHandle,
             ObjectHandle eventModelsSupplierHandle,
             ObjectHandle curvesSupplierHandle,
-            ObjectHandle dynamicSimulationParametersHandle,
+            int startTime, int stopTime,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
@@ -43,8 +43,8 @@ public final class DynamicSimulationCFuntions {
             DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
             CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
-            DynamicSimulationParameters dynamicSimulationParameters = ObjectHandles.getGlobal()
-                    .get(dynamicSimulationParametersHandle);
+            DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
+                    stopTime);
             logger().info("Dynamic simulation run by Dynawaltz");
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
