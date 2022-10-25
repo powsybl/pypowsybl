@@ -56,50 +56,77 @@ public final class DynamicSimulationCFuntions {
     }
 
     @CEntryPoint(name = "addAlphaBetaLoad")
-    public static void addAlphaBetaLoad(ObjectHandle dynamicMappingHandle, String staticId, String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addAlphaBetaLoad(staticId, dynamicParam);
+    public static void addAlphaBetaLoad(IsolateThread thread, ObjectHandle dynamicMappingHandle, String staticId,
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addAlphaBetaLoad(staticId, dynamicParam);
+        });
     }
 
     @CEntryPoint(name = "addOneTransformerLoad")
-    public static void addOneTransformerLoad(ObjectHandle dynamicMappingHandle, String staticId, String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addOneTransformerLoad(staticId, dynamicParam);
+    public static void addOneTransformerLoad(IsolateThread thread, ObjectHandle dynamicMappingHandle, String staticId,
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addOneTransformerLoad(staticId, dynamicParam);
+        });
     }
 
     @CEntryPoint(name = "addOmegaRef")
-    public static void addOmegaRef(ObjectHandle dynamicMappingHandle, String generatorId) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addOmegaRef(generatorId);
+    public static void addOmegaRef(IsolateThread thread, ObjectHandle dynamicMappingHandle, String generatorId,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addOmegaRef(generatorId);
+        });
     }
 
     @CEntryPoint(name = "addGeneratorSynchronousThreeWindings")
-    public static void addGeneratorSynchronousThreeWindings(ObjectHandle dynamicMappingHandle, String staticId,
-            String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addGeneratorSynchronousThreeWindings(staticId, dynamicParam);
+    public static void addGeneratorSynchronousThreeWindings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+            String staticId,
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addGeneratorSynchronousThreeWindings(staticId, dynamicParam);
+        });
     }
 
     @CEntryPoint(name = "addGeneratorSynchronousThreeWindingsProportionalRegulations")
-    public static void addGeneratorSynchronousThreeWindingsProportionalRegulations(ObjectHandle dynamicMappingHandle,
+    public static void addGeneratorSynchronousThreeWindingsProportionalRegulations(IsolateThread thread,
+            ObjectHandle dynamicMappingHandle,
             String staticId,
-            String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addGeneratorSynchronousThreeWindingsProportionalRegulations(staticId, dynamicParam);
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addGeneratorSynchronousThreeWindingsProportionalRegulations(staticId, dynamicParam);
+        });
     }
 
     @CEntryPoint(name = "addGeneratorSynchronousFourWindings")
-    public static void addGeneratorSynchronousFourWindings(ObjectHandle dynamicMappingHandle, String staticId,
-            String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addGeneratorSynchronousFourWindings(staticId, dynamicParam);
+    public static void addGeneratorSynchronousFourWindings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+            String staticId,
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addGeneratorSynchronousFourWindings(staticId, dynamicParam);
+        });
     }
 
     @CEntryPoint(name = "addGeneratorSynchronousFourWindingsProportionalRegulations")
-    public static void addGeneratorSynchronousFourWindingsProportionalRegulations(ObjectHandle dynamicMappingHandle,
+    public static void addGeneratorSynchronousFourWindingsProportionalRegulations(IsolateThread thread,
+            ObjectHandle dynamicMappingHandle,
             String staticId,
-            String dynamicParam) {
-        DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-        dynamicMapping.addGeneratorSynchronousFourWindingsProportionalRegulations(staticId, dynamicParam);
+            String dynamicParam,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            dynamicMapping.addGeneratorSynchronousFourWindingsProportionalRegulations(staticId, dynamicParam);
+        });
     }
 }
