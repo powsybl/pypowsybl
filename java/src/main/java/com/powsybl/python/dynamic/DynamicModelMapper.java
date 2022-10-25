@@ -56,7 +56,7 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
 
     public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parametersIds) {
         dynamicModelList.add(
-                () -> new GeneratorSynchronousThreeWindingsProportionalRegulations(staticId, staticId, parametersIds));
+            () -> new GeneratorSynchronousThreeWindingsProportionalRegulations(staticId, staticId, parametersIds));
     }
 
     public void addGeneratorSynchronousFourWindings(String staticId, String parametersIds) {
@@ -65,7 +65,7 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
 
     public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parametersIds) {
         dynamicModelList.add(
-                () -> new GeneratorSynchronousFourWindingsProportionalRegulations(staticId, staticId, parametersIds));
+            () -> new GeneratorSynchronousFourWindingsProportionalRegulations(staticId, staticId, parametersIds));
     }
 
 }
