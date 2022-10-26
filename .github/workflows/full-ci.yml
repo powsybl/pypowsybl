@@ -48,7 +48,7 @@ jobs:
           components: 'native-image'
 
       - name: Checkout sources
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -105,7 +105,7 @@ jobs:
         run: make doctest
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pypowsybl-wheel-linux-${{ matrix.python.name }}
           path: wheelhouse/*.whl
@@ -151,12 +151,12 @@ jobs:
           components: 'native-image'
 
       - name: Checkout sources
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           submodules: true
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python.version }}
 
@@ -186,7 +186,7 @@ jobs:
         run: make doctest
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
@@ -198,12 +198,12 @@ jobs:
 
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: download
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pypowsybl-wheels
           path: |
