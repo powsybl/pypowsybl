@@ -883,13 +883,13 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS']),
-                            columns=['name', 'v', 'angle', 'voltage_level_id', 'connected'],
-                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', True],
-                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', True],
-                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', True],
-                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', True]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False)
 
     n.update_busbar_sections(
@@ -899,13 +899,13 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS']),
-                            columns=['name', 'fictitious', 'v', 'angle', 'voltage_level_id', 'connected'],
-                            data=[['S1VL1_BBS', True, 224.6139, 2.2822, 'S1VL1', True],
-                                  ['S1VL2_BBS1', False, 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S1VL2_BBS2', False, 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S2VL1_BBS', False, 408.8470, 0.7347, 'S2VL1', True],
-                                  ['S3VL1_BBS', False, 400.0000, 0.0000, 'S3VL1', True],
-                                  ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, True],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
@@ -1541,9 +1541,11 @@ def test_dump_to_string_with_report():
 
 def test_create_branch_feeder_bays_line():
     n = pp.network.create_four_substations_node_breaker_network()
-    df = pd.DataFrame(index=['new_line'], columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
-         'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
-         data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
     pp.network.create_line_bays(n, df)
     retrieved_newline = n.get_lines().loc['new_line']
     assert retrieved_newline["r"] == 5.0
@@ -1590,7 +1592,7 @@ def test_create_line_on_line():
     assert retrieved_newline["connected1"]
     assert retrieved_newline["connected2"]
 
-    #Check splitted line percent
+    # Check splitted line percent
     retrieved_splittedline1 = n.get_lines().loc['NHV1_NHV2_1_1']
     assert retrieved_splittedline1["r"] == 2.25
 
@@ -1603,11 +1605,14 @@ def test_create_line_on_line():
 
 def test_create_branch_feeder_bays_twt():
     n = pp.network.create_four_substations_node_breaker_network()
-    df = pd.DataFrame(index=['new_twt'], columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
-         'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
-         data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0, 'S1VL1', 'S1VL2']])
+    df = pd.DataFrame(index=['new_twt'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
+                               'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
+                      data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
+                             400.0, 1.0, 'S1VL1', 'S1VL2']])
     pp.network.create_2_windings_transformer_bays(n, df)
-    retrieved_newtwt= n.get_2_windings_transformers().loc['new_twt']
+    retrieved_newtwt = n.get_2_windings_transformers().loc['new_twt']
     assert retrieved_newtwt["r"] == 5.0
     assert retrieved_newtwt["x"] == 50.0
     assert retrieved_newtwt["g"] == 2.0
@@ -1637,7 +1642,8 @@ def test_connect_voltage_level_on_line():
 # TODO: add checks of extensions everywhere once that they are interfaced.
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network()
-    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"], data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
     pp.network.create_load_bay(network=n, df=df, raise_exception=True)
     load = n.get_loads().loc["new_load"]
     assert load.p0 == 10.0
@@ -1646,7 +1652,8 @@ def test_add_load_bay():
 
 def test_add_load_bay_from_kwargs():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, busbar_section_id="S1VL1_BBS", position_order=10)
+    pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, busbar_section_id="S1VL1_BBS",
+                               position_order=10)
     load = n.get_loads().loc["new_load"]
     assert load.p0 == 10.0
     assert load.q0 == 3.0
@@ -1656,7 +1663,8 @@ def test_add_generator_bay():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.network.create_generator_bay(n, pd.DataFrame.from_records(
         data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 10)],
-        columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'busbar_section_id', 'position_order'],
+        columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v',
+                 'busbar_section_id', 'position_order'],
         index='id'))
     generator = n.get_generators().loc['new_gen']
     assert generator.target_p == 100.0
@@ -1886,7 +1894,8 @@ def test_phase_tap_changer_regulated_side():
     assert tap_changer.regulation_mode == 'FIXED_TAP'
 
     with pytest.raises(pp.PyPowsyblError, match='regulated terminal is not set'):
-        n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300, regulation_mode='CURRENT_LIMITER',
+        n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
+                                    regulation_mode='CURRENT_LIMITER',
                                     regulating=True, regulated_side='')
 
     n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300, regulation_mode='CURRENT_LIMITER',
@@ -1895,6 +1904,7 @@ def test_phase_tap_changer_regulated_side():
     assert tap_changer.regulating
     assert tap_changer.regulated_side == 'TWO'
     assert tap_changer.regulation_mode == 'CURRENT_LIMITER'
+
 
 if __name__ == '__main__':
     unittest.main()

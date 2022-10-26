@@ -727,11 +727,12 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getBusbarSectionStream, getOrThrow(Network::getBusbarSection, "Bus bar section"))
                 .stringsIndex("id", BusbarSection::getId)
                 .strings("name", bbs -> bbs.getOptionalName().orElse(""))
-                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .doubles("v", BusbarSection::getV)
                 .doubles("angle", BusbarSection::getAngle)
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
+                .strings("bus_id", bbs -> getBusId(bbs.getTerminal()))
                 .booleans("connected", bbs -> bbs.getTerminal().isConnected(), connectInjection())
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
