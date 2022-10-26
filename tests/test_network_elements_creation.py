@@ -469,14 +469,14 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS', 'S_TEST']),
-                            columns=['name', 'fictitious', 'v', 'angle', 'voltage_level_id', 'connected'],
-                            data=[['S1VL1_BBS', False, 224.6139, 2.2822, 'S1VL1', True],
-                                  ['S1VL2_BBS1', False, 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S1VL2_BBS2', False, 400.0000, 0.0000, 'S1VL2', True],
-                                  ['S2VL1_BBS', False, 408.8470, 0.7347, 'S2VL1', True],
-                                  ['S3VL1_BBS', False, 400.0000, 0.0000, 'S3VL1', True],
-                                  ['S4VL1_BBS', False, 400.0000, -1.1259, 'S4VL1', True],
-                                  ['S_TEST', False, NaN, NaN, 'S1VL1', True]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, False],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False],
+                                  ['S_TEST', NaN, NaN, 'S1VL1', 'S1VL1_0', True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
