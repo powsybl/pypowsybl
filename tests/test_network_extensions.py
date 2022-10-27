@@ -410,3 +410,12 @@ def test_slack_terminal():
     e = n.get_extensions(extension_name).loc[voltage_level_id]
     assert e.element_id == 'S1VL2_BBS1'
     assert e.bus_id == 'S1VL2_0'
+
+
+def test_slack_terminal_bus_breaker():
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_extensions('slackTerminal', voltage_level_id='VLHV1', element_id='NHV1')
+    e = n.get_extensions('slackTerminal').loc['VLHV1']
+    assert e.element_id == 'NHV1_NHV2_1'   # because there is no terminal associated to buses, not so natural,
+                                           # but powsybl-core works this way
+    assert e.bus_id == 'VLHV1_0'  # the corresponding "bus view" bus

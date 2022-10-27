@@ -56,10 +56,11 @@ public class SlackTerminalDataframeAdder extends AbstractSimpleAdder {
                 }
             } else if (this.busId != null && this.elementId == null) {
                 String busId = this.busId.get(row);
-                if (network.getBusView().getBus(busId) == null) {
+                Bus bus = network.getBusView().getBus(busId);
+                if (bus == null) {
                     throw new PowsyblException("bus id : " + busId + " does not match any existing bus");
                 }
-                SlackTerminal.attach(network.getBusView().getBus(busId));
+                SlackTerminal.attach(bus);
             } else {
                 throw new PowsyblException("only one of element_id or bus_id must be filled");
             }
