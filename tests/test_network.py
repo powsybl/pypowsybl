@@ -66,6 +66,8 @@ def test_get_import_parameters():
     assert 'Ignore base voltage specified in the file' == parameters['description']['psse.import.ignore-base-voltage']
     assert 'BOOLEAN' == parameters['type']['psse.import.ignore-base-voltage']
     assert 'false' == parameters['default']['psse.import.ignore-base-voltage']
+    parameters = pp.network.get_import_parameters('CGMES')
+    assert '[mRID, rdfID]' == parameters['possible_values']['iidm.import.cgmes.source-for-iidm-id']
 
 
 def test_get_export_parameters():
@@ -76,6 +78,7 @@ def test_get_export_parameters():
     assert 'CIM version to export' == parameters['description'][name]
     assert 'STRING' == parameters['type'][name]
     assert '' == parameters['default'][name]
+    assert '[EQ, TP, SSH, SV]' == parameters['possible_values']['iidm.export.cgmes.profiles']
 
 
 def test_get_export_format():
