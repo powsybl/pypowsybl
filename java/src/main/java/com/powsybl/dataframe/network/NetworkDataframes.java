@@ -77,6 +77,10 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits());
         mappers.put(DataframeElementType.ALIAS, aliases());
+        mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
+        mappers.put(DataframeElementType.INJECTION, injections());
+        mappers.put(DataframeElementType.BRANCH, branches());
+        mappers.put(DataframeElementType.TERMINAL, terminals());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -860,6 +864,50 @@ public final class NetworkDataframes {
 
     static String getPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
         return getTerminalSideStr(transformer, transformer.getPhaseTapChanger().getRegulationTerminal());
+    }
+
+    static NetworkDataframeMapper identifiables() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getIdentifiables().stream(), NetworkDataframes::getT2OrThrow)
+                .stringsIndex("id", Identifiable::getId)
+                .strings("type", identifiable -> identifiable.getType().toString())
+                .build();
+    }
+
+    static NetworkDataframeMapper injections() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
+                        .filter(connectable -> connectable instanceof Injection),
+                NetworkDataframes::getT2OrThrow)
+                .stringsIndex("id", Connectable::getId)
+                .strings("type", connectable -> connectable.getType().toString())
+                .strings("voltage_level_id", connectable -> ((Injection) connectable).getTerminal().getVoltageLevel().getId())
+                .strings("bus_id", connectable -> ((Injection) connectable).getTerminal().getBusView().getBus() == null ? "" :
+                        ((Injection) connectable).getTerminal().getBusView().getBus().getId())
+                .build();
+    }
+
+    static NetworkDataframeMapper branches() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getBranchStream, NetworkDataframes::getT2OrThrow)
+                .stringsIndex("id", Branch::getId)
+                .strings("type", branch -> branch.getType().toString())
+                .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
+                .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
+                        branch.getTerminal1().getBusView().getBus().getId())
+                .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
+                .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
+                        branch.getTerminal2().getBusView().getBus().getId())
+                .build();
+    }
+
+    static NetworkDataframeMapper terminals() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
+                .flatMap(connectable -> (Stream<Terminal>) connectable.getTerminals().stream()), NetworkDataframes::getT2OrThrow)
+                .stringsIndex("element_id", terminal -> ((Terminal) terminal).getConnectable().getId())
+                .strings("voltage_level_id", terminal -> ((Terminal) terminal).getVoltageLevel().getId())
+                .strings("bus_id", terminal -> ((Terminal) terminal).getBusView().getBus() == null ? "" :
+                        ((Terminal) terminal).getBusView().getBus().getId())
+                .strings("element_side", terminal -> ((Terminal) terminal).getConnectable() instanceof Branch ?
+                        ((Branch) ((Terminal) terminal).getConnectable()).getSide((Terminal) terminal).toString() : "")
+                .build();
     }
 
     private static Terminal getBranchTerminal(Branch<?> branch, String side) {

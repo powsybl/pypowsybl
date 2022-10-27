@@ -2195,6 +2195,98 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
+    def get_identifiables(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of identifiables
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of identifiables.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the identifiable
+
+            This dataframe is indexed on the identifiable ID.
+        """
+        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes)
+
+    def get_injections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of injections
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of injections.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the injection
+              - **voltage_level_id**: at which substation the injection is connected
+              - **bus_id**: bus where this injection is connected
+
+            This dataframe is indexed on the injections ID.
+        """
+        return self.get_elements(ElementType.INJECTION, all_attributes, attributes)
+
+    def get_branches(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of branches
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of branches.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the branch (line or 2 windings transformer)
+              - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **bus1_id**: bus where this branch is connected, on side 1
+              - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **bus2_id**: bus where this branch is connected, on side 2
+
+            This dataframe is indexed on the branche ID.
+        """
+        return self.get_elements(ElementType.BRANCH, all_attributes, attributes)
+
+    def get_terminals(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of terminal
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of terminals.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: voltage level where the terminal is connected
+              - **bus_id**: bus where this terminal is
+              - **element_side**: if it is a terminal of a branch it will indicate his side else it is ""
+
+            This dataframe is indexed on the element ID of the terminal.
+        """
+        return self.get_elements(ElementType.TERMINAL, all_attributes, attributes)
+
     def _update_elements(self, element_type: ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
@@ -4980,9 +5072,7 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
                           c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
-                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
-        _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
