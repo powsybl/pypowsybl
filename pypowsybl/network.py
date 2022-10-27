@@ -250,7 +250,8 @@ class Network:  # pylint: disable=too-many-public-methods
     def disconnect(self, id: str) -> bool:
         return _pp.update_connectable_status(self._handle, id, False)
 
-    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> None:
+    def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
+             reporter: _Reporter = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -275,7 +276,8 @@ class Network:  # pylint: disable=too-many-public-methods
         file = _path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters, None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+        _pp.dump_network(self._handle, file, format, parameters,
+                         None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: _Reporter = None) -> str:
         """
@@ -291,7 +293,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+        return _pp.dump_network_to_string(self._handle, format, parameters,
+                                          None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = _sys.float_info.max, ids: _List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -327,7 +330,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
 
-    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0) -> None:
+    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
+                                       depth: int = 0) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -370,7 +374,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: _List[str] = None,
+                     **kwargs: _ArrayLike) -> _DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -403,13 +408,15 @@ class Network:  # pylint: disable=too-many-public-methods
         else:
             elements_array = None
 
-        series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes, attributes, elements_array)
+        series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
+                                                                attributes, elements_array)
         result = _create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
         return result
 
-    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_buses(self, all_attributes: bool = False, attributes: _List[str] = None,
+                  **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of buses.
 
@@ -491,7 +498,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BUS, all_attributes, attributes, **kwargs)
 
-    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_generators(self, all_attributes: bool = False, attributes: _List[str] = None,
+                       **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of generators.
 
@@ -602,7 +610,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.GENERATOR, all_attributes, attributes, **kwargs)
 
-    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_loads(self, all_attributes: bool = False, attributes: _List[str] = None,
+                  **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of loads.
 
@@ -709,7 +718,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: _List[str] = None,
+                      **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -746,7 +756,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
+                  **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of lines data.
 
@@ -837,7 +848,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LINE, all_attributes, attributes, **kwargs)
 
-    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_2_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of 2 windings transformers.
 
@@ -932,7 +944,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_3_windings_transformers(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of 3 windings transformers.
 
@@ -947,7 +960,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
-    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_shunt_compensators(self, all_attributes: bool = False, attributes: _List[str] = None,
+                               **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators.
 
@@ -1025,7 +1039,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.SHUNT_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                                  **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for non linear model.
 
@@ -1048,7 +1063,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                              **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of shunt compensators sections for linear model.
 
@@ -1072,7 +1088,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
+                           **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of dangling lines.
 
@@ -1152,7 +1169,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
-    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                   **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of LCC converter stations.
 
@@ -1231,7 +1249,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LCC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                   **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of VSC converter stations.
 
@@ -1318,7 +1337,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.VSC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
-    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_static_var_compensators(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of static var compensators.
 
@@ -1398,7 +1418,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes, **kwargs)
 
-    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_voltage_levels(self, all_attributes: bool = False, attributes: _List[str] = None,
+                           **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of voltage levels.
 
@@ -1480,7 +1501,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.VOLTAGE_LEVEL, all_attributes, attributes, **kwargs)
 
-    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_busbar_sections(self, all_attributes: bool = False, attributes: _List[str] = None,
+                            **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of busbar sections.
 
@@ -1568,7 +1590,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BUSBAR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_substations(self, all_attributes: bool = False, attributes: _List[str] = None,
+                        **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get substations :class:`~pandas.DataFrame`.
 
@@ -1594,7 +1617,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
-    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_hvdc_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
+                       **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of HVDC lines.
 
@@ -1672,7 +1696,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.HVDC_LINE, all_attributes, attributes, **kwargs)
 
-    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_switches(self, all_attributes: bool = False, attributes: _List[str] = None,
+                     **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of switches.
 
@@ -1770,7 +1795,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of ratio tap changer steps.
 
@@ -1845,7 +1871,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: _List[str] = None,
+                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Get a dataframe of phase tap changer steps.
 
@@ -1924,7 +1951,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
-    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None,
+                               **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Create a ratio tap changers:class:`~pandas.DataFrame`.
 
@@ -1999,7 +2027,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
-    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None, **kwargs: _ArrayLike) -> _DataFrame:
+    def get_phase_tap_changers(self, all_attributes: bool = False, attributes: _List[str] = None,
+                               **kwargs: _ArrayLike) -> _DataFrame:
         r"""
         Create a phase tap changers:class:`~pandas.DataFrame`.
 
@@ -2074,7 +2103,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
-    def get_reactive_capability_curve_points(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+    def get_reactive_capability_curve_points(self, all_attributes: bool = False,
+                                             attributes: _List[str] = None) -> _DataFrame:
         """
         Get a dataframe of reactive capability curve points.
 
@@ -2932,7 +2962,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
         limits = self.get_operational_limits(all_attributes, attributes)
-        current_limits = limits[limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
+        current_limits = limits[
+            limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
         current_limits.index.rename('branch_id', inplace=True)
         current_limits.set_index('name', append=True, inplace=True)
         if 'fictitious' in current_limits.columns:
@@ -3012,7 +3043,8 @@ class Network:  # pylint: disable=too-many-public-methods
             networks = [networks]
         return _pp.merge(self._handle, [n._handle for n in networks])
 
-    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]], **kwargs: _ArrayLike) -> None:
+    def _create_elements(self, element_type: ElementType, dfs: _List[_Optional[_DataFrame]],
+                         **kwargs: _ArrayLike) -> None:
         metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
         c_dfs = _get_c_dataframes(dfs, metadata, **kwargs)
         _pp.create_element(self._handle, c_dfs, element_type)
@@ -4029,7 +4061,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
-        return _create_data_frame_from_series_array(_pp.create_network_elements_extension_series_array(self._handle, extension_name))
+        return _create_data_frame_from_series_array(
+            _pp.create_network_elements_extension_series_array(self._handle, extension_name))
 
     def get_extension(self, extension_name: str) -> _DataFrame:
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
@@ -4345,10 +4378,12 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     file = _path_to_str(file)
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network(file, parameters, None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+    return Network(_pp.load_network(file, parameters,
+                                    None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 
-def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
+                     reporter: _Reporter = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -4362,7 +4397,8 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters, None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
+                                                None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 
 def get_extensions_names() -> _List[str]:
@@ -4375,9 +4411,12 @@ def get_extensions_names() -> _List[str]:
     return _pp.get_extensions_names()
 
 
-def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float, new_line_b1: float,
-                        new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
-                        position_percent: float = 50.0, create_fictitious_substation: bool = False, fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
+def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float,
+                        new_line_b1: float,
+                        new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '',
+                        line1_name: str = '', line2_id: str = '', line2_name: str = '',
+                        position_percent: float = 50.0, create_fictitious_substation: bool = False,
+                        fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
                         fictitious_substation_id: str = '', fictitious_substation_name: str = '') -> None:
     """
     Connects an existing voltage level to an existing line through a tee point.
@@ -4413,13 +4452,16 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
         fictitious_substation_name: the name of the fictitious substation (optional).
     """
     _pp.create_line_on_line(network._handle, bbs_or_bus_id, new_line_id, new_line_r, new_line_x, new_line_b1,
-                            new_line_b2, new_line_g1, new_line_g2, line_id, line1_id, line1_name, line2_id, line2_name, position_percent,
-                            create_fictitious_substation, fictitious_voltage_level_id, fictitious_voltage_level_name, fictitious_substation_id,
+                            new_line_b2, new_line_g1, new_line_g2, line_id, line1_id, line1_name, line2_id, line2_name,
+                            position_percent,
+                            create_fictitious_substation, fictitious_voltage_level_id, fictitious_voltage_level_name,
+                            fictitious_substation_id,
                             fictitious_substation_name)
 
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
-                                  line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '') -> None:
+                                  line1_id: str = '', line1_name: str = '', line2_id: str = '',
+                                  line2_name: str = '') -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -4438,10 +4480,12 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
         line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
         line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
     """
-    _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id, line2_name, position_percent)
+    _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
+                                      line2_name, position_percent)
 
 
-def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
+                    **kwargs: _ArrayLike) -> None:
     """
     Creates a load, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4472,7 +4516,8 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
     return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
 
 
-def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                       reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a battery, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4504,7 +4549,8 @@ def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception:
     return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
 
 
-def create_generator_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_generator_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a generator, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4540,7 +4586,8 @@ def create_generator_bay(network: Network, df: _DataFrame = None, raise_exceptio
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_dangling_line_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                             reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a dangling line, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4634,7 +4681,8 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
     return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter)
 
 
-def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                      reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a static var compensator, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4669,7 +4717,8 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, r
     return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
 
 
-def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                     reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4701,7 +4750,8 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, ra
     return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
 
 
-def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                     reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4735,7 +4785,8 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, ra
     return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
 
 
-def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType, raise_exception: bool, reporter: _Optional[_Reporter], **kwargs: _ArrayLike) -> None:
+def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], element_type: _pp.ElementType,
+                       raise_exception: bool, reporter: _Optional[_Reporter], **kwargs: _ArrayLike) -> None:
     """
     Creates an injection, connects it to the network on a given busbar section and creates the associated topology.
 
@@ -4757,14 +4808,19 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
     """
     metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
     c_dfs = _get_c_dataframes_and_add_voltage_level_id(network, dfs, metadata, **kwargs)
-    _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model, c_dfs, element_type)
+    _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model,
+                          c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
+                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
+        _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
-        dfs[0]['voltage_level_id'] = dfs[0].apply(lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(0), axis=1)
+        dfs[0]['voltage_level_id'] = dfs[0].apply(
+            lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(
+                0), axis=1)
     for i, df in enumerate(dfs):
         if df is None:
             c_dfs.append(None)

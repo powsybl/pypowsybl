@@ -231,7 +231,8 @@ def test_measurements():
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
 
-    n.create_extensions(extension_name, id='measurement1', element_id=element_id, type='CURRENT', value=100, standard_deviation=2, valid=True)
+    n.create_extensions(extension_name, id='measurement1', element_id=element_id, type='CURRENT', value=100,
+                        standard_deviation=2, valid=True)
     e = n.get_extensions(extension_name).loc[element_id]
     assert e.id == 'measurement1'
     assert e.type == 'CURRENT'
@@ -240,7 +241,8 @@ def test_measurements():
     assert e.value == 2.0
     assert e.valid
     n.create_extensions(extension_name, id=['measurement2', 'measurement3'], element_id=[element_id, element_id],
-                        type=['REACTIVE_POWER', 'ACTIVE_POWER'], value=[200, 180], standard_deviation=[21, 23], valid=[True, True])
+                        type=['REACTIVE_POWER', 'ACTIVE_POWER'], value=[200, 180], standard_deviation=[21, 23],
+                        valid=[True, True])
     e = n.get_extensions(extension_name).loc[element_id]
     expected = pd.DataFrame(index=pd.Series(name='element_id', data=['LD1', 'LD1']),
                             columns=['id', 'type', 'side', 'standard_deviation', 'value', 'valid'],
@@ -327,7 +329,8 @@ def test_connectable_position():
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
     n.create_extensions(extension_name, id=[element_id, element_id, element_id], side=['ONE', 'TWO', 'THREE'],
-                        order=[1, 2, 3], feeder_name=['test', 'test1', 'test2'], direction=['TOP', 'BOTTOM', 'UNDEFINED'])
+                        order=[1, 2, 3], feeder_name=['test', 'test1', 'test2'],
+                        direction=['TOP', 'BOTTOM', 'UNDEFINED'])
     e = n.get_extensions(extension_name).loc[element_id]
     assert all([a == b for a, b in zip(e.side.values, ['ONE', 'TWO', 'THREE'])])
     assert all([a == b for a, b in zip(e.feeder_name.values, ['test', 'test1', 'test2'])])
@@ -379,8 +382,31 @@ def test_generator_short_circuit():
     extensions = n.get_extensions(extension_name)
     assert extensions.empty
     element_id = 'GH1'
-    n.create_extensions(extension_name, id=element_id, direct_sub_trans_x=9.2, direct_trans_x=2.1, step_up_transformer_x=5)
+    n.create_extensions(extension_name, id=element_id, direct_sub_trans_x=9.2, direct_trans_x=2.1,
+                        step_up_transformer_x=5)
     e = n.get_extensions(extension_name).loc[element_id]
     assert e.direct_sub_trans_x == 9.2
     assert e.direct_trans_x == 2.1
     assert e.step_up_transformer_x == 5
+
+
+def test_slack_terminal():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'slackTerminal'
+    voltage_level_id = 'S1VL2'
+    element_id = 'GH1'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, voltage_level_id=voltage_level_id, element_id=element_id)
+    e = n.get_extensions(extension_name).loc[voltage_level_id]
+    assert e.element_id == element_id
+    assert e.bus_id == 'S1VL2_0'
+
+    n.remove_extensions(extension_name, [voltage_level_id])
+    assert n.get_extensions(extension_name).empty
+
+    n.create_extensions(extension_name, voltage_level_id=voltage_level_id, bus_id='S1VL2_0')
+    e = n.get_extensions(extension_name).loc[voltage_level_id]
+    assert e.element_id == 'S1VL2_BBS1'
+    assert e.bus_id == 'S1VL2_0'
