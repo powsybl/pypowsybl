@@ -34,7 +34,7 @@ public:
 class JavaHandle {
 public:
     //Implicit constructor from void* returned by graalvm
-    JavaHandle(void* handle);
+    explicit JavaHandle(void* handle);
     ~JavaHandle() {}
 
     //Implicit conversion to void* for use as input to graalvm
