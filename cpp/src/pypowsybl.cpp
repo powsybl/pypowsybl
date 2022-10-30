@@ -93,7 +93,7 @@ T callJava(F f, ARGS... args) {
 
     setLogLevelFromPythonLogger(&guard, &exc);
 
-    T r = f(guard.thread(), args..., &exc);
+    T r(f(guard.thread(), args..., &exc));
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
     }
@@ -109,7 +109,9 @@ T callJava(F f, ARGS... args) {
 //Destruction of java object when the shared_ptr has no more references
 JavaHandle::JavaHandle(void* handle):
     handle_(handle, [](void* to_be_deleted) {
-        callJava<>(::destroyObjectHandle, to_be_deleted);
+        if (to_be_deleted) {
+            callJava<>(::destroyObjectHandle, to_be_deleted);
+        }
     })
 {
 }
@@ -469,7 +471,7 @@ std::string getVersionTable() {
 }
 
 JavaHandle createNetwork(const std::string& name, const std::string& id) {
-    return JavaHandle(callJava<void*>(::createNetwork, (char*) name.data(), (char*) id.data()));
+    return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
 void merge(JavaHandle network, std::vector<JavaHandle>& others) {
@@ -541,8 +543,8 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return JavaHandle(callJava<void*>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
-                              parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter));
+    return callJava<JavaHandle>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
+                              parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
@@ -556,9 +558,9 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return JavaHandle(callJava<void*>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
+    return callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
                            parameterNamesPtr.get(), parameterNames.size(),
-                           parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter));
+                           parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
@@ -676,7 +678,7 @@ std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vecto
 }
 
 JavaHandle createSecurityAnalysis() {
-    return JavaHandle(callJava<void*>(::createSecurityAnalysis));
+    return callJava<JavaHandle>(::createSecurityAnalysis);
 }
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
@@ -687,11 +689,11 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
                                const std::string& provider, bool dc, JavaHandle* reporter) {
     auto c_parameters = parameters.to_c_struct();
-    return JavaHandle(callJava<void*>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reporter == nullptr) ? nullptr : *reporter));
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 JavaHandle createSensitivityAnalysis() {
-    return JavaHandle(callJava<void*>(::createSensitivityAnalysis));
+    return callJava<JavaHandle>(::createSensitivityAnalysis);
 }
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
@@ -778,7 +780,7 @@ void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, con
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter) {
     auto c_parameters = parameters.to_c_struct();
-    return JavaHandle(callJava<void*>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter));
+    return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
 matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
@@ -1014,7 +1016,7 @@ void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes
 }
 
 JavaHandle createGLSKdocument(std::string& filename) {
-    return JavaHandle(callJava<void*>(::createGLSKdocument, (char*) filename.c_str()));
+    return callJava<JavaHandle>(::createGLSKdocument, (char*) filename.c_str());
 }
 
 std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant) {
@@ -1044,7 +1046,7 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
 }
 
 JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName) {
-    return JavaHandle(callJava<void*>(::createReporterModel, (char*) taskKey.data(), (char*) defaultName.data()));
+    return callJava<JavaHandle>(::createReporterModel, (char*) taskKey.data(), (char*) defaultName.data());
 }
 
 std::string printReport(const JavaHandle& reporterModel) {
