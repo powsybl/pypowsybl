@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2022-10-02-69a0972
+    container: quay.io/pypa/manylinux2014_x86_64:2022-11-01-e47a7a6
     strategy:
       matrix:
         python:
@@ -34,6 +34,11 @@ jobs:
             name: cp310,
             abi: cp310,
             version: '3.10',
+          }
+          - {
+            name: cp311,
+            abi: cp311,
+            version: '3.11',
           }
 
     steps:
@@ -140,6 +145,10 @@ jobs:
           - {
             name: cp310,
             version: '3.10.1',
+          }
+          - {
+            name: cp311,
+            version: '3.11',
           }
 
     steps:
