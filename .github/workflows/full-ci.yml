@@ -51,6 +51,7 @@ jobs:
           version: '22.2.0'
           java-version: '11'
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -158,6 +159,7 @@ jobs:
           version: '22.2.0'
           java-version: '11'
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout sources
         uses: actions/checkout@v3
