@@ -109,7 +109,9 @@ T callJava(F f, ARGS... args) {
 //Destruction of java object when the shared_ptr has no more references
 JavaHandle::JavaHandle(void* handle):
     handle_(handle, [](void* to_be_deleted) {
-        callJava<>(::destroyObjectHandle, to_be_deleted);
+        if (to_be_deleted) {
+            callJava<>(::destroyObjectHandle, to_be_deleted);
+        }
     })
 {
 }
