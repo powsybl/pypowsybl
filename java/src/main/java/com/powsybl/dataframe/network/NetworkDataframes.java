@@ -76,6 +76,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits());
+        mappers.put(DataframeElementType.ALIAS, aliases());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -999,6 +1000,20 @@ public final class NetworkDataframes {
 
     public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName) {
         return EXTENSIONS_MAPPERS.get(extensionName);
+    }
+
+    private static NetworkDataframeMapper aliases() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
+                .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("alias", Pair::getRight)
+                .strings("alias_type", pair -> ((Optional<String>) pair.getLeft().getAliasType(pair.getRight())).orElse(""))
+                .build();
+    }
+
+    private static Stream<Pair<Identifiable, String>> getAliasesData(Network network) {
+        return network.getIdentifiables().stream()
+                .flatMap(identifiable -> identifiable.getAliases().stream()
+                        .map(alias -> Pair.of(identifiable, alias)));
     }
 
 }
