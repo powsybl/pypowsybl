@@ -3997,13 +3997,13 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
 
-    def create_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def add_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        create aliases on network elements.
+        Adds aliases to network elements.
 
-        an alias is a reference to a network element.
-        For example to get or to update an element his alias can be used insead of his id.
-        An alias type may be referenced with a type
+        An alias is a reference to a network element.
+        For example, to get or to update an element, his alias may be used instead of his id.
+        An alias may be associated with a type, to distinguish it from other aliases.
 
         Args:
             df: Attributes as a dataframe.
@@ -4015,15 +4015,16 @@ class Network:  # pylint: disable=too-many-public-methods
 
             Valid attributes are:
 
-            - **id**:    the identifier of the network element associated to the alias
-            - **alias**:     name of the alias
-            - **alias_type**:     type of the alias (optional)
+            - **id**:          the identifier of the network element associated to the alias
+            - **alias**:       name of the alias
+            - **alias_type**:  type of the alias (optional)
 
         Examples:
 
             .. code-block:: python
-                network.create_aliases(id='element_id', alias='alias_id')
-                network.create_aliases(id='element_id', alias='alias_id', alias_type='alias_type')
+
+                network.add_aliases(id='element_id', alias='alias_id')
+                network.add_aliases(id='element_id', alias='alias_id', alias_type='alias_type')
         """
         return self._create_elements(ElementType.ALIAS, [df], **kwargs)
 
@@ -4069,7 +4070,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def remove_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Removes aliases from the network
+        Removes aliases of network elements.
 
         Args:
             df: Attributes as a dataframe.
@@ -4088,13 +4089,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.remove_elements(id='element_id', alias='alias_id')
+                network.remove_aliases(id='element_id', alias='alias_id')
         """
         metadata = _pp.get_network_elements_creation_dataframes_metadata(ElementType.ALIAS)[0]
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
         _pp.remove_aliases(self._handle, c_df)
-
 
     def remove_elements(self, elements_ids: _Union[str, _List[str]]) -> None:
         """

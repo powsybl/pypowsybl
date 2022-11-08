@@ -12,6 +12,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,15 +49,16 @@ public class AliasDataframeAdder extends AbstractSimpleAdder {
             if (identifiable == null) {
                 throw new PowsyblException("identifiable " + ids.get(row) + " does not exist");
             }
+
+            String alias = aliases.get(row);
+            String type = null;
             if (aliasTypes != null) {
-                String type = aliasTypes.get(row);
-                if (type != null) {
-                    identifiable.addAlias(aliases.get(row), type);
-                } else {
-                    identifiable.addAlias(aliases.get(row));
-                }
+                type = aliasTypes.get(row);
+            }
+            if (StringUtils.isBlank(type)) {
+                identifiable.addAlias(alias);
             } else {
-                identifiable.addAlias(aliases.get(row));
+                identifiable.addAlias(alias, type);
             }
         }
 

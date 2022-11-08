@@ -1909,14 +1909,14 @@ def test_phase_tap_changer_regulated_side():
 def test_aliases():
     n = pp.network.create_four_substations_node_breaker_network()
     assert n.get_aliases().empty
-    n.create_aliases(id='TWT', alias='test', alias_type='type')
+    n.add_aliases(id='TWT', alias='test', alias_type='type')
     alias = n.get_aliases().loc['TWT']
     assert alias['alias'] == 'test'
     assert alias['alias_type'] == 'type'
     twt = n.get_2_windings_transformers(id='test')
     assert twt.shape[0] == 1
     assert twt.loc['TWT']['r'] == 2.0
-    n.create_aliases(id='GH1', alias='no_type_test')
+    n.add_aliases(id='GH1', alias='no_type_test')
     alias2 = n.get_aliases().loc['GH1']
     assert alias2['alias'] == 'no_type_test'
     assert alias2['alias_type'] == ''
