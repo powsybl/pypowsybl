@@ -373,6 +373,7 @@ class FlowDecompositionParameters:
     rescale_enabled: bool
     xnec_selection_strategy: XnecSelectionStrategy
     dc_fallback_enabled_after_ac_divergence: bool
+    sensitivity_variable_batch_size: int
     def __init__(self) -> None: ...
 
 def add_contingency(analysis_context: JavaHandle, contingency_id: str, elements_ids: List[str]) -> None: ...

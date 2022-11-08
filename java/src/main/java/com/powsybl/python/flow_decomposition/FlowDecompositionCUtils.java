@@ -24,12 +24,12 @@ public final class FlowDecompositionCUtils {
 
     public static FlowDecompositionParameters createFlowDecompositionParameters(PyPowsyblApiHeader.FlowDecompositionParametersPointer loadFlowParametersPtr) {
         return createFlowDecompositionParameters()
-            .setSaveIntermediates(FlowDecompositionParameters.DO_NOT_SAVE_INTERMEDIATES)
             .setEnableLossesCompensation(loadFlowParametersPtr.isLossesCompensationEnabled())
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
             .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
             .setDcFallbackEnabledAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
-            .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()]);
+            .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()])
+            .setSensitivityVariableBatchSize(loadFlowParametersPtr.getSensitivityVariableBatchSize());
     }
 }

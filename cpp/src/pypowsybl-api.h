@@ -221,6 +221,7 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char rescale_enabled;
     int xnec_selection_strategy;
     unsigned char dc_fallback_enabled_after_ac_divergence;
+    int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
 
 typedef enum {

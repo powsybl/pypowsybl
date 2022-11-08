@@ -213,6 +213,7 @@ public:
     bool rescale_enabled;
     XnecSelectionStrategy xnec_selection_strategy;
     bool dc_fallback_enabled_after_ac_divergence;
+    int sensitivity_variable_batch_size;
 };
 
 

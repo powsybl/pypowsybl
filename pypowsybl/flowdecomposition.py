@@ -45,6 +45,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         dc_fallback_enabled_after_ac_divergence: Defines the fallback bahavior after an AC divergence
             Use ``True`` to run DC loadflow if an AC loadflow diverges (default).
             Use ``False`` to throw an exception if an AC loadflow diverges.
+        sensitivity_variable_bloc_size: Defines the chunk size for sensitivity analysis.
+            This will reduce memory footprint of flow decomposition but increase computation time.
+            If setting a too high value, a max integer error may be thrown.
     """
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
@@ -55,7 +58,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  sensitivity_epsilon: float = None,
                  rescale_enabled: bool = None,
                  xnec_selection_strategy: XnecSelectionStrategy = None,
-                 dc_fallback_enabled_after_ac_divergence: bool = None):
+                 dc_fallback_enabled_after_ac_divergence: bool = None,
+                 sensitivity_variable_batch_size: int = None):
 
         self._init_with_default_values()
         if enable_losses_compensation is not None:
@@ -70,6 +74,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.xnec_selection_strategy = xnec_selection_strategy
         if dc_fallback_enabled_after_ac_divergence is not None:
             self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
+        if sensitivity_variable_batch_size is not None:
+            self.sensitivity_variable_batch_size = sensitivity_variable_batch_size
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -79,6 +85,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.rescale_enabled = default_parameters.rescale_enabled
         self.xnec_selection_strategy = default_parameters.xnec_selection_strategy
         self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
+        self.sensitivity_variable_batch_size = default_parameters.sensitivity_variable_batch_size
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
         c_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -88,6 +95,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.rescale_enabled = self.rescale_enabled
         c_parameters.xnec_selection_strategy = self.xnec_selection_strategy
         c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
+        c_parameters.sensitivity_variable_batch_size = self.sensitivity_variable_batch_size
         return c_parameters
 
     def __repr__(self) -> str:
@@ -98,6 +106,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", rescale_enabled={self.rescale_enabled!r}" \
                f", xnec_selection_strategy={self.xnec_selection_strategy.name}" \
                f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
+               f", sensitivity_variable_bloc_size={self.sensitivity_variable_bloc_size}" \
                f")"
 
 def run(network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:

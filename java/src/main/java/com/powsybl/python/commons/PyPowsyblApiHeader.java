@@ -776,5 +776,11 @@ public final class PyPowsyblApiHeader {
 
         @CField("dc_fallback_enabled_after_ac_divergence")
         void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
+
+        @CField("sensitivity_variable_batch_size")
+        int getSensitivityVariableBatchSize();
+
+        @CField("sensitivity_variable_batch_size")
+        void setSensitivityVariableBatchSize(int sensitivityVariableBatchSize);
     }
 }
