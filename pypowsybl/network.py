@@ -36,7 +36,7 @@ from pypowsybl.utils.dataframes import (
     _create_c_dataframe,
     _create_properties_c_dataframe,
     _adapt_properties_kwargs,
-    _get_c_dataframes
+    _get_c_dataframes, _adapt_kwargs
 )
 from pypowsybl.report import Reporter as _Reporter
 
@@ -405,6 +405,7 @@ class Network:  # pylint: disable=too-many-public-methods
             metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
+
         else:
             elements_array = None
 
@@ -2131,6 +2132,18 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed on the generator ID.
         """
         return self.get_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
+
+    def get_aliases(self, all_attributes: bool = False, attributes: _List[str] = None,
+                    **kwargs: _ArrayLike) -> _DataFrame:
+        """
+        Get a dataframe of aliases of all network elements.
+
+        Args:
+
+        Returns:
+            A dataframe of aliases
+        """
+        return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
     def _update_elements(self, element_type: ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3984,6 +3997,37 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
 
+    def add_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Adds aliases to network elements.
+
+        An alias is a reference to a network element.
+        For example, to get or to update an element, his alias may be used instead of his id.
+        An alias may be associated with a type, to distinguish it from other aliases.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:          the identifier of the network element associated to the alias
+            - **alias**:       name of the alias
+            - **alias_type**:  type of the alias (optional)
+
+        Examples:
+
+            .. code-block:: python
+
+                network.add_aliases(id='element_id', alias='alias_id')
+                network.add_aliases(id='element_id', alias='alias_id', alias_type='alias_type')
+        """
+        return self._create_elements(ElementType.ALIAS, [df], **kwargs)
+
     def get_validation_level(self) -> ValidationLevel:
         """
         The network's validation level.
@@ -4023,6 +4067,34 @@ class Network:  # pylint: disable=too-many-public-methods
                                       with the new minimum validation level.
         """
         _pp.set_min_validation_level(self._handle, validation_level)
+
+    def remove_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Removes aliases of network elements.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the network element associated to the alias
+            - **alias**:     name of the alias
+
+        Examples:
+
+            .. code-block:: python
+
+                network.remove_aliases(id='element_id', alias='alias_id')
+        """
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(ElementType.ALIAS)[0]
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.remove_aliases(self._handle, c_df)
 
     def remove_elements(self, elements_ids: _Union[str, _List[str]]) -> None:
         """

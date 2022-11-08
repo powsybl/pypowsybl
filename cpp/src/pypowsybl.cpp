@@ -109,7 +109,9 @@ T callJava(F f, ARGS... args) {
 //Destruction of java object when the shared_ptr has no more references
 JavaHandle::JavaHandle(void* handle):
     handle_(handle, [](void* to_be_deleted) {
-        callJava<>(::destroyObjectHandle, to_be_deleted);
+        if (to_be_deleted) {
+            callJava<>(::destroyObjectHandle, to_be_deleted);
+        }
     })
 {
 }
@@ -1121,6 +1123,10 @@ std::vector<int> getUnusedConnectableOrderPositions(const pypowsybl::JavaHandle 
     auto positionsArrayPtr = callJava<array*>(::getUnusedConnectableOrderPositions, network, (char*) busbarSectionId.c_str(), (char*) beforeOrAfter.c_str());
     ToPrimitiveVector<int> res(positionsArrayPtr);
     return res.get();
+}
+
+void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe) {
+    pypowsybl::callJava(::removeAliases, network, dataframe);
 }
 
 }

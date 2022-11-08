@@ -464,6 +464,8 @@ SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std:
 
 std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
 
+void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
+
 }
 
 #endif //PYPOWSYBL_H
