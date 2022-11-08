@@ -195,6 +195,8 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
             case MINMAX_REACTIVE_LIMITS:
                 return PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
+            case ALIAS:
+                return PyPowsyblApiHeader.ElementType.ALIAS;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -254,6 +256,8 @@ public final class Util {
                 return DataframeElementType.OPERATIONAL_LIMITS;
             case MINMAX_REACTIVE_LIMITS:
                 return DataframeElementType.MINMAX_REACTIVE_LIMITS;
+            case ALIAS:
+                return DataframeElementType.ALIAS;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }

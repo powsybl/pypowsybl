@@ -20,6 +20,7 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
@@ -404,6 +405,17 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType)).updateSeries(network, updatingDataframe);
+        });
+    }
+
+    @CEntryPoint(name = "removeAliases")
+    public static void removeAliases(IsolateThread thread, ObjectHandle networkHandle,
+                                     DataframePointer cDataframe,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe dataframe = createDataframe(cDataframe);
+            AliasDataframeAdder.deleteElements(network, dataframe);
         });
     }
 
