@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
+import com.powsybl.dynawaltz.automatons.CurrentLimitAutomaton;
 import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousFourWindings;
 import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousFourWindingsProportionalRegulations;
 import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindings;
@@ -14,6 +15,7 @@ import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindingsProp
 import com.powsybl.dynawaltz.dynamicmodels.LoadAlphaBeta;
 import com.powsybl.dynawaltz.dynamicmodels.LoadOneTransformer;
 import com.powsybl.dynawaltz.dynamicmodels.OmegaRef;
+import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 
 public class DynamicModelMapper implements DynamicModelsSupplier {
@@ -66,6 +68,10 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
     public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parametersIds) {
         dynamicModelList.add(
             () -> new GeneratorSynchronousFourWindingsProportionalRegulations(staticId, staticId, parametersIds));
+    }
+
+    public void addCurrentLimitAutomaton(String staticId, String parametersIds, Branch.Side side) {
+        dynamicModelList.add(() -> new CurrentLimitAutomaton(staticId, staticId, parametersIds, side));
     }
 
 }
