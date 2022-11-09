@@ -11,11 +11,11 @@ import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynawaltz.DynaWaltzCurve;
 import com.powsybl.iidm.network.Network;
 
-public class TimeseriesSupplier implements CurvesSupplier {
+public class CurveMappingSupplier implements CurvesSupplier {
 
     private List<Supplier<Curve>> curvesSupplierList;
 
-    public TimeseriesSupplier() {
+    public CurveMappingSupplier() {
         curvesSupplierList = new LinkedList<>();
     }
 
