@@ -45,7 +45,7 @@ jobs:
           ref: refs/heads/main
 
       - name: Build and install powsybl-entsoe with Maven
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install'
 
       - name: Checkout powsybl-dependencies sources
         uses: actions/checkout@v1
@@ -54,7 +54,7 @@ jobs:
           ref: refs/heads/entsoe_2.0.0_integration
 
       - name: Build and install powsybl-dependencies with Maven
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-dependencies/pom.xml install
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-dependencies/pom.xml install'
 
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
