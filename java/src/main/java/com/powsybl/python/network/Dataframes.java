@@ -51,6 +51,7 @@ public final class Dataframes {
             .strings("description", Parameter::getDescription)
             .enums("type", ParameterType.class, Parameter::getType)
             .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
+            .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
             .build();
 
     private static final DataframeMapper<Exporter> EXPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Exporter, Parameter>()
@@ -59,6 +60,7 @@ public final class Dataframes {
             .strings("description", Parameter::getDescription)
             .enums("type", ParameterType.class, Parameter::getType)
             .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
+            .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
             .build();
 
     private static final DataframeMapper<SecurityAnalysisResult> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
