@@ -14,18 +14,43 @@ import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
+import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 @CContext(Directives.class)
-public final class DynamicSimulationCFuntions {
+public final class DynamicSimulationCFunctions {
 
-    private DynamicSimulationCFuntions() {
+    private DynamicSimulationCFunctions() {
     }
 
     private static Logger logger() {
-        return LoggerFactory.getLogger(DynamicSimulationCFuntions.class);
+        return LoggerFactory.getLogger(DynamicSimulationCFunctions.class);
+    }
+
+    @CEntryPoint(name = "createDynamicSimulationContext")
+    public static ObjectHandle createDynamicSimulationContext(IsolateThread thread,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new DynamicSimulationContext()));
+    }
+
+    @CEntryPoint(name = "createDynamicModelMapping")
+    public static ObjectHandle createDynamicModelMapping(IsolateThread thread,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new DynamicModelMapper()));
+    }
+
+    @CEntryPoint(name = "createTimeseriesMapping")
+    public static ObjectHandle createTimeseriesMapping(IsolateThread thread,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new CurveMappingSupplier()));
+    }
+
+    @CEntryPoint(name = "createEventMapping")
+    public static ObjectHandle createEventMapping(IsolateThread thread,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new EventSupplier()));
     }
 
     @CEntryPoint(name = "runDynamicModel")
@@ -129,4 +154,68 @@ public final class DynamicSimulationCFuntions {
             dynamicMapping.addGeneratorSynchronousFourWindingsProportionalRegulations(staticId, dynamicParam);
         });
     }
+
+    @CEntryPoint(name = "addCurrentLimitAutomaton")
+    public static void addCurrentLimitAutomaton(IsolateThread thread,
+            ObjectHandle dynamicMappingHandle,
+            String staticId,
+            String dynamicParam,
+            String sideStr,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+            Branch.Side side;
+            switch (sideStr) {
+                case "one":
+                    side = Branch.Side.ONE;
+                    break;
+                case "two":
+                    side = Branch.Side.TWO;
+                    break;
+                default:
+                    side = null; // will throw
+            }
+            dynamicMapping.addCurrentLimitAutomaton(staticId, dynamicParam, side);
+        });
+    }
+
+    @CEntryPoint(name = "addCurve")
+    public static void addCurve(IsolateThread thread,
+            ObjectHandle timeseriesSupplier,
+            String dynamicId,
+            String variable,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            CurveMappingSupplier timeSeriesSupplier = ObjectHandles.getGlobal().get(timeseriesSupplier);
+            timeSeriesSupplier.addCurve(dynamicId, variable);
+        });
+    }
+
+    @CEntryPoint(name = "addEventQuadripoleDisconnection")
+    public static void addEventQuadripoleDisconnection(IsolateThread thread,
+            ObjectHandle eventSupplierHandle,
+            String eventModelId,
+            String staticId,
+            String parameterSetId,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
+            eventSupplier.addEventQuadripoleDisconnection(eventModelId, staticId, parameterSetId);
+        });
+    }
+
+    @CEntryPoint(name = "addEventSetPointBoolean")
+    public static void addEventSetPointBoolean(IsolateThread thread,
+            ObjectHandle eventSupplierHandle,
+            String eventModelId,
+            String staticId,
+            String parameterSetId,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
+            eventSupplier.addEventSetPointBoolean(eventModelId, staticId, parameterSetId);
+        });
+    }
+
+
 }
