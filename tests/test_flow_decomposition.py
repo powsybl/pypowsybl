@@ -76,7 +76,7 @@ def test_flow_decomposition_parameters():
         'rescale_enabled': [True, False],
         'xnec_selection_strategy': [pp.flowdecomposition.XnecSelectionStrategy.ONLY_INTERCONNECTIONS, pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC],
         'dc_fallback_enabled_after_ac_divergence': [True, False],
-        'sensitivity_variable_bloc_size' : [100, 1000, 5000, 15000]
+        'sensitivity_variable_batch_size' : [100, 1000, 5000, 15000]
     }
 
     for attribute, values in attributes.items():

@@ -45,7 +45,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         dc_fallback_enabled_after_ac_divergence: Defines the fallback bahavior after an AC divergence
             Use ``True`` to run DC loadflow if an AC loadflow diverges (default).
             Use ``False`` to throw an exception if an AC loadflow diverges.
-        sensitivity_variable_bloc_size: Defines the chunk size for sensitivity analysis.
+        sensitivity_variable_batch_size: Defines the chunk size for sensitivity analysis.
             This will reduce memory footprint of flow decomposition but increase computation time.
             If setting a too high value, a max integer error may be thrown.
     """
@@ -106,7 +106,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", rescale_enabled={self.rescale_enabled!r}" \
                f", xnec_selection_strategy={self.xnec_selection_strategy.name}" \
                f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
-               f", sensitivity_variable_bloc_size={self.sensitivity_variable_bloc_size}" \
+               f", sensitivity_variable_batch_size={self.sensitivity_variable_batch_size}" \
                f")"
 
 def run(network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
