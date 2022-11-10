@@ -765,12 +765,6 @@ public final class PyPowsyblApiHeader {
         @CField("rescale_enabled")
         void setRescaleEnabled(boolean rescaleEnabled);
 
-        @CField("xnec_selection_strategy")
-        int getXnecSelectionStrategy();
-
-        @CField("xnec_selection_strategy")
-        void setXnecSelectionStrategy(int xnecSelectionStrategy);
-
         @CField("dc_fallback_enabled_after_ac_divergence")
         boolean isDcFallbackEnabledAfterAcDivergence();
 

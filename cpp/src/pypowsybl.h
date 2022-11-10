@@ -211,7 +211,6 @@ public:
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
     bool rescale_enabled;
-    XnecSelectionStrategy xnec_selection_strategy;
     bool dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 };
@@ -439,7 +438,11 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
+JavaHandle createFlowDecomposition();
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& analysisContext, const std::vector<std::string>& elementsIds);
+
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 

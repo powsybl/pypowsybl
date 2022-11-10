@@ -29,7 +29,6 @@ public final class FlowDecompositionCUtils {
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
             .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
             .setDcFallbackEnabledAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
-            .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()])
             .setSensitivityVariableBatchSize(loadFlowParametersPtr.getSensitivityVariableBatchSize());
     }
 }
