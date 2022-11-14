@@ -219,12 +219,6 @@ typedef struct flow_decomposition_parameters_struct {
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
     unsigned char rescale_enabled;
-    int xnec_selection_strategy;
     unsigned char dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
-
-typedef enum {
-    ONLY_INTERCONNECTIONS = 0,
-    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
-} xnec_selection_strategy;
