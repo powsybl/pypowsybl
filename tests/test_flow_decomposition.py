@@ -73,7 +73,7 @@ def test_flow_decomposition_run_full_integration():
         dc_fallback_enabled_after_ac_divergence=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition()
     flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
-    df = flow_decomposition.run(net, parameters) # TODO
+    df = flow_decomposition.run(net, parameters)
     print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],

@@ -103,7 +103,10 @@ class FlowDecomposition:
 
     def add_precontingency_monitored_elements(self, branch_ids: _Union[_List[str], str]) -> None:
         """
-        TODO
+        Add elements to be monitored by the flow decomposition on precontingency state.
+
+        Args:
+            branch_ids: list of branches to be monitored
         """
         if isinstance(branch_ids, str):
             branch_ids = [branch_ids]
@@ -136,15 +139,15 @@ class FlowDecomposition:
 
             This dataframe is indexed on the xnec ID **xnec_id**.
 
-        Examples:
-            TODO update !
-
+        Example:
             .. code-block:: python
 
-                network = pp.network.create_eurostag_tutorial_example1_network()
-                flow_decomposition_parameters = pp.flowdecomposition.Parameters()
-                load_flow_parameters = pp.loadflow.Parameters()
-                pp.flowdecomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
+                >>> network = pp.network.create_eurostag_tutorial_example1_network()
+                >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
+                >>> load_flow_parameters = pp.loadflow.Parameters()
+                >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+                >>> flow_decomposition.add_precontingency_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+                >>> flow_decomposition.run(network, flow_decomposition_parameters=flow_decomposition_parameters, load_flow_parameters=load_flow_parameters)
 
             It outputs something like:
 
@@ -162,7 +165,16 @@ class FlowDecomposition:
         return create_data_frame_from_series_array(res)
 
 def create_decomposition() -> FlowDecomposition:
-    """
-    TODO
+    """ Creates a flow decomposition objet, which can be used to run a flow decomposition on a network
+
+    Example:
+        .. code-block::
+
+            >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+            >>> flow_decomposition.add_precontingency_monitored_elements(['line_1', 'line_2'])
+            >>> flow_decomposition.run(network)
+
+    Returns:
+        A flow decomposition object, which allows to run a flow decomposition on a network.
     """
     return FlowDecomposition(_pypowsybl.create_flow_decomposition())

@@ -15,6 +15,8 @@ Here are the assumptions that we made:
 - country GSK  
 - no HVDC management  
 
+TODO This needs to be updated for v2.0
+
 Run a flow decomposition
 ------------------------
 
@@ -24,7 +26,9 @@ You can run a flow decomposition using the following methods:
    :nosignatures:
    :toctree: api/
 
-    run
+    create_decomposition
+    FlowDecomposition.add_precontingency_monitored_elements
+    FlowDecomposition.run
 
 Parameters
 ----------
@@ -41,11 +45,3 @@ The execution of the flowdecomposition can be customized using flowdecomposition
    :hidden:
 
    flowdecomposition/parameters
-
-Some enum classes are used in parameters:
-
-.. autosummary::
-   :toctree: api/
-   :template: autosummary/class_without_members.rst
-
-    XnecSelectionStrategy
