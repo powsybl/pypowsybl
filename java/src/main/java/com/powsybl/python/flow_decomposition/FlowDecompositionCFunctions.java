@@ -10,7 +10,7 @@ import com.powsybl.flow_decomposition.FlowDecompositionComputer;
 import com.powsybl.flow_decomposition.FlowDecompositionParameters;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.flow_decomposition.XnecProvider;
-import com.powsybl.flow_decomposition.XnecProviderByIds;
+import com.powsybl.flow_decomposition.xnec_provider.XnecProviderByIds;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;

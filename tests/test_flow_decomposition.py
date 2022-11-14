@@ -73,15 +73,15 @@ def test_flow_decomposition_run_full_integration():
         dc_fallback_enabled_after_ac_divergence=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition()
     flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
-    df = flow_decomposition.run(net)
+    df = flow_decomposition.run(net, parameters) # TODO
     print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
         data=[
-            ['BLOAD 11 BLOAD 12 2', 'BLOAD 11 BLOAD 12 2', 'BE', 'BE', -160.005945, -188.652703,  29.015809, -2.007905,  0.000000, -2.007905, 163.652703],
-            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE',  192.390656,  188.652703,  29.015809,  0.000000, -2.007905, -2.007905, 163.652703],
-            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE',  -76.189072,  -88.652703, -87.047428,  0.000000,  6.023714,  6.023714, 163.652703],
+            ['BLOAD 11 BLOAD 12 2', 'BLOAD 11 BLOAD 12 2', 'BE', 'BE', -160.00594493625374, -168.54299036226615, 27.730133478072496, -24.11086055331822, 0.0 , -0.014661297382767557, 156.40133330888222],
+            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE', 192.39065600179342, 200.6712560368467 , 27.81857394392333 , 0.0 , 7.68659503747561 , -0.014661297382767557, 156.90014831777725],
+            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE', -76.18907198080873, -84.72530847149157, -87.04742845831291 , 0.0 , 7.674711445291424, 0.04179811510434703 , 155.51999087872588],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 
