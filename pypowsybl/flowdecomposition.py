@@ -4,7 +4,7 @@
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import Union as _Union, Dict as _Dict, List as _List
+from typing import Union as _Union, List as _List
 import pandas as _pd
 
 from pypowsybl import _pypowsybl
@@ -108,7 +108,6 @@ class FlowDecomposition:
         if isinstance(branch_ids, str):
             branch_ids = [branch_ids]
         _pypowsybl.add_precontingency_monitored_elements_for_flow_decomposition(self._handle, branch_ids)
-        
 
     def run(self, network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
         """
@@ -138,7 +137,6 @@ class FlowDecomposition:
             This dataframe is indexed on the xnec ID **xnec_id**.
 
         Examples:
-        
             TODO update !
 
             .. code-block:: python
