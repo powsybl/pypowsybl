@@ -78,7 +78,6 @@ public final class DynamicSimulationCFunctions {
             CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
-            logger().info("Dynamic simulation running by Dynawaltz");
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
                     eventModelsSupplier,
