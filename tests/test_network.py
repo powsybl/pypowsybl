@@ -2094,5 +2094,24 @@ def test_aliases():
     assert n.get_aliases().empty
 
 
+def test_remove_feeder_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    pp.network.create_line_bays(n, df)
+    assert 'new_line' in n.get_lines().index
+    assert 'new_line1_BREAKER' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line2_BREAKER' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' in n.get_switches().index
+    pp.network.remove_feeder_bays(n, 'new_line')
+    assert 'new_line1_BREAKER' not in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
+    assert 'new_line2_BREAKER' not in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
+
 if __name__ == '__main__':
     unittest.main()

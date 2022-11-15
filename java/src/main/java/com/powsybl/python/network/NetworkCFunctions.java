@@ -32,6 +32,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Exporter;
 import com.powsybl.iidm.network.ExportersLoader;
 import com.powsybl.iidm.network.ExportersServiceLoader;
+import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.ImportConfig;
 import com.powsybl.iidm.network.Importer;
@@ -963,13 +964,13 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "removeDeeply")
-    public static void removeDeeply(IsolateThread thread, ObjectHandle networkHandle,
-                                    CCharPointerPointer idsPtrPtr, int idsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "removeFeederBays")
+    public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
+                                    CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            List<String> ids = toStringList(idsPtrPtr, idsCount);
+            List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-
+            ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
         });
     }
 

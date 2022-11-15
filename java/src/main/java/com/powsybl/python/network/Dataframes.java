@@ -104,7 +104,7 @@ public final class Dataframes {
     /**
      * A mapper which maps an importer to a dataframe containing its parameters.
      */
-    static DataframeMapper<Importer> importerParametersMapper() {
+    static DataframeMapper<com.powsybl.iidm.network.Importer> importerParametersMapper() {
         return IMPORTER_PARAMETERS_MAPPER;
     }
 

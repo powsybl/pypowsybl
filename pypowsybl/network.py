@@ -5106,6 +5106,20 @@ def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Networ
     return _create_c_dataframe(df, metadata)
 
 
+def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]]) -> None:
+    """
+    Remove feeder bays it means the connectable will be removed and all equipment connecting
+    these network element to a bus bar (breaker, disconnector, ...).
+
+    Args:
+        network: the network to which we want to remove the feeder bay
+        connectable_ids: either a list or a single string to indicate which equipment will be removed with their feeder bay.
+    """
+    if isinstance(connectable_ids, str):
+        connectable_ids = [connectable_ids]
+    _pp.remove_feeder_bays(network._handle, connectable_ids)
+
+
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
     """
     Gets the order positions of every connectable of a given voltage level in a dataframe.
