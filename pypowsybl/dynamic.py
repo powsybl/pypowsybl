@@ -6,9 +6,7 @@
 #
 
 from enum import Enum as _Enum
-from os import stat
 import os
-from typing import Union as _Union, Dict as _Dict, List as _List
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 
@@ -17,7 +15,7 @@ class BranchSide(_Enum):
     '''
     warning the values are hardcoded in java layer
     '''
-    ONE = "one",
+    ONE = "one"
     TWO = "two"
 
 
@@ -31,8 +29,8 @@ class ModelMapping:
     def add_one_transformer_load(self, static_id: str, dynamic_param: str) -> None:
         _pp.add_one_transformer_load(self._handle, static_id, dynamic_param)
 
-    def add_omega_ref(self, generatorId: str) -> None:
-        _pp.add_omega_ref(self._handle, generatorId)
+    def add_omega_ref(self, generator_id: str) -> None:
+        _pp.add_omega_ref(self._handle, generator_id)
 
     def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
         _pp.add_generator_synchronous_three_windings(
@@ -79,7 +77,6 @@ class EventMapping:
 class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
         self._handle = handle
-    pass
 
 
 class Simulation:
