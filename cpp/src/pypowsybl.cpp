@@ -1186,4 +1186,73 @@ LayoutParameters* createLayoutParameters() {
     return new LayoutParameters(parameters.get());
 }
 
+/*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
+JavaHandle createDynamicSimulationContext() {
+    return callJava<JavaHandle>(::createDynamicSimulationContext);
+}
+JavaHandle createDynamicModelMapping() {
+    return callJava<JavaHandle>(::createDynamicModelMapping);
+}
+
+JavaHandle createTimeseriesMapping() {
+    return callJava<JavaHandle>(::createTimeseriesMapping);
+}
+
+JavaHandle createEventMapping() {
+    return callJava<JavaHandle>(::createEventMapping);
+}
+
+
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop) {
+    return callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
+}
+
+
+void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addAlphaBetaLoad, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addOneTransformerLoad, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId) {
+    callJava<>(::addOmegaRef, dynamicMappingHandle, (char*) generatorId.c_str());
+}
+
+void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addGeneratorSynchronousThreeWindings, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addGeneratorSynchronousThreeWindingsProportionalRegulations, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addGeneratorSynchronousFourWindings, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
+    callJava<>(::addGeneratorSynchronousFourWindingsProportionalRegulations, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
+}
+
+void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide) {
+    callJava<>(::addCurrentLimitAutomaton, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str(), (char*) branchSide.c_str());
+}
+
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
+    callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
+}
+
+void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
+    callJava<>(::addEventQuadripoleDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
+}
+
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
+    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
+}
+
+void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName) {
+    callJava<>(::setPowSyBlConfigLocation, (char*) absolutePathToConfig.c_str(), (char*) configFileName.c_str());
+}
 }
