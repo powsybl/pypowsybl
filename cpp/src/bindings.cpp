@@ -640,4 +640,36 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
+    /************************DYNAMIC SIMULATION WITH DYNAWALTZ*******************************/
+    //TODO descriptions of methods
+
+    //entrypoints for constructors
+    m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext, "TODO desc");
+    m.def("create_dynamic_model_mapping", &pypowsybl::createDynamicModelMapping, "TODO desc");
+    m.def("create_timeseries_mapping", &pypowsybl::createTimeseriesMapping, "TODO desc");
+    m.def("create_event_mapping", &pypowsybl::createEventMapping, "TODO desc");
+
+    //running simulations
+    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, "Run a dynamic model with Dynawaltz",
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
+
+    //model mapping
+    m.def("add_alphabeta_load", &pypowsybl::addAlphaBetaLoad, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_one_transformer_load", &pypowsybl::addOneTransformerLoad, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_omega_ref", &pypowsybl::addOmegaRef, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("generator_id"));
+    m.def("add_generator_synchronous_three_windings", &pypowsybl::addGeneratorSynchronousThreeWindings, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_generator_synchronous_three_windings_proportional_regulations", &pypowsybl::addGeneratorSynchronousThreeWindingsProportionalRegulations, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_generator_synchronous_four_windings", &pypowsybl::addGeneratorSynchronousFourWindings, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_generator_synchronous_four_windings_proportional_regulations", &pypowsybl::addGeneratorSynchronousFourWindingsProportionalRegulations, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"));
+    m.def("add_current_limit_automaton", &pypowsybl::addCurrentLimitAutomaton, "TODO desc", py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"), py::arg("branch_side"));
+
+    // timeseries/curves mapping
+    m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
+
+    // events mapping
+    m.def("add_event_quadripole_disconnection", &pypowsybl::addEventQuadripoleDisconnection, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("parameter_set_id"));
+    m.def("add_event_set_point_boolean", &pypowsybl::addEventSetPointBoolean, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("parameter_set_id"));
+
+    // config
+    m.def("set_powsybl_config_location", &pypowsybl::setPowSyBlConfigLocation, py::arg("absolute_path_to_config"), py::arg("config_file_name"));
 }
