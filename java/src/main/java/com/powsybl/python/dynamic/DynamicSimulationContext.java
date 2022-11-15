@@ -42,7 +42,7 @@ public class DynamicSimulationContext {
     /**
      * TODO do we need to keep interface with providers here or if it should be done
      * by the class {@link DynamicSimulation}
-     * 
+     *
      * @param name
      * @return
      */

@@ -650,7 +650,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_event_mapping", &pypowsybl::createEventMapping, "TODO desc");
 
     //running simulations
-    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, "Run a dynamic model with Dynawaltz",
+    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, "Run a dynamic model with Dynawaltz", py::call_guard<py::gil_scoped_release>(),
         py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
 
     //model mapping
