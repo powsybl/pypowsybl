@@ -12,6 +12,8 @@ import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
@@ -27,7 +29,14 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.network.Exporter;
+import com.powsybl.iidm.network.ExportersLoader;
+import com.powsybl.iidm.network.ExportersServiceLoader;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.ImportConfig;
+import com.powsybl.iidm.network.Importer;
+import com.powsybl.iidm.network.ImportersLoader;
+import com.powsybl.iidm.network.ImportersServiceLoader;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.dataframe.CDoubleSeries;
@@ -132,8 +141,13 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            Network network = Network.read(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            Network network;
+            if (reporter == null) {
+                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+            } else {
+                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            }
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -149,7 +163,12 @@ public final class NetworkCFunctions {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network = Network.read(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                Network network;
+                if (reporter == null) {
+                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+                } else {
+                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                }
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -167,8 +186,12 @@ public final class NetworkCFunctions {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            if (reporter == null) {
+                network.write(formatStr, parameters, Paths.get(fileStr));
+            } else {
+                network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
+            }
         });
     }
 
