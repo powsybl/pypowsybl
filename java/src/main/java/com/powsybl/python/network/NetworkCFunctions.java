@@ -28,12 +28,14 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.export.Exporter;
-import com.powsybl.iidm.export.Exporters;
-import com.powsybl.iidm.export.ExportersLoader;
-import com.powsybl.iidm.export.ExportersServiceLoader;
-import com.powsybl.iidm.import_.*;
+import com.powsybl.iidm.network.Exporter;
+import com.powsybl.iidm.network.ExportersLoader;
+import com.powsybl.iidm.network.ExportersServiceLoader;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.ImportConfig;
+import com.powsybl.iidm.network.Importer;
+import com.powsybl.iidm.network.ImportersLoader;
+import com.powsybl.iidm.network.ImportersServiceLoader;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
@@ -142,9 +144,9 @@ public final class NetworkCFunctions {
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             Network network;
             if (reporter == null) {
-                network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
             } else {
-                network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
             }
             return ObjectHandles.getGlobal().create(network);
         });
@@ -163,9 +165,9 @@ public final class NetworkCFunctions {
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
                 Network network;
                 if (reporter == null) {
-                    network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
+                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
                 } else {
-                    network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
                 }
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
@@ -186,9 +188,9 @@ public final class NetworkCFunctions {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             if (reporter == null) {
-                Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
+                network.write(formatStr, parameters, Paths.get(fileStr));
             } else {
-                Exporters.export(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, network, parameters, Paths.get(fileStr), reporter);
+                network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
             }
         });
     }

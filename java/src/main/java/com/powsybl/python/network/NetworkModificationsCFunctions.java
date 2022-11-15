@@ -220,7 +220,7 @@ public final class NetworkModificationsCFunctions {
                 int min = positionsOrders.get().getMinimum();
                 return createIntegerArray(Arrays.asList(min, max));
             } else {
-                return createIntegerArray(Collections.EMPTY_LIST);
+                return createIntegerArray(Collections.emptyList());
             }
         });
 

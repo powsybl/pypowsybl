@@ -652,6 +652,7 @@ def test_phase_tap_changers():
     update = pd.DataFrame(index=['TWT'],
                           columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
                           data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
+    n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
@@ -1863,6 +1864,8 @@ def test_get_unused_order_positions():
     assert positions_after.left == 121
     assert positions_after.right == 2147483647
     positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
+    print('')
+    print(positions_before)
     assert positions_before.right == -1
 
     positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
@@ -1895,7 +1898,7 @@ def test_phase_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == 'ONE'
     assert tap_changer.regulation_mode == 'FIXED_TAP'
-
+    n.update_ratio_tap_changers(id='TWT', regulating=False)
     with pytest.raises(pp.PyPowsyblError, match='regulated terminal is not set'):
         n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
                                     regulation_mode='CURRENT_LIMITER',
