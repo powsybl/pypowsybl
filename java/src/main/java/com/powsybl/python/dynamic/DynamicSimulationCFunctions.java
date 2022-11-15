@@ -96,8 +96,6 @@ public final class DynamicSimulationCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String staticId = CTypeUtil.toString(staticIdPtr);
             String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            logger().info("staticId = " + staticId);
-            logger().info("dynamicParam = " + dynamicParam);
             DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             dynamicMapping.addAlphaBetaLoad(staticId, dynamicParam);
         });
