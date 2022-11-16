@@ -1864,9 +1864,7 @@ def test_get_unused_order_positions():
     assert positions_after.left == 121
     assert positions_after.right == 2147483647
     positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
-    print('')
-    print(positions_before)
-    assert positions_before.right == -1
+    assert positions_before.right == 0
 
     positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
     assert positions_before_no_space is None
