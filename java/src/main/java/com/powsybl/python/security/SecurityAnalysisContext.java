@@ -7,9 +7,9 @@
 package com.powsybl.python.security;
 
 import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
@@ -34,7 +34,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                         network.getVariantManager().getWorkingVariantId(),
                         contingencies,
                         securityAnalysisParameters,
-                        LocalComputationManager.getDefault(),
+                        CommonObjects.getComputationManager(),
                         new LimitViolationFilter(),
                         new DefaultLimitViolationDetector(),
                         Collections.emptyList(),

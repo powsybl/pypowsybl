@@ -11,8 +11,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
-import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.computation.local.LocalComputationManager;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
@@ -35,13 +34,11 @@ import com.powsybl.iidm.export.ExportersServiceLoader;
 import com.powsybl.iidm.import_.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
+import com.powsybl.python.report.ReportCUtils;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -139,13 +136,8 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            Network network;
-            if (reporter == null) {
-                network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-            } else {
-                network = Importers.loadNetwork(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
-            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            Network network = Importers.loadNetwork(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -159,14 +151,9 @@ public final class NetworkCFunctions {
             String fileNameStr = CTypeUtil.toString(fileName);
             String fileContentStr = CTypeUtil.toString(fileContent);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network;
-                if (reporter == null) {
-                    network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-                } else {
-                    network = Importers.loadNetwork(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
-                }
+                Network network = Importers.loadNetwork(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -184,12 +171,8 @@ public final class NetworkCFunctions {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            if (reporter == null) {
-                Exporters.export(formatStr, network, parameters, Paths.get(fileStr));
-            } else {
-                Exporters.export(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, network, parameters, Paths.get(fileStr), reporter);
-            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            Exporters.export(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, network, parameters, Paths.get(fileStr), reporter);
         });
     }
 
@@ -207,12 +190,8 @@ public final class NetworkCFunctions {
             if (exporter == null) {
                 throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
             }
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            if (reporter == null) {
-                exporter.export(network, parameters, dataSource);
-            } else {
-                exporter.export(network, parameters, dataSource, reporter);
-            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            exporter.export(network, parameters, dataSource, reporter);
             try {
                 var names = dataSource.listNames(".*?");
                 if (names.size() != 1) {

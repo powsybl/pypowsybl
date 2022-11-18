@@ -115,4 +115,9 @@ public final class CommonCFunctions {
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
     }
+
+    @CEntryPoint(name = "closePypowsybl")
+    public static void closePypowsybl(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, CommonObjects::close);
+    }
 }
