@@ -7,7 +7,7 @@
 package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
@@ -15,6 +15,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SensitivityAnalysisParametersPointer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
+import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sensitivity.SensitivityAnalysisParameters;
 import com.powsybl.sensitivity.SensitivityAnalysisProvider;
 import com.powsybl.sensitivity.SensitivityVariableSet;
@@ -171,7 +172,7 @@ public final class SensitivityAnalysisCFunctions {
             SensitivityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
             logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
             SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(dc, sensitivityAnalysisParametersPtr, provider);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reporter);
             return ObjectHandles.getGlobal().create(resultContext);
         });

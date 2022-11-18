@@ -7,6 +7,7 @@
 import os as _os
 import inspect as _inspect
 import logging
+import atexit as _atexit
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
@@ -42,6 +43,9 @@ __all__ = [
 powsyblLogger = logging.getLogger('powsybl')
 powsyblLogger.addHandler(logging.NullHandler())
 _pypowsybl.set_logger(powsyblLogger)
+
+# register closing of pypowsybl resources (computation manager...)
+_atexit.register(_pypowsybl.close)
 
 
 def set_config_read(read_config: bool = True) -> None:
