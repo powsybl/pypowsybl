@@ -183,7 +183,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
-            .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS);
+            .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
+            .value("ALIAS", element_type::ALIAS);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -634,4 +635,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_connectables_order_positions", &pypowsybl::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
 
     m.def("get_unused_order_positions", &pypowsybl::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
+
+    m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
+
+    m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 }

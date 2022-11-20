@@ -1134,4 +1134,12 @@ std::vector<int> getUnusedConnectableOrderPositions(const pypowsybl::JavaHandle 
     return res.get();
 }
 
+void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe) {
+    pypowsybl::callJava(::removeAliases, network, dataframe);
+}
+
+void closePypowsybl() {
+    pypowsybl::callJava(::closePypowsybl);
+}
+
 }

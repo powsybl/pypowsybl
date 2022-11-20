@@ -66,6 +66,7 @@ All network elements are accessible as dataframes, using the following getters.
 
    Network.get_2_windings_transformers
    Network.get_3_windings_transformers
+   Network.get_aliases
    Network.get_batteries
    Network.get_bus_breaker_topology
    Network.get_busbar_sections
@@ -124,7 +125,8 @@ Network elements can be modified using dataframes:
    Network.update_vsc_converter_stations
    Network.add_elements_properties
    Network.remove_elements_properties
-
+   Network.add_aliases
+   Network.remove_aliases
 
 
 Network elements creation and removal
@@ -137,7 +139,7 @@ Network elements can be created or removed using the following methods:
    :nosignatures:
 
    Network.create_2_windings_transformers
-   Network.create_batteries
+   Network.create_aliases
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits

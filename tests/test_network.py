@@ -66,6 +66,8 @@ def test_get_import_parameters():
     assert 'Ignore base voltage specified in the file' == parameters['description']['psse.import.ignore-base-voltage']
     assert 'BOOLEAN' == parameters['type']['psse.import.ignore-base-voltage']
     assert 'false' == parameters['default']['psse.import.ignore-base-voltage']
+    parameters = pp.network.get_import_parameters('CGMES')
+    assert '[mRID, rdfID]' == parameters['possible_values']['iidm.import.cgmes.source-for-iidm-id']
 
 
 def test_get_export_parameters():
@@ -76,6 +78,7 @@ def test_get_export_parameters():
     assert 'CIM version to export' == parameters['description'][name]
     assert 'STRING' == parameters['type'][name]
     assert '' == parameters['default'][name]
+    assert '[EQ, TP, SSH, SV]' == parameters['possible_values']['iidm.export.cgmes.profiles']
 
 
 def test_get_export_format():
@@ -1904,6 +1907,24 @@ def test_phase_tap_changer_regulated_side():
     assert tap_changer.regulating
     assert tap_changer.regulated_side == 'TWO'
     assert tap_changer.regulation_mode == 'CURRENT_LIMITER'
+
+
+def test_aliases():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert n.get_aliases().empty
+    n.add_aliases(id='TWT', alias='test', alias_type='type')
+    alias = n.get_aliases().loc['TWT']
+    assert alias['alias'] == 'test'
+    assert alias['alias_type'] == 'type'
+    twt = n.get_2_windings_transformers(id='test')
+    assert twt.shape[0] == 1
+    assert twt.loc['TWT']['r'] == 2.0
+    n.add_aliases(id='GH1', alias='no_type_test')
+    alias2 = n.get_aliases().loc['GH1']
+    assert alias2['alias'] == 'no_type_test'
+    assert alias2['alias_type'] == ''
+    n.remove_aliases(id=['TWT', 'GH1'], alias=['test', 'no_type_test'])
+    assert n.get_aliases().empty
 
 
 if __name__ == '__main__':

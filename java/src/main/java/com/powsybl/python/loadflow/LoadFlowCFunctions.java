@@ -6,9 +6,8 @@
  */
 package com.powsybl.python.loadflow;
 
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.util.ServiceLoaderCache;
-import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -17,6 +16,7 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
+import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -90,15 +90,10 @@ public final class LoadFlowCFunctions {
             logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
 
             LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
-            LoadFlowResult result;
             LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            if (reporter == null) {
-                result = runner.run(network, parameters);
-            } else {
-                result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
-                        LocalComputationManager.getDefault(), parameters, reporter);
-            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                        CommonObjects.getComputationManager(), parameters, reporter);
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }

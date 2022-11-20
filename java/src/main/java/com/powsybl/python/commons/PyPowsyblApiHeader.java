@@ -468,7 +468,8 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
-        MINMAX_REACTIVE_LIMITS;
+        MINMAX_REACTIVE_LIMITS,
+        ALIAS;
 
         @CEnumValue
         public native int getCValue();

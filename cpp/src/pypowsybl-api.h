@@ -122,6 +122,7 @@ typedef enum {
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
+    ALIAS,
 } element_type;
 
 typedef enum {
