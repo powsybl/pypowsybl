@@ -139,7 +139,7 @@ public final class NetworkCFunctions {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            Network network = Importers.loadNetwork(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            Network network = Network.read(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -155,7 +155,7 @@ public final class NetworkCFunctions {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network = Importers.loadNetwork(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                Network network = Network.read(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -174,7 +174,7 @@ public final class NetworkCFunctions {
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            Exporters.export(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, network, parameters, Paths.get(fileStr), reporter);
+            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
         });
     }
 
