@@ -147,7 +147,8 @@ def test_get_provider_parameters_names():
         'minPlausibleTargetVoltage',
         'maxPlausibleTargetVoltage',
         'minRealisticVoltage',
-        'maxRealisticVoltage'
+        'maxRealisticVoltage',
+        'reactiveRangeCheckMode'
     ]
 
 
