@@ -8,14 +8,14 @@ package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoWindingsTransformer;
-import com.powsybl.contingency.ContingencyContextType;
+import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.sensitivity.*;
 
@@ -301,7 +301,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                         contingencies,
                         variableSets,
                         sensitivityAnalysisParameters,
-                        LocalComputationManager.getDefault(),
+                        CommonObjects.getComputationManager(),
                         (reporter == null) ? Reporter.NO_OP : reporter);
 
         Map<String, double[]> valuesByContingencyId = new HashMap<>(contingencies.size());
