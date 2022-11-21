@@ -78,11 +78,11 @@ class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
         self._handle = handle
 
-    def state(self):
+    def state(self) -> str:
         return _pp.get_dynamic_simulation_results_status(self._handle)
 
     @property
-    def status(self):
+    def status(self) -> str:
         return self.state()
 
 
