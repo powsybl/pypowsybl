@@ -696,4 +696,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     // config
     m.def("set_powsybl_config_location", &pypowsybl::setPowSyBlConfigLocation, py::arg("absolute_path_to_config"), py::arg("config_file_name"));
+
+    // Simulation results
+    m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
 }

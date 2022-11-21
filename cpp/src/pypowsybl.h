@@ -523,7 +523,17 @@ namespace pypowsybl {
     void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
     void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
+    // timeseries/curves mapping
+    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+
+    // events mapping
+    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+
     // config ?
     void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+
+    std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+
 }
 #endif //PYPOWSYBL_H
