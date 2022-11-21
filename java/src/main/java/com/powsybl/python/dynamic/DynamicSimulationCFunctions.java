@@ -270,4 +270,14 @@ public final class DynamicSimulationCFunctions {
             System.setProperty("powsybl.config.name", CTypeUtil.toString(configFileName));
         });
     }
+
+    @CEntryPoint(name = "getDynamicSimulationResultsStatus")
+    public static CCharPointer getDynamicSimulationResultsStatus(IsolateThread thread,
+             ObjectHandle dynamicSimulationResultsHandle,
+             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(dynamicSimulationResultsHandle);
+            return CTypeUtil.toCharPtr(simulationResult.isOk() ? "Ok" : "Not OK");
+        });
+    }
 }

@@ -497,6 +497,9 @@ void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventMod
 
 // config ?
 void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+
+std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+
 }
 
 #endif //PYPOWSYBL_H

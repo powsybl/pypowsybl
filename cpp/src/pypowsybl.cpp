@@ -1202,4 +1202,8 @@ void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventMod
 void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName) {
     callJava<>(::setPowSyBlConfigLocation, (char*) absolutePathToConfig.c_str(), (char*) configFileName.c_str());
 }
+
+std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
+    return callJava<std::string>(::getDynamicSimulationResultsStatus, dynamicSimulationResultsHandle);
+}
 }
