@@ -533,7 +533,32 @@ namespace pypowsybl {
     // config ?
     void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
 
+    JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+
+    // dynamic model mapping
+    void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId);
+    void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+    void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
+
+    // timeseries/curves mapping
+    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+
+    // events mapping
+    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+
+    // config ?
+    void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+
+    // results
     std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+    SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
+    std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId);
 
 }
 #endif //PYPOWSYBL_H

@@ -1259,4 +1259,14 @@ void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string conf
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
     return callJava<std::string>(::getDynamicSimulationResultsStatus, dynamicSimulationResultsHandle);
 }
+
+SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
+    return new SeriesArray(callJava<array*>(::getDynamicCurve, resultHandle, (char*) curveName.c_str()));
+}
+
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId) {
+    ToStringVector vector(callJava<array*>(::getAllDynamicCurvesIds, curveMappingHandle, (char*) dynamicId.c_str()));
+    return vector.get();
+}
+
 }

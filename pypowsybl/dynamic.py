@@ -7,9 +7,11 @@
 
 from enum import Enum as _Enum
 import os
+import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 from uuid import uuid4
+from pypowsybl.util import create_data_frame_from_series_array
 
 
 class BranchSide(_Enum):
@@ -67,6 +69,7 @@ class EventType(_Enum):
     SET_POINT_BOOLEAN = 'SET_POINT_BOOLEAN'
     BRANCH_DISCONNECTION = 'BRANCH_DISCONNECTION'
 
+
 class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
@@ -79,22 +82,26 @@ class EventMapping:
         _pp.add_event_set_point_boolean(
             self._handle, event_model_id, static_id, parameter_set_id)
 
-    def add_event(self, parameter_set_id: str, event: EventType, static_id: str, event_id:str = None) -> None:
+    def add_event(self, parameter_set_id: str, event: EventType, static_id: str, event_id: str = None) -> None:
         if not event_id:
             event_id = str(uuid4())
 
         if event is EventType.QUADRIPOLE_DISCONNECT:
-            _pp.add_event_quadripole_disconnection(self._handle, event_id, static_id, parameter_set_id)
+            _pp.add_event_quadripole_disconnection(
+                self._handle, event_id, static_id, parameter_set_id)
             return
         if event is EventType.SET_POINT_BOOLEAN:
-            _pp.add_event_set_point_boolean(self._handle, event_id, static_id, parameter_set_id)
+            _pp.add_event_set_point_boolean(
+                self._handle, event_id, static_id, parameter_set_id)
             return
 
-        raise Exception("Pypowsybl-DynamicSimulationError: Unknown event {}".format(event))
+        raise Exception(
+            "Pypowsybl-DynamicSimulationError: Unknown event {}".format(event))
 
     @staticmethod
     def get_possible_events():
         return [event for event in EventType]
+
 
 class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
@@ -106,6 +113,17 @@ class SimulationResult:
     @property
     def status(self) -> str:
         return self.state()
+
+    def get_curve(self, curve_name: str) -> _pd.DataFrame:
+        series_array = _pp.get_dynamic_curve(self._handle, curve_name)
+        return create_data_frame_from_series_array(series_array)
+
+    def get_all_curves(self, curve_mapping: CurveMapping, dynamic_id: str) -> _pd.DataFrame:
+        curve_name_lst = _pp.get_all_dynamic_curves_ids(
+            curve_mapping._handle, dynamic_id)
+        df_curves = [self.get_curve(curve_name)
+                     for curve_name in curve_name_lst]
+        return _pd.concat(df_curves, axis=1)
 
 
 class Simulation:
