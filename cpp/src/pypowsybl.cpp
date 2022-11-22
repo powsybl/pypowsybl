@@ -667,6 +667,12 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, bool useName, bool centerName, bool diagonalLabel, bool topologicalColoring) {
+    auto svgAndMetadataArrayPtr = callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), useName, centerName, diagonalLabel, topologicalColoring);
+    ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
+    return svgAndMetadata.get();
+}
+
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth) {
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
     callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);

@@ -305,6 +305,8 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, bool useName, bool centerName, bool diagonalLabel, bool topologicalColoring);
+
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);

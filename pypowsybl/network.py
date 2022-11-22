@@ -64,12 +64,17 @@ class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, content: str):
+    def __init__(self, content: str, metadata: str = None):
         self._content = content
+        self._metadata = metadata
 
     @property
     def svg(self) -> str:
         return self._content
+
+    @property
+    def metadata(self) -> _Optional[str]:
+        return self._metadata
 
     def __str__(self) -> str:
         return self._content
@@ -318,17 +323,22 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_file = _path_to_str(svg_file)
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
-    def get_single_line_diagram(self, container_id: str) -> Svg:
+    def get_single_line_diagram(self, container_id: str, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
+            use_name: (layout parameter) use names instead of ids in labels
+            center_name: (layout parameter) center labels
+            diagonal_label: (layout parameter) display diagonal labels
+            topological_coloring: (layout parameter) when False, use a nominal voltage style provider (instead of the default topological style provider)
 
         Returns:
             the single line diagram
         """
-        return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
+        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, use_name, center_name, diagonal_label, topological_coloring)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
                                        depth: int = 0) -> None:

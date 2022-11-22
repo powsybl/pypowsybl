@@ -803,6 +803,18 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
+                                                       boolean useName, boolean centerName, boolean diagonalLabel, boolean topologicalColoring,
+                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String containerIdStr = CTypeUtil.toString(containerId);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, useName, centerName, diagonalLabel, topologicalColoring);
+            return createCharPtrArray(svgAndMeta);
+        });
+    }
+
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {

@@ -336,6 +336,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
+    m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
+          py::arg("network"), py::arg("container_id"), py::arg("use_name"), py::arg("center_name"), py::arg("diagonal_label"), py::arg("topological_coloring"));
+
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
           py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"));
 
