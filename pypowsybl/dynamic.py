@@ -12,7 +12,7 @@ from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 from uuid import uuid4
 from pypowsybl.util import create_data_frame_from_series_array
-
+from typing import List as _List
 
 class BranchSide(_Enum):
     '''
@@ -62,6 +62,10 @@ class CurveMapping:
 
     def add_curve(self, dynamic_id: str, variable: str) -> None:
         _pp.add_curve(self._handle, dynamic_id, variable)
+
+    def add_curves(self, dynamic_id: str, variables: _List[str]) -> None:
+        for var in variables:
+            _pp.add_curve(self._handle, dynamic_id, var)
 
 
 class EventType(_Enum):
