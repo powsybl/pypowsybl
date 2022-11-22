@@ -122,7 +122,7 @@ Array<load_flow_component_result>::~Array() {
 }
 
 template<>
-Array<contingency_result>::~Array() {
+Array<post_contingency_result>::~Array() {
     callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
 
@@ -852,8 +852,12 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
     threeWindingsTransformerIds.size(), contingencyIdsPtr.get(), contingencyIds.size());
 }
 
-ContingencyResultArray* getSecurityAnalysisResult(const JavaHandle& securityAnalysisResult) {
-    return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
+PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult) {
+    return new PostContingencyResultArray(callJava<array*>(::getPostContingencyResults, securityAnalysisResult));
+}
+
+pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult) {
+    return callJava<pre_contingency_result*>(::getPreContingencyResult, securityAnalysisResult);
 }
 
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult) {

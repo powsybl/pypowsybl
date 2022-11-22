@@ -89,11 +89,16 @@ typedef struct limit_violation_struct {
     int side;
 } limit_violation;
 
-typedef struct contingency_result_struct {
+typedef struct post_contingency_result_struct {
     char* contingency_id;
     int status;
     array limit_violations;
-} contingency_result;
+} post_contingency_result;
+
+typedef struct pre_contingency_result_struct {
+    int status;
+    array limit_violations;
+} pre_contingency_result;
 
 typedef enum {
     BUS = 0,

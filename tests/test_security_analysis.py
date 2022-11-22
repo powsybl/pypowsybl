@@ -61,7 +61,7 @@ def test_variant():
     sa_result = sa.run_ac(n)
     assert len(sa_result.post_contingency_results) == 1
     assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
-    assert sa_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
+    assert sa_result.post_contingency_results['First contingency'].status == pp.security.ComputationStatus.CONVERGED
     assert not sa_result.limit_violations.empty
 
     # setting load  on variant so that we relieve the violations
@@ -141,7 +141,7 @@ def test_provider_parameters():
     parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
     n = pp.network.create_ieee14()
     result = pp.security.create_analysis().run_ac(n, parameters)
-    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.FAILED
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED
 
     n = pp.network.create_ieee14()
     result = pp.security.create_analysis().run_ac(n)
@@ -225,7 +225,7 @@ def test_security_analysis_parameters():
     result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
     assert result.limit_violations.empty
     assert len(result.post_contingency_results) == 0
-    assert result.pre_contingency_result.status.name == 'FAILED'
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED
 
 
 def test_provider_parameters_names():
