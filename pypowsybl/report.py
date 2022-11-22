@@ -6,6 +6,7 @@
 #
 import pypowsybl._pypowsybl as _pp
 
+
 class Reporter:  # pylint: disable=too-few-public-methods
     def __init__(self, task_key: str = '', default_name: str = ''):
         self._reporter_model_handle = _pp.create_reporter_model(task_key, default_name)
