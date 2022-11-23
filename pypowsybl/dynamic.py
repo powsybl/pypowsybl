@@ -9,6 +9,7 @@ from enum import Enum as _Enum
 import os
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
+from uuid import uuid4
 
 
 class BranchSide(_Enum):
@@ -61,6 +62,11 @@ class CurveMapping:
         _pp.add_curve(self._handle, dynamic_id, variable)
 
 
+class EventType(_Enum):
+    QUADRIPOLE_DISCONNECT = 'QUADRIPOLE_DISCONNECT'
+    SET_POINT_BOOLEAN = 'SET_POINT_BOOLEAN'
+    BRANCH_DISCONNECTION = 'BRANCH_DISCONNECTION'
+
 class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
@@ -73,6 +79,22 @@ class EventMapping:
         _pp.add_event_set_point_boolean(
             self._handle, event_model_id, static_id, parameter_set_id)
 
+    def add_event(self, parameter_set_id: str, event: EventType, static_id: str, event_id:str = None) -> None:
+        if not event_id:
+            event_id = str(uuid4())
+
+        if event is EventType.QUADRIPOLE_DISCONNECT:
+            _pp.add_event_quadripole_disconnection(self._handle, event_id, static_id, parameter_set_id)
+            return
+        if event is EventType.SET_POINT_BOOLEAN:
+            _pp.add_event_set_point_boolean(self._handle, event_id, static_id, parameter_set_id)
+            return
+
+        raise Exception("Pypowsybl-DynamicSimulationError: Unknown event {}".format(event))
+
+    @staticmethod
+    def get_possible_events():
+        return [event for event in EventType]
 
 class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
