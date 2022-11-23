@@ -20,7 +20,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pypowsybl.network import ValidationLevel
+from pypowsybl.network import ValidationLevel,LayoutParameters
 
 import util
 import tempfile
@@ -680,12 +680,25 @@ def test_variant():
     assert 1 == len(n.get_variant_ids())
 
 
+def test_layout_parameters():
+    parameters = LayoutParameters()
+    assert False == parameters.use_name
+    assert False == parameters.center_name
+    assert False == parameters.diagonal_label
+    assert True == parameters.topological_coloring
+    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False)
+    assert True == parameters.use_name
+    assert True == parameters.center_name
+    assert True == parameters.diagonal_label
+    assert False == parameters.topological_coloring
+
+
 def test_sld_svg():
     n = pp.network.create_four_substations_node_breaker_network()
     sld = n.get_single_line_diagram('S1VL1')
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', use_name=True, center_name=True, diagonal_label=True, topological_coloring=False)
+    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
 

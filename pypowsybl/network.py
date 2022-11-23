@@ -83,6 +83,37 @@ class Svg:
         return self._content
 
 
+class LayoutParameters:
+    """
+    This class represents layout parameters for a single line diagram svg generation."""
+
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True):
+        self._use_name = use_name
+        self._center_name = center_name
+        self._diagonal_label = diagonal_label
+        self._topological_coloring = topological_coloring
+
+    @property
+    def use_name(self) -> bool:
+        """Use names instead of ids in labels."""
+        return self._use_name
+
+    @property
+    def center_name(self) -> bool:
+        """Center labels."""
+        return self._center_name
+
+    @property
+    def diagonal_label(self) -> bool:
+        """Display diagonal labels."""
+        return self._diagonal_label
+
+    @property
+    def topological_coloring(self) -> bool:
+        """When False, coloring is based only on nominal voltage."""
+        return self._topological_coloring
+
+
 class NodeBreakerTopology:
     """
     Node-breaker representation of the topology of a voltage level.
@@ -323,21 +354,19 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_file = _path_to_str(svg_file)
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
 
-    def get_single_line_diagram(self, container_id: str, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
-            use_name: (layout parameter) use names instead of ids in labels
-            center_name: (layout parameter) center labels
-            diagonal_label: (layout parameter) display diagonal labels
-            topological_coloring: (layout parameter) when False, use a nominal voltage style provider (instead of the default topological style provider)
+            parameters: layout parameters to adjust the rendering of the diagram
 
         Returns:
             the single line diagram
         """
-        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, use_name, center_name, diagonal_label, topological_coloring)
+        p = parameters if parameters is not None else LayoutParameters()
+        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p.use_name, p.center_name, p.diagonal_label, p.topological_coloring)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
