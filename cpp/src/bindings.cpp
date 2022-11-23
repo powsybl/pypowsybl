@@ -675,4 +675,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
+    m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
+    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("curve_mapping_handle"), py::arg("dynamic_id"));
+
+
 }

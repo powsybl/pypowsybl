@@ -498,7 +498,10 @@ void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventMod
 // config ?
 void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
 
+// results
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId);
 
 }
 

@@ -7,10 +7,12 @@
 
 from enum import Enum as _Enum
 import os
+import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 from uuid import uuid4
-
+from pypowsybl.util import create_data_frame_from_series_array
+from typing import List as _List
 
 class BranchSide(_Enum):
     '''
@@ -61,6 +63,10 @@ class CurveMapping:
     def add_curve(self, dynamic_id: str, variable: str) -> None:
         _pp.add_curve(self._handle, dynamic_id, variable)
 
+    def add_curves(self, dynamic_id: str, variables: _List[str]) -> None:
+        for var in variables:
+            _pp.add_curve(self._handle, dynamic_id, var)
+
 
 class EventType(_Enum):
     QUADRIPOLE_DISCONNECT = 'QUADRIPOLE_DISCONNECT'
@@ -106,6 +112,17 @@ class SimulationResult:
     @property
     def status(self) -> str:
         return self.state()
+
+    def get_curve(self, curve_name: str) -> _pd.DataFrame:
+        series_array = _pp.get_dynamic_curve(self._handle, curve_name)
+        return create_data_frame_from_series_array(series_array)
+
+    def get_all_curves(self, curve_mapping: CurveMapping, dynamic_id: str) -> _pd.DataFrame:
+        curve_name_lst = _pp.get_all_dynamic_curves_ids(
+            curve_mapping._handle, dynamic_id)
+        df_curves = [self.get_curve(curve_name)
+                     for curve_name in curve_name_lst]
+        return _pd.concat(df_curves, axis=1)
 
 
 class Simulation:

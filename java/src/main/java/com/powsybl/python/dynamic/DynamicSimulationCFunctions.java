@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.dynamic;
 
@@ -14,9 +15,11 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.powsybl.dataframe.dynamic.CurvesSeries;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
@@ -26,6 +29,12 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.python.network.Dataframes;
+import com.powsybl.timeseries.DoublePoint;
+import com.powsybl.timeseries.TimeSeries;
 
 @CContext(Directives.class)
 public final class DynamicSimulationCFunctions {
@@ -280,4 +289,30 @@ public final class DynamicSimulationCFunctions {
             return CTypeUtil.toCharPtr(simulationResult.isOk() ? "Ok" : "Not OK");
         });
     }
+
+    @CEntryPoint(name = "getDynamicCurve")
+    public static ArrayPointer<SeriesPointer> getDynamicCurve(IsolateThread thread,
+            ObjectHandle resultHandle,
+            CCharPointer curveNamePtr,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+            String curveName = CTypeUtil.toString(curveNamePtr);
+            TimeSeries<DoublePoint, ?> curve = result.getCurve(curveName);
+            return Dataframes.createCDataframe(CurvesSeries.curvesDataFrameMapper(curveName), curve);
+        });
+    }
+
+    @CEntryPoint(name = "getAllDynamicCurvesIds")
+    public static ArrayPointer<CCharPointerPointer> getAllDynamicCurvesIds(IsolateThread thread,
+            ObjectHandle curveMappingHandle,
+            CCharPointer dynamicIdPtr,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String dynamicId = CTypeUtil.toString(dynamicIdPtr);
+            CurveMappingSupplier timeSeriesSupplier = ObjectHandles.getGlobal().get(curveMappingHandle);
+            return Util.createCharPtrArray(timeSeriesSupplier.getCurveNames(dynamicId));
+        });
+    }
+
 }
