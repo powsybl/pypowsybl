@@ -30,6 +30,8 @@ First example
 -------------
 
 To perform a flow decomposition, you need at least a network.  
+The flow decomposition is based on an object. You can add pre-contingency lines to this object.  
+Those lines will be mapped to the network when running a flow decomposition.  
 The flow decomposition computation returns a dataframe containing the flow decomposition and the reference values.  
 The reference values are the active power flows in AC on the original network and in DC on the compensated network.  
 By default, the compensated network is the same as the original network as the loss compensation is not activated by default.  
@@ -196,7 +198,8 @@ Here are the available parameters and their default values:
         dc-fallback-enabled-after-ac-divergence: True
         sensitivity-variable-batch-size: 15000
 
-The flow decomposition parameters can be overwriten in Python.
+The flow decomposition parameters can be overwriten in Python.  
+If you have memory issues, do not hesitate to reduce the `sensitivity-variable-batch-size` parameter.
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE

@@ -52,8 +52,6 @@ def test_flow_decomposition_run_no_parameters():
     flow_decomposition = pp.flowdecomposition.create_decomposition()
     flow_decomposition.add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     df = flow_decomposition.run(net)
-    print(pp.flowdecomposition.Parameters())
-    print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
@@ -74,7 +72,6 @@ def test_flow_decomposition_run_full_integration():
     flow_decomposition = pp.flowdecomposition.create_decomposition()
     flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     df = flow_decomposition.run(net, parameters)
-    print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
@@ -114,11 +111,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('powsybl').setLevel(logging.DEBUG)
     test_demo()
-    print('\n\n\n\n')
     test_demo_one_by_one()
-    print('\n\n\n\n')
     test_flow_decomposition_parameters()
-    print('\n\n\n\n')
     test_flow_decomposition_run_no_parameters()
-    print('\n\n\n\n')
     test_flow_decomposition_run_full_integration()
