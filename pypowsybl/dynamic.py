@@ -7,13 +7,13 @@
 
 import os
 from enum import Enum as _Enum
+from uuid import uuid4
+from typing import List as _List
+import pandas as _pd
+
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
-from uuid import uuid4
 from pypowsybl.util import create_data_frame_from_series_array
-from typing import List as _List
-
-import pandas as _pd
 
 class BranchSide(_Enum):
     '''
@@ -97,16 +97,15 @@ class EventMapping:
             _pp.add_event_set_point_boolean(self._handle, event_id, static_id, parameter_set_id)
             return
 
-        raise Exception("Pypowsybl-DynamicSimulationError: Unknown event {}".format(event))
+        raise Exception(f"Pypowsybl-DynamicSimulationError: Unknown event {event}")
 
     @staticmethod
     def get_possible_events() -> _List[EventType]:
-        return [event for event in EventType]
+        return list(EventType)
 
 class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
         self._handle = handle
-        return
 
     def state(self) -> str:
         return _pp.get_dynamic_simulation_results_status(self._handle)
