@@ -99,7 +99,7 @@ class EventMapping:
         raise Exception("Pypowsybl-DynamicSimulationError: Unknown event {}".format(event))
 
     @staticmethod
-    def get_possible_events():
+    def get_possible_events() -> _List[EventType]:
         return [event for event in EventType]
 
 class SimulationResult:
