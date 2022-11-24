@@ -5,13 +5,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+import os
+
 from enum import Enum as _Enum
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 from uuid import uuid4
 from pypowsybl.util import create_data_frame_from_series_array
 from typing import List as _List
-import os
+
 import pandas as _pd
 
 class BranchSide(_Enum):
