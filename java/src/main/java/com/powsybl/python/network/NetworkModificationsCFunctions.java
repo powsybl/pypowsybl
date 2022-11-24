@@ -6,7 +6,6 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
@@ -47,17 +46,6 @@ public final class NetworkModificationsCFunctions {
     private NetworkModificationsCFunctions() {
     }
 
-    private static String getVoltageLevelFromBusOrBusBar(Network network, String id) {
-        Identifiable identifiable = network.getIdentifiable(id);
-        if (identifiable instanceof Bus) {
-            return ((Bus) identifiable).getVoltageLevel().getId();
-        } else if (identifiable instanceof BusbarSection) {
-            return ((BusbarSection) identifiable).getTerminal().getVoltageLevel().getId();
-        } else {
-            throw new PowsyblException("bbs_id_bus_id must be a busbar or a bus");
-        }
-    }
-
     @CEntryPoint(name = "createLineOnLine")
     public static void createLineOnLine(IsolateThread thread, ObjectHandle networkHandle,
                                         CCharPointer bbsIdBusId,
@@ -93,7 +81,6 @@ public final class NetworkModificationsCFunctions {
             String line2NameStr = CTypeUtil.toStringOrNull(line2Name);
             String newLineIdStr = CTypeUtil.toString(newLineId);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String voltageLevelIdStr = getVoltageLevelFromBusOrBusBar(network, bbsIdBusIdStr);
             Line line = network.getLine(lineIdStr);
             LineAdder adder = network.newLine()
                     .setId(newLineIdStr)
@@ -104,8 +91,7 @@ public final class NetworkModificationsCFunctions {
                     .setG1(newLineG1)
                     .setG2(newLineG2);
             CreateLineOnLine createLineOnLine = new CreateLineOnLineBuilder()
-                    .withPercent(positionPercent)
-                    .withVoltageLevelId(voltageLevelIdStr)
+                    .withPositionPercent(positionPercent)
                     .withBusbarSectionOrBusId(bbsIdBusIdStr)
                     .withFictitiousVoltageLevelId(fictitiousVoltageLevelIdStr)
                     .withFictitiousVoltageLevelName(fictitiousVoltageLevelNameStr)
@@ -141,7 +127,6 @@ public final class NetworkModificationsCFunctions {
             String line2IdStr = CTypeUtil.toStringOrNull(line2Id);
             String line2NameStr = CTypeUtil.toStringOrNull(line2Name);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String voltageLevelIdStr = getVoltageLevelFromBusOrBusBar(network, bbsIdBusIdStr);
             Line line = network.getLine(lineIdStr);
             ConnectVoltageLevelOnLine modification = new ConnectVoltageLevelOnLineBuilder()
                     .withLine1Id(line1IdStr)
@@ -150,8 +135,7 @@ public final class NetworkModificationsCFunctions {
                     .withLine2Name(line2NameStr)
                     .withLine(line)
                     .withBusbarSectionOrBusId(bbsIdBusIdStr)
-                    .withVoltageLevelId(voltageLevelIdStr)
-                    .withPercent(positionPercent)
+                    .withPositionPercent(positionPercent)
                     .build();
             modification.apply(network);
         });
@@ -236,7 +220,7 @@ public final class NetworkModificationsCFunctions {
                 int min = positionsOrders.get().getMinimum();
                 return createIntegerArray(Arrays.asList(min, max));
             } else {
-                return createIntegerArray(Collections.EMPTY_LIST);
+                return createIntegerArray(Collections.emptyList());
             }
         });
 

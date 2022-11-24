@@ -6,7 +6,6 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.iidm.import_.Importers;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ public class NetworkModificationTest {
 
     @Test
     void testGetFeedersByConnectable() {
-        Network network = Importers.loadNetwork("testNetworkNodeBreaker.xiidm", getClass().getResourceAsStream("/testNetworkNodeBreaker.xiidm"));
+        Network network = Network.read("testNetworkNodeBreaker.xiidm", getClass().getResourceAsStream("/testNetworkNodeBreaker.xiidm"));
         Map<String, List<ConnectablePosition.Feeder>> feeders = getFeedersByConnectable(network.getVoltageLevel("vl1"));
         assertFalse(feeders.isEmpty());
         assertEquals(13, feeders.size());
@@ -39,7 +38,7 @@ public class NetworkModificationTest {
 
     @Test
     void testGetFeedersByConnectableWithInternalLine() {
-        Network network = Importers.loadNetwork("network-node-breaker-with-new-internal-line.xml", getClass().getResourceAsStream("/network-node-breaker-with-new-internal-line.xml"));
+        Network network = Network.read("network-node-breaker-with-new-internal-line.xml", getClass().getResourceAsStream("/network-node-breaker-with-new-internal-line.xml"));
         Map<String, List<ConnectablePosition.Feeder>> feeders = getFeedersByConnectable(network.getVoltageLevel("vl1"));
         assertEquals(2, feeders.get("lineTest").size());
         assertEquals(14, feeders.size());

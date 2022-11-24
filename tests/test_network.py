@@ -72,7 +72,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 7 == len(parameters)
+    assert 8 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -652,6 +652,7 @@ def test_phase_tap_changers():
     update = pd.DataFrame(index=['TWT'],
                           columns=['tap', 'target_deadband', 'regulation_value', 'regulation_mode', 'regulating'],
                           data=[[10, 100, 1000, 'CURRENT_LIMITER', True]])
+    n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
     assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
@@ -1581,7 +1582,7 @@ def test_create_line_on_line():
     assert gen3['voltage_level_id'] == 'VLTEST'
     assert gen3['bus_breaker_bus_id'] == 'VLTEST_0'
     assert gen3['target_p'] == 100
-    assert gen3['bus_id'] == ''
+    assert gen3['bus_id'] == 'VLTEST_0#0'
 
     pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
@@ -1863,7 +1864,7 @@ def test_get_unused_order_positions():
     assert positions_after.left == 121
     assert positions_after.right == 2147483647
     positions_before = pp.network.get_unused_order_positions_before(n, 'bbs1')
-    assert positions_before.right == -1
+    assert positions_before.right == 0
 
     positions_before_no_space = pp.network.get_unused_order_positions_before(n, 'bbs4')
     assert positions_before_no_space is None
@@ -1895,7 +1896,7 @@ def test_phase_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == 'ONE'
     assert tap_changer.regulation_mode == 'FIXED_TAP'
-
+    n.update_ratio_tap_changers(id='TWT', regulating=False)
     with pytest.raises(pp.PyPowsyblError, match='regulated terminal is not set'):
         n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
                                     regulation_mode='CURRENT_LIMITER',

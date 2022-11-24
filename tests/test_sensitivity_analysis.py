@@ -248,15 +248,14 @@ def test_no_output_matrices_available():
 
 
 def test_provider_parameters():
-    # TODO: change test when handling of max iterations is fixed in OLF
     # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
     parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '1'})
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
-    result = analysis.run(n, parameters)
-    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(303.45, abs=0.01)
-
+    with pytest.raises(pp.PyPowsyblError, match='Loadflow diverged with status MAX_ITERATION_REACHED'):
+        analysis.run(n, parameters)
+    # does not throw
     result = analysis.run(n)
     assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
 

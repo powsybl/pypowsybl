@@ -139,7 +139,6 @@ Network elements can be created or removed using the following methods:
    :nosignatures:
 
    Network.create_2_windings_transformers
-   Network.create_aliases
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits

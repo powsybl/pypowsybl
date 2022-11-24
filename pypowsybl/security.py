@@ -9,7 +9,8 @@ import pandas as _pd
 import pypowsybl.loadflow
 from prettytable import PrettyTable as _PrettyTable
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyResult, LimitViolation, ContingencyContextType
+from pypowsybl._pypowsybl import PostContingencyResult, PreContingencyResult, LimitViolation, ContingencyContextType
+from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import (
     ContingencyContainer as _ContingencyContainer,
@@ -17,8 +18,10 @@ from pypowsybl.util import (
 )
 from pypowsybl.report import Reporter as _Reporter
 
+ComputationStatus.__name__ = 'ComputationStatus'
+ComputationStatus.__module__ = __name__
 
-def _contingency_result_repr(self: ContingencyResult) -> str:
+def _post_contingency_result_repr(self: PostContingencyResult) -> str:
     return f"{self.__class__.__name__}(" \
            f"contingency_id={self.contingency_id!r}" \
            f", status={self.status.name}" \
@@ -26,7 +29,17 @@ def _contingency_result_repr(self: ContingencyResult) -> str:
            f")"
 
 
-ContingencyResult.__repr__ = _contingency_result_repr  # type: ignore
+PostContingencyResult.__repr__ = _post_contingency_result_repr  # type: ignore
+
+
+def _pre_contingency_result_repr(self: PreContingencyResult) -> str:
+    return f"{self.__class__.__name__}(" \
+           f", status={self.status.name}" \
+           f", limit_violations=[{len(self.limit_violations)}]" \
+           f")"
+
+
+PreContingencyResult.__repr__ = _pre_contingency_result_repr  # type: ignore
 
 
 def _limit_violation_repr(self: LimitViolation) -> str:
@@ -130,7 +143,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
                                                                    default_parameters.low_voltage_absolute_threshold,
                                                                    default_parameters.high_voltage_proportional_threshold,
                                                                    default_parameters.high_voltage_absolute_threshold)
-        self.provider_parameters = dict(zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+        self.provider_parameters = dict(
+            zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SecurityAnalysisParameters:
         c_parameters = _pypowsybl.SecurityAnalysisParameters()
@@ -159,30 +173,29 @@ class SecurityAnalysisResult:
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
-        results = _pypowsybl.get_security_analysis_result(self._handle)
+        self._pre_contingency_result = _pypowsybl.get_pre_contingency_result(self._handle)
+        post_contingency_results = _pypowsybl.get_post_contingency_results(self._handle)
         self._post_contingency_results = {}
-        for result in results:
+        for result in post_contingency_results:
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
-            else:
-                self._pre_contingency_result = result
         self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
-    def pre_contingency_result(self) -> ContingencyResult:
+    def pre_contingency_result(self) -> PreContingencyResult:
         """
         Result for the pre-contingency state.
         """
         return self._pre_contingency_result
 
     @property
-    def post_contingency_results(self) -> _Dict[str, ContingencyResult]:
+    def post_contingency_results(self) -> _Dict[str, PostContingencyResult]:
         """
         Results for the contingencies, as a dictionary contingency ID -> result.
         """
         return self._post_contingency_results
 
-    def find_post_contingency_result(self, contingency_id: str) -> ContingencyResult:
+    def find_post_contingency_result(self, contingency_id: str) -> PostContingencyResult:
         """
         Result for the specified contingency.
 
@@ -263,10 +276,12 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
+                                                                                        pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
+                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
     def run_dc(self, network: _Network, parameters: _Union[Parameters, pypowsybl.loadflow.Parameters] = None,
                provider: str = '', reporter: _Reporter = None) -> SecurityAnalysisResult:
@@ -281,10 +296,12 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
+                                                                                        pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True, None if reporter is None else reporter._reporter_model)) # pylint: disable=protected-access
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
+                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: _Union[_List[str], str] = None,

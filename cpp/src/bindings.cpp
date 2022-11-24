@@ -240,6 +240,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
             .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
             .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.");
+    
+    py::enum_<pypowsybl::PostContingencyComputationStatus>(m, "PostContingencyComputationStatus", "Loadflow status for one connected component after contingency for security analysis.")
+            .value("CONVERGED", pypowsybl::PostContingencyComputationStatus::CONVERGED, "The loadflow has converged.")
+            .value("FAILED", pypowsybl::PostContingencyComputationStatus::FAILED, "The loadflow has failed.")
+            .value("MAX_ITERATION_REACHED", pypowsybl::PostContingencyComputationStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
+            .value("SOLVER_FAILED", pypowsybl::PostContingencyComputationStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
+            .value("NO_IMPACT", pypowsybl::PostContingencyComputationStatus::NO_IMPACT, "The contingency has no impact.");
 
     py::class_<load_flow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const load_flow_component_result& r) {
@@ -405,18 +412,25 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");
 
-    py::class_<contingency_result>(m, "ContingencyResult")
-            .def_property_readonly("contingency_id", [](const contingency_result& r) {
+    py::class_<post_contingency_result>(m, "PostContingencyResult")
+            .def_property_readonly("contingency_id", [](const post_contingency_result& r) {
                 return r.contingency_id;
             })
-            .def_property_readonly("status", [](const contingency_result& r) {
-                return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
+            .def_property_readonly("status", [](const post_contingency_result& r) {
+                return static_cast<pypowsybl::PostContingencyComputationStatus>(r.status);
             })
-            .def_property_readonly("limit_violations", [](const contingency_result& r) {
+            .def_property_readonly("limit_violations", [](const post_contingency_result& r) {
                 return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
             });
+    bindArray<pypowsybl::PostContingencyResultArray>(m, "PostContingencyResultArray");
 
-    bindArray<pypowsybl::ContingencyResultArray>(m, "ContingencyResultArray");
+    py::class_<pre_contingency_result>(m, "PreContingencyResult")
+            .def_property_readonly("status", [](const pre_contingency_result& r) {
+                return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
+            })
+            .def_property_readonly("limit_violations", [](const pre_contingency_result& r) {
+                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+            });
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
@@ -535,7 +549,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("NONE", contingency_context_type::NONE)
             .value("SPECIFIC", contingency_context_type::SPECIFIC);
 
-    m.def("get_security_analysis_result", &pypowsybl::getSecurityAnalysisResult, "get result of a security analysis", py::arg("result"));
+    m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
+    m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
     m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
     m.def("get_node_breaker_view_internal_connections", &pypowsybl::getNodeBreakerViewInternalConnections,
     "get all internal connections for a voltage level", py::arg("network"), py::arg("voltage_level"));
@@ -597,15 +612,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_glsk_factors_start_timestamp", &pypowsybl::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
+    
+    m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
+
+    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements to be monitored for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("elements_ids"));
 
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
-
-    py::enum_<pypowsybl::XnecSelectionStrategy>(m, "XnecSelectionStrategy", "Define how to select branches")
-            .value("ONLY_INTERCONNECTIONS", pypowsybl::XnecSelectionStrategy::ONLY_INTERCONNECTIONS,
-                   "Select only branches that connect two different countries")
-            .value("INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC", pypowsybl::XnecSelectionStrategy::INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
-                   "Select branches that are interconnections or have a maximum zone to zone PTDF greater than 5%");
+          py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
@@ -613,8 +627,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
                 .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
-                .def_readwrite("xnec_selection_strategy", &pypowsybl::FlowDecompositionParameters::xnec_selection_strategy)
-                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence);
+                .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence)
+                .def_readwrite("sensitivity_variable_batch_size", &pypowsybl::FlowDecompositionParameters::sensitivity_variable_batch_size);
 
     m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),
             py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"),
