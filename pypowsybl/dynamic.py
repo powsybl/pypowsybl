@@ -6,7 +6,6 @@
 #
 
 import os
-
 from enum import Enum as _Enum
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
