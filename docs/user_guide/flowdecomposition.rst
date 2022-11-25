@@ -30,6 +30,8 @@ First example
 -------------
 
 To perform a flow decomposition, you need at least a network.  
+The flow decomposition is based on an object. You can add pre-contingency lines to this object.  
+Those lines will be mapped to the network when running a flow decomposition.  
 The flow decomposition computation returns a dataframe containing the flow decomposition and the reference values.  
 The reference values are the active power flows in AC on the original network and in DC on the compensated network.  
 By default, the compensated network is the same as the original network as the loss compensation is not activated by default.  
@@ -39,7 +41,9 @@ Here are toy examples that do not reflect reality.
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
                    branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                         
@@ -58,7 +62,9 @@ This example will highlight loop flows from the peripheral areas.
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_LOOP_FLOW_WITH_COUNTRIES.uct')))
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 FLOAD 11 1', 'EGEN  11 FGEN  11 1', 'FGEN  11 BGEN  11 1', 'FLOAD 11 ELOAD 11 1'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
                                    branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                                                            
@@ -126,7 +132,9 @@ Here are the results with neutral tap position.
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
                                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                                        
@@ -154,7 +162,9 @@ Here are the results with non-neutral tap position.
                              tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
     id                                                                                                                                      
     BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
                                    branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr    pst_flow
     xnec_id                                                                                                                                                                           
@@ -181,16 +191,15 @@ Here are the available parameters and their default values:
     :caption: Available parameters and their default values
 
     flow-decomposition-default-parameters:
-        save-intermediates: False
         enable-losses-compensation: False
         losses-compensation-epsilon: 1e-5
         sensitivity-epsilon: 1e-5
         rescale-enabled: False
-        branch-selection-strategy: ONLY_INTERCONNECTIONS
         dc-fallback-enabled-after-ac-divergence: True
+        sensitivity-variable-batch-size: 15000
 
-The flow decomposition parameters can be overwriten in Python.
-The :code:`save-intermediates` parameter is not available in Python.
+The flow decomposition parameters can be overwriten in Python.  
+If you have memory issues, do not hesitate to reduce the `sensitivity-variable-batch-size` parameter.
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -200,9 +209,11 @@ The :code:`save-intermediates` parameter is not available in Python.
     ... losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON, 
     ... sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON, 
     ... rescale_enabled=True, 
-    ... xnec_selection_strategy=pp.flowdecomposition.XnecSelectionStrategy.INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC, 
-    ... dc_fallback_enabled_after_ac_divergence=True)
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, parameters)
+    ... dc_fallback_enabled_after_ac_divergence=True,
+    ... sensitivity_variable_batch_size=1000)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network, parameters)
     >>> flow_decomposition_dataframe
                                    branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                                         
@@ -218,7 +229,9 @@ You can also overwrite the Load flow parameters.
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
     >>> load_flow_parameters = pp.loadflow.Parameters()
-    >>> flow_decomposition_dataframe = pp.flowdecomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+    >>> flow_decomposition.add_precontingency_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> flow_decomposition_dataframe = flow_decomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
     >>> flow_decomposition_dataframe
                    branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr  pst_flow
     xnec_id                                                                                                                                                         
