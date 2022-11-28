@@ -8,6 +8,7 @@ import com.powsybl.iidm.network.Importer;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
+import com.powsybl.iidm.network.extensions.FourSubstationsNodeBreakerWithExtensionsFactory;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("micro_grid_be", () -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE())),
             factory("micro_grid_nl", () -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL())),
             factory("four_substations_node_breaker", () -> FourSubstationsNodeBreakerFactory.create()),
+            factory("four_substations_node_breaker_with_extensions", () -> FourSubstationsNodeBreakerWithExtensionsFactory.create()),
             factory("eurostag_tutorial_example1", () -> Networks.createEurostagTutorialExample1WithFixedCurrentLimits()),
             factory("eurostag_tutorial_example1_with_power_limits", () -> Networks.createEurostagTutorialExample1WithFixedPowerLimits()),
             factory("eurostag_tutorial_example1_with_apc_extension", () -> Networks.createEurostagTutorialExample1WithApcExtension()),

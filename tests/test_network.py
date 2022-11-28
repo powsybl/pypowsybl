@@ -1643,44 +1643,55 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
 
 
-# TODO: add checks of extensions everywhere once that they are interfaced.
 def test_add_load_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
                       data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
     pp.network.create_load_bay(network=n, df=df, raise_exception=True)
     load = n.get_loads().loc["new_load"]
     assert load.p0 == 10.0
     assert load.q0 == 3.0
+    position = n.get_extensions('position').loc["new_load"]
+    assert position.order == 0
+    assert position.feeder_name == 'new_load'
+    assert position.direction == 'BOTTOM'
 
 
 def test_add_load_bay_from_kwargs():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, busbar_section_id="S1VL1_BBS",
-                               position_order=10)
+                               position_order=15)
     load = n.get_loads().loc["new_load"]
     assert load.p0 == 10.0
     assert load.q0 == 3.0
+    position = n.get_extensions('position').loc["new_load"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_load'
+    assert position.direction == 'BOTTOM'
 
 
 def test_add_generator_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     pp.network.create_generator_bay(n, pd.DataFrame.from_records(
-        data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 10)],
+        data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 15, 'TOP')],
         columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v',
-                 'busbar_section_id', 'position_order'],
+                 'busbar_section_id', 'position_order', 'direction'],
         index='id'))
     generator = n.get_generators().loc['new_gen']
     assert generator.target_p == 100.0
     assert generator.target_q == 150.0
     assert generator.voltage_level_id == 'S1VL1'
+    position = n.get_extensions('position').loc["new_gen"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_gen'
+    assert position.direction == 'TOP'
 
 
 def test_add_battery_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(
         columns=['id', 'busbar_section_id', 'max_p', 'min_p', 'target_p', 'target_q', 'position_order'],
-        data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 10)],
+        data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 15)],
         index='id')
     pp.network.create_battery_bay(n, df)
     battery = n.get_batteries().loc['new_battery']
@@ -1689,10 +1700,14 @@ def test_add_battery_bay():
     assert battery.min_p == 10
     assert battery.target_p == 90
     assert battery.target_q == 20
+    position = n.get_extensions('position').loc["new_battery"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_battery'
+    assert position.direction == 'BOTTOM'
 
 
 def test_add_dangling_line_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(index='id', data=[{
         'id': 'new_dangling_line',
         'name': 'dangling_line',
@@ -1702,7 +1717,7 @@ def test_add_dangling_line_bay():
         'x': 2,
         'g': 1,
         'b': 1,
-        'position_order': 0,
+        'position_order': 15,
         'busbar_section_id': 'S1VL1_BBS'
     }])
     pp.network.create_dangling_line_bay(n, df)
@@ -1714,15 +1729,19 @@ def test_add_dangling_line_bay():
     assert dangling_line.b == 1
     assert dangling_line.p0 == 100
     assert dangling_line.q0 == 101
+    position = n.get_extensions('position').loc["new_dangling_line"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_dangling_line'
+    assert position.direction == 'BOTTOM'
 
 
 def test_add_linear_shunt_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     shunt_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'model_type', 'section_count', 'target_v',
                  'target_deadband', 'busbar_section_id', 'position_order'],
-        data=[('shunt_test', '', 'LINEAR', 1, 400, 2, 'S1VL1_BBS', 20)])
+        data=[('shunt_test', '', 'LINEAR', 1, 400, 2, 'S1VL1_BBS', 25)])
     model_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
@@ -1744,15 +1763,20 @@ def test_add_linear_shunt_bay():
     assert model.b_per_section == -0.01
     assert model.max_section_count == 2
 
+    position = n.get_extensions('position').loc['shunt_test']
+    assert position.order == 25
+    assert position.feeder_name == 'shunt_test'
+    assert position.direction == 'BOTTOM'
 
-def test_non_linear_shunt():
-    n = pp.network.create_four_substations_node_breaker_network()
+
+def test_add_non_linear_shunt_bay():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     shunt_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'model_type', 'section_count', 'target_v',
                  'target_deadband', 'busbar_section_id', 'position_order'],
-        data=[('shunt1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 20),
-              ('shunt2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 100)])
+        data=[('shunt1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 25),
+              ('shunt2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL1_BBS', 55)])
     model_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'g', 'b'],
@@ -1788,15 +1812,25 @@ def test_non_linear_shunt():
     assert section2.g == 7
     assert section2.b == 8
 
+    position1 = n.get_extensions('position').loc['shunt1']
+    assert position1.order == 25
+    assert position1.feeder_name == 'shunt1'
+    assert position1.direction == 'BOTTOM'
+
+    position2 = n.get_extensions('position').loc['shunt2']
+    assert position2.order == 55
+    assert position2.feeder_name == 'shunt2'
+    assert position2.direction == 'BOTTOM'
+
 
 def test_add_svc_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(
         index='id',
         data=[{'id': 'svc_test',
                'name': '',
                'busbar_section_id': 'S1VL1_BBS',
-               'position_order': 10,
+               'position_order': 15,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
                'target_v': 400,
@@ -1810,16 +1844,20 @@ def test_add_svc_bay():
     assert svc.target_v == 400
     assert svc.b_min == 0
     assert svc.b_max == 2
+    position = n.get_extensions('position').loc['svc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'svc_test'
+    assert position.direction == 'BOTTOM'
 
 
-def test_lcc_creation():
-    n = pp.network.create_four_substations_node_breaker_network()
+def test_add_lcc_bay():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(
         index='id',
         data=[{'id': 'lcc_test',
                'name': '',
                'busbar_section_id': 'S1VL1_BBS',
-               'position_order': 10,
+               'position_order': 15,
                'loss_factor': 0.1,
                'power_factor': 0.2}])
     pp.network.create_lcc_converter_station_bay(n, df)
@@ -1827,16 +1865,20 @@ def test_lcc_creation():
     assert lcc.voltage_level_id == 'S1VL1'
     assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
     assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
+    position = n.get_extensions('position').loc['lcc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'lcc_test'
+    assert position.direction == 'BOTTOM'
 
 
 def test_add_vsc_bay():
-    n = pp.network.create_four_substations_node_breaker_network()
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(
         index='id',
         data=[{'id': 'vsc_test',
                'name': '',
                'busbar_section_id': 'S1VL1_BBS',
-               'position_order': 10,
+               'position_order': 15,
                'target_q': 200,
                'voltage_regulator_on': True,
                'loss_factor': 1.0,
@@ -1848,7 +1890,49 @@ def test_add_vsc_bay():
     assert vsc.voltage_regulator_on == True
     assert vsc.loss_factor == 1
     assert vsc.target_v == 400
+    position = n.get_extensions('position').loc['vsc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'vsc_test'
+    assert position.direction == 'BOTTOM'
 
+
+def test_no_extensions_created_if_none_in_the_voltage_level():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+    position = n.get_extensions('position')
+    assert position.size == 0
+
+
+def test_extensions_created_if_first_equipment_in_the_voltage_level():
+    n = pp.network.create_empty()
+    stations = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'S1'}
+    ])
+    n.create_substations(stations)
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225}
+    ])
+    n.create_voltage_levels(voltage_levels)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1}
+    ])
+    n.create_busbar_sections(busbars)
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "BBS1", 0]])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+    position = n.get_extensions('position').loc['new_load']
+    assert position.order == 0
+    assert position.feeder_name == 'new_load'
+    assert position.direction == 'BOTTOM'
 
 def test_get_order_positions_connectables():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
