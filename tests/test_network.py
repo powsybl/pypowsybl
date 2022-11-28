@@ -1896,6 +1896,44 @@ def test_add_vsc_bay():
     assert position.direction == 'BOTTOM'
 
 
+def test_no_extensions_created_if_none_in_the_voltage_level():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+    position = n.get_extensions('position')
+    assert position.size == 0
+
+
+def test_extensions_created_if_first_equipment_in_the_voltage_level():
+    n = pp.network.create_empty()
+    stations = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'S1'}
+    ])
+    n.create_substations(stations)
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225}
+    ])
+    n.create_voltage_levels(voltage_levels)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1}
+    ])
+    n.create_busbar_sections(busbars)
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "BBS1", 0]])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+    position = n.get_extensions('position').loc['new_load']
+    assert position.order == 0
+    assert position.feeder_name == 'new_load'
+    assert position.direction == 'BOTTOM'
+
 def test_get_order_positions_connectables():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))
     df = pp.network.get_connectables_order_positions(n, 'vl1')
