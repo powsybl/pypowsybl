@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.flow_decomposition;
 
@@ -24,12 +25,11 @@ public final class FlowDecompositionCUtils {
 
     public static FlowDecompositionParameters createFlowDecompositionParameters(PyPowsyblApiHeader.FlowDecompositionParametersPointer loadFlowParametersPtr) {
         return createFlowDecompositionParameters()
-            .setSaveIntermediates(FlowDecompositionParameters.DO_NOT_SAVE_INTERMEDIATES)
             .setEnableLossesCompensation(loadFlowParametersPtr.isLossesCompensationEnabled())
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
             .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
             .setDcFallbackEnabledAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
-            .setXnecSelectionStrategy(FlowDecompositionParameters.XnecSelectionStrategy.values()[loadFlowParametersPtr.getXnecSelectionStrategy()]);
+            .setSensitivityVariableBatchSize(loadFlowParametersPtr.getSensitivityVariableBatchSize());
     }
 }

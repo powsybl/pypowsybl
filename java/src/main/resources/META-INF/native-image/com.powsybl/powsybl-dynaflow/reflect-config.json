@@ -1,21 +1,16 @@
 [
   {
     "name":"com.powsybl.dynaflow.DynaFlowParameters",
-    "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true,
-    "queryAllDeclaredConstructors":true,
-    "methods":[
-      {"name":"<init>","parameterTypes":[] },
-      {"name":"getAutomaticSlackBusOn","parameterTypes":[] },
-      {"name":"getDsoVoltageLevel","parameterTypes":[] },
-      {"name":"getShuntRegulationOn","parameterTypes":[] },
-      {"name":"getSvcRegulationOn","parameterTypes":[] },
-      {"name":"setAutomaticSlackBusOn","parameterTypes":["boolean"] },
-      {"name":"setDsoVoltageLevel","parameterTypes":["double"] },
-      {"name":"setShuntRegulationOn","parameterTypes":["boolean"] },
-      {"name":"setSvcRegulationOn","parameterTypes":["boolean"] }
-    ]}
-,
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true
+  },
   {
     "name":"com.powsybl.dynaflow.json.JsonDynaFlowParametersSerializer$SerializationSpec",
     "allDeclaredFields":true,

@@ -68,7 +68,7 @@ private:
 };
 
 typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
-typedef Array<contingency_result> ContingencyResultArray;
+typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
@@ -87,11 +87,19 @@ std::vector<T> toVector(array* arrayPtr) {
 template<>
 std::vector<std::string> toVector(array* arrayPtr);
 
-enum LoadFlowComponentStatus {
+enum class LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
     SOLVER_FAILED,
     FAILED,
+};
+
+enum class PostContingencyComputationStatus {
+    CONVERGED = 0,
+    MAX_ITERATION_REACHED,
+    SOLVER_FAILED,
+    FAILED,
+    NO_IMPACT
 };
 
 enum LimitType {
@@ -211,8 +219,8 @@ public:
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
     bool rescale_enabled;
-    XnecSelectionStrategy xnec_selection_strategy;
     bool dc_fallback_enabled_after_ac_divergence;
+    int sensitivity_variable_batch_size;
 };
 
 class LayoutParameters {
@@ -379,7 +387,9 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
-ContingencyResultArray* getSecurityAnalysisResult(const JavaHandle& securityAnalysisResult);
+PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
+
+pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
 
 SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
 
@@ -451,7 +461,11 @@ long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
 long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
+JavaHandle createFlowDecomposition();
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& analysisContext, const std::vector<std::string>& elementsIds);
+
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 

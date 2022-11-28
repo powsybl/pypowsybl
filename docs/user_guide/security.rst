@@ -31,9 +31,9 @@ the violations created by the contingency, they are collected by contingency in 
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     >>> result = security_analysis.run_ac(network)
     >>> result.pre_contingency_result
-    ContingencyResult(contingency_id='', status=CONVERGED, limit_violations=[3])
+    PreContingencyResult(, status=CONVERGED, limit_violations=[3])
     >>> result.post_contingency_results
-    {'First contingency': ContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[3])}
+    {'First contingency': PostContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[3])}
     >>> result.limit_violations
                                   subject_name   limit_type limit_name   limit  acceptable_duration  limit_reduction        value side
     contingency_id    subject_id

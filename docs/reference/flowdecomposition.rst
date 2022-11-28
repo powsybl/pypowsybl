@@ -10,7 +10,7 @@ This simple version of flow decomposition will evolve with next versions of flow
 Here are the assumptions that we made:
 
 - no contingency management  
-- XNEC = interconnection branch or 5% zonal PTDF method  
+- XNEC = lines specified by the user
 - zone = country  
 - country GSK  
 - no HVDC management  
@@ -24,7 +24,9 @@ You can run a flow decomposition using the following methods:
    :nosignatures:
    :toctree: api/
 
-    run
+    create_decomposition
+    FlowDecomposition.add_precontingency_monitored_elements
+    FlowDecomposition.run
 
 Parameters
 ----------
@@ -41,11 +43,3 @@ The execution of the flowdecomposition can be customized using flowdecomposition
    :hidden:
 
    flowdecomposition/parameters
-
-Some enum classes are used in parameters:
-
-.. autosummary::
-   :toctree: api/
-   :template: autosummary/class_without_members.rst
-
-    XnecSelectionStrategy

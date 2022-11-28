@@ -145,7 +145,7 @@
     </iidm:extension>
     <iidm:extension id="load1">
         <cp:position>
-            <cp:feeder name="load1" order="0" direction="TOP"/>
+            <cp:feeder name="load1" order="1" direction="TOP"/>
         </cp:position>
     </iidm:extension>
     <iidm:extension id="trf6">

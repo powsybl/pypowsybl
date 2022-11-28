@@ -11,7 +11,6 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SecurityAnalysisParametersPointer;
 import com.powsybl.python.contingency.ContingencyContainer;
@@ -21,6 +20,7 @@ import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
+import com.powsybl.security.results.PreContingencyResult;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -138,15 +138,26 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
-    private static LoadFlowResult.ComponentResult.Status getStatus(LimitViolationsResult result) {
-        return result.isComputationOk() ? LoadFlowResult.ComponentResult.Status.CONVERGED : LoadFlowResult.ComponentResult.Status.FAILED;
+    private static void setPostContingencyResultInSecurityAnalysisResultPointer(PyPowsyblApiHeader.PostContingencyResultPointer contingencyPtr, PostContingencyResult postContingencyResult) {
+        contingencyPtr.setContingencyId(CTypeUtil.toCharPtr(postContingencyResult.getContingency().getId()));
+        contingencyPtr.setStatus(postContingencyResult.getStatus().ordinal());
+        List<LimitViolation> limitViolations = postContingencyResult.getLimitViolationsResult().getLimitViolations();
+        PyPowsyblApiHeader.LimitViolationPointer limitViolationPtr = UnmanagedMemory.calloc(limitViolations.size() * SizeOf.get(PyPowsyblApiHeader.LimitViolationPointer.class));
+        createLimitViolationPtr(limitViolationPtr, limitViolations);
+        contingencyPtr.limitViolations().setLength(limitViolations.size());
+        contingencyPtr.limitViolations().setPtr(limitViolationPtr);
     }
 
-    private static void setSecurityAnalysisResultPointer(PyPowsyblApiHeader.ContingencyResultPointer contingencyPtr, String contingencyId, LimitViolationsResult limitViolationsResult) {
-        contingencyPtr.setContingencyId(CTypeUtil.toCharPtr(contingencyId));
-        contingencyPtr.setStatus(getStatus(limitViolationsResult).ordinal());
-        List<LimitViolation> limitViolations = limitViolationsResult.getLimitViolations();
+    private static void setPreContingencyResultInSecurityAnalysisResultPointer(PyPowsyblApiHeader.PreContingencyResultPointer contingencyPtr, PreContingencyResult preContingencyResult) {
+        contingencyPtr.setStatus(preContingencyResult.getStatus().ordinal());
+        List<LimitViolation> limitViolations = preContingencyResult.getLimitViolationsResult().getLimitViolations();
         PyPowsyblApiHeader.LimitViolationPointer limitViolationPtr = UnmanagedMemory.calloc(limitViolations.size() * SizeOf.get(PyPowsyblApiHeader.LimitViolationPointer.class));
+        createLimitViolationPtr(limitViolationPtr, limitViolations);
+        contingencyPtr.limitViolations().setLength(limitViolations.size());
+        contingencyPtr.limitViolations().setPtr(limitViolationPtr);
+    }
+
+    private static void createLimitViolationPtr(PyPowsyblApiHeader.LimitViolationPointer limitViolationPtr, List<LimitViolation> limitViolations) {
         for (int i = 0; i < limitViolations.size(); i++) {
             LimitViolation limitViolation = limitViolations.get(i);
             PyPowsyblApiHeader.LimitViolationPointer limitViolationPtrPlus = limitViolationPtr.addressOf(i);
@@ -160,18 +171,21 @@ public final class SecurityAnalysisCFunctions {
             limitViolationPtrPlus.setValue(limitViolation.getValue());
             limitViolationPtrPlus.setSide(limitViolation.getSide() != null ? limitViolation.getSide().ordinal() : -1);
         }
-        contingencyPtr.limitViolations().setLength(limitViolations.size());
-        contingencyPtr.limitViolations().setPtr(limitViolationPtr);
     }
 
-    private static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ContingencyResultPointer> createContingencyResultArrayPointer(SecurityAnalysisResult result) {
-        int resultCount = result.getPostContingencyResults().size() + 1; // + 1 for pre-contingency result
-        PyPowsyblApiHeader.ContingencyResultPointer contingencyPtr = UnmanagedMemory.calloc(resultCount * SizeOf.get(PyPowsyblApiHeader.ContingencyResultPointer.class));
-        setSecurityAnalysisResultPointer(contingencyPtr, "", result.getPreContingencyResult().getLimitViolationsResult());
+    private static PyPowsyblApiHeader.PreContingencyResultPointer createPreContingencyResultArrayPointer(SecurityAnalysisResult result) {
+        PyPowsyblApiHeader.PreContingencyResultPointer contingencyPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.PreContingencyResultPointer.class));
+        setPreContingencyResultInSecurityAnalysisResultPointer(contingencyPtr, result.getPreContingencyResult());
+        return contingencyPtr;
+    }
+
+    private static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> createPostContingencyResultArrayPointer(SecurityAnalysisResult result) {
+        int resultCount = result.getPostContingencyResults().size(); // + 1 for pre-contingency result
+        PyPowsyblApiHeader.PostContingencyResultPointer contingencyPtr = UnmanagedMemory.calloc(resultCount * SizeOf.get(PyPowsyblApiHeader.PostContingencyResultPointer.class));
         for (int i = 0; i < result.getPostContingencyResults().size(); i++) {
             PostContingencyResult postContingencyResult = result.getPostContingencyResults().get(i);
-            PyPowsyblApiHeader.ContingencyResultPointer contingencyPtrPlus = contingencyPtr.addressOf(i + 1);
-            setSecurityAnalysisResultPointer(contingencyPtrPlus, postContingencyResult.getContingency().getId(), postContingencyResult.getLimitViolationsResult());
+            PyPowsyblApiHeader.PostContingencyResultPointer contingencyPtrPlus = contingencyPtr.addressOf(i);
+            setPostContingencyResultInSecurityAnalysisResultPointer(contingencyPtrPlus, postContingencyResult);
         }
         return allocArrayPointer(contingencyPtr, resultCount);
     }
@@ -202,11 +216,19 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getSecurityAnalysisResult")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ContingencyResultPointer> getSecurityAnalysisResult(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getPostContingencyResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> getPostContingencyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return createContingencyResultArrayPointer(result);
+            return createPostContingencyResultArrayPointer(result);
+        });
+    }
+
+    @CEntryPoint(name = "getPreContingencyResult")
+    public static PyPowsyblApiHeader.PreContingencyResultPointer getPreContingencyResult(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            return createPreContingencyResultArrayPointer(result);
         });
     }
 
@@ -219,11 +241,11 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "freeContingencyResultArrayPointer")
-    public static void freeContingencyResultArrayPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ContingencyResultPointer> contingencyResultArrayPtr,
+    public static void freeContingencyResultArrayPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> contingencyResultArrayPtr,
                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
-                PyPowsyblApiHeader.ContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+                PyPowsyblApiHeader.PostContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
                 UnmanagedMemory.free(contingencyResultPtrPlus.getContingencyId());
                 for (int l = 0; l < contingencyResultPtrPlus.limitViolations().getLength(); l++) {
                     PyPowsyblApiHeader.LimitViolationPointer violation = contingencyResultPtrPlus.limitViolations().getPtr().addressOf(l);

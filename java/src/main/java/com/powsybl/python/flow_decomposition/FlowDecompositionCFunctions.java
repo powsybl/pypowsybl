@@ -3,12 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.flow_decomposition;
 
 import com.powsybl.flow_decomposition.FlowDecompositionComputer;
 import com.powsybl.flow_decomposition.FlowDecompositionParameters;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
+import com.powsybl.flow_decomposition.XnecProvider;
+import com.powsybl.flow_decomposition.xnec_provider.XnecProviderByIds;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -25,9 +28,13 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
+import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.doCatch;
 
 /**
@@ -41,13 +48,30 @@ public final class FlowDecompositionCFunctions {
     private FlowDecompositionCFunctions() {
     }
 
+    @CEntryPoint(name = "createFlowDecomposition")
+    public static ObjectHandle createFlowDecomposition(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new FlowDecompositionContext()));
+    }
+
+    @CEntryPoint(name = "addPrecontingencyMonitoredElementsForFlowDecomposition")
+    public static void addPrecontingencyMonitoredElementsForFlowDecomposition(IsolateThread thread, ObjectHandle flowDecompositionContextHandle,
+                                                                              CCharPointerPointer elementIdPtrPtr, int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            FlowDecompositionContext flowDecompositionContext = ObjectHandles.getGlobal().get(flowDecompositionContextHandle);
+            List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
+            flowDecompositionContext.addPrecontingencyMonitoredElements(elementIds);
+        });
+    }
+
     @CEntryPoint(name = "runFlowDecomposition")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> runFlowDecomposition(IsolateThread thread,
+                                                                                                         ObjectHandle flowDecompositionContextHandle,
                                                                                                          ObjectHandle networkHandle,
                                                                                                          PyPowsyblApiHeader.FlowDecompositionParametersPointer flowDecompositionParametersPtr,
                                                                                                          PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
+            FlowDecompositionContext flowDecompositionContext = ObjectHandles.getGlobal().get(flowDecompositionContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
 
             String lfProviderName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
@@ -59,7 +83,9 @@ public final class FlowDecompositionCFunctions {
 
             FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
             FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(flowDecompositionParameters, loadFlowParameters, lfProviderName, sensiProviderName);
-            FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(network);
+            List<String> precontingencyMonitoredElements = flowDecompositionContext.getPrecontingencyMonitoredElements();
+            XnecProvider xnecProvider = new XnecProviderByIds(precontingencyMonitoredElements);
+            FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(xnecProvider, network);
 
             return Dataframes.createCDataframe(Dataframes.flowDecompositionMapper(flowDecompositionResults.getZoneSet()), flowDecompositionResults);
         });
@@ -73,9 +99,7 @@ public final class FlowDecompositionCFunctions {
     @CEntryPoint(name = "freeFlowDecompositionParameters")
     public static void freeFlowDecompositionParameters(IsolateThread thread, PyPowsyblApiHeader.FlowDecompositionParametersPointer flowDecompositionParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            UnmanagedMemory.free(flowDecompositionParametersPtr);
-        });
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(flowDecompositionParametersPtr));
     }
 
     private static PyPowsyblApiHeader.FlowDecompositionParametersPointer convertToFlowDecompositionParametersPointer(FlowDecompositionParameters parameters) {
@@ -84,8 +108,8 @@ public final class FlowDecompositionCFunctions {
         paramsPtr.setLossesCompensationEpsilon(parameters.getLossesCompensationEpsilon());
         paramsPtr.setSensitivityEpsilon(parameters.getSensitivityEpsilon());
         paramsPtr.setRescaleEnabled(parameters.isRescaleEnabled());
-        paramsPtr.setXnecSelectionStrategy(parameters.getXnecSelectionStrategy().ordinal());
         paramsPtr.setDcFallbackEnabledAfterAcDivergence(parameters.isDcFallbackEnabledAfterAcDivergence());
+        paramsPtr.setSensitivityVariableBatchSize(parameters.getSensitivityVariableBatchSize());
         return paramsPtr;
     }
 
