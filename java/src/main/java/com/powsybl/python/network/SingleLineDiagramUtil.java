@@ -8,7 +8,6 @@ package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
-import com.powsybl.sld.layout.LayoutParameters;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
@@ -32,9 +31,10 @@ public final class SingleLineDiagramUtil {
     private SingleLineDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String containerId, String svgFile) {
-        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile))) {
-            writeSvg(network, containerId, writer);
+    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
+             Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+            writeSvg(network, containerId, writer, metadataWriter, layoutParametersExt);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -50,17 +50,9 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static List<String> getSvgAndMetadata(Network network, String containerId, boolean useName, boolean centerName, boolean diagonalLabel, boolean topologicalColoring) {
+    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
         try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
-            LayoutParameters layoutParameters = new LayoutParameters()
-                    .setUseName(useName)
-                    .setLabelCentered(centerName)
-                    .setLabelDiagonal(diagonalLabel)
-                    .setSvgWidthAndHeightAdded(true);
-            DiagramStyleProvider styleProvider = topologicalColoring ? new TopologicalStyleProvider(network)
-                    : new NominalVoltageDiagramStyleProvider(network);
-
-            writeSvg(network, containerId, writer, writerMeta, layoutParameters, styleProvider);
+            writeSvg(network, containerId, writer, writerMeta, layoutParametersExt);
             writer.flush();
             writerMeta.flush();
             return List.of(writer.toString(), writerMeta.toString());
@@ -70,19 +62,15 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer) {
-        writeSvg(network, containerId, writer, new StringWriter());
+        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.LayoutParametersExt());
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter) {
-        LayoutParameters layoutParameters = new LayoutParameters()
-                .setSvgWidthAndHeightAdded(true);
-        writeSvg(network, containerId, writer, metadataWriter, layoutParameters, new TopologicalStyleProvider(network));
-    }
-
-    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, LayoutParameters layoutParameters, DiagramStyleProvider diagramStyleProvider) {
+    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
         ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
-        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParameters, componentLibrary,
-                new DefaultDiagramLabelProvider(network, componentLibrary, layoutParameters), diagramStyleProvider, "");
+        DiagramStyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
+                : new NominalVoltageDiagramStyleProvider(network);
+        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
+                new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
     }
 
 }

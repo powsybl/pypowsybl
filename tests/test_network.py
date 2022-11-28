@@ -1514,6 +1514,11 @@ def test_write_svg_file(tmpdir):
     assert not exists(data.join('test_sld.svg'))
     net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
     assert exists(data.join('test_sld.svg'))
+    assert not exists(data.join('test2_sld.svg'))
+    assert not exists(data.join('test2_sld.json'))
+    net.write_single_line_diagram_svg('S1VL1', data.join('test2_sld.svg'), data.join('test2_sld.json'))
+    assert exists(data.join('test2_sld.svg'))
+    assert exists(data.join('test2_sld.json'))
 
 
 def test_attributes_order():

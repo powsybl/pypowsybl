@@ -42,23 +42,21 @@ class SingleLineDiagramUtilTest {
     @Test
     void test() throws IOException {
         Network network = FourSubstationsNodeBreakerFactory.create();
-        try (StringWriter writer = new StringWriter(); StringWriter metadataWriter = new StringWriter()) {
-            SingleLineDiagramUtil.writeSvg(network, "S1VL1", writer, metadataWriter);
+        try (StringWriter writer = new StringWriter()) {
+            SingleLineDiagramUtil.writeSvg(network, "S1VL1", writer);
             assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(SingleLineDiagramUtil.class.getResourceAsStream("/sld.xml"))), StandardCharsets.UTF_8)),
                          fixSvg(TestUtil.normalizeLineSeparator(writer.toString())));
-
-            assertTrue(metadataWriter.toString().length() > 0);
         }
     }
 
     @Test
     void testSvgAndMetadata() throws IOException {
         Network network = FourSubstationsNodeBreakerFactory.create();
+        NetworkCFunctions.LayoutParametersExt layoutParametersExt = new NetworkCFunctions.LayoutParametersExt();
         try (StringWriter writer = new StringWriter(); StringWriter metadataWriter = new StringWriter()) {
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", false, false, false, true);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", layoutParametersExt);
             assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(SingleLineDiagramUtil.class.getResourceAsStream("/sld.xml"))), StandardCharsets.UTF_8)),
                     fixSvg(TestUtil.normalizeLineSeparator(svgAndMeta.get(0))));
-
             assertTrue(svgAndMeta.get(1).length() > 0);
         }
     }

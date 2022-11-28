@@ -113,6 +113,14 @@ class LayoutParameters:
         """When False, coloring is based only on nominal voltage."""
         return self._topological_coloring
 
+    def _to_c_parameters(self) -> _pp.LayoutParameters:
+        c_parameters = _pp.LayoutParameters()
+        c_parameters.use_name = self._use_name
+        c_parameters.center_name = self._center_name
+        c_parameters.diagonal_label = self._diagonal_label
+        c_parameters.topological_coloring = self._topological_coloring
+        return c_parameters
+
 
 class NodeBreakerTopology:
     """
@@ -343,16 +351,19 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None, parameters: LayoutParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
         Args:
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
+            metadata_file: a json metadata file path
+            parameters: layout parameters to adjust the rendering of the diagram
         """
         svg_file = _path_to_str(svg_file)
-        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()
+        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file, '' if metadata_file is None else _path_to_str(metadata_file), p)
 
     def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
@@ -365,8 +376,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the single line diagram
         """
-        p = parameters if parameters is not None else LayoutParameters()
-        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p.use_name, p.center_name, p.diagonal_label, p.topological_coloring)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()
+        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,

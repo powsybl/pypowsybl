@@ -659,16 +659,18 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
     return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
 }
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
-    callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, bool useName, bool centerName, bool diagonalLabel, bool topologicalColoring) {
-    auto svgAndMetadataArrayPtr = callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), useName, centerName, diagonalLabel, topologicalColoring);
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    auto svgAndMetadataArrayPtr = callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
@@ -1137,6 +1139,38 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe) {
 
 void closePypowsybl() {
     pypowsybl::callJava(::closePypowsybl);
+}
+
+LayoutParameters::LayoutParameters(layout_parameters* src) {
+    use_name = (bool) src->use_name;
+    center_name = (bool) src->center_name;
+    diagonal_label = (bool) src->diagonal_label;
+    topological_coloring = (bool) src->topological_coloring;
+}
+
+void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
+    res.use_name = (unsigned char) use_name;
+    res.center_name = (unsigned char) center_name;
+    res.diagonal_label = (unsigned char) diagonal_label;
+    res.topological_coloring = (unsigned char) topological_coloring;
+}
+
+std::shared_ptr<layout_parameters> LayoutParameters::to_c_struct() const {
+    layout_parameters* res = new layout_parameters();
+    layout_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<layout_parameters>(res, [](layout_parameters* ptr){
+        delete ptr;
+    });
+}
+
+LayoutParameters* createLayoutParameters() {
+    layout_parameters* parameters_ptr = callJava<layout_parameters*>(::createLayoutParameters);
+    auto parameters = std::shared_ptr<layout_parameters>(parameters_ptr, [](layout_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeLayoutParameters, ptr);
+    });
+    return new LayoutParameters(parameters.get());
 }
 
 }

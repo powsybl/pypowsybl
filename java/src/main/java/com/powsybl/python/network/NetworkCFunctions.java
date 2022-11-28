@@ -39,6 +39,7 @@ import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.report.ReportCUtils;
+import com.powsybl.sld.layout.LayoutParameters;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -781,14 +782,71 @@ public final class NetworkCFunctions {
         });
     }
 
+    public static class LayoutParametersExt {
+        public final LayoutParameters layoutParameters;
+        public final boolean topologicalColoring;
+
+        public LayoutParametersExt() {
+            this(new LayoutParameters(), true);
+        }
+
+        public LayoutParametersExt(LayoutParameters layoutParameters, boolean topologicalColoring) {
+            Objects.requireNonNull(layoutParameters);
+            this.layoutParameters = layoutParameters;
+            this.layoutParameters.setSvgWidthAndHeightAdded(true);
+            this.topologicalColoring = topologicalColoring;
+        }
+    }
+
+    public static void copyToCLayoutParameters(LayoutParametersExt parameters, LayoutParametersPointer cParameters) {
+        cParameters.setUseName(parameters.layoutParameters.isUseName());
+        cParameters.setCenterName(parameters.layoutParameters.isLabelCentered());
+        cParameters.setDiagonalLabel(parameters.layoutParameters.isLabelDiagonal());
+        cParameters.setTopologicalColoring(parameters.topologicalColoring);
+    }
+
+    public static LayoutParametersPointer convertToLayoutParametersPointer(LayoutParametersExt parameters) {
+        LayoutParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LayoutParametersPointer.class));
+        copyToCLayoutParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    @CEntryPoint(name = "createLayoutParameters")
+    public static LayoutParametersPointer createLayoutParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToLayoutParametersPointer(new LayoutParametersExt()));
+    }
+
+    public static void freeLayoutParametersPointer(LayoutParametersPointer layoutParametersPtr) {
+        UnmanagedMemory.free(layoutParametersPtr);
+    }
+
+    @CEntryPoint(name = "freeLayoutParameters")
+    public static void freeLayoutParameters(IsolateThread thread, LayoutParametersPointer layoutParametersPtr,
+                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            freeLayoutParametersPointer(layoutParametersPtr);
+        });
+    }
+
+    public static LayoutParametersExt convertLayoutParameters(LayoutParametersPointer layoutParametersPtr) {
+        return new LayoutParametersExt(new LayoutParameters()
+                .setUseName(layoutParametersPtr.isUseName())
+                .setLabelCentered(layoutParametersPtr.isCenterName())
+                .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel()),
+                layoutParametersPtr.isTopologicalColoring());
+    }
+
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                 CCharPointer svgFile, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                 CCharPointer svgFile, CCharPointer metadataFile, LayoutParametersPointer layoutParametersPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svgFileStr = CTypeUtil.toString(svgFile);
-            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
+            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, layoutParametersExt);
         });
     }
 
@@ -805,12 +863,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                       boolean useName, boolean centerName, boolean diagonalLabel, boolean topologicalColoring,
-                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                        LayoutParametersPointer layoutParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, useName, centerName, diagonalLabel, topologicalColoring);
+            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, layoutParametersExt);
             return createCharPtrArray(svgAndMeta);
         });
     }

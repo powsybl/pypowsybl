@@ -228,3 +228,10 @@ typedef enum {
     ONLY_INTERCONNECTIONS = 0,
     INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
 } xnec_selection_strategy;
+
+typedef struct layout_parameters_struct {
+    unsigned char use_name;
+    unsigned char center_name;
+    unsigned char diagonal_label;
+    unsigned char topological_coloring;
+} layout_parameters;

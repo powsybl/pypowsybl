@@ -778,4 +778,33 @@ public final class PyPowsyblApiHeader {
         @CField("dc_fallback_enabled_after_ac_divergence")
         void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
     }
+
+    @CStruct("layout_parameters")
+    public interface LayoutParametersPointer extends PointerBase {
+
+        @CField("use_name")
+        boolean isUseName();
+
+        @CField("use_name")
+        void setUseName(boolean useName);
+
+        @CField("center_name")
+        boolean isCenterName();
+
+        @CField("center_name")
+        void setCenterName(boolean centerName);
+
+        @CField("diagonal_label")
+        boolean isDiagonalLabel();
+
+        @CField("diagonal_label")
+        void setDiagonalLabel(boolean diagonalLabel);
+
+        @CField("topological_coloring")
+        boolean isTopologicalColoring();
+
+        @CField("topological_coloring")
+        void setTopologicalColoring(boolean topologicalColoring);
+    }
+
 }
