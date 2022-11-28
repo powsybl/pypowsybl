@@ -32,6 +32,7 @@ import java.util.*;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
+import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getFeedersByConnectable;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
@@ -224,57 +225,5 @@ public final class NetworkModificationsCFunctions {
             }
         });
 
-    }
-
-    static Map<String, List<ConnectablePosition.Feeder>> getFeedersByConnectable(VoltageLevel voltageLevel) {
-        Map<String, List<ConnectablePosition.Feeder>> feedersByConnectable = new HashMap<>();
-        voltageLevel.getConnectables().forEach(connectable -> {
-            ConnectablePosition<?> position = (ConnectablePosition<?>) connectable.getExtension(ConnectablePosition.class);
-            if (position != null) {
-                List<ConnectablePosition.Feeder> feeder = getFeeders(position, voltageLevel, connectable);
-                feedersByConnectable.put(connectable.getId(), feeder);
-            }
-        });
-        return feedersByConnectable;
-    }
-
-    private static List<ConnectablePosition.Feeder> getFeeders(ConnectablePosition<?> position, VoltageLevel voltageLevel, Connectable<?> connectable) {
-        if (connectable instanceof Injection) {
-            return getInjectionFeeder(position);
-        } else if (connectable instanceof Branch) {
-            return getBranchFeeders(position, voltageLevel, (Branch<?>) connectable);
-        } else if (connectable instanceof ThreeWindingsTransformer) {
-            return get3wtFeeders(position, voltageLevel, (ThreeWindingsTransformer) connectable);
-        }
-        return Collections.emptyList();
-    }
-
-    private static List<ConnectablePosition.Feeder> getInjectionFeeder(ConnectablePosition<?> position) {
-        return Collections.singletonList(position.getFeeder());
-    }
-
-    private static List<ConnectablePosition.Feeder> getBranchFeeders(ConnectablePosition<?> position, VoltageLevel voltageLevel, Branch<?> branch) {
-        List<ConnectablePosition.Feeder> feeders = new ArrayList<>();
-        if (branch.getTerminal1().getVoltageLevel() == voltageLevel) {
-            feeders.add(position.getFeeder1());
-        }
-        if (branch.getTerminal2().getVoltageLevel() == voltageLevel) {
-            feeders.add(position.getFeeder2());
-        }
-        return feeders;
-    }
-
-    private static List<ConnectablePosition.Feeder> get3wtFeeders(ConnectablePosition<?> position, VoltageLevel voltageLevel, ThreeWindingsTransformer twt) {
-        List<ConnectablePosition.Feeder> feeders = new ArrayList<>();
-        if (twt.getLeg1().getTerminal().getVoltageLevel() == voltageLevel) {
-            feeders.add(position.getFeeder1());
-        }
-        if (twt.getLeg2().getTerminal().getVoltageLevel() == voltageLevel) {
-            feeders.add(position.getFeeder2());
-        }
-        if (twt.getLeg3().getTerminal().getVoltageLevel() == voltageLevel) {
-            feeders.add(position.getFeeder3());
-        }
-        return feeders;
     }
 }
