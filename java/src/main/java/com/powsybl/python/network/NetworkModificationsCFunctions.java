@@ -33,6 +33,7 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
 import static com.powsybl.python.commons.Util.*;
@@ -276,7 +277,29 @@ public final class NetworkModificationsCFunctions {
                 return createIntegerArray(Collections.emptyList());
             }
         });
+    }
 
+    @CEntryPoint(name = "createCouplingDevice")
+    public static void createCouplingDevice(IsolateThread thread, ObjectHandle networkHandle,
+                                            PyPowsyblApiHeader.DataframePointer cDataframe,
+                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe df = createDataframe(cDataframe);
+            CreateCouplingDeviceBuilder builder = createCouplingDeviceBuilder(df);
+            NetworkModification modification = builder.build();
+            modification.apply(network);
+        });
+    }
+
+    static CreateCouplingDeviceBuilder createCouplingDeviceBuilder(UpdatingDataframe df) {
+        CreateCouplingDeviceBuilder builder = new CreateCouplingDeviceBuilder();
+        for (int row = 0; row < df.getRowCount(); row++) {
+            applyIfPresent(df.getStrings("busbar_section_id_1"), row, builder::withBusbarSectionId1);
+            applyIfPresent(df.getStrings("busbar_section_id_2"), row, builder::withBusbarSectionId2);
+            applyIfPresent(df.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
+        }
+        return builder;
     }
 
     @CEntryPoint(name = "createNetworkModification")

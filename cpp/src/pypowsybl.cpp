@@ -1292,4 +1292,15 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe* datafra
     pypowsybl::callJava(::createNetworkModification, network, dataframe, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
+void createCouplingDevice(const JavaHandle& network, dataframe* dataframe) {
+    pypowsybl::callJava(::createCouplingDevice, network, dataframe);
+}
+
+std::vector<SeriesMetadata> getCouplingDeviceCreationMetadata() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getCouplingDeviceCreationMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
 }

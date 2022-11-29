@@ -965,4 +965,15 @@ public final class NetworkCFunctions {
             ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
         });
     }
+    @CEntryPoint(name = "getCouplingDeviceCreationMetadata")
+    public static DataframeMetadataPointer getCouplingDeviceCreationMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            List<SeriesMetadata> metadata = List.of(
+                    SeriesMetadata.stringIndex("busbar_section_id_1"),
+                    SeriesMetadata.strings("busbar_section_id_2"),
+                    SeriesMetadata.strings("switch_prefix_id"));
+            return createSeriesMetadata(metadata);
+        });
+    }
+
 }
