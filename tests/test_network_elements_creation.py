@@ -19,7 +19,6 @@ import pathlib
 from numpy import NaN
 from pypowsybl import PyPowsyblError
 
-
 @pytest.fixture
 def this_dir():
     return pathlib.Path(__file__).parent

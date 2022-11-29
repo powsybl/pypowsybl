@@ -6,9 +6,9 @@ import com.powsybl.cgmes.model.test.TestGridModelResources;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Importer;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.FourSubstationsNodeBreakerWithExtensionsFactory;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
-import com.powsybl.iidm.network.extensions.FourSubstationsNodeBreakerWithExtensionsFactory;
 
 import java.util.List;
 import java.util.function.Supplier;

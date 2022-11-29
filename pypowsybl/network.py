@@ -5100,6 +5100,7 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
 
+
 def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a line and connects it to busbar sections through standard feeder bays.
@@ -5301,6 +5302,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
+
 def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str, tee_point_line_to_remove: str,
                                   bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
                                   new_line1_name: str = None, new_line2_name: str = None) -> None:
@@ -5329,3 +5331,11 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
 
     _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2, tee_point_line_to_remove,
         bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)
+
+
+def create_voltage_level_topology(network: Network, switch_kind: _List[str], df: _DataFrame = None, raise_exception: bool = False,
+                                  reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    metadata = _pp.get_voltage_level_topology_creation_metadata()
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_voltage_level_topology(network._handle, c_df, switch_kind, raise_exception, None if reporter is None else reporter._reporter_model)

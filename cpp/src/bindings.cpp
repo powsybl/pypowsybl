@@ -672,6 +672,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("revert_connect_voltage_level_on_line", &pypowsybl::revertConnectVoltageLevelOnLine, "reverses the action done in connect_voltage_level_on_line", py::arg("network"), py::arg("line1_id"), py::arg("line2_id"), py::arg("line_id"), py::arg("line_name"));
 
     m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
+
     m.def("replace_tee_point_by_voltage_level_on_line", &pypowsybl::replaceTeePointByVoltageLevelOnLine, "Replace tee point by voltage level on line", py::arg("network"), py::arg("tee_point_line1"), py::arg("tee_point_line2"), py::arg("tee_point_line_to_remove"),
      py::arg("bbs_or_bus_id"), py::arg("new_line1_id"), py::arg("new_line1_name"), py::arg("new_line2_id"), py::arg("new_line2_name"));
 
@@ -691,4 +692,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
     m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
+
+    m.def("get_voltage_level_topology_creation_metadata", &pypowsybl::getVoltageLevelTopologyCreationMetadata, "Get metadata for voltage level topology creation");
+
+    m.def("create_voltage_level_topology", &pypowsybl::createVoltageLevelTopology, "Create voltage level topology", py::arg("network"), py::arg("dataframe"), py::arg("switch_kind"), py::arg("raise_exception"), py::arg("reporter"));
 }

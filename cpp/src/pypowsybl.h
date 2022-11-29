@@ -517,5 +517,9 @@ LayoutParameters* createLayoutParameters();
 void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
     std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name);
 
+std::vector<SeriesMetadata> getVoltageLevelTopologyCreationMetadata();
+
+void createVoltageLevelTopology(pypowsybl::JavaHandle network, dataframe* dataframe,  const std::vector<std::string>& switchKind, bool throwException, JavaHandle* reporter);
+
 }
 #endif //PYPOWSYBL_H

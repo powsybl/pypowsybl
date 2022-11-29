@@ -21,10 +21,7 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
@@ -972,4 +969,11 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getVoltageLevelTopologyCreationMetadata")
+    public static DataframeMetadataPointer getVoltageLevelTopologyCreationMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            List<SeriesMetadata> seriesMetadata = VoltageLevelTopologyCreationSeries.getSeriesMetadata();
+            return createSeriesMetadata(seriesMetadata);
+        });
+    }
 }
