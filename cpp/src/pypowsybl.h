@@ -550,7 +550,7 @@ void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::str
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
-void createCouplingDevice(const JavaHandle& network, dataframe* dataframe);
+void createCouplingDevice(const JavaHandle& network, dataframe* dataframe, bool throwException, JavaHandle* reporter);
 
 std::vector<SeriesMetadata> getCouplingDeviceCreationMetadata();
 }

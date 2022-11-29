@@ -5399,7 +5399,8 @@ def transform_list_to_str(entry: _Union[str, _List[str]]) -> str:
         raise _pp.PyPowsyblError("argument should be a list of str or a str")
 
 
-def create_coupling_device(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_coupling_device(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                           reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a coupling device on the network between two busbar sections of a same voltage level.
 
@@ -5433,4 +5434,4 @@ def create_coupling_device(network: Network, df: _DataFrame = None, **kwargs: _A
     metadata = _pp.get_coupling_device_creation_metadata()
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_coupling_device(network._handle, c_df)
+    _pp.create_coupling_device(network._handle, c_df, raise_exception,  None if reporter is None else reporter._reporter_model)

@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
@@ -281,14 +282,16 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "createCouplingDevice")
     public static void createCouplingDevice(IsolateThread thread, ObjectHandle networkHandle,
-                                            PyPowsyblApiHeader.DataframePointer cDataframe,
+                                            PyPowsyblApiHeader.DataframePointer cDataframe, boolean throwException,
+                                            ObjectHandle reporterHandle,
                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             UpdatingDataframe df = createDataframe(cDataframe);
             CreateCouplingDeviceBuilder builder = createCouplingDeviceBuilder(df);
             NetworkModification modification = builder.build();
-            modification.apply(network);
+            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         });
     }
 
