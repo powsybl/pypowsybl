@@ -120,9 +120,9 @@ public final class NetworkModificationsCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String lineToBeMerged1IdStr = CTypeUtil.toString(lineToBeMerged1Id);
             String lineToBeMerged2IdStr = CTypeUtil.toString(lineToBeMerged2Id);
-            String lineToBeDeletedIdStr = CTypeUtil.toStringOrNull(lineToBeDeletedId);
-            String mergedLineIdStr = CTypeUtil.toStringOrNull(mergedLineId);
-            String mergedLineNameStr = CTypeUtil.toStringOrNull(mergedLineName);
+            String lineToBeDeletedIdStr = CTypeUtil.toString(lineToBeDeletedId);
+            String mergedLineIdStr = CTypeUtil.toString(mergedLineId);
+            String mergedLineNameStr = CTypeUtil.toString(mergedLineName);
 
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             RevertCreateLineOnLine modification = new RevertCreateLineOnLineBuilder()
@@ -178,8 +178,8 @@ public final class NetworkModificationsCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String line1IdStr = CTypeUtil.toString(line1Id);
             String line2IdStr = CTypeUtil.toString(line2Id);
-            String lineIdStr = CTypeUtil.toStringOrNull(lineId);
-            String lineNameStr = CTypeUtil.toStringOrNull(lineName);
+            String lineIdStr = CTypeUtil.toString(lineId);
+            String lineNameStr = CTypeUtil.toString(lineName);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             RevertConnectVoltageLevelOnLine modification = new RevertConnectVoltageLevelOnLineBuilder()
                     .withLine1Id(line1IdStr)
