@@ -1624,7 +1624,7 @@ def test_revert_create_line_on_line():
 
     pp.network.revert_create_line_on_line(network=n, line_to_be_merged1_id='NHV1_NHV2_1_1',
                                           line_to_be_merged2_id='NHV1_NHV2_1_2', line_to_be_deleted='test_line',
-                                           merged_line_id='NHV1_NHV2_1')
+                                          merged_line_id='NHV1_NHV2_1')
     assert len(n.get_lines()) == 2
 
     retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
