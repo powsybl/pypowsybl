@@ -1096,10 +1096,22 @@ void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
                         (char*) fictitiousSubstationId.c_str(), (char*) fictitiousSubstationName.c_str());
 }
 
+void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
+    std::string mergedLineId, std::string mergedLineName) {
+    pypowsybl::callJava(::revertCreateLineOnLine, network, (char*) lineToBeMerged1Id.c_str(), (char*) lineToBeMerged2Id.c_str(),
+                        (char*) lineToBeDeletedId.c_str(), (char*) mergedLineId.c_str(), (char*) mergedLineName.c_str());
+}
+
 void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
         std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent) {
     pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(),
                         (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
+}
+
+void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
+    std::string lineName) {
+    pypowsybl::callJava(::revertConnectVoltageLevelOnLine, network, (char*) line1Id.c_str(), (char*) line2Id.c_str(),
+                        (char*) lineId.c_str(), (char*) lineName.c_str());
 }
 
 void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType) {
