@@ -5335,6 +5335,33 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
 
 def create_voltage_level_topology(network: Network, switch_kind: _List[str], df: _DataFrame = None, raise_exception: bool = False,
                                   reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number of sections.
+
+    Args:
+        network: the network in which the busbar sections are.
+        switch_kind: a list containing the type of switch between each section. It should have the length of the
+        section_count in the dataframe - 1.
+        df: Attributes as a dataframe.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        reporter: an optional reporter to get functional logs.
+        kwargs: attributes as keyword arguments.
+    Notes:
+        The voltage level must be created and in node/breaker topology.
+        Busbar sections will be created, as well as disconnectors or breakers between each section depending on the
+        switch_kind list.
+
+        The input dataframe expects these attributes:
+        - **voltage_level_id**: the identifier of the voltage level where the topology should be created.
+        - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
+        - **busbar_count**: the total number of busbar to be created.
+        - **low_section_index**: the lowest section index to be used. By default, 1.
+        - **section_count**: the total number of sections to be created.
+        - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
+        default, nothing.
+        - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
+
+    """
     metadata = _pp.get_voltage_level_topology_creation_metadata()
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
