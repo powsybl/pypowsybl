@@ -5407,6 +5407,9 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
     Args:
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe.
+        raise_exception: an optional boolean indicating if an exception should be raised in case an error occurs during
+        computation.
+        reporter: an optional reporter to store the funtional logs.
         kwargs: Attributes as keyword arguments.
 
     Notes:
