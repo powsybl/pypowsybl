@@ -4556,7 +4556,7 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
         merged_line_name: The name of the new line from the two lines to be merged (default to line id)
     """
     if merged_line_name is None:
-      merged_line_name = merged_line_id
+        merged_line_name = merged_line_id
     _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
@@ -4599,7 +4599,7 @@ def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_
         line_name: The name of the line to be created (default to line_id)
     """
     if line_name is None:
-      line_name = line1_id
+        line_name = line1_id
     _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
