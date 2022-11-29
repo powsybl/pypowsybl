@@ -1622,7 +1622,9 @@ def test_revert_create_line_on_line():
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
     assert len(n.get_lines()) == 4
 
-    pp.network.revert_create_line_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'NHV1_NHV2_1')
+    pp.network.revert_create_line_on_line(network=n, line_to_be_merged1_id='NHV1_NHV2_1_1',
+                                          line_to_be_merged2_id='NHV1_NHV2_1_2', line_to_be_deleted='test_line',
+                                           merged_line_id='NHV1_NHV2_1')
     assert len(n.get_lines()) == 2
 
     retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
@@ -1679,7 +1681,8 @@ def test_revert_connect_voltage_level_on_line():
 
     assert len(n.get_lines()) == 3
 
-    pp.network.revert_connect_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'NHV1_NHV2_1')
+    pp.network.revert_connect_voltage_level_on_line(network=n, line1_id='NHV1_NHV2_1_1', line2_id='NHV1_NHV2_1_2',
+                                                    line_id='NHV1_NHV2_1')
 
     assert len(n.get_lines()) == 2
     retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
