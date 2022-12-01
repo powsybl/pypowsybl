@@ -537,7 +537,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeElementType type = convert(elementType);
             List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
+            return CTypeUtil.createSeriesMetadata(seriesMetadata);
         });
     }
 
@@ -559,7 +559,7 @@ public final class NetworkCFunctions {
             DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
             int i = 0;
             for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                 i++;
             }
 
@@ -628,27 +628,6 @@ public final class NetworkCFunctions {
         UnmanagedMemory.free(metadata.getAttributesMetadata());
     }
 
-    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
-        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
-        for (int i = 0; i < metadata.size(); i++) {
-            SeriesMetadata colMetadata = metadata.get(i);
-            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
-            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
-            metadataPtr.setType(convert(colMetadata.getType()));
-            metadataPtr.setIndex(colMetadata.isIndex());
-            metadataPtr.setModifiable(colMetadata.isModifiable());
-            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
-        }
-        cMetadata.setAttributesCount(metadata.size());
-        cMetadata.setAttributesMetadata(seriesMetadataPtr);
-    }
-
-    private static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
-        DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
-        createSeriesMetadata(metadata, res);
-        return res;
-    }
-
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  DataframePointer dataframe,
@@ -687,7 +666,7 @@ public final class NetworkCFunctions {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
             if (mapper != null) {
                 List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
-                return createSeriesMetadata(seriesMetadata);
+                return CTypeUtil.createSeriesMetadata(seriesMetadata);
             } else {
                 throw new PowsyblException("extension " + name + " not found");
             }
@@ -720,7 +699,7 @@ public final class NetworkCFunctions {
             DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
             int i = 0;
             for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                 i++;
             }
 
@@ -928,7 +907,7 @@ public final class NetworkCFunctions {
     public static DataframeMetadataPointer getTwtFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             List<SeriesMetadata> seriesMetadata = FeederBaysTwtSeries.getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
+            return CTypeUtil.createSeriesMetadata(seriesMetadata);
         });
     }
 
@@ -936,7 +915,7 @@ public final class NetworkCFunctions {
     public static DataframeMetadataPointer getLineFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             List<SeriesMetadata> seriesMetadata = FeederBaysLineSeries.getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
+            return CTypeUtil.createSeriesMetadata(seriesMetadata);
         });
     }
 
