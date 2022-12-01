@@ -1207,37 +1207,12 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
     return callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
 }
 
-
-void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addAlphaBetaLoad, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
-void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addOneTransformerLoad, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
-void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId) {
-    callJava<>(::addOmegaRef, dynamicMappingHandle, (char*) generatorId.c_str());
-}
-
-void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addGeneratorSynchronousThreeWindings, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
-void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addGeneratorSynchronousThreeWindingsProportionalRegulations, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
-void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addGeneratorSynchronousFourWindings, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
-void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam) {
-    callJava<>(::addGeneratorSynchronousFourWindingsProportionalRegulations, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str());
-}
-
 void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide) {
     callJava<>(::addCurrentLimitAutomaton, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str(), (char*) branchSide.c_str());
+}
+
+void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf) {
+    callJava<>(::addAllDynamicMappings, dynamicMappingHandle, mappingDf);
 }
 
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
@@ -1267,6 +1242,13 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId) {
     ToStringVector vector(callJava<array*>(::getAllDynamicCurvesIds, curveMappingHandle, (char*) dynamicId.c_str()));
     return vector.get();
+}
+
+std::vector<SeriesMetadata> getDynamicMappingsMetaData() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getDynamicMappingsMetaData);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
 }
 
 }

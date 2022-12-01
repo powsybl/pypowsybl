@@ -14,6 +14,7 @@ import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.utils.dataframes import _create_c_dataframe
 
 
 class BranchSide(_Enum):
@@ -24,38 +25,57 @@ class BranchSide(_Enum):
     TWO = "two"
 
 
+class MappingType(_pp.DynamicMappingType):
+    pass
+
+
 class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
-    def add_alphabeta_load(self, static_id: str, parameter_set_id: str) -> None:
-        _pp.add_alphabeta_load(self._handle, static_id, parameter_set_id)
+    def add_alpha_beta_load(self, static_id: str, parameter_set_id: str) -> None:
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [parameter_set_id],
+                                                          "mapping_type": [MappingType.ALPHA_BETA_LOAD]}))
 
     def add_one_transformer_load(self, static_id: str, dynamic_param: str) -> None:
-        _pp.add_one_transformer_load(self._handle, static_id, dynamic_param)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [dynamic_param],
+                                                          "mapping_type": [MappingType.ONE_TRANSFORMER_LOAD]}))
 
     def add_omega_ref(self, generator_id: str) -> None:
-        _pp.add_omega_ref(self._handle, generator_id)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [generator_id],
+                                                          "parameter_set_id": [""],
+                                                          "mapping_type": [MappingType.OMEGA_REF]}))
 
     def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
-        _pp.add_generator_synchronous_three_windings(
-            self._handle, static_id, dynamic_param)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [dynamic_param],
+                                                          "mapping_type": [MappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS]}))
 
     def add_generator_synchronous_three_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
-        _pp.add_generator_synchronous_three_windings_proportional_regulations(
-            self._handle, static_id, dynamic_param)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [dynamic_param],
+                                                          "mapping_type": [MappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS]}))
 
     def add_generator_synchronous_four_windings(self, static_id: str, dynamic_param: str) -> None:
-        _pp.add_generator_synchronous_four_windings(
-            self._handle, static_id, dynamic_param)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [dynamic_param],
+                                                          "mapping_type": [MappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS]}))
 
     def add_generator_synchronous_four_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
-        _pp.add_generator_synchronous_four_windings_proportional_regulations(
-            self._handle, static_id, dynamic_param)
+        self.add_all_dynamic_mappings(_pd.DataFrame(data={"static_id": [static_id],
+                                                          "parameter_set_id": [dynamic_param],
+                                                          "mapping_type": [MappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS]}))
 
     def add_current_limit_automaton(self, static_id: str, dynamic_param: str, branch_side: BranchSide) -> None:
         _pp.add_current_limit_automaton(
             self._handle, static_id, dynamic_param, branch_side.value)
+
+    def add_all_dynamic_mappings(self, df: _pd.DataFrame) -> None:
+        metadata = _pp.get_dynamic_mappings_meta_data()
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.add_all_dynamic_mappings(self._handle, c_df)
 
 
 class CurveMapping:

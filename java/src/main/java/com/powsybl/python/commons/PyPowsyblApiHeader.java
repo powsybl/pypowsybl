@@ -22,7 +22,8 @@ import org.graalvm.word.PointerBase;
 /**
  * Defines java mapping with C structs defined in pypowsybl-api.h header.
  *
- * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
+ * @author Geoffroy Jamgotchian
+ *         {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class PyPowsyblApiHeader {
@@ -592,12 +593,12 @@ public final class PyPowsyblApiHeader {
     }
 
     /*
-    typedef struct series_metadata_struct {
-        char* name;
-        int type;
-        unsigned char  is_index;
-        unsigned char  is_modifiable;
-    } series_metadata;
+     * typedef struct series_metadata_struct {
+     * char* name;
+     * int type;
+     * unsigned char is_index;
+     * unsigned char is_modifiable;
+     * } series_metadata;
      */
     @CStruct("series_metadata")
     public interface SeriesMetadataPointer extends PointerBase {
@@ -820,4 +821,21 @@ public final class PyPowsyblApiHeader {
         void setTopologicalColoring(boolean topologicalColoring);
     }
 
+    @CEnum("DynamicMappingType")
+    public enum DynamicMappingType {
+        ALPHA_BETA_LOAD,
+        ONE_TRANSFORMER_LOAD,
+        OMEGA_REF,
+        GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
+        GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
+        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
+        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
+        CURRENT_LIMIT_AUTOMATON;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native DynamicMappingType fromCValue(int value);
+    }
 }

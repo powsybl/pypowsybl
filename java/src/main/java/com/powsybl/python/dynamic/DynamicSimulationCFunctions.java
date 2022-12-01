@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.dataframe.dynamic.CurvesSeries;
+import com.powsybl.dataframe.dynamic.DynamicMappingsDataframeHandle;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
@@ -31,8 +33,11 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.network.Dataframes;
+import com.powsybl.python.network.NetworkCFunctions;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
@@ -97,97 +102,23 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addAlphaBetaLoad")
-    public static void addAlphaBetaLoad(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
+    @CEntryPoint(name = "addAllDynamicMappings")
+    public static void addAllDynamicMapping(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+            DataframePointer mappingDf,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
             DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addAlphaBetaLoad(staticId, dynamicParam);
+            UpdatingDataframe df = NetworkCFunctions.createDataframe(mappingDf);
+            dynamicMapping.addAllMappings(df);
         });
     }
 
-    @CEntryPoint(name = "addOneTransformerLoad")
-    public static void addOneTransformerLoad(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
+    @CEntryPoint(name = "getDynamicMappingsMetaData")
+    public static DataframeMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addOneTransformerLoad(staticId, dynamicParam);
-        });
-    }
-
-    @CEntryPoint(name = "addOmegaRef")
-    public static void addOmegaRef(IsolateThread thread, ObjectHandle dynamicMappingHandle, CCharPointer generatorIdPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String generatorId = CTypeUtil.toString(generatorIdPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addOmegaRef(generatorId);
-        });
-    }
-
-    @CEntryPoint(name = "addGeneratorSynchronousThreeWindings")
-    public static void addGeneratorSynchronousThreeWindings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addGeneratorSynchronousThreeWindings(staticId,
-                    dynamicParam);
-        });
-    }
-
-    @CEntryPoint(name = "addGeneratorSynchronousThreeWindingsProportionalRegulations")
-    public static void addGeneratorSynchronousThreeWindingsProportionalRegulations(IsolateThread thread,
-            ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addGeneratorSynchronousThreeWindingsProportionalRegulations(staticId,
-                    dynamicParam);
-        });
-    }
-
-    @CEntryPoint(name = "addGeneratorSynchronousFourWindings")
-    public static void addGeneratorSynchronousFourWindings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addGeneratorSynchronousFourWindings(staticId,
-                    dynamicParam);
-        });
-    }
-
-    @CEntryPoint(name = "addGeneratorSynchronousFourWindingsProportionalRegulations")
-    public static void addGeneratorSynchronousFourWindingsProportionalRegulations(IsolateThread thread,
-            ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            dynamicMapping.addGeneratorSynchronousFourWindingsProportionalRegulations(staticId,
-                    dynamicParam);
+        return doCatch(exceptionHandlerPtr, () -> {
+            return CTypeUtil.createSeriesMetadata(
+                    DynamicMappingsDataframeHandle.dynamicMappingsDataFrameMapper().getSeriesMetadata());
         });
     }
 

@@ -555,6 +555,21 @@ namespace pypowsybl {
     // config ?
     void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
 
+    // dynamic model mapping
+    void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
+    void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf);
+    std::vector<SeriesMetadata> getDynamicMappingsMetaData();
+
+    // timeseries/curves mapping
+    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+
+    // events mapping
+    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+
+    // config ?
+    void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+
     // results
     std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
     SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);

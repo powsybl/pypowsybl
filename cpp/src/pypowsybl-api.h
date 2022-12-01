@@ -235,3 +235,19 @@ typedef struct layout_parameters_struct {
     unsigned char diagonal_label;
     unsigned char topological_coloring;
 } layout_parameters;
+
+typedef enum {
+    ONLY_INTERCONNECTIONS = 0,
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+} xnec_selection_strategy;
+
+typedef enum {
+    ALPHA_BETA_LOAD = 0,
+    ONE_TRANSFORMER_LOAD,
+    OMEGA_REF,
+    GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
+    GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
+    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
+    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
+    CURRENT_LIMIT_AUTOMATON,
+} DynamicMappingType;
