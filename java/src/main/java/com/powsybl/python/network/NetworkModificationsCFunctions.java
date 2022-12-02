@@ -330,37 +330,34 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "replaceTeePointByVoltageLevelOnLine")
     public static void replaceTeePointByVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
-                                                           CCharPointer line1ZId,
-                                                           CCharPointer lineZ2Id,
-                                                           CCharPointer lineZPId,
-                                                           CCharPointer voltageLevelId,
+                                                           CCharPointer teePointLine1,
+                                                           CCharPointer teePointLine2,
+                                                           CCharPointer teePointLineToRemove,
                                                            CCharPointer bbsOrBusId,
-                                                           CCharPointer line1CId,
-                                                           CCharPointer line1CName,
-                                                           CCharPointer lineC2Id,
-                                                           CCharPointer lineC2Name,
+                                                           CCharPointer newLine1Id,
+                                                           CCharPointer newLine1Name,
+                                                           CCharPointer newLine2Id,
+                                                           CCharPointer newLine2Name,
                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
 
-        String line1ZIdStr = CTypeUtil.toString(line1ZId);
-        String lineZ2IdStr = CTypeUtil.toString(lineZ2Id);
-        String lineZPIdStr = CTypeUtil.toStringOrNull(lineZPId);
-        String voltageLevelIdStr = CTypeUtil.toStringOrNull(voltageLevelId);
+        String teePointLine1Str = CTypeUtil.toString(teePointLine1);
+        String teePointLineStr = CTypeUtil.toString(teePointLine2);
+        String teePointLineToRemoveStr = CTypeUtil.toStringOrNull(teePointLineToRemove);
         String bbsOrBusIdStr = CTypeUtil.toStringOrNull(bbsOrBusId);
-        String line1CIdStr = CTypeUtil.toStringOrNull(line1CId);
-        String line1CNameStr = CTypeUtil.toStringOrNull(line1CName);
-        String lineC2IdStr = CTypeUtil.toStringOrNull(lineC2Id);
-        String lineC2NameStr = CTypeUtil.toStringOrNull(lineC2Name);
+        String newLine1IdStr = CTypeUtil.toStringOrNull(newLine1Id);
+        String newLine1NameStr = CTypeUtil.toStringOrNull(newLine1Name);
+        String newLine2IdStr = CTypeUtil.toStringOrNull(newLine2Id);
+        String newLine2NameStr = CTypeUtil.toStringOrNull(newLine2Name);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         NetworkModification modification = new ReplaceTeePointByVoltageLevelOnLineBuilder()
-                .withLine1ZId(line1ZIdStr)
-                .withLineZ2Id(lineZ2IdStr)
-                .withLineZPId(lineZPIdStr)
-                .withVoltageLevelId(voltageLevelIdStr)
+                .withTeePointLine1(teePointLine1Str)
+                .withTeePointLine2(teePointLineStr)
+                .withTeePointLineToRemove(teePointLineToRemoveStr)
                 .withBbsOrBusId(bbsOrBusIdStr)
-                .withLine1CId(line1CIdStr)
-                .withLine1CName(line1CNameStr)
-                .withLineC2Id(lineC2IdStr)
-                .withLineC2Name(lineC2NameStr).build();
+                .withNewLine1Id(newLine1IdStr)
+                .withNewLine1Name(newLine1NameStr)
+                .withNewLine2Id(newLine2IdStr)
+                .withNewLine2Name(newLine2NameStr).build();
         modification.apply(network);
     }
 }

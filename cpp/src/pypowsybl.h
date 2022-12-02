@@ -510,5 +510,8 @@ LayoutParameters* createLayoutParameters();
 void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1ZId, std::string lineZ2Id, std::string lineZPId, std::string voltageLevelId,
     std::string bbsOrBusId, std::string line1CId, std::string line1CName, std::string lineC2Id, std::string lineC2Name);
 
+void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
+    std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name);
+
 }
 #endif //PYPOWSYBL_H

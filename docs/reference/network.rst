@@ -259,6 +259,7 @@ Advanced network modifications
    revert_create_line_on_line
    connect_voltage_level_on_line
    revert_connect_voltage_level_on_line
+   replace_tee_point_by_voltage_level_on_line
 
 
 Utility functions

@@ -5297,32 +5297,31 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, line1z_id: str, linez2_Id: str, linezp_id: str,
-                                  voltage_level_id: str, bbs_or_bus_id: str, line1c_id: str, linec2_id: str,
-                                  line1c_name: str = None, linec2_name: str = None) -> None:
+def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str, tee_point_line_to_remove: str,
+                                  bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
+                                  new_line1_name: str = None, new_line2_name: str = None) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
 
     Args:
-        line1z_id : The ID of the existing line connecting the first voltage level to the tee point
-        linez2_Id : The ID of the existing line connecting the tee point to the second voltage level
-        linezp_id : The ID of the existing line connecting the tee point to the attached voltage level
-        voltage_level_id : The ID of the existing attached voltage level
+        tee_point_line1 : The ID of the existing line connecting the first voltage level to the tee point
+        tee_point_line2 : The ID of the existing line connecting the tee point to the second voltage level
+        tee_point_line_to_remove : The ID of the existing line connecting the tee point to the attached voltage level
         bbs_or_bus_id : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
-          where we want to connect the new lines line1C and lineC2
-        line1c_id : The ID of the new line connecting the first voltage level to the attached voltage level
-        linec2_id : The ID of the new line connecting the second voltage level to the attached voltage level
-        line1c_name : The optional name of the new line connecting the first voltage level to the attached voltage level
-        linec2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
+          where we want to connect the new lines new line 1 and new line 2
+        new_line1_id : The ID of the new line connecting the first voltage level to the attached voltage level
+        new_line2_id : The ID of the new line connecting the second voltage level to the attached voltage level
+        new_line1_name : The optional name of the new line connecting the first voltage level to the attached voltage level
+        new_line2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
 
     Notes:
         It replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
         and removes the tee point.
     """
-    if line1c_name is None:
-        line1c_name = line1c_id
-    if linec2_name is None:
-        linec2_name = linec2_id
+    if new_line1_name is None:
+        new_line1_name = new_line1_id
+    if new_line2_name is None:
+        new_line2_name = new_line2_id
 
-    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, line1z_id, linez2_Id, linezp_id, voltage_level_id,
-        bbs_or_bus_id, line1c_id, line1c_name, linec2_id, linec2_name)
+    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2, tee_point_line_to_remove,
+        bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)

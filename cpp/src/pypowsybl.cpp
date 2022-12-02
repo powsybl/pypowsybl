@@ -1207,6 +1207,12 @@ void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::str
      (char*)voltageLevelId.c_str(), (char*)bbsOrBusId.c_str(), (char*)line1CId.c_str(), (char*)line1CName.c_str(), (char*)lineC2Id.c_str(),
      (char*)lineC2Name.c_str());
 
+void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
+        std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name) {
+    pypowsybl::callJava(::replaceTeePointByVoltageLevelOnLine, network, (char*)teePointLine1.c_str(), (char*)teePointLine2.c_str(), (char*)teePointLineToRemove.c_str(),
+     (char*)bbsOrBusId.c_str(), (char*)newLine1Id.c_str(), (char*)newLine1Name.c_str(), (char*)newLine2Id.c_str(),
+     (char*)newLine2Name.c_str());
+
 }
 
 void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
