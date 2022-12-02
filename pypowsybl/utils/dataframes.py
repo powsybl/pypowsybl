@@ -104,6 +104,26 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
 
+def _find_index_in_metadata(series_metadata: List[_pp.SeriesMetadata]) -> _pp.SeriesMetadata:
+    return [s for s in series_metadata if s.is_index][0]
+
+
+def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _ArrayLike) -> _ArrayLike:
+    """autofill kwargs with a default index (like pandas would do)
+
+    Args:
+        series_metadata (List[_pp.SeriesMetadata]): metadata to make match the id column name
+
+    Returns:
+        _ArrayLike: new kwargs with the index if it was not present
+    """
+    index_name = _find_index_in_metadata(series_metadata).name
+    any_value = next(iter(kwargs.values()))
+    size = 1 if type(any_value) is str else len(kwargs[any_value])
+    if index_name not in kwargs:
+        kwargs[index_name] = list(range(size))
+    return kwargs
+
 def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
     """
        Creates the C representation of a dataframe of properties.
