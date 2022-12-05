@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public final class VoltageLevelTopologyCreationSeries {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("voltage_level_id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.ints("low_busbar_index"),
             SeriesMetadata.ints("busbar_count"),
             SeriesMetadata.ints("low_section_index"),
