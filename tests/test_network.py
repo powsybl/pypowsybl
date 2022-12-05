@@ -1880,14 +1880,9 @@ def test_terminals():
 
 def test_create_coupling_device():
     n = pp.network.create_empty()
-    stations = pd.DataFrame.from_records(index='id', data=[
-        {'id': 'S1'},
-    ])
-    n.create_substations(stations)
-    voltage_levels = pd.DataFrame.from_records(index='id', data=[
-        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225},
-    ])
-    n.create_voltage_levels(voltage_levels)
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
     busbars = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
         {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
