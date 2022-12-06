@@ -1147,6 +1147,19 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
 
+def test_bb_topology_with_no_bus_view_bus_does_not_throw():
+    n = pp.network.create_empty()
+    n.create_substations(id='S')
+    n.create_voltage_levels(id='VL', substation_id='S', nominal_v=380, topology_kind='NODE_BREAKER')
+    n.create_busbar_sections(id='BB', voltage_level_id='VL', node=0)
+    n.create_loads(id='L', voltage_level_id='VL', p0=0, q0=0, node=1)
+    n.create_switches(id='SW', kind='DISCONNECTOR', voltage_level_id='VL', node1=0, node2=1, open=True)
+
+    # must not throw
+    topo = n.get_bus_breaker_topology('VL')
+    assert topo.buses.index.to_list() == ['VL_0', 'VL_1']
+
+
 def test_not_connected_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])

@@ -17,6 +17,7 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
+    perunit
 )
 
 __version__ = '0.20.0.dev1'
@@ -34,7 +35,8 @@ __all__ = [
     "security",
     "sensitivity",
     "glsk",
-    "flowdecomposition"
+    "flowdecomposition",
+    "perunit"
 ]
 
 
