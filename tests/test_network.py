@@ -1647,9 +1647,9 @@ def test_create_branch_feeder_bays_twt():
     df = pd.DataFrame(index=['new_twt'],
                       columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
-                               'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
+                               'rated_u2', 'rated_s'],
                       data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
-                             400.0, 1.0, 'S1VL1', 'S1VL2']])
+                             400.0, 1.0]])
     pp.network.create_2_windings_transformer_bays(n, df)
     retrieved_newtwt = n.get_2_windings_transformers().loc['new_twt']
     assert retrieved_newtwt["r"] == 5.0
