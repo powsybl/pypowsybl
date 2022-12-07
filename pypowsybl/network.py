@@ -5054,7 +5054,7 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
 
 
-def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _Optional[_DataFrame],
+def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _DataFrame,
                                                                  metadata: _List[_pp.SeriesMetadata],
                                                                  **kwargs: _ArrayLike) -> _Optional[_pp.Dataframe]:
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
