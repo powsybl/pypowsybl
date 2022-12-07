@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.powsybl.dataframe.dynamic.DynamicMappingsDataframeHandle;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -85,6 +86,16 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
         dynamicModelList.add(() -> new CurrentLimitAutomaton(staticId, staticId, parametersIds, side));
     }
 
+    /**
+     * Will add all the dynamic mapping contained in the dataframe.
+     *
+     * Handles default values for missing arguments like CURRENT_LIMIT_AUTOMATON.
+     * Ignores parameter_set_id for OMEGA_REF
+     *
+     * @param mappingDf dataframe that should respect
+     *                  {@link DynamicMappingsDataframeHandle#dynamicMappingsDataFrameMapper}
+     *                  format
+     */
     public void addAllMappings(UpdatingDataframe mappingDf) {
         StringSeries staticIdSeries = mappingDf.getStrings("static_id");
         StringSeries parameterSetIdSeries = mappingDf.getStrings("parameter_set_id");
