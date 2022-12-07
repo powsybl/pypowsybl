@@ -8,11 +8,10 @@
 import os
 from enum import Enum as _Enum
 from uuid import uuid4
-from typing import List as _List
+from typing import List as _List, Union as _Union
 import pandas as _pd
-from numpy.typing import ArrayLike as _ArrayLike
-
 from pypowsybl import _pypowsybl as _pp
+from pypowsybl._pypowsybl import DynamicMappingType
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe
@@ -26,59 +25,56 @@ class BranchSide(_Enum):
     TWO = "two"
 
 
-class MappingType(_pp.DynamicMappingType):
-    pass
-
-
 class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
     def add_alpha_beta_load(self, static_id: str, parameter_set_id: str) -> None:
-        self.add_all_dynamic_mappings(
-            static_id=static_id, parameter_set_id=parameter_set_id, mapping_type=MappingType.ALPHA_BETA_LOAD)
+        self.add_all_dynamic_mappings(static_id=static_id,
+                                      parameter_set_id=parameter_set_id,
+                                      mapping_type=DynamicMappingType.ALPHA_BETA_LOAD)
 
     def add_one_transformer_load(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,
-                                      mapping_type=MappingType.ONE_TRANSFORMER_LOAD)
+                                      mapping_type=DynamicMappingType.ONE_TRANSFORMER_LOAD)
 
     def add_omega_ref(self, generator_id: str) -> None:
         self.add_all_dynamic_mappings(static_id=generator_id,
                                       parameter_set_id="",
-                                      mapping_type=MappingType.OMEGA_REF)
+                                      mapping_type=DynamicMappingType.OMEGA_REF)
 
     def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,
-                                      mapping_type=MappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
+                                      mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
 
     def add_generator_synchronous_three_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,
-                                      mapping_type=MappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
+                                      mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
 
     def add_generator_synchronous_four_windings(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,
-                                      mapping_type=MappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
+                                      mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
 
     def add_generator_synchronous_four_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,
-                                      mapping_type=MappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
+                                      mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
 
     def add_current_limit_automaton(self, static_id: str, dynamic_param: str, branch_side: BranchSide) -> None:
         _pp.add_current_limit_automaton(
             self._handle, static_id, dynamic_param, branch_side.value)
 
-    def add_all_dynamic_mappings(self, df: _pd.DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def add_all_dynamic_mappings(self, df: _pd.DataFrame = None, **kwargs: _Union[str, DynamicMappingType]) -> None:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
         The dataframe must contains these three columns :
             - static_id: id of the network element to map (or the id of the generator for omega_ref)
             - parameter_set_id: set id in the parameter file
-            - mapping_type: value of enum MappingType
+            - mapping_type: value of enum DynamicMappingType
         For current_limit_automaton the branch side defaults to ONE, see add_current_limit_automaton to add a model with another branch side.
         For omega_ref the static_id column refers to the generator's id, and the parameter_set_id will be ignored
         """
