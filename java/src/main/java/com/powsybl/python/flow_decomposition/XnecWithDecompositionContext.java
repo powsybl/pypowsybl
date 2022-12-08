@@ -20,34 +20,25 @@ import java.util.function.ToDoubleFunction;
  * @author Hugo Schindler {@literal <hugo.schindler at rte-france.com>}
  */
 public class XnecWithDecompositionContext extends DecomposedFlow {
-    private final String branchId;
-
-    public XnecWithDecompositionContext(Map.Entry<String, DecomposedFlow> entry) {
-        super(entry.getValue().getLoopFlows(),
-            entry.getValue().getInternalFlow(),
-            entry.getValue().getAllocatedFlow(),
-            entry.getValue().getPstFlow(),
-            entry.getValue().getAcReferenceFlow(),
-            entry.getValue().getDcReferenceFlow(),
-            entry.getValue().getCountry1(),
-            entry.getValue().getCountry2());
-        this.branchId = entry.getKey();
-    }
-
-    public String getId() {
-        return getBranchId();
-    }
-
-    public String getBranchId() {
-        return branchId;
+    public XnecWithDecompositionContext(DecomposedFlow decomposedFlow) {
+        super(decomposedFlow.getBranchId(),
+            decomposedFlow.getContingencyId(),
+            decomposedFlow.getLoopFlows(),
+            decomposedFlow.getInternalFlow(),
+            decomposedFlow.getAllocatedFlow(),
+            decomposedFlow.getPstFlow(),
+            decomposedFlow.getAcReferenceFlow(),
+            decomposedFlow.getDcReferenceFlow(),
+            decomposedFlow.getCountry1(),
+            decomposedFlow.getCountry2());
     }
 
     public String getCountry1String() {
-        return super.getCountry1().toString();
+        return getCountry1().toString();
     }
 
     public String getCountry2String() {
-        return super.getCountry2().toString();
+        return getCountry2().toString();
     }
 
     public static Map<String, ToDoubleFunction<XnecWithDecompositionContext>> getLoopFlowsFunctionMap(Set<Country> zoneSet) {

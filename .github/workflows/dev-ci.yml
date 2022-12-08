@@ -38,6 +38,24 @@ jobs:
         with:
           submodules: true
 
+      - name: Checkout powsybl-entsoe sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-entsoe
+          ref: refs/heads/post_contingency_calculation
+
+      - name: Build and install powsybl-entsoe with Maven
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install'
+
+      - name: Checkout powsybl-dependencies sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-dependencies
+          ref: refs/heads/entsoe_integration
+
+      - name: Build and install powsybl-dependencies with Maven
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-dependencies/pom.xml install'
+
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
@@ -119,6 +137,25 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Checkout powsybl-entsoe sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-entsoe
+          ref: refs/heads/post_contingency_calculation
+
+      - name: Build and install powsybl-entsoe with Maven
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install
+
+      - name: Checkout powsybl-dependencies sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-dependencies
+          ref: refs/heads/entsoe_integration
+
+      - name: Build and install powsybl-dependencies with Maven
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-dependencies/pom.xml install
+
 
       - name: Setup Python
         uses: actions/setup-python@v4

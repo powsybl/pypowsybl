@@ -21,11 +21,11 @@ def test_demo():
     df = flow_decomposition.run(network, parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
-        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'
+        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
         ],
         data=[
-            ['NHV1_NHV2_1', 'NHV1_NHV2_1', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 300.0, 0.0, 0.0],
-            ['NHV1_NHV2_2', 'NHV1_NHV2_2', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 300.0, 0.0, 0.0],
+            ['NHV1_NHV2_1', 'NHV1_NHV2_1', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 0.0, 300.0, 0.0],
+            ['NHV1_NHV2_2', 'NHV1_NHV2_2', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 0.0, 300.0, 0.0],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 
@@ -38,11 +38,11 @@ def test_demo_one_by_one():
     df = flow_decomposition.run(network, parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
-        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'
+        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
         ],
         data=[
-            ['NHV1_NHV2_1', 'NHV1_NHV2_1', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 300.0, 0.0, 0.0],
-            ['NHV1_NHV2_2', 'NHV1_NHV2_2', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 300.0, 0.0, 0.0],
+            ['NHV1_NHV2_1', 'NHV1_NHV2_1', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 0.0, 300.0, 0.0],
+            ['NHV1_NHV2_2', 'NHV1_NHV2_2', 'FR', 'BE', 302.444049, 300.0, 0.0, 0.0, 0.0, 300.0, 0.0],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 
@@ -54,10 +54,10 @@ def test_flow_decomposition_run_no_parameters():
     df = flow_decomposition.run(net)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
-        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
+        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'],
         data=[
-            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE', 192.390656, 188.652703,  29.015809, 0.0, -2.007905, -2.007905, 163.652703],
-            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE', -76.189072, -88.652703, -87.047428, 0.0,  6.023714,  6.023714, 163.652703],
+            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE', 192.390656, 188.652703,  29.015809, 163.652703, 0.0, -2.007905, -2.007905],
+            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE', -76.189072, -88.652703, -87.047428, 163.652703, 0.0,  6.023714,  6.023714],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 
@@ -74,11 +74,11 @@ def test_flow_decomposition_run_full_integration():
     df = flow_decomposition.run(net, parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
-        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr', 'pst_flow'],
+        columns=['xnec_id', 'branch_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'],
         data=[
-            ['BLOAD 11 BLOAD 12 2', 'BLOAD 11 BLOAD 12 2', 'BE', 'BE', -160.00594493625374, -168.54299036226615, 27.730133478072496, -24.11086055331822, 0.0 , -0.014661297382767557, 156.40133330888222],
-            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE', 192.39065600179342, 200.6712560368467 , 27.81857394392333 , 0.0 , 7.68659503747561 , -0.014661297382767557, 156.90014831777725],
-            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE', -76.18907198080873, -84.72530847149157, -87.04742845831291 , 0.0 , 7.674711445291424, 0.04179811510434703 , 155.51999087872588],
+            ['BLOAD 11 BLOAD 12 2', 'BLOAD 11 BLOAD 12 2', 'BE', 'BE', -160.00594493625374, -168.54299036226615,  27.730133478072496, 156.40133330888222, -24.11086055331822, 0.0              , -0.014661297382767557],
+            ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', 'FR', 'BE',  192.39065600179342,  200.6712560368467 ,  27.81857394392333 , 156.90014831777725,   0.0             , 7.68659503747561 , -0.014661297382767557],
+            ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', 'FR', 'BE',  -76.18907198080873,  -84.72530847149157, -87.04742845831291 , 155.51999087872588,   0.0             , 7.674711445291424,  0.04179811510434703 ],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 

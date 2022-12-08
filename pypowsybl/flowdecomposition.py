@@ -152,13 +152,13 @@ class FlowDecomposition:
 
             It outputs something like:
 
-            =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
-            /             branch_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow internal_flow loop_flow_from_be loop_flow_from_fr pst_flow
-            =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
-            xnec_id
-            NHV1_NHV2_1 NHV1_NHV2_1       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
-            NHV1_NHV2_2 NHV1_NHV2_2       FR       BE        302.444049             300.0             0.0           0.0             300.0               0.0      0.0
-            =========== =========== ======== ======== ================= ================= =============== ============= ================= ================= ========
+            =========== =========== ======== ======== ================= ================= =============== ======== ============= ================= =================
+            /             branch_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow pst_flow internal_flow loop_flow_from_be loop_flow_from_fr
+            =========== =========== ======== ======== ================= ================= =============== ======== ============= ================= =================
+            xnec_id                                                                                      
+            NHV1_NHV2_1 NHV1_NHV2_1       FR       BE        302.444049             300.0             0.0      0.0           0.0             300.0               0.0
+            NHV1_NHV2_2 NHV1_NHV2_2       FR       BE        302.444049             300.0             0.0      0.0           0.0             300.0               0.0
+            =========== =========== ======== ======== ================= ================= =============== ======== ============= ================= =================
         """
         fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()
         lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
