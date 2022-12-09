@@ -134,7 +134,7 @@ class FlowDecomposition:
         return self
 
     def add_monitored_elements(self, branch_ids: _Union[_List[str], str],
-                               contingency_ids: _Union[_List[str], str] = [],
+                               contingency_ids: _Union[_List[str], str] = None,
                                contingency_context_type: ContingencyContextType = ContingencyContextType.ALL) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition.
@@ -148,7 +148,7 @@ class FlowDecomposition:
             contingency_ids:            List of contingencies
             contingency_context_type:   Defines if the branches should be monitored for all states (ALL by default), only N situation (NONE) or only specified contingencies (SPECIFIC)
         """
-        if contingency_context_type is not ContingencyContextType.NONE:
+        if contingency_context_type is not ContingencyContextType.NONE and contingency_ids:
             self.add_postcontingency_monitored_elements(branch_ids, contingency_ids)
         if contingency_context_type is not ContingencyContextType.SPECIFIC:
             self.add_precontingency_monitored_elements(branch_ids)
@@ -219,8 +219,8 @@ class FlowDecomposition:
                 >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
                 >>> load_flow_parameters = pp.loadflow.Parameters()
                 >>> branch_ids = ['NHV1_NHV2_1', 'NHV1_NHV2_2']
-                >>> flow_decomposition = pp.flowdecomposition.create_decomposition() 
-                ...     .add_single_element_contingencies(branch_ids) 
+                >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+                ...     .add_single_element_contingencies(branch_ids)
                 ...     .add_monitored_elements(branch_ids, branch_ids)
                 >>> flow_decomposition.run(network, flow_decomposition_parameters=flow_decomposition_parameters, load_flow_parameters=load_flow_parameters)
 
@@ -229,7 +229,7 @@ class FlowDecomposition:
             ======================= =========== ============== ======== ======== ================= ================= =============== ======== ============= ================= =================
             /                       branch_id   contingency_id country1 country2 ac_reference_flow dc_reference_flow commercial_flow pst_flow internal_flow loop_flow_from_be loop_flow_from_fr
             ======================= =========== ============== ======== ======== ================= ================= =============== ======== ============= ================= =================
-            xnec_id                                                                                                                                                                                
+            xnec_id
             NHV1_NHV2_1             NHV1_NHV2_1                      FR       BE        302.444049             300.0             0.0      0.0           0.0             300.0               0.0
             NHV1_NHV2_1_NHV1_NHV2_2 NHV1_NHV2_1 NHV1_NHV2_2          FR       BE        610.562161             600.0             0.0      0.0           0.0             600.0               0.0
             NHV1_NHV2_2             NHV1_NHV2_2                      FR       BE        302.444049             300.0             0.0      0.0           0.0             300.0               0.0
