@@ -15,8 +15,13 @@ Running a flow decomposition
     PROJECT_DIR = pathlib.Path(cwd).parent
     DATA_DIR = PROJECT_DIR.joinpath('data')
 
-You can use the module :mod:`pypowsybl.flowdecomposition` in order to run load flows on networks.
+You can use the module :mod:`pypowsybl.flowdecomposition` in order to run flow decomposition on networks.
 Please check out the examples below.
+
+The general idea of this API is to create a decomposition object.
+Then, you can define contingencies if necessary.
+Then, you can define XNE and XNEC. XNEC definition requires pre-defined contingencies.
+Finally, you can run the flow decomposition with some flow decomposition and/or load flow parameters.
 
 For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.flowdecomposition>`.
 
@@ -30,7 +35,7 @@ First example
 -------------
 
 To perform a flow decomposition, you need at least a network.  
-The flow decomposition is based on an object. You can add pre-contingency lines to this object.  
+We will define a flow decomposition object, add it some contingencies and some monitored lines.
 Those lines will be mapped to the network when running a flow decomposition.  
 The flow decomposition computation returns a dataframe containing the flow decomposition and the reference values.  
 The reference values are the active power flows in AC on the original network and in DC on the compensated network.  
@@ -41,14 +46,18 @@ Here are toy examples that do not reflect reality.
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> branch_ids = ['NHV1_NHV2_1', 'NHV1_NHV2_2']
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ...     .add_single_element_contingencies(branch_ids) \
+    ...     .add_monitored_elements(branch_ids, branch_ids)
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
-                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
-    xnec_id                                                                                                                                                         
-    NHV1_NHV2_1  NHV1_NHV2_1       FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
-    NHV1_NHV2_2  NHV1_NHV2_2       FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
+                               branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                    
+    NHV1_NHV2_1              NHV1_NHV2_1                      FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
+    NHV1_NHV2_1_NHV1_NHV2_2  NHV1_NHV2_1    NHV1_NHV2_2       FR       BE         610.562161              600.0              0.0       0.0            0.0              600.0                0.0
+    NHV1_NHV2_2              NHV1_NHV2_2                      FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
+    NHV1_NHV2_2_NHV1_NHV2_1  NHV1_NHV2_2    NHV1_NHV2_1       FR       BE         610.562161              600.0              0.0       0.0            0.0              600.0                0.0
 
 Loop flows
 ----------
@@ -62,16 +71,15 @@ This example will highlight loop flows from the peripheral areas.
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_LOOP_FLOW_WITH_COUNTRIES.uct')))
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 FLOAD 11 1', 'EGEN  11 FGEN  11 1', 'FGEN  11 BGEN  11 1', 'FLOAD 11 ELOAD 11 1'])
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['BLOAD 11 FLOAD 11 1', 'EGEN  11 FGEN  11 1', 'FGEN  11 BGEN  11 1', 'FLOAD 11 ELOAD 11 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
-                                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr
-    xnec_id                                                                                                                                                                                            
-    BLOAD 11 FLOAD 11 1  BLOAD 11 FLOAD 11 1       BE       FR                NaN              200.0     0.000000e+00       0.0            0.0       0.000000e+00              100.0       1.000000e+02
-    EGEN  11 FGEN  11 1  EGEN  11 FGEN  11 1       ES       FR                NaN              100.0    -8.526513e-14       0.0            0.0       4.973799e-14              100.0      -1.421085e-14
-    FGEN  11 BGEN  11 1  FGEN  11 BGEN  11 1       FR       BE                NaN              200.0    -1.421085e-13       0.0            0.0       9.947598e-14              100.0       1.000000e+02
-    FLOAD 11 ELOAD 11 1  FLOAD 11 ELOAD 11 1       FR       ES                NaN              100.0     0.000000e+00       0.0            0.0       0.000000e+00              100.0       0.000000e+00
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                                           
+    BLOAD 11 FLOAD 11 1  BLOAD 11 FLOAD 11 1                      BE       FR                NaN              200.0     0.000000e+00       0.0            0.0       0.000000e+00              100.0       1.000000e+02
+    EGEN  11 FGEN  11 1  EGEN  11 FGEN  11 1                      ES       FR                NaN              100.0    -8.526513e-14       0.0            0.0       4.973799e-14              100.0      -1.421085e-14
+    FGEN  11 BGEN  11 1  FGEN  11 BGEN  11 1                      FR       BE                NaN              200.0    -1.421085e-13       0.0            0.0       9.947598e-14              100.0       1.000000e+02
+    FLOAD 11 ELOAD 11 1  FLOAD 11 ELOAD 11 1                      FR       ES                NaN              100.0     0.000000e+00       0.0            0.0       0.000000e+00              100.0       0.000000e+00
 
 On this example, the AC load flow does not converge, the fallback to DC load flow is activated by default.  
 This means that the AC reference values are NaNs.  
@@ -132,14 +140,13 @@ Here are the results with neutral tap position.
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
-                                  branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+                                  branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id                                                                                                                                                                        
-    FGEN  11 BLOAD 11 1 FGEN  11 BLOAD 11 1       FR       BE          29.003009               25.0        28.999015      -0.0            0.0          -1.999508          -1.999508
-    FGEN  11 BLOAD 12 1 FGEN  11 BLOAD 12 1       FR       BE          87.009112               75.0        86.997046       0.0            0.0          -5.998523          -5.998523
+    FGEN  11 BLOAD 11 1 FGEN  11 BLOAD 11 1                      FR       BE          29.003009               25.0        28.999015      -0.0            0.0          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1 FGEN  11 BLOAD 12 1                      FR       BE          87.009112               75.0        86.997046       0.0            0.0          -5.998523          -5.998523
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if ("flow" in c and "reference" not in c)]].sum(axis=1)
     xnec_id
     FGEN  11 BLOAD 11 1    25.0
@@ -162,14 +169,13 @@ Here are the results with non-neutral tap position.
                              tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
     id                                                                                                                                      
     BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
-                                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow    pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow    pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id                                                                                                                                                                           
-    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1       FR       BE         192.390656         188.652703        29.015809  163.652703            0.0          -2.007905          -2.007905
-    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1       FR       BE         -76.189072         -88.652703       -87.047428  163.652703            0.0           6.023714           6.023714
+    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1                      FR       BE         192.390656         188.652703        29.015809  163.652703            0.0          -2.007905          -2.007905
+    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1                      FR       BE         -76.189072         -88.652703       -87.047428  163.652703            0.0           6.023714           6.023714
     >>> flow_decomposition_dataframe[[c for c in flow_decomposition_dataframe.columns if ("flow" in c and "reference" not in c)]].sum(axis=1)
     xnec_id
     FGEN  11 BLOAD 11 1    188.652703
@@ -211,15 +217,14 @@ If you have memory issues, do not hesitate to reduce the `sensitivity-variable-b
     ... rescale_enabled=True, 
     ... dc_fallback_enabled_after_ac_divergence=True,
     ... sensitivity_variable_batch_size=1000)
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network, parameters)
     >>> flow_decomposition_dataframe
-                                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id                                                                                                                                                                         
-    BLOAD 11 BLOAD 12 2  BLOAD 11 BLOAD 12 2       BE       BE           3.005666          -28.99635         3.008332      -0.0      -0.001333           0.000000          -0.001333
-    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1       FR       BE          29.003009           28.99635        29.005675       0.0       0.000000          -0.001333          -0.001333
-    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1       FR       BE          87.009112           86.98905        87.017108       0.0       0.000000          -0.003998          -0.003998
+    BLOAD 11 BLOAD 12 2  BLOAD 11 BLOAD 12 2                      BE       BE           3.005666          -28.99635         3.008332      -0.0      -0.001333           0.000000          -0.001333
+    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1                      FR       BE          29.003009           28.99635        29.005675       0.0       0.000000          -0.001333          -0.001333
+    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1                      FR       BE          87.009112           86.98905        87.017108       0.0       0.000000          -0.003998          -0.003998
 
 You can also overwrite the Load flow parameters.
 
@@ -229,11 +234,10 @@ You can also overwrite the Load flow parameters.
     >>> network = pp.network.create_eurostag_tutorial_example1_network()
     >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
     >>> load_flow_parameters = pp.loadflow.Parameters()
-    >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-    >>> flow_decomposition.add_precontingency_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['NHV1_NHV2_1', 'NHV1_NHV2_2'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network, flow_decomposition_parameters, load_flow_parameters)
     >>> flow_decomposition_dataframe
-                   branch_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id                                                                                                                                                         
-    NHV1_NHV2_1  NHV1_NHV2_1       FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
-    NHV1_NHV2_2  NHV1_NHV2_2       FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
+    NHV1_NHV2_1  NHV1_NHV2_1                      FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0
+    NHV1_NHV2_2  NHV1_NHV2_2                      FR       BE         302.444049              300.0              0.0       0.0            0.0              300.0                0.0

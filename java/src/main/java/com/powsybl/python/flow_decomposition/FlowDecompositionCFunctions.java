@@ -15,6 +15,7 @@ import com.powsybl.flow_decomposition.xnec_provider.XnecProviderByIds;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
+import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.CommonCFunctions;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -28,6 +29,7 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,13 +56,40 @@ public final class FlowDecompositionCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(XnecProviderByIds.builder()));
     }
 
-    @CEntryPoint(name = "addPrecontingencyMonitoredElementsForFlowDecomposition")
-    public static void addPrecontingencyMonitoredElementsForFlowDecomposition(IsolateThread thread, ObjectHandle xnecProviderBuilderHandle,
-                                                                              CCharPointerPointer elementIdPtrPtr, int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "addContingencyForFlowDecomposition")
+    public static void addContingency(IsolateThread thread, ObjectHandle xnecProviderBuilderHandle,
+                                      CCharPointer contingencyIdPtr,
+                                      CCharPointerPointer elementIdPtrPtr, int elementCount,
+                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             XnecProviderByIds.Builder builder = ObjectHandles.getGlobal().get(xnecProviderBuilderHandle);
-            Set<String> elementIds = new HashSet<>(toStringList(elementIdPtrPtr, elementCount));
-            builder.addNetworkElementsOnBasecase(elementIds);
+            Set<String> elementsIds = new HashSet<>(toStringList(elementIdPtrPtr, elementCount));
+            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+            builder.addContingency(contingencyId, elementsIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPrecontingencyMonitoredElementsForFlowDecomposition")
+    public static void addPrecontingencyMonitoredElements(IsolateThread thread, ObjectHandle xnecProviderBuilderHandle,
+                                                          CCharPointerPointer elementIdPtrPtr, int elementCount,
+                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            XnecProviderByIds.Builder builder = ObjectHandles.getGlobal().get(xnecProviderBuilderHandle);
+            Set<String> elementsIds = new HashSet<>(toStringList(elementIdPtrPtr, elementCount));
+            builder.addNetworkElementsOnBasecase(elementsIds);
+        });
+    }
+
+    @CEntryPoint(name = "addPostcontingencyMonitoredElementsForFlowDecomposition")
+    public static void addPostcontingencyMonitoredElements(IsolateThread thread, ObjectHandle xnecProviderBuilderHandle,
+                                                           CCharPointerPointer elementIdPtrPtr, int elementCount,
+                                                           CCharPointerPointer contingenciesIdPtrPtr, int contingenciesCount,
+                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            XnecProviderByIds.Builder builder = ObjectHandles.getGlobal().get(xnecProviderBuilderHandle);
+            Set<String> elementsIds = new HashSet<>(toStringList(elementIdPtrPtr, elementCount));
+            Set<String> contingenciesIds = new HashSet<>(toStringList(contingenciesIdPtrPtr, contingenciesCount));
+            builder.addNetworkElementsAfterContingencies(elementsIds, contingenciesIds);
         });
     }
 
@@ -98,7 +127,7 @@ public final class FlowDecompositionCFunctions {
 
     @CEntryPoint(name = "freeFlowDecompositionParameters")
     public static void freeFlowDecompositionParameters(IsolateThread thread, PyPowsyblApiHeader.FlowDecompositionParametersPointer flowDecompositionParametersPtr,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(flowDecompositionParametersPtr));
     }
 

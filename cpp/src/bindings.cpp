@@ -625,8 +625,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     
     m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
 
-    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements to be monitored for a flow decomposition",
-          py::arg("flow_decomposition_context"), py::arg("elements_ids"));
+    m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Create contingency for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("contingency_id"), py::arg("elements_ids"));
+
+    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements before contingency to be monitored for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("branch_ids"));
+
+    m.def("add_postcontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPostcontingencyMonitoredElementsForFlowDecomposition, "Add elements after contingency to be monitored for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("branch_ids"), py::arg("contingency_ids"));
 
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
           py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
