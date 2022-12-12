@@ -64,18 +64,62 @@ class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, content: str):
+    def __init__(self, content: str, metadata: str = None):
         self._content = content
+        self._metadata = metadata
 
     @property
     def svg(self) -> str:
         return self._content
+
+    @property
+    def metadata(self) -> _Optional[str]:
+        return self._metadata
 
     def __str__(self) -> str:
         return self._content
 
     def _repr_svg_(self) -> str:
         return self._content
+
+
+class LayoutParameters:
+    """
+    This class represents layout parameters for a single line diagram svg generation."""
+
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True):
+        self._use_name = use_name
+        self._center_name = center_name
+        self._diagonal_label = diagonal_label
+        self._topological_coloring = topological_coloring
+
+    @property
+    def use_name(self) -> bool:
+        """Use names instead of ids in labels."""
+        return self._use_name
+
+    @property
+    def center_name(self) -> bool:
+        """Center labels."""
+        return self._center_name
+
+    @property
+    def diagonal_label(self) -> bool:
+        """Display diagonal labels."""
+        return self._diagonal_label
+
+    @property
+    def topological_coloring(self) -> bool:
+        """When False, coloring is based only on nominal voltage."""
+        return self._topological_coloring
+
+    def _to_c_parameters(self) -> _pp.LayoutParameters:
+        c_parameters = _pp.LayoutParameters()
+        c_parameters.use_name = self._use_name
+        c_parameters.center_name = self._center_name
+        c_parameters.diagonal_label = self._diagonal_label
+        c_parameters.topological_coloring = self._topological_coloring
+        return c_parameters
 
 
 class NodeBreakerTopology:
@@ -307,28 +351,34 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None, parameters: LayoutParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
         Args:
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
+            metadata_file: a json metadata file path
+            parameters: layout parameters to adjust the rendering of the diagram
         """
         svg_file = _path_to_str(svg_file)
-        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
+        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file, '' if metadata_file is None else _path_to_str(metadata_file), p)
 
-    def get_single_line_diagram(self, container_id: str) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
+            parameters: layout parameters to adjust the rendering of the diagram
 
         Returns:
             the single line diagram
         """
-        return Svg(_pp.get_single_line_diagram_svg(self._handle, container_id))
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
+        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
                                        depth: int = 0) -> None:
@@ -4338,6 +4388,15 @@ def create_four_substations_node_breaker_network() -> Network:
         a new instance of powsybl "4 substations" test case
     """
     return _create_network('four_substations_node_breaker')
+
+
+def create_four_substations_node_breaker_network_with_extensions() -> Network:
+    """
+    Create an instance of powsybl "4 substations" test case with ConnectablePosition and BusbarSectionPosition extensions.
+
+    The topology is in node-breaker representation.
+    """
+    return _create_network('four_substations_node_breaker_with_extensions')
 
 
 def create_micro_grid_be_network() -> Network:

@@ -30,6 +30,7 @@ Following methods may be used to create a new network instance:
    create_eurostag_tutorial_example1_network
    create_eurostag_tutorial_example1_with_power_limits_network
    create_four_substations_node_breaker_network
+   create_four_substations_node_breaker_network_with_extensions
    create_micro_grid_be_network
    create_micro_grid_nl_network
 
@@ -139,7 +140,6 @@ Network elements can be created or removed using the following methods:
    :nosignatures:
 
    Network.create_2_windings_transformers
-   Network.create_aliases
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits

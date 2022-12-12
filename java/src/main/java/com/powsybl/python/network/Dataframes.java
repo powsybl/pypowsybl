@@ -14,8 +14,6 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
-import com.powsybl.iidm.export.Exporter;
-import com.powsybl.iidm.import_.Importer;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
@@ -347,6 +345,7 @@ public final class Dataframes {
         return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
             Bus busViewBus = bus.getConnectedTerminalStream()
                     .map(t -> t.getBusView().getBus())
+                    .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
             return new BusBreakerViewBusData(bus, busViewBus);

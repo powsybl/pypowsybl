@@ -89,11 +89,16 @@ typedef struct limit_violation_struct {
     int side;
 } limit_violation;
 
-typedef struct contingency_result_struct {
+typedef struct post_contingency_result_struct {
     char* contingency_id;
     int status;
     array limit_violations;
-} contingency_result;
+} post_contingency_result;
+
+typedef struct pre_contingency_result_struct {
+    int status;
+    array limit_violations;
+} pre_contingency_result;
 
 typedef enum {
     BUS = 0,
@@ -220,11 +225,13 @@ typedef struct flow_decomposition_parameters_struct {
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
     unsigned char rescale_enabled;
-    int xnec_selection_strategy;
     unsigned char dc_fallback_enabled_after_ac_divergence;
+    int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
 
-typedef enum {
-    ONLY_INTERCONNECTIONS = 0,
-    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
-} xnec_selection_strategy;
+typedef struct layout_parameters_struct {
+    unsigned char use_name;
+    unsigned char center_name;
+    unsigned char diagonal_label;
+    unsigned char topological_coloring;
+} layout_parameters;

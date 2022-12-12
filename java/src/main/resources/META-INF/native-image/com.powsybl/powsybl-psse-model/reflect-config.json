@@ -146,6 +146,27 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.psse.model.pf.io.TransformerImpedanceCorrectionTablesData$IOLegacyText35$ZCorr35First",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.io.TransformerImpedanceCorrectionTablesData$IOLegacyText35$ZCorr35Points",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.io.TransformerImpedanceCorrectionTablesData$IOLegacyText35$ZCorr35X",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.psse.model.pf.io.WindingHeaderTransformer",
     "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
   },

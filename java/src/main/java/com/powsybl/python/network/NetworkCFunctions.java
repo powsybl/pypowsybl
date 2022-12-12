@@ -27,11 +27,6 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.export.Exporter;
-import com.powsybl.iidm.export.Exporters;
-import com.powsybl.iidm.export.ExportersLoader;
-import com.powsybl.iidm.export.ExportersServiceLoader;
-import com.powsybl.iidm.import_.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.*;
@@ -39,6 +34,7 @@ import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.report.ReportCUtils;
+import com.powsybl.sld.layout.LayoutParameters;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -137,7 +133,7 @@ public final class NetworkCFunctions {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            Network network = Importers.loadNetwork(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            Network network = Network.read(Paths.get(fileStr), CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -153,7 +149,7 @@ public final class NetworkCFunctions {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network = Importers.loadNetwork(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                Network network = Network.read(fileNameStr, is, CommonObjects.getComputationManager(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -172,7 +168,7 @@ public final class NetworkCFunctions {
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            Exporters.export(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, network, parameters, Paths.get(fileStr), reporter);
+            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
         });
     }
 
@@ -781,14 +777,71 @@ public final class NetworkCFunctions {
         });
     }
 
+    public static class LayoutParametersExt {
+        public final LayoutParameters layoutParameters;
+        public final boolean topologicalColoring;
+
+        public LayoutParametersExt() {
+            this(new LayoutParameters(), true);
+        }
+
+        public LayoutParametersExt(LayoutParameters layoutParameters, boolean topologicalColoring) {
+            Objects.requireNonNull(layoutParameters);
+            this.layoutParameters = layoutParameters;
+            this.layoutParameters.setSvgWidthAndHeightAdded(true);
+            this.topologicalColoring = topologicalColoring;
+        }
+    }
+
+    public static void copyToCLayoutParameters(LayoutParametersExt parameters, LayoutParametersPointer cParameters) {
+        cParameters.setUseName(parameters.layoutParameters.isUseName());
+        cParameters.setCenterName(parameters.layoutParameters.isLabelCentered());
+        cParameters.setDiagonalLabel(parameters.layoutParameters.isLabelDiagonal());
+        cParameters.setTopologicalColoring(parameters.topologicalColoring);
+    }
+
+    public static LayoutParametersPointer convertToLayoutParametersPointer(LayoutParametersExt parameters) {
+        LayoutParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LayoutParametersPointer.class));
+        copyToCLayoutParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    @CEntryPoint(name = "createLayoutParameters")
+    public static LayoutParametersPointer createLayoutParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToLayoutParametersPointer(new LayoutParametersExt()));
+    }
+
+    public static void freeLayoutParametersPointer(LayoutParametersPointer layoutParametersPtr) {
+        UnmanagedMemory.free(layoutParametersPtr);
+    }
+
+    @CEntryPoint(name = "freeLayoutParameters")
+    public static void freeLayoutParameters(IsolateThread thread, LayoutParametersPointer layoutParametersPtr,
+                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            freeLayoutParametersPointer(layoutParametersPtr);
+        });
+    }
+
+    public static LayoutParametersExt convertLayoutParameters(LayoutParametersPointer layoutParametersPtr) {
+        return new LayoutParametersExt(new LayoutParameters()
+                .setUseName(layoutParametersPtr.isUseName())
+                .setLabelCentered(layoutParametersPtr.isCenterName())
+                .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel()),
+                layoutParametersPtr.isTopologicalColoring());
+    }
+
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                 CCharPointer svgFile, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                 CCharPointer svgFile, CCharPointer metadataFile, LayoutParametersPointer layoutParametersPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svgFileStr = CTypeUtil.toString(svgFile);
-            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
+            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, layoutParametersExt);
         });
     }
 
@@ -800,6 +853,18 @@ public final class NetworkCFunctions {
             String containerIdStr = CTypeUtil.toString(containerId);
             String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
             return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
+                                                                                        LayoutParametersPointer layoutParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String containerIdStr = CTypeUtil.toString(containerId);
+            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, layoutParametersExt);
+            return createCharPtrArray(svgAndMeta);
         });
     }
 

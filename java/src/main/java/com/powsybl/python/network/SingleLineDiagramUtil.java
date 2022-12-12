@@ -8,7 +8,12 @@ package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
-import com.powsybl.sld.layout.LayoutParameters;
+import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.ConvergenceComponentLibrary;
+import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
+import com.powsybl.sld.svg.DiagramStyleProvider;
+import com.powsybl.sld.util.NominalVoltageDiagramStyleProvider;
+import com.powsybl.sld.util.TopologicalStyleProvider;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -16,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -25,9 +31,10 @@ public final class SingleLineDiagramUtil {
     private SingleLineDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String containerId, String svgFile) {
-        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile))) {
-            writeSvg(network, containerId, writer);
+    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
+             Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+            writeSvg(network, containerId, writer, metadataWriter, layoutParametersExt);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -43,9 +50,27 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer) {
-        LayoutParameters layoutParameters = new LayoutParameters()
-                .setSvgWidthAndHeightAdded(true);
-        SingleLineDiagram.draw(network, containerId, writer, new StringWriter(), layoutParameters);
+    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+        try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
+            writeSvg(network, containerId, writer, writerMeta, layoutParametersExt);
+            writer.flush();
+            writerMeta.flush();
+            return List.of(writer.toString(), writerMeta.toString());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
+
+    static void writeSvg(Network network, String containerId, Writer writer) {
+        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.LayoutParametersExt());
+    }
+
+    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+        ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
+        DiagramStyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
+                : new NominalVoltageDiagramStyleProvider(network);
+        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
+                new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
+    }
+
 }

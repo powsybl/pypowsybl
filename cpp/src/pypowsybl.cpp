@@ -122,7 +122,7 @@ Array<load_flow_component_result>::~Array() {
 }
 
 template<>
-Array<contingency_result>::~Array() {
+Array<post_contingency_result>::~Array() {
     callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
 
@@ -412,8 +412,8 @@ FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_para
     losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
     sensitivity_epsilon = (float) src->sensitivity_epsilon;
     rescale_enabled = (bool) src->rescale_enabled;
-    xnec_selection_strategy = static_cast<XnecSelectionStrategy>(src->xnec_selection_strategy);
     dc_fallback_enabled_after_ac_divergence = (bool) src->dc_fallback_enabled_after_ac_divergence;
+    sensitivity_variable_batch_size = (int) src->sensitivity_variable_batch_size;
 }
 
 std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c_struct() const {
@@ -422,8 +422,8 @@ std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c
     res->losses_compensation_epsilon = losses_compensation_epsilon;
     res->sensitivity_epsilon = sensitivity_epsilon;
     res->rescale_enabled = (unsigned char) rescale_enabled;
-    res->xnec_selection_strategy = xnec_selection_strategy;
     res->dc_fallback_enabled_after_ac_divergence = (unsigned char) dc_fallback_enabled_after_ac_divergence;
+    res->sensitivity_variable_batch_size = (int) sensitivity_variable_batch_size;
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<flow_decomposition_parameters>(res, [](flow_decomposition_parameters* ptr){
         delete ptr;
@@ -659,12 +659,20 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
     return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
 }
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile) {
-    callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data());
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
+}
+
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    auto svgAndMetadataArrayPtr = callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
+    ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
+    return svgAndMetadata.get();
 }
 
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth) {
@@ -852,8 +860,12 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
     threeWindingsTransformerIds.size(), contingencyIdsPtr.get(), contingencyIds.size());
 }
 
-ContingencyResultArray* getSecurityAnalysisResult(const JavaHandle& securityAnalysisResult) {
-    return new ContingencyResultArray(callJava<array*>(::getSecurityAnalysisResult, securityAnalysisResult));
+PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult) {
+    return new PostContingencyResultArray(callJava<array*>(::getPostContingencyResults, securityAnalysisResult));
+}
+
+pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult) {
+    return callJava<pre_contingency_result*>(::getPreContingencyResult, securityAnalysisResult);
 }
 
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult) {
@@ -1057,10 +1069,19 @@ std::string jsonReport(const JavaHandle& reporterModel) {
     return toString(callJava<char*>(::jsonReport, reporterModel));
 }
 
-SeriesArray* runFlowDecomposition(const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
+JavaHandle createFlowDecomposition() {
+    return callJava<JavaHandle>(::createFlowDecomposition);
+}
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& elementsIds) {
+    ToCharPtrPtr elementIdPtr(elementsIds);
+    callJava(::addPrecontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, elementIdPtr.get(), elementsIds.size());
+}
+
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
     auto c_flow_decomposition_parameters = flow_decomposition_parameters.to_c_struct();
     auto c_load_flow_parameters  = load_flow_parameters.to_c_struct();
-    return new SeriesArray(callJava<array*>(::runFlowDecomposition, network, c_flow_decomposition_parameters.get(), c_load_flow_parameters.get()));
+    return new SeriesArray(callJava<array*>(::runFlowDecomposition, flowDecompositionContext, network, c_flow_decomposition_parameters.get(), c_load_flow_parameters.get()));
 }
 
 FlowDecompositionParameters* createFlowDecompositionParameters() {
@@ -1131,6 +1152,38 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe) {
 
 void closePypowsybl() {
     pypowsybl::callJava(::closePypowsybl);
+}
+
+LayoutParameters::LayoutParameters(layout_parameters* src) {
+    use_name = (bool) src->use_name;
+    center_name = (bool) src->center_name;
+    diagonal_label = (bool) src->diagonal_label;
+    topological_coloring = (bool) src->topological_coloring;
+}
+
+void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
+    res.use_name = (unsigned char) use_name;
+    res.center_name = (unsigned char) center_name;
+    res.diagonal_label = (unsigned char) diagonal_label;
+    res.topological_coloring = (unsigned char) topological_coloring;
+}
+
+std::shared_ptr<layout_parameters> LayoutParameters::to_c_struct() const {
+    layout_parameters* res = new layout_parameters();
+    layout_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<layout_parameters>(res, [](layout_parameters* ptr){
+        delete ptr;
+    });
+}
+
+LayoutParameters* createLayoutParameters() {
+    layout_parameters* parameters_ptr = callJava<layout_parameters*>(::createLayoutParameters);
+    auto parameters = std::shared_ptr<layout_parameters>(parameters_ptr, [](layout_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeLayoutParameters, ptr);
+    });
+    return new LayoutParameters(parameters.get());
 }
 
 }

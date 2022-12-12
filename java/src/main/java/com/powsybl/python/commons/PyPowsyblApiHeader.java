@@ -420,8 +420,21 @@ public final class PyPowsyblApiHeader {
         LimitViolationPointer addressOf(int index);
     }
 
-    @CStruct("contingency_result")
-    public interface ContingencyResultPointer extends PointerBase {
+    @CStruct("pre_contingency_result")
+    public interface PreContingencyResultPointer extends PointerBase {
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CFieldAddress("limit_violations")
+        ArrayPointer<LimitViolationPointer> limitViolations();
+    }
+
+    @CStruct("post_contingency_result")
+    public interface PostContingencyResultPointer extends PointerBase {
 
         @CField("contingency_id")
         CCharPointer getContingencyId();
@@ -438,7 +451,7 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
 
-        ContingencyResultPointer addressOf(int index);
+        PostContingencyResultPointer addressOf(int index);
     }
 
     @CEnum("element_type")
@@ -766,16 +779,45 @@ public final class PyPowsyblApiHeader {
         @CField("rescale_enabled")
         void setRescaleEnabled(boolean rescaleEnabled);
 
-        @CField("xnec_selection_strategy")
-        int getXnecSelectionStrategy();
-
-        @CField("xnec_selection_strategy")
-        void setXnecSelectionStrategy(int xnecSelectionStrategy);
-
         @CField("dc_fallback_enabled_after_ac_divergence")
         boolean isDcFallbackEnabledAfterAcDivergence();
 
         @CField("dc_fallback_enabled_after_ac_divergence")
         void setDcFallbackEnabledAfterAcDivergence(boolean dcFallbackEnabledAfterAcDivergence);
+
+        @CField("sensitivity_variable_batch_size")
+        int getSensitivityVariableBatchSize();
+
+        @CField("sensitivity_variable_batch_size")
+        void setSensitivityVariableBatchSize(int sensitivityVariableBatchSize);
     }
+
+    @CStruct("layout_parameters")
+    public interface LayoutParametersPointer extends PointerBase {
+
+        @CField("use_name")
+        boolean isUseName();
+
+        @CField("use_name")
+        void setUseName(boolean useName);
+
+        @CField("center_name")
+        boolean isCenterName();
+
+        @CField("center_name")
+        void setCenterName(boolean centerName);
+
+        @CField("diagonal_label")
+        boolean isDiagonalLabel();
+
+        @CField("diagonal_label")
+        void setDiagonalLabel(boolean diagonalLabel);
+
+        @CField("topological_coloring")
+        boolean isTopologicalColoring();
+
+        @CField("topological_coloring")
+        void setTopologicalColoring(boolean topologicalColoring);
+    }
+
 }
