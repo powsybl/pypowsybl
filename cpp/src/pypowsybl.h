@@ -223,6 +223,17 @@ public:
     int sensitivity_variable_batch_size;
 };
 
+class LayoutParameters {
+public:
+    LayoutParameters(layout_parameters* src);
+    std::shared_ptr<layout_parameters> to_c_struct() const;
+    void layout_to_c_struct(layout_parameters& params) const;
+
+    bool use_name;
+    bool center_name;
+    bool diagonal_label;
+    bool topological_coloring;
+};
 
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
@@ -309,9 +320,11 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile);
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters);
 
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -488,6 +501,6 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
 
+LayoutParameters* createLayoutParameters();
 }
-
 #endif //PYPOWSYBL_H

@@ -345,6 +345,7 @@ public final class Dataframes {
         return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
             Bus busViewBus = bus.getConnectedTerminalStream()
                     .map(t -> t.getBusView().getBus())
+                    .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
             return new BusBreakerViewBusData(bus, busViewBus);

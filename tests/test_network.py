@@ -20,7 +20,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pypowsybl.network import ValidationLevel
+from pypowsybl.network import ValidationLevel,LayoutParameters
 
 import util
 import tempfile
@@ -681,10 +681,27 @@ def test_variant():
     assert 1 == len(n.get_variant_ids())
 
 
+def test_layout_parameters():
+    parameters = LayoutParameters()
+    assert False == parameters.use_name
+    assert False == parameters.center_name
+    assert False == parameters.diagonal_label
+    assert True == parameters.topological_coloring
+    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False)
+    assert True == parameters.use_name
+    assert True == parameters.center_name
+    assert True == parameters.diagonal_label
+    assert False == parameters.topological_coloring
+
+
 def test_sld_svg():
     n = pp.network.create_four_substations_node_breaker_network()
     sld = n.get_single_line_diagram('S1VL1')
     assert re.search('.*<svg.*', sld.svg)
+    assert len(sld.metadata) > 0
+    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False))
+    assert re.search('.*<svg.*', sld1.svg)
+    assert len(sld1.metadata) > 0
 
 
 def test_sld_nad():
@@ -1130,6 +1147,19 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
 
+def test_bb_topology_with_no_bus_view_bus_does_not_throw():
+    n = pp.network.create_empty()
+    n.create_substations(id='S')
+    n.create_voltage_levels(id='VL', substation_id='S', nominal_v=380, topology_kind='NODE_BREAKER')
+    n.create_busbar_sections(id='BB', voltage_level_id='VL', node=0)
+    n.create_loads(id='L', voltage_level_id='VL', p0=0, q0=0, node=1)
+    n.create_switches(id='SW', kind='DISCONNECTOR', voltage_level_id='VL', node1=0, node2=1, open=True)
+
+    # must not throw
+    topo = n.get_bus_breaker_topology('VL')
+    assert topo.buses.index.to_list() == ['VL_0', 'VL_1']
+
+
 def test_not_connected_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame.from_records(index='id', data=[{'id': 'NHV1', 'name': '', 'bus_id': 'VLHV1_0'}])
@@ -1498,6 +1528,11 @@ def test_write_svg_file(tmpdir):
     assert not exists(data.join('test_sld.svg'))
     net.write_single_line_diagram_svg('S1VL1', data.join('test_sld.svg'))
     assert exists(data.join('test_sld.svg'))
+    assert not exists(data.join('test2_sld.svg'))
+    assert not exists(data.join('test2_sld.json'))
+    net.write_single_line_diagram_svg('S1VL1', data.join('test2_sld.svg'), data.join('test2_sld.json'))
+    assert exists(data.join('test2_sld.svg'))
+    assert exists(data.join('test2_sld.json'))
 
 
 def test_attributes_order():

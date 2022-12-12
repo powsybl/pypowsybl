@@ -228,3 +228,10 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
+
+typedef struct layout_parameters_struct {
+    unsigned char use_name;
+    unsigned char center_name;
+    unsigned char diagonal_label;
+    unsigned char topological_coloring;
+} layout_parameters;

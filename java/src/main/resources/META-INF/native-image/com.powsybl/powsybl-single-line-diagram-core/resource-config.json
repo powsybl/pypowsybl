@@ -7,6 +7,7 @@
     {"pattern":"\\QbaseVoltageConstantColors.css\\E"},
     {"pattern":"\\QhighlightLineStates.css\\E"},
     {"pattern":"\\Qtautologies.css\\E"},
-    {"pattern":"\\QtopologicalBaseVoltages.css\\E"}
+    {"pattern":"\\QtopologicalBaseVoltages.css\\E"},
+    {"pattern":"\\QbaseVoltages.css\\E"}
   ]}
 }
