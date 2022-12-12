@@ -6,12 +6,13 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.adders.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.NetworkModification;
 import com.powsybl.iidm.modification.topology.*;
@@ -33,7 +34,6 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -280,36 +280,22 @@ public final class NetworkModificationsCFunctions {
 
     }
 
-    @CEntryPoint(name = "createVoltageLevelTopology")
-    public static void createVoltageLevelTopology(IsolateThread thread, ObjectHandle networkHandle,
-                                                  PyPowsyblApiHeader.DataframePointer cDataframe, CCharPointerPointer switchKindPtr,
-                                                  int switchCount, boolean throwException, ObjectHandle reporterHandle,
-                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createNetworkModification")
+    public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
+                                                 PyPowsyblApiHeader.DataframePointer cDataframe,
+                                                 CCharPointerPointer switchKindPtr, int switchCount,
+                                                 PyPowsyblApiHeader.NetworkModificationType networkModificationType,
+                                                 boolean throwException, ObjectHandle reporterHandle,
+                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             UpdatingDataframe df = createDataframe(cDataframe);
             List<String> switchKindStr = toStringList(switchKindPtr, switchCount);
-            List<SwitchKind> switchKind = switchKindStr.stream().map(SwitchKind::valueOf).collect(Collectors.toList());
-            CreateVoltageLevelTopologyBuilder builder = createBuilder(df);
-            builder.withSwitchKinds(switchKind);
-            NetworkModification modification = builder.build();
-            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            List<SwitchKind> switchKinds = switchKindStr.stream().map(SwitchKind::valueOf).collect(Collectors.toList());
+            DataframeNetworkModificationType type = convert(networkModificationType);
+            NetworkModifications.applyModification(type, network, df, switchKinds, throwException, reporter);
         });
-    }
-
-    public static CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe) {
-        CreateVoltageLevelTopologyBuilder builder = new CreateVoltageLevelTopologyBuilder();
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            applyIfPresent(dataframe.getStrings("voltage_level_id"), row, builder::withVoltageLevelId);
-            applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusbarIndex);
-            applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withBusbarCount);
-            applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
-            applyIfPresent(dataframe.getInts("section_count"), row, builder::withSectionCount);
-            applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
-            applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
-        }
-        return builder;
     }
 
     static Map<String, List<ConnectablePosition.Feeder>> getFeedersByConnectable(VoltageLevel voltageLevel) {

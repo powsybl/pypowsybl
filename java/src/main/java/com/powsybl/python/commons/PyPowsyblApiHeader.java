@@ -512,6 +512,17 @@ public final class PyPowsyblApiHeader {
         public static native ValidationType fromCValue(int value);
     }
 
+    @CEnum("network_modification_type")
+    public enum NetworkModificationType {
+        VOLTAGE_LEVEL_TOPOLOGY_CREATION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native NetworkModificationType fromCValue(int value);
+    }
+
     @CStruct("matrix")
     public interface MatrixPointer extends PointerBase {
 

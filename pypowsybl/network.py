@@ -29,6 +29,7 @@ import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import NetworkModificationType
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import (
@@ -5362,7 +5363,7 @@ def create_voltage_level_topology(network: Network, switch_kind: _List[str], df:
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
 
     """
-    metadata = _pp.get_voltage_level_topology_creation_metadata()
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_voltage_level_topology(network._handle, c_df, switch_kind, raise_exception, None if reporter is None else reporter._reporter_model)
+    _pp.create_network_modification(network._handle, c_df, switch_kind, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model)

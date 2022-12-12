@@ -204,6 +204,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TWTS", validation_type::TWTS)
             .value("TWTS3W", validation_type::TWTS3W);
 
+    py::enum_<network_modification_type>(m, "NetworkModificationType")
+            .value("VOLTAGE_LEVEL_TOPOLOGY_CREATION", network_modification_type::VOLTAGE_LEVEL_TOPOLOGY_CREATION);
+
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
@@ -693,7 +696,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
 
-    m.def("get_voltage_level_topology_creation_metadata", &pypowsybl::getVoltageLevelTopologyCreationMetadata, "Get metadata for voltage level topology creation");
+    m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 
-    m.def("create_voltage_level_topology", &pypowsybl::createVoltageLevelTopology, "Create voltage level topology", py::arg("network"), py::arg("dataframe"), py::arg("switch_kind"), py::arg("raise_exception"), py::arg("reporter"));
+    m.def("create_network_modification", &pypowsybl::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("switch_kind"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+
 }

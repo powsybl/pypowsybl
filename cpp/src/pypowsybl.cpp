@@ -1229,16 +1229,16 @@ void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::stri
     pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
-std::vector<SeriesMetadata> getVoltageLevelTopologyCreationMetadata() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getVoltageLevelTopologyCreationMetadata);
+std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
-void createVoltageLevelTopology(pypowsybl::JavaHandle network, dataframe* dataframe,  const std::vector<std::string>& switchKind, bool throwException, JavaHandle* reporter) {
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  const std::vector<std::string>& switchKind, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
     ToCharPtrPtr switchKindPtr(switchKind);
-    pypowsybl::callJava(::createVoltageLevelTopology, network, dataframe, switchKindPtr.get(), switchKind.size(), throwException, (reporter == nullptr) ? nullptr : *reporter);
+    pypowsybl::callJava(::createNetworkModification, network, dataframe, switchKindPtr.get(), switchKind.size(), networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 }

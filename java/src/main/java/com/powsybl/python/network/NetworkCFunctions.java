@@ -14,11 +14,8 @@ import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.*;
@@ -969,11 +966,14 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getVoltageLevelTopologyCreationMetadata")
-    public static DataframeMetadataPointer getVoltageLevelTopologyCreationMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getModificationMetadata")
+    public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
+                                                                    NetworkModificationType networkModificationType,
+                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = VoltageLevelTopologyCreationSeries.getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
+            DataframeNetworkModificationType type = convert(networkModificationType);
+            List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
+            return createSeriesMetadata(metadata);
         });
     }
 }
