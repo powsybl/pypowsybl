@@ -103,8 +103,20 @@ class FlowDecomposition:
     """
     def __init__(self, handle: _pypowsybl.JavaHandle) -> None:
         self._handle = handle
+        
+    def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> FlowDecomposition:
+        """
+        Add a contingency with a single element (1 N-1 state).
 
-    def add_single_element_contingencies(self, element_ids: _Union[_List[str], str], contingency_id_provider: _Callable[[str], str] = None) -> FlowDecomposition:
+        Args:
+            element_id:     Id of the element
+            contingency_id: If of the contingency. By default, the id of the contingency is the one of the element.
+        """
+        if contingency_id is None:
+            contingency_id = element_id
+        return self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=contingency_id)
+
+    def add_single_element_contingencies(self, element_ids: _List[str], contingency_id_provider: _Callable[[str], str] = None) -> FlowDecomposition:
         """
         Add a contingency for each element (n N-1 states).
 
@@ -114,8 +126,6 @@ class FlowDecomposition:
         """
         if contingency_id_provider is None:
             contingency_id_provider = lambda x: x
-        if isinstance(element_ids, str):
-            return self.add_multiple_elements_contingency(elements_ids=[element_ids], contingency_id=contingency_id_provider(element_ids))
         for element_id in element_ids:
             self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=contingency_id_provider(element_id))
         return self

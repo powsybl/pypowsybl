@@ -22,7 +22,6 @@ def test_demo():
         .add_single_element_contingencies(branch_ids) \
         .add_monitored_elements(branch_ids, branch_ids)
     df = flow_decomposition.run(network, parameters)
-    print(df)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
@@ -113,7 +112,7 @@ def test_flow_decomposition_with_N1():
     branch_id = 'DB000011 DF000011 1'
     contingency_id = 'DD000011 DF000011 1'
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
-        .add_single_element_contingencies(contingency_id) \
+        .add_single_element_contingencies([contingency_id]) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
     df = flow_decomposition.run(network, parameters)
     expected = pd.DataFrame.from_records(
@@ -132,7 +131,7 @@ def test_flow_decomposition_with_N1_custom_name():
     contingency_element_id = 'DD000011 DF000011 1'
     contingency_id = 'contingency_DD000011 DF000011 1'
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
-        .add_single_element_contingencies(contingency_element_id, lambda s: f"contingency_{s}") \
+        .add_single_element_contingencies([contingency_element_id], lambda s: f"contingency_{s}") \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
     df = flow_decomposition.run(network, parameters)
     expected = pd.DataFrame.from_records(
@@ -150,7 +149,7 @@ def test_flow_decomposition_with_N1_and_N():
     branch_id = 'DB000011 DF000011 1'
     contingency_id = 'DD000011 DF000011 1'
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
-        .add_single_element_contingencies(contingency_id) \
+        .add_single_element_contingency(contingency_id) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id) \
         .add_precontingency_monitored_elements(branch_id)
     df = flow_decomposition.run(network, parameters)
