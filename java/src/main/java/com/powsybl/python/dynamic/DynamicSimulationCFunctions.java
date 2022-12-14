@@ -9,6 +9,8 @@ package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.Util.doCatch;
 
+import java.util.stream.Collectors;
+
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -20,22 +22,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.dataframe.dynamic.CurvesSeries;
-import com.powsybl.dataframe.dynamic.DynamicMappingsDataframeHandle;
+import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdderFactory;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.Util;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.python.commons.Util;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.NetworkCFunctions;
 import com.powsybl.timeseries.DoublePoint;
@@ -102,51 +104,24 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addAllDynamicMappings")
-    public static void addAllDynamicMapping(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            DataframePointer mappingDf,
+    @CEntryPoint(name = "addDynamicMappings")
+    public static void addDynamicMapping(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+            DynamicMappingType mappingType,
+            DataframePointer mappingDataframePtr,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            UpdatingDataframe df = NetworkCFunctions.createDataframe(mappingDf);
-            dynamicMapping.addAllMappings(df);
+            UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
+            DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicMapping, mappingDataframe);
         });
     }
 
     @CEntryPoint(name = "getDynamicMappingsMetaData")
     public static DataframeMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
+            DynamicMappingType mappingType,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            return CTypeUtil.createSeriesMetadata(
-                    DynamicMappingsDataframeHandle.dynamicMappingsDataFrameMapper().getSeriesMetadata());
-        });
-    }
-
-    @CEntryPoint(name = "addCurrentLimitAutomaton")
-    public static void addCurrentLimitAutomaton(IsolateThread thread,
-            ObjectHandle dynamicMappingHandle,
-            CCharPointer staticIdPtr,
-            CCharPointer dynamicParamPtr,
-            CCharPointer sideStrPtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            String dynamicParam = CTypeUtil.toString(dynamicParamPtr);
-            String sideStr = CTypeUtil.toString(sideStrPtr);
-            DynamicModelMapper dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            Branch.Side side;
-            switch (sideStr) {
-                case "one":
-                    side = Branch.Side.ONE;
-                    break;
-                case "two":
-                    side = Branch.Side.TWO;
-                    break;
-                default:
-                    side = null; // will throw
-            }
-            dynamicMapping.addCurrentLimitAutomaton(staticId, dynamicParam,
-                    side);
+            return CTypeUtil.createSeriesMetadata(DynamicMappingAdderFactory.getAdder(mappingType).getMetadata());
         });
     }
 
@@ -198,19 +173,6 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "setPowSyBlConfigLocation")
-    public static void setPowSyBlConfigLocation(IsolateThread thread,
-            CCharPointer absolutePathToConfig,
-            CCharPointer configFileName,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        // TODO: create/find a way to programmatically modify a plateform config
-        doCatch(exceptionHandlerPtr, () -> {
-            System.setProperty("powsybl.config.dirs", CTypeUtil.toString(absolutePathToConfig));
-            // will try to find first matching extension .yml .xml .property
-            System.setProperty("powsybl.config.name", CTypeUtil.toString(configFileName));
-        });
-    }
-
     @CEntryPoint(name = "getDynamicSimulationResultsStatus")
     public static CCharPointer getDynamicSimulationResultsStatus(IsolateThread thread,
              ObjectHandle dynamicSimulationResultsHandle,
@@ -236,13 +198,11 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "getAllDynamicCurvesIds")
     public static ArrayPointer<CCharPointerPointer> getAllDynamicCurvesIds(IsolateThread thread,
-            ObjectHandle curveMappingHandle,
-            CCharPointer dynamicIdPtr,
+            ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            String dynamicId = CTypeUtil.toString(dynamicIdPtr);
-            CurveMappingSupplier timeSeriesSupplier = ObjectHandles.getGlobal().get(curveMappingHandle);
-            return Util.createCharPtrArray(timeSeriesSupplier.getCurveNames(dynamicId));
+            DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+            return Util.createCharPtrArray(result.getCurves().keySet().stream().collect(Collectors.toList()));
         });
     }
 
