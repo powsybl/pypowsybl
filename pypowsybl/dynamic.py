@@ -11,18 +11,10 @@ from uuid import uuid4
 from typing import List as _List, Union as _Union
 import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl._pypowsybl import DynamicMappingType
+from pypowsybl._pypowsybl import DynamicMappingType, BranchSide
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe
-
-
-class BranchSide(_Enum):
-    '''
-    warning the values are hardcoded in java layer
-    '''
-    ONE = "one"
-    TWO = "two"
 
 
 class ModelMapping:
@@ -40,8 +32,7 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.ONE_TRANSFORMER_LOAD)
 
     def add_omega_ref(self, generator_id: str) -> None:
-        self.add_all_dynamic_mappings(static_id=generator_id,
-                                      parameter_set_id="",
+        self.add_all_dynamic_mappings(generator_id=generator_id,
                                       mapping_type=DynamicMappingType.OMEGA_REF)
 
     def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
@@ -65,33 +56,35 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
 
     def add_current_limit_automaton(self, static_id: str, dynamic_param: str, branch_side: BranchSide) -> None:
-        _pp.add_current_limit_automaton(
-            self._handle, static_id, dynamic_param, branch_side.value)
+        self.add_all_dynamic_mappings(static_id=static_id,
+                                      parameter_set_id=dynamic_param,
+                                      branch_side=branch_side,
+                                      mapping_type=DynamicMappingType.CURRENT_LIMIT_AUTOMATON)
 
-    def add_all_dynamic_mappings(self, df: _pd.DataFrame = None, **kwargs: _Union[str, DynamicMappingType]) -> None:
+    def add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: _pd.DataFrame = None, **kwargs: _Union[str, BranchSide, DynamicMappingType]) -> None:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
         The dataframe must contains these three columns :
             - static_id: id of the network element to map (or the id of the generator for omega_ref)
             - parameter_set_id: set id in the parameter file
             - mapping_type: value of enum DynamicMappingType
-        For current_limit_automaton the branch side defaults to ONE, see add_current_limit_automaton to add a model with another branch side.
-        For omega_ref the static_id column refers to the generator's id, and the parameter_set_id will be ignored
         """
-        metadata = _pp.get_dynamic_mappings_meta_data()
+        metadata = _pp.get_dynamic_mappings_meta_data(mapping_type)
         if kwargs:
             kwargs = _add_index_to_kwargs(metadata, **kwargs)
-        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-        c_df = _create_c_dataframe(df, metadata)
-        _pp.add_all_dynamic_mappings(self._handle, c_df)
+        mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
+        c_mapping_df = _create_c_dataframe(mapping_df, metadata)
+        _pp.add_all_dynamic_mappings(self._handle, mapping_type, c_mapping_df)
 
 
 class CurveMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_timeseries_mapping()
+        self._curves_names: _List[str] = []
 
     def add_curve(self, dynamic_id: str, variable: str) -> None:
-        _pp.add_curve(self._handle, dynamic_id, variable)
+        self._curves_names.append(_pp.add_curve(
+            self._handle, dynamic_id, variable))
 
     def add_curves(self, dynamic_id: str, variables: _List[str]) -> None:
         for var in variables:
@@ -99,7 +92,6 @@ class CurveMapping:
 
 
 class EventType(_Enum):
-    QUADRIPOLE_DISCONNECT = 'QUADRIPOLE_DISCONNECT'
     SET_POINT_BOOLEAN = 'SET_POINT_BOOLEAN'
     BRANCH_DISCONNECTION = 'BRANCH_DISCONNECTION'
 
@@ -120,8 +112,8 @@ class EventMapping:
         if not event_id:
             event_id = str(uuid4())
 
-        if event is EventType.QUADRIPOLE_DISCONNECT:
-            _pp.add_event_quadripole_disconnection(
+        if event is EventType.BRANCH_DISCONNECTION:
+            _pp.add_event_branch_disconnection(
                 self._handle, event_id, static_id, parameter_set_id)
             return
         if event is EventType.SET_POINT_BOOLEAN:
@@ -140,22 +132,22 @@ class EventMapping:
 class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
         self._handle = handle
+        self._status = _pp.get_dynamic_simulation_results_status(self._handle)
+        self._curves = self._get_all_curves()
 
-    def state(self) -> str:
-        return _pp.get_dynamic_simulation_results_status(self._handle)
-
-    @property
     def status(self) -> str:
-        return self.state()
+        return self._status
 
-    def get_curve(self, curve_name: str) -> _pd.DataFrame:
+    def curves(self) -> _pd.DataFrame:
+        return self._curves
+
+    def _get_curve(self, curve_name: str) -> _pd.DataFrame:
         series_array = _pp.get_dynamic_curve(self._handle, curve_name)
         return create_data_frame_from_series_array(series_array)
 
-    def get_all_curves(self, curve_mapping: CurveMapping, dynamic_id: str) -> _pd.DataFrame:
-        curve_name_lst = _pp.get_all_dynamic_curves_ids(
-            curve_mapping._handle, dynamic_id)
-        df_curves = [self.get_curve(curve_name)
+    def _get_all_curves(self) -> _pd.DataFrame:
+        curve_name_lst = _pp.get_all_dynamic_curves_ids(self._handle)
+        df_curves = [self._get_curve(curve_name)
                      for curve_name in curve_name_lst]
         return _pd.concat(df_curves, axis=1)
 
@@ -181,9 +173,3 @@ class Simulation:
                 timeseries_mapping._handle,
                 start, stop)
         )
-
-    @staticmethod
-    def set_config(path: str, config_name: str) -> None:
-        os.environ["powsybl.config.dirs"] = path
-        os.environ["powsybl.config.name"] = config_name
-        _pp.set_powsybl_config_location(path, config_name)

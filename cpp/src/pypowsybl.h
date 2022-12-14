@@ -567,13 +567,21 @@ namespace pypowsybl {
     void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
     void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
-    // config ?
-    void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+    // dynamic model mapping
+    void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
+    std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+
+    // timeseries/curves mapping
+    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+
+    // events mapping
+    void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
     // results
     std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
     SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
-    std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId);
+    std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 }
 #endif //PYPOWSYBL_H

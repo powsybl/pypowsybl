@@ -1207,28 +1207,20 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
     return callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
 }
 
-void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide) {
-    callJava<>(::addCurrentLimitAutomaton, dynamicMappingHandle, (char*) staticId.c_str(), (char*) dynamicParam.c_str(), (char*) branchSide.c_str());
-}
-
-void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf) {
-    callJava<>(::addAllDynamicMappings, dynamicMappingHandle, mappingDf);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf) {
+    callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, mappingDf);
 }
 
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
     callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
-void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
-    callJava<>(::addEventQuadripoleDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
+void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
+    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
 }
 
 void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
     callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
-}
-
-void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName) {
-    callJava<>(::setPowSyBlConfigLocation, (char*) absolutePathToConfig.c_str(), (char*) configFileName.c_str());
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
@@ -1239,13 +1231,13 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
     return new SeriesArray(callJava<array*>(::getDynamicCurve, resultHandle, (char*) curveName.c_str()));
 }
 
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle curveMappingHandle, std::string dynamicId) {
-    ToStringVector vector(callJava<array*>(::getAllDynamicCurvesIds, curveMappingHandle, (char*) dynamicId.c_str()));
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
+    ToStringVector vector(callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
     return vector.get();
 }
 
-std::vector<SeriesMetadata> getDynamicMappingsMetaData() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getDynamicMappingsMetaData);
+std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getDynamicMappingsMetaData, mappingType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;

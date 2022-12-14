@@ -251,3 +251,8 @@ typedef enum {
     GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
     CURRENT_LIMIT_AUTOMATON,
 } DynamicMappingType;
+
+typedef enum {
+    ONE = 0,
+    TWO,
+} BranchSide;

@@ -122,6 +122,10 @@ py::array seriesAsNumpyArray(const series& series) {
 
 void dynamicSimulationBindings(py::module_& m) {
 
+    py::enum_<BranchSide>(m, "BranchSide")
+        .value("ONE", BranchSide::ONE)
+        .value("TWO", BranchSide::TWO);
+
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
         .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
         .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
@@ -143,24 +147,20 @@ void dynamicSimulationBindings(py::module_& m) {
         py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
 
     //model mapping
-    m.def("add_current_limit_automaton", &pypowsybl::addCurrentLimitAutomaton, py::arg("dynamic_mapping_handle"), py::arg("static_id"), py::arg("dynamic_param"), py::arg("branch_side"));
-    m.def("add_all_dynamic_mappings", &pypowsybl::addAllDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_df"));
-    m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData);
+    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
 
     // timeseries/curves mapping
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_quadripole_disconnection", &pypowsybl::addEventQuadripoleDisconnection, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("parameter_set_id"));
+    m.def("add_event_branch_disconnection", &pypowsybl::addEventBranchDisconnection, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("parameter_set_id"));
     m.def("add_event_set_point_boolean", &pypowsybl::addEventSetPointBoolean, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("parameter_set_id"));
-
-    // config
-    m.def("set_powsybl_config_location", &pypowsybl::setPowSyBlConfigLocation, py::arg("absolute_path_to_config"), py::arg("config_file_name"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
     m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
-    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("curve_mapping_handle"), py::arg("dynamic_id"));
+    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
