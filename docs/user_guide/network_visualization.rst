@@ -15,7 +15,7 @@ Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
 
 .. code-block:: python
 
-    >>> network.get_single_line_diagram_svg('VL4')
+    >>> network.get_single_line_diagram('VL4')
 
 .. image:: ../_static/images/ieee14_vl4.svg
 
