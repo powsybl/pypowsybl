@@ -21,6 +21,8 @@ Please check out the examples below.
 The general idea of this API is to create a decomposition object.
 Then, you can define contingencies if necessary.
 Then, you can define XNE and XNEC. XNEC definition requires pre-defined contingencies.
+Some pre-defined XNE selection adder functions are available.
+All the adder functions will be united when running a flow decomposition.
 Finally, you can run the flow decomposition with some flow decomposition and/or load flow parameters.
 
 For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.flowdecomposition>`.
@@ -35,9 +37,9 @@ First example
 -------------
 
 To perform a flow decomposition, you need at least a network.  
-We will define a flow decomposition object, add it some contingencies and some monitored lines.
+We will define a flow decomposition object, add some contingencies and some monitored lines.
 Those lines will be mapped to the network when running a flow decomposition.  
-The flow decomposition computation returns a dataframe containing the flow decomposition and the reference values.  
+The flow decomposition computation returns a data frame containing the flow decomposition and the reference values.  
 The reference values are the active power flows in AC on the original network and in DC on the compensated network.  
 By default, the compensated network is the same as the original network as the loss compensation is not activated by default.  
 Here are toy examples that do not reflect reality.  
@@ -92,7 +94,7 @@ Network details
 ^^^^^^^^^^^^^^^
 
 Here is another example with a more complex network containing a phase-shifting transformer (PST).  
-This PST has a non neutral tap position, thus forcing the flows in a certain direction.  
+This PST has a non-neutral tap position, thus forcing the flows in a certain direction.  
 This example illustrates the flow decomposition with such network element.  
 
 .. image:: ../_static/images/flow_decomposition_PST.svg
@@ -187,6 +189,144 @@ Here are the results with non-neutral tap position.
 Note that the reference flow on the 2d branch has changed of sign.  
 As we use it as reference, all the decomposed flows have also changed of sign.  
 
+Adder functions
+---------------
+
+The flow decomposition algorithm will decompose flow on monitored elements.  
+You need to define those elements.  
+You can either define those elements with specific ids or with automatic functions.  
+
+The union of selected elements will be decomposed.  
+For example, if you select the same branch in the same state two times, it will be decomposed only once.  
+
+Specific adder functions
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Specific adder functions are based on IDs.  
+When running the flow decomposition, the IDs will be mapped to the network.  
+If an identifiable is not found on the network, a warning will be sent (beware of activated logs) and the corresponding XNEC will be ignored.  
+
+With those adder functions, you can create XNEs and/or XNECs.  
+You need to specify contingencies first if required.  
+If you try to create a XNEC with an undefined contingency ID, an error will be raised.  
+
+By default, if you add monitored elements with branches and contingencies, it will create all possible valid pairs of branch and states.  
+By default, all the states are base case and all contingency states defined.  
+You can specify which states you want in the base add monitored element function or use a dedicated pre/post contingency function.  
+
+Here is an example
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ... .add_monitored_elements(['FGEN  11 BLOAD 11 1']) \ 
+    ... .add_single_element_contingency('FGEN  11 BLOAD 11 1') \
+    ... .add_monitored_elements(['FGEN  11 BLOAD 12 1'], ['FGEN  11 BLOAD 11 1']) \ 
+    ... .add_multiple_elements_contingency(['FGEN  11 BLOAD 11 1', 'BLOAD 11 BLOAD 12 2']) \
+    ... .add_monitored_elements('FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2', pp.flowdecomposition.ContingencyContextType.SPECIFIC)
+    >>> flow_decomposition.run(network)
+                                                                  branch_id                           contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                                                                                 
+    FGEN  11 BLOAD 11 1                                 FGEN  11 BLOAD 11 1                                                FR       BE          29.003009               25.0        28.999015      -0.0            0.0          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1                                 FGEN  11 BLOAD 12 1                                                FR       BE          87.009112               75.0        86.997046       0.0            0.0          -5.998523          -5.998523
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE         116.016179              100.0       115.996062       0.0            0.0          -7.998031          -7.998031
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1_BLOAD 1...  FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2       FR       BE         100.034531              100.0       115.996062       0.0            0.0          -7.998031          -7.998031
+
+See the API reference for more details about how each specific adder works.
+
+Automatic adder functions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Automatic adder functions are based on automatic selection processes.  
+With those functions, you can create XNEs and/or XNECs.  
+
+Some automatic XNE selection adder functions are available.
+
+5% zonal PTDF criteria
+~~~~~~~~~~~~~~~~~~~~~~
+
+This adder function will add all branches in the N state that have a zone-to-zone PTDF greater than 5% or that are interconnections.  
+This function adds some non-negligible precomputing to the process.  
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ... .add_5perc_ptdf_as_monitored_elements()
+    >>> flow_decomposition.run(network)
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                        
+    BLOAD 11 BLOAD 12 2  BLOAD 11 BLOAD 12 2                      BE       BE           3.005666              -25.0        28.999015      -0.0      -1.999508           0.000000          -1.999508
+    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1                      FR       BE          29.003009               25.0        28.999015      -0.0       0.000000          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1                      FR       BE          87.009112               75.0        86.997046       0.0       0.000000          -5.998523          -5.998523
+
+Interconnections
+~~~~~~~~~~~~~~~~
+
+This adder function will add interconnections in the N state.  
+Be careful when using this function with large networks.  
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ... .add_interconnections_as_monitored_elements()
+    >>> flow_decomposition.run(network)
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                        
+    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1                      FR       BE          29.003009               25.0        28.999015      -0.0            0.0          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1                      FR       BE          87.009112               75.0        86.997046       0.0            0.0          -5.998523          -5.998523
+
+All branches
+~~~~~~~~~~~~
+
+This adder function will add all branches in the N state.  
+Be careful when using this function with large networks.  
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ... .add_all_branches_as_monitored_elements()
+    >>> flow_decomposition.run(network)
+                                   branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                        
+    BLOAD 11 BLOAD 12 2  BLOAD 11 BLOAD 12 2                      BE       BE           3.005666              -25.0        28.999015      -0.0      -1.999508           0.000000          -1.999508
+    FGEN  11 BLOAD 11 1  FGEN  11 BLOAD 11 1                      FR       BE          29.003009               25.0        28.999015      -0.0       0.000000          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 12 1                      FR       BE          87.009112               75.0        86.997046       0.0       0.000000          -5.998523          -5.998523
+
+Mixing adder functions
+^^^^^^^^^^^^^^^^^^^^^^
+
+You can mix everything together as you like.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
+    ... .add_single_element_contingency('FGEN  11 BLOAD 11 1') \
+    ... .add_monitored_elements(['FGEN  11 BLOAD 12 1', 'BLOAD 11 BLOAD 12 2'], ['FGEN  11 BLOAD 11 1']) \ 
+    ... .add_multiple_elements_contingency(['FGEN  11 BLOAD 11 1', 'BLOAD 11 BLOAD 12 2']) \
+    ... .add_postcontingency_monitored_elements('FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2') \
+    ... .add_interconnections_as_monitored_elements() \
+    ... .add_all_branches_as_monitored_elements()
+    >>> flow_decomposition.run(network)
+                                                                  branch_id                           contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
+    xnec_id                                                                                                                                                                                                                                                 
+    BLOAD 11 BLOAD 12 2                                 BLOAD 11 BLOAD 12 2                                                BE       BE           3.005666              -25.0        28.999015      -0.0      -1.999508           0.000000          -1.999508
+    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1             BLOAD 11 BLOAD 12 2                      FGEN  11 BLOAD 11 1       BE       BE          32.000000               -0.0         0.000000       0.0      -0.000000           0.000000           0.000000
+    FGEN  11 BLOAD 11 1                                 FGEN  11 BLOAD 11 1                                                FR       BE          29.003009               25.0        28.999015      -0.0       0.000000          -1.999508          -1.999508
+    FGEN  11 BLOAD 12 1                                 FGEN  11 BLOAD 12 1                                                FR       BE          87.009112               75.0        86.997046       0.0       0.000000          -5.998523          -5.998523
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE         116.016179              100.0       115.996062       0.0       0.000000          -7.998031          -7.998031
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1_BLOAD 1...  FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2       FR       BE         100.034531              100.0       115.996062       0.0       0.000000          -7.998031          -7.998031
+
+
 Configuration file 
 ------------------
 
@@ -204,7 +344,7 @@ Here are the available parameters and their default values:
         dc-fallback-enabled-after-ac-divergence: True
         sensitivity-variable-batch-size: 15000
 
-The flow decomposition parameters can be overwriten in Python.  
+The flow decomposition parameters can be overwritten in Python.  
 If you have memory issues, do not hesitate to reduce the `sensitivity-variable-batch-size` parameter.
 
 .. doctest::

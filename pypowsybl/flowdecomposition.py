@@ -6,14 +6,19 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from __future__ import annotations
-from typing import Union as _Union, List as _List, Callable as _Callable
+from typing import Union as _Union, List as _List, Callable as _Callable, Optional as _Optional
 import pandas as _pd
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyContextType
+from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
 import pypowsybl.loadflow
+
+# enforcing some class metadata on classes imported from C extension,
+# in particular for sphinx documentation to work correctly,
+# and add some documentation
+ContingencyContextType.__module__ = __name__
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
@@ -103,7 +108,10 @@ class FlowDecomposition:
     """
     def __init__(self, handle: _pypowsybl.JavaHandle) -> None:
         self._handle = handle
-        
+
+    def __get_contingency_id(self, contingency_id_provider: _Optional[_Callable[[str], str]], element_id: str) -> str:
+        return contingency_id_provider(element_id) if contingency_id_provider else element_id
+
     def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> FlowDecomposition:
         """
         Add a contingency with a single element (1 N-1 state).
@@ -124,10 +132,8 @@ class FlowDecomposition:
             element_ids:                List of elements
             contingency_id_provider:    Function to transform an element id to a contingency id. By default, the identity function is used.
         """
-        if contingency_id_provider is None:
-            contingency_id_provider = lambda x: x
         for element_id in element_ids:
-            self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=contingency_id_provider(element_id))
+            self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=self.__get_contingency_id(contingency_id_provider, element_id))
         return self
 
     def add_multiple_elements_contingency(self, elements_ids: _List[str], contingency_id: str = None) -> FlowDecomposition:
@@ -192,6 +198,27 @@ class FlowDecomposition:
         if isinstance(contingency_ids, str):
             contingency_ids = [contingency_ids]
         _pypowsybl.add_postcontingency_monitored_elements_for_flow_decomposition(self._handle, branch_ids=branch_ids, contingency_ids=contingency_ids)
+        return self
+
+    def add_5perc_ptdf_as_monitored_elements(self) -> FlowDecomposition:
+        '''
+        Add branches that have a zone to zone PTDF greater than 5% or that are interconnections to be monitored on a precontingency state (XNE).
+        '''
+        _pypowsybl.add_additional_xnec_provider_for_flow_decomposition(self._handle, DefaultXnecProvider.GT_5_PERC_ZONE_TO_ZONE_PTDF)
+        return self
+
+    def add_interconnections_as_monitored_elements(self) -> FlowDecomposition:
+        '''
+        Add branches that are interconnections to be monitored on a precontingency state (XNE).
+        '''
+        _pypowsybl.add_additional_xnec_provider_for_flow_decomposition(self._handle, DefaultXnecProvider.INTERCONNECTIONS)
+        return self
+
+    def add_all_branches_as_monitored_elements(self) -> FlowDecomposition:
+        '''
+        Add all branches of the network to be monitored on a precontingency state (XNE).
+        '''
+        _pypowsybl.add_additional_xnec_provider_for_flow_decomposition(self._handle, DefaultXnecProvider.ALL_BRANCHES)
         return self
 
     def run(self, network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:

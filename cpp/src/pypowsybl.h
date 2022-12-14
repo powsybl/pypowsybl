@@ -132,6 +132,12 @@ enum ConnectedComponentMode {
     ALL,
 };
 
+enum DefaultXnecProvider {
+    GT_5_PERC_ZONE_TO_ZONE_PTDF = 0,
+    ALL_BRANCHES,
+    INTERCONNECTIONS,
+};
+
 class SeriesMetadata {
 public:
     SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
@@ -463,6 +469,8 @@ void addContingencyForFlowDecomposition(const JavaHandle& flowDecompositionConte
 void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds);
 
 void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds, const std::vector<std::string>& contingencyIds);
+
+void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider);
 
 SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 

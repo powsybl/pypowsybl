@@ -1089,6 +1089,10 @@ void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& f
     callJava(::addPostcontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, branchIdPtr.get(), branchIds.size(), contingencyIdPtr.get(), contingencyIds.size());
 }
 
+void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider) {
+    callJava(::addAdditionalXnecProviderForFlowDecomposition, flowDecompositionContext, defaultXnecProvider);
+}
+
 SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
     auto c_flow_decomposition_parameters = flow_decomposition_parameters.to_c_struct();
     auto c_load_flow_parameters  = load_flow_parameters.to_c_struct();
