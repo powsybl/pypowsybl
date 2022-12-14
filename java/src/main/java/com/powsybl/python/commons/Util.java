@@ -10,9 +10,9 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
@@ -299,16 +299,14 @@ public final class Util {
         }
     }
 
-    /**
-     * allows the mapping of lib names in package
-     * com.powsybl.dynawaltz.dynamicmodels
-     * from powsybl-dynawaltz to this enum
-     *
-     * @param value
-     * @return the associated DynamicMappingType value
-     */
-    public static DynamicMappingType getEnumValue(String value) {
-        Objects.nonNull(value);
-        return DynamicMappingType.valueOf(value.replaceAll("_", "").toUpperCase());
+    public static Branch.Side convert(PyPowsyblApiHeader.BranchSide side) {
+        switch (side) {
+            case ONE:
+                return Branch.Side.ONE;
+            case TWO:
+                return Branch.Side.TWO;
+            default:
+                throw new PowsyblException("Unknown element type : " + side);
+        }
     }
 }
