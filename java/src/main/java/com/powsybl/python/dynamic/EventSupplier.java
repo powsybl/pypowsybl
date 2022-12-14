@@ -31,7 +31,7 @@ public class EventSupplier implements EventModelsSupplier {
      * <p>
      * The event represent the disconnection the given line/transformer
      */
-    public void addEventQuadripoleDisconnection(String eventModelId, String staticId, String parameterSetId) {
+    public void addEventBranchDisconnection(String eventModelId, String staticId, String parameterSetId) {
         this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, parameterSetId));
     }
 

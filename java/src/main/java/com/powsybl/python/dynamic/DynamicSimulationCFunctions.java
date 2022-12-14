@@ -164,8 +164,8 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addEventQuadripoleDisconnection")
-    public static void addEventQuadripoleDisconnection(IsolateThread thread,
+    @CEntryPoint(name = "addEventBranchDisconnection")
+    public static void addEventBranchDisconnection(IsolateThread thread,
             ObjectHandle eventSupplierHandle,
             CCharPointer eventModelIdPtr,
             CCharPointer staticIdPtr,
@@ -176,7 +176,7 @@ public final class DynamicSimulationCFunctions {
             String staticId = CTypeUtil.toString(staticIdPtr);
             String parameterSetId = CTypeUtil.toString(parameterSetIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventQuadripoleDisconnection(eventModelId,
+            eventSupplier.addEventBranchDisconnection(eventModelId,
                     staticId, parameterSetId);
         });
     }
