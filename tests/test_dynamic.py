@@ -57,8 +57,13 @@ def test_add_event():
     events = dyn.EventMapping()
     events.add_event("EQD", dyn.EventType.BRANCH_DISCONNECTION,
                      "test_quadripole_id")
+    events.add_event("test_parameter_event", dyn.EventType.SET_POINT_BOOLEAN,
+                     "test_generator_id")
+    events.add_event("test_parameter_event", dyn.EventType.SET_POINT_BOOLEAN,
+                     "test_generator_id", "one_event_id")
 
 
 def test_add_curve():
     timeseries = dyn.CurveMapping()
-    timeseries.add_curves("test_load_id", ["load_PPu", "load_QPu"])
+    timeseries.add_curves("test_load_id_1", ["load_PPu", "load_QPu"])
+    timeseries.add_curves("test_load_id_2", "load_PPu")
