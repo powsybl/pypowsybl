@@ -96,8 +96,8 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_quadripole_disconnection(self, event_model_id: str, static_id: str, parameter_set_id: str) -> None:
-        _pp.add_event_quadripole_disconnection(
+    def add_branch_disconnection(self, event_model_id: str, static_id: str, parameter_set_id: str) -> None:
+        _pp.add_event_branch_disconnection(
             self._handle, event_model_id, static_id, parameter_set_id)
 
     def add_set_point_boolean(self, event_model_id: str, static_id: str, parameter_set_id: str) -> None:
