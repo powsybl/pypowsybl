@@ -82,7 +82,7 @@ class CurveMapping:
 
     def add_curves(self, dynamic_id: str, variables: _List[str]) -> None:
         for var in variables:
-            _pp.add_curve(self._handle, dynamic_id, var)
+            self.add_curve(dynamic_id, var)
 
 
 class EventType(_Enum):
