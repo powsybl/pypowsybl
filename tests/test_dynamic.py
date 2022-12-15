@@ -19,8 +19,8 @@ def set_up():
 
 
 def test_get_possible_events():
-    assert set(dyn.EventMapping.get_possible_events()) == set([dyn.EventType.QUADRIPOLE_DISCONNECT,
-                                                               dyn.EventType.SET_POINT_BOOLEAN, dyn.EventType.BRANCH_DISCONNECTION])
+    assert set(dyn.EventMapping.get_possible_events()) == set([dyn.EventType.BRANCH_DISCONNECTION,
+                                                               dyn.EventType.SET_POINT_BOOLEAN])
 
 
 def test_add_mapping():
@@ -29,7 +29,6 @@ def test_add_mapping():
     model_mapping = dyn.ModelMapping()
     model_mapping.add_alpha_beta_load(id, parameter_id)
     model_mapping.add_one_transformer_load(id, parameter_id)
-    model_mapping.add_omega_ref(id)
     model_mapping.add_generator_synchronous_three_windings(id, parameter_id)
     model_mapping.add_generator_synchronous_three_windings_proportional_regulations(
         id, parameter_id)
@@ -44,26 +43,19 @@ def test_dataframe_mapping():
     network = pp.network.create_ieee9()
     model_mapping = dyn.ModelMapping()
     load_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_loads().loc[l].name for l in network.get_loads().index],
-                                              "parameter_set_id": ["LAB" for l in network.get_loads().index],
-                                              "mapping_type": [dyn.DynamicMappingType.ALPHA_BETA_LOAD for l in network.get_loads().index]})
-
+                                              "parameter_set_id": ["LAB" for l in network.get_loads().index]})
     generator_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_generators().loc[l].name for l in network.get_generators().index],
-                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index],
-                                                   "mapping_type": [dyn.DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS for l in network.get_generators().index]})
+                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index]})
 
-    omega_ref_df = pd.DataFrame.from_dict({"static_id": [network.get_generators().loc[l].name for l in network.get_generators().index],
-                                           "parameter_set_id": ["ignored" for l in network.get_generators().index],
-                                           "mapping_type": [dyn.DynamicMappingType.OMEGA_REF for l in network.get_generators().index]})
-
+    model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.ALPHA_BETA_LOAD,
+                                           load_mapping_df.set_index("static_id"))
     model_mapping.add_all_dynamic_mappings(
-        pd.concat([load_mapping_df, generator_mapping_df, omega_ref_df],
-                  ignore_index=True)
-    )
+        dyn.DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS, generator_mapping_df.set_index("static_id"))
 
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_event("EQD", dyn.EventType.QUADRIPOLE_DISCONNECT,
+    events.add_event("EQD", dyn.EventType.BRANCH_DISCONNECTION,
                      "test_quadripole_id")
 
 
