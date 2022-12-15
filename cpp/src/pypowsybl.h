@@ -558,7 +558,6 @@ namespace pypowsybl {
     // dynamic model mapping
     void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
     void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf);
-    std::vector<SeriesMetadata> getDynamicMappingsMetaData();
 
     // timeseries/curves mapping
     void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
