@@ -31,10 +31,6 @@ class ModelMapping:
                                       parameter_set_id=dynamic_param,
                                       mapping_type=DynamicMappingType.ONE_TRANSFORMER_LOAD)
 
-    def add_omega_ref(self, generator_id: str) -> None:
-        self.add_all_dynamic_mappings(generator_id=generator_id,
-                                      mapping_type=DynamicMappingType.OMEGA_REF)
-
     def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=dynamic_param,

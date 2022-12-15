@@ -21,7 +21,6 @@ import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindings;
 import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindingsProportionalRegulations;
 import com.powsybl.dynawaltz.dynamicmodels.LoadAlphaBeta;
 import com.powsybl.dynawaltz.dynamicmodels.LoadOneTransformer;
-import com.powsybl.dynawaltz.dynamicmodels.OmegaRef;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 
@@ -53,10 +52,6 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
      */
     public void addOneTransformerLoad(String staticId, String parametersIds) {
         dynamicModelList.add(() -> new LoadOneTransformer(staticId, staticId, parametersIds));
-    }
-
-    public void addOmegaRef(String generatorId) {
-        dynamicModelList.add(() -> new OmegaRef(generatorId));
     }
 
     public void addGeneratorSynchronousThreeWindings(String staticId, String parametersIds) {

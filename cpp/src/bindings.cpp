@@ -129,7 +129,6 @@ void dynamicSimulationBindings(py::module_& m) {
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
         .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
         .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
-        .value("OMEGA_REF", DynamicMappingType::OMEGA_REF)
         .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
         .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
         .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
