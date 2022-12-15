@@ -76,11 +76,9 @@ class ModelMapping:
 class CurveMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_timeseries_mapping()
-        self._curves_names: _List[str] = []
 
     def add_curve(self, dynamic_id: str, variable: str) -> None:
-        self._curves_names.append(_pp.add_curve(
-            self._handle, dynamic_id, variable))
+        _pp.add_curve(self._handle, dynamic_id, variable)
 
     def add_curves(self, dynamic_id: str, variables: _List[str]) -> None:
         for var in variables:
