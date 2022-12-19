@@ -37,7 +37,7 @@ from pypowsybl.utils.dataframes import (
     _create_c_dataframe,
     _create_properties_c_dataframe,
     _adapt_properties_kwargs,
-    _get_c_dataframes, _adapt_kwargs
+    _get_c_dataframes
 )
 from pypowsybl.report import Reporter as _Reporter
 
@@ -5334,15 +5334,13 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
         bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)
 
 
-def create_voltage_level_topology(network: Network, switch_kind: _List[str], df: _DataFrame = None, raise_exception: bool = False,
+def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,
                                   reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number of sections.
 
     Args:
         network: the network in which the busbar sections are.
-        switch_kind: a list containing the type of switch between each section. It should have the length of the
-        section_count in the dataframe - 1.
         df: Attributes as a dataframe.
         raise_exception: whether an exception should be raised if a problem occurs. By default, false.
         reporter: an optional reporter to get functional logs.
@@ -5361,9 +5359,11 @@ def create_voltage_level_topology(network: Network, switch_kind: _List[str], df:
         - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
         default, nothing.
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
+        - **switch_kinds**: string containing the type of switch between each section. It should contain
+        section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR'.
 
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, c_df, switch_kind, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model)
+    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access

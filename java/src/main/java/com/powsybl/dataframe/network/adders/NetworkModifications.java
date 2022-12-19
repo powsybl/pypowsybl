@@ -12,9 +12,7 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeNetworkModificationType;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.SwitchKind;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.powsybl.dataframe.DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
@@ -35,12 +33,12 @@ public final class NetworkModifications {
         return MODIFICATION.get(type);
     }
 
-    public static void applyModification(DataframeNetworkModificationType type, Network network, UpdatingDataframe dataframe, List<SwitchKind> switchKinds, boolean throwException, ReporterModel reporter) {
+    public static void applyModification(DataframeNetworkModificationType type, Network network, UpdatingDataframe dataframe, boolean throwException, ReporterModel reporter) {
         NetworkModification modification = MODIFICATION.get(type);
         if (modification == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-        modification.applyModification(network, dataframe, switchKinds, throwException, reporter);
+        modification.applyModification(network, dataframe, throwException, reporter);
     }
 
 }

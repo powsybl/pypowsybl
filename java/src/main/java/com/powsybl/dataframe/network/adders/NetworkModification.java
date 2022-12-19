@@ -11,7 +11,6 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.SwitchKind;
 
 import java.util.List;
 
@@ -22,6 +21,6 @@ public interface NetworkModification {
 
     List<SeriesMetadata> getMetadata();
 
-    void applyModification(Network network, UpdatingDataframe dataframe, List<SwitchKind> switchKinds, boolean throwException, ReporterModel reporter);
+    void applyModification(Network network, UpdatingDataframe dataframe, boolean throwException, ReporterModel reporter);
 
 }

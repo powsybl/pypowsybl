@@ -28,15 +28,12 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
-import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
@@ -283,7 +280,6 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "createNetworkModification")
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
                                                  PyPowsyblApiHeader.DataframePointer cDataframe,
-                                                 CCharPointerPointer switchKindPtr, int switchCount,
                                                  PyPowsyblApiHeader.NetworkModificationType networkModificationType,
                                                  boolean throwException, ObjectHandle reporterHandle,
                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -291,10 +287,8 @@ public final class NetworkModificationsCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
             UpdatingDataframe df = createDataframe(cDataframe);
-            List<String> switchKindStr = toStringList(switchKindPtr, switchCount);
-            List<SwitchKind> switchKinds = switchKindStr.stream().map(SwitchKind::valueOf).collect(Collectors.toList());
             DataframeNetworkModificationType type = convert(networkModificationType);
-            NetworkModifications.applyModification(type, network, df, switchKinds, throwException, reporter);
+            NetworkModifications.applyModification(type, network, df, throwException, reporter);
         });
     }
 

@@ -2187,17 +2187,16 @@ def test_voltage_level_topology_creation():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'section_count': 2}
+        {'id': 'VL1', 'busbar_count': 3, 'section_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
     ])
-    switch = ['BREAKER']
-    pp.network.create_voltage_level_topology(network, switch, df)
+    pp.network.create_voltage_level_topology(network, df)
 
 
 def test_voltage_level_topology_creation_from_kwargs():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
-    switch = ['BREAKER']
-    pp.network.create_voltage_level_topology(network=network, switch_kind=switch, raise_exception=True, id='VL1', busbar_count=1, section_count=2)
+    switch = 'BREAKER, DISCONNECTOR'
+    pp.network.create_voltage_level_topology(network=network, switch_kinds=switch, raise_exception=True, id='VL1', busbar_count=1, section_count=3)
 
 
 if __name__ == '__main__':

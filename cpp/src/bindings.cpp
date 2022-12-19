@@ -698,6 +698,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 
-    m.def("create_network_modification", &pypowsybl::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("switch_kind"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+    m.def("create_network_modification", &pypowsybl::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
 
 }

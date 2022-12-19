@@ -519,6 +519,6 @@ void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::str
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  const std::vector<std::string>& switchKind, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
 }
 #endif //PYPOWSYBL_H

@@ -1236,9 +1236,8 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
     return res;
 }
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  const std::vector<std::string>& switchKind, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
-    ToCharPtrPtr switchKindPtr(switchKind);
-    pypowsybl::callJava(::createNetworkModification, network, dataframe, switchKindPtr.get(), switchKind.size(), networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
+    pypowsybl::callJava(::createNetworkModification, network, dataframe, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 }
