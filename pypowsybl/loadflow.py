@@ -287,6 +287,110 @@ ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType
 
 _OptionalDf = _Optional[_DataFrame]
 
+class ValidationParameters:
+    """
+
+    """
+
+    def __init__(self, threshold: float = None,
+                 verbose: bool = None,
+                 load_flow_name: str = None,
+                 table_formatter_factory: _pypowsybl.TableFormatterFactory = None,
+                 epsilon_x: float = None,
+                 apply_reactance_correction: bool = None,
+                 validation_output_writer: _pypowsybl.ValidationOutputWriter = None,
+                 load_flow_parameters: _pypowsybl.LoadFlowParameters = None,
+                 ok_missing_values: bool = None,
+                 no_requirement_if_reactive_bound_inversion: bool = None,
+                 compare_results: bool = None,
+                 check_main_component_only: bool = None,
+                 no_requirement_if_setpoint_outside_power_bounds: bool = None):
+        self._init_with_default_values()
+        if threshold is not None:
+            self.threshold = threshold
+        if verbose is not None:
+            self.verbose = verbose
+        if load_flow_name is not None:
+            self.load_flow_name = load_flow_name
+        if table_formatter_factory is not None:
+            self.table_formatter_factory = table_formatter_factory
+        if epsilon_x is not None:
+            self.epsilon_x = epsilon_x
+        if apply_reactance_correction is not None:
+            self.apply_reactance_correction = apply_reactance_correction
+        if validation_output_writer is not None:
+            self.validation_output_writer = validation_output_writer
+        if load_flow_parameters is not None:
+            self.load_flow_parameters = load_flow_parameters
+        if ok_missing_values is not None:
+            self.ok_missing_values = ok_missing_values
+        if no_requirement_if_reactive_bound_inversion is not None:
+            self.no_requirement_if_reactive_bound_inversion = no_requirement_if_reactive_bound_inversion
+        if compare_results is not None:
+            self.compare_results = compare_results
+        if check_main_component_only is not None:
+            self.check_main_component_only = check_main_component_only
+        if no_requirement_if_setpoint_outside_power_bounds is not None:
+            self.no_requirement_if_setpoint_outside_power_bounds = no_requirement_if_setpoint_outside_power_bounds
+
+    def _init_with_default_values(self) -> None:
+        self._init_from_c(_pypowsybl.ValidationConfig())
+
+    def _init_from_c(self, c_parameters: _pypowsybl.ValidationConfig) -> None:
+        self.threshold = c_parameters.threshold
+        self.verbose = c_parameters.verbose
+        self.load_flow_name = c_parameters.load_flow_name
+        self.table_formatter_factory = c_parameters.table_formatter_factory
+        self.epsilon_x = c_parameters.epsilon_x
+        self.apply_reactance_correction = c_parameters.apply_reactance_correction
+        self.validation_output_writer = c_parameters.validation_output_writer
+        self.load_flow_parameters = c_parameters.load_flow_parameters
+        self.ok_missing_values = c_parameters.ok_missing_values
+        self.no_requirement_if_reactive_bound_inversion = c_parameters.no_requirement_if_reactive_bound_inversion
+        self.compare_results = c_parameters.compare_results
+        self.check_main_component_only = c_parameters.check_main_component_only
+        self.no_requirement_if_setpoint_outside_power_bounds = c_parameters.no_requirement_if_setpoint_outside_power_bounds
+
+    def _to_c_parameters(self) -> _pypowsybl.ValidationConfig:
+        c_parameters = _pypowsybl.ValidationConfig()
+        c_parameters.threshold = self.threshold
+        c_parameters.verbose = self.verbose
+        c_parameters.load_flow_name = self.load_flow_name
+        c_parameters.table_formatter_factory = self.table_formatter_factory
+        c_parameters.epsilon_x = self.epsilon_x
+        c_parameters.apply_reactance_correction = self.apply_reactance_correction
+        c_parameters.validation_output_writer = self.validation_output_writer
+        c_parameters.load_flow_parameters = self.load_flow_parameters
+        c_parameters.ok_missing_values = self.ok_missing_values
+        c_parameters.no_requirement_if_reactive_bound_inversion = self.no_requirement_if_reactive_bound_inversion
+        c_parameters.compare_results = self.compare_results
+        c_parameters.check_main_component_only = self.check_main_component_only
+        c_parameters.no_requirement_if_setpoint_outside_power_bounds = self.no_requirement_if_setpoint_outside_power_bounds
+        return c_parameters
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f"threshold={self.threshold}" \
+               f", verbose={self.verbose!r}" \
+               f", load_flow_name={self.load_flow_name!r}" \
+               f", table_formatter_factory={self.table_formatter_factory.name!r}" \
+               f", epsilon_x={self.epsilon_x!r}" \
+               f", apply_reactance_correction={self.apply_reactance_correction!r}" \
+               f", validation_output_writer={self.validation_output_writer.name!r}" \
+               f", load_flow_parameters={self.load_flow_parameters.name!r}" \
+               f", ok_missing_values={self.ok_missing_values!r}" \
+               f", no_requirement_if_reactive_bound_inversion={self.no_requirement_if_reactive_bound_inversion}" \
+               f", compare_results={self.compare_results!r}" \
+               f", no_requirement_if_setpoint_outside_power_bounds={self.no_requirement_if_setpoint_outside_power_bounds}" \
+               f")"
+
+def _validation_parameters_from_c(c_parameters: _pypowsybl.ValidationConfig) -> ValidationParameters:
+    """
+    Converts C struct to python parameters (bypassing python constructor)
+    """
+    res = ValidationParameters.__new__(ValidationParameters)
+    res._init_from_c(c_parameters)
+    return res
 
 class ValidationResult:
     """
@@ -368,13 +472,15 @@ class ValidationResult:
         return self._valid
 
 
-def run_validation(network: _Network, validation_types: _List[ValidationType] = None) -> ValidationResult:
+def run_validation(network: _Network, validation_types: _List[ValidationType] = None,
+                   validation_parameters: ValidationParameters = None) -> ValidationResult:
     """
     Checks that the network data are consistent with AC loadflow equations.
 
     Args:
         network: The network to be checked.
         validation_types: The types of data to be checked. If None, all types will be checked.
+        validation_parameters: The parameters to run the validation with.
 
     Returns:
         The validation result.
