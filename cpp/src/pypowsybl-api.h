@@ -56,6 +56,21 @@ typedef struct load_flow_parameters_struct {
     int provider_parameters_values_count;
 } load_flow_parameters;
 
+typedef struct load_flow_validation_parameters_struct {
+    double threshold;
+    double epsilon_x;
+    unsigned char verbose;
+    char* load_flow_name;
+    struct load_flow_parameters_struct load_flow_parameters;
+    unsigned char apply_reactance_correction;
+    unsigned char ok_missing_values;
+    unsigned char no_requirement_if_reactive_bound_inversion;
+    unsigned char compare_results;
+    unsigned char check_main_component_only;
+    unsigned char no_requirement_if_setpoint_outside_power_bounds;
+    // table_formatter_factory, validation_output_writer ?
+} load_flow_validation_parameters;
+
 typedef struct security_analysis_parameters_struct {
     struct load_flow_parameters_struct load_flow_parameters;
     double flow_proportional_threshold;

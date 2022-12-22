@@ -39,15 +39,18 @@ public final class LoadFlowValidationCFunctions {
 
     @CEntryPoint(name = "runLoadFlowValidation")
     public static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                  PyPowsyblApiHeader.ValidationType validationType, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                  PyPowsyblApiHeader.ValidationType validationType,
+                                                                                  PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
+                                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createLoadFlowValidationSeriesArray(network, validationType);
+            return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
         });
     }
 
-    static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(Network network, PyPowsyblApiHeader.ValidationType validationType) {
-        InMemoryValidationWriter writer = createLoadFlowValidationWriter(network, validationType);
+    static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(Network network, PyPowsyblApiHeader.ValidationType validationType,
+                                                                           PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {
+        InMemoryValidationWriter writer = createLoadFlowValidationWriter(network, validationType, loadFlowValidationParametersPtr);
         return createCDataFrame(writer, validationType);
     }
 
@@ -60,8 +63,9 @@ public final class LoadFlowValidationCFunctions {
     }
 
     // package scope for unit testing
-    static InMemoryValidationWriter createLoadFlowValidationWriter(Network network, PyPowsyblApiHeader.ValidationType validationType) {
-        ValidationConfig validationConfig = PyPowsyblConfiguration.isReadConfig() ? ValidationConfig.load() : defaultValidationConfig();
+    static InMemoryValidationWriter createLoadFlowValidationWriter(Network network, PyPowsyblApiHeader.ValidationType validationType,
+                                                                   PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {
+        ValidationConfig validationConfig = createValidationConfig(loadFlowValidationParametersPtr);
         InMemoryValidationWriter writer = new InMemoryValidationWriter();
         switch (validationType) {
             case FLOWS:
@@ -110,5 +114,22 @@ public final class LoadFlowValidationCFunctions {
             default:
                 throw new PowsyblException("Validation '" + validationType + "' not supported");
         }
+    }
+
+    private static ValidationConfig createValidationConfig(PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {
+        ValidationConfig validationConfig = PyPowsyblConfiguration.isReadConfig() ? ValidationConfig.load() : defaultValidationConfig();
+
+        // set LoadFlowParameters + tableFormatterFactory, validationOutputWriter ?
+        validationConfig.setThreshold(loadFlowValidationParametersPtr.getThreshold())
+                .setVerbose(loadFlowValidationParametersPtr.isVerbose())
+                .setLoadFlowName(loadFlowValidationParametersPtr.getLoadFlowName())
+                .setEpsilonX(loadFlowValidationParametersPtr.getEpsilonX())
+                .setApplyReactanceCorrection(loadFlowValidationParametersPtr.isApplyReactanceCorrection())
+                .setOkMissingValues(loadFlowValidationParametersPtr.isOkMissingValues())
+                .setNoRequirementIfReactiveBoundInversion(loadFlowValidationParametersPtr.isNoRequirementIfReactiveBoundInversion())
+                .setCompareResults(loadFlowValidationParametersPtr.isCompareResults())
+                .setCheckMainComponentOnly(loadFlowValidationParametersPtr.isCheckMainComponentOnly())
+                .setNoRequirementIfSetpointOutsidePowerBounds(loadFlowValidationParametersPtr.isNoRequirementIfSetpointOutsidePowerBounds());
+        return validationConfig;
     }
 }

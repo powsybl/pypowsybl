@@ -268,6 +268,75 @@ public final class PyPowsyblApiHeader {
         void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
+    @CStruct("load_flow_validation_parameters")
+    public interface LoadFlowValidationParametersPointer extends PointerBase {
+
+        @CField("threshold")
+        int getThreshold();
+
+        @CField("threshold")
+        void setThreshold(double threshold);
+
+        @CField("verbose")
+        boolean isVerbose();
+
+        @CField("verbose")
+        void setVerbose(boolean verbose);
+
+        @CField("load_flow_name")
+        CCharPointer getLoadFlowName();
+
+        @CField("load_flow_name")
+        void setLoadFlowName(CCharPointer loadFlowName);
+
+        @CField("epsilon_x")
+        double getEpsilonX();
+
+        @CField("epsilon_x")
+        void setEpsilonX(double epsilonX);
+
+        @CField("apply_reactance_correction")
+        boolean isApplyReactanceCorrection();
+
+        @CField("apply_reactance_correction")
+        void setApplyReactanceCorrection(boolean applyReactanceCorrection);
+
+        @CFieldAddress("load_flow_parameters")
+        LoadFlowParametersPointer getLoadFlowParameters();
+
+        @CField("ok_missing_values")
+        boolean isOkMissingValues();
+
+        @CField("ok_missing_values")
+        void setOkMissingValues(boolean okMissingValues);
+
+        @CField("no_requirement_if_reactive_bound_inversion")
+        boolean isNoRequirementIfReactiveBoundInversion();
+
+        @CField("no_requirement_if_reactive_bound_inversion")
+        void setNoRequirementIfReactiveBoundInversion(boolean noRequirementIfReactiveBoundInversion);
+
+        @CField("compare_results")
+        boolean isCompareResults();
+
+        @CField("compare_results")
+        void setCompareResults(boolean compareResults);
+
+        @CField("check_main_component_only")
+        boolean isCheckMainComponentOnly();
+
+        @CField("check_main_component_only")
+        void setCheckMainComponentOnly(boolean checkMainComponentOnly);
+
+        @CField("no_requirement_if_setpoint_outside_power_bounds")
+        boolean isNoRequirementIfSetpointOutsidePowerBounds();
+
+        @CField("no_requirement_if_setpoint_outside_power_bounds")
+        void setNoRequirementIfSetpointOutsidePowerBounds(boolean noRequirementIfSetpointOutsidePowerBounds);
+
+        //tableFormatterFactory, validationOutputWriter ?
+    }
+
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
