@@ -343,6 +343,48 @@ std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
     });
 }
 
+void deleteLoadFlowValidationParameters(load_flow_validation_parameters* ptr) {
+    deleteLoadFlowParameters(&ptr->load_flow_parameters);
+}
+
+LoadFlowValidationParameters::LoadFlowValidationParameters(load_flow_validation_parameters* src):
+    load_flow_parameters(&src->load_flow_parameters)
+{
+    threshold = (double) src->threshold;
+    verbose = (bool) src->verbose;
+    load_flow_name = src->load_flow_name;
+    epsilon_x = (double) src->epsilon_x;
+    apply_reactance_correction = (bool) src->apply_reactance_correction;
+    ok_missing_values = (bool) src->ok_missing_values;
+    no_requirement_if_reactive_bound_inversion = (bool) src->no_requirement_if_reactive_bound_inversion;
+    compare_results = (bool) src->compare_results;
+    check_main_component_only = (bool) src->check_main_component_only;
+    no_requirement_if_setpoint_outside_power_bounds = (bool) src->no_requirement_if_setpoint_outside_power_bounds;
+}
+
+void LoadFlowValidationParameters::load_to_c_struct(load_flow_validation_parameters& res) const {
+    res.threshold = threshold;
+    res.verbose = (unsigned char) verbose;
+    res.load_flow_name = copyStringToCharPtr(load_flow_name);
+    res.epsilon_x = epsilon_x;
+    res.apply_reactance_correction = (unsigned char) apply_reactance_correction;
+    rs.ok_missing_values = (unsigned char) ok_missing_values;
+    res.no_requirement_if_reactive_bound_inversion = (unsigned char) no_requirement_if_reactive_bound_inversion;
+    res.compare_results = (unsigned char) compare_results;
+    res.check_main_component_only = (unsigned char) check_main_component_only;
+    res.no_requirement_if_setpoint_outside_power_bounds = (unsigned char) no_requirement_if_setpoint_outside_power_bounds;
+}
+
+std::shared_ptr<load_flow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {
+    load_flow_validation_parameters* res = new load_flow_validation_parameters();
+    load_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<load_flow_validation_parameters>(res, [](load_flow_validation_parameters* ptr){
+        deleteLoadFlowValidationParameters(ptr);
+        delete ptr;
+    });
+}
+
 void deleteSecurityAnalysisParameters(security_analysis_parameters* ptr) {
     deleteLoadFlowParameters(&ptr->load_flow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);

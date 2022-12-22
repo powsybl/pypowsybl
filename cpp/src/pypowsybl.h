@@ -186,6 +186,24 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class LoadFlowValidationParameters {
+public:
+    LoadFlowValidationParameters(load_flow_validation_parameters* src);
+    std::shared_ptr<load_flow_validation_parameters> to_c_struct() const;
+
+    LoadFlowParameters load_flow_parameters;
+    double threshold;
+    bool verbose;
+    std::string load_flow_name;
+    double epsilon_x;
+    bool apply_reactance_correction;
+    bool ok_missing_values;
+    bool no_requirement_if_reactive_bound_inversion;
+    bool compare_results;
+    bool check_main_component_only;
+    bool no_requirement_if_setpoint_outside_power_bounds;
+};
+
 class SecurityAnalysisParameters {
 public:
     SecurityAnalysisParameters(security_analysis_parameters* src);
@@ -305,6 +323,8 @@ LoadFlowParameters* createLoadFlowParameters();
 
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
+LoadFlowValidationParameters* createLoadFlowValidationParameters();
+
 SecurityAnalysisParameters* createSecurityAnalysisParameters();
 
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
@@ -319,7 +339,7 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters);
 

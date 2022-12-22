@@ -319,6 +319,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
+            .def(py::init(&pypowsybl::createValidationConfig))
+            .def_readwrite("threshold", &pypowsybl::LoadFlowValidationParameters::threshold)
+            //TODO;
+
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
             .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
             .def_readwrite("load_flow_parameters", &pypowsybl::SecurityAnalysisParameters::load_flow_parameters)
