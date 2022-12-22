@@ -5362,6 +5362,11 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
         - **switch_kinds**: string containing the type of switch between each section. It should contain
         section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR'.
 
+    Examples:
+
+    .. code-block:: python
+        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', busbar_count=3,
+                                                 section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
