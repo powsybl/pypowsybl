@@ -673,7 +673,7 @@ LoadFlowParameters* createLoadFlowParameters() {
     return new LoadFlowParameters(parameters.get());
 }
 
-LoadFlowValidationParameters* createLoadFlowValidationParameters() {
+LoadFlowValidationParameters* createValidationConfig() {
     load_flow_validation_parameters* parameters_ptr = callJava<load_flow_validation_parameters*>(::createValidationConfig);
     auto parameters = std::shared_ptr<load_flow_validation_parameters>(parameters_ptr, [](load_flow_validation_parameters* ptr){
        //Memory has been allocated on java side, we need to clean it up on java side
