@@ -475,6 +475,7 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
     """
     if validation_types is None:
         validation_types = ValidationType.ALL
+    validation_config = validation_parameters._to_c_parameters() if validation_parameters is not None else _pypowsybl.LoadFlowValidationParameters()
     res_by_type = {}
     for validation_type in validation_types:
         series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type, validation_parameters)
