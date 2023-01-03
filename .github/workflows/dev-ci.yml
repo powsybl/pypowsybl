@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-entsoe
-          ref: refs/heads/union_xnec_provider
+          ref: refs/heads/add_xnodeflow_decomposition
 
       - name: Build and install powsybl-entsoe with Maven
         run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install'
@@ -142,7 +142,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-entsoe
-          ref: refs/heads/union_xnec_provider
+          ref: refs/heads/add_xnodeflow_decomposition
 
       - name: Build and install powsybl-entsoe with Maven
         run: mvn --batch-mode -DskipTests=true --file ../powsybl-entsoe/pom.xml install

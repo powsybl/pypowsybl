@@ -443,6 +443,7 @@ public final class Dataframes {
             .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
             .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
             .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
+            .doubles("x_node_flow", XnecWithDecompositionContext::getXNodeFlow)
             .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
             .doubles("internal_flow", XnecWithDecompositionContext::getInternalFlow)
             .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))

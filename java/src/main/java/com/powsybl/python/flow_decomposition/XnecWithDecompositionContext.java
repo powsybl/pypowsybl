@@ -23,14 +23,15 @@ public class XnecWithDecompositionContext extends DecomposedFlow {
     public XnecWithDecompositionContext(DecomposedFlow decomposedFlow) {
         super(decomposedFlow.getBranchId(),
             decomposedFlow.getContingencyId(),
-            decomposedFlow.getLoopFlows(),
-            decomposedFlow.getInternalFlow(),
-            decomposedFlow.getAllocatedFlow(),
-            decomposedFlow.getPstFlow(),
+            decomposedFlow.getCountry1(),
+            decomposedFlow.getCountry2(),
             decomposedFlow.getAcReferenceFlow(),
             decomposedFlow.getDcReferenceFlow(),
-            decomposedFlow.getCountry1(),
-            decomposedFlow.getCountry2());
+            decomposedFlow.getAllocatedFlow(),
+            decomposedFlow.getXNodeFlow(),
+            decomposedFlow.getPstFlow(),
+            decomposedFlow.getInternalFlow(),
+            decomposedFlow.getLoopFlows());
     }
 
     public String getCountry1String() {
