@@ -190,6 +190,7 @@ class LoadFlowValidationParameters {
 public:
     LoadFlowValidationParameters(load_flow_validation_parameters* src);
     std::shared_ptr<load_flow_validation_parameters> to_c_struct() const;
+    void load_to_c_struct(load_flow_validation_parameters& params) const;
 
     LoadFlowParameters load_flow_parameters;
     double threshold;
@@ -323,7 +324,7 @@ LoadFlowParameters* createLoadFlowParameters();
 
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
-LoadFlowValidationParameters* createLoadFlowValidationParameters();
+LoadFlowValidationParameters* createValidationConfig();
 
 SecurityAnalysisParameters* createSecurityAnalysisParameters();
 

@@ -322,7 +322,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
             .def(py::init(&pypowsybl::createValidationConfig))
             .def_readwrite("threshold", &pypowsybl::LoadFlowValidationParameters::threshold)
-            //TODO;
+            .def_readwrite("verbose", &pypowsybl::LoadFlowValidationParameters::verbose)
+            .def_readwrite("load_flow_name", &pypowsybl::LoadFlowValidationParameters::load_flow_name)
+            .def_readwrite("epsilon_x", &pypowsybl::LoadFlowValidationParameters::epsilon_x)
+            .def_readwrite("apply_reactance_correction", &pypowsybl::LoadFlowValidationParameters::apply_reactance_correction)
+            .def_readwrite("ok_missing_values", &pypowsybl::LoadFlowValidationParameters::ok_missing_values)
+            .def_readwrite("no_requirement_if_reactive_bound_inversion", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_reactive_bound_inversion)
+            .def_readwrite("compare_results", &pypowsybl::LoadFlowValidationParameters::compare_results)
+            .def_readwrite("check_main_component_only", &pypowsybl::LoadFlowValidationParameters::check_main_component_only)
+            .def_readwrite("no_requirement_if_setpoint_outside_power_bounds", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_setpoint_outside_power_bounds);
 
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
             .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
@@ -344,7 +352,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
-    m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("validation_type"));
+    m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
+          py::arg("validation_type"), py::arg("validation_parameters"));
 
     py::class_<pypowsybl::LayoutParameters>(m, "LayoutParameters")
         .def(py::init(&pypowsybl::createLayoutParameters))

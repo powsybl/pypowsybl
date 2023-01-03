@@ -368,7 +368,7 @@ void LoadFlowValidationParameters::load_to_c_struct(load_flow_validation_paramet
     res.load_flow_name = copyStringToCharPtr(load_flow_name);
     res.epsilon_x = epsilon_x;
     res.apply_reactance_correction = (unsigned char) apply_reactance_correction;
-    rs.ok_missing_values = (unsigned char) ok_missing_values;
+    res.ok_missing_values = (unsigned char) ok_missing_values;
     res.no_requirement_if_reactive_bound_inversion = (unsigned char) no_requirement_if_reactive_bound_inversion;
     res.compare_results = (unsigned char) compare_results;
     res.check_main_component_only = (unsigned char) check_main_component_only;
@@ -673,6 +673,15 @@ LoadFlowParameters* createLoadFlowParameters() {
     return new LoadFlowParameters(parameters.get());
 }
 
+LoadFlowValidationParameters* createLoadFlowValidationParameters() {
+    load_flow_validation_parameters* parameters_ptr = callJava<load_flow_validation_parameters*>(::createValidationConfig);
+    auto parameters = std::shared_ptr<load_flow_validation_parameters>(parameters_ptr, [](load_flow_validation_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeValidationConfig, ptr);
+    });
+    return new LoadFlowValidationParameters(parameters.get());
+}
+
 
 SecurityAnalysisParameters* createSecurityAnalysisParameters() {
     security_analysis_parameters* parameters_ptr = callJava<security_analysis_parameters*>(::createSecurityAnalysisParameters);
@@ -697,8 +706,9 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter));
 }
 
-SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType) {
-    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType));
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& load_flow_validation_parameters) {
+    auto c_validation_parameters = load_flow_validation_parameters.to_c_struct();
+    return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType, c_validation_parameters.get()));
 }
 
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters) {

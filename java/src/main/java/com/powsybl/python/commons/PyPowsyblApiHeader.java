@@ -272,7 +272,7 @@ public final class PyPowsyblApiHeader {
     public interface LoadFlowValidationParametersPointer extends PointerBase {
 
         @CField("threshold")
-        int getThreshold();
+        double getThreshold();
 
         @CField("threshold")
         void setThreshold(double threshold);
