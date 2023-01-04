@@ -287,7 +287,7 @@ ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType
 
 _OptionalDf = _Optional[_DataFrame]
 
-class ValidationParameters:
+class ValidationParameters: # pylint: disable=too-few-public-methods
     """
     table_formatter_factory, validation_output_writer ?
     """
@@ -372,13 +372,6 @@ class ValidationParameters:
                f", no_requirement_if_setpoint_outside_power_bounds={self.no_requirement_if_setpoint_outside_power_bounds}" \
                f")"
 
-def _validation_parameters_from_c(c_parameters: _pypowsybl.LoadFlowValidationParameters) -> ValidationParameters:
-    """
-    Converts C struct to python parameters (bypassing python constructor)
-    """
-    res = ValidationParameters.__new__(ValidationParameters)
-    res._init_from_c(c_parameters)
-    return res
 
 class ValidationResult:
     """
