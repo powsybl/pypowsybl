@@ -625,7 +625,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     
     m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
 
-    m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Create contingency for a flow decomposition",
+    m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Add a contingency for flow decomposition",
           py::arg("flow_decomposition_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
     m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements before contingency to be monitored for a flow decomposition",
