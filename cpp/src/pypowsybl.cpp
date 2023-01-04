@@ -352,7 +352,7 @@ LoadFlowValidationParameters::LoadFlowValidationParameters(load_flow_validation_
 {
     threshold = (double) src->threshold;
     verbose = (bool) src->verbose;
-    load_flow_name = src->load_flow_name;
+    load_flow_name = toString(src->load_flow_name);
     epsilon_x = (double) src->epsilon_x;
     apply_reactance_correction = (bool) src->apply_reactance_correction;
     ok_missing_values = (bool) src->ok_missing_values;

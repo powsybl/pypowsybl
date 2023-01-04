@@ -297,7 +297,7 @@ class ValidationParameters:
                  load_flow_name: str = None,
                  epsilon_x: float = None,
                  apply_reactance_correction: bool = None,
-                 load_flow_parameters: _pypowsybl.LoadFlowParameters = None,
+                 load_flow_parameters: Parameters = None,
                  ok_missing_values: bool = None,
                  no_requirement_if_reactive_bound_inversion: bool = None,
                  compare_results: bool = None,
@@ -336,7 +336,7 @@ class ValidationParameters:
         self.load_flow_name = c_parameters.load_flow_name
         self.epsilon_x = c_parameters.epsilon_x
         self.apply_reactance_correction = c_parameters.apply_reactance_correction
-        self.load_flow_parameters = c_parameters.load_flow_parameters
+        self.load_flow_parameters = _parameters_from_c(c_parameters.load_flow_parameters)
         self.ok_missing_values = c_parameters.ok_missing_values
         self.no_requirement_if_reactive_bound_inversion = c_parameters.no_requirement_if_reactive_bound_inversion
         self.compare_results = c_parameters.compare_results
@@ -350,7 +350,7 @@ class ValidationParameters:
         c_parameters.load_flow_name = self.load_flow_name
         c_parameters.epsilon_x = self.epsilon_x
         c_parameters.apply_reactance_correction = self.apply_reactance_correction
-        c_parameters.load_flow_parameters = self.load_flow_parameters
+        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
         c_parameters.ok_missing_values = self.ok_missing_values
         c_parameters.no_requirement_if_reactive_bound_inversion = self.no_requirement_if_reactive_bound_inversion
         c_parameters.compare_results = self.compare_results
@@ -365,7 +365,7 @@ class ValidationParameters:
                f", load_flow_name={self.load_flow_name!r}" \
                f", epsilon_x={self.epsilon_x!r}" \
                f", apply_reactance_correction={self.apply_reactance_correction!r}" \
-               f", load_flow_parameters={self.load_flow_parameters.name!r}" \
+               f", load_flow_parameters={self.load_flow_parameters!r}" \
                f", ok_missing_values={self.ok_missing_values!r}" \
                f", no_requirement_if_reactive_bound_inversion={self.no_requirement_if_reactive_bound_inversion}" \
                f", compare_results={self.compare_results!r}" \
@@ -478,7 +478,7 @@ def run_validation(network: _Network, validation_types: _List[ValidationType] = 
     validation_config = validation_parameters._to_c_parameters() if validation_parameters is not None else _pypowsybl.LoadFlowValidationParameters()
     res_by_type = {}
     for validation_type in validation_types:
-        series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type, validation_parameters)
+        series_array = _pypowsybl.run_load_flow_validation(network._handle, validation_type, validation_config)
         res_by_type[validation_type] = _create_data_frame_from_series_array(series_array)
 
     return ValidationResult(buses=res_by_type.get(ValidationType.BUSES, None),

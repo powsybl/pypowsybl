@@ -326,6 +326,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("load_flow_name", &pypowsybl::LoadFlowValidationParameters::load_flow_name)
             .def_readwrite("epsilon_x", &pypowsybl::LoadFlowValidationParameters::epsilon_x)
             .def_readwrite("apply_reactance_correction", &pypowsybl::LoadFlowValidationParameters::apply_reactance_correction)
+            .def_readwrite("load_flow_parameters", &pypowsybl::LoadFlowValidationParameters::load_flow_parameters)
             .def_readwrite("ok_missing_values", &pypowsybl::LoadFlowValidationParameters::ok_missing_values)
             .def_readwrite("no_requirement_if_reactive_bound_inversion", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_reactive_bound_inversion)
             .def_readwrite("compare_results", &pypowsybl::LoadFlowValidationParameters::compare_results)

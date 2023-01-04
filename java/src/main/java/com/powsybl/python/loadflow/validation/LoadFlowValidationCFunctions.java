@@ -136,6 +136,8 @@ public final class LoadFlowValidationCFunctions {
         cParameters.setVerbose(parameters.isVerbose());
         if (parameters.getLoadFlowName().isPresent()) {
             cParameters.setLoadFlowName(CTypeUtil.toCharPtr(parameters.getLoadFlowName().get()));
+        } else {
+            cParameters.setLoadFlowName(CTypeUtil.toCharPtr(""));
         }
         cParameters.setEpsilonX(parameters.getEpsilonX());
         cParameters.setApplyReactanceCorrection(parameters.applyReactanceCorrection());
@@ -162,12 +164,11 @@ public final class LoadFlowValidationCFunctions {
     }
 
     public static void freeLoadFlowValidationParametersPointer(LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {
-        UnmanagedMemory.free(loadFlowValidationParametersPtr.getLoadFlowName());
-        LoadFlowCFunctions.freeLoadFlowParametersPointer(loadFlowValidationParametersPtr.getLoadFlowParameters());
+        LoadFlowCUtils.freeLoadFlowParametersContent(loadFlowValidationParametersPtr.getLoadFlowParameters());
         UnmanagedMemory.free(loadFlowValidationParametersPtr);
     }
 
-    private static ValidationConfig createValidationConfig() {
+    public static ValidationConfig createValidationConfig() {
         return PyPowsyblConfiguration.isReadConfig() ? ValidationConfig.load() : defaultValidationConfig();
     }
 
