@@ -120,6 +120,31 @@ def test_validation_all():
     assert validation.twts is not None
 
 
+def test_lf_validation_parameters():
+    # Testing setting independently every attributes
+    attributes = {
+        'threshold': [0.1, 0.2],
+        'verbose': [True, False],
+        'load_flow_name': ['loadFlow1', 'loadFLow2'],
+        'epsilon_x': [0.1, 0.2],
+        'apply_reactance_correction': [True, False],
+        'ok_missing_values': [True, False],
+        'no_requirement_if_reactive_bound_inversion': [True, False],
+        'compare_results': [True, False],
+        'check_main_component_only': [True, False],
+        'no_requirement_if_setpoint_outside_power_bounds': [True, False]
+    }
+
+    for attribute, values in attributes.items():
+        for value in values:
+            parameters = lf.ValidationParameters(**dict([(attribute, value)]))
+            assert value == getattr(parameters, attribute)
+
+            parameters = lf.ValidationParameters()
+            setattr(parameters, attribute, value)
+            assert value == getattr(parameters, attribute)
+
+
 def test_provider_names():
     assert 'OpenLoadFlow' in pp.loadflow.get_provider_names()
     assert 'DynaFlow' in pp.loadflow.get_provider_names()
