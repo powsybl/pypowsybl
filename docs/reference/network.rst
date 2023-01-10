@@ -249,7 +249,9 @@ Advanced network modifications
    create_lcc_converter_station_bay
    create_vsc_converter_station_bay
    create_line_on_line
+   revert_create_line_on_line
    connect_voltage_level_on_line
+   revert_connect_voltage_level_on_line
 
 
 Utility functions

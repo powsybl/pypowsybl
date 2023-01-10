@@ -4589,6 +4589,25 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
+                               merged_line_id: str, merged_line_name: str = None) -> None:
+    """
+    This method reverses the action done in the create_line_on_line method.
+    It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
+    and eventually removes the existing voltage levels (tee point and tapped voltage level), if they contain no equipments
+    anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line_to_be_merged1_id: The id of the first line connected to the tee point.
+        line_to_be_merged2_id: The id of the second line connected to the tee point.
+        line_to_be_deleted: The tee point line that will be deleted
+        merged_line_id: The id of the new line from the two lines to be merged
+        merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+    """
+    if merged_line_name is None:
+        merged_line_name = merged_line_id
+    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4614,6 +4633,24 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
+                                         line_name: str = None) -> None:
+    """
+    This method reverses the action done in the connect_voltage_level_on_line method.
+    It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
+    and eventually removes the voltage level in common (switching voltage level),
+    if it contains no equipments anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line1_id: The id of the first existing line
+        line2_id: The id of the second existing line
+        line_id: The id of the new line to be created
+        line_name: The name of the line to be created (default to line_id)
+    """
+    if line_name is None:
+        line_name = line1_id
+    _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
