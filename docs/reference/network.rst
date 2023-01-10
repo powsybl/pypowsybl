@@ -260,6 +260,7 @@ Advanced network modifications
    connect_voltage_level_on_line
    revert_connect_voltage_level_on_line
    replace_tee_point_by_voltage_level_on_line
+   revert_connect_voltage_level_on_line
 
 
 Utility functions
