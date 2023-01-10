@@ -1641,15 +1641,39 @@ def test_create_line_on_line():
     assert 'GEN3' in generators.index
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
 
+def test_revert_create_line_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    assert len(n.get_lines()) == 2
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0)
+    assert len(n.get_lines()) == 4
+
+    pp.network.revert_create_line_on_line(network=n, line_to_be_merged1_id='NHV1_NHV2_1_1',
+                                          line_to_be_merged2_id='NHV1_NHV2_1_2', line_to_be_deleted='test_line',
+                                          merged_line_id='NHV1_NHV2_1')
+    assert len(n.get_lines()) == 2
+
+    retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
+    assert retrieved_line["connected1"]
+    assert retrieved_line["connected2"]
 
 def test_create_branch_feeder_bays_twt():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_twt'],
                       columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
-                               'rated_u2', 'rated_s', 'voltage_level1_id', 'voltage_level2_id'],
+                               'rated_u2', 'rated_s'],
                       data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
-                             400.0, 1.0, 'S1VL1', 'S1VL2']])
+                             400.0, 1.0]])
     pp.network.create_2_windings_transformer_bays(n, df)
     retrieved_newtwt = n.get_2_windings_transformers().loc['new_twt']
     assert retrieved_newtwt["r"] == 5.0
@@ -1677,6 +1701,29 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
 
+def test_revert_connect_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
+
+    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+
+    assert len(n.get_lines()) == 3
+
+    pp.network.revert_connect_voltage_level_on_line(network=n, line1_id='NHV1_NHV2_1_1', line2_id='NHV1_NHV2_1_2',
+                                                    line_id='NHV1_NHV2_1')
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
 
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()

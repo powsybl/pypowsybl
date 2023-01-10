@@ -658,9 +658,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"),
             py::arg("line_id"), py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"),
             py::arg("create_fictitious_substation"), py::arg("fictitious_voltage_level_id"), py::arg("fictitious_voltage_level_name"), py::arg("fictitious_substation_id"), py::arg("fictitious_substation_name"));
+    m.def("revert_create_line_on_line", &pypowsybl::revertCreateLineOnLine, "reverses the action done in the create_line_on_line", py::arg("network"), py::arg("line_to_be_merged1_id"), py::arg("line_to_be_merged2_id"),
+            py::arg("line_to_be_deleted_id"), py::arg("merged_line_id"), py::arg("merged_line_name"));
 
     m.def("connect_voltage_level_on_line", &pypowsybl::connectVoltageLevelOnLine, "connect a voltage level on a line", py::arg("network"), py::arg("bbs_or_bus_id"), py::arg("line_id"),
             py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"));
+    m.def("revert_connect_voltage_level_on_line", &pypowsybl::revertConnectVoltageLevelOnLine, "reverses the action done in connect_voltage_level_on_line", py::arg("network"), py::arg("line1_id"), py::arg("line2_id"), py::arg("line_id"), py::arg("line_name"));
 
     m.def("create_feeder_bay", ::createFeederBay, "Create feeder bay", py::arg("network"), py::arg("throw_exception"), py::arg("reporter"), py::arg("dataframe"), py::arg("element_type"));
 

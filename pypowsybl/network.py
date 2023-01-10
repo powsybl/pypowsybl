@@ -4589,6 +4589,25 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
+                               merged_line_id: str, merged_line_name: str = None) -> None:
+    """
+    This method reverses the action done in the create_line_on_line method.
+    It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
+    and eventually removes the existing voltage levels (tee point and tapped voltage level), if they contain no equipments
+    anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line_to_be_merged1_id: The id of the first line connected to the tee point.
+        line_to_be_merged2_id: The id of the second line connected to the tee point.
+        line_to_be_deleted: The tee point line that will be deleted
+        merged_line_id: The id of the new line from the two lines to be merged
+        merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+    """
+    if merged_line_name is None:
+        merged_line_name = merged_line_id
+    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4614,6 +4633,24 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
+                                         line_name: str = None) -> None:
+    """
+    This method reverses the action done in the connect_voltage_level_on_line method.
+    It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
+    and eventually removes the voltage level in common (switching voltage level),
+    if it contains no equipments anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line1_id: The id of the first existing line
+        line2_id: The id of the second existing line
+        line_id: The id of the new line to be created
+        line_name: The name of the line to be created (default to line_id)
+    """
+    if line_name is None:
+        line_name = line1_id
+    _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
@@ -5050,9 +5087,23 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
         :meth:`Network.create_2_windings_transformers`
     """
     metadata = _pp.get_twt_feeder_bays_metadata()
-    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    c_df = _create_c_dataframe(df, metadata)
+    c_df = _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network, df, metadata, **kwargs)
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+
+
+def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _Optional[_DataFrame],
+                                                                 metadata: _List[_pp.SeriesMetadata],
+                                                                 **kwargs: _ArrayLike) -> _pp.Dataframe:
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    df['voltage_level1_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_1']].get(
+            0), axis=1)
+    df['voltage_level2_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_2']].get(
+            0), axis=1)
+    return _create_c_dataframe(df, metadata)
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
