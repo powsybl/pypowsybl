@@ -12,13 +12,10 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
-import com.powsybl.entsoe.util.EntsoeArea;
-import com.powsybl.entsoe.util.MergedXnode;
-import com.powsybl.entsoe.util.Xnode;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.dataframe.CDataframeHandler;
 
@@ -69,30 +66,6 @@ public final class NetworkExtensions {
         }
     }
 
-    public static class ExtensionInformation {
-        private final String id;
-        private final String description;
-        private final String attributes;
-
-        public ExtensionInformation(String id, String description, String attributes) {
-            this.id = id;
-            this.description = description;
-            this.attributes = attributes;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getAttributes() {
-            return attributes;
-        }
-    }
-
     private static class Container {
         private final Map<String, ExtensionInformation> elements;
 
@@ -117,30 +90,10 @@ public final class NetworkExtensions {
                 .strings("attributes", ExtensionInformation::getAttributes)
                 .build();
         Container container = new Container(
-                new ExtensionInformation(ActivePowerControl.NAME,
-                        "Provides information about the participation of generators to balancing",
-                        "index : id (str), participate(bool), droop (float)"),
-                new ExtensionInformation(BranchObservability.NAME,
-                        "Provides information about the observability of a branch",
-                        "index : id (str), observable (bool), p1_standard_deviation (float), p1_redundant (bool), p2_standard_deviation (float), p2_redundant (bool), " +
-                                "q1_standard_deviation (float), q1_redundant (bool), q2_standard_deviation (float), q2_redundant (bool)"),
-                new ExtensionInformation(EntsoeArea.NAME, "Provides Entsoe geographical code for a substation", "index : id (str), code (str)"),
-                new ExtensionInformation(GeneratorEntsoeCategory.NAME, "Provides Entsoe category code for a generator", "index : id (str), code (int)"),
-                new ExtensionInformation(HvdcAngleDroopActivePowerControl.NAME, "Active power control mode based on an offset in MW and a droop in MW/degree",
-                        "index : id (str), droop (float), p0 (float), enabled (bool)"),
-                new ExtensionInformation(HvdcOperatorActivePowerRange.NAME, "",
-                        "index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)"),
-                new ExtensionInformation(InjectionObservability.NAME, "Provides information about the observability of a injection",
-                        "index : id (str), observable (bool), p_standard_deviation (float), p_redundant (bool), q_standard_deviation (float), q_redundant (bool), v_standard_deviation (float), v_redundant (bool)"),
-                new ExtensionInformation(LoadDetail.NAME, "Provides active power setpoint and reactive power setpoint for a load",
-                        "index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)"),
-                new ExtensionInformation(Measurements.NAME, "Provides measurement about a specific equipment",
-                        "index : element_id (str),id (str), type (str), standard_deviation (float), value (float), valid (bool)"),
-                new ExtensionInformation(MergedXnode.NAME, "Provides information about the border point between 2 TSOs on a merged line",
-                        "index : id (str), code (str), line1 (str), line2 (str), r_dp (float), x_dp (float), g1_dp (float), b1_dp (float), " +
-                        "g2_dp (float), b2_dp (float), p1 (float), q1 (float), p2 (float), q2 (float)"),
-                new ExtensionInformation(Xnode.NAME, "Provides information about the border point of a TSO on a dangling line",
-                        "index : id (str), code (str)")
+                EXTENSIONS_PROVIDERS.values()
+                        .stream()
+                        .map(NetworkExtensionDataframeProvider::getExtensionInformation)
+                        .collect(Collectors.toList())
         );
         CDataframeHandler handler = new CDataframeHandler();
         mapper.createDataframe(container, handler, new DataframeFilter());

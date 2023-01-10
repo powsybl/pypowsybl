@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -42,6 +43,14 @@ public class BranchObservabilityDataframeProvider implements NetworkExtensionDat
     @Override
     public String getExtensionName() {
         return BranchObservability.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(BranchObservability.NAME,
+                "Provides information about the observability of a branch",
+                "index : id (str), observable (bool), p1_standard_deviation (float), p1_redundant (bool), p2_standard_deviation (float), p2_redundant (bool), "
+                        + "q1_standard_deviation (float), q1_redundant (bool), q2_standard_deviation (float), q2_redundant (bool)");
     }
 
     @Override

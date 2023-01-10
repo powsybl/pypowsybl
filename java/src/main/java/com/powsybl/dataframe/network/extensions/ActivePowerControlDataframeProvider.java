@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -29,6 +30,13 @@ public class ActivePowerControlDataframeProvider implements NetworkExtensionData
     @Override
     public String getExtensionName() {
         return ActivePowerControl.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(ActivePowerControl.NAME,
+                "Provides information about the participation of generators to balancing",
+                "index : id (str), participate(bool), droop (float)");
     }
 
     private Stream<ActivePowerControl> itemsStream(Network network) {

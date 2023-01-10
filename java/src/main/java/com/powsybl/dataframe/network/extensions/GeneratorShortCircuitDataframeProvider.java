@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,11 @@ public class GeneratorShortCircuitDataframeProvider implements NetworkExtensionD
     @Override
     public String getExtensionName() {
         return GeneratorShortCircuit.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(GeneratorShortCircuit.NAME, "", "");
     }
 
     private Stream<GeneratorShortCircuit> itemsStream(Network network) {

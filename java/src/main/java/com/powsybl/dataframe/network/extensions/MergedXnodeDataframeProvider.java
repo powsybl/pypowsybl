@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,13 @@ public class MergedXnodeDataframeProvider implements NetworkExtensionDataframePr
     @Override
     public String getExtensionName() {
         return MergedXnode.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(MergedXnode.NAME, "Provides information about the border point between 2 TSOs on a merged line",
+                "index : id (str), code (str), line1 (str), line2 (str), r_dp (float), x_dp (float), g1_dp (float), b1_dp (float), " +
+                        "g2_dp (float), b2_dp (float), p1 (float), q1 (float), p2 (float), q2 (float)");
     }
 
     private Stream<MergedXnode> itemsStream(Network network) {
