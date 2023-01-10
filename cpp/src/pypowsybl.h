@@ -16,571 +16,577 @@
 
 namespace pypowsybl {
 
-    class PyPowsyblError: public std::runtime_error {
-    public:
-        PyPowsyblError(const char* msg)
-            : runtime_error(msg) {
-        }
-
-        PyPowsyblError(const std::string& msg)
-            : runtime_error(msg) {
-        }
-    };
-
-    /**
-     * Wraps a void* corresponding to a graalvm ObjectHandle
-     * in order to handle its destruction.
-     */
-    class JavaHandle {
-    public:
-        //Implicit constructor from void* returned by graalvm
-        JavaHandle(void* handle);
-        ~JavaHandle() {}
-
-        //Implicit conversion to void* for use as input to graalvm
-        operator void* () {
-            return handle_.get();
-        }
-
-    private:
-        //Object handle destruction will be called when no more reference
-        std::shared_ptr<void> handle_;
-    };
-
-
-    template<typename T>
-    class Array {
-    public:
-        explicit Array(array* delegate)
-            : delegate_(delegate) {
-        }
-
-        int length() const { return delegate_->length; }
-
-        T* begin() const { return (T*) delegate_->ptr; }
-
-        T* end() const { return (T*) delegate_->ptr + delegate_->length; }
-
-        ~Array();
-
-    private:
-        array* delegate_;
-    };
-
-    typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
-    typedef Array<post_contingency_result> PostContingencyResultArray;
-    typedef Array<limit_violation> LimitViolationArray;
-    typedef Array<series> SeriesArray;
-
-
-    template<typename T>
-    std::vector<T> toVector(array* arrayPtr) {
-        std::vector<T> values;
-        values.reserve(arrayPtr->length);
-        for (int i = 0; i < arrayPtr->length; i++) {
-            T value = *((T*) arrayPtr->ptr + i);
-            values.push_back(value);
-        }
-        return values;
+class PyPowsyblError : public std::runtime_error {
+public:
+    PyPowsyblError(const char* msg)
+        : runtime_error(msg) {
     }
 
-    template<>
-    std::vector<std::string> toVector(array* arrayPtr);
-
-    enum class LoadFlowComponentStatus {
-        CONVERGED = 0,
-        MAX_ITERATION_REACHED,
-        SOLVER_FAILED,
-        FAILED,
-    };
-
-    enum class PostContingencyComputationStatus {
-        CONVERGED = 0,
-        MAX_ITERATION_REACHED,
-        SOLVER_FAILED,
-        FAILED,
-        NO_IMPACT
-    };
-
-    enum LimitType {
-        CURRENT = 0,
-        LOW_VOLTAGE,
-        HIGH_VOLTAGE,
-    };
-
-    enum Side {
-        NONE = -1,
-        ONE,
-        TWO,
-    };
-
-    enum VoltageInitMode {
-        UNIFORM_VALUES = 0,
-        PREVIOUS_VALUES,
-        DC_VALUES,
-    };
-
-    enum BalanceType {
-        PROPORTIONAL_TO_GENERATION_P = 0,
-        PROPORTIONAL_TO_GENERATION_P_MAX,
-        PROPORTIONAL_TO_LOAD,
-        PROPORTIONAL_TO_CONFORM_LOAD,
-    };
-
-    enum ConnectedComponentMode {
-        MAIN = 0,
-        ALL,
-    };
-
-    enum XnecSelectionStrategy {
-        ONLY_INTERCONNECTIONS = 0,
-        INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
-    };
-
-    class SeriesMetadata {
-    public:
-        SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
-            name_(name),
-            type_(type),
-            isIndex_(isIndex),
-            isModifiable_(isModifiable),
-            isDefault_(isDefault) {
-        }
-
-        const std::string& name() const { return name_; }
-        int type() const { return type_; }
-        bool isIndex() const { return isIndex_; }
-        bool isModifiable() const { return isModifiable_; }
-        bool isDefault() const { return isDefault_; }
-
-    private:
-        std::string name_;
-        int type_;
-        bool isIndex_;
-        bool isModifiable_;
-        bool isDefault_;
-    };
-
-
-    class LoadFlowParameters {
-    public:
-        LoadFlowParameters(load_flow_parameters* src);
-        std::shared_ptr<load_flow_parameters> to_c_struct() const;
-        void load_to_c_struct(load_flow_parameters& params) const;
-
-        VoltageInitMode voltage_init_mode;
-        bool transformer_voltage_control_on;
-        bool no_generator_reactive_limits;
-        bool phase_shifter_regulation_on;
-        bool twt_split_shunt_admittance;
-        bool simul_shunt;
-        bool read_slack_bus;
-        bool write_slack_bus;
-        bool distributed_slack;
-        BalanceType balance_type;
-        bool dc_use_transformer_ratio;
-        std::vector<std::string> countries_to_balance;
-        ConnectedComponentMode connected_component_mode;
-        std::vector<std::string> provider_parameters_keys;
-        std::vector<std::string> provider_parameters_values;
-    };
-
-    class SecurityAnalysisParameters {
-    public:
-        SecurityAnalysisParameters(security_analysis_parameters* src);
-        std::shared_ptr<security_analysis_parameters> to_c_struct() const;
+    PyPowsyblError(const std::string&  msg)
+        : runtime_error(msg) {
+    }
+};
+
+/**
+ * Wraps a void* corresponding to a graalvm ObjectHandle
+ * in order to handle its destruction.
+ */
+class JavaHandle {
+public:
+    //Implicit constructor from void* returned by graalvm
+    JavaHandle(void* handle);
+    ~JavaHandle() {}
+
+    //Implicit conversion to void* for use as input to graalvm
+    operator void*() {
+        return handle_.get();
+    }
+
+private:
+    //Object handle destruction will be called when no more reference
+    std::shared_ptr<void> handle_;
+};
+
+
+template<typename T>
+class Array {
+public:
+    explicit Array(array* delegate)
+        : delegate_(delegate) {
+    }
+
+    int length() const { return delegate_->length; }
+
+    T* begin() const { return (T*) delegate_->ptr; }
+
+    T* end() const { return (T*) delegate_->ptr + delegate_->length; }
+
+    ~Array();
+
+private:
+    array* delegate_;
+};
+
+typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
+typedef Array<post_contingency_result> PostContingencyResultArray;
+typedef Array<limit_violation> LimitViolationArray;
+typedef Array<series> SeriesArray;
+
+
+template<typename T>
+std::vector<T> toVector(array* arrayPtr) {
+    std::vector<T> values;
+    values.reserve(arrayPtr->length);
+    for (int i = 0; i < arrayPtr->length; i++) {
+        T value = *((T*) arrayPtr->ptr + i);
+        values.push_back(value);
+    }
+    return values;
+}
+
+template<>
+std::vector<std::string> toVector(array* arrayPtr);
+
+enum class LoadFlowComponentStatus {
+    CONVERGED = 0,
+    MAX_ITERATION_REACHED,
+    SOLVER_FAILED,
+    FAILED,
+};
+
+enum class PostContingencyComputationStatus {
+    CONVERGED = 0,
+    MAX_ITERATION_REACHED,
+    SOLVER_FAILED,
+    FAILED,
+    NO_IMPACT
+};
+
+enum LimitType {
+    CURRENT = 0,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+};
+
+enum Side {
+    NONE = -1,
+    ONE,
+    TWO,
+};
+
+enum VoltageInitMode {
+    UNIFORM_VALUES = 0,
+    PREVIOUS_VALUES,
+    DC_VALUES,
+};
+
+enum BalanceType {
+    PROPORTIONAL_TO_GENERATION_P = 0,
+    PROPORTIONAL_TO_GENERATION_P_MAX,
+    PROPORTIONAL_TO_LOAD,
+    PROPORTIONAL_TO_CONFORM_LOAD,
+};
+
+enum ConnectedComponentMode {
+    MAIN = 0,
+    ALL,
+};
+
+enum XnecSelectionStrategy {
+    ONLY_INTERCONNECTIONS = 0,
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+};
+
+class SeriesMetadata {
+public:
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+        name_(name),
+        type_(type),
+        isIndex_(isIndex),
+        isModifiable_(isModifiable),
+        isDefault_(isDefault) {
+    }
+
+    const std::string& name() const { return name_; }
+    int type() const { return type_; }
+    bool isIndex() const { return isIndex_; }
+    bool isModifiable() const { return isModifiable_; }
+    bool isDefault() const { return isDefault_; }
+
+private:
+    std::string name_;
+    int type_;
+    bool isIndex_;
+    bool isModifiable_;
+    bool isDefault_;
+};
+
+
+class LoadFlowParameters {
+public:
+    LoadFlowParameters(load_flow_parameters* src);
+    std::shared_ptr<load_flow_parameters> to_c_struct() const;
+    void load_to_c_struct(load_flow_parameters& params) const;
+
+    VoltageInitMode voltage_init_mode;
+    bool transformer_voltage_control_on;
+    bool no_generator_reactive_limits;
+    bool phase_shifter_regulation_on;
+    bool twt_split_shunt_admittance;
+    bool simul_shunt;
+    bool read_slack_bus;
+    bool write_slack_bus;
+    bool distributed_slack;
+    BalanceType balance_type;
+    bool dc_use_transformer_ratio;
+    std::vector<std::string> countries_to_balance;
+    ConnectedComponentMode connected_component_mode;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+class SecurityAnalysisParameters {
+public:
+    SecurityAnalysisParameters(security_analysis_parameters* src);
+    std::shared_ptr<security_analysis_parameters> to_c_struct() const;
+
+    LoadFlowParameters load_flow_parameters;
+    double flow_proportional_threshold;
+    double low_voltage_proportional_threshold;
+    double low_voltage_absolute_threshold;
+    double high_voltage_proportional_threshold;
+    double high_voltage_absolute_threshold;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
 
-        LoadFlowParameters load_flow_parameters;
-        double flow_proportional_threshold;
-        double low_voltage_proportional_threshold;
-        double low_voltage_absolute_threshold;
-        double high_voltage_proportional_threshold;
-        double high_voltage_absolute_threshold;
-        std::vector<std::string> provider_parameters_keys;
-        std::vector<std::string> provider_parameters_values;
-    };
+class SensitivityAnalysisParameters {
+public:
+    SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
+    std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
 
-    class SensitivityAnalysisParameters {
-    public:
-        SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
-        std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
+    LoadFlowParameters load_flow_parameters;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
 
-        LoadFlowParameters load_flow_parameters;
-        std::vector<std::string> provider_parameters_keys;
-        std::vector<std::string> provider_parameters_values;
-    };
+class FlowDecompositionParameters {
+public:
+    FlowDecompositionParameters(flow_decomposition_parameters* src);
+    std::shared_ptr<flow_decomposition_parameters> to_c_struct() const;
 
-    class FlowDecompositionParameters {
-    public:
-        FlowDecompositionParameters(flow_decomposition_parameters* src);
-        std::shared_ptr<flow_decomposition_parameters> to_c_struct() const;
+    bool enable_losses_compensation;
+    float losses_compensation_epsilon;
+    float sensitivity_epsilon;
+    bool rescale_enabled;
+    bool dc_fallback_enabled_after_ac_divergence;
+    int sensitivity_variable_batch_size;
+};
 
-        bool enable_losses_compensation;
-        float losses_compensation_epsilon;
-        float sensitivity_epsilon;
-        bool rescale_enabled;
-        bool dc_fallback_enabled_after_ac_divergence;
-        int sensitivity_variable_batch_size;
-    };
+class LayoutParameters {
+public:
+    LayoutParameters(layout_parameters* src);
+    std::shared_ptr<layout_parameters> to_c_struct() const;
+    void layout_to_c_struct(layout_parameters& params) const;
 
-    class LayoutParameters {
-    public:
-        LayoutParameters(layout_parameters* src);
-        std::shared_ptr<layout_parameters> to_c_struct() const;
-        void layout_to_c_struct(layout_parameters& params) const;
+    bool use_name;
+    bool center_name;
+    bool diagonal_label;
+    bool topological_coloring;
+};
 
-        bool use_name;
-        bool center_name;
-        bool diagonal_label;
-        bool topological_coloring;
-    };
+char* copyStringToCharPtr(const std::string& str);
+char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
+int* copyVectorInt(const std::vector<int>& ints);
+double* copyVectorDouble(const std::vector<double>& doubles);
 
-    char* copyStringToCharPtr(const std::string& str);
-    char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
-    int* copyVectorInt(const std::vector<int>& ints);
-    double* copyVectorDouble(const std::vector<double>& doubles);
+void deleteCharPtrPtr(char** charPtrPtr, int length);
 
-    void deleteCharPtrPtr(char** charPtrPtr, int length);
+::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
-    ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
+void init();
 
-    void init();
+void setJavaLibraryPath(const std::string& javaLibraryPath);
 
-    void setJavaLibraryPath(const std::string& javaLibraryPath);
+void setConfigRead(bool configRead);
 
-    void setConfigRead(bool configRead);
+void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
 
-    void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
+void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
 
-    void setDefaultSecurityAnalysisProvider(const std::string& securityAnalysisProvider);
+void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
 
-    void setDefaultSensitivityAnalysisProvider(const std::string& sensitivityAnalysisProvider);
+bool isConfigRead();
 
-    bool isConfigRead();
+std::string getDefaultLoadFlowProvider();
 
-    std::string getDefaultLoadFlowProvider();
+std::string getDefaultSecurityAnalysisProvider();
 
-    std::string getDefaultSecurityAnalysisProvider();
+std::string getDefaultSensitivityAnalysisProvider();
 
-    std::string getDefaultSensitivityAnalysisProvider();
+std::string getVersionTable();
 
-    std::string getVersionTable();
+JavaHandle createNetwork(const std::string& name, const std::string& id);
 
-    JavaHandle createNetwork(const std::string& name, const std::string& id);
+void merge(JavaHandle network, std::vector<JavaHandle>& others);
 
-    void merge(JavaHandle network, std::vector<JavaHandle>& others);
+bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
-    bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
 
-    bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
+std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
+                                               const std::vector<std::string>& countries, bool mainCc, bool mainSc,
+                                               bool notConnectedToSameBusAtBothSides);
 
-    std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
-        const std::vector<std::string>& countries, bool mainCc, bool mainSc,
-        bool notConnectedToSameBusAtBothSides);
+std::vector<std::string> getNetworkImportFormats();
 
-    std::vector<std::string> getNetworkImportFormats();
+std::vector<std::string> getNetworkExportFormats();
 
-    std::vector<std::string> getNetworkExportFormats();
+std::vector<std::string> getLoadFlowProviderNames();
 
-    std::vector<std::string> getLoadFlowProviderNames();
+std::vector<std::string> getSecurityAnalysisProviderNames();
 
-    std::vector<std::string> getSecurityAnalysisProviderNames();
+std::vector<std::string> getSensitivityAnalysisProviderNames();
 
-    std::vector<std::string> getSensitivityAnalysisProviderNames();
+SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 
-    SeriesArray* createImporterParametersSeriesArray(const std::string& format);
+SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
-    SeriesArray* createExporterParametersSeriesArray(const std::string& format);
+std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
-    std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-    JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-    JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-    void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+LoadFlowParameters* createLoadFlowParameters();
 
-    LoadFlowParameters* createLoadFlowParameters();
+std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
-    std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
+SecurityAnalysisParameters* createSecurityAnalysisParameters();
 
-    SecurityAnalysisParameters* createSecurityAnalysisParameters();
+std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
 
-    std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
+SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
 
-    SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
+std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
-    std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
+std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-    std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-    void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-    LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
 
-    SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters);
 
-    void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters);
+std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
-    std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters);
 
-    std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
 
-    void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
-    std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
+JavaHandle createSecurityAnalysis();
 
-    JavaHandle createSecurityAnalysis();
+void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-    void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
 
-    JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
+JavaHandle createSensitivityAnalysis();
 
-    JavaHandle createSensitivityAnalysis();
+void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
-    void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
+void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                               const std::vector<std::string>& variablesIds);
 
-    void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-        const std::vector<std::string>& variablesIds);
+void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                                             const std::vector<std::string>& variablesIds);
 
-    void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-        const std::vector<std::string>& variablesIds);
+void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                                              const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
 
-    void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-        const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
+void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
 
-    void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-    JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
+matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
-    matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
+matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
 
-    matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
-    matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
+matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
 
-    matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 
-    SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
+void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
-    void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
 
-    SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
+std::vector<std::string> getExtensionsNames();
 
-    std::vector<std::string> getExtensionsNames();
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
-    void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
+std::string getWorkingVariantId(const JavaHandle& network);
 
-    std::string getWorkingVariantId(const JavaHandle& network);
+void setWorkingVariant(const JavaHandle& network, std::string& variant);
 
-    void setWorkingVariant(const JavaHandle& network, std::string& variant);
+void removeVariant(const JavaHandle& network, std::string& variant);
 
-    void removeVariant(const JavaHandle& network, std::string& variant);
+void cloneVariant(const JavaHandle& network, std::string& src, std::string& variant, bool mayOverwrite);
 
-    void cloneVariant(const JavaHandle& network, std::string& src, std::string& variant, bool mayOverwrite);
+std::vector<std::string> getVariantsIds(const JavaHandle& network);
 
-    std::vector<std::string> getVariantsIds(const JavaHandle& network);
+void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
+                      const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
+                      const std::vector<std::string>& contingencyIds);
 
-    void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
-        const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
-        const std::vector<std::string>& contingencyIds);
+SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
-    SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
+PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
 
-    PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
+pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
 
-    pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
+SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
 
-    SeriesArray* getBranchResults(const JavaHandle& securityAnalysisResult);
+SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
 
-    SeriesArray* getBusResults(const JavaHandle& securityAnalysisResult);
+SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
 
-    SeriesArray* getThreeWindingsTransformerResults(const JavaHandle& securityAnalysisResult);
+SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getNodeBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel);
+SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getNodeBreakerViewNodes(const JavaHandle& network, std::string& voltageLevel);
+SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getNodeBreakerViewInternalConnections(const JavaHandle& network, std::string& voltageLevel);
+SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network, std::string& voltageLevel);
+SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& voltageLevel);
+SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
-    SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel);
+/**
+ * Metadata of the dataframe of network elements data for a given element type.
+ */
+std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType);
 
-    /**
-     * Metadata of the dataframe of network elements data for a given element type.
-     */
-    std::vector<SeriesMetadata> getNetworkDataframeMetadata(element_type elementType);
+/**
+ * Metadata of the list of dataframes to create network elements of the given type.
+ */
+std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
 
-    /**
-     * Metadata of the list of dataframes to create network elements of the given type.
-     */
-    std::vector<std::vector<SeriesMetadata>> getNetworkElementCreationDataframesMetadata(element_type elementType);
+void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
 
-    void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, element_type elementType);
+::validation_level_type getValidationLevel(const JavaHandle& network);
 
-    ::validation_level_type getValidationLevel(const JavaHandle& network);
+::validation_level_type validate(const JavaHandle& network);
 
-    ::validation_level_type validate(const JavaHandle& network);
+void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
 
-    void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
+void setupLoggerCallback(void *& callback);
 
-    void setupLoggerCallback(void*& callback);
+void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
 
-    void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataframe);
+void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
 
-    void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
 
-    void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
+void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
 
-    void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
 
-    std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
+std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
 
-    std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
+void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
-    void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
+JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
 
-    JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
+std::string printReport(const JavaHandle& reporterModel);
 
-    std::string printReport(const JavaHandle& reporterModel);
+std::string jsonReport(const JavaHandle& reporterModel);
 
-    std::string jsonReport(const JavaHandle& reporterModel);
+JavaHandle createGLSKdocument(std::string& filename);
 
-    JavaHandle createGLSKdocument(std::string& filename);
+std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
 
-    std::vector<std::string> getGLSKinjectionkeys(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
 
-    std::vector<std::string> getGLSKcountries(const JavaHandle& importer);
+std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
 
-    std::vector<double> getGLSKInjectionFactors(pypowsybl::JavaHandle network, const JavaHandle& importer, std::string& country, long instant);
+long getInjectionFactorStartTimestamp(const JavaHandle& importer);
 
-    long getInjectionFactorStartTimestamp(const JavaHandle& importer);
+long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
-    long getInjectionFactorEndTimestamp(const JavaHandle& importer);
+JavaHandle createFlowDecomposition();
 
-    JavaHandle createFlowDecomposition();
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& analysisContext, const std::vector<std::string>& elementsIds);
 
-    void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& analysisContext, const std::vector<std::string>& elementsIds);
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
-    SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
+FlowDecompositionParameters* createFlowDecompositionParameters();
 
-    FlowDecompositionParameters* createFlowDecompositionParameters();
+void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
+    std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
+    std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
+    std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
 
-    void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
-        std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
-        std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
-        std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
+void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
+    std::string mergedLineId, std::string mergedLineName);
 
-    void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
-        std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
+void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
+    std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
 
-    void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType);
+void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
+    std::string lineName);
 
-    void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe);
+void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType);
 
-    void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
+void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe);
 
-    std::vector<SeriesMetadata> getLineFeederBaysMetadata();
+void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
 
-    std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
+std::vector<SeriesMetadata> getLineFeederBaysMetadata();
 
-    SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
+std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
 
-    std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
+SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
 
-    void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
+std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
 
-    void closePypowsybl();
+void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
-    LayoutParameters* createLayoutParameters();
-    //=======dynamic modeling for dynawaltz package==========
+void closePypowsybl();
 
-    //handle creation
-    JavaHandle createDynamicSimulationContext();
-    JavaHandle createDynamicModelMapping();
-    JavaHandle createTimeseriesMapping();
-    JavaHandle createEventMapping();
+LayoutParameters* createLayoutParameters();
+//=======dynamic modeling for dynawaltz package==========
 
-    JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+//handle creation
+JavaHandle createDynamicSimulationContext();
+JavaHandle createDynamicModelMapping();
+JavaHandle createTimeseriesMapping();
+JavaHandle createEventMapping();
 
-    // dynamic model mapping
-    void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId);
-    void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
 
-    // timeseries/curves mapping
-    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// dynamic model mapping
+void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId);
+void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
 
-    // events mapping
-    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
-    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
-    // timeseries/curves mapping
-    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// events mapping
+void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
-    // events mapping
-    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
-    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
-    // config ?
-    void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+// events mapping
+void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
-    JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+// config ?
+void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
 
-    // dynamic model mapping
-    void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId);
-    void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
-    void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
 
-    // timeseries/curves mapping
-    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// dynamic model mapping
+void addAlphaBetaLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addOneTransformerLoad(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addOmegaRef(JavaHandle dynamicMappingHandle, std::string generatorId);
+void addGeneratorSynchronousThreeWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousThreeWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousFourWindings(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addGeneratorSynchronousFourWindingsProportionalRegulations(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam);
+void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
 
-    // events mapping
-    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
-    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
-    // config ?
-    void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
+// events mapping
+void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
-    // dynamic model mapping
-    void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
-    void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf);
+// config ?
+void setPowSyBlConfigLocation(std::string absolutePathToConfig, std::string configFileName);
 
-    // timeseries/curves mapping
-    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// dynamic model mapping
+void addCurrentLimitAutomaton(JavaHandle dynamicMappingHandle, std::string staticId, std::string dynamicParam, std::string branchSide);
+void addAllDynamicMappings(JavaHandle dynamicMappingHandle, dataframe* mappingDf);
 
-    // events mapping
-    void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
-    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
-    // dynamic model mapping
-    void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-    std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+// events mapping
+void addEventQuadripoleDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
 
-    // timeseries/curves mapping
-    void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// dynamic model mapping
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
 
-    // events mapping
-    void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
-    void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
-    // results
-    std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
-    SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
-    std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+// events mapping
+void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId);
+
+// results
+std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 }
 #endif //PYPOWSYBL_H
