@@ -5087,9 +5087,23 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
         :meth:`Network.create_2_windings_transformers`
     """
     metadata = _pp.get_twt_feeder_bays_metadata()
-    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    c_df = _create_c_dataframe(df, metadata)
+    c_df = _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network, df, metadata, **kwargs)
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+
+
+def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _Optional[_DataFrame],
+                                                                 metadata: _List[_pp.SeriesMetadata],
+                                                                 **kwargs: _ArrayLike) -> _pp.Dataframe:
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    df['voltage_level1_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_1']].get(
+            0), axis=1)
+    df['voltage_level2_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_2']].get(
+            0), axis=1)
+    return _create_c_dataframe(df, metadata)
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
