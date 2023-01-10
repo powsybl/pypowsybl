@@ -36,7 +36,7 @@ public class ActivePowerControlDataframeProvider implements NetworkExtensionData
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(ActivePowerControl.NAME,
                 "Provides information about the participation of generators to balancing",
-                "index : id (str), participate(bool), droop (float)");
+                "index : id (str), participate (bool), droop (float)");
     }
 
     private Stream<ActivePowerControl> itemsStream(Network network) {

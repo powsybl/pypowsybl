@@ -30,7 +30,9 @@ public class SlackTerminalDataframeProvider implements NetworkExtensionDataframe
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation("slackTerminal", "", "");
+        return new ExtensionInformation("slackTerminal",
+                "a bus with generating units that balances the reactive power (Q) and real power (P) of the system while doing load flow analysis",
+                "index : voltage_level_id (str), element_id (str), bus_id (str)");
     }
 
     private Stream<SlackTerminal> itemsStream(Network network) {

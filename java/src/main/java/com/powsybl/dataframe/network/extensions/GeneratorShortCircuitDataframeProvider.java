@@ -33,7 +33,9 @@ public class GeneratorShortCircuitDataframeProvider implements NetworkExtensionD
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(GeneratorShortCircuit.NAME, "", "");
+        return new ExtensionInformation(GeneratorShortCircuit.NAME, "it contains the transitory reactance of a generator needed to compute short circuit. " +
+                "A subtransitory reactance can also be contained",
+                "index : id (str), direct_sub_trans_x (float), direct_trans_x (float), step_up_transformer_x (float)");
     }
 
     private Stream<GeneratorShortCircuit> itemsStream(Network network) {

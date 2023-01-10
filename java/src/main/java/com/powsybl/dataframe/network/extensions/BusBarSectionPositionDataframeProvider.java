@@ -32,7 +32,8 @@ public class BusBarSectionPositionDataframeProvider implements NetworkExtensionD
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(BusbarSectionPosition.NAME, "", "");
+        return new ExtensionInformation(BusbarSectionPosition.NAME, "Position information about the BusbarSection",
+                "index : id (str), busbar_index (int), section_index (int)");
     }
 
     private Stream<BusbarSectionPosition> itemsStream(Network network) {

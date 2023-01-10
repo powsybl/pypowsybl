@@ -32,7 +32,9 @@ public class IdentifiableShortCircuitDataframeProvider implements NetworkExtensi
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(IdentifiableShortCircuit.NAME, "", "");
+        return new ExtensionInformation(IdentifiableShortCircuit.NAME, "it contains max and min values of current " +
+                "allowed during short circuit on a network element",
+                "index : id (str), equipment_type (str), ip_min (float), ip_max (float)");
     }
 
     private Stream<IdentifiableShortCircuit> itemsStream(Network network) {

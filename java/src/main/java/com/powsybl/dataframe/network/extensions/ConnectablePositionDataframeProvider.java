@@ -36,7 +36,8 @@ public class ConnectablePositionDataframeProvider implements NetworkExtensionDat
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(ConnectablePosition.NAME, "", "");
+        return new ExtensionInformation(ConnectablePosition.NAME, "it gives the position of a connectable relative to other equipments in the network",
+                "index : id (str), side (str), order (int), feeder_name (str), direction (str)");
     }
 
     private ConnectablePositionFeederData getOrThrow(Network network, UpdatingDataframe dataframe, int index) {
