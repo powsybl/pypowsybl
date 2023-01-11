@@ -142,13 +142,11 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            Network network;
+            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
             if (reporter == null) {
-                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-            } else {
-                network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                reporter = ReporterModel.NO_OP;
             }
+            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -164,12 +162,10 @@ public final class NetworkCFunctions {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                Network network;
                 if (reporter == null) {
-                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters);
-                } else {
-                    network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                    reporter = ReporterModel.NO_OP;
                 }
+                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -187,12 +183,11 @@ public final class NetworkCFunctions {
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
             if (reporter == null) {
-                network.write(formatStr, parameters, Paths.get(fileStr));
-            } else {
-                network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
+                reporter = ReporterModel.NO_OP;
             }
+            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
         });
     }
 
