@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -27,6 +28,12 @@ public class BusBarSectionPositionDataframeProvider implements NetworkExtensionD
     @Override
     public String getExtensionName() {
         return BusbarSectionPosition.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(BusbarSectionPosition.NAME, "Position information about the BusbarSection",
+                "index : id (str), busbar_index (int), section_index (int)");
     }
 
     private Stream<BusbarSectionPosition> itemsStream(Network network) {

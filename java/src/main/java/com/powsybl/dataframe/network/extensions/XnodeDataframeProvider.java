@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,12 @@ public class XnodeDataframeProvider implements NetworkExtensionDataframeProvider
     @Override
     public String getExtensionName() {
         return Xnode.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(Xnode.NAME, "Provides information about the border point of a TSO on a dangling line",
+                "index : id (str), code (str)");
     }
 
     private Stream<Xnode> itemsStream(Network network) {

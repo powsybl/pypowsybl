@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -27,6 +28,13 @@ public class IdentifiableShortCircuitDataframeProvider implements NetworkExtensi
     @Override
     public String getExtensionName() {
         return IdentifiableShortCircuit.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(IdentifiableShortCircuit.NAME, "it contains max and min values of current " +
+                "allowed during short circuit on a network element",
+                "index : id (str), equipment_type (str), ip_min (float), ip_max (float)");
     }
 
     private Stream<IdentifiableShortCircuit> itemsStream(Network network) {

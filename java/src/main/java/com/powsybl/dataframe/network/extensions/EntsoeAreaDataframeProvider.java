@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -29,6 +30,12 @@ public class EntsoeAreaDataframeProvider implements NetworkExtensionDataframePro
     @Override
     public String getExtensionName() {
         return EntsoeArea.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(EntsoeArea.NAME, "Provides Entsoe geographical code for a substation",
+                "index : id (str), code (str)");
     }
 
     private Stream<EntsoeArea> itemsStream(Network network) {

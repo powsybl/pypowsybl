@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,13 @@ public class HvdcAngleDroopActivePowerControlDataframeProvider implements Networ
     @Override
     public String getExtensionName() {
         return HvdcAngleDroopActivePowerControl.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(HvdcAngleDroopActivePowerControl.NAME,
+                "Active power control mode based on an offset in MW and a droop in MW/degree",
+                "index : id (str), droop (float), p0 (float), enabled (bool)");
     }
 
     private Stream<HvdcAngleDroopActivePowerControl> itemsStream(Network network) {
