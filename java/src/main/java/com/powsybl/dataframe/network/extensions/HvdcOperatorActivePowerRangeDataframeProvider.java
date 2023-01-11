@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,12 @@ public class HvdcOperatorActivePowerRangeDataframeProvider implements NetworkExt
     @Override
     public String getExtensionName() {
         return HvdcOperatorActivePowerRange.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(HvdcOperatorActivePowerRange.NAME, "",
+                "index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)");
     }
 
     private Stream<HvdcOperatorActivePowerRange> itemsStream(Network network) {

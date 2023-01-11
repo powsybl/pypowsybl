@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,13 @@ public class GeneratorShortCircuitDataframeProvider implements NetworkExtensionD
     @Override
     public String getExtensionName() {
         return GeneratorShortCircuit.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(GeneratorShortCircuit.NAME, "it contains the transitory reactance of a generator needed to compute short circuit. " +
+                "A subtransitory reactance can also be contained",
+                "index : id (str), direct_sub_trans_x (float), direct_trans_x (float), step_up_transformer_x (float)");
     }
 
     private Stream<GeneratorShortCircuit> itemsStream(Network network) {

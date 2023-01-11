@@ -537,6 +537,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"));
 
     m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
+
+    m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
     
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
