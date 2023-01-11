@@ -2113,5 +2113,41 @@ def test_remove_feeder_bay():
     assert 'new_line2_BREAKER' not in n.get_switches().index
     assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
 
+
+def test_identifiables():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert n.get_identifiables().loc['GH3'].type == 'GENERATOR'
+    assert n.get_identifiables().loc['TWT'].type == 'TWO_WINDINGS_TRANSFORMER'
+
+
+def test_injections():
+    n = pp.network.create_four_substations_node_breaker_network()
+    load = n.get_injections().loc['LD1']
+    assert load.type == 'LOAD'
+    assert load.voltage_level_id == 'S1VL1'
+    assert load.bus_id == 'S1VL1_0'
+
+
+def test_branches():
+    n = pp.network.create_four_substations_node_breaker_network()
+    twt = n.get_branches().loc['TWT']
+    assert twt.voltage_level1_id == 'S1VL1'
+    assert twt.bus1_id == 'S1VL1_0'
+    assert twt.voltage_level2_id == 'S1VL2'
+    assert twt.bus2_id == 'S1VL2_0'
+
+
+def test_terminals():
+    n = pp.network.create_four_substations_node_breaker_network()
+    terminals = n.get_terminals()
+    shunt = terminals.loc['SHUNT']
+    assert shunt.voltage_level_id == 'S1VL2'
+    assert shunt.bus_id == 'S1VL2_0'
+    line = terminals.loc['LINE_S2S3']
+    assert line.shape[0] == 2
+    assert line.iloc[0].element_side == 'ONE'
+    assert line.iloc[1].element_side == 'TWO'
+
+
 if __name__ == '__main__':
     unittest.main()

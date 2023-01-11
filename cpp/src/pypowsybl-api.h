@@ -128,6 +128,10 @@ typedef enum {
     OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
+    IDENTIFIABLE,
+    INJECTION,
+    BRANCH,
+    TERMINAL,
 } element_type;
 
 typedef enum {
