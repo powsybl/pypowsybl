@@ -188,6 +188,7 @@ Network elements extensions
    :nosignatures:
 
    get_extensions_names
+   get_extensions_information
    Network.get_extensions
    Network.create_extensions
    Network.update_extensions

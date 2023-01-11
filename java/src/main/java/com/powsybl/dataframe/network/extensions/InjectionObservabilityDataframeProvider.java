@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -48,6 +49,13 @@ public class InjectionObservabilityDataframeProvider implements NetworkExtension
     @Override
     public String getExtensionName() {
         return InjectionObservability.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(InjectionObservability.NAME, "Provides information about the observability of a injection",
+                "index : id (str), observable (bool), p_standard_deviation (float), p_redundant (bool), " +
+                        "q_standard_deviation (float), q_redundant (bool), v_standard_deviation (float), v_redundant (bool)");
     }
 
     @Override

@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -26,6 +27,11 @@ public interface NetworkExtensionDataframeProvider {
      * The extension name. Should match the IIDM extension name as defined in the extension class.
      */
     String getExtensionName();
+
+    /**
+     * the extension information
+     */
+    ExtensionInformation getExtensionInformation();
 
     /**
      * Defines the mapping between the network and the extension dataframe.

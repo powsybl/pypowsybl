@@ -370,9 +370,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsNames")
     public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            return createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames()));
-        });
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames())));
+    }
+
+    @CEntryPoint(name = "getExtensionsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, NetworkExtensions::getExtensionInformation);
     }
 
     @CEntryPoint(name = "createElement")

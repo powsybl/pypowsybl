@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -33,6 +34,12 @@ public class LoadDetailDataframeProvider implements NetworkExtensionDataframePro
     @Override
     public String getExtensionName() {
         return LoadDetail.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(LoadDetail.NAME, "Provides active power setpoint and reactive power setpoint for a load",
+                "index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)");
     }
 
     private Stream<LoadDetail> itemsStream(Network network) {
