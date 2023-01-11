@@ -291,7 +291,41 @@ _OptionalDf = _Optional[_DataFrame]
 
 class ValidationParameters: # pylint: disable=too-few-public-methods
     """
+    Parameters for a loadflow validation.
 
+    All parameters are first read from you configuration file, then overridden with
+    the constructor arguments.
+
+    .. currentmodule:: pypowsybl.loadflow
+
+    Args:
+        threshold: Define the margin used for values comparison.
+            The default value is ``0``.
+        verbose: Define whether the load flow validation should run in verbose or quiet mode.
+        loadflow_name: Implementation name to use for running the load flow.
+        epsilon_x: Value used to correct the reactance in flows validation.
+            The default value is ``0.1``.
+        apply_reactance_correction: Define whether small reactance values have to be fixed to epsilon_x or not.
+            The default value is ``False``.
+        loadflow_parameters: Parameters that are common to loadflow and loadflow validation.
+        ok_missing_values: Define whether the validation checks fail if some parameters of connected components have NaN values or not.
+            The default value is ``False``.
+        no_requirement_if_reactive_bound_inversion: Define whether the validation checks fail if there is a reactive
+            bounds inversion (maxQ < minQ) or not.
+            The default value is ``False``.
+        compare_results: Should be set to ``True`` to compare the results of 2 validations, i.e. print output files with
+            data of both ones.
+            The default value is ``False``.
+        check_main_component_only: Define whether the validation checks are done only on the equiments in the main
+            connected component or in all components.
+            The default value is ``True``.
+        no_requirement_if_setpoint_outside_power_bounds: Define whether the validation checks fail if there is a
+            setpoint outside the active power bounds (targetP < minP or targetP > maxP) or not.
+            The default value is ``False``.
+        output_writer: Define the output format.
+            Use ``CSV`` to have all values of a validated equipment in one line.
+            Use ``CSV_MULTILINE`` to have a line for each value and validated equipment.
+            The default value is ``CSV_MULTILINE``.
     """
 
     def __init__(self, threshold: float = None,
