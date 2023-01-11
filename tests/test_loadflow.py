@@ -125,7 +125,7 @@ def test_lf_validation_parameters():
     attributes = {
         'threshold': [0.1, 0.2],
         'verbose': [True, False],
-        'load_flow_name': ['loadFlow1', 'loadFLow2'],
+        'loadflow_name': ['loadFlow1', 'loadFLow2'],
         'epsilon_x': [0.1, 0.2],
         'apply_reactance_correction': [True, False],
         'ok_missing_values': [True, False],
