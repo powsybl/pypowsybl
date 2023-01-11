@@ -20,6 +20,7 @@ import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;

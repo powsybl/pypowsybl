@@ -5,11 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.adders;
+package com.powsybl.dataframe.network.modifications;
 
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.network.modifications.NetworkModification;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.CreateVoltageLevelTopologyBuilder;
 import com.powsybl.iidm.network.Network;

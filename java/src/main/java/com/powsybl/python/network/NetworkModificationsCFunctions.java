@@ -12,7 +12,7 @@ import com.powsybl.dataframe.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
-import com.powsybl.dataframe.network.adders.NetworkModifications;
+import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.NetworkModification;
 import com.powsybl.iidm.modification.topology.*;
