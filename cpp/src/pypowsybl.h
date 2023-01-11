@@ -503,6 +503,8 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
 
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds);
+
 LayoutParameters* createLayoutParameters();
 }
 #endif //PYPOWSYBL_H

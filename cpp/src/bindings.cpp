@@ -673,4 +673,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
+
+    m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
 }
