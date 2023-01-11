@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -37,6 +38,12 @@ public class MeasurementsDataframeProvider implements NetworkExtensionDataframeP
     @Override
     public String getExtensionName() {
         return Measurements.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(Measurements.NAME, "Provides measurement about a specific equipment",
+                "index : element_id (str),id (str), type (str), standard_deviation (float), value (float), valid (bool)");
     }
 
     @Override

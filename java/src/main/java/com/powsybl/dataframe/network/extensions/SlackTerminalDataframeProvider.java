@@ -7,6 +7,7 @@
 package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -25,6 +26,13 @@ public class SlackTerminalDataframeProvider implements NetworkExtensionDataframe
     @Override
     public String getExtensionName() {
         return "slackTerminal";
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation("slackTerminal",
+                "a terminal that determines the slack bus for loadflow analysis",
+                "index : voltage_level_id (str), element_id (str), bus_id (str)");
     }
 
     private Stream<SlackTerminal> itemsStream(Network network) {

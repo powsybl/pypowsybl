@@ -4634,6 +4634,16 @@ def get_extensions_names() -> _List[str]:
     return _pp.get_extensions_names()
 
 
+def get_extensions_information() -> _DataFrame:
+    """
+    Get more information about extensions
+
+    Returns:
+        a dataframe with information about extensions
+    """
+    return _create_data_frame_from_series_array(_pp.get_extensions_information())
+
+
 def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float,
                         new_line_b1: float,
                         new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '',
