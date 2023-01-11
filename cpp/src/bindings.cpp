@@ -184,7 +184,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
-            .value("ALIAS", element_type::ALIAS);
+            .value("ALIAS", element_type::ALIAS)
+            .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
+            .value("INJECTION", element_type::INJECTION)
+            .value("BRANCH", element_type::BRANCH)
+            .value("TERMINAL", element_type::TERMINAL);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)

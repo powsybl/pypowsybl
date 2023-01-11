@@ -102,6 +102,10 @@ Supported elements are:
  - busbar sections
  - HVDC lines
  - ratio and phase tap changer steps associated to a 2 windings transformers
+ - identifiables that are all the equipment on the network
+ - injections
+ - branches (lines and two windings transformers)
+ - terminals are a practical view of those objects which are very important in the java implementation
 
 Each element of the network is mapped to one row of the dataframe, an each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).
