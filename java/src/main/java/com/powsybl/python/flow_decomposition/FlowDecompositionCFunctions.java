@@ -114,11 +114,14 @@ public final class FlowDecompositionCFunctions {
             String lfProviderName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
             LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(lfProviderName);
             String sensiProviderName = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
+            LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(DC, loadFlowParametersPtr, loadFlowProvider);
+            FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
+
             logger().debug("Loadflow provider used is : {}", loadFlowProvider.getName());
             logger().debug("Sensitivity analysis provider used is : {}", sensiProviderName);
-            LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(DC, loadFlowParametersPtr, loadFlowProvider);
+            logger().debug("Load flow parameters : {}", loadFlowParameters);
+            logger().debug("Flow decomposition parameters : {}", flowDecompositionParameters);
 
-            FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
             FlowDecompositionComputer flowDecompositionComputer = new FlowDecompositionComputer(flowDecompositionParameters, loadFlowParameters, lfProviderName, sensiProviderName);
             XnecProvider xnecProvider = flowDecompositionContext.getXnecProvider();
             FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(xnecProvider, network);

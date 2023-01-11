@@ -8,8 +8,8 @@
 package com.powsybl.python.flow_decomposition;
 
 import com.powsybl.flow_decomposition.DecomposedFlow;
-import com.powsybl.iidm.network.Country;
 import com.powsybl.flow_decomposition.NetworkUtil;
+import com.powsybl.iidm.network.Country;
 
 import java.util.Map;
 import java.util.Set;

@@ -13,14 +13,33 @@ import pypowsybl as pp
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
 
+def define_test_load_flow_parameters():
+    return pp.loadflow.Parameters(
+        voltage_init_mode=pp.loadflow.VoltageInitMode.UNIFORM_VALUES,
+        transformer_voltage_control_on=False, 
+        no_generator_reactive_limits=False, 
+        phase_shifter_regulation_on=False, 
+        twt_split_shunt_admittance=False, 
+        simul_shunt=False, 
+        read_slack_bus=True, 
+        write_slack_bus=False, 
+        distributed_slack=True, 
+        balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX, 
+        dc_use_transformer_ratio=True, 
+        countries_to_balance=[], 
+        connected_component_mode=pp.loadflow.ConnectedComponentMode.MAIN, 
+        provider_parameters={}
+        )
+
 def test_demo():
     network = pp.network.create_eurostag_tutorial_example1_network()
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters()
     branch_ids = ['NHV1_NHV2_1', 'NHV1_NHV2_2']
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_single_element_contingencies(branch_ids) \
         .add_monitored_elements(branch_ids, branch_ids)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
@@ -35,11 +54,12 @@ def test_demo():
 
 def test_demo_one_by_one():
     network = pp.network.create_eurostag_tutorial_example1_network()
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters()
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_precontingency_monitored_elements('NHV1_NHV2_1') \
         .add_precontingency_monitored_elements(['NHV1_NHV2_2'])
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
@@ -52,9 +72,10 @@ def test_demo_one_by_one():
 
 def test_flow_decomposition_run_no_parameters():
     net = pp.network.load(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     net.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     flow_decomposition = pp.flowdecomposition.create_decomposition().add_precontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
-    df = flow_decomposition.run(net)
+    df = flow_decomposition.run(net, load_flow_parameters=load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'],
@@ -66,6 +87,7 @@ def test_flow_decomposition_run_no_parameters():
 
 def test_flow_decomposition_run_full_integration():
     net = pp.network.load(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     net.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True,
         losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON,
@@ -74,7 +96,7 @@ def test_flow_decomposition_run_full_integration():
         dc_fallback_enabled_after_ac_divergence=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
-    df = flow_decomposition.run(net, parameters)
+    df = flow_decomposition.run(net, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'],
@@ -82,6 +104,35 @@ def test_flow_decomposition_run_full_integration():
             ['BLOAD 11 BLOAD 12 2', 'BLOAD 11 BLOAD 12 2', '', 'BE', 'BE', -160.00594493625374, -168.54299036226615,  27.730133478072496, 0.0, 156.40133330888222, -24.11086055331822, 0.0              , -0.014661297382767557],
             ['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 11 1', '', 'FR', 'BE',  192.39065600179342,  200.6712560368467 ,  27.81857394392333 , 0.0, 156.90014831777725,   0.0             , 7.68659503747561 , -0.014661297382767557],
             ['FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 12 1', '', 'FR', 'BE',  -76.18907198080873,  -84.72530847149157, -87.04742845831291 , 0.0, 155.51999087872588,   0.0             , 7.674711445291424,  0.04179811510434703 ],
+        ])
+    pd.testing.assert_frame_equal(expected, df, check_dtype=False)
+
+def test_flow_decomposition_run_demo_user_guide():
+    net = pp.network.load(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
+    parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=False,
+        losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON,
+        sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON,
+        rescale_enabled=False,
+        dc_fallback_enabled_after_ac_divergence=True)
+    flow_decomposition = pp.flowdecomposition.create_decomposition() \
+        .add_single_element_contingency('FGEN  11 BLOAD 11 1') \
+        .add_postcontingency_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1', 'BLOAD 11 BLOAD 12 2'], ['FGEN  11 BLOAD 11 1']) \
+        .add_multiple_elements_contingency(['FGEN  11 BLOAD 11 1', 'BLOAD 11 BLOAD 12 2']) \
+        .add_postcontingency_monitored_elements('FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2') \
+        .add_interconnections_as_monitored_elements() \
+        .add_all_branches_as_monitored_elements()
+    df = flow_decomposition.run(net, flow_decomposition_parameters=parameters, load_flow_parameters=load_flow_parameters)
+    expected = pd.DataFrame.from_records(
+        index=['xnec_id'],
+        columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'],
+        data=[
+            ['BLOAD 11 BLOAD 12 2'                                        , 'BLOAD 11 BLOAD 12 2',                                        '', 'BE', 'BE',   3.005666, -25.0,  28.999015, 0.0, -0.0, -1.999508,  0.000000, -1.999508],
+            ['BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1'                    , 'BLOAD 11 BLOAD 12 2',                     'FGEN  11 BLOAD 11 1', 'BE', 'BE',  32.000000,  -0.0,   0.000000, 0.0,  0.0, -0.000000,  0.000000,  0.000000],
+            ['FGEN  11 BLOAD 11 1'                                        , 'FGEN  11 BLOAD 11 1',                                        '', 'FR', 'BE',  29.003009,  25.0,  28.999015, 0.0, -0.0,  0.000000, -1.999508, -1.999508],
+            ['FGEN  11 BLOAD 12 1'                                        , 'FGEN  11 BLOAD 12 1',                                        '', 'FR', 'BE',  87.009112,  75.0,  86.997046, 0.0,  0.0,  0.000000, -5.998523, -5.998523],
+            ['FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1'                    , 'FGEN  11 BLOAD 12 1',                     'FGEN  11 BLOAD 11 1', 'FR', 'BE', 116.016179, 100.0, 115.996062, 0.0,  0.0,  0.000000, -7.998031, -7.998031],
+            ['FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2', 'FR', 'BE', 100.034531, 100.0, 115.996062, 0.0,  0.0,  0.000000, -7.998031, -7.998031],
         ])
     pd.testing.assert_frame_equal(expected, df, check_dtype=False)
 
@@ -107,13 +158,14 @@ def test_flow_decomposition_parameters():
 
 def test_flow_decomposition_with_N1():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id = 'DB000011 DF000011 1'
     contingency_id = 'DD000011 DF000011 1'
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_single_element_contingencies([contingency_id]) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -125,6 +177,7 @@ def test_flow_decomposition_with_N1():
 
 def test_flow_decomposition_with_N1_custom_name():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id = 'DB000011 DF000011 1'
     contingency_element_id = 'DD000011 DF000011 1'
@@ -132,7 +185,7 @@ def test_flow_decomposition_with_N1_custom_name():
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_single_element_contingencies([contingency_element_id], lambda s: f"contingency_{s}") \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -144,6 +197,7 @@ def test_flow_decomposition_with_N1_custom_name():
 
 def test_flow_decomposition_with_N1_and_N():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id = 'DB000011 DF000011 1'
     contingency_id = 'DD000011 DF000011 1'
@@ -151,7 +205,7 @@ def test_flow_decomposition_with_N1_and_N():
         .add_single_element_contingency(contingency_id) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id) \
         .add_precontingency_monitored_elements(branch_id)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -164,6 +218,7 @@ def test_flow_decomposition_with_N1_and_N():
 
 def test_flow_decomposition_with_N2():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id = 'DB000011 DF000011 1'
     contingency_element_id1 = 'FB000011 FD000011 1'
@@ -172,7 +227,7 @@ def test_flow_decomposition_with_N2():
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_multiple_elements_contingency(elements_ids=[contingency_element_id1, contingency_element_id2]) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -184,6 +239,7 @@ def test_flow_decomposition_with_N2():
 
 def test_flow_decomposition_with_N2_custom_name():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id = 'DB000011 DF000011 1'
     contingency_element_id1 = 'FB000011 FD000011 1'
@@ -192,7 +248,7 @@ def test_flow_decomposition_with_N2_custom_name():
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_multiple_elements_contingency(elements_ids=[contingency_element_id1, contingency_element_id2], contingency_id=contingency_id) \
         .add_postcontingency_monitored_elements(branch_id, contingency_id)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -204,6 +260,7 @@ def test_flow_decomposition_with_N2_custom_name():
 
 def test_flow_decomposition_with_N1_N2_and_N():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     branch_id_1 = 'DB000011 DF000011 1'
     branch_id_2 = 'DD000011 DF000011 1'
@@ -221,7 +278,7 @@ def test_flow_decomposition_with_N1_N2_and_N():
         .add_single_element_contingencies([contingency_n1_id1, contingency_n1_id2, contingency_n1_id3]) \
         .add_multiple_elements_contingency([contingency_element_n2_id1, contingency_element_n2_id2]) \
         .add_monitored_elements(branch_id_list, contingency_id_list)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -247,11 +304,12 @@ def test_flow_decomposition_with_N1_N2_and_N():
 
 def test_flow_decomposition_add_monitored_element_no_contingency():
     network = pp.network.create_eurostag_tutorial_example1_network()
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters()
     branch_ids = ['NHV1_NHV2_1', 'NHV1_NHV2_2']
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_monitored_elements(branch_ids)
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_fr'
@@ -264,10 +322,11 @@ def test_flow_decomposition_add_monitored_element_no_contingency():
 
 def test_flow_decomposition_add_5perc_ptdf():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_5perc_ptdf_as_monitored_elements()
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -301,10 +360,11 @@ def test_flow_decomposition_add_5perc_ptdf():
     
 def test_flow_decomposition_add_interconnections():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_interconnections_as_monitored_elements()
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -321,10 +381,11 @@ def test_flow_decomposition_add_interconnections():
 
 def test_flow_decomposition_add_all_branches():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_all_branches_as_monitored_elements()
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -361,6 +422,7 @@ def test_flow_decomposition_add_all_branches():
 
 def test_flow_decomposition_combine_xnec_providers():
     network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    load_flow_parameters = define_test_load_flow_parameters()
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_interconnections_as_monitored_elements() \
@@ -371,7 +433,7 @@ def test_flow_decomposition_combine_xnec_providers():
         .add_multiple_elements_contingency(['XBF00011 BF000011 1 + XBF00011 FB000011 1', 'BD000021 BF000021 1'], 'N-2 contingency') \
         .add_monitored_elements('XDF00011 DF000011 1 + XDF00011 FD000011 1', 'N-2 contingency', pp.flowdecomposition.ContingencyContextType.SPECIFIC) \
         .add_precontingency_monitored_elements('XDF00011 DF000011 1 + XDF00011 FD000011 1')
-    df = flow_decomposition.run(network, parameters)
+    df = flow_decomposition.run(network, parameters, load_flow_parameters)
     expected = pd.DataFrame.from_records(
         index=['xnec_id'],
         columns=['xnec_id', 'branch_id', 'contingency_id', 'country1', 'country2', 'ac_reference_flow', 'dc_reference_flow', 'commercial_flow', 'x_node_flow', 'pst_flow', 'internal_flow', 'loop_flow_from_be', 'loop_flow_from_de', 'loop_flow_from_fr'
@@ -421,6 +483,7 @@ if __name__ == "__main__":
     test_flow_decomposition_parameters()
     test_flow_decomposition_run_no_parameters()
     test_flow_decomposition_run_full_integration()
+    test_flow_decomposition_run_demo_user_guide()
     test_flow_decomposition_with_N1()
     test_flow_decomposition_with_N1_custom_name()
     test_flow_decomposition_with_N1_and_N()

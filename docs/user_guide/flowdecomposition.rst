@@ -332,6 +332,7 @@ You can mix everything together as you like.
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
+    >>> parameters = pp.flowdecomposition.Parameters(sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON)
     >>> flow_decomposition = pp.flowdecomposition.create_decomposition() \
     ... .add_single_element_contingency('FGEN  11 BLOAD 11 1') \
     ... .add_monitored_elements(['FGEN  11 BLOAD 12 1', 'BLOAD 11 BLOAD 12 2'], ['FGEN  11 BLOAD 11 1']) \ 
@@ -339,15 +340,18 @@ You can mix everything together as you like.
     ... .add_postcontingency_monitored_elements('FGEN  11 BLOAD 12 1', 'FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2') \
     ... .add_interconnections_as_monitored_elements() \
     ... .add_all_branches_as_monitored_elements()
-    >>> flow_decomposition.run(network)
+    >>> flow_decomposition.run(network, flow_decomposition_parameters=parameters)
                                                                   branch_id                           contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  x_node_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id                                                                                                                                                                                                                                                              
     BLOAD 11 BLOAD 12 2                                 BLOAD 11 BLOAD 12 2                                                BE       BE           3.005666              -25.0        28.999015          0.0      -0.0      -1.999508           0.000000          -1.999508
-    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1             BLOAD 11 BLOAD 12 2                      FGEN  11 BLOAD 11 1       BE       BE          32.000000               -0.0         0.000000          0.0       0.0      -0.000000           0.000000           0.000000
+    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1             BLOAD 11 BLOAD 12 2                      FGEN  11 BLOAD 11 1       BE       BE          32.000000               -0.0         0.000000          0.0      -0.0       0.000000           0.000000           0.000000
     FGEN  11 BLOAD 11 1                                 FGEN  11 BLOAD 11 1                                                FR       BE          29.003009               25.0        28.999015          0.0      -0.0       0.000000          -1.999508          -1.999508
     FGEN  11 BLOAD 12 1                                 FGEN  11 BLOAD 12 1                                                FR       BE          87.009112               75.0        86.997046          0.0       0.0       0.000000          -5.998523          -5.998523
-    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE         116.016179              100.0       115.996062          0.0       0.0       0.000000          -7.998031          -7.998031
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE         116.016179              100.0       115.996062          0.0      -0.0       0.000000          -7.998031          -7.998031
     FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1_BLOAD 1...  FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2       FR       BE         100.034531              100.0       115.996062          0.0       0.0       0.000000          -7.998031          -7.998031
+
+Note: if one of our xnec is missing, it might be caused by a zero MW DC reference flow, you can show them by reducing the sensitivity-epsilon as bone before.  
+This will be fixed in next versions.  
 
 
 Configuration file 

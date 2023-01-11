@@ -16,7 +16,6 @@ import com.powsybl.flow_decomposition.xnec_provider.XnecProviderInterconnection;
 import com.powsybl.flow_decomposition.xnec_provider.XnecProviderUnion;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,13 +47,9 @@ final class FlowDecompositionContext {
     }
 
     XnecProvider getXnecProvider() {
-        if (additionalXnecProviderList.isEmpty()) {
-            return xnecProviderByIdsBuilder.build();
-        } else {
-            List<XnecProvider> xnecProviderList = new ArrayList<>(Collections.singleton(xnecProviderByIdsBuilder.build()));
-            xnecProviderList.addAll(additionalXnecProviderList);
-            return new XnecProviderUnion(xnecProviderList);
-        }
+        List<XnecProvider> xnecProviderList = new ArrayList<>(additionalXnecProviderList);
+        xnecProviderList.add(xnecProviderByIdsBuilder.build());
+        return new XnecProviderUnion(xnecProviderList);
     }
 
     enum DefaultXnecProvider {
