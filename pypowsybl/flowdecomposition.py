@@ -221,14 +221,14 @@ class FlowDecomposition:
         _pypowsybl.add_additional_xnec_provider_for_flow_decomposition(self._handle, DefaultXnecProvider.ALL_BRANCHES)
         return self
 
-    def run(self, network: _Network, flow_decomposition_parameters: Parameters = None, load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
+    def run(self, network: _Network, flow_decomposition_parameters: Parameters = None, loadflow_parameters: pypowsybl.loadflow.Parameters = None) -> _pd.DataFrame:
         """
         Runs a flow decomposition.
 
         Args:
             network:                        Network on which the flow decomposition will be computed
             flow_decomposition_parameters:  Flow decomposition parameters
-            load_flow_parameters:           Load flow parameters
+            loadflow_parameters:           Load flow parameters
 
         Returns:
             A dataframe with decomposed flow for each relevant line
@@ -275,7 +275,7 @@ class FlowDecomposition:
             ======================= =========== ============== ======== ======== ================= ================= =============== =========== ======== ============= ================= =================
         """
         fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()
-        lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
+        lf_p = loadflow_parameters._to_c_parameters() if loadflow_parameters is not None else _pypowsybl.LoadFlowParameters()
         res = _pypowsybl.run_flow_decomposition(self._handle, network._handle, fd_p, lf_p)
         return create_data_frame_from_series_array(res)
 

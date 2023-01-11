@@ -25,7 +25,7 @@ typedef struct network_metadata_struct {
     int forecast_distance;
 } network_metadata;
 
-typedef struct load_flow_component_result_struct {
+typedef struct loadflow_component_result_struct {
     int connected_component_num;
     int synchronous_component_num;
     int status;
@@ -33,9 +33,9 @@ typedef struct load_flow_component_result_struct {
     char* slack_bus_id;
     double slack_bus_active_power_mismatch;
     double distributed_active_power;
-} load_flow_component_result;
+} loadflow_component_result;
 
-typedef struct load_flow_parameters_struct {
+typedef struct loadflow_parameters_struct {
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
     unsigned char no_generator_reactive_limits;
@@ -54,25 +54,25 @@ typedef struct load_flow_parameters_struct {
     int provider_parameters_keys_count;
     char** provider_parameters_values;
     int provider_parameters_values_count;
-} load_flow_parameters;
+} loadflow_parameters;
 
-typedef struct load_flow_validation_parameters_struct {
+typedef struct loadflow_validation_parameters_struct {
     double threshold;
     double epsilon_x;
     unsigned char verbose;
-    char* load_flow_name;
-    struct load_flow_parameters_struct load_flow_parameters;
+    char* loadflow_name;
+    struct loadflow_parameters_struct loadflow_parameters;
     unsigned char apply_reactance_correction;
     unsigned char ok_missing_values;
     unsigned char no_requirement_if_reactive_bound_inversion;
     unsigned char compare_results;
     unsigned char check_main_component_only;
     unsigned char no_requirement_if_setpoint_outside_power_bounds;
-    // table_formatter_factory, validation_output_writer ?
-} load_flow_validation_parameters;
+    int output_writer;
+} loadflow_validation_parameters;
 
 typedef struct security_analysis_parameters_struct {
-    struct load_flow_parameters_struct load_flow_parameters;
+    struct loadflow_parameters_struct loadflow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
@@ -85,7 +85,7 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
-    struct load_flow_parameters_struct load_flow_parameters;
+    struct loadflow_parameters_struct loadflow_parameters;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;

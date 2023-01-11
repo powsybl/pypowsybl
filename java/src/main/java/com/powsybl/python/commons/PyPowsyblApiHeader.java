@@ -108,7 +108,7 @@ public final class PyPowsyblApiHeader {
         void setForecastDistance(int forecastDistance);
     }
 
-    @CStruct("load_flow_component_result")
+    @CStruct("loadflow_component_result")
     public interface LoadFlowComponentResultPointer extends PointerBase {
 
         @CField("connected_component_num")
@@ -156,7 +156,7 @@ public final class PyPowsyblApiHeader {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
-    @CStruct("load_flow_parameters")
+    @CStruct("loadflow_parameters")
     public interface LoadFlowParametersPointer extends PointerBase {
 
         @CField("voltage_init_mode")
@@ -268,7 +268,7 @@ public final class PyPowsyblApiHeader {
         void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
-    @CStruct("load_flow_validation_parameters")
+    @CStruct("loadflow_validation_parameters")
     public interface LoadFlowValidationParametersPointer extends PointerBase {
 
         @CField("threshold")
@@ -283,10 +283,10 @@ public final class PyPowsyblApiHeader {
         @CField("verbose")
         void setVerbose(boolean verbose);
 
-        @CField("load_flow_name")
+        @CField("loadflow_name")
         CCharPointer getLoadFlowName();
 
-        @CField("load_flow_name")
+        @CField("loadflow_name")
         void setLoadFlowName(CCharPointer loadFlowName);
 
         @CField("epsilon_x")
@@ -301,7 +301,7 @@ public final class PyPowsyblApiHeader {
         @CField("apply_reactance_correction")
         void setApplyReactanceCorrection(boolean applyReactanceCorrection);
 
-        @CFieldAddress("load_flow_parameters")
+        @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("ok_missing_values")
@@ -334,13 +334,17 @@ public final class PyPowsyblApiHeader {
         @CField("no_requirement_if_setpoint_outside_power_bounds")
         void setNoRequirementIfSetpointOutsidePowerBounds(boolean noRequirementIfSetpointOutsidePowerBounds);
 
-        //tableFormatterFactory, validationOutputWriter ?
+        @CField("output_writer")
+        int getOutputWriter();
+
+        @CField("output_writer")
+        void setOutputWriter(int outputWriter);
     }
 
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("load_flow_parameters")
+        @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("flow_proportional_threshold")
@@ -401,7 +405,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("load_flow_parameters")
+        @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
         @CField("provider_parameters_keys")

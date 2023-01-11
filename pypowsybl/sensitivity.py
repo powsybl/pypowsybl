@@ -145,35 +145,35 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.sensitivity
 
     Args:
-        load_flow_parameters: parameters that are common to loadflow and sensitivity analysis
+        loadflow_parameters: parameters that are common to loadflow and sensitivity analysis
         provider_parameters: Define parameters linked to the sensitivity analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, load_flow_parameters: pypowsybl.loadflow.Parameters = None,
+    def __init__(self, loadflow_parameters: pypowsybl.loadflow.Parameters = None,
                  provider_parameters: _Dict[str, str] = None):
         self._init_with_default_values()
-        if load_flow_parameters is not None:
-            self.load_flow_parameters = load_flow_parameters
+        if loadflow_parameters is not None:
+            self.loadflow_parameters = loadflow_parameters
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
+        self.loadflow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.loadflow_parameters)
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
         c_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.loadflow_parameters = self.loadflow_parameters._to_c_parameters()
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
-               f"load_flow_parameters={self.load_flow_parameters}" \
+               f"loadflow_parameters={self.loadflow_parameters}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
 
@@ -437,7 +437,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
+        sensitivity_parameters = Parameters(loadflow_parameters=parameters) if isinstance(parameters, pypowsybl.loadflow.Parameters) else parameters
         p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()
         return DcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider,
@@ -479,7 +479,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         Returns:
             a sensitivity analysis result
         """
-        sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
+        sensitivity_parameters = Parameters(loadflow_parameters=parameters) if isinstance(parameters,
                                                                                                        pypowsybl.loadflow.Parameters) else parameters
         p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()
         return AcSensitivityAnalysisResult(

@@ -117,7 +117,7 @@ JavaHandle::JavaHandle(void* handle):
 }
 
 template<>
-Array<load_flow_component_result>::~Array() {
+Array<loadflow_component_result>::~Array() {
     callJava<>(::freeLoadFlowComponentResultPointer, delegate_);
 }
 
@@ -288,13 +288,13 @@ void copyCharPtrPtrToVector(char** src, int count, std::vector<std::string>& des
     std::copy(src, src + count, std::back_inserter(dest));
 }
 
-void deleteLoadFlowParameters(load_flow_parameters* ptr) {
+void deleteLoadFlowParameters(loadflow_parameters* ptr) {
     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
-LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
+LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
     no_generator_reactive_limits = (bool) src->no_generator_reactive_limits;
@@ -312,7 +312,7 @@ LoadFlowParameters::LoadFlowParameters(load_flow_parameters* src) {
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
 }
 
-void LoadFlowParameters::load_to_c_struct(load_flow_parameters& res) const {
+void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.voltage_init_mode = voltage_init_mode;
     res.transformer_voltage_control_on = (unsigned char) transformer_voltage_control_on;
     res.no_generator_reactive_limits = (unsigned char) no_generator_reactive_limits;
@@ -333,26 +333,26 @@ void LoadFlowParameters::load_to_c_struct(load_flow_parameters& res) const {
     res.provider_parameters_values_count = provider_parameters_values.size();
 }
 
-std::shared_ptr<load_flow_parameters> LoadFlowParameters::to_c_struct() const {
-    load_flow_parameters* res = new load_flow_parameters();
+std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
+    loadflow_parameters* res = new loadflow_parameters();
     load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
-    return std::shared_ptr<load_flow_parameters>(res, [](load_flow_parameters* ptr){
+    return std::shared_ptr<loadflow_parameters>(res, [](loadflow_parameters* ptr){
         deleteLoadFlowParameters(ptr);
         delete ptr;
     });
 }
 
-void deleteLoadFlowValidationParameters(load_flow_validation_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->load_flow_parameters);
+void deleteLoadFlowValidationParameters(loadflow_validation_parameters* ptr) {
+    deleteLoadFlowParameters(&ptr->loadflow_parameters);
 }
 
-LoadFlowValidationParameters::LoadFlowValidationParameters(load_flow_validation_parameters* src):
-    load_flow_parameters(&src->load_flow_parameters)
+LoadFlowValidationParameters::LoadFlowValidationParameters(loadflow_validation_parameters* src):
+    loadflow_parameters(&src->loadflow_parameters)
 {
     threshold = (double) src->threshold;
     verbose = (bool) src->verbose;
-    load_flow_name = toString(src->load_flow_name);
+    loadflow_name = toString(src->loadflow_name);
     epsilon_x = (double) src->epsilon_x;
     apply_reactance_correction = (bool) src->apply_reactance_correction;
     ok_missing_values = (bool) src->ok_missing_values;
@@ -360,12 +360,13 @@ LoadFlowValidationParameters::LoadFlowValidationParameters(load_flow_validation_
     compare_results = (bool) src->compare_results;
     check_main_component_only = (bool) src->check_main_component_only;
     no_requirement_if_setpoint_outside_power_bounds = (bool) src->no_requirement_if_setpoint_outside_power_bounds;
+    output_writer = static_cast<OutputWriter>(src->output_writer);
 }
 
-void LoadFlowValidationParameters::load_to_c_struct(load_flow_validation_parameters& res) const {
+void LoadFlowValidationParameters::load_to_c_struct(loadflow_validation_parameters& res) const {
     res.threshold = threshold;
     res.verbose = (unsigned char) verbose;
-    res.load_flow_name = copyStringToCharPtr(load_flow_name);
+    res.loadflow_name = copyStringToCharPtr(loadflow_name);
     res.epsilon_x = epsilon_x;
     res.apply_reactance_correction = (unsigned char) apply_reactance_correction;
     res.ok_missing_values = (unsigned char) ok_missing_values;
@@ -373,26 +374,27 @@ void LoadFlowValidationParameters::load_to_c_struct(load_flow_validation_paramet
     res.compare_results = (unsigned char) compare_results;
     res.check_main_component_only = (unsigned char) check_main_component_only;
     res.no_requirement_if_setpoint_outside_power_bounds = (unsigned char) no_requirement_if_setpoint_outside_power_bounds;
+    res.output_writer = output_writer;
 }
 
-std::shared_ptr<load_flow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {
-    load_flow_validation_parameters* res = new load_flow_validation_parameters();
+std::shared_ptr<loadflow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {
+    loadflow_validation_parameters* res = new loadflow_validation_parameters();
     load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
-    return std::shared_ptr<load_flow_validation_parameters>(res, [](load_flow_validation_parameters* ptr){
+    return std::shared_ptr<loadflow_validation_parameters>(res, [](loadflow_validation_parameters* ptr){
         deleteLoadFlowValidationParameters(ptr);
         delete ptr;
     });
 }
 
 void deleteSecurityAnalysisParameters(security_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->load_flow_parameters);
+    deleteLoadFlowParameters(&ptr->loadflow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
 SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_parameters* src):
-    load_flow_parameters(&src->load_flow_parameters)
+    loadflow_parameters(&src->loadflow_parameters)
 {
     flow_proportional_threshold = (double) src->flow_proportional_threshold;
     low_voltage_proportional_threshold = (double) src->low_voltage_proportional_threshold;
@@ -405,7 +407,7 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
 
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
     security_analysis_parameters* res = new security_analysis_parameters();
-    load_flow_parameters.load_to_c_struct(res->load_flow_parameters);
+    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
     res->flow_proportional_threshold = (double) flow_proportional_threshold;
     res->low_voltage_proportional_threshold = (double) low_voltage_proportional_threshold;
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
@@ -423,13 +425,13 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
 }
 
 void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->load_flow_parameters);
+    deleteLoadFlowParameters(&ptr->loadflow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
-    load_flow_parameters(&src->load_flow_parameters)
+    loadflow_parameters(&src->loadflow_parameters)
 {
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -437,7 +439,7 @@ SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysi
 
 std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::to_c_struct() const {
     sensitivity_analysis_parameters* res = new sensitivity_analysis_parameters();
-    load_flow_parameters.load_to_c_struct(res->load_flow_parameters);
+    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
     res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
@@ -665,8 +667,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 }
 
 LoadFlowParameters* createLoadFlowParameters() {
-    load_flow_parameters* parameters_ptr = callJava<load_flow_parameters*>(::createLoadFlowParameters);
-    auto parameters = std::shared_ptr<load_flow_parameters>(parameters_ptr, [](load_flow_parameters* ptr){
+    loadflow_parameters* parameters_ptr = callJava<loadflow_parameters*>(::createLoadFlowParameters);
+    auto parameters = std::shared_ptr<loadflow_parameters>(parameters_ptr, [](loadflow_parameters* ptr){
        //Memory has been allocated on java side, we need to clean it up on java side
        callJava(::freeLoadFlowParameters, ptr);
     });
@@ -674,8 +676,8 @@ LoadFlowParameters* createLoadFlowParameters() {
 }
 
 LoadFlowValidationParameters* createValidationConfig() {
-    load_flow_validation_parameters* parameters_ptr = callJava<load_flow_validation_parameters*>(::createValidationConfig);
-    auto parameters = std::shared_ptr<load_flow_validation_parameters>(parameters_ptr, [](load_flow_validation_parameters* ptr){
+    loadflow_validation_parameters* parameters_ptr = callJava<loadflow_validation_parameters*>(::createValidationConfig);
+    auto parameters = std::shared_ptr<loadflow_validation_parameters>(parameters_ptr, [](loadflow_validation_parameters* ptr){
        //Memory has been allocated on java side, we need to clean it up on java side
        callJava(::freeValidationConfig, ptr);
     });
@@ -706,8 +708,8 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
             callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter));
 }
 
-SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& load_flow_validation_parameters) {
-    auto c_validation_parameters = load_flow_validation_parameters.to_c_struct();
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& loadflow_validation_parameters) {
+    auto c_validation_parameters = loadflow_validation_parameters.to_c_struct();
     return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType, c_validation_parameters.get()));
 }
 
@@ -1149,10 +1151,10 @@ void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompo
     callJava(::addAdditionalXnecProviderForFlowDecomposition, flowDecompositionContext, defaultXnecProvider);
 }
 
-SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& loadflow_parameters) {
     auto c_flow_decomposition_parameters = flow_decomposition_parameters.to_c_struct();
-    auto c_load_flow_parameters  = load_flow_parameters.to_c_struct();
-    return new SeriesArray(callJava<array*>(::runFlowDecomposition, flowDecompositionContext, network, c_flow_decomposition_parameters.get(), c_load_flow_parameters.get()));
+    auto c_loadflow_parameters  = loadflow_parameters.to_c_struct();
+    return new SeriesArray(callJava<array*>(::runFlowDecomposition, flowDecompositionContext, network, c_flow_decomposition_parameters.get(), c_loadflow_parameters.get()));
 }
 
 FlowDecompositionParameters* createFlowDecompositionParameters() {
