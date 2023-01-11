@@ -93,7 +93,7 @@ def test_validation():
     assert abs(157.8-validation.branch_flows['p1']['L1-2-1']) < 0.1
     assert not validation.valid
     n2 = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
+    pp.loadflow.run_ac(n2)
     validation2 = pp.loadflow.run_validation(n2, [ValidationType.SVCS])
     assert 1 == len(validation2.svcs)
     assert validation2.svcs['validated']['SVC']
@@ -143,6 +143,15 @@ def test_lf_validation_parameters():
             parameters = lf.ValidationParameters()
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
+
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(n)
+    parameters = lf.ValidationParameters()
+    validation = pp.loadflow.run_validation(n, validation_parameters=parameters)
+    assert not validation.branch_flows['validated']['LINE_S2S3']
+    parameters = lf.ValidationParameters(threshold=0.1)
+    validation = pp.loadflow.run_validation(n, validation_parameters=parameters)
+    assert validation.branch_flows['validated']['LINE_S2S3']
 
 
 def test_provider_names():
