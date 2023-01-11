@@ -460,7 +460,7 @@ def test_get_extensions_information():
     assert extensions_information.loc['identifiableShortCircuit']['attributes'] == 'index : id (str), equipment_type (str), ip_min (float), ip_max (float)'
     assert extensions_information.loc['position']['detail'] == 'it gives the position of a connectable relative to other equipments in the network'
     assert extensions_information.loc['position']['attributes'] == 'index : id (str), side (str), order (int), feeder_name (str), direction (str)'
-    assert extensions_information.loc['slackTerminal']['detail'] == 'a bus with generating units that balances the reactive power (Q) and real power (P) of the system while doing load flow analysis'
+    assert extensions_information.loc['slackTerminal']['detail'] == 'a terminal that determines the slack bus for loadflow analysis'
     assert extensions_information.loc['slackTerminal']['attributes'] == 'index : voltage_level_id (str), element_id (str), bus_id (str)'
     assert extensions_information.loc['busbarSectionPosition']['detail'] == 'Position information about the BusbarSection'
     assert extensions_information.loc['busbarSectionPosition']['attributes'] == 'index : id (str), busbar_index (int), section_index (int)'
