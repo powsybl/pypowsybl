@@ -736,6 +736,7 @@ def test_current_limits():
 def test_deep_copy():
     n = pp.network.create_eurostag_tutorial_example1_network()
     copy_n = copy.deepcopy(n)
+    assert copy_n.id == "sim1"
     assert ['NGEN_NHV1', 'NHV2_NLOAD'] == copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER)
 
 
