@@ -333,12 +333,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("no_requirement_if_setpoint_outside_power_bounds")
         void setNoRequirementIfSetpointOutsidePowerBounds(boolean noRequirementIfSetpointOutsidePowerBounds);
-
-        @CField("output_writer")
-        int getOutputWriter();
-
-        @CField("output_writer")
-        void setOutputWriter(int outputWriter);
     }
 
     @CStruct("security_analysis_parameters")

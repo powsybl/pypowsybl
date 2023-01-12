@@ -68,7 +68,6 @@ typedef struct loadflow_validation_parameters_struct {
     unsigned char compare_results;
     unsigned char check_main_component_only;
     unsigned char no_requirement_if_setpoint_outside_power_bounds;
-    int output_writer;
 } loadflow_validation_parameters;
 
 typedef struct security_analysis_parameters_struct {

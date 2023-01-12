@@ -360,7 +360,6 @@ LoadFlowValidationParameters::LoadFlowValidationParameters(loadflow_validation_p
     compare_results = (bool) src->compare_results;
     check_main_component_only = (bool) src->check_main_component_only;
     no_requirement_if_setpoint_outside_power_bounds = (bool) src->no_requirement_if_setpoint_outside_power_bounds;
-    output_writer = static_cast<OutputWriter>(src->output_writer);
 }
 
 void LoadFlowValidationParameters::load_to_c_struct(loadflow_validation_parameters& res) const {
@@ -374,7 +373,6 @@ void LoadFlowValidationParameters::load_to_c_struct(loadflow_validation_paramete
     res.compare_results = (unsigned char) compare_results;
     res.check_main_component_only = (unsigned char) check_main_component_only;
     res.no_requirement_if_setpoint_outside_power_bounds = (unsigned char) no_requirement_if_setpoint_outside_power_bounds;
-    res.output_writer = output_writer;
 }
 
 std::shared_ptr<loadflow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {

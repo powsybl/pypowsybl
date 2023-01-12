@@ -213,7 +213,6 @@ public:
     bool compare_results;
     bool check_main_component_only;
     bool no_requirement_if_setpoint_outside_power_bounds;
-    OutputWriter output_writer;
 };
 
 class SecurityAnalysisParameters {

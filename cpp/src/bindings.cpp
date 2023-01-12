@@ -296,10 +296,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
-    py::enum_<pypowsybl::OutputWriter>(m, "OutputWriter", "Define the line structure of the output of the validation.")
-            .value("CSV", pypowsybl::OutputWriter::CSV, "A line for each validated element.")
-            .value("CSV_MULTILINE", pypowsybl::OutputWriter::CSV_MULTILINE, "A line for each validated element and output value.");
-
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
@@ -335,8 +331,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("no_requirement_if_reactive_bound_inversion", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_reactive_bound_inversion)
             .def_readwrite("compare_results", &pypowsybl::LoadFlowValidationParameters::compare_results)
             .def_readwrite("check_main_component_only", &pypowsybl::LoadFlowValidationParameters::check_main_component_only)
-            .def_readwrite("no_requirement_if_setpoint_outside_power_bounds", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_setpoint_outside_power_bounds)
-            .def_readwrite("output_writer", &pypowsybl::LoadFlowValidationParameters::output_writer);
+            .def_readwrite("no_requirement_if_setpoint_outside_power_bounds", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_setpoint_outside_power_bounds);
 
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
             .def(py::init(&pypowsybl::createSecurityAnalysisParameters))

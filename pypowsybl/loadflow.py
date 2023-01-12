@@ -18,8 +18,7 @@ from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
     VoltageInitMode,
-    ValidationType,
-    OutputWriter
+    ValidationType
 )
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
@@ -33,7 +32,6 @@ BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 ComponentStatus.__name__ = 'ComponentStatus'
 ComponentStatus.__module__ = __name__
-OutputWriter.__module__ = __name__
 
 
 # Pure python wrapper for C ext object
@@ -322,10 +320,6 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
         no_requirement_if_setpoint_outside_power_bounds: Define whether the validation checks fail if there is a
             setpoint outside the active power bounds (targetP < minP or targetP > maxP) or not.
             The default value is ``False``.
-        output_writer: Define the output format.
-            Use ``CSV`` to have all values of a validated equipment in one line.
-            Use ``CSV_MULTILINE`` to have a line for each value and validated equipment.
-            The default value is ``CSV_MULTILINE``.
     """
 
     def __init__(self, threshold: float = None,
@@ -338,8 +332,7 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
                  no_requirement_if_reactive_bound_inversion: bool = None,
                  compare_results: bool = None,
                  check_main_component_only: bool = None,
-                 no_requirement_if_setpoint_outside_power_bounds: bool = None,
-                 output_writer: OutputWriter = None):
+                 no_requirement_if_setpoint_outside_power_bounds: bool = None):
         self._init_with_default_values()
         if threshold is not None:
             self.threshold = threshold
@@ -363,8 +356,6 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
             self.check_main_component_only = check_main_component_only
         if no_requirement_if_setpoint_outside_power_bounds is not None:
             self.no_requirement_if_setpoint_outside_power_bounds = no_requirement_if_setpoint_outside_power_bounds
-        if output_writer is not None:
-            self.output_writer = output_writer
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(_pypowsybl.LoadFlowValidationParameters())
@@ -381,7 +372,6 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
         self.compare_results = c_parameters.compare_results
         self.check_main_component_only = c_parameters.check_main_component_only
         self.no_requirement_if_setpoint_outside_power_bounds = c_parameters.no_requirement_if_setpoint_outside_power_bounds
-        self.output_writer = c_parameters.output_writer
 
     def _to_c_parameters(self) -> _pypowsybl.LoadFlowValidationParameters:
         c_parameters = _pypowsybl.LoadFlowValidationParameters()
@@ -396,7 +386,6 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
         c_parameters.compare_results = self.compare_results
         c_parameters.check_main_component_only = self.check_main_component_only
         c_parameters.no_requirement_if_setpoint_outside_power_bounds = self.no_requirement_if_setpoint_outside_power_bounds
-        c_parameters.output_writer = self.output_writer
         return c_parameters
 
     def __repr__(self) -> str:
@@ -411,7 +400,6 @@ class ValidationParameters: # pylint: disable=too-few-public-methods
                f", no_requirement_if_reactive_bound_inversion={self.no_requirement_if_reactive_bound_inversion}" \
                f", compare_results={self.compare_results!r}" \
                f", no_requirement_if_setpoint_outside_power_bounds={self.no_requirement_if_setpoint_outside_power_bounds}" \
-               f", output_writer={self.output_writer!r}" \
                f")"
 
 

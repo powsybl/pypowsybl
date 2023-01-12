@@ -13,7 +13,6 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.loadflow.validation.ValidationType;
-import com.powsybl.loadflow.validation.ValidationOutputWriter;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
@@ -148,7 +147,6 @@ public final class LoadFlowValidationCFunctions {
         cParameters.setCompareResults(parameters.isCompareResults());
         cParameters.setCheckMainComponentOnly(parameters.isCheckMainComponentOnly());
         cParameters.setNoRequirementIfSetpointOutsidePowerBounds(parameters.isNoRequirementIfSetpointOutsidePowerBounds());
-        cParameters.setOutputWriter(parameters.getValidationOutputWriter().ordinal());
     }
 
     public static LoadFlowValidationParametersPointer convertToLoadFlowValidationParametersPointer(ValidationConfig parameters) {
@@ -187,7 +185,6 @@ public final class LoadFlowValidationCFunctions {
         validationConfig.setCompareResults(loadFlowValidationParametersPtr.isCompareResults());
         validationConfig.setCheckMainComponentOnly(loadFlowValidationParametersPtr.isCheckMainComponentOnly());
         validationConfig.setNoRequirementIfSetpointOutsidePowerBounds(loadFlowValidationParametersPtr.isNoRequirementIfSetpointOutsidePowerBounds());
-        validationConfig.setValidationOutputWriter(ValidationOutputWriter.values()[loadFlowValidationParametersPtr.getOutputWriter()]);
         return validationConfig;
     }
 }
