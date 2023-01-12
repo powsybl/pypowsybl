@@ -120,7 +120,7 @@ def test_validation_all():
     assert validation.twts is not None
 
 
-def test_lf_validation_parameters():
+def test_validation_parameters_get_set():
     # Testing setting independently every attributes
     attributes = {
         'threshold': [0.1, 0.2],
@@ -144,6 +144,8 @@ def test_lf_validation_parameters():
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
 
+
+def test_validation_parameters_effect():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n)
     parameters = lf.ValidationParameters()

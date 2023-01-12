@@ -135,7 +135,7 @@ enum ConnectedComponentMode {
 enum DefaultXnecProvider {
     GT_5_PERC_ZONE_TO_ZONE_PTDF = 0,
     ALL_BRANCHES,
-    INTERCONNECTIONS
+    INTERCONNECTIONS,
 };
 
 enum OutputWriter {

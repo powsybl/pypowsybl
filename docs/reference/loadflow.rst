@@ -72,6 +72,16 @@ Some enum classes are used in results:
 
     ComponentStatus
 
+Parameters to validate loadflow
+-------------------------------
+
+The validation of a loadflow can be customized using loadflow validation parameters.
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   ValidationParameters
 
 Validate loadflow results
 -------------------------
