@@ -482,7 +482,11 @@ public final class PyPowsyblApiHeader {
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
-        ALIAS;
+        ALIAS,
+        IDENTIFIABLE,
+        INJECTION,
+        BRANCH,
+        TERMINAL;
 
         @CEnumValue
         public native int getCValue();

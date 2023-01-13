@@ -226,12 +226,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pp.JavaHandle):
         self._handle = handle
-        att = _pp.get_network_metadata(self._handle)
-        self._id = att.id
-        self._name = att.name
-        self._source_format = att.source_format
-        self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
+        self.__init_from_handle()
 
     @property
     def id(self) -> str:
@@ -281,6 +276,15 @@ class Network:  # pylint: disable=too-many-public-methods
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
         self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
+        self.__init_from_handle()
+
+    def __init_from_handle(self) -> None:
+        att = _pp.get_network_metadata(self._handle)
+        self._id = att.id
+        self._name = att.name
+        self._source_format = att.source_format
+        self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
@@ -2194,6 +2198,98 @@ class Network:  # pylint: disable=too-many-public-methods
             A dataframe of aliases
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
+
+    def get_identifiables(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of identifiables
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of identifiables.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the identifiable
+
+            This dataframe is indexed on the identifiable ID.
+        """
+        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes)
+
+    def get_injections(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of injections
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of injections.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the injection
+              - **voltage_level_id**: at which substation the injection is connected
+              - **bus_id**: bus where this injection is connected
+
+            This dataframe is indexed on the injections ID.
+        """
+        return self.get_elements(ElementType.INJECTION, all_attributes, attributes)
+
+    def get_branches(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of branches
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of branches.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the branch (line or 2 windings transformer)
+              - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **bus1_id**: bus where this branch is connected, on side 1
+              - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **bus2_id**: bus where this branch is connected, on side 2
+
+            This dataframe is indexed on the branche ID.
+        """
+        return self.get_elements(ElementType.BRANCH, all_attributes, attributes)
+
+    def get_terminals(self, all_attributes: bool = False, attributes: _List[str] = None) -> _DataFrame:
+        """
+        Get a dataframe of terminal
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of terminals.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: voltage level where the terminal is connected
+              - **bus_id**: bus where this terminal is
+              - **element_side**: if it is a terminal of a branch it will indicate his side else it is ""
+
+            This dataframe is indexed on the element ID of the terminal.
+        """
+        return self.get_elements(ElementType.TERMINAL, all_attributes, attributes)
 
     def _update_elements(self, element_type: ElementType, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -4543,6 +4639,16 @@ def get_extensions_names() -> _List[str]:
     return _pp.get_extensions_names()
 
 
+def get_extensions_information() -> _DataFrame:
+    """
+    Get more information about extensions
+
+    Returns:
+        a dataframe with information about extensions
+    """
+    return _create_data_frame_from_series_array(_pp.get_extensions_information())
+
+
 def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float,
                         new_line_b1: float,
                         new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '',
@@ -4590,6 +4696,25 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
+                               merged_line_id: str, merged_line_name: str = None) -> None:
+    """
+    This method reverses the action done in the create_line_on_line method.
+    It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
+    and eventually removes the existing voltage levels (tee point and tapped voltage level), if they contain no equipments
+    anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line_to_be_merged1_id: The id of the first line connected to the tee point.
+        line_to_be_merged2_id: The id of the second line connected to the tee point.
+        line_to_be_deleted: The tee point line that will be deleted
+        merged_line_id: The id of the new line from the two lines to be merged
+        merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+    """
+    if merged_line_name is None:
+        merged_line_name = merged_line_id
+    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4615,6 +4740,24 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
+                                         line_name: str = None) -> None:
+    """
+    This method reverses the action done in the connect_voltage_level_on_line method.
+    It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
+    and eventually removes the voltage level in common (switching voltage level),
+    if it contains no equipments anymore, except bus or bus bar section.
+
+    Args:
+        network: the network
+        line1_id: The id of the first existing line
+        line2_id: The id of the second existing line
+        line_id: The id of the new line to be created
+        line_name: The name of the line to be created (default to line_id)
+    """
+    if line_name is None:
+        line_name = line1_id
+    _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
@@ -4944,9 +5087,7 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
                           c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
-                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
-        _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
@@ -5051,9 +5192,37 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
         :meth:`Network.create_2_windings_transformers`
     """
     metadata = _pp.get_twt_feeder_bays_metadata()
-    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    c_df = _create_c_dataframe(df, metadata)
+    c_df = _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network, df, metadata, **kwargs)
     _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+
+
+def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _Optional[_DataFrame],
+                                                                 metadata: _List[_pp.SeriesMetadata],
+                                                                 **kwargs: _ArrayLike) -> _pp.Dataframe:
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    df['voltage_level1_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_1']].get(
+            0), axis=1)
+    df['voltage_level2_id'] = df.apply(
+        lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[
+            row['busbar_section_id_2']].get(
+            0), axis=1)
+    return _create_c_dataframe(df, metadata)
+
+
+def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]]) -> None:
+    """
+    Remove feeder bays it means the connectable will be removed and all equipment connecting
+    these network element to a bus bar (breaker, disconnector, ...).
+
+    Args:
+        network: the network to which we want to remove the feeder bay
+        connectable_ids: either a list or a single string to indicate which equipment will be removed with their feeder bay.
+    """
+    if isinstance(connectable_ids, str):
+        connectable_ids = [connectable_ids]
+    _pp.remove_feeder_bays(network._handle, connectable_ids)
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:

@@ -826,6 +826,10 @@ std::vector<std::string> getExtensionsNames() {
     return formats.get();
 }
 
+SeriesArray* getExtensionsInformation() {
+    return new SeriesArray(callJava<array*>(::getExtensionsInformation));
+}
+
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }
@@ -1073,9 +1077,24 @@ JavaHandle createFlowDecomposition() {
     return callJava<JavaHandle>(::createFlowDecomposition);
 }
 
-void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& elementsIds) {
+void addContingencyForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     ToCharPtrPtr elementIdPtr(elementsIds);
-    callJava(::addPrecontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, elementIdPtr.get(), elementsIds.size());
+    callJava(::addContingencyForFlowDecomposition, flowDecompositionContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
+}
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds) {
+    ToCharPtrPtr branchIdPtr(branchIds);
+    callJava(::addPrecontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, branchIdPtr.get(), branchIds.size());
+}
+
+void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds, const std::vector<std::string>& contingencyIds) {
+    ToCharPtrPtr branchIdPtr(branchIds);
+    ToCharPtrPtr contingencyIdPtr(contingencyIds);
+    callJava(::addPostcontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, branchIdPtr.get(), branchIds.size(), contingencyIdPtr.get(), contingencyIds.size());
+}
+
+void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider) {
+    callJava(::addAdditionalXnecProviderForFlowDecomposition, flowDecompositionContext, defaultXnecProvider);
 }
 
 SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
@@ -1104,10 +1123,22 @@ void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
                         (char*) fictitiousSubstationId.c_str(), (char*) fictitiousSubstationName.c_str());
 }
 
+void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
+    std::string mergedLineId, std::string mergedLineName) {
+    pypowsybl::callJava(::revertCreateLineOnLine, network, (char*) lineToBeMerged1Id.c_str(), (char*) lineToBeMerged2Id.c_str(),
+                        (char*) lineToBeDeletedId.c_str(), (char*) mergedLineId.c_str(), (char*) mergedLineName.c_str());
+}
+
 void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
         std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent) {
     pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(),
                         (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
+}
+
+void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
+    std::string lineName) {
+    pypowsybl::callJava(::revertConnectVoltageLevelOnLine, network, (char*) line1Id.c_str(), (char*) line2Id.c_str(),
+                        (char*) lineId.c_str(), (char*) lineName.c_str());
 }
 
 void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType) {
@@ -1184,6 +1215,11 @@ LayoutParameters* createLayoutParameters() {
        callJava(::freeLayoutParameters, ptr);
     });
     return new LayoutParameters(parameters.get());
+}
+
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
+    ToCharPtrPtr connectableIdsPtr(connectableIds);
+    pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
 }

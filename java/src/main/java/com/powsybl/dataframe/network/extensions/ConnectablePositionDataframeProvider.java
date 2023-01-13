@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -31,6 +32,12 @@ public class ConnectablePositionDataframeProvider implements NetworkExtensionDat
     @Override
     public String getExtensionName() {
         return ConnectablePosition.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(ConnectablePosition.NAME, "it gives the position of a connectable relative to other equipments in the network",
+                "index : id (str), side (str), order (int), feeder_name (str), direction (str)");
     }
 
     private ConnectablePositionFeederData getOrThrow(Network network, UpdatingDataframe dataframe, int index) {
