@@ -6,11 +6,18 @@
  */
 package com.powsybl.dataframe.network.extensions;
 
+import com.google.common.base.Functions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSortedMap;
+import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.DataframeMapper;
+import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.dataframe.CDataframeHandler;
 
 import java.util.*;
 import java.util.function.Function;
@@ -57,6 +64,40 @@ public final class NetworkExtensions {
         if (provider != null) {
             provider.removeExtensions(network, ids);
         }
+    }
+
+    private static class Container {
+        private final Map<String, ExtensionInformation> elements;
+
+        Container(ExtensionInformation... elements) {
+            this(Arrays.asList(elements));
+        }
+
+        Container(Collection<ExtensionInformation> elements) {
+            this.elements = elements.stream().collect(Collectors.toUnmodifiableMap(ExtensionInformation::getId, Functions.identity()));
+        }
+
+        List<ExtensionInformation> getExtensionInformation() {
+            return new ArrayList<>(elements.values());
+        }
+    }
+
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation() {
+        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, ExtensionInformation>()
+                .itemsProvider(Container::getExtensionInformation)
+                .stringsIndex("id", ExtensionInformation::getId)
+                .strings("detail", ExtensionInformation::getDescription)
+                .strings("attributes", ExtensionInformation::getAttributes)
+                .build();
+        Container container = new Container(
+                EXTENSIONS_PROVIDERS.values()
+                        .stream()
+                        .map(NetworkExtensionDataframeProvider::getExtensionInformation)
+                        .collect(Collectors.toList())
+        );
+        CDataframeHandler handler = new CDataframeHandler();
+        mapper.createDataframe(container, handler, new DataframeFilter());
+        return handler.getDataframePtr();
     }
 }
 

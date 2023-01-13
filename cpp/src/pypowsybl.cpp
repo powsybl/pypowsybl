@@ -826,6 +826,10 @@ std::vector<std::string> getExtensionsNames() {
     return formats.get();
 }
 
+SeriesArray* getExtensionsInformation() {
+    return new SeriesArray(callJava<array*>(::getExtensionsInformation));
+}
+
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }
@@ -1211,6 +1215,11 @@ LayoutParameters* createLayoutParameters() {
        callJava(::freeLayoutParameters, ptr);
     });
     return new LayoutParameters(parameters.get());
+}
+
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
+    ToCharPtrPtr connectableIdsPtr(connectableIds);
+    pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
 }

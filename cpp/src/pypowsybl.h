@@ -370,6 +370,8 @@ SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network
 
 std::vector<std::string> getExtensionsNames();
 
+SeriesArray* getExtensionsInformation();
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
@@ -507,6 +509,8 @@ std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle networ
 void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
+
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds);
 
 LayoutParameters* createLayoutParameters();
 }

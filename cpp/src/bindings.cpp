@@ -184,7 +184,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
-            .value("ALIAS", element_type::ALIAS);
+            .value("ALIAS", element_type::ALIAS)
+            .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
+            .value("INJECTION", element_type::INJECTION)
+            .value("BRANCH", element_type::BRANCH)
+            .value("TERMINAL", element_type::TERMINAL);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -537,6 +541,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"));
 
     m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
+
+    m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
     
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
@@ -681,4 +687,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
+
+    m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
 }

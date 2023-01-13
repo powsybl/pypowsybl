@@ -8,6 +8,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
@@ -28,6 +29,12 @@ public class GeneratorEntsoeCategoryDataframeProvider implements NetworkExtensio
     @Override
     public String getExtensionName() {
         return GeneratorEntsoeCategory.NAME;
+    }
+
+    @Override
+    public ExtensionInformation getExtensionInformation() {
+        return new ExtensionInformation(GeneratorEntsoeCategory.NAME,
+                "Provides Entsoe category code for a generator", "index : id (str), code (int)");
     }
 
     private Stream<GeneratorEntsoeCategory> itemsStream(Network network) {

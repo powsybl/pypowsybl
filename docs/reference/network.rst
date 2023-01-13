@@ -69,6 +69,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_3_windings_transformers
    Network.get_aliases
    Network.get_batteries
+   Network.get_branches
    Network.get_bus_breaker_topology
    Network.get_busbar_sections
    Network.get_buses
@@ -76,6 +77,8 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_dangling_lines
    Network.get_generators
    Network.get_hvdc_lines
+   Network.get_identifiables
+   Network.get_injections
    Network.get_lcc_converter_stations
    Network.get_lines
    Network.get_loads
@@ -92,6 +95,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_static_var_compensators
    Network.get_substations
    Network.get_switches
+   Network.get_terminals
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
 
@@ -140,6 +144,8 @@ Network elements can be created or removed using the following methods:
    :nosignatures:
 
    Network.create_2_windings_transformers
+   Network.create_batteries
+   Network.create_aliases
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits
@@ -186,6 +192,7 @@ Network elements extensions
    :nosignatures:
 
    get_extensions_names
+   get_extensions_information
    Network.get_extensions
    Network.create_extensions
    Network.update_extensions

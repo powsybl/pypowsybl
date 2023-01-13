@@ -519,4 +519,44 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "geo_tags", "fictitious", "prop1");
     }
+
+    @Test
+    void testIdentifiables() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(IDENTIFIABLE, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "type");
+    }
+
+    @Test
+    void testInjections() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(INJECTION, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "type", "voltage_level_id", "bus_id");
+    }
+
+    @Test
+    void testBranches() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(BRANCH, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "voltage_level2_id", "bus2_id");
+    }
+
+    @Test
+    void testTerminals() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(TERMINAL, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("element_id", "voltage_level_id", "bus_id", "element_side");
+    }
 }
