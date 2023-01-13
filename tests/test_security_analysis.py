@@ -178,11 +178,11 @@ def test_loadflow_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     parameters = pp.security.Parameters()
-    parameters.loadflow_parameters.countries_to_balance = ['UNKNOWN']
+    parameters.load_flow_parameters.countries_to_balance = ['UNKNOWN']
     with pytest.raises(pp.PyPowsyblError, match='No enum constant com.powsybl.iidm.network.Country.UNKNOWN'):
         sa.run_ac(network, parameters=parameters)
 
-    parameters.loadflow_parameters.countries_to_balance = ['FR']
+    parameters.load_flow_parameters.countries_to_balance = ['FR']
     res = sa.run_ac(network, parameters=parameters)
     assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
 
@@ -222,7 +222,7 @@ def test_security_analysis_parameters():
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
     # loadflow parameters only and specific parameters
-    result = sa.run_ac(network, parameters=pp.security.Parameters(loadflow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
+    result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
     assert result.limit_violations.empty
     assert len(result.post_contingency_results) == 0
     assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED

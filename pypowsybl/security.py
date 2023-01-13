@@ -110,19 +110,19 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.security
 
     Args:
-        loadflow_parameters: parameters that are common to loadflow and security analysis
+        load_flow_parameters: parameters that are common to loadflow and security analysis
         increased_violations_parameters: Define what violations should be considered increased between N and contingency situations
         provider_parameters: Define parameters linked to the security analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
     def __init__(self,
-                 loadflow_parameters: pypowsybl.loadflow.Parameters = None,
+                 load_flow_parameters: pypowsybl.loadflow.Parameters = None,
                  increased_violations_parameters: IncreasedViolationsParameters = None,
                  provider_parameters: _Dict[str, str] = None):
         self._init_with_default_values()
-        if loadflow_parameters is not None:
-            self.loadflow_parameters = loadflow_parameters
+        if load_flow_parameters is not None:
+            self.load_flow_parameters = load_flow_parameters
         if increased_violations_parameters:
             self._increased_violations = increased_violations_parameters
         if provider_parameters is not None:
@@ -137,7 +137,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SecurityAnalysisParameters()
-        self.loadflow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.loadflow_parameters)
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.loadflow_parameters)
         self._increased_violations = IncreasedViolationsParameters(default_parameters.flow_proportional_threshold,
                                                                    default_parameters.low_voltage_proportional_threshold,
                                                                    default_parameters.low_voltage_absolute_threshold,
@@ -148,7 +148,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _to_c_parameters(self) -> _pypowsybl.SecurityAnalysisParameters:
         c_parameters = _pypowsybl.SecurityAnalysisParameters()
-        c_parameters.loadflow_parameters = self.loadflow_parameters._to_c_parameters()
+        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()
         c_parameters.flow_proportional_threshold = self.increased_violations.flow_proportional_threshold
         c_parameters.low_voltage_proportional_threshold = self.increased_violations.low_voltage_proportional_threshold
         c_parameters.low_voltage_absolute_threshold = self.increased_violations.low_voltage_absolute_threshold
@@ -160,7 +160,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
-               f", loadflow_parameters={self.loadflow_parameters!r}" \
+               f", load_flow_parameters={self.load_flow_parameters!r}" \
                f", increased_violations={self.increased_violations!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
@@ -276,7 +276,7 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        security_parameters = Parameters(loadflow_parameters=parameters) if isinstance(parameters,
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(
@@ -296,7 +296,7 @@ class SecurityAnalysis(_ContingencyContainer):
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
-        security_parameters = Parameters(loadflow_parameters=parameters) if isinstance(parameters,
+        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
         return SecurityAnalysisResult(

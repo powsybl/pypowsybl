@@ -42,7 +42,7 @@ def test_run_lf():
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
     assert 'VL1_0' == results[0].slack_bus_id
-    assert round(abs(0.5-results[0].slack_bus_active_power_mismatch), 1) == 0
+    assert round(abs(0.5 - results[0].slack_bus_active_power_mismatch), 1) == 0
     assert 7 == results[0].iteration_count
 
     parameters = lf.Parameters(distributed_slack=False)
@@ -88,9 +88,9 @@ def test_validation():
     pp.loadflow.run_ac(n)
     validation = pp.loadflow.run_validation(n,
                                             [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
-    assert abs(-232.4-validation.generators['p']['B1-G']) < 0.1
-    assert abs(-47.8-validation.buses['incoming_p']['VL4_0']) < 0.1
-    assert abs(157.8-validation.branch_flows['p1']['L1-2-1']) < 0.1
+    assert abs(-232.4 - validation.generators['p']['B1-G']) < 0.1
+    assert abs(-47.8 - validation.buses['incoming_p']['VL4_0']) < 0.1
+    assert abs(157.8 - validation.branch_flows['p1']['L1-2-1']) < 0.1
     assert not validation.valid
     n2 = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n2)
@@ -103,7 +103,7 @@ def test_twt_validation():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     validation = pp.loadflow.run_validation(n, [ValidationType.TWTS])
-    assert abs(-10.421382-validation.twts['error']['NHV2_NLOAD']) < 0.00001
+    assert abs(-10.421382 - validation.twts['error']['NHV2_NLOAD']) < 0.00001
     assert validation.valid
 
 
@@ -120,7 +120,7 @@ def test_validation_all():
     assert validation.twts is not None
 
 
-def test_validation_parameters_get_set():
+def test_validation_parameters_get():
     # Testing setting independently every attributes
     attributes = {
         'threshold': [0.1, 0.2],
@@ -140,17 +140,38 @@ def test_validation_parameters_get_set():
             parameters = lf.ValidationParameters(**dict([(attribute, value)]))
             assert value == getattr(parameters, attribute)
 
+
+def test_validation_parameters_set():
+    attributes = {
+        'threshold': [0.1, 0.2],
+        'verbose': [True, False],
+        'loadflow_name': ['loadFlow1', 'loadFLow2'],
+        'epsilon_x': [0.1, 0.2],
+        'apply_reactance_correction': [True, False],
+        'ok_missing_values': [True, False],
+        'no_requirement_if_reactive_bound_inversion': [True, False],
+        'compare_results': [True, False],
+        'check_main_component_only': [True, False],
+        'no_requirement_if_setpoint_outside_power_bounds': [True, False]
+    }
+    for attribute, values in attributes.items():
+        for value in values:
             parameters = lf.ValidationParameters()
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
 
 
-def test_validation_parameters_effect():
+def test_validation_parameters_not_valid():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n)
     parameters = lf.ValidationParameters()
     validation = pp.loadflow.run_validation(n, validation_parameters=parameters)
     assert not validation.branch_flows['validated']['LINE_S2S3']
+
+
+def test_validation_parameters_valid():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(n)
     parameters = lf.ValidationParameters(threshold=0.1)
     validation = pp.loadflow.run_validation(n, validation_parameters=parameters)
     assert validation.branch_flows['validated']['LINE_S2S3']
@@ -203,7 +224,7 @@ def test_run_lf_with_report():
     reporter = rp.Reporter()
     report1 = str(reporter)
     assert len(report1) > 0
-    pp.loadflow.run_ac(n, reporter = reporter)
+    pp.loadflow.run_ac(n, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) > len(report1)
     json_report = reporter.to_json()
@@ -211,6 +232,6 @@ def test_run_lf_with_report():
     json.loads(json_report)
 
     n2 = pp.network.create_eurostag_tutorial_example1_network()
-    pp.loadflow.run_ac(n2, reporter = reporter)
+    pp.loadflow.run_ac(n2, reporter=reporter)
     report3 = str(reporter)
     assert len(report3) > len(report2)
