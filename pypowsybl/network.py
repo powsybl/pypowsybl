@@ -226,12 +226,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pp.JavaHandle):
         self._handle = handle
-        att = _pp.get_network_metadata(self._handle)
-        self._id = att.id
-        self._name = att.name
-        self._source_format = att.source_format
-        self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
+        self.__init_from_handle()
 
     @property
     def id(self) -> str:
@@ -281,6 +276,15 @@ class Network:  # pylint: disable=too-many-public-methods
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
         self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
+        self.__init_from_handle()
+
+    def __init_from_handle(self) -> None:
+        att = _pp.get_network_metadata(self._handle)
+        self._id = att.id
+        self._name = att.name
+        self._source_format = att.source_format
+        self._forecast_distance = _datetime.timedelta(minutes=att.forecast_distance)
+        self._case_date = _datetime.datetime.fromtimestamp(att.case_date, _timezone.utc)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
