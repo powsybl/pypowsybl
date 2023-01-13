@@ -439,19 +439,21 @@ public final class Dataframes {
             .itemsProvider(Dataframes::getXnecWithDecompositions)
             .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
             .strings("branch_id", XnecWithDecompositionContext::getBranchId)
+            .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
             .strings("country1", XnecWithDecompositionContext::getCountry1String)
             .strings("country2", XnecWithDecompositionContext::getCountry2String)
             .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
             .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
             .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
+            .doubles("x_node_flow", XnecWithDecompositionContext::getXNodeFlow)
+            .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
             .doubles("internal_flow", XnecWithDecompositionContext::getInternalFlow)
             .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
-            .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
             .build();
     }
 
     private static List<XnecWithDecompositionContext> getXnecWithDecompositions(FlowDecompositionResults flowDecompositionResults) {
-        return flowDecompositionResults.getDecomposedFlowMap().entrySet().stream()
+        return flowDecompositionResults.getDecomposedFlowMap().values().stream()
             .map(XnecWithDecompositionContext::new)
             .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
             .collect(Collectors.toList());
