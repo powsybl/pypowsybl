@@ -422,6 +422,16 @@ def test_slack_terminal_bus_breaker():
                                            # but powsybl-core works this way
     assert e.bus_id == 'VLHV1_0'  # the corresponding "bus view" bus
 
+def test_slack_terminal_bus_breaker():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'coordinatedReactiveControl'
+    n.create_extensions(extension_name, generator_id='GH1', q_percent=0.8)
+    e = n.get_extensions(extension_name).loc['GH1']
+    assert e.q_percent == 0.8
+    extensions_information = pypowsybl.network.get_extensions_information()
+    assert extensions_information.loc[extension_name]['detail'] == 'it allow to specify the percent of the coordinated reactive control that comes from a generator'
+    assert extensions_information.loc[extension_name]['attributes'] == 'index : generator_id (str), q_percent (float)'
+
 
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
