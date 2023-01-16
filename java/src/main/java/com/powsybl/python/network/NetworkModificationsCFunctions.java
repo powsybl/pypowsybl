@@ -327,4 +327,37 @@ public final class NetworkModificationsCFunctions {
         }
         return feeders;
     }
+
+    @CEntryPoint(name = "replaceTeePointByVoltageLevelOnLine")
+    public static void replaceTeePointByVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
+                                                           CCharPointer teePointLine1,
+                                                           CCharPointer teePointLine2,
+                                                           CCharPointer teePointLineToRemove,
+                                                           CCharPointer bbsOrBusId,
+                                                           CCharPointer newLine1Id,
+                                                           CCharPointer newLine1Name,
+                                                           CCharPointer newLine2Id,
+                                                           CCharPointer newLine2Name,
+                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+
+        String teePointLine1Str = CTypeUtil.toString(teePointLine1);
+        String teePointLineStr = CTypeUtil.toString(teePointLine2);
+        String teePointLineToRemoveStr = CTypeUtil.toStringOrNull(teePointLineToRemove);
+        String bbsOrBusIdStr = CTypeUtil.toStringOrNull(bbsOrBusId);
+        String newLine1IdStr = CTypeUtil.toStringOrNull(newLine1Id);
+        String newLine1NameStr = CTypeUtil.toStringOrNull(newLine1Name);
+        String newLine2IdStr = CTypeUtil.toStringOrNull(newLine2Id);
+        String newLine2NameStr = CTypeUtil.toStringOrNull(newLine2Name);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        NetworkModification modification = new ReplaceTeePointByVoltageLevelOnLineBuilder()
+                .withTeePointLine1(teePointLine1Str)
+                .withTeePointLine2(teePointLineStr)
+                .withTeePointLineToRemove(teePointLineToRemoveStr)
+                .withBbsOrBusId(bbsOrBusIdStr)
+                .withNewLine1Id(newLine1IdStr)
+                .withNewLine1Name(newLine1NameStr)
+                .withNewLine2Id(newLine2IdStr)
+                .withNewLine2Name(newLine2NameStr).build();
+        modification.apply(network);
+    }
 }
