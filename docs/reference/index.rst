@@ -12,3 +12,4 @@ of pypowsybl classes and methods.
    security
    sensitivity
    flowdecomposition
+   dynamic
