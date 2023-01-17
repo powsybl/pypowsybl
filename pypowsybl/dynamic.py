@@ -108,7 +108,7 @@ class ModelMapping:
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 
         | The dataframe must contains these three columns :
-        |     - static_id: id of the network element to map (or the id of the generator for omega_ref)
+        |     - static_id: id of the network element to map
         |     - parameter_set_id: set id in the parameter file
         |     - mapping_type: value of enum DynamicMappingType
 
