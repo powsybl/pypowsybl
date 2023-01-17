@@ -1283,5 +1283,6 @@ std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappin
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;
+    }
 
 }
