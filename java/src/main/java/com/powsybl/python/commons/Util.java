@@ -198,6 +198,14 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS:
                 return PyPowsyblApiHeader.ElementType.ALIAS;
+            case TERMINAL:
+                return PyPowsyblApiHeader.ElementType.TERMINAL;
+            case INJECTION:
+                return PyPowsyblApiHeader.ElementType.INJECTION;
+            case BRANCH:
+                return PyPowsyblApiHeader.ElementType.BRANCH;
+            case IDENTIFIABLE:
+                return PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
@@ -259,6 +267,14 @@ public final class Util {
                 return DataframeElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS:
                 return DataframeElementType.ALIAS;
+            case TERMINAL:
+                return DataframeElementType.TERMINAL;
+            case INJECTION:
+                return DataframeElementType.INJECTION;
+            case BRANCH:
+                return DataframeElementType.BRANCH;
+            case IDENTIFIABLE:
+                return DataframeElementType.IDENTIFIABLE;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }

@@ -826,6 +826,10 @@ std::vector<std::string> getExtensionsNames() {
     return formats.get();
 }
 
+SeriesArray* getExtensionsInformation() {
+    return new SeriesArray(callJava<array*>(::getExtensionsInformation));
+}
+
 std::string getWorkingVariantId(const JavaHandle& network) {
     return toString(callJava<char*>(::getWorkingVariantId, network));
 }
@@ -1073,9 +1077,24 @@ JavaHandle createFlowDecomposition() {
     return callJava<JavaHandle>(::createFlowDecomposition);
 }
 
-void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& elementsIds) {
+void addContingencyForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds) {
     ToCharPtrPtr elementIdPtr(elementsIds);
-    callJava(::addPrecontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, elementIdPtr.get(), elementsIds.size());
+    callJava(::addContingencyForFlowDecomposition, flowDecompositionContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
+}
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds) {
+    ToCharPtrPtr branchIdPtr(branchIds);
+    callJava(::addPrecontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, branchIdPtr.get(), branchIds.size());
+}
+
+void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds, const std::vector<std::string>& contingencyIds) {
+    ToCharPtrPtr branchIdPtr(branchIds);
+    ToCharPtrPtr contingencyIdPtr(contingencyIds);
+    callJava(::addPostcontingencyMonitoredElementsForFlowDecomposition, flowDecompositionContext, branchIdPtr.get(), branchIds.size(), contingencyIdPtr.get(), contingencyIds.size());
+}
+
+void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider) {
+    callJava(::addAdditionalXnecProviderForFlowDecomposition, flowDecompositionContext, defaultXnecProvider);
 }
 
 SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters) {
@@ -1198,6 +1217,11 @@ LayoutParameters* createLayoutParameters() {
     return new LayoutParameters(parameters.get());
 }
 
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
+    ToCharPtrPtr connectableIdsPtr(connectableIds);
+    pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
+}
+
 /*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
 JavaHandle createDynamicSimulationContext() {
     return callJava<JavaHandle>(::createDynamicSimulationContext);
@@ -1213,7 +1237,6 @@ JavaHandle createTimeseriesMapping() {
 JavaHandle createEventMapping() {
     return callJava<JavaHandle>(::createEventMapping);
 }
-
 
 JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop) {
     return callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
@@ -1253,6 +1276,5 @@ std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappin
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;
-}
 
 }

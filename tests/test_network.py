@@ -736,6 +736,7 @@ def test_current_limits():
 def test_deep_copy():
     n = pp.network.create_eurostag_tutorial_example1_network()
     copy_n = copy.deepcopy(n)
+    assert copy_n.id == "sim1"
     assert ['NGEN_NHV1', 'NHV2_NLOAD'] == copy_n.get_elements_ids(pp.network.ElementType.TWO_WINDINGS_TRANSFORMER)
 
 
@@ -2092,6 +2093,61 @@ def test_aliases():
     assert alias2['alias_type'] == ''
     n.remove_aliases(id=['TWT', 'GH1'], alias=['test', 'no_type_test'])
     assert n.get_aliases().empty
+
+
+def test_remove_feeder_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    pp.network.create_line_bays(n, df)
+    assert 'new_line' in n.get_lines().index
+    assert 'new_line1_BREAKER' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line2_BREAKER' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' in n.get_switches().index
+    pp.network.remove_feeder_bays(n, 'new_line')
+    assert 'new_line1_BREAKER' not in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
+    assert 'new_line2_BREAKER' not in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
+
+
+def test_identifiables():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert n.get_identifiables().loc['GH3'].type == 'GENERATOR'
+    assert n.get_identifiables().loc['TWT'].type == 'TWO_WINDINGS_TRANSFORMER'
+
+
+def test_injections():
+    n = pp.network.create_four_substations_node_breaker_network()
+    load = n.get_injections().loc['LD1']
+    assert load.type == 'LOAD'
+    assert load.voltage_level_id == 'S1VL1'
+    assert load.bus_id == 'S1VL1_0'
+
+
+def test_branches():
+    n = pp.network.create_four_substations_node_breaker_network()
+    twt = n.get_branches().loc['TWT']
+    assert twt.voltage_level1_id == 'S1VL1'
+    assert twt.bus1_id == 'S1VL1_0'
+    assert twt.voltage_level2_id == 'S1VL2'
+    assert twt.bus2_id == 'S1VL2_0'
+
+
+def test_terminals():
+    n = pp.network.create_four_substations_node_breaker_network()
+    terminals = n.get_terminals()
+    shunt = terminals.loc['SHUNT']
+    assert shunt.voltage_level_id == 'S1VL2'
+    assert shunt.bus_id == 'S1VL2_0'
+    line = terminals.loc['LINE_S2S3']
+    assert line.shape[0] == 2
+    assert line.iloc[0].element_side == 'ONE'
+    assert line.iloc[1].element_side == 'TWO'
 
 
 if __name__ == '__main__':

@@ -226,7 +226,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
-            .value("ALIAS", element_type::ALIAS);
+            .value("ALIAS", element_type::ALIAS)
+            .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
+            .value("INJECTION", element_type::INJECTION)
+            .value("BRANCH", element_type::BRANCH)
+            .value("TERMINAL", element_type::TERMINAL);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -580,6 +584,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
 
+    m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
+
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
 
@@ -667,8 +673,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
     
     m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
 
-    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements to be monitored for a flow decomposition",
-          py::arg("flow_decomposition_context"), py::arg("elements_ids"));
+    m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Add a contingency for flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("contingency_id"), py::arg("elements_ids"));
+
+    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements before contingency to be monitored for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("branch_ids"));
+
+    m.def("add_postcontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPostcontingencyMonitoredElementsForFlowDecomposition, "Add elements after contingency to be monitored for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("branch_ids"), py::arg("contingency_ids"));
+
+    m.def("add_additional_xnec_provider_for_flow_decomposition", &pypowsybl::addAdditionalXnecProviderForFlowDecomposition, "Add an additional default xnec provider for a flow decomposition",
+          py::arg("flow_decomposition_context"), py::arg("default_xnec_provider"));
 
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
           py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
@@ -681,6 +696,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
                 .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence)
                 .def_readwrite("sensitivity_variable_batch_size", &pypowsybl::FlowDecompositionParameters::sensitivity_variable_batch_size);
+
+    py::enum_<pypowsybl::DefaultXnecProvider>(m, "DefaultXnecProvider", "Define the default xnec providers")
+            .value("GT_5_PERC_ZONE_TO_ZONE_PTDF", pypowsybl::DefaultXnecProvider::GT_5_PERC_ZONE_TO_ZONE_PTDF, "Select branches on base case with greater than 5 perc zone to zone PTDF or that is an interconnection.")
+            .value("ALL_BRANCHES", pypowsybl::DefaultXnecProvider::ALL_BRANCHES, "Select all branches in a network.")
+            .value("INTERCONNECTIONS", pypowsybl::DefaultXnecProvider::INTERCONNECTIONS, "Select all the interconnections in a network.");
 
     m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),
             py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"),
@@ -710,6 +730,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
-    dynamicSimulationBindings(m);
+    m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
 
+    dynamicSimulationBindings(m);
 }

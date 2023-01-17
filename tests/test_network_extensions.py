@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import pathlib
 import pytest
+
+import pypowsybl.network
 import pypowsybl.network as pn
 
 TEST_DIR = pathlib.Path(__file__).parent
@@ -419,3 +421,46 @@ def test_slack_terminal_bus_breaker():
     assert e.element_id == 'NHV1_NHV2_1'   # because there is no terminal associated to buses, not so natural,
                                            # but powsybl-core works this way
     assert e.bus_id == 'VLHV1_0'  # the corresponding "bus view" bus
+
+
+def test_get_extensions_information():
+    extensions_information = pypowsybl.network.get_extensions_information()
+    assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
+    assert extensions_information.loc['measurements']['attributes'] == 'index : element_id (str),id (str), type (str), ' \
+                                                                       'standard_deviation (float), value (float), valid (bool)'
+    assert extensions_information.loc['branchObservability']['detail'] == 'Provides information about the observability of a branch'
+    assert extensions_information.loc['branchObservability']['attributes'] == 'index : id (str), observable (bool), ' \
+                                                                              'p1_standard_deviation (float), p1_redundant (bool), ' \
+                                                                              'p2_standard_deviation (float), p2_redundant (bool), ' \
+                                                                              'q1_standard_deviation (float), q1_redundant (bool), ' \
+                                                                              'q2_standard_deviation (float), q2_redundant (bool)'
+    assert extensions_information.loc['hvdcAngleDroopActivePowerControl']['detail'] == 'Active power control mode based on an offset in MW and a droop in MW/degree'
+    assert extensions_information.loc['hvdcAngleDroopActivePowerControl']['attributes'] == 'index : id (str), droop (float), p0 (float), enabled (bool)'
+    assert extensions_information.loc['injectionObservability']['detail'] == 'Provides information about the observability of a injection'
+    assert extensions_information.loc['injectionObservability'][
+               'attributes'] == 'index : id (str), observable (bool), p_standard_deviation (float), p_redundant (bool), q_standard_deviation (float), q_redundant (bool), v_standard_deviation (float), v_redundant (bool)'
+    assert extensions_information.loc['detail']['detail'] == 'Provides active power setpoint and reactive power setpoint for a load'
+    assert extensions_information.loc['detail'][
+               'attributes'] == 'index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)'
+    assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
+    assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
+    assert extensions_information.loc['mergedXnode']['detail'] == 'Provides information about the border point between 2 TSOs on a merged line'
+    assert extensions_information.loc['mergedXnode']['attributes'] == 'index : id (str), code (str), line1 (str), line2 (str), r_dp (float), x_dp (float), g1_dp (float), b1_dp (float), g2_dp (float), b2_dp (float), p1 (float), q1 (float), p2 (float), q2 (float)'
+    assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
+    assert extensions_information.loc['activePowerControl']['attributes'] == 'index : id (str), participate (bool), droop (float)'
+    assert extensions_information.loc['entsoeCategory']['detail'] == 'Provides Entsoe category code for a generator'
+    assert extensions_information.loc['entsoeCategory']['attributes'] == 'index : id (str), code (int)'
+    assert extensions_information.loc['entsoeArea']['detail'] == 'Provides Entsoe geographical code for a substation'
+    assert extensions_information.loc['entsoeArea']['attributes'] == 'index : id (str), code (str)'
+    assert extensions_information.loc['xnode']['detail'] == 'Provides information about the border point of a TSO on a dangling line'
+    assert extensions_information.loc['xnode']['attributes'] == 'index : id (str), code (str)'
+    assert extensions_information.loc['generatorShortCircuit']['detail'] == 'it contains the transitory reactance of a generator needed to compute short circuit. A subtransitory reactance can also be contained'
+    assert extensions_information.loc['generatorShortCircuit']['attributes'] == 'index : id (str), direct_sub_trans_x (float), direct_trans_x (float), step_up_transformer_x (float)'
+    assert extensions_information.loc['identifiableShortCircuit']['detail'] == 'it contains max and min values of current allowed during short circuit on a network element'
+    assert extensions_information.loc['identifiableShortCircuit']['attributes'] == 'index : id (str), equipment_type (str), ip_min (float), ip_max (float)'
+    assert extensions_information.loc['position']['detail'] == 'it gives the position of a connectable relative to other equipments in the network'
+    assert extensions_information.loc['position']['attributes'] == 'index : id (str), side (str), order (int), feeder_name (str), direction (str)'
+    assert extensions_information.loc['slackTerminal']['detail'] == 'a terminal that determines the slack bus for loadflow analysis'
+    assert extensions_information.loc['slackTerminal']['attributes'] == 'index : voltage_level_id (str), element_id (str), bus_id (str)'
+    assert extensions_information.loc['busbarSectionPosition']['detail'] == 'Position information about the BusbarSection'
+    assert extensions_information.loc['busbarSectionPosition']['attributes'] == 'index : id (str), busbar_index (int), section_index (int)'

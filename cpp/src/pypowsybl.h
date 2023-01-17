@@ -132,9 +132,10 @@ enum ConnectedComponentMode {
     ALL,
 };
 
-enum XnecSelectionStrategy {
-    ONLY_INTERCONNECTIONS = 0,
-    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+enum DefaultXnecProvider {
+    GT_5_PERC_ZONE_TO_ZONE_PTDF = 0,
+    ALL_BRANCHES,
+    INTERCONNECTIONS,
 };
 
 class SeriesMetadata {
@@ -369,6 +370,8 @@ SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network
 
 std::vector<std::string> getExtensionsNames();
 
+SeriesArray* getExtensionsInformation();
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
 
 std::string getWorkingVariantId(const JavaHandle& network);
@@ -463,7 +466,13 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer);
 
 JavaHandle createFlowDecomposition();
 
-void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& analysisContext, const std::vector<std::string>& elementsIds);
+void addContingencyForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+
+void addPrecontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds);
+
+void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& flowDecompositionContext, const std::vector<std::string>& branchIds, const std::vector<std::string>& contingencyIds);
+
+void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider);
 
 SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
 
@@ -500,6 +509,8 @@ std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle networ
 void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
+
+void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds);
 
 LayoutParameters* createLayoutParameters();
 //=======dynamic modeling for dynawaltz package==========
