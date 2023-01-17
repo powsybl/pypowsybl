@@ -8,36 +8,51 @@ The dynamic module allows to run time domain simulation.
 
 ModelMapping
 ------------
-.. autoclass:: ModelMapping
-.. automethod:: ModelMapping.add_all_dynamic_mappings
-.. automethod:: ModelMapping.add_alpha_beta_load
-.. automethod:: ModelMapping.add_one_transformer_load
-.. automethod:: ModelMapping.add_generator_synchronous_three_windings
-.. automethod:: ModelMapping.add_generator_synchronous_three_windings_proportional_regulations
-.. automethod:: ModelMapping.add_generator_synchronous_four_windings
-.. automethod:: ModelMapping.add_generator_synchronous_four_windings_proportional_regulations
-.. automethod:: ModelMapping.add_current_limit_automaton
+.. autosummary::
+   :toctree: api/
+
+    ModelMapping
+    ModelMapping.add_all_dynamic_mappings
+    ModelMapping.add_alpha_beta_load
+    ModelMapping.add_one_transformer_load
+    ModelMapping.add_generator_synchronous_three_windings
+    ModelMapping.add_generator_synchronous_three_windings_proportional_regulations
+    ModelMapping.add_generator_synchronous_four_windings
+    ModelMapping.add_generator_synchronous_four_windings_proportional_regulations
+    ModelMapping.add_current_limit_automaton
 
 EventMapping
 ------------
-.. autoclass:: EventMapping
-.. automethod:: EventMapping.add_branch_disconnection
-.. automethod:: EventMapping.add_set_point_boolean
-.. automethod:: EventMapping.add_event
+.. autosummary::
+   :toctree: api/
+
+    EventMapping
+    EventMapping.add_branch_disconnection
+    EventMapping.add_set_point_boolean
+    EventMapping.add_event
 
 CurveMapping
 ------------
-.. autoclass:: CurveMapping
-.. automethod:: CurveMapping.add_curve
-.. automethod:: CurveMapping.add_curves
+.. autosummary::
+    :toctree: api/
+
+    CurveMapping
+    CurveMapping.add_curve
+    CurveMapping.add_curves
 
 Simulation
 ----------
-.. autoclass:: Simulation
-.. automethod:: Simulation.run
+.. autosummary::
+    :toctree: api/
+
+    Simulation
+    Simulation.run
 
 Results
 -------
-.. autoclass:: SimulationResult
-.. automethod:: SimulationResult.status
-.. automethod:: SimulationResult.curves
+.. autosummary::
+    :toctree: api/
+
+    SimulationResult
+    SimulationResult.status
+    SimulationResult.curves
