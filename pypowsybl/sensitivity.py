@@ -160,13 +160,13 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.loadflow_parameters)
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
         c_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
