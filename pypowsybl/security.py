@@ -137,7 +137,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SecurityAnalysisParameters()
-        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.load_flow_parameters)
+        self.load_flow_parameters = pypowsybl.loadflow._parameters_from_c(default_parameters.loadflow_parameters)
         self._increased_violations = IncreasedViolationsParameters(default_parameters.flow_proportional_threshold,
                                                                    default_parameters.low_voltage_proportional_threshold,
                                                                    default_parameters.low_voltage_absolute_threshold,
@@ -148,7 +148,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _to_c_parameters(self) -> _pypowsybl.SecurityAnalysisParameters:
         c_parameters = _pypowsybl.SecurityAnalysisParameters()
-        c_parameters.load_flow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()
         c_parameters.flow_proportional_threshold = self.increased_violations.flow_proportional_threshold
         c_parameters.low_voltage_proportional_threshold = self.increased_violations.low_voltage_proportional_threshold
         c_parameters.low_voltage_absolute_threshold = self.increased_violations.low_voltage_absolute_threshold

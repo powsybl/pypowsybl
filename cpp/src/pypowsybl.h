@@ -67,7 +67,7 @@ private:
     array* delegate_;
 };
 
-typedef Array<load_flow_component_result> LoadFlowComponentResultArray;
+typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
@@ -138,6 +138,16 @@ enum DefaultXnecProvider {
     INTERCONNECTIONS,
 };
 
+enum OutputWriter {
+    CSV = 0,
+    CSV_MULTILINE,
+};
+
+enum XnecSelectionStrategy {
+    ONLY_INTERCONNECTIONS = 0,
+    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
+};
+
 class SeriesMetadata {
 public:
     SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
@@ -165,9 +175,9 @@ private:
 
 class LoadFlowParameters {
 public:
-    LoadFlowParameters(load_flow_parameters* src);
-    std::shared_ptr<load_flow_parameters> to_c_struct() const;
-    void load_to_c_struct(load_flow_parameters& params) const;
+    LoadFlowParameters(loadflow_parameters* src);
+    std::shared_ptr<loadflow_parameters> to_c_struct() const;
+    void load_to_c_struct(loadflow_parameters& params) const;
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
@@ -186,12 +196,31 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class LoadFlowValidationParameters {
+public:
+    LoadFlowValidationParameters(loadflow_validation_parameters* src);
+    std::shared_ptr<loadflow_validation_parameters> to_c_struct() const;
+    void load_to_c_struct(loadflow_validation_parameters& params) const;
+
+    LoadFlowParameters loadflow_parameters;
+    double threshold;
+    bool verbose;
+    std::string loadflow_name;
+    double epsilon_x;
+    bool apply_reactance_correction;
+    bool ok_missing_values;
+    bool no_requirement_if_reactive_bound_inversion;
+    bool compare_results;
+    bool check_main_component_only;
+    bool no_requirement_if_setpoint_outside_power_bounds;
+};
+
 class SecurityAnalysisParameters {
 public:
     SecurityAnalysisParameters(security_analysis_parameters* src);
     std::shared_ptr<security_analysis_parameters> to_c_struct() const;
 
-    LoadFlowParameters load_flow_parameters;
+    LoadFlowParameters loadflow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
@@ -206,7 +235,7 @@ public:
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
 
-    LoadFlowParameters load_flow_parameters;
+    LoadFlowParameters loadflow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -305,6 +334,8 @@ LoadFlowParameters* createLoadFlowParameters();
 
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
+LoadFlowValidationParameters* createValidationConfig();
+
 SecurityAnalysisParameters* createSecurityAnalysisParameters();
 
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
@@ -319,7 +350,7 @@ void reduceNetwork(const JavaHandle& network, const double v_min, const double v
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType);
+SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters);
 
@@ -474,7 +505,7 @@ void addPostcontingencyMonitoredElementsForFlowDecomposition(const JavaHandle& f
 
 void addAdditionalXnecProviderForFlowDecomposition(const JavaHandle& flowDecompositionContext, DefaultXnecProvider defaultXnecProvider);
 
-SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& load_flow_parameters);
+SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, const JavaHandle& network, const FlowDecompositionParameters& flow_decomposition_parameters, const LoadFlowParameters& loadflow_parameters);
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 

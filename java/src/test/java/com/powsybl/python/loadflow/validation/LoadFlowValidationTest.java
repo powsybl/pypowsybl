@@ -13,6 +13,7 @@ import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import org.assertj.core.api.Assertions;
@@ -33,7 +34,8 @@ class LoadFlowValidationTest {
         final Network network = IeeeCdfNetworkFactory.create9();
         LoadFlow.Runner runner = LoadFlow.find("OpenLoadFlow");
         runner.run(network, new LoadFlowParameters());
-        InMemoryValidationWriter busWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES);
+        ValidationConfig validationConfig = LoadFlowValidationCFunctions.createValidationConfig();
+        InMemoryValidationWriter busWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES, validationConfig);
         Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData()))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");

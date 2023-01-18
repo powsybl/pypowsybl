@@ -422,7 +422,7 @@ def test_slack_terminal_bus_breaker():
                                            # but powsybl-core works this way
     assert e.bus_id == 'VLHV1_0'  # the corresponding "bus view" bus
 
-def test_slack_terminal_bus_breaker():
+def test_coordinated_reactive_control():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'coordinatedReactiveControl'
     n.create_extensions(extension_name, generator_id='GH1', q_percent=0.8)
