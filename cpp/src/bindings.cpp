@@ -294,26 +294,26 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SOLVER_FAILED", pypowsybl::PostContingencyComputationStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
             .value("NO_IMPACT", pypowsybl::PostContingencyComputationStatus::NO_IMPACT, "The contingency has no impact.");
 
-    py::class_<load_flow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
-            .def_property_readonly("connected_component_num", [](const load_flow_component_result& r) {
+    py::class_<loadflow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
+            .def_property_readonly("connected_component_num", [](const loadflow_component_result& r) {
                 return r.connected_component_num;
             })
-            .def_property_readonly("synchronous_component_num", [](const load_flow_component_result& r) {
+            .def_property_readonly("synchronous_component_num", [](const loadflow_component_result& r) {
                 return r.synchronous_component_num;
             })
-            .def_property_readonly("status", [](const load_flow_component_result& r) {
+            .def_property_readonly("status", [](const loadflow_component_result& r) {
                 return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
-            .def_property_readonly("iteration_count", [](const load_flow_component_result& r) {
+            .def_property_readonly("iteration_count", [](const loadflow_component_result& r) {
                 return r.iteration_count;
             })
-            .def_property_readonly("slack_bus_id", [](const load_flow_component_result& r) {
+            .def_property_readonly("slack_bus_id", [](const loadflow_component_result& r) {
                 return r.slack_bus_id;
             })
-            .def_property_readonly("slack_bus_active_power_mismatch", [](const load_flow_component_result& r) {
+            .def_property_readonly("slack_bus_active_power_mismatch", [](const loadflow_component_result& r) {
                 return r.slack_bus_active_power_mismatch;
             })
-            .def_property_readonly("distributed_active_power", [](const load_flow_component_result& r) {
+            .def_property_readonly("distributed_active_power", [](const loadflow_component_result& r) {
                 return r.distributed_active_power;
             });
 
@@ -337,7 +337,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::ConnectedComponentMode>(m, "ConnectedComponentMode", "Define which connected components to run on.")
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
-    
+
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
@@ -361,9 +361,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
+            .def(py::init(&pypowsybl::createValidationConfig))
+            .def_readwrite("threshold", &pypowsybl::LoadFlowValidationParameters::threshold)
+            .def_readwrite("verbose", &pypowsybl::LoadFlowValidationParameters::verbose)
+            .def_readwrite("loadflow_name", &pypowsybl::LoadFlowValidationParameters::loadflow_name)
+            .def_readwrite("epsilon_x", &pypowsybl::LoadFlowValidationParameters::epsilon_x)
+            .def_readwrite("apply_reactance_correction", &pypowsybl::LoadFlowValidationParameters::apply_reactance_correction)
+            .def_readwrite("loadflow_parameters", &pypowsybl::LoadFlowValidationParameters::loadflow_parameters)
+            .def_readwrite("ok_missing_values", &pypowsybl::LoadFlowValidationParameters::ok_missing_values)
+            .def_readwrite("no_requirement_if_reactive_bound_inversion", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_reactive_bound_inversion)
+            .def_readwrite("compare_results", &pypowsybl::LoadFlowValidationParameters::compare_results)
+            .def_readwrite("check_main_component_only", &pypowsybl::LoadFlowValidationParameters::check_main_component_only)
+            .def_readwrite("no_requirement_if_setpoint_outside_power_bounds", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_setpoint_outside_power_bounds);
+
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
             .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
-            .def_readwrite("load_flow_parameters", &pypowsybl::SecurityAnalysisParameters::load_flow_parameters)
+            .def_readwrite("loadflow_parameters", &pypowsybl::SecurityAnalysisParameters::loadflow_parameters)
             .def_readwrite("flow_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::flow_proportional_threshold)
             .def_readwrite("low_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_proportional_threshold)
             .def_readwrite("low_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_absolute_threshold)
@@ -374,14 +388,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::SensitivityAnalysisParameters>(m, "SensitivityAnalysisParameters")
             .def(py::init(&pypowsybl::createSensitivityAnalysisParameters))
-            .def_readwrite("load_flow_parameters", &pypowsybl::SensitivityAnalysisParameters::load_flow_parameters)
+            .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
 
-    m.def("run_load_flow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
+    m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
 
-    m.def("run_load_flow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"), py::arg("validation_type"));
+    m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
+          py::arg("validation_type"), py::arg("validation_parameters"));
 
     py::class_<pypowsybl::LayoutParameters>(m, "LayoutParameters")
         .def(py::init(&pypowsybl::createLayoutParameters))
@@ -686,7 +701,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("flow_decomposition_context"), py::arg("default_xnec_provider"));
 
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
-          py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("load_flow_parameters"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("loadflow_parameters"));
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
