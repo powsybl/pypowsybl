@@ -432,6 +432,25 @@ def test_coordinated_reactive_control():
     assert extensions_information.loc[extension_name]['detail'] == 'it allow to specify the percent of the coordinated reactive control that comes from a generator'
     assert extensions_information.loc[extension_name]['attributes'] == 'index : generator_id (str), q_percent (float)'
 
+def test_standby_automaton():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'standbyAutomaton'
+    n.create_extensions(extension_name, id='SVC', standby=True, b0=0.1, low_voltage_threshold=200, low_voltage_setpoint=215,
+                        high_voltage_threshold=235, high_voltage_setpoint=225)
+    e = n.get_extensions(extension_name).loc['SVC']
+    assert e.standby
+    pytest.approx(e.b0, 0.1)
+    assert e.low_voltage_threshold == 200
+    assert e.low_voltage_setpoint == 215
+    assert e.high_voltage_threshold == 235
+    assert e.high_voltage_setpoint == 225
+
+    extensions_information = pypowsybl.network.get_extensions_information()
+    assert extensions_information.loc[extension_name]['detail'] == 'allow to manage standby mode for static var compensator'
+    assert extensions_information.loc[extension_name]['attributes'] == 'index : id (str), standby (boolean), b0 (double),' \
+                                                                       ' low_voltage_threshold (double), low_voltage_setpoint ' \
+                                                                       '(double), high_voltage_threshold (double), ' \
+                                                                       'high_voltage_setpoint (double)'
 
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
