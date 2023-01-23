@@ -37,10 +37,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q"),
-            SeriesMetadata.strings("bus_or_busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.doubles("target_q")
 
     );
 

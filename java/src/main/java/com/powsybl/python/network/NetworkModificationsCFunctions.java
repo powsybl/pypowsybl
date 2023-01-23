@@ -7,11 +7,7 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -34,9 +30,7 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import java.util.*;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
-import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
-import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
-import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getFeedersByConnectable;
+import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
@@ -196,55 +190,6 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    @CEntryPoint(name = "createFeederBay")
-    public static void createFeederBay(IsolateThread thread, ObjectHandle networkHandle, boolean throwException,
-                                       ObjectHandle reporterHandle, PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
-                                       PyPowsyblApiHeader.ElementType elementType,
-                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            DataframeElementType type = convert(elementType);
-            List<UpdatingDataframe> dataframes = new ArrayList<>();
-            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
-                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
-            }
-            NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reporter);
-        });
-    }
-
-    @CEntryPoint(name = "createBranchFeederBaysLine")
-    public static void createBranchFeederBaysLine(IsolateThread thread, ObjectHandle networkHandle,
-                                                  PyPowsyblApiHeader.DataframePointer cDataframeLine,
-                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe df = createDataframe(cDataframeLine);
-            for (int row = 0; row < df.getRowCount(); row++) {
-                FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-                CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df, row);
-                NetworkModification modification = builder.build();
-                modification.apply(network);
-            }
-        });
-    }
-
-    @CEntryPoint(name = "createBranchFeederBaysTwt")
-    public static void createBranchFeederBaysTwt(IsolateThread thread, ObjectHandle networkHandle,
-                                                 PyPowsyblApiHeader.DataframePointer cDataframeLine, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe df = createDataframe(cDataframeLine);
-            for (int row = 0; row < df.getRowCount(); row++) {
-                FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
-                CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df, row);
-                NetworkModification modification = builder.build();
-                modification.apply(network);
-            }
-        });
-    }
-
     @CEntryPoint(name = "getConnectablesOrderPositions")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getConnectablesOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
                                                                                                                   CCharPointer voltageLevelId, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -294,16 +239,19 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "createNetworkModification")
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
-                                                 PyPowsyblApiHeader.DataframePointer cDataframe,
+                                                 PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
                                                  PyPowsyblApiHeader.NetworkModificationType networkModificationType,
                                                  boolean throwException, ObjectHandle reporterHandle,
                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            UpdatingDataframe df = createDataframe(cDataframe);
+            List<UpdatingDataframe> dfs = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+            }
             DataframeNetworkModificationType type = convert(networkModificationType);
-            NetworkModifications.applyModification(type, network, df, throwException, reporter);
+            NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
         });
     }
 
@@ -350,4 +298,5 @@ public final class NetworkModificationsCFunctions {
             return CTypeUtil.createSeriesMetadata(metadata);
         });
     }
+
 }

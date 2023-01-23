@@ -12,5 +12,8 @@ package com.powsybl.dataframe.network.modifications;
  */
 public enum DataframeNetworkModificationType {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION,
-    CREATE_COUPLING_DEVICE
+    CREATE_COUPLING_DEVICE,
+    CREATE_FEEDER_BAY,
+    CREATE_LINE_FEEDER,
+    CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER
 }

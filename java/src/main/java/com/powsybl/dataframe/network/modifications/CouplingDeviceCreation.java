@@ -43,9 +43,12 @@ public class CouplingDeviceCreation implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, UpdatingDataframe dataframe, boolean throwException, ReporterModel reporter) {
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            CreateCouplingDeviceBuilder builder = createBuilder(dataframe, row);
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+        if (dataframes.size() != 1) {
+            throw new IllegalArgumentException("Expected only one input dataframe");
+        }
+        for (int row = 0; row < dataframes.get(0).getRowCount(); row++) {
+            CreateCouplingDeviceBuilder builder = createBuilder(dataframes.get(0), row);
             builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         }
     }

@@ -39,10 +39,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("bus_or_busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.booleans("voltage_regulator_on")
     );
 
     @Override

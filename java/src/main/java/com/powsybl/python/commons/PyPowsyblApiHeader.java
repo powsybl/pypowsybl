@@ -582,7 +582,10 @@ public final class PyPowsyblApiHeader {
     @CEnum("network_modification_type")
     public enum NetworkModificationType {
         VOLTAGE_LEVEL_TOPOLOGY_CREATION,
-        CREATE_COUPLING_DEVICE;
+        CREATE_COUPLING_DEVICE,
+        CREATE_FEEDER_BAY,
+        CREATE_LINE_FEEDER,
+        CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
 
         @CEnumValue
         public native int getCValue();

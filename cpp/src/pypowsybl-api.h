@@ -172,6 +172,9 @@ typedef enum {
 typedef enum {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,
     CREATE_COUPLING_DEVICE,
+    CREATE_FEEDER_BAY,
+    CREATE_LINE_FEEDER,
+    CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER
 } network_modification_type;
 
 typedef struct matrix_struct {

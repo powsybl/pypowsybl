@@ -9,8 +9,8 @@ package com.powsybl.python.commons;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
@@ -333,6 +333,12 @@ public final class Util {
                 return DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
             case CREATE_COUPLING_DEVICE:
                 return DataframeNetworkModificationType.CREATE_COUPLING_DEVICE;
+            case CREATE_FEEDER_BAY:
+                return DataframeNetworkModificationType.CREATE_FEEDER_BAY;
+            case CREATE_LINE_FEEDER:
+                return DataframeNetworkModificationType.CREATE_LINE_FEEDER;
+            case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER:
+                return DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }

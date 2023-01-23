@@ -5128,17 +5128,18 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
         to the bus.
 
     """
-    metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    c_dfs = _get_c_dataframes_and_add_voltage_level_id(dfs, metadata, **kwargs)
-    _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model,
-                          c_dfs, element_type)
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY, element_type)
+    c_dfs = _get_c_dataframes_and_add_element_type(dfs, metadata, element_type, **kwargs)
+    _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.CREATE_FEEDER_BAY, raise_exception,
+                                    None if reporter is None else reporter._reporter_model) #pylint: disable=protected-access
 
 
-def _get_c_dataframes_and_add_voltage_level_id(dfs: _List[_Optional[_DataFrame]],
-                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
-        _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_element_type(dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]],
+                                           element_type: _pp.ElementType, **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
+    if dfs[0] is not None:
+        dfs[0]['feeder_type'] = element_type.name
     for i, df in enumerate(dfs):
         if df is None:
             c_dfs.append(None)
@@ -5147,7 +5148,8 @@ def _get_c_dataframes_and_add_voltage_level_id(dfs: _List[_Optional[_DataFrame]]
     return c_dfs
 
 
-def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_line_bays(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
+                     **kwargs: _ArrayLike) -> None:
     """
     Creates a line and connects it to buses or busbar sections through standard feeder bays.
 
@@ -5159,6 +5161,9 @@ def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLi
     Args:
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
+                raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -5188,13 +5193,17 @@ def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLi
     See Also:
         :meth:`Network.create_lines`
     """
-    metadata = _pp.get_line_feeder_bays_metadata()
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_LINE_FEEDER,
+                                                                       ElementType.LINE)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_branch_feeder_bays_line(network._handle, c_df)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_LINE_FEEDER,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                       reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a transformer and connects it to buses or busbar sections through standard feeder bays.
 
@@ -5207,6 +5216,9 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     Args:
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -5237,10 +5249,12 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     See Also:
         :meth:`Network.create_2_windings_transformers`
     """
-    metadata = _pp.get_twt_feeder_bays_metadata()
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, ElementType.TWO_WINDINGS_TRANSFORMER)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+    _pp.create_network_modification(network._handle, [c_df],
+                                    NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]]) -> None:
@@ -5406,7 +5420,7 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
@@ -5458,7 +5472,7 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.CREATE_COUPLING_DEVICE,
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_COUPLING_DEVICE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 

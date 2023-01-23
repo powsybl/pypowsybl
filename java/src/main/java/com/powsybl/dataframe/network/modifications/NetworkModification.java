@@ -8,10 +8,12 @@
 package com.powsybl.dataframe.network.modifications;
 
 import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,8 +21,14 @@ import java.util.List;
  */
 public interface NetworkModification {
 
-    List<SeriesMetadata> getMetadata();
+    default List<List<SeriesMetadata>> getMetadata(DataframeElementType elementType) {
+        return Collections.singletonList(Collections.emptyList());
+    }
 
-    void applyModification(Network network, UpdatingDataframe dataframe, boolean throwException, ReporterModel reporter);
+    default List<SeriesMetadata> getMetadata() {
+        return Collections.emptyList();
+    }
+
+    void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter);
 
 }

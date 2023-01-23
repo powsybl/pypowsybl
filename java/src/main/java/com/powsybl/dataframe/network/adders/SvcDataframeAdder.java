@@ -39,10 +39,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("b_min"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q"),
-            SeriesMetadata.strings("bus_or_busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.doubles("target_q")
     );
 
     @Override
