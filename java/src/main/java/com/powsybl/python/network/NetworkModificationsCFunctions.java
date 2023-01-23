@@ -7,10 +7,10 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.NetworkModification;
 import com.powsybl.iidm.modification.topology.*;
@@ -191,24 +191,6 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    @CEntryPoint(name = "createFeederBay")
-    public static void createFeederBay(IsolateThread thread, ObjectHandle networkHandle, boolean throwException,
-                                       ObjectHandle reporterHandle, PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
-                                       PyPowsyblApiHeader.ElementType elementType,
-                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            DataframeElementType type = convert(elementType);
-            List<UpdatingDataframe> dataframes = new ArrayList<>();
-            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
-                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
-            }
-            NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reporter);
-        });
-    }
-
     @CEntryPoint(name = "createBranchFeederBaysLine")
     public static void createBranchFeederBaysLine(IsolateThread thread, ObjectHandle networkHandle,
                                                   PyPowsyblApiHeader.DataframePointer cDataframeLine,
@@ -248,7 +230,6 @@ public final class NetworkModificationsCFunctions {
             Map<String, List<ConnectablePosition.Feeder>> feederPositionsOrders = getFeedersByConnectable(voltageLevel);
             return Dataframes.createCDataframe(Dataframes.feederMapMapper(), feederPositionsOrders);
         });
-
     }
 
     @CEntryPoint(name = "getUnusedConnectableOrderPositions")
@@ -274,6 +255,24 @@ public final class NetworkModificationsCFunctions {
             }
         });
 
+    }
+
+    @CEntryPoint(name = "createNetworkModification")
+    public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
+                                                 PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
+                                                 PyPowsyblApiHeader.NetworkModificationType networkModificationType,
+                                                 boolean throwException, ObjectHandle reporterHandle,
+                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            List<UpdatingDataframe> dataframes = new ArrayList<>();
+            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+            }
+            DataframeNetworkModificationType type = convert(networkModificationType);
+            NetworkModifications.applyModification(type, network, dataframes, throwException, reporter);
+        });
     }
 
     static Map<String, List<ConnectablePosition.Feeder>> getFeedersByConnectable(VoltageLevel voltageLevel) {

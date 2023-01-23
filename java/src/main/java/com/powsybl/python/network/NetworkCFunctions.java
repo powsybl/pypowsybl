@@ -14,18 +14,13 @@ import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -972,4 +967,45 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getModificationMetadata")
+    public static DataframesMetadataPointer getModificationMetadata(IsolateThread thread,
+                                                                    NetworkModificationType networkModificationType,
+                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DataframeNetworkModificationType type = convert(networkModificationType);
+            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(type).getMetadata();
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+            int i = 0;
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                i++;
+            }
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
+            return res;
+        });
+    }
+
+    @CEntryPoint(name = "getModificationMetadataWithElementType")
+    public static DataframesMetadataPointer getModificationMetadataWithElementType(IsolateThread thread,
+                                                                   NetworkModificationType networkModificationType,
+                                                                   ElementType elementType,
+                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DataframeNetworkModificationType modificationType = convert(networkModificationType);
+            DataframeElementType type = convert(elementType);
+            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(modificationType).getMetadata(type);
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+            int i = 0;
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                i++;
+            }
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
+            return res;
+        });
+    }
 }

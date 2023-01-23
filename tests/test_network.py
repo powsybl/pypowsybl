@@ -1667,6 +1667,7 @@ def test_revert_create_line_on_line():
     assert retrieved_line["connected1"]
     assert retrieved_line["connected2"]
 
+
 def test_create_branch_feeder_bays_twt():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_twt'],
@@ -1702,6 +1703,7 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
 
+
 def test_revert_connect_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
@@ -1725,6 +1727,7 @@ def test_revert_connect_voltage_level_on_line():
     assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
     assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
     assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
+
 
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
@@ -1978,6 +1981,7 @@ def test_add_vsc_bay():
     assert position.feeder_name == 'vsc_test'
     assert position.direction == 'BOTTOM'
 
+
 def test_replace_tee_point_by_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
@@ -2011,6 +2015,7 @@ def test_replace_tee_point_by_voltage_level_on_line():
     assert retrieved_newline2["connected2"]
 
     assert 'test_line' not in n.get_lines().index
+
 
 def test_no_extensions_created_if_none_in_the_voltage_level():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -2049,6 +2054,7 @@ def test_extensions_created_if_first_equipment_in_the_voltage_level():
     assert position.order == 0
     assert position.feeder_name == 'new_load'
     assert position.direction == 'BOTTOM'
+
 
 def test_get_order_positions_connectables():
     n = pp.network.load(str(TEST_DIR.joinpath('node-breaker-with-extensions.xiidm')))

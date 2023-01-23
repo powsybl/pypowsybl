@@ -44,10 +44,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.booleans("voltage_regulator_on")
     );
 
     @Override

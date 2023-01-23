@@ -38,10 +38,7 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("type"),
             SeriesMetadata.doubles("p0"),
-            SeriesMetadata.doubles("q0"),
-            SeriesMetadata.strings("busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.doubles("q0")
     );
 
     @Override

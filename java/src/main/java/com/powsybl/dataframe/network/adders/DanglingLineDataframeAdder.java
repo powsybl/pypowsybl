@@ -40,10 +40,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("r"),
             SeriesMetadata.doubles("x"),
             SeriesMetadata.doubles("g"),
-            SeriesMetadata.doubles("b"),
-            SeriesMetadata.strings("busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.doubles("b")
     );
 
     @Override

@@ -29,6 +29,7 @@ import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import NetworkModificationType
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import (
@@ -36,7 +37,7 @@ from pypowsybl.utils.dataframes import (
     _create_c_dataframe,
     _create_properties_c_dataframe,
     _adapt_properties_kwargs,
-    _get_c_dataframes, _adapt_kwargs
+    _get_c_dataframes
 )
 from pypowsybl.report import Reporter as _Reporter
 
@@ -4695,6 +4696,7 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
+
 def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
                                merged_line_id: str, merged_line_name: str = None) -> None:
     """
@@ -4714,6 +4716,7 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
     if merged_line_name is None:
         merged_line_name = merged_line_id
     _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
+
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4739,6 +4742,7 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+
 def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
                                          line_name: str = None) -> None:
     """
@@ -4757,6 +4761,7 @@ def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_
     if line_name is None:
         line_name = line1_id
     _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
+
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
@@ -5080,25 +5085,26 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
         section with an open disconnector.
 
     """
-    metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    c_dfs = _get_c_dataframes_and_add_voltage_level_id(network, dfs, metadata, **kwargs)
-    _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model,
-                          c_dfs, element_type)
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY, element_type)
+    c_dfs = _get_c_dataframes_and_add_voltage_level_id_and_element_type(network, dfs, metadata, element_type, **kwargs)
+    _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.CREATE_FEEDER_BAY, raise_exception, None if reporter is None else reporter._reporter_model) #pylint: disable=protected-access
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id_and_element_type(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], element_type: _pp.ElementType, **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
         dfs[0]['voltage_level_id'] = dfs[0].apply(
             lambda row: network.get_busbar_sections(attributes=['voltage_level_id']).loc[row['busbar_section_id']].get(
                 0), axis=1)
+        dfs[0]['feeder_type'] = element_type.name
     for i, df in enumerate(dfs):
         if df is None:
             c_dfs.append(None)
         else:
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
+
 
 def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
@@ -5301,6 +5307,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
+
 def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str, tee_point_line_to_remove: str,
                                   bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
                                   new_line1_name: str = None, new_line2_name: str = None) -> None:
@@ -5329,3 +5336,42 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
 
     _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2, tee_point_line_to_remove,
         bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)
+
+
+def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                  reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number of sections.
+
+    Args:
+        network: the network in which the busbar sections are.
+        df: Attributes as a dataframe.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        reporter: an optional reporter to get functional logs.
+        kwargs: attributes as keyword arguments.
+    Notes:
+        The voltage level must be created and in node/breaker topology.
+        Busbar sections will be created, as well as disconnectors or breakers between each section depending on the
+        switch_kind list.
+
+        The input dataframe expects these attributes:
+        - **voltage_level_id**: the identifier of the voltage level where the topology should be created.
+        - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
+        - **busbar_count**: the total number of busbar to be created.
+        - **low_section_index**: the lowest section index to be used. By default, 1.
+        - **section_count**: the total number of sections to be created.
+        - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
+        default, nothing.
+        - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
+        - **switch_kinds**: string containing the type of switch between each section. It should contain
+        section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR'.
+
+    Examples:
+
+    .. code-block:: python
+        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', busbar_count=3,
+                                                 section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
+    """
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
+    c_dfs = _get_c_dataframes([df], metadata, **kwargs)
+    _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
