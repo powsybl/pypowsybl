@@ -37,7 +37,7 @@ public class StandByAutomatonDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("high_voltage_setpoint")
     );
 
-    private static class StateOfChargeSeries {
+    private static class StandByAutomatonSeries {
         private final StringSeries id;
         private final IntSeries standBy;
         private final DoubleSeries b0;
@@ -46,7 +46,7 @@ public class StandByAutomatonDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries highVoltageThreshold;
         private final DoubleSeries highVoltageSetpoint;
 
-        StateOfChargeSeries(UpdatingDataframe dataframe) {
+        StandByAutomatonSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
             this.standBy = dataframe.getInts("standby");
             this.b0 = dataframe.getDoubles("b0");
@@ -75,7 +75,7 @@ public class StandByAutomatonDataframeAdder extends AbstractSimpleAdder {
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        StateOfChargeSeries series = new StateOfChargeSeries(dataframe);
+        StandByAutomatonSeries series = new StandByAutomatonSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }
