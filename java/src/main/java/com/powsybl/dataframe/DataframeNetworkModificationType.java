@@ -11,5 +11,8 @@ package com.powsybl.dataframe;
  * @author Coline Piloquet <coline.piloquet at rte-france.com>
  */
 public enum DataframeNetworkModificationType {
-    VOLTAGE_LEVEL_TOPOLOGY_CREATION
+    VOLTAGE_LEVEL_TOPOLOGY_CREATION,
+    CREATE_FEEDER_BAY,
+    CREATE_LINE_FEEDER,
+    CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER
 }

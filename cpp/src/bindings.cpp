@@ -206,7 +206,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<network_modification_type>(m, "NetworkModificationType")
             .value("VOLTAGE_LEVEL_TOPOLOGY_CREATION", network_modification_type::VOLTAGE_LEVEL_TOPOLOGY_CREATION)
-            .value("CREATE_FEEDER_BAY", network_modification_type::CREATE_FEEDER_BAY);
+            .value("CREATE_FEEDER_BAY", network_modification_type::CREATE_FEEDER_BAY)
+            .value("CREATE_LINE_FEEDER", network_modification_type::CREATE_LINE_FEEDER)
+            .value("CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER", network_modification_type::CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER);
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
@@ -692,13 +694,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("replace_tee_point_by_voltage_level_on_line", &pypowsybl::replaceTeePointByVoltageLevelOnLine, "Replace tee point by voltage level on line", py::arg("network"), py::arg("tee_point_line1"), py::arg("tee_point_line2"), py::arg("tee_point_line_to_remove"),
      py::arg("bbs_or_bus_id"), py::arg("new_line1_id"), py::arg("new_line1_name"), py::arg("new_line2_id"), py::arg("new_line2_name"));
-
-    m.def("get_line_feeder_bays_metadata", &pypowsybl::getLineFeederBaysMetadata, "Get metadata for line branch feeder bay creation dataframe.");
-    m.def("create_branch_feeder_bays_line", &pypowsybl::createBranchFeederBaysLine, "Create branch feeder bays", py::arg("network"), py::arg("dataframe"));
-
-    m.def("get_twt_feeder_bays_metadata", &pypowsybl::getTwtFeederBaysMetadata, "Get metadata for twt branch feeder bay creation dataframe.");
-    m.def("create_branch_feeder_bays_twt", &pypowsybl::createBranchFeederBaysTwt, "Create branch feeder bays", py::arg("network"), py::arg("dataframe"));
-
 
     m.def("get_connectables_order_positions", &pypowsybl::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
 

@@ -8,8 +8,6 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeNetworkModificationType;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.NetworkModification;
@@ -187,34 +185,6 @@ public final class NetworkModificationsCFunctions {
                     .withLineId(lineIdStr)
                     .withLineName(lineNameStr)
                     .build();
-            modification.apply(network);
-        });
-    }
-
-    @CEntryPoint(name = "createBranchFeederBaysLine")
-    public static void createBranchFeederBaysLine(IsolateThread thread, ObjectHandle networkHandle,
-                                                  PyPowsyblApiHeader.DataframePointer cDataframeLine,
-                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe df = createDataframe(cDataframeLine);
-            FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df);
-            NetworkModification modification = builder.build();
-            modification.apply(network);
-        });
-    }
-
-    @CEntryPoint(name = "createBranchFeederBaysTwt")
-    public static void createBranchFeederBaysTwt(IsolateThread thread, ObjectHandle networkHandle,
-                                                 PyPowsyblApiHeader.DataframePointer cDataframeLine, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-
-            UpdatingDataframe df = createDataframe(cDataframeLine);
-            FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
-            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df);
-            NetworkModification modification = builder.build();
             modification.apply(network);
         });
     }

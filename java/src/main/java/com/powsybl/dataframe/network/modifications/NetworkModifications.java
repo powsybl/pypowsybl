@@ -28,7 +28,9 @@ public final class NetworkModifications {
 
     private static final Map<DataframeNetworkModificationType, NetworkModification> MODIFICATION = Map.ofEntries(
             Map.entry(VOLTAGE_LEVEL_TOPOLOGY_CREATION, new VoltageLevelTopologyCreation()),
-            Map.entry(CREATE_FEEDER_BAY, new CreateFeederBay())
+            Map.entry(CREATE_FEEDER_BAY, new CreateFeederBay()),
+            Map.entry(CREATE_LINE_FEEDER, new CreateLineFeeder()),
+            Map.entry(CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, new CreateTwoWindingsTransformerFeeder())
     );
 
     public static NetworkModification getModification(DataframeNetworkModificationType type) {

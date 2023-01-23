@@ -1193,28 +1193,6 @@ void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string 
                         (char*) lineId.c_str(), (char*) lineName.c_str());
 }
 
-void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe) {
-  pypowsybl::callJava(::createBranchFeederBaysLine, network, dataframe);
-}
-
-void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe) {
-  pypowsybl::callJava(::createBranchFeederBaysTwt, network, dataframe);
-}
-
-std::vector<SeriesMetadata> getLineFeederBaysMetadata() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getLineFeederBaysMetadata);
-    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
-    callJava(::freeDataframeMetadata, metadata);
-    return res;
-}
-
-std::vector<SeriesMetadata> getTwtFeederBaysMetadata() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getTwtFeederBaysMetadata);
-    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
-    callJava(::freeDataframeMetadata, metadata);
-    return res;
-}
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
     return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
 }
@@ -1277,13 +1255,10 @@ void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::stri
     pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
-std::vector<std::vector<SeriesMetadata>> getModificationMetadata(network_modification_type networkModificationType) {
-    dataframes_metadata* metadata = pypowsybl::callJava<dataframes_metadata*>(::getModificationMetadata, networkModificationType);
-    std::vector<std::vector<SeriesMetadata>> res;
-    for (int i =0; i < metadata->dataframes_count; i++) {
-        res.push_back(convertDataframeMetadata(metadata->dataframes_metadata + i));
-    }
-    pypowsybl::callJava(::freeDataframesMetadata, metadata);
+std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 

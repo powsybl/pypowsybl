@@ -941,22 +941,6 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getTwtFeederBaysMetadata")
-    public static DataframeMetadataPointer getTwtFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = FeederBaysTwtSeries.getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
-        });
-    }
-
-    @CEntryPoint(name = "getLineFeederBaysMetadata")
-    public static DataframeMetadataPointer getLineFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = FeederBaysLineSeries.getSeriesMetadata();
-            return createSeriesMetadata(seriesMetadata);
-        });
-    }
-
     @CEntryPoint(name = "removeFeederBays")
     public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
                                     CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -968,22 +952,13 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getModificationMetadata")
-    public static DataframesMetadataPointer getModificationMetadata(IsolateThread thread,
+    public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
                                                                     NetworkModificationType networkModificationType,
                                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeNetworkModificationType type = convert(networkModificationType);
-            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(type).getMetadata();
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
-            }
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
+            List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
+            return createSeriesMetadata(metadata);
         });
     }
 

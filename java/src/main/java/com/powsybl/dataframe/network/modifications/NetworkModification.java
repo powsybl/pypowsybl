@@ -25,7 +25,7 @@ public interface NetworkModification {
         return Collections.emptyList();
     }
 
-    default List<List<SeriesMetadata>> getMetadata() {
+    default List<SeriesMetadata> getMetadata() {
         return Collections.emptyList();
     }
 

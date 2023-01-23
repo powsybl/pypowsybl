@@ -14,8 +14,6 @@ import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;

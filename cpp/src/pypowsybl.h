@@ -523,14 +523,6 @@ void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdB
 void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
     std::string lineName);
 
-void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe);
-
-void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
-
-std::vector<SeriesMetadata> getLineFeederBaysMetadata();
-
-std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
 
 std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
@@ -546,7 +538,7 @@ LayoutParameters* createLayoutParameters();
 void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
     std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name);
 
-std::vector<std::vector<SeriesMetadata>> getModificationMetadata(network_modification_type networkModificationType);
+std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 

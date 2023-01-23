@@ -39,8 +39,8 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
     );
 
     @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
+    public List<SeriesMetadata> getMetadata() {
+        return METADATA;
     }
 
     private CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe) {

@@ -321,6 +321,10 @@ public final class Util {
                 return DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
             case CREATE_FEEDER_BAY:
                 return DataframeNetworkModificationType.CREATE_FEEDER_BAY;
+            case CREATE_LINE_FEEDER:
+                return DataframeNetworkModificationType.CREATE_LINE_FEEDER;
+            case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER:
+                return DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }

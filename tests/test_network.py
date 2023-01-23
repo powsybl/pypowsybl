@@ -30,6 +30,9 @@ import pypowsybl.report as rp
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
 
+import logging
+logging.basicConfig()
+logging.getLogger('powsybl').setLevel(1)
 
 def test_create_empty_network():
     n = pp.network.create_empty("test")

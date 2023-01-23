@@ -4661,7 +4661,7 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
 
     Connects an existing voltage level (in practice a voltage level where we have some loads or generations)
     to an existing line through a tee point. This method cuts an existing line in two, creating a fictitious
-    voltage level between them (an a fictitious substation if asked).
+    voltage level between them (and a fictitious substation if asked).
     Then it links an existing voltage level to this fictitious voltage level by creating a new line
     described in the provided dataframe.
 
@@ -5106,7 +5106,8 @@ def _get_c_dataframes_and_add_voltage_level_id_and_element_type(network: Network
     return c_dfs
 
 
-def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_line_bays(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
+                     **kwargs: _ArrayLike) -> None:
     """
     Creates a line and connects it to busbar sections through standard feeder bays.
 
@@ -5118,6 +5119,9 @@ def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLi
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
         kwargs: Attributes as keyword arguments.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
         The voltage level containing the busbar section must be described in node/breaker topology.
@@ -5147,13 +5151,15 @@ def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLi
     See Also:
         :meth:`Network.create_lines`
     """
-    metadata = _pp.get_line_feeder_bays_metadata()
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_LINE_FEEDER, ElementType.LINE)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_branch_feeder_bays_line(network._handle, c_df)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_LINE_FEEDER, raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                       reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Creates a transformer and connects it to busbar sections through standard feeder bays.
 
@@ -5164,6 +5170,9 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     Args:
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -5195,9 +5204,10 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     See Also:
         :meth:`Network.create_2_windings_transformers`
     """
-    metadata = _pp.get_twt_feeder_bays_metadata()
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, ElementType.TWO_WINDINGS_TRANSFORMER)[0]
     c_df = _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network, df, metadata, **kwargs)
-    _pp.create_branch_feeder_bays_twt(network._handle, c_df)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def _get_c_dataframes_and_add_voltage_level_ids_twt_bay_creation(network: Network, df: _Optional[_DataFrame],
@@ -5373,5 +5383,6 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
                                                  section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
-    c_dfs = _get_c_dataframes([df], metadata, **kwargs)
-    _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
