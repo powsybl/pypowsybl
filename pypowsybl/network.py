@@ -3047,7 +3047,7 @@ class Network:  # pylint: disable=too-many-public-methods
         c_df = _create_c_dataframe(df, metadata)
         _pp.update_extensions(self._handle, extension_name, c_df)
 
-    def create_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_extensions(self, extension_name: str, df: _Union[_DataFrame, _List[_Optional[_DataFrame]]] = None, **kwargs: _ArrayLike) -> None:
         """
         create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
@@ -3061,7 +3061,14 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The id column in the dataframe provides the link to the extensions parent elements
         """
-        self._create_extensions(extension_name, [df], **kwargs)
+        if isinstance(df, _List):
+            dfs: _List[_Optional[_DataFrame]] = df
+        else:
+            dfs = [df]
+        self._create_extensions(extension_name, dfs, **kwargs)
+
+    """ def create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]] = None, **kwargs: _ArrayLike) -> None:
+        self._create_extensions(extension_name, dfs, **kwargs) """
 
     def get_working_variant_id(self) -> str:
         """
@@ -4291,6 +4298,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _create_data_frame_from_series_array(
             _pp.create_network_elements_extension_series_array(self._handle, extension_name))
+
+    """ def get_extensions(self, extension_name: str) -> _List(_DataFrame):
+        return """
 
     def get_extension(self, extension_name: str) -> _DataFrame:
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
