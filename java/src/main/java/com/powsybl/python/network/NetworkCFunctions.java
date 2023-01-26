@@ -349,8 +349,10 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                                            CCharPointer extensionName,
+                                                                                                           CCharPointer cTableName,
                                                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        String name = CTypeUtil.toString(extensionName);
+        String tableName = CTypeUtil.toString(cTableName);
+        String name = tableName.isEmpty() ? CTypeUtil.toString(extensionName) : CTypeUtil.toString(extensionName) + "_" + tableName;
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
             if (mapper != null) {

@@ -399,7 +399,7 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
-SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName);
 
 std::vector<std::string> getExtensionsNames();
 
