@@ -4696,6 +4696,7 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
+
 def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
                                merged_line_id: str, merged_line_name: str = None) -> None:
     """
@@ -4715,6 +4716,7 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
     if merged_line_name is None:
         merged_line_name = merged_line_id
     _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
+
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4740,6 +4742,7 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+
 def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
                                          line_name: str = None) -> None:
     """
@@ -4758,6 +4761,7 @@ def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_
     if line_name is None:
         line_name = line1_id
     _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
+
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
@@ -5359,8 +5363,8 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
         - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
         default, nothing.
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
-        - **switch_kinds**: string containing the type of switch between each section. It should contain
-        section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR'.
+        - **switch_kinds**: string or list containing the type of switch between each section. It should contain
+        section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR' or ['BREAKER', 'DISCONNECTOR'].
 
     Examples:
 
@@ -5370,5 +5374,8 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    if isinstance(df["switch_kinds"].get(0), list):
+        df['switch_kinds'] = df['switch_kinds'].map(
+            lambda row: ', '.join(str(e) for e in row))
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access

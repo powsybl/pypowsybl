@@ -2209,5 +2209,19 @@ def test_voltage_level_topology_creation_from_kwargs():
     assert switches[switches['kind'] == 'BREAKER'].shape[0] == 1
 
 
+def test_voltage_level_topology_creation_with_switch_kind_as_list():
+    network = pp.network.create_four_substations_node_breaker_network()
+    network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
+    df = pd.DataFrame.from_records(index="id", data=[
+        {'id': 'VL1', 'busbar_count': 3, 'section_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']}
+    ])
+    pp.network.create_voltage_level_topology(network, df)
+    busbar_sections = network.get_busbar_sections()
+    assert busbar_sections[busbar_sections['voltage_level_id'] == 'VL1'].shape[0] == 9
+    switches = network.get_node_breaker_topology('VL1').switches
+    assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 9
+    assert switches[switches['kind'] == 'BREAKER'].shape[0] == 3
+
+
 if __name__ == '__main__':
     unittest.main()
