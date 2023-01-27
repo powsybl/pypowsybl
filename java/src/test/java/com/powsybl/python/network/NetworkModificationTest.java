@@ -32,7 +32,7 @@ public class NetworkModificationTest {
         assertTrue(feeders.containsKey("trf5"));
         List<ConnectablePosition.Feeder> feeder = feeders.get("trf6");
         assertEquals(1, feeder.size());
-        assertEquals("trf61", feeder.get(0).getName());
+        assertEquals("trf61", feeder.get(0).getName().orElse(""));
         assertEquals(50, feeder.get(0).getOrder().orElse(0));
     }
 

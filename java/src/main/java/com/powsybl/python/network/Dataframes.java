@@ -376,7 +376,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getPositions)
                 .stringsIndex("connectable_id", Pair::getLeft)
                 .ints("order_position", pair -> pair.getRight().getOrder().orElse(MIN_VALUE))
-                .strings("extension_name", pair -> pair.getRight().getName())
+                .strings("extension_name", pair -> pair.getRight().getName().orElse(null))
                 .build();
     }
 

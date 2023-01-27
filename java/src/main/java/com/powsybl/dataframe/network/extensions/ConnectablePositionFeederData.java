@@ -29,7 +29,7 @@ public class ConnectablePositionFeederData {
     }
 
     public ConnectablePositionFeederData(String id, ConnectablePosition.Feeder feeder, SideEnum side) {
-        this(id, feeder.getName(), feeder.getOrder().orElse(null), feeder.getDirection().toString(), side);
+        this(id, feeder.getName().orElse(null), feeder.getOrder().orElse(null), feeder.getDirection().toString(), side);
     }
 
     public String getId() {
