@@ -351,10 +351,10 @@ public final class NetworkCFunctions {
                                                                                                            CCharPointer extensionName,
                                                                                                            CCharPointer cTableName,
                                                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        String name = CTypeUtil.toString(extensionName);
         String tableName = CTypeUtil.toString(cTableName);
-        String name = tableName.isEmpty() ? CTypeUtil.toString(extensionName) : CTypeUtil.toString(extensionName) + "_" + tableName;
         return doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.ofNullable(tableName));
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 return Dataframes.createCDataframe(mapper, network);
@@ -673,7 +673,7 @@ public final class NetworkCFunctions {
                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             String name = CTypeUtil.toString(namePtr);
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 UpdatingDataframe updatingDataframe = createDataframe(dataframe);
@@ -702,7 +702,7 @@ public final class NetworkCFunctions {
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String name = CTypeUtil.toString(namePtr);
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
             if (mapper != null) {
                 List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
                 return createSeriesMetadata(seriesMetadata);

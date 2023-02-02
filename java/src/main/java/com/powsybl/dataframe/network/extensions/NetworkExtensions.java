@@ -47,10 +47,16 @@ public final class NetworkExtensions {
         return new ArrayList<>(EXTENSIONS_PROVIDERS.keySet());
     }
 
-    public static Map<String, NetworkDataframeMapper> createExtensionsMappers() {
-        return EXTENSIONS_PROVIDERS.values().stream()
-                .collect(Collectors.toMap(NetworkExtensionDataframeProvider::getExtensionName,
-                        NetworkExtensionDataframeProvider::createMapper));
+    public static Map<DataframeKey, NetworkDataframeMapper> createExtensionsMappers() {
+        Map<DataframeKey, NetworkDataframeMapper> extensionMappers = new HashMap<>();
+        EXTENSIONS_PROVIDERS.values().forEach(ext -> {
+            String extensionName = ext.getExtensionName();
+            Map<Optional<String>, NetworkDataframeMapper> dataframeMappers = ext.createMappers();
+            for (Optional<String> tableName : dataframeMappers.keySet()) {
+                extensionMappers.put(new DataframeKey(extensionName, tableName), dataframeMappers.get(tableName));
+            }
+        });
+        return extensionMappers;
     }
 
     public static Map<String, NetworkElementAdder> createExtensionsAdders() {

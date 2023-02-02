@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class GeneratorEntsoeCategoryDataframeProvider implements NetworkExtensionDataframeProvider {
+public class GeneratorEntsoeCategoryDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
     @Override
     public String getExtensionName() {

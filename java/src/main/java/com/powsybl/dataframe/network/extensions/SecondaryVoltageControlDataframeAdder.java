@@ -14,8 +14,10 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +28,7 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
     private static final List<SeriesMetadata> ZONES_METADATA = List.of(
             SeriesMetadata.stringIndex("name"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.strings("bus_id")
+            SeriesMetadata.strings("bus_ids")
         );
 
     private static final List<SeriesMetadata> UNITS_METADATA = List.of(
@@ -42,18 +44,23 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
     private static class SecondaryVoltageControlSeries {
 
+        private final int zoneCount;
         private final StringSeries zoneName;
         private final DoubleSeries targetV;
-        private final StringSeries busId;
+        private final StringSeries busIds;
+
+        private final int unitsCount;
         private final StringSeries unitId;
         private final IntSeries participate;
         private final StringSeries unitZoneName;
 
         SecondaryVoltageControlSeries(UpdatingDataframe zonesDf, UpdatingDataframe unitsDf) {
+            this.zoneCount = zonesDf.getRowCount();
             this.zoneName = zonesDf.getStrings("name");
             this.targetV = zonesDf.getDoubles("target_v");
-            this.busId = zonesDf.getStrings("bus_id");
+            this.busIds = zonesDf.getStrings("bus_ids");
 
+            this.unitsCount = unitsDf.getRowCount();
             this.unitId = unitsDf.getStrings("unit_id");
             this.participate = unitsDf.getInts("participate");
             this.unitZoneName = unitsDf.getStrings("zone_name");
@@ -61,6 +68,28 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
         void create(Network network) {
             var adder = network.newExtension(SecondaryVoltageControlAdder.class);
+            List<SecondaryVoltageControl.ControlZone> controlZones = new ArrayList<>();
+            for (int zone = 0; zone < zoneCount; zone++) {
+                String name = zoneName.get(zone);
+                SecondaryVoltageControl.PilotPoint pilotPoint = new SecondaryVoltageControl.PilotPoint(List.of(busIds.get(zone)),
+                        targetV.get(zone));
+
+                List<SecondaryVoltageControl.ControlUnit> controlUnits = new ArrayList<>();
+                for (int unit = 0; unit < unitsCount; unit++) {
+                    if (unitZoneName.get(unit) == name) {
+                        controlUnits.add(new SecondaryVoltageControl.ControlUnit(unitId.get(unit), participate.get(unit) == 1));
+                    }
+                }
+
+                SecondaryVoltageControl.ControlZone newZone = new SecondaryVoltageControl.ControlZone(
+                        name,
+                        pilotPoint,
+                        controlUnits
+                );
+                controlZones.add(newZone);
+            }
+
+            adder.add();
         }
     }
 

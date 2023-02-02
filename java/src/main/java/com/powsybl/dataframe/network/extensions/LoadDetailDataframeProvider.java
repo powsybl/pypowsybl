@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class LoadDetailDataframeProvider implements NetworkExtensionDataframeProvider {
+public class LoadDetailDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
     static final String FIXED_P = "fixed_p0";
     static final String VARIABLE_P = "variable_p0";

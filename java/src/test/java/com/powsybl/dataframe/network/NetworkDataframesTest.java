@@ -56,14 +56,14 @@ class NetworkDataframesTest {
 
     private static List<Series> createExtensionDataFrame(String name, Network network) {
         List<Series> series = new ArrayList<>();
-        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
         assertNotNull(mapper);
         mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
     }
 
     private static void updateExtension(String name, Network network, UpdatingDataframe updatingDataframe) {
-        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
         assertNotNull(mapper);
         mapper.updateSeries(network, updatingDataframe);
     }

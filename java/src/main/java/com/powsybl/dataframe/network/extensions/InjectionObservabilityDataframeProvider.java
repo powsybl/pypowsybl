@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class InjectionObservabilityDataframeProvider implements NetworkExtensionDataframeProvider {
+public class InjectionObservabilityDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
     private Stream<InjectionObservability> itemsStream(Network network) {
         return network.getIdentifiables().stream().filter(Objects::nonNull)

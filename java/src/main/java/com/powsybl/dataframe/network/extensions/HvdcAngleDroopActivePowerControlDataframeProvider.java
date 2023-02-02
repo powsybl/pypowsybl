@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class HvdcAngleDroopActivePowerControlDataframeProvider implements NetworkExtensionDataframeProvider {
+public class HvdcAngleDroopActivePowerControlDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
     @Override
     public String getExtensionName() {
