@@ -34,8 +34,8 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(SecondaryVoltageControl.NAME,
-                "Provides information about the secondary voltage control zones and units",
-                "index : ");
+                "Provides information about the secondary voltage control zones and units, in two distinct dataframes.",
+                "[dataframe \"zones\"] index : name (str), target_v (float), bus_ids (str) / [dataframe \"units\"] index : unit_id (str), participate (bool), zone_name (str)");
     }
 
     @Override

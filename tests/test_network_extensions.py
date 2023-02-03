@@ -513,3 +513,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['slackTerminal']['attributes'] == 'index : voltage_level_id (str), element_id (str), bus_id (str)'
     assert extensions_information.loc['busbarSectionPosition']['detail'] == 'Position information about the BusbarSection'
     assert extensions_information.loc['busbarSectionPosition']['attributes'] == 'index : id (str), busbar_index (int), section_index (int)'
+    assert extensions_information.loc['secondaryVoltageControl']['detail'] == 'Provides information about the secondary voltage control zones and units, in two distinct dataframes.'
+    assert extensions_information.loc['secondaryVoltageControl']['attributes'] == '[dataframe "zones"] index : name (str), target_v (float), bus_ids (str) / [dataframe "units"] index : unit_id (str), participate (bool), zone_name (str)'

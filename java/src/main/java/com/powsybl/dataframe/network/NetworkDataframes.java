@@ -11,7 +11,7 @@ import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
-import com.powsybl.dataframe.network.extensions.DataframeKey;
+import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.network.NetworkUtil;
@@ -41,7 +41,7 @@ public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
 
-    private static final Map<DataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
+    private static final Map<ExtensionDataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
     private NetworkDataframes() {
     }
@@ -1049,7 +1049,7 @@ public final class NetworkDataframes {
     }
 
     public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName, Optional<String> tableName) {
-        return EXTENSIONS_MAPPERS.get(new DataframeKey(extensionName, tableName));
+        return EXTENSIONS_MAPPERS.get(new ExtensionDataframeKey(extensionName, tableName));
     }
 
     private static NetworkDataframeMapper aliases() {

@@ -12,13 +12,13 @@ import java.util.Optional;
 /**
  * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
  */
-public class DataframeKey {
+public class ExtensionDataframeKey {
     private String extensionName;
     private Optional<String> tableName;
 
     private int hashCode;
 
-    public DataframeKey(String extensionName, Optional<String> tableName) {
+    public ExtensionDataframeKey(String extensionName, Optional<String> tableName) {
         this.extensionName = extensionName;
         this.tableName = tableName;
         this.hashCode = Objects.hash(extensionName, tableName);
@@ -34,10 +34,10 @@ public class DataframeKey {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof DataframeKey)) {
+        if (!(o instanceof ExtensionDataframeKey)) {
             return false;
         }
-        DataframeKey key = (DataframeKey) o;
+        ExtensionDataframeKey key = (ExtensionDataframeKey) o;
         return key.tableName.equals(this.tableName) && key.extensionName.equals(this.extensionName);
     }
 

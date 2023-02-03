@@ -3054,6 +3054,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             extension_name: name of the extension
             dfs: the data to be created
+                 A single dataframe or a list of dataframes can be given as arguments
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
                     In the case of sequences, all arguments must have the same length.
@@ -4284,6 +4285,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             extension_name: name of the extension
+            table_name: optional argument to choose the name of the dataframe to
+                        retrieve for extensions using multiple dataframes
 
         Returns:
             A dataframe with the extensions data.
