@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class XnodeDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
+public class XnodeDataframeProvider extends AbstractSingleDataframeNetworkExtension {
 
     @Override
     public String getExtensionName() {

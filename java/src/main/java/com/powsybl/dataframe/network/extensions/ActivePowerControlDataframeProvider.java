@@ -25,8 +25,7 @@ import java.util.stream.Stream;
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class ActivePowerControlDataframeProvider extends AbstractSingleDataframeNetworkExtension
-        implements NetworkExtensionDataframeProvider {
+public class ActivePowerControlDataframeProvider extends AbstractSingleDataframeNetworkExtension {
 
     @Override
     public String getExtensionName() {

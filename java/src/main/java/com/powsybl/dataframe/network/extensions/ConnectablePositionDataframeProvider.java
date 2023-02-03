@@ -27,7 +27,7 @@ import java.util.Objects;
  * @author Etienne Lesot <etienne.lesot@rte-france.fr>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class ConnectablePositionDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
+public class ConnectablePositionDataframeProvider extends AbstractSingleDataframeNetworkExtension {
 
     @Override
     public String getExtensionName() {

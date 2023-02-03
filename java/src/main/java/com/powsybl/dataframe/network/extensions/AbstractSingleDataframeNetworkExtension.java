@@ -1,25 +1,22 @@
 /**
- * Copyright (c) 2021-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2021-2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * file, You can obtain one at http://mozilla.org/MPL-2.0/.
  */
 package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
  */
-public abstract class AbstractSingleDataframeNetworkExtension {
+public abstract class AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
     public List<Optional<String>> getExtensionTableNames() {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     public Map<Optional<String>, NetworkDataframeMapper> createMappers() {

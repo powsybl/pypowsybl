@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class BusBarSectionPositionDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
+public class BusBarSectionPositionDataframeProvider extends AbstractSingleDataframeNetworkExtension {
     @Override
     public String getExtensionName() {
         return BusbarSectionPosition.NAME;

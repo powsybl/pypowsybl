@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class BranchObservabilityDataframeProvider extends AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
+public class BranchObservabilityDataframeProvider extends AbstractSingleDataframeNetworkExtension {
 
     private Stream<BranchObservability> itemsStream(Network network) {
         return network.getBranchStream().filter(Objects::nonNull)
