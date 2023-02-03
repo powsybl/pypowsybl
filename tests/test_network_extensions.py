@@ -452,6 +452,26 @@ def test_standby_automaton():
                                                                        '(double), high_voltage_threshold (double), ' \
                                                                        'high_voltage_setpoint (double)'
 
+def test_secondary_voltage_control():
+    n = pn.create_eurostag_tutorial_example1_network()
+    extension_name = 'secondaryVoltageControl'
+    zones_df = pd.DataFrame.from_records(
+            index='name',
+            columns=['name', 'target_v', 'bus_ids'],
+            data=[('zone_test', 400, 'NHV1')])
+    units_df = pd.DataFrame.from_records(
+                index='unit_id',
+                columns=['unit_id', 'participate', 'zone_name'],
+                data=[('GEN', True, 'zone_test')])
+    n.create_extensions(extension_name, [zones_df, units_df])
+
+    e1 = n.get_extensions(extension_name, "zones").loc['zone_test']
+    assert e1.target_v == 400
+    assert e1.bus_ids == "NHV1"
+    e2 = n.get_extensions(extension_name, "units").loc['GEN']
+    assert e2.participate
+    assert e2.zone_name == 'zone_test'
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'

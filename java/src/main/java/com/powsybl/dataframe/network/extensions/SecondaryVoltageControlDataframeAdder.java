@@ -68,7 +68,6 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
         void create(Network network) {
             var adder = network.newExtension(SecondaryVoltageControlAdder.class);
-            List<SecondaryVoltageControl.ControlZone> controlZones = new ArrayList<>();
             for (int zone = 0; zone < zoneCount; zone++) {
                 String name = zoneName.get(zone);
                 SecondaryVoltageControl.PilotPoint pilotPoint = new SecondaryVoltageControl.PilotPoint(List.of(busIds.get(zone)),
@@ -76,7 +75,7 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
                 List<SecondaryVoltageControl.ControlUnit> controlUnits = new ArrayList<>();
                 for (int unit = 0; unit < unitsCount; unit++) {
-                    if (unitZoneName.get(unit) == name) {
+                    if (unitZoneName.get(unit).equals(name)) {
                         controlUnits.add(new SecondaryVoltageControl.ControlUnit(unitId.get(unit), participate.get(unit) == 1));
                     }
                 }
@@ -86,7 +85,7 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
                         pilotPoint,
                         controlUnits
                 );
-                controlZones.add(newZone);
+                adder.addControlZone(newZone);
             }
 
             adder.add();

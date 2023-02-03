@@ -22,6 +22,8 @@ import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
+import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
+import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
@@ -55,8 +57,12 @@ class NetworkDataframesTest {
     }
 
     private static List<Series> createExtensionDataFrame(String name, Network network) {
+        return createExtensionDataFrame(name, null, network);
+    }
+
+    private static List<Series> createExtensionDataFrame(String name, String tableName, Network network) {
         List<Series> series = new ArrayList<>();
-        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.ofNullable(tableName));
         assertNotNull(mapper);
         mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
@@ -174,6 +180,34 @@ class NetworkDataframesTest {
                 network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
         series = createExtensionDataFrame("activePowerControl", network);
         assertEquals(0, series.get(0).getStrings().length);
+    }
+
+    @Test
+    void secondaryVoltageControlExtension() {
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
+        SecondaryVoltageControl control = network.newExtension(SecondaryVoltageControlAdder.class)
+                .addControlZone(new SecondaryVoltageControl.ControlZone("z1",
+                        new SecondaryVoltageControl.PilotPoint(List.of("NLOAD"), 15d),
+                        List.of(new SecondaryVoltageControl.ControlUnit("GEN", false))))
+                .add();
+
+        List<Series> zoneSeries = createExtensionDataFrame("secondaryVoltageControl", "zones", network);
+        assertThat(zoneSeries)
+                .extracting(Series::getName)
+                .containsExactly("name", "target_v", "bus_ids");
+        assertThat(zoneSeries.get(1).getDoubles())
+                .containsExactly(15d);
+        assertThat(zoneSeries.get(2).getStrings())
+                .containsExactly("NLOAD");
+
+        List<Series> unitSeries = createExtensionDataFrame("secondaryVoltageControl", "units", network);
+        assertThat(unitSeries)
+                .extracting(Series::getName)
+                .containsExactly("unit_id", "participate", "zone_name");
+        assertThat(unitSeries.get(1).getBooleans())
+                .containsExactly(false);
+        assertThat(unitSeries.get(2).getStrings())
+                .containsExactly("z1");
     }
 
     @Test

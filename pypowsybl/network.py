@@ -3065,9 +3065,6 @@ class Network:  # pylint: disable=too-many-public-methods
             df = [df]
         self._create_extensions(extension_name, df, **kwargs)
 
-    """ def create_extensions(self, extension_name: str, dfs: _List[_Optional[_DataFrame]] = None, **kwargs: _ArrayLike) -> None:
-        self._create_extensions(extension_name, dfs, **kwargs) """
-
     def get_working_variant_id(self) -> str:
         """
         The current working variant ID.
