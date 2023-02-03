@@ -352,7 +352,8 @@ public final class NetworkCFunctions {
                                                                                                            CCharPointer cTableName,
                                                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         String name = CTypeUtil.toString(extensionName);
-        String tableName = CTypeUtil.toString(cTableName);
+        String tempName = CTypeUtil.toString(cTableName);
+        String tableName = tempName.isEmpty() ? null : tempName;
         return doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.ofNullable(tableName));
             if (mapper != null) {
