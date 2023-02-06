@@ -1600,6 +1600,35 @@ def test_create_branch_feeder_bays_line():
     assert retrieved_newline["connected2"]
 
 
+def test_create_multiple_branch_feeder_bays_line():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'new_line1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+         'position_order_1': 105, 'position_order_2': 40, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
+         'b2': 50.0},
+        {'id': 'new_line2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+         'position_order_1': 106, 'position_order_2': 45, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
+         'b2': 50.0},
+    ])
+    pp.network.create_line_bays(n, df)
+    new_line_1 = n.get_lines().loc['new_line1']
+    assert new_line_1["connected1"]
+    assert new_line_1["connected2"]
+    position1 = n.get_extensions('position').loc["new_line1"]
+    assert all([a == b for a, b in zip(position1.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position1.feeder_name.values, ['new_line1', 'new_line1'])])
+    assert all([a == b for a, b in zip(position1.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position1.order.values, [105, 40])])
+    new_line_2 = n.get_lines().loc['new_line2']
+    assert new_line_2["connected1"]
+    assert new_line_2["connected2"]
+    position2 = n.get_extensions('position').loc["new_line2"]
+    assert all([a == b for a, b in zip(position2.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position2.feeder_name.values, ['new_line2', 'new_line2'])])
+    assert all([a == b for a, b in zip(position2.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position2.order.values, [106, 45])])
+
+
 def test_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
@@ -1688,6 +1717,45 @@ def test_create_branch_feeder_bays_twt():
     assert retrieved_newtwt["rated_u1"] == 225.0
     assert retrieved_newtwt["rated_u2"] == 400.0
     assert retrieved_newtwt["rated_s"] == 1.0
+
+
+def test_create_multiple_branch_feeder_bays_twt():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    two_windings_transformers = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'new_twt1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+         'position_order_1': 105, 'position_order_2': 50, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
+         'rated_u2': 50.0, 'rated_s': 60.0},
+        {'id': 'new_twt2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+         'position_order_1': 106, 'position_order_2': 51, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
+         'rated_u2': 50.0, 'rated_s': 60.0},
+    ])
+    pp.network.create_2_windings_transformer_bays(n, two_windings_transformers)
+    new_twt_1 = n.get_2_windings_transformers().loc['new_twt1']
+    assert new_twt_1["r"] == 5.0
+    assert new_twt_1["x"] == 50.0
+    assert new_twt_1["g"] == 20.0
+    assert new_twt_1["b"] == 30.0
+    assert new_twt_1["rated_u1"] == 40.0
+    assert new_twt_1["rated_u2"] == 50.0
+    assert new_twt_1["rated_s"] == 60.0
+    position1 = n.get_extensions('position').loc["new_twt1"]
+    assert all([a == b for a, b in zip(position1.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position1.feeder_name.values, ['new_twt1', 'new_twt1'])])
+    assert all([a == b for a, b in zip(position1.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position1.order.values, [105, 50])])
+    new_twt_2 = n.get_2_windings_transformers().loc['new_twt2']
+    assert new_twt_2["r"] == 5.0
+    assert new_twt_2["x"] == 50.0
+    assert new_twt_2["g"] == 20.0
+    assert new_twt_2["b"] == 30.0
+    assert new_twt_2["rated_u1"] == 40.0
+    assert new_twt_2["rated_u2"] == 50.0
+    assert new_twt_2["rated_s"] == 60.0
+    position2 = n.get_extensions('position').loc["new_twt2"]
+    assert all([a == b for a, b in zip(position2.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position2.feeder_name.values, ['new_twt2', 'new_twt2'])])
+    assert all([a == b for a, b in zip(position2.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position2.order.values, [106, 51])])
 
 
 def test_connect_voltage_level_on_line():
