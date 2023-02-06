@@ -441,6 +441,14 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "substation_id", "nominal_v", "high_voltage_limit", "low_voltage_limit");
+
+        List<Series> allAttributesSeries = createDataFrame(VOLTAGE_LEVEL, network,
+                new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+
+        assertThat(allAttributesSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "substation_id", "nominal_v", "high_voltage_limit", "low_voltage_limit",
+                "fictitious", "topology_kind");
     }
 
     @Test
