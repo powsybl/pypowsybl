@@ -712,6 +712,7 @@ public final class NetworkDataframes {
                 .doubles("high_voltage_limit", VoltageLevel::getHighVoltageLimit, VoltageLevel::setHighVoltageLimit)
                 .doubles("low_voltage_limit", VoltageLevel::getLowVoltageLimit, VoltageLevel::setLowVoltageLimit)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("topology_kind", vl -> vl.getTopologyKind().toString(), false)
                 .addProperties()
                 .build();
     }
