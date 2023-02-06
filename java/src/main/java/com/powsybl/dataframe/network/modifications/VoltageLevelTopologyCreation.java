@@ -16,7 +16,6 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.SwitchKind;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,34 +42,30 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
         return METADATA;
     }
 
-    private CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe) {
+    private CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe, int row) {
         CreateVoltageLevelTopologyBuilder builder = new CreateVoltageLevelTopologyBuilder();
         List<SwitchKind> switchKinds = null;
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            applyIfPresent(dataframe.getStrings("id"), row, builder::withVoltageLevelId);
-            applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusbarIndex);
-            applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withBusbarCount);
-            applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
-            applyIfPresent(dataframe.getInts("section_count"), row, builder::withSectionCount);
-            applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
-            applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
-            switchKinds = getSwitchKinds(dataframe.getStringValue("switch_kinds", row).orElse(""));
-        }
-        builder.withSwitchKinds(switchKinds);
+        applyIfPresent(dataframe.getStrings("id"), row, builder::withVoltageLevelId);
+        applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusbarIndex);
+        applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withBusbarCount);
+        applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
+        applyIfPresent(dataframe.getInts("section_count"), row, builder::withSectionCount);
+        applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
+        applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
+        builder.withSwitchKinds(Arrays.stream(dataframe.getStringValue("switch_kinds", row)
+                        .orElse(",")
+                        .split(", "))
+                .map(SwitchKind::valueOf)
+                .collect(Collectors.toList()));
         return builder;
-    }
-
-    private List<SwitchKind> getSwitchKinds(String switchKindsStr) {
-        if (switchKindsStr.equals("")) {
-            return Collections.emptyList();
-        }
-        return Arrays.stream(switchKindsStr.split(", ")).map(SwitchKind::valueOf).collect(Collectors.toList());
     }
 
     @Override
     public void applyModification(Network network, UpdatingDataframe dataframe, boolean throwException, ReporterModel reporter) {
-        CreateVoltageLevelTopologyBuilder builder = createBuilder(dataframe);
-        com.powsybl.iidm.modification.NetworkModification modification = builder.build();
-        modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            CreateVoltageLevelTopologyBuilder builder = createBuilder(dataframe, row);
+            com.powsybl.iidm.modification.NetworkModification modification = builder.build();
+            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+        }
     }
 }

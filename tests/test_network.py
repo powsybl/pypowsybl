@@ -1726,6 +1726,7 @@ def test_revert_connect_voltage_level_on_line():
     assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
     assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
 
+
 def test_add_load_bay():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "busbar_section_id", "position_order"],
@@ -2221,6 +2222,30 @@ def test_voltage_level_topology_creation_with_switch_kind_as_list():
     switches = network.get_node_breaker_topology('VL1').switches
     assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 9
     assert switches[switches['kind'] == 'BREAKER'].shape[0] == 3
+
+
+def test_multiple_voltage_levels_creation():
+    network = pp.network.create_four_substations_node_breaker_network()
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL1', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 400},
+        {'substation_id': 'S1', 'id': 'VL2', 'topology_kind': 'NODE_BREAKER', 'nominal_v': 225},
+    ])
+    network.create_voltage_levels(voltage_levels)
+    df = pd.DataFrame.from_records(index="id", data=[
+        {'id': 'VL1', 'busbar_count': 3, 'section_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']},
+        {'id': 'VL2', 'busbar_count': 2, 'section_count': 2, 'switch_kinds': ['BREAKER']}
+    ])
+    pp.network.create_voltage_level_topology(network, df)
+    busbar_sections = network.get_busbar_sections()
+    assert busbar_sections[busbar_sections['voltage_level_id'] == 'VL1'].shape[0] == 9
+    switches = network.get_node_breaker_topology('VL1').switches
+    assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 9
+    assert switches[switches['kind'] == 'BREAKER'].shape[0] == 3
+
+    assert busbar_sections[busbar_sections['voltage_level_id'] == 'VL2'].shape[0] == 4
+    switches = network.get_node_breaker_topology('VL2').switches
+    assert switches[switches['kind'] == 'BREAKER'].shape[0] == 2
+    assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 4
 
 
 if __name__ == '__main__':
