@@ -8,7 +8,8 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeNetworkModificationType;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
@@ -36,6 +37,7 @@ import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.g
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
+import static com.powsybl.python.network.NetworkCFunctions.createSeriesMetadata;
 
 /**
  * Defines the C functions for network modifications.
@@ -375,5 +377,16 @@ public final class NetworkModificationsCFunctions {
                 .withNewLine2Id(newLine2IdStr)
                 .withNewLine2Name(newLine2NameStr).build();
         modification.apply(network);
+    }
+
+    @CEntryPoint(name = "getModificationMetadata")
+    public static PyPowsyblApiHeader.DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
+                                                                                      PyPowsyblApiHeader.NetworkModificationType networkModificationType,
+                                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DataframeNetworkModificationType type = convert(networkModificationType);
+            List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
+            return createSeriesMetadata(metadata);
+        });
     }
 }

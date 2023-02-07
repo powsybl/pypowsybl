@@ -20,7 +20,6 @@ import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
-import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -660,7 +659,7 @@ public final class NetworkCFunctions {
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
-    private static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+    protected static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
         DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
         createSeriesMetadata(metadata, res);
         return res;
@@ -964,17 +963,6 @@ public final class NetworkCFunctions {
             List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
-        });
-    }
-
-    @CEntryPoint(name = "getModificationMetadata")
-    public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
-                                                                    NetworkModificationType networkModificationType,
-                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DataframeNetworkModificationType type = convert(networkModificationType);
-            List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
-            return createSeriesMetadata(metadata);
         });
     }
 }

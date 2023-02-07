@@ -5098,7 +5098,7 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
 
 def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
                                                metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
-_List[_Optional[_pp.Dataframe]]:
+        _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
@@ -5383,12 +5383,17 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    for i in range(len(df)):
-        if isinstance(df["switch_kinds"].get(i), list):
-            df['switch_kinds'].iloc[i] = ','.join(str(e.replace(' ', '')) for e in df['switch_kinds'].get(i))
-        if isinstance(df["switch_kinds"].get(i), str):
-            df['switch_kinds'].iloc[i] = df['switch_kinds'].get(i).replace(' ', '')
+    df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
+
+def transform_list_to_str(entry: _Union[str, _List[str]]) -> str:
+    if isinstance(entry, list):
+        return ','.join(str(e.replace(' ', '')) for e in entry)
+    if isinstance(entry, str):
+        return entry.replace(' ', '')
+    else:
+        raise _pp.PyPowsyblError("argument should be a list of str or a str")

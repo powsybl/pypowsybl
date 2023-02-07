@@ -9,13 +9,12 @@ package com.powsybl.dataframe.network.modifications;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.dataframe.DataframeNetworkModificationType;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Map;
 
-import static com.powsybl.dataframe.DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
+import static com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
 
 /**
  * @author Coline Piloquet <coline.piloquet at rte-france.com>

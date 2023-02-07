@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.SwitchKind;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -44,9 +45,9 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
 
     private CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe, int row) {
         CreateVoltageLevelTopologyBuilder builder = new CreateVoltageLevelTopologyBuilder();
-        String switchKindStr = dataframe.getStringValue("switch_kinds", row).isEmpty() ||
-                dataframe.getStringValue("switch_kinds", row).get().isEmpty() ? "," :
-                dataframe.getStringValue("switch_kinds", row).get();
+        Optional<String> switchKindOptionalStr = dataframe.getStringValue("switch_kinds", row);
+        String switchKindStr = switchKindOptionalStr.isEmpty() || switchKindOptionalStr.get().isEmpty() ? "," :
+                switchKindOptionalStr.get();
         List<SwitchKind> switchKindList = Arrays.stream(switchKindStr.split(","))
                 .map(SwitchKind::valueOf)
                 .collect(Collectors.toList());
