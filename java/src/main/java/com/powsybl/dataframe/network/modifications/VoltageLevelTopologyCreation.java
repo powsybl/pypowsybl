@@ -44,19 +44,20 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
 
     private CreateVoltageLevelTopologyBuilder createBuilder(UpdatingDataframe dataframe, int row) {
         CreateVoltageLevelTopologyBuilder builder = new CreateVoltageLevelTopologyBuilder();
-        List<SwitchKind> switchKinds = null;
+        String switchKindStr = dataframe.getStringValue("switch_kinds", row).isEmpty() ||
+                dataframe.getStringValue("switch_kinds", row).get().isEmpty() ? "," :
+                dataframe.getStringValue("switch_kinds", row).get();
+        List<SwitchKind> switchKindList = Arrays.stream(switchKindStr.split(","))
+                .map(SwitchKind::valueOf)
+                .collect(Collectors.toList());
         applyIfPresent(dataframe.getStrings("id"), row, builder::withVoltageLevelId);
         applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusbarIndex);
         applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withBusbarCount);
         applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
-        applyIfPresent(dataframe.getInts("section_count"), row, builder::withSectionCount);
+        builder.withSectionCount(switchKindList.size() + 1);
         applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
         applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
-        builder.withSwitchKinds(Arrays.stream(dataframe.getStringValue("switch_kinds", row)
-                        .orElse(",")
-                        .split(", "))
-                .map(SwitchKind::valueOf)
-                .collect(Collectors.toList()));
+        builder.withSwitchKinds(switchKindList);
         return builder;
     }
 

@@ -88,7 +88,8 @@ class LayoutParameters:
     """
     This class represents layout parameters for a single line diagram svg generation."""
 
-    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True):
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
+                 topological_coloring: bool = True):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
@@ -356,7 +357,8 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None, parameters: LayoutParameters = None) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
+                                      parameters: LayoutParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -367,8 +369,9 @@ class Network:  # pylint: disable=too-many-public-methods
             parameters: layout parameters to adjust the rendering of the diagram
         """
         svg_file = _path_to_str(svg_file)
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
-        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file, '' if metadata_file is None else _path_to_str(metadata_file), p)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
+                                          '' if metadata_file is None else _path_to_str(metadata_file), p)
 
     def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
@@ -381,7 +384,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the single line diagram
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
         svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
@@ -4697,7 +4700,8 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_name)
 
 
-def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str,
+                               line_to_be_deleted: str,
                                merged_line_id: str, merged_line_name: str = None) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
@@ -4715,7 +4719,8 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
     """
     if merged_line_name is None:
         merged_line_name = merged_line_id
-    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
+    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted,
+                                   merged_line_id, merged_line_name)
 
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
@@ -5091,7 +5096,9 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
                           c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
+                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
+_List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
@@ -5308,9 +5315,10 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str, tee_point_line_to_remove: str,
-                                  bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
-                                  new_line1_name: str = None, new_line2_name: str = None) -> None:
+def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str,
+                                               tee_point_line_to_remove: str,
+                                               bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
+                                               new_line1_name: str = None, new_line2_name: str = None) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
 
@@ -5334,8 +5342,10 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
     if new_line2_name is None:
         new_line2_name = new_line2_id
 
-    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2, tee_point_line_to_remove,
-        bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)
+    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2,
+                                                   tee_point_line_to_remove,
+                                                   bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id,
+                                                   new_line2_name)
 
 
 def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,
@@ -5359,7 +5369,6 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
         - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
         - **busbar_count**: the total number of busbar to be created.
         - **low_section_index**: the lowest section index to be used. By default, 1.
-        - **section_count**: the total number of sections to be created.
         - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
         default, nothing.
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
@@ -5374,8 +5383,12 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    if isinstance(df["switch_kinds"].get(0), list):
-        df['switch_kinds'] = df['switch_kinds'].map(
-            lambda row: ', '.join(str(e) for e in row))
+    for i in range(len(df)):
+        if isinstance(df["switch_kinds"].get(i), list):
+            df['switch_kinds'].iloc[i] = ','.join(str(e.replace(' ', '')) for e in df['switch_kinds'].get(i))
+        if isinstance(df["switch_kinds"].get(i), str):
+            df['switch_kinds'].iloc[i] = df['switch_kinds'].get(i).replace(' ', '')
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION, raise_exception, None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
