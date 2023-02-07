@@ -1499,7 +1499,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **high_voltage_limit**: the high voltage limit
               - **low_voltage_limit**: the low voltage limit
               - **fictitious** (optional): ``True`` if the voltage level is part of the model and not of the actual network
-
+              - **topology_kind** (optional): the voltage level topology kind (NODE_BREAKER or BUS_BREAKER)
             This dataframe is indexed by the id of the voltage levels
 
         Examples:

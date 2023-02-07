@@ -574,8 +574,10 @@ def test_update_2_windings_transformers_data_frame():
 
 def test_voltage_levels_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    voltage_levels = n.get_voltage_levels()
-    assert 24.0 == voltage_levels['nominal_v']['VLGEN']
+    voltage_levels = n.get_voltage_levels(all_attributes=True)
+    vlgen = voltage_levels.loc['VLGEN']
+    assert 24.0 == vlgen['nominal_v']
+    assert 'BUS_BREAKER' == vlgen['topology_kind']
 
 
 def test_substations_data_frame():

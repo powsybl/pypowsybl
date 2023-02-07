@@ -28,7 +28,7 @@ class NetworkAreaDiagramUtilTest {
     void test() throws IOException {
         Network network = IeeeCdfNetworkFactory.create14();
         String svg = NetworkAreaDiagramUtil.getSvg(network, Collections.emptyList(), 0);
-        assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.xml"))), StandardCharsets.UTF_8)),
+        assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.svg"))), StandardCharsets.UTF_8)),
                      TestUtil.normalizeLineSeparator(svg));
     }
 }
