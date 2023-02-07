@@ -1281,4 +1281,15 @@ void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::stri
     pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
+std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
+    pypowsybl::callJava(::createNetworkModification, network, dataframe, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+}
+
 }

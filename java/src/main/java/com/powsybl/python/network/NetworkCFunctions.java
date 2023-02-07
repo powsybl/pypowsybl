@@ -14,17 +14,11 @@ import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
@@ -665,7 +659,7 @@ public final class NetworkCFunctions {
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
-    private static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+    protected static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
         DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
         createSeriesMetadata(metadata, res);
         return res;
@@ -971,5 +965,4 @@ public final class NetworkCFunctions {
             ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
         });
     }
-
 }
