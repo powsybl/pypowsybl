@@ -92,11 +92,9 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         ControlZone zone = ext.getControlZones().stream()
                 .filter(controlZone -> {
                     return  controlZone.getControlUnits().stream()
-                        .filter(controlUnit -> {
+                        .anyMatch(controlUnit -> {
                             return controlUnit.getId().equals(id);
-                        })
-                        .findAny()
-                        .isPresent();
+                        });
                 })
                 .findAny()
                 .orElse(null);
