@@ -5434,7 +5434,9 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
                             network, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
 
     """
-    metadata = _pp.get_coupling_device_creation_metadata()
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_coupling_device(network._handle, c_df, raise_exception,  None if reporter is None else reporter._reporter_model)
+    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.CREATE_COUPLING_DEVICE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
