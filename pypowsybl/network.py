@@ -3028,12 +3028,13 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
-    def update_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "", **kwargs: _ArrayLike) -> None:
         """
         Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
         Args:
             extension_name: name of the extension
+            table_name: for multiple dataframes extensions, to precise which dataframe to modify
             df: the data to be updated
             kwargs: the data to be updated, as named arguments.
                     Arguments can be single values or any type of sequence.
@@ -3042,10 +3043,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The id column in the dataframe provides the link to the extensions parent elements
         """
-        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
+        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name, table_name)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        _pp.update_extensions(self._handle, extension_name, c_df)
+        _pp.update_extensions(self._handle, extension_name, table_name, c_df)
 
     def create_extensions(self, extension_name: str, df: _Union[_DataFrame, _List[_Optional[_DataFrame]]] = None, **kwargs: _ArrayLike) -> None:
         """

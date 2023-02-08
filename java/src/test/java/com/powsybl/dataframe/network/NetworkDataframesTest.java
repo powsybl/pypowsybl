@@ -62,14 +62,14 @@ class NetworkDataframesTest {
 
     private static List<Series> createExtensionDataFrame(String name, String tableName, Network network) {
         List<Series> series = new ArrayList<>();
-        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.ofNullable(tableName));
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
         assertNotNull(mapper);
         mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
         return series;
     }
 
     private static void updateExtension(String name, Network network, UpdatingDataframe updatingDataframe) {
-        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, Optional.empty());
+        NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, null);
         assertNotNull(mapper);
         mapper.updateSeries(network, updatingDataframe);
     }
@@ -194,7 +194,7 @@ class NetworkDataframesTest {
         List<Series> zoneSeries = createExtensionDataFrame("secondaryVoltageControl", "zones", network);
         assertThat(zoneSeries)
                 .extracting(Series::getName)
-                .containsExactly("name", "target_v", "bus_ids");
+                .containsExactly("id", "target_v", "bus_ids");
         assertThat(zoneSeries.get(1).getDoubles())
                 .containsExactly(15d);
         assertThat(zoneSeries.get(2).getStrings())
@@ -203,7 +203,7 @@ class NetworkDataframesTest {
         List<Series> unitSeries = createExtensionDataFrame("secondaryVoltageControl", "units", network);
         assertThat(unitSeries)
                 .extracting(Series::getName)
-                .containsExactly("unit_id", "participate", "zone_name");
+                .containsExactly("id", "participate", "zone_name");
         assertThat(unitSeries.get(1).getBooleans())
                 .containsExactly(false);
         assertThat(unitSeries.get(2).getStrings())

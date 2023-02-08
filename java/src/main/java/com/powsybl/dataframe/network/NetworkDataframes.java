@@ -1048,7 +1048,7 @@ public final class NetworkDataframes {
         return twt;
     }
 
-    public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName, Optional<String> tableName) {
+    public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName, String tableName) {
         return EXTENSIONS_MAPPERS.get(new ExtensionDataframeKey(extensionName, tableName));
     }
 

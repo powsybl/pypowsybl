@@ -27,13 +27,13 @@ import java.util.List;
 public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> ZONES_METADATA = List.of(
-            SeriesMetadata.stringIndex("name"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.strings("bus_ids")
         );
 
     private static final List<SeriesMetadata> UNITS_METADATA = List.of(
-            SeriesMetadata.stringIndex("unit_id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("zone_name"),
             SeriesMetadata.booleans("participate")
     );
@@ -57,12 +57,12 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
         SecondaryVoltageControlSeries(UpdatingDataframe zonesDf, UpdatingDataframe unitsDf) {
             this.zoneCount = zonesDf.getRowCount();
-            this.zoneName = zonesDf.getStrings("name");
+            this.zoneName = zonesDf.getStrings("id");
             this.targetV = zonesDf.getDoubles("target_v");
             this.busIds = zonesDf.getStrings("bus_ids");
 
             this.unitsCount = unitsDf.getRowCount();
-            this.unitId = unitsDf.getStrings("unit_id");
+            this.unitId = unitsDf.getStrings("id");
             this.participate = unitsDf.getInts("participate");
             this.unitZoneName = unitsDf.getStrings("zone_name");
         }
@@ -71,7 +71,7 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
             var adder = network.newExtension(SecondaryVoltageControlAdder.class);
             for (int zone = 0; zone < zoneCount; zone++) {
                 String name = zoneName.get(zone);
-                SecondaryVoltageControl.PilotPoint pilotPoint = new SecondaryVoltageControl.PilotPoint(List.of(busIds.get(zone)),
+                SecondaryVoltageControl.PilotPoint pilotPoint = new SecondaryVoltageControl.PilotPoint(List.of(busIds.get(zone).split(",")),
                         targetV.get(zone));
 
                 List<SecondaryVoltageControl.ControlUnit> controlUnits = new ArrayList<>();

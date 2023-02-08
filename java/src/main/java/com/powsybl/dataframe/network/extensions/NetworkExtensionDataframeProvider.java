@@ -16,7 +16,6 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * SPI for defining dataframes of network extensions.
@@ -38,12 +37,12 @@ public interface NetworkExtensionDataframeProvider {
     /**
      * The names of dataframes for extensions using multiple dataframes
      */
-    List<Optional<String>> getExtensionTableNames();
+    List<String> getExtensionTableNames();
 
     /**
      * Defines the mapping between the network and the extension dataframe.
      */
-    Map<Optional<String>, NetworkDataframeMapper> createMappers();
+    Map<String, NetworkDataframeMapper> createMappers();
 
     void removeExtensions(Network network, List<String> ids);
 

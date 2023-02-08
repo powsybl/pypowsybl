@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.network.extensions;
 
 import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
@@ -36,12 +37,12 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(SecondaryVoltageControl.NAME,
                 "Provides information about the secondary voltage control zones and units, in two distinct dataframes.",
-                "[dataframe \"zones\"] index : name (str), target_v (float), bus_ids (str) / [dataframe \"units\"] index : unit_id (str), participate (bool), zone_name (str)");
+                "[dataframe \"zones\"] index : id (str), target_v (float), bus_ids (str) / [dataframe \"units\"] index : id (str), participate (bool), zone_name (str)");
     }
 
     @Override
-    public List<Optional<String>> getExtensionTableNames() {
-        return List.of(Optional.of("zones"), Optional.of("units"));
+    public List<String> getExtensionTableNames() {
+        return List.of("zones", "units");
     }
 
     private Stream<ControlZone> zonesStream(Network network) {
@@ -65,19 +66,63 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         return units.stream();
     }
 
+    private ControlZone getControlZoneOrThrow(Network network, String name) {
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+        }
+        ControlZone zone = ext.getControlZones().stream()
+                .filter(controlZone -> {
+                    return controlZone.getName().equals(name);
+                })
+                .findAny()
+                .orElse(null);
+        if (zone == null) {
+            throw new PowsyblException("No secondary voltage control zone named " + name + " found.");
+        }
+        return zone;
+    }
+
+    private ControlUnitWithZone getControlUnitWithZoneOrThrow(Network network, String id) {
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+        }
+
+        ControlZone zone = ext.getControlZones().stream()
+                .filter(controlZone -> {
+                    return  controlZone.getControlUnits().stream()
+                        .filter(controlUnit -> {
+                            return controlUnit.getId().equals(id);
+                        })
+                        .findAny()
+                        .isPresent();
+                })
+                .findAny()
+                .orElse(null);
+        if (zone == null) {
+            throw new PowsyblException("No secondary voltage control zone containing control unit " + id + " found.");
+        }
+
+        return new ControlUnitWithZone(zone.getControlUnits().stream().filter(controlUnit -> {
+            return controlUnit.getId().equals(id);
+        }).findAny().get(),
+                zone.getName());
+    }
+
     @Override
-    public Map<Optional<String>, NetworkDataframeMapper> createMappers() {
-        Map<Optional<String>, NetworkDataframeMapper> mappers = new HashMap<>();
-        mappers.put(Optional.of("zones"),
-                NetworkDataframeMapperBuilder.ofStream(this::zonesStream)
-                        .stringsIndex("name", ControlZone::getName)
+    public Map<String, NetworkDataframeMapper> createMappers() {
+        Map<String, NetworkDataframeMapper> mappers = new HashMap<>();
+        mappers.put("zones",
+                NetworkDataframeMapperBuilder.ofStream(this::zonesStream, this::getControlZoneOrThrow)
+                        .stringsIndex("id", ControlZone::getName)
                         .doubles("target_v", zone -> zone.getPilotPoint().getTargetV(), (zone, v) -> zone.getPilotPoint().setTargetV(v))
-                        .strings("bus_ids", zone -> zone.getPilotPoint().getBusbarSectionsOrBusesIds().get(0)) // TODO : parser liste ids
+                        .strings("bus_ids", zone -> String.join(",", zone.getPilotPoint().getBusbarSectionsOrBusesIds()))
                         .build()
         );
-        mappers.put(Optional.of("units"),
-                NetworkDataframeMapperBuilder.ofStream(this::unitsStream)
-                        .stringsIndex("unit_id", unit -> unit.getUnit().getId())
+        mappers.put("units",
+                NetworkDataframeMapperBuilder.ofStream(this::unitsStream, this::getControlUnitWithZoneOrThrow)
+                        .stringsIndex("id", unit -> unit.getUnit().getId())
                         .booleans("participate", unit -> unit.getUnit().isParticipate(), (unit, b) -> unit.getUnit().setParticipate(b))
                         .strings("zone_name", ControlUnitWithZone::getZoneName)
                         .build()
@@ -95,9 +140,9 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         return new SecondaryVoltageControlDataframeAdder();
     }
 
-    private class ControlUnitWithZone {
-        private SecondaryVoltageControl.ControlUnit unit;
-        private String zoneName;
+    private static class ControlUnitWithZone {
+        private final SecondaryVoltageControl.ControlUnit unit;
+        private final String zoneName;
 
         public ControlUnitWithZone(SecondaryVoltageControl.ControlUnit unit, String zoneName) {
             this.unit = unit;

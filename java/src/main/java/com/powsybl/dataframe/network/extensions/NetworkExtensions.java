@@ -51,8 +51,8 @@ public final class NetworkExtensions {
         Map<ExtensionDataframeKey, NetworkDataframeMapper> extensionMappers = new HashMap<>();
         EXTENSIONS_PROVIDERS.values().forEach(ext -> {
             String extensionName = ext.getExtensionName();
-            Map<Optional<String>, NetworkDataframeMapper> dataframeMappers = ext.createMappers();
-            for (Optional<String> tableName : dataframeMappers.keySet()) {
+            Map<String, NetworkDataframeMapper> dataframeMappers = ext.createMappers();
+            for (String tableName : dataframeMappers.keySet()) {
                 extensionMappers.put(new ExtensionDataframeKey(extensionName, tableName), dataframeMappers.get(tableName));
             }
         });

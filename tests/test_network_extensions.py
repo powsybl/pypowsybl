@@ -456,12 +456,12 @@ def test_secondary_voltage_control():
     n = pn.create_eurostag_tutorial_example1_network()
     extension_name = 'secondaryVoltageControl'
     zones_df = pd.DataFrame.from_records(
-            index='name',
-            columns=['name', 'target_v', 'bus_ids'],
+            index='id',
+            columns=['id', 'target_v', 'bus_ids'],
             data=[('zone_test', 400, 'NHV1')])
     units_df = pd.DataFrame.from_records(
-                index='unit_id',
-                columns=['unit_id', 'participate', 'zone_name'],
+                index='id',
+                columns=['id', 'participate', 'zone_name'],
                 data=[('GEN', True, 'zone_test')])
     n.create_extensions(extension_name, [zones_df, units_df])
 
@@ -471,6 +471,13 @@ def test_secondary_voltage_control():
     e2 = n.get_extensions(extension_name, "units").loc['GEN']
     assert e2.participate
     assert e2.zone_name == 'zone_test'
+
+    n.update_extensions(extension_name, table_name='zones', df=pd.DataFrame.from_records(index="id", data=[{'id': 'zone_test', 'target_v': 225}]))
+    e1 = n.get_extensions(extension_name, "zones").loc['zone_test']
+    assert e1.target_v == 225
+    n.update_extensions(extension_name, table_name='units', df=pd.DataFrame.from_records(index="id", data=[{'id': 'GEN', 'participate': False}]))
+    e2 = n.get_extensions(extension_name, "units").loc['GEN']
+    assert e2.participate == False
 
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
@@ -514,4 +521,4 @@ def test_get_extensions_information():
     assert extensions_information.loc['busbarSectionPosition']['detail'] == 'Position information about the BusbarSection'
     assert extensions_information.loc['busbarSectionPosition']['attributes'] == 'index : id (str), busbar_index (int), section_index (int)'
     assert extensions_information.loc['secondaryVoltageControl']['detail'] == 'Provides information about the secondary voltage control zones and units, in two distinct dataframes.'
-    assert extensions_information.loc['secondaryVoltageControl']['attributes'] == '[dataframe "zones"] index : name (str), target_v (float), bus_ids (str) / [dataframe "units"] index : unit_id (str), participate (bool), zone_name (str)'
+    assert extensions_information.loc['secondaryVoltageControl']['attributes'] == '[dataframe "zones"] index : id (str), target_v (float), bus_ids (str) / [dataframe "units"] index : id (str), participate (bool), zone_name (str)'

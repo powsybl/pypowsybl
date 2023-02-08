@@ -8,19 +8,18 @@
 package com.powsybl.dataframe.network.extensions;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
  */
 public class ExtensionDataframeKey {
-    private String extensionName;
-    private Optional<String> tableName;
+    private final String extensionName;
+    private final String tableName;
 
-    private int hashCode;
+    private final int hashCode;
 
-    public ExtensionDataframeKey(String extensionName, Optional<String> tableName) {
-        this.extensionName = extensionName;
+    public ExtensionDataframeKey(String extensionName, String tableName) {
+        this.extensionName = Objects.requireNonNull(extensionName);
         this.tableName = tableName;
         this.hashCode = Objects.hash(extensionName, tableName);
     }
@@ -30,7 +29,7 @@ public class ExtensionDataframeKey {
     }
 
     public String getTableName() {
-        return tableName.orElse(null);
+        return tableName;
     }
 
     @Override
@@ -39,6 +38,10 @@ public class ExtensionDataframeKey {
             return false;
         }
         ExtensionDataframeKey key = (ExtensionDataframeKey) o;
+
+        if (key.tableName == null) {
+            return this.tableName == null && key.extensionName.equals(this.extensionName);
+        }
         return key.tableName.equals(this.tableName) && key.extensionName.equals(this.extensionName);
     }
 

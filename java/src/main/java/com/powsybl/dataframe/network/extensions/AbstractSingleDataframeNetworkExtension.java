@@ -16,12 +16,14 @@ import java.util.*;
  */
 public abstract class AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 
-    public List<Optional<String>> getExtensionTableNames() {
+    public List<String> getExtensionTableNames() {
         return Collections.emptyList();
     }
 
-    public Map<Optional<String>, NetworkDataframeMapper> createMappers() {
-        return Map.of(Optional.empty(), createMapper());
+    public Map<String, NetworkDataframeMapper> createMappers() {
+        HashMap<String, NetworkDataframeMapper> mapper = new HashMap<>();
+        mapper.put(null, createMapper());
+        return mapper;
     }
 
     public abstract NetworkDataframeMapper createMapper();
