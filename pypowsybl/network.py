@@ -3713,8 +3713,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def create_shunt_compensators(self, shunt_df: _DataFrame,
                                   linear_model_df: _Optional[_DataFrame] = None,
-                                  non_linear_model_df: _Optional[_DataFrame] = None,
-                                  **kwargs: _ArrayLike) -> None:
+                                  non_linear_model_df: _Optional[_DataFrame] = None) -> None:
         """
         Create shunt compensators.
 
@@ -3810,7 +3809,7 @@ class Network:  # pylint: disable=too-many-public-methods
         if non_linear_model_df is None:
             non_linear_model_df = pd.DataFrame()
         dfs: _List[_Optional[_DataFrame]] = [shunt_df, linear_model_df, non_linear_model_df]
-        return self._create_elements(ElementType.SHUNT_COMPENSATOR, dfs, **kwargs)
+        return self._create_elements(ElementType.SHUNT_COMPENSATOR, dfs)
 
     def create_switches(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3893,13 +3892,15 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
-    def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame) -> None:
         """
         Create ratio tap changers on transformers.
 
         Tap changers data must be provided in 2 separate dataframes:
         one for the tap changers attributes, and another one for tap changers steps attributes.
         The latter one will generally have multiple lines for one transformer ID.
+        The steps are created in order of the dataframe order meaning (for a transformer) first line of the steps
+        dataframe will create step one of the steps of these transformer.
 
         Args:
             rtc_df: dataframe of tap changers data
@@ -3940,18 +3941,21 @@ class Network:  # pylint: disable=too-many-public-methods
                     index='id',
                     columns=['id', 'b', 'g', 'r', 'x', 'rho'],
                     data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
-                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.8)])
                 network.create_ratio_tap_changers(rtc_df, steps_df)
         """
-        return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df], **kwargs)
+        return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df])
 
-    def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame) -> None:
         """
         Create phase tap changers on transformers.
 
         Tap changers data must be provided in 2 separate dataframes:
         one for the tap changers attributes, and another one for tap changers steps attributes.
         The latter one will generally have multiple lines for one transformer ID.
+        The steps are created in order of the dataframe order meaning (for a transformer) first line of the steps
+        dataframe will create step one of the steps of these transformer.
 
         Args:
             ptc_df: dataframe of tap changers data
@@ -3990,12 +3994,13 @@ class Network:  # pylint: disable=too-many-public-methods
                 steps_df = pd.DataFrame.from_records(
                     index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
                     data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+                          ('TWT_TEST', 2, 2, 1, 1, 0.4, 0.2),
                           ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
                 n.create_phase_tap_changers(ptc_df, steps_df)
         """
-        return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df], **kwargs)
+        return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df])
 
-    def create_hvdc_lines(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_hvdc_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates HVDC lines.
 
@@ -4033,7 +4038,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
 
-    def create_operational_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_operational_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates operational limits.
 
@@ -4064,10 +4069,11 @@ class Network:  # pylint: disable=too-many-public-methods
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
         """
-        df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+        if df is not None:
+            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
-    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_minmax_reactive_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates reactive limits of type min/max.
 
@@ -4101,7 +4107,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
 
-    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_curve_reactive_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates reactive limits as "curves".
 
