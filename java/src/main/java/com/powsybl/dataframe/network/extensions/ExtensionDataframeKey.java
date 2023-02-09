@@ -28,10 +28,6 @@ public class ExtensionDataframeKey {
         return extensionName;
     }
 
-    public String getTableName() {
-        return tableName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ExtensionDataframeKey)) {

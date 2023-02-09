@@ -143,8 +143,8 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         private final String zoneName;
 
         public ControlUnitWithZone(SecondaryVoltageControl.ControlUnit unit, String zoneName) {
-            this.unit = unit;
-            this.zoneName = zoneName;
+            this.unit = Objects.requireNonNull(unit);
+            this.zoneName = Objects.requireNonNull(zoneName);
         }
 
         public SecondaryVoltageControl.ControlUnit getUnit() {
