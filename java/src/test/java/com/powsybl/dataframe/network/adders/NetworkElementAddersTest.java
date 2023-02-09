@@ -492,12 +492,12 @@ class NetworkElementAddersTest {
         assertNull(extension);
 
         DefaultUpdatingDataframe zoneDataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(zoneDataframe, "id", zoneName);
+        addStringColumn(zoneDataframe, "name", zoneName);
         addDoubleColumn(zoneDataframe, "target_v", 15d);
         addStringColumn(zoneDataframe, "bus_ids", busId);
 
         DefaultUpdatingDataframe unitDataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(unitDataframe, "id", controlUnitId);
+        addStringColumn(unitDataframe, "unit_id", controlUnitId);
         addIntColumn(unitDataframe, "participate", 1);
         addStringColumn(unitDataframe, "zone_name", zoneName);
 

@@ -27,13 +27,13 @@ import java.util.List;
 public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> ZONES_METADATA = List.of(
-            SeriesMetadata.stringIndex("id"),
+            SeriesMetadata.stringIndex("name"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.strings("bus_ids")
         );
 
     private static final List<SeriesMetadata> UNITS_METADATA = List.of(
-            SeriesMetadata.stringIndex("id"),
+            SeriesMetadata.stringIndex("unit_id"),
             SeriesMetadata.strings("zone_name"),
             SeriesMetadata.booleans("participate")
     );
@@ -57,12 +57,12 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 
         SecondaryVoltageControlSeries(UpdatingDataframe zonesDf, UpdatingDataframe unitsDf) {
             this.zoneCount = zonesDf.getRowCount();
-            this.zoneName = zonesDf.getStrings("id");
+            this.zoneName = zonesDf.getStrings("name");
             this.targetV = zonesDf.getDoubles("target_v");
             this.busIds = zonesDf.getStrings("bus_ids");
 
             this.unitsCount = unitsDf.getRowCount();
-            this.unitId = unitsDf.getStrings("id");
+            this.unitId = unitsDf.getStrings("unit_id");
             this.participate = unitsDf.getInts("participate");
             this.unitZoneName = unitsDf.getStrings("zone_name");
         }

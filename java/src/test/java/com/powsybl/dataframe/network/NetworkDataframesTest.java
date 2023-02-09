@@ -194,7 +194,7 @@ class NetworkDataframesTest {
         List<Series> zoneSeries = createExtensionDataFrame("secondaryVoltageControl", "zones", network);
         assertThat(zoneSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "target_v", "bus_ids");
+                .containsExactly("name", "target_v", "bus_ids");
         assertThat(zoneSeries.get(1).getDoubles())
                 .containsExactly(15d);
         assertThat(zoneSeries.get(2).getStrings())
@@ -203,7 +203,7 @@ class NetworkDataframesTest {
         List<Series> unitSeries = createExtensionDataFrame("secondaryVoltageControl", "units", network);
         assertThat(unitSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "participate", "zone_name");
+                .containsExactly("unit_id", "participate", "zone_name");
         assertThat(unitSeries.get(1).getBooleans())
                 .containsExactly(false);
         assertThat(unitSeries.get(2).getStrings())
