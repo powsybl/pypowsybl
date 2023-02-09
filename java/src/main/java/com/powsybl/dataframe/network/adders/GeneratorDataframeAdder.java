@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -20,7 +19,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -45,7 +44,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("rated_s"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -66,13 +65,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries ratedS;
         private final IntSeries voltageRegulatorOn;
         private final StringSeries energySource;
+        private final StringSeries busOrBusbarSections;
 
         GeneratorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.maxP = dataframe.getDoubles("max_p");
             this.minP = dataframe.getDoubles("min_p");
             this.targetP = dataframe.getDoubles("target_p");
@@ -81,10 +78,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.ratedS = dataframe.getDoubles("rated_s");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.energySource = dataframe.getStrings("energy_source");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         GeneratorAdder createAdder(Network network, int row) {
-            GeneratorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            GeneratorAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newGenerator();
             setInjectionAttributes(adder, row);
             applyIfPresent(maxP, row, adder::setMaxP);

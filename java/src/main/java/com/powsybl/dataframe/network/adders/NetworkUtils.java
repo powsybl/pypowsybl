@@ -7,10 +7,8 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.Substation;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.dataframe.update.StringSeries;
+import com.powsybl.iidm.network.*;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
@@ -24,6 +22,30 @@ public final class NetworkUtils {
         VoltageLevel voltageLevel = network.getVoltageLevel(id);
         if (voltageLevel == null) {
             throw new PowsyblException("Voltage level " + id + " does not exist.");
+        }
+        return voltageLevel;
+    }
+
+    public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections) {
+        VoltageLevel voltageLevel;
+        if (voltageLevels == null) {
+            if (busOrBusbarSections.get(row) != null) {
+                Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
+                if (busOrBusbarSection == null) {
+                    throw new PowsyblException(String.format("Identifiable %s not found.", busOrBusbarSections.get(row)));
+                }
+                if (busOrBusbarSection instanceof BusbarSection) {
+                    voltageLevel = ((BusbarSection) busOrBusbarSection).getTerminal().getVoltageLevel();
+                } else if (busOrBusbarSection instanceof Bus) {
+                    voltageLevel = ((Bus) busOrBusbarSection).getVoltageLevel();
+                } else {
+                    throw new PowsyblException(String.format("Unsupported type %s for identifiable %s", busOrBusbarSection.getType(), busOrBusbarSection.getId()));
+                }
+            } else {
+                throw new PowsyblException("voltage_level_id is missing");
+            }
+        } else {
+            voltageLevel = getVoltageLevelOrThrow(network, voltageLevels.get(row));
         }
         return voltageLevel;
     }

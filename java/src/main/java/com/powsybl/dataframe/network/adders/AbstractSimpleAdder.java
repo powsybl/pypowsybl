@@ -14,6 +14,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
@@ -67,15 +68,17 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
     }
 
     private void addWithBay(Network network, UpdatingDataframe dataframe, InjectionAdder<?> injectionAdder, int row, boolean throwException, Reporter reporter) {
-        String busbarSectionId = dataframe.getStrings("busbar_section_id").get(row);
-        int injectionPositionOrder = dataframe.getInts("position_order").get(row);
+        String busOrBusbarSectionId = dataframe.getStrings("bus_or_busbar_section_id").get(row);
+        OptionalInt injectionPositionOrder = dataframe.getIntValue("position_order", row);
         ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(dataframe.getStringValue("direction", row).orElse("BOTTOM"));
-        CreateFeederBay modification = new CreateFeederBayBuilder()
+        CreateFeederBayBuilder builder = new CreateFeederBayBuilder()
                 .withInjectionAdder(injectionAdder)
-                .withBbsId(busbarSectionId)
-                .withInjectionPositionOrder(injectionPositionOrder)
-                .withInjectionDirection(direction)
-                .build();
+                .withBusOrBusbarSectionId(busOrBusbarSectionId)
+                .withInjectionDirection(direction);
+        if (injectionPositionOrder.isPresent()) {
+            builder.withInjectionPositionOrder(injectionPositionOrder.getAsInt());
+        }
+        CreateFeederBay modification = builder.build();
         modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
     }
 
