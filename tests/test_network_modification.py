@@ -11,7 +11,7 @@ def test_voltage_level_topology_creation():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -25,7 +25,7 @@ def test_voltage_level_topology_creation_with_no_switch_kind():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     pp.network.create_voltage_level_topology(network=network, switch_kinds='', raise_exception=True, id='VL1',
-                                             busbar_count=1)
+                                             aligned_buses_or_busbar_count=1)
     busbar_sections = network.get_busbar_sections()
     assert 'VL1_1_1' in busbar_sections.index
     switches = network.get_node_breaker_topology('VL1').switches
@@ -37,7 +37,7 @@ def test_voltage_level_topology_creation_from_kwargs():
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     switch = 'BREAKER, DISCONNECTOR'
     pp.network.create_voltage_level_topology(network=network, switch_kinds=switch, raise_exception=True, id='VL1',
-                                             busbar_count=1, )
+                                             aligned_buses_or_busbar_count=1, )
     busbar_sections = network.get_busbar_sections()
     assert busbar_sections[busbar_sections['voltage_level_id'] == 'VL1'].shape[0] == 3
     switches = network.get_node_breaker_topology('VL1').switches
@@ -49,7 +49,7 @@ def test_voltage_level_topology_creation_with_switch_kind_as_list():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -67,8 +67,8 @@ def test_multiple_voltage_levels_creation():
     ])
     network.create_voltage_levels(voltage_levels)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']},
-        {'id': 'VL2', 'busbar_count': 2, 'switch_kinds': ['BREAKER']}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']},
+        {'id': 'VL2', 'aligned_buses_or_busbar_count': 2, 'switch_kinds': ['BREAKER']}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -93,6 +93,12 @@ def test_no_switch_kind():
         {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': []}
     ])
     pp.network.create_voltage_level_topology(network, df)
+
+
+def test_create_voltage_level_topology_bus_breaker():
+    network = pp.network.create_empty()
+    network.create_voltage_levels(id='VL1', topology_kind='BUS_BREAKER', nominal_v=225)
+    pp.network.create_voltage_level_topology(id='VL1', aligned_buses_or_busbar_count=3, section_count=2)
 
 
 def test_no_extensions_created_if_none_in_the_voltage_level():

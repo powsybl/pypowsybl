@@ -29,11 +29,11 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.ints("low_busbar_index"),
-            SeriesMetadata.ints("busbar_count"),
+            SeriesMetadata.ints("low_bus_or_busbar_index"),
+            SeriesMetadata.ints("aligned_buses_or_busbar_count"),
             SeriesMetadata.ints("low_section_index"),
             SeriesMetadata.ints("section_count"),
-            SeriesMetadata.strings("busbar_section_prefix_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_prefix_id"),
             SeriesMetadata.strings("switch_prefix_id"),
             SeriesMetadata.strings("switch_kinds")
     );
@@ -52,11 +52,11 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
                 .map(SwitchKind::valueOf)
                 .collect(Collectors.toList());
         applyIfPresent(dataframe.getStrings("id"), row, builder::withVoltageLevelId);
-        applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusbarIndex);
-        applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withBusbarCount);
+        applyIfPresent(dataframe.getInts("low_bus_or_busbar_index"), row, builder::withLowBusbarIndex);
+        applyIfPresent(dataframe.getInts("aligned_buses_or_busbar_count"), row, builder::withBusbarCount);
         applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
-        builder.withSectionCount(switchKindList.size() + 1);
-        applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
+        builder.withSectionCount(dataframe.getIntValue("section_count", row).orElse(switchKindList.size() + 1));
+        applyIfPresent(dataframe.getStrings("bus_or_busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
         applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
         builder.withSwitchKinds(switchKindList);
         return builder;

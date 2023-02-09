@@ -5366,30 +5366,33 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
         reporter: an optional reporter to get functional logs.
         kwargs: attributes as keyword arguments.
     Notes:
-        The voltage level must be created and in node/breaker topology.
-        Busbar sections will be created, as well as disconnectors or breakers between each section depending on the
-        switch_kind list.
+        In topology node/breaker, busbar sections will be created, as well as disconnectors or breakers between each
+        section depending on the switch_kind list.
+        In topology bus/breaker, section_count*aligned_buses_or_busbar_count of buses will be created, as a matrix of
+        aligned_buses_or_busbar_count rows and section_count buses on each row connected to each other through breakers.
 
         The input dataframe expects these attributes:
         - **voltage_level_id**: the identifier of the voltage level where the topology should be created.
-        - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
-        - **busbar_count**: the total number of busbar to be created.
+        - **low_bus_or_busbar_index**: the lowest bus or busbar index to be used. By default, 1 (no other buses or busbar sections).
+        - **aligned_buses_or_busbar_count**: the total number of busbar or the number of lines of buses to be created.
         - **low_section_index**: the lowest section index to be used. By default, 1.
-        - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
+        - **bus_or_busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
         default, nothing.
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
+        - **section_count**: optionally in node/breaker, required in bus/breaker, the number of sections to be created.
         - **switch_kinds**: string or list containing the type of switch between each section. It should contain
         section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR' or ['BREAKER', 'DISCONNECTOR'].
 
     Examples:
 
     .. code-block:: python
-        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', busbar_count=3,
+        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', aligned_buses_or_busbar_count=3,
                                                  section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
+    if 'switch_kinds' in df.columns:
+        df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
                                     raise_exception,
