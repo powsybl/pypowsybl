@@ -9,6 +9,7 @@ package com.powsybl.python.commons;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
@@ -325,4 +326,14 @@ public final class Util {
                 throw new PowsyblException("Unknown element type : " + side);
         }
     }
+
+    public static DataframeNetworkModificationType convert(PyPowsyblApiHeader.NetworkModificationType networkModificationType) {
+        switch (networkModificationType) {
+            case VOLTAGE_LEVEL_TOPOLOGY_CREATION:
+                return DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
+            default:
+                throw new PowsyblException("Unknown network modification type: " + networkModificationType);
+        }
+    }
+
 }

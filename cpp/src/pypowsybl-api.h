@@ -169,6 +169,10 @@ typedef enum {
     SPECIFIC,
 } contingency_context_type;
 
+typedef enum {
+    VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,
+} network_modification_type;
+
 typedef struct matrix_struct {
     int row_count;
     int column_count;

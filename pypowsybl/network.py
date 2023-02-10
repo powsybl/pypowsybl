@@ -29,6 +29,7 @@ import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import NetworkModificationType
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import (
@@ -36,7 +37,7 @@ from pypowsybl.utils.dataframes import (
     _create_c_dataframe,
     _create_properties_c_dataframe,
     _adapt_properties_kwargs,
-    _get_c_dataframes, _adapt_kwargs
+    _get_c_dataframes
 )
 from pypowsybl.report import Reporter as _Reporter
 
@@ -87,7 +88,8 @@ class LayoutParameters:
     """
     This class represents layout parameters for a single line diagram svg generation."""
 
-    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True):
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
+                 topological_coloring: bool = True):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
@@ -355,7 +357,8 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None, parameters: LayoutParameters = None) -> None:
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
+                                      parameters: LayoutParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -366,8 +369,9 @@ class Network:  # pylint: disable=too-many-public-methods
             parameters: layout parameters to adjust the rendering of the diagram
         """
         svg_file = _path_to_str(svg_file)
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
-        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file, '' if metadata_file is None else _path_to_str(metadata_file), p)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+        _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
+                                          '' if metadata_file is None else _path_to_str(metadata_file), p)
 
     def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
@@ -380,7 +384,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the single line diagram
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters() # pylint: disable=protected-access
+        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
         svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
@@ -1495,7 +1499,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **high_voltage_limit**: the high voltage limit
               - **low_voltage_limit**: the low voltage limit
               - **fictitious** (optional): ``True`` if the voltage level is part of the model and not of the actual network
-
+              - **topology_kind** (optional): the voltage level topology kind (NODE_BREAKER or BUS_BREAKER)
             This dataframe is indexed by the id of the voltage levels
 
         Examples:
@@ -3709,8 +3713,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def create_shunt_compensators(self, shunt_df: _DataFrame,
                                   linear_model_df: _Optional[_DataFrame] = None,
-                                  non_linear_model_df: _Optional[_DataFrame] = None,
-                                  **kwargs: _ArrayLike) -> None:
+                                  non_linear_model_df: _Optional[_DataFrame] = None) -> None:
         """
         Create shunt compensators.
 
@@ -3806,7 +3809,7 @@ class Network:  # pylint: disable=too-many-public-methods
         if non_linear_model_df is None:
             non_linear_model_df = pd.DataFrame()
         dfs: _List[_Optional[_DataFrame]] = [shunt_df, linear_model_df, non_linear_model_df]
-        return self._create_elements(ElementType.SHUNT_COMPENSATOR, dfs, **kwargs)
+        return self._create_elements(ElementType.SHUNT_COMPENSATOR, dfs)
 
     def create_switches(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
@@ -3889,13 +3892,15 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.VOLTAGE_LEVEL, [df], **kwargs)
 
-    def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_ratio_tap_changers(self, rtc_df: _DataFrame, steps_df: _DataFrame) -> None:
         """
         Create ratio tap changers on transformers.
 
         Tap changers data must be provided in 2 separate dataframes:
         one for the tap changers attributes, and another one for tap changers steps attributes.
         The latter one will generally have multiple lines for one transformer ID.
+        The steps are created in order of the dataframe order meaning (for a transformer) first line of the steps
+        dataframe will create step one of the steps of these transformer.
 
         Args:
             rtc_df: dataframe of tap changers data
@@ -3936,18 +3941,21 @@ class Network:  # pylint: disable=too-many-public-methods
                     index='id',
                     columns=['id', 'b', 'g', 'r', 'x', 'rho'],
                     data=[('NGEN_NHV1', 2, 2, 1, 1, 0.5),
-                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5)])
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.5),
+                          ('NGEN_NHV1', 2, 2, 1, 1, 0.8)])
                 network.create_ratio_tap_changers(rtc_df, steps_df)
         """
-        return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df], **kwargs)
+        return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df])
 
-    def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_phase_tap_changers(self, ptc_df: _DataFrame, steps_df: _DataFrame) -> None:
         """
         Create phase tap changers on transformers.
 
         Tap changers data must be provided in 2 separate dataframes:
         one for the tap changers attributes, and another one for tap changers steps attributes.
         The latter one will generally have multiple lines for one transformer ID.
+        The steps are created in order of the dataframe order meaning (for a transformer) first line of the steps
+        dataframe will create step one of the steps of these transformer.
 
         Args:
             ptc_df: dataframe of tap changers data
@@ -3986,12 +3994,13 @@ class Network:  # pylint: disable=too-many-public-methods
                 steps_df = pd.DataFrame.from_records(
                     index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
                     data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+                          ('TWT_TEST', 2, 2, 1, 1, 0.4, 0.2),
                           ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
                 n.create_phase_tap_changers(ptc_df, steps_df)
         """
-        return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df], **kwargs)
+        return self._create_elements(ElementType.PHASE_TAP_CHANGER, [ptc_df, steps_df])
 
-    def create_hvdc_lines(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_hvdc_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates HVDC lines.
 
@@ -4029,7 +4038,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
 
-    def create_operational_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_operational_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates operational limits.
 
@@ -4060,10 +4069,11 @@ class Network:  # pylint: disable=too-many-public-methods
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
         """
-        df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+        if df is not None:
+            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
-    def create_minmax_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_minmax_reactive_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates reactive limits of type min/max.
 
@@ -4097,7 +4107,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.MINMAX_REACTIVE_LIMITS, [df], **kwargs)
 
-    def create_curve_reactive_limits(self, df: _DataFrame, **kwargs: _ArrayLike) -> None:
+    def create_curve_reactive_limits(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Creates reactive limits as "curves".
 
@@ -4696,7 +4706,9 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
                             fictitious_substation_id,
                             fictitious_substation_name)
 
-def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str, line_to_be_deleted: str,
+
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str,
+                               line_to_be_deleted: str,
                                merged_line_id: str, merged_line_name: str = None) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
@@ -4714,7 +4726,9 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
     """
     if merged_line_name is None:
         merged_line_name = merged_line_id
-    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted, merged_line_id, merged_line_name)
+    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted,
+                                   merged_line_id, merged_line_name)
+
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
                                   line1_id: str = '', line1_name: str = '', line2_id: str = '',
@@ -4740,6 +4754,7 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
                                       line2_name, position_percent)
 
+
 def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
                                          line_name: str = None) -> None:
     """
@@ -4758,6 +4773,7 @@ def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_
     if line_name is None:
         line_name = line1_id
     _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
+
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,
                     **kwargs: _ArrayLike) -> None:
@@ -5087,7 +5103,9 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
                           c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
+                                               metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
+        _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
@@ -5100,6 +5118,7 @@ def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Opt
         else:
             c_dfs.append(_create_c_dataframe(df, metadata[i]))
     return c_dfs
+
 
 def create_line_bays(network: Network, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
     """
@@ -5302,9 +5321,11 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str, tee_point_line_to_remove: str,
-                                  bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
-                                  new_line1_name: str = None, new_line2_name: str = None) -> None:
+
+def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str,
+                                               tee_point_line_to_remove: str,
+                                               bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
+                                               new_line1_name: str = None, new_line2_name: str = None) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
 
@@ -5328,5 +5349,58 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1
     if new_line2_name is None:
         new_line2_name = new_line2_id
 
-    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2, tee_point_line_to_remove,
-        bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id, new_line2_name)
+    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2,
+                                                   tee_point_line_to_remove,
+                                                   bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id,
+                                                   new_line2_name)
+
+
+def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                  reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number of sections.
+
+    Args:
+        network: the network in which the busbar sections are.
+        df: Attributes as a dataframe.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        reporter: an optional reporter to get functional logs.
+        kwargs: attributes as keyword arguments.
+    Notes:
+        The voltage level must be created and in node/breaker topology.
+        Busbar sections will be created, as well as disconnectors or breakers between each section depending on the
+        switch_kind list.
+
+        The input dataframe expects these attributes:
+        - **voltage_level_id**: the identifier of the voltage level where the topology should be created.
+        - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
+        - **busbar_count**: the total number of busbar to be created.
+        - **low_section_index**: the lowest section index to be used. By default, 1.
+        - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
+        default, nothing.
+        - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
+        - **switch_kinds**: string or list containing the type of switch between each section. It should contain
+        section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR' or ['BREAKER', 'DISCONNECTOR'].
+
+    Examples:
+
+    .. code-block:: python
+        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', busbar_count=3,
+                                                 section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
+    """
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
+
+def transform_list_to_str(entry: _Union[str, _List[str]]) -> str:
+    if isinstance(entry, list):
+        return ','.join(str(e.replace(' ', '')) for e in entry)
+    if isinstance(entry, str):
+        return entry.replace(' ', '')
+    else:
+        raise _pp.PyPowsyblError("argument should be a list of str or a str")

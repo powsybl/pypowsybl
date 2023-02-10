@@ -14,17 +14,11 @@ import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
-import com.powsybl.dataframe.SeriesDataType;
-import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
-import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
-import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.adders.*;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
@@ -650,6 +644,27 @@ public final class NetworkCFunctions {
         UnmanagedMemory.free(metadata.getAttributesMetadata());
     }
 
+    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
+        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
+        for (int i = 0; i < metadata.size(); i++) {
+            SeriesMetadata colMetadata = metadata.get(i);
+            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
+            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
+            metadataPtr.setType(convert(colMetadata.getType()));
+            metadataPtr.setIndex(colMetadata.isIndex());
+            metadataPtr.setModifiable(colMetadata.isModifiable());
+            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
+        }
+        cMetadata.setAttributesCount(metadata.size());
+        cMetadata.setAttributesMetadata(seriesMetadataPtr);
+    }
+
+    protected static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+        DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
+        createSeriesMetadata(metadata, res);
+        return res;
+    }
+
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  DataframePointer dataframe,
@@ -950,5 +965,4 @@ public final class NetworkCFunctions {
             ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
         });
     }
-
 }

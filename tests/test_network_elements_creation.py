@@ -501,6 +501,19 @@ def test_hvdc_creation():
     assert hvdc.target_p == 100
     assert hvdc.max_p == 200
     assert hvdc.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER'
+    # test inline arguments
+    n = pn.create_four_substations_node_breaker_network()
+    n.create_hvdc_lines(id='VSC_TEST', converter_station1_id='VSC1',
+                        converter_station2_id='VSC2', r=0.1, nominal_v=320, target_p=100,
+                        max_p=200, converters_mode='SIDE_1_RECTIFIER_SIDE_2_INVERTER')
+    hvdc = n.get_hvdc_lines().loc['VSC_TEST']
+    assert hvdc.converter_station1_id == 'VSC1'
+    assert hvdc.converter_station2_id == 'VSC2'
+    assert hvdc.r == 0.1
+    assert hvdc.nominal_v == 320
+    assert hvdc.target_p == 100
+    assert hvdc.max_p == 200
+    assert hvdc.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER'
 
 
 def test_create_network_and_run_loadflow():
@@ -656,13 +669,15 @@ def test_create_minmax_reactive_limits():
         columns=['id', 'min_q', 'max_q'],
         data=[['GH1', -201.0, 201.0],
               ['GH2', -205.0, 205.0]])
-    pd.testing.assert_frame_equal(expected, network.get_generators(id=['GH1', 'GH2'], attributes=['min_q', 'max_q']), check_dtype=False)
+    pd.testing.assert_frame_equal(expected, network.get_generators(id=['GH1', 'GH2'], attributes=['min_q', 'max_q']),
+                                  check_dtype=False)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'min_q', 'max_q'],
         data=[['VSC1', -355.0, 405.0],
               ['VSC2', -405.0, 505.0]])
-    pd.testing.assert_frame_equal(expected, network.get_vsc_converter_stations(id=['VSC1', 'VSC2'], attributes=['min_q', 'max_q']),
+    pd.testing.assert_frame_equal(expected, network.get_vsc_converter_stations(id=['VSC1', 'VSC2'],
+                                                                               attributes=['min_q', 'max_q']),
                                   check_dtype=False)
     network = util.create_battery_network()
     network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
@@ -703,7 +718,8 @@ num  p  min_q max_q
 0   50    -50   100
 1   60   -100    50
     """, index='num')
-    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['BAT'], check_dtype=False)
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['BAT'],
+                                  check_dtype=False)
 
     # VSCs
     network = pn.create_four_substations_node_breaker_network()
@@ -717,7 +733,8 @@ num p    min_q    max_q
 0   50    -50     100
 1   60  -100      50
 """, index='num')
-    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['VSC1'], check_dtype=False)
+    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['VSC1'],
+                                  check_dtype=False)
 
 
 def test_delete_elements_eurostag():
@@ -758,7 +775,7 @@ def test_remove_elements_switches():
     net = pypowsybl.network.create_four_substations_node_breaker_network()
     net.remove_elements(['S1VL1_BBS_LD1_DISCONNECTOR', 'S1VL1_LD1_BREAKER', 'TWT', 'HVDC1'])
     # TODO: restore it when bug fixed in powsybl-core
-    #net.remove_elements(['S1VL1', 'S1'])
+    # net.remove_elements(['S1VL1', 'S1'])
     assert 'S1VL1_BBS_LD1_DISCONNECTOR' not in net.get_switches().index
     assert 'S1VL1_LD1_BREAKER' not in net.get_switches().index
     assert 'HVDC1' not in net.get_hvdc_lines().index
