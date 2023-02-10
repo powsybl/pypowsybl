@@ -5115,12 +5115,12 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
 
     """
     metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)
-    c_dfs = _get_c_dataframes_and_add_voltage_level_id(network, dfs, metadata, **kwargs)
+    c_dfs = _get_c_dataframes_and_add_voltage_level_id(dfs, metadata, **kwargs)
     _pp.create_feeder_bay(network._handle, raise_exception, None if reporter is None else reporter._reporter_model,
                           c_dfs, element_type)
 
 
-def _get_c_dataframes_and_add_voltage_level_id(network: Network, dfs: _List[_Optional[_DataFrame]],
+def _get_c_dataframes_and_add_voltage_level_id(dfs: _List[_Optional[_DataFrame]],
                                                metadata: _List[_List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> \
         _List[_Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
