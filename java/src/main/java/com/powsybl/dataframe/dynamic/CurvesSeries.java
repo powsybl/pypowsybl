@@ -12,6 +12,9 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
+/**
+ * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ */
 public final class CurvesSeries {
 
     private CurvesSeries() {

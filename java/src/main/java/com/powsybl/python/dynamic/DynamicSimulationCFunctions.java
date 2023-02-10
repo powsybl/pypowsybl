@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -43,6 +43,9 @@ import com.powsybl.python.network.NetworkCFunctions;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
+/**
+ * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ */
 @CContext(Directives.class)
 public final class DynamicSimulationCFunctions {
 
