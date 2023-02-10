@@ -407,3 +407,53 @@ def test_add_vsc_bay():
     assert position.order == 15
     assert position.feeder_name == 'vsc_test'
     assert position.direction == 'BOTTOM'
+
+
+def test_create_coupling_device():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+    ])
+    n.create_busbar_sections(busbars)
+    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
+                        section_index=[1, 1, 1])
+    assert len(n.get_switches().index) == 0
+    coupling_device = pd.DataFrame.from_records(index='busbar_section_id_1', data=[
+        {'busbar_section_id_1': 'BBS1', 'busbar_section_id_2': 'BBS2'},
+    ])
+    pp.network.create_coupling_device(n, coupling_device)
+    switches = n.get_switches()
+    assert len(switches.index) == 7
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == False].index) == 3
+
+
+def test_create_coupling_device_kwargs():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                                  nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+    ])
+    n.create_busbar_sections(busbars)
+    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
+                        section_index=[1, 1, 1])
+    assert len(n.get_switches().index) == 0
+    pp.network.create_coupling_device(n, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
+    switches = n.get_switches()
+    assert len(switches.index) == 7
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == False].index) == 3
+
