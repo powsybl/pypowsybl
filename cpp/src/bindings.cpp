@@ -290,6 +290,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
                    "Distribute slack on generators, in proportion of target P")
             .value("PROPORTIONAL_TO_GENERATION_P_MAX", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
                    "Distribute slack on generators, in proportion of max P")
+            .value("PROPORTIONAL_TO_GENERATION_REMAINING_MARGIN", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_REMAINING_MARGIN,
+                   "Distribute slack on generators, in proportion of max P - target P")
+            .value("PROPORTIONAL_TO_GENERATION_PARTICIPATION_FACTOR", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_PARTICIPATION_FACTOR,
+                   "Distribute slack on generators, in proportion of participationFactor (see ActivePowerControl extension)")
             .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD,
                    "Distribute slack on loads, in proportion of load")
             .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD,

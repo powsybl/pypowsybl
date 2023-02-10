@@ -2,7 +2,7 @@ package com.powsybl.python.network;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.cgmes.conformity.CgmesConformity1Catalog;
-import com.powsybl.cgmes.model.test.TestGridModelResources;
+import com.powsybl.cgmes.model.GridModelReferenceResources;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Importer;
 import com.powsybl.iidm.network.Network;
@@ -52,7 +52,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
         return FACTORIES;
     }
 
-    private static Network importCgmes(TestGridModelResources modelResources) {
+    private static Network importCgmes(GridModelReferenceResources modelResources) {
         return Importer.find("CGMES")
                 .importData(modelResources.dataSource(), new NetworkFactoryImpl(), null);
     }
