@@ -13,10 +13,7 @@ import com.powsybl.entsoe.util.EntsoeGeographicalCode;
 import com.powsybl.entsoe.util.MergedXnode;
 import com.powsybl.entsoe.util.Xnode;
 import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
-import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategory;
-import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
+import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
@@ -482,5 +479,31 @@ class NetworkElementAddersTest {
         extension = s.getExtension(EntsoeArea.class);
         assertNotNull(extension);
         assertEquals(EntsoeGeographicalCode.valueOf(code), extension.getCode());
+    }
+
+    @Test
+    void secondaryVoltageControlExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String zoneName = "test";
+        String controlUnitId = "GEN";
+        String busId = "NHV1";
+
+        SecondaryVoltageControl extension = network.getExtension(SecondaryVoltageControl.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe zoneDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(zoneDataframe, "name", zoneName);
+        addDoubleColumn(zoneDataframe, "target_v", 15d);
+        addStringColumn(zoneDataframe, "bus_ids", busId);
+
+        DefaultUpdatingDataframe unitDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(unitDataframe, "unit_id", controlUnitId);
+        addIntColumn(unitDataframe, "participate", 1);
+        addStringColumn(unitDataframe, "zone_name", zoneName);
+
+        List<UpdatingDataframe> dataframes = List.of(zoneDataframe, unitDataframe);
+        NetworkElementAdders.addExtensions("secondaryVoltageControl", network, dataframes);
+        extension = network.getExtension(SecondaryVoltageControl.class);
+        assertNotNull(extension);
     }
 }

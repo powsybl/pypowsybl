@@ -3028,12 +3028,13 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
-    def update_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "", **kwargs: _ArrayLike) -> None:
         """
         Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
         Args:
             extension_name: name of the extension
+            table_name: for multiple dataframes extensions, to precise which dataframe to modify
             df: the data to be updated
             kwargs: the data to be updated, as named arguments.
                     Arguments can be single values or any type of sequence.
@@ -3042,18 +3043,19 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The id column in the dataframe provides the link to the extensions parent elements
         """
-        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name)
+        metadata = _pp.get_network_extensions_dataframe_metadata(extension_name, table_name)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        _pp.update_extensions(self._handle, extension_name, c_df)
+        _pp.update_extensions(self._handle, extension_name, table_name, c_df)
 
-    def create_extensions(self, extension_name: str, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+    def create_extensions(self, extension_name: str, df: _Union[_DataFrame, _List[_Optional[_DataFrame]]] = None, **kwargs: _ArrayLike) -> None:
         """
         create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
         Args:
             extension_name: name of the extension
             dfs: the data to be created
+                 A single dataframe or a list of dataframes can be given as arguments
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
                     In the case of sequences, all arguments must have the same length.
@@ -3061,7 +3063,9 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The id column in the dataframe provides the link to the extensions parent elements
         """
-        self._create_extensions(extension_name, [df], **kwargs)
+        if not isinstance(df, _List):
+            df = [df]
+        self._create_extensions(extension_name, df, **kwargs)
 
     def get_working_variant_id(self) -> str:
         """
@@ -4276,12 +4280,14 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
 
-    def get_extensions(self, extension_name: str) -> _DataFrame:
+    def get_extensions(self, extension_name: str, table_name: str = "") -> _DataFrame:
         """
         Get an extension as a :class:`~pandas.DataFrame` for a specified extension name.
 
         Args:
             extension_name: name of the extension
+            table_name: optional argument to choose the name of the dataframe to
+                        retrieve for extensions using multiple dataframes
 
         Returns:
             A dataframe with the extensions data.
@@ -4290,7 +4296,7 @@ class Network:  # pylint: disable=too-many-public-methods
             The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
         return _create_data_frame_from_series_array(
-            _pp.create_network_elements_extension_series_array(self._handle, extension_name))
+            _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> _DataFrame:
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)

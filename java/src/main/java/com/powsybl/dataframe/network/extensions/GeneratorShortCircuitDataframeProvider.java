@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class GeneratorShortCircuitDataframeProvider implements NetworkExtensionDataframeProvider {
+public class GeneratorShortCircuitDataframeProvider extends AbstractSingleDataframeNetworkExtension {
     @Override
     public String getExtensionName() {
         return GeneratorShortCircuit.NAME;

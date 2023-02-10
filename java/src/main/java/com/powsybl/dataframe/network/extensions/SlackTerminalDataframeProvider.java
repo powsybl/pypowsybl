@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class SlackTerminalDataframeProvider implements NetworkExtensionDataframeProvider {
+public class SlackTerminalDataframeProvider extends AbstractSingleDataframeNetworkExtension {
     @Override
     public String getExtensionName() {
         return "slackTerminal";
