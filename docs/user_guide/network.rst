@@ -557,13 +557,14 @@ For example, you can add a line and connect it between **BBS3** and **BBS4**, ri
 .. testcode::
 
     pp.network.create_line_bays(n, id='line2', r=0.1, x=10, g1=0, b1=0, g2=0, b2=0,
-                                            busbar_section_id_1='BBS3',
+                                            bus_or_busbar_section_id_1='BBS3',
                                             position_order_1=25,
                                             direction_1='TOP',
-                                            busbar_section_id_2='BBS4',
+                                            bus_or_busbar_section_id_2='BBS4',
                                             position_order_2=15,
                                             direction_2='TOP')
 
+Here the direction of the line is specified in the argument, but it is optional and by default TOP.
 You can draw the single line diagrams of both voltage levels to check that the line was added correctly:
 
 .. code-block:: python
@@ -587,7 +588,7 @@ transformer must be in the same substation, let's pick VL1. You can create VL3 w
     n.create_voltage_levels(substation_id='S1', id='VL3', topology_kind='NODE_BREAKER', nominal_v=63)
 
 Now voltage level VL3 is created, but it is empty. The next step is to create the topology of the voltage level, i.e. the busbar sections and disconnectors or switches.
-You can use the same methods as to create VL1 and VL2, or use the built-in allowing to create in one line the topology of symmetrical voltage levels.
+You can use the same methods as to create VL1 and VL2, or use the built-in function allowing to create in one line the topology of symmetrical voltage levels.
 Let's create the topology with two busbar sections and three sections with breakers between sections one and two
 and disconnectors between sections two and three. You can do that with:
 
@@ -603,14 +604,13 @@ To check that the topology was correctly created, you can draw the single line d
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_only_bbs.svg
 
-Now you can add some coupling devices between each section of the new voltage level. For that, you can use the built-in methods and you just
+Now you can add some coupling devices between each section of the new voltage level. For that, you can use the built-in method and you just
 have to specify the two busbar sections on which the switches should be closed. Open switches will automatically be created on the parallel busbar
 sections:
 
 .. testcode::
 
-    pp.network.create_coupling_device(n, busbar_section_id_1='VL3_1_1', busbar_section_id_2='VL3_1_2')
-    pp.network.create_coupling_device(n, busbar_section_id_1='VL3_2_2', busbar_section_id_2='VL3_2_3')
+    pp.network.create_coupling_device(n, busbar_section_id_1=['VL3_1_1', 'VL3_2_2'], busbar_section_id_2=['VL3_1_2', 'VL3_2_3'])
 
 You can create the single line diagram to check that the coupling devices were well created:
 
