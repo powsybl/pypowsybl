@@ -7,7 +7,7 @@
 package com.powsybl.python.network;
 
 import com.google.common.io.ByteStreams;
-import com.powsybl.commons.TestUtil;
+import com.powsybl.commons.test.TestUtil;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import org.junit.jupiter.api.Test;

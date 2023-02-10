@@ -192,7 +192,6 @@ def test_get_provider_parameters_names():
         'throwsExceptionInCaseOfSlackDistributionFailure',
         'loadPowerFactorConstant',
         'plausibleActivePowerLimit',
-        'addRatioToLinesWithDifferentNominalVoltageAtBothEnds',
         'slackBusPMaxMismatch',
         'voltagePerReactivePowerControl',
         'reactivePowerRemoteControl',
@@ -200,12 +199,21 @@ def test_get_provider_parameters_names():
         'newtonRaphsonConvEpsPerEq',
         'voltageInitModeOverride',
         'transformerVoltageControlMode',
+        'shuntVoltageControlMode',
         'dcPowerFactor',
         'minPlausibleTargetVoltage',
         'maxPlausibleTargetVoltage',
         'minRealisticVoltage',
         'maxRealisticVoltage',
-        'reactiveRangeCheckMode'
+        'reactiveRangeCheckMode',
+        'lowImpedanceThreshold',
+        'networkCacheEnabled',
+        'svcVoltageMonitoring',
+        'stateVectorScalingMode',
+        'maxSlackBusCount',
+        'debugDir',
+        'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
+        'secondaryVoltageControl'
     ]
 
 
