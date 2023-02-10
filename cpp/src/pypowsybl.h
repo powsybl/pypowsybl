@@ -399,7 +399,7 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
-SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName);
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName);
 
 std::vector<std::string> getExtensionsNames();
 
@@ -469,11 +469,11 @@ void addNetworkElementProperties(pypowsybl::JavaHandle network, dataframe* dataf
 
 void removeNetworkElementProperties(pypowsybl::JavaHandle network, const std::vector<std::string>& ids, const std::vector<std::string>& properties);
 
-void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe);
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, std::string& tableName, dataframe* dataframe);
 
 void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids);
 
-std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name);
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name, std::string& tableName);
 
 std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesMetadata(std::string& name);
 

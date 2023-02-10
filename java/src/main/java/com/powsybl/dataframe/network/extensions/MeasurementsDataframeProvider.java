@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class MeasurementsDataframeProvider implements NetworkExtensionDataframeProvider {
+public class MeasurementsDataframeProvider extends AbstractSingleDataframeNetworkExtension {
 
     public static final String ELEMENT_ID = "element_id";
     public static final String ID = "id";

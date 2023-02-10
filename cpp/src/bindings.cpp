@@ -561,7 +561,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
 
     m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
 
@@ -628,11 +628,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
     m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("dataframe"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements", 
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("ids"));
     m.def("get_network_extensions_dataframe_metadata", &pypowsybl::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
-          py::arg("name"));
+          py::arg("name"), py::arg("table_name"));
     m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
     m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", 
