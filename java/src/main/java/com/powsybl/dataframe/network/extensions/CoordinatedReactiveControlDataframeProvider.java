@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
-public class CoordinatedReactiveControlDataframeProvider implements NetworkExtensionDataframeProvider {
+public class CoordinatedReactiveControlDataframeProvider extends AbstractSingleDataframeNetworkExtension {
     @Override
     public String getExtensionName() {
         return CoordinatedReactiveControl.NAME;

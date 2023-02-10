@@ -868,8 +868,8 @@ SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element
     return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
 }
 
-SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName) {
-    return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str()));
+SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName) {
+    return new SeriesArray(callJava<array*>(::createNetworkElementsExtensionSeriesArray, network, (char*) extensionName.c_str(), (char*) tableName.c_str()));
 }
 
 std::vector<std::string> getExtensionsNames() {
@@ -1052,8 +1052,8 @@ std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std
     return providerParameters.get();
 }
 
-void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, dataframe* dataframe) {
-    pypowsybl::callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), dataframe);
+void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, std::string& tableName, dataframe* dataframe) {
+    pypowsybl::callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), (char*) tableName.data(), dataframe);
 }
 
 void removeExtensions(const JavaHandle& network, std::string& name, const std::vector<std::string>& ids) {
@@ -1061,8 +1061,8 @@ void removeExtensions(const JavaHandle& network, std::string& name, const std::v
     pypowsybl::callJava<>(::removeExtensions, network, (char*) name.data(), idsPtr.get(), ids.size());
 }
 
-std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name) {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getExtensionSeriesMetadata, (char*) name.data());
+std::vector<SeriesMetadata> getNetworkExtensionsDataframeMetadata(std::string& name, std::string& tableName) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getExtensionSeriesMetadata, (char*) name.data(), (char*) tableName.data());
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;

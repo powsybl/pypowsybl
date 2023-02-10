@@ -349,10 +349,13 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
                                                                                                            CCharPointer extensionName,
+                                                                                                           CCharPointer cTableName,
                                                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         String name = CTypeUtil.toString(extensionName);
+        String tempName = CTypeUtil.toString(cTableName);
+        String tableName = tempName.isEmpty() ? null : tempName;
         return doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 return Dataframes.createCDataframe(mapper, network);
@@ -667,16 +670,21 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
-                                                                 DataframePointer dataframe,
+                                                                 CCharPointer tableNamePtr, DataframePointer dataframe,
                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             String name = CTypeUtil.toString(namePtr);
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            String tmpName = CTypeUtil.toString(tableNamePtr);
+            String tableName = tmpName.equals("") ? null : tmpName;
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 UpdatingDataframe updatingDataframe = createDataframe(dataframe);
                 mapper.updateSeries(network, updatingDataframe);
             } else {
+                if (tableName != null) {
+                    throw new PowsyblException("table " + tableName + " of extension " + name + " not found");
+                }
                 throw new PowsyblException("extension " + name + " not found");
             }
         });
@@ -696,11 +704,13 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getExtensionSeriesMetadata")
-    public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr,
+    public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr, CCharPointer tableNamePtr,
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String name = CTypeUtil.toString(namePtr);
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name);
+            String tmpName = CTypeUtil.toString(tableNamePtr);
+            String tableName = tmpName.equals("") ? null : tmpName;
+            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
                 return CTypeUtil.createSeriesMetadata(seriesMetadata);

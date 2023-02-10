@@ -332,6 +332,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
                    "Distribute slack on generators, in proportion of target P")
             .value("PROPORTIONAL_TO_GENERATION_P_MAX", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_P_MAX,
                    "Distribute slack on generators, in proportion of max P")
+            .value("PROPORTIONAL_TO_GENERATION_REMAINING_MARGIN", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_REMAINING_MARGIN,
+                   "Distribute slack on generators, in proportion of max P - target P")
+            .value("PROPORTIONAL_TO_GENERATION_PARTICIPATION_FACTOR", pypowsybl::BalanceType::PROPORTIONAL_TO_GENERATION_PARTICIPATION_FACTOR,
+                   "Distribute slack on generators, in proportion of participationFactor (see ActivePowerControl extension)")
             .value("PROPORTIONAL_TO_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_LOAD,
                    "Distribute slack on loads, in proportion of load")
             .value("PROPORTIONAL_TO_CONFORM_LOAD", pypowsybl::BalanceType::PROPORTIONAL_TO_CONFORM_LOAD,
@@ -598,7 +602,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
 
     m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
 
@@ -669,7 +673,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("ids"));
     m.def("get_network_extensions_dataframe_metadata", &pypowsybl::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
-          py::arg("name"));
+          py::arg("name"), py::arg("table_name"));
     m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
     m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name",
