@@ -12,19 +12,17 @@ public abstract class AbstractFeederBaysSeries {
 
     abstract AbstractBranchSeries createTypedSeries(UpdatingDataframe dataframe);
 
-    public CreateBranchFeederBaysBuilder createBuilder(Network n, UpdatingDataframe dataframe) {
+    public CreateBranchFeederBaysBuilder createBuilder(Network n, UpdatingDataframe dataframe, int row) {
         AbstractBranchSeries series = createTypedSeries(dataframe);
         CreateBranchFeederBaysBuilder builder = new CreateBranchFeederBaysBuilder();
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            BranchAdder<?> lAdder = series.create(n, row);
-            builder.withBranchAdder(lAdder);
-            applyIfPresent(dataframe.getStrings("busbar_section_id_1"), row, builder::withBusOrBusbarSectionId1);
-            applyIfPresent(dataframe.getStrings("busbar_section_id_2"), row, builder::withBusOrBusbarSectionId2);
-            applyIfPresent(dataframe.getInts("position_order_1"), row, builder::withPositionOrder1);
-            applyIfPresent(dataframe.getInts("position_order_2"), row, builder::withPositionOrder2);
-            applyIfPresent(dataframe.getStrings("direction_1"), row, ConnectablePosition.Direction.class, builder::withDirection1);
-            applyIfPresent(dataframe.getStrings("direction_2"), row, ConnectablePosition.Direction.class, builder::withDirection2);
-        }
+        BranchAdder<?> lAdder = series.create(n, row);
+        builder.withBranchAdder(lAdder);
+        applyIfPresent(dataframe.getStrings("busbar_section_id_1"), row, builder::withBusOrBusbarSectionId1);
+        applyIfPresent(dataframe.getStrings("busbar_section_id_2"), row, builder::withBusOrBusbarSectionId2);
+        applyIfPresent(dataframe.getInts("position_order_1"), row, builder::withPositionOrder1);
+        applyIfPresent(dataframe.getInts("position_order_2"), row, builder::withPositionOrder2);
+        applyIfPresent(dataframe.getStrings("direction_1"), row, ConnectablePosition.Direction.class, builder::withDirection1);
+        applyIfPresent(dataframe.getStrings("direction_2"), row, ConnectablePosition.Direction.class, builder::withDirection2);
         return builder;
     }
 }

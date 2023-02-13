@@ -222,10 +222,12 @@ public final class NetworkModificationsCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe df = createDataframe(cDataframeLine);
-            FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df);
-            NetworkModification modification = builder.build();
-            modification.apply(network);
+            for (int row = 0; row < df.getRowCount(); row++) {
+                FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
+                CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, df, row);
+                NetworkModification modification = builder.build();
+                modification.apply(network);
+            }
         });
     }
 
@@ -234,12 +236,13 @@ public final class NetworkModificationsCFunctions {
                                                  PyPowsyblApiHeader.DataframePointer cDataframeLine, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-
             UpdatingDataframe df = createDataframe(cDataframeLine);
-            FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
-            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df);
-            NetworkModification modification = builder.build();
-            modification.apply(network);
+            for (int row = 0; row < df.getRowCount(); row++) {
+                FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
+                CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, df, row);
+                NetworkModification modification = builder.build();
+                modification.apply(network);
+            }
         });
     }
 
