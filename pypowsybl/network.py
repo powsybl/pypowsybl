@@ -5410,3 +5410,46 @@ def transform_list_to_str(entry: _Union[str, _List[str]]) -> str:
         return entry.replace(' ', '')
     else:
         raise _pp.PyPowsyblError("argument should be a list of str or a str")
+
+
+def create_coupling_device(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                           reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+    """
+    Creates a coupling device on the network between two busbar sections of a same voltage level.
+
+    Args:
+        network: the network in which the busbar sections are.
+        df: Attributes as a dataframe.
+        raise_exception: an optional boolean indicating if an exception should be raised in case an error occurs during
+        computation.
+        reporter: an optional reporter to store the funtional logs.
+        kwargs: Attributes as keyword arguments.
+
+    Notes:
+        The voltage level containing the busbar sections must be described in node/breaker topology.
+        A closed breaker will be created as well as a closed disconnector on both given busbar sections to connect them.
+        If the topology extensions are present on the busbar sections then on every parallel busbar section, an open
+        disconnectors will be created to connect them to the breaker. If the two given busbar sections are the only two
+        parallel busbar sections, and they have the same section index then, only two closed disconnectors will be
+        created.
+
+        The input dataframe expects these attributes:
+
+        - **busbar_section_id_1**: the identifier of the busbars section on side 1
+        - **busbar_section_id_2**: the identifier of the busbars section on side 2
+        - **switch_prefix_id**: an optional prefix for all the switches
+
+    Examples:
+
+        .. code-block:: python
+
+            pp.network.create_coupling_device(
+                            network, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
+
+    """
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, c_df, NetworkModificationType.CREATE_COUPLING_DEVICE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access

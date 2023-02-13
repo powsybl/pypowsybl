@@ -14,6 +14,7 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.Map;
 
+import static com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType.CREATE_COUPLING_DEVICE;
 import static com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
 
 /**
@@ -25,7 +26,8 @@ public final class NetworkModifications {
     }
 
     private static final Map<DataframeNetworkModificationType, NetworkModification> MODIFICATION = Map.ofEntries(
-            Map.entry(VOLTAGE_LEVEL_TOPOLOGY_CREATION, new VoltageLevelTopologyCreation())
+            Map.entry(VOLTAGE_LEVEL_TOPOLOGY_CREATION, new VoltageLevelTopologyCreation()),
+            Map.entry(CREATE_COUPLING_DEVICE, new CouplingDeviceCreation())
     );
 
     public static NetworkModification getModification(DataframeNetworkModificationType type) {

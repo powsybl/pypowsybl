@@ -331,6 +331,8 @@ public final class Util {
         switch (networkModificationType) {
             case VOLTAGE_LEVEL_TOPOLOGY_CREATION:
                 return DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
+            case CREATE_COUPLING_DEVICE:
+                return DataframeNetworkModificationType.CREATE_COUPLING_DEVICE;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }

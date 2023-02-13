@@ -129,7 +129,6 @@
                                 <artifactItem>
                                     <groupId>com.powsybl</groupId>
                                     <artifactId>powsybl-math-native</artifactId>
-                                    <version>${powsybl-math-native.version}</version>
                                     <destFileName>powsybl-math-native.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>

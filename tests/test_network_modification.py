@@ -407,3 +407,326 @@ def test_add_vsc_bay():
     assert position.order == 15
     assert position.feeder_name == 'vsc_test'
     assert position.direction == 'BOTTOM'
+
+
+def test_create_coupling_device():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+    ])
+    n.create_busbar_sections(busbars)
+    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
+                        section_index=[1, 1, 1])
+    assert len(n.get_switches().index) == 0
+    coupling_device = pd.DataFrame.from_records(index='busbar_section_id_1', data=[
+        {'busbar_section_id_1': 'BBS1', 'busbar_section_id_2': 'BBS2'},
+    ])
+    pp.network.create_coupling_device(n, coupling_device)
+    switches = n.get_switches()
+    assert len(switches.index) == 7
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == False].index) == 3
+
+
+def test_create_coupling_device_kwargs():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                                  nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+    ])
+    n.create_busbar_sections(busbars)
+    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
+                        section_index=[1, 1, 1])
+    assert len(n.get_switches().index) == 0
+    pp.network.create_coupling_device(n, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
+    switches = n.get_switches()
+    assert len(switches.index) == 7
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == False].index) == 3
+
+
+def test_remove_feeder_bay():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    pp.network.create_line_bays(n, df)
+    assert 'new_line' in n.get_lines().index
+    assert 'new_line1_BREAKER' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line2_BREAKER' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' in n.get_switches().index
+    pp.network.remove_feeder_bays(n, 'new_line')
+    assert 'new_line1_BREAKER' not in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
+    assert 'new_line2_BREAKER' not in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
+
+
+def test_create_branch_feeder_bays_line():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    pp.network.create_line_bays(n, df)
+    retrieved_newline = n.get_lines().loc['new_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["g1"] == 20.0
+    assert retrieved_newline["g2"] == 30.0
+    assert retrieved_newline["b1"] == 40.0
+    assert retrieved_newline["b2"] == 50.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
+
+
+def test_create_multiple_branch_feeder_bays_line():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'new_line1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+         'position_order_1': 105, 'position_order_2': 40, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
+         'b2': 50.0},
+        {'id': 'new_line2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+         'position_order_1': 106, 'position_order_2': 45, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
+         'b2': 50.0},
+    ])
+    pp.network.create_line_bays(n, df)
+    new_line_1 = n.get_lines().loc['new_line1']
+    assert new_line_1["connected1"]
+    assert new_line_1["connected2"]
+    position1 = n.get_extensions('position').loc["new_line1"]
+    assert all([a == b for a, b in zip(position1.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position1.feeder_name.values, ['new_line1', 'new_line1'])])
+    assert all([a == b for a, b in zip(position1.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position1.order.values, [105, 40])])
+    new_line_2 = n.get_lines().loc['new_line2']
+    assert new_line_2["connected1"]
+    assert new_line_2["connected2"]
+    position2 = n.get_extensions('position').loc["new_line2"]
+    assert all([a == b for a, b in zip(position2.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position2.feeder_name.values, ['new_line2', 'new_line2'])])
+    assert all([a == b for a, b in zip(position2.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position2.order.values, [106, 45])])
+
+
+def test_create_line_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    assert 'VLTEST' in n.get_voltage_levels().index
+    assert n.get_voltage_levels().loc['VLTEST']['substation_id'] == 'P3'
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    assert 'VLTEST_0' in n.get_bus_breaker_topology('VLTEST').buses.index
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    generators = n.get_generators(all_attributes=True)
+    assert 'GEN3' in generators.index
+    gen3 = generators.loc['GEN3']
+    assert gen3['voltage_level_id'] == 'VLTEST'
+    assert gen3['bus_breaker_bus_id'] == 'VLTEST_0'
+    assert gen3['target_p'] == 100
+    assert gen3['bus_id'] == 'VLTEST_0#0'
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0)
+    retrieved_newline = n.get_lines().loc['test_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["b1"] == 2.0
+    assert retrieved_newline["b2"] == 3.0
+    assert retrieved_newline["g1"] == 4.0
+    assert retrieved_newline["g2"] == 5.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
+
+    # Check splitted line percent
+    retrieved_splittedline1 = n.get_lines().loc['NHV1_NHV2_1_1']
+    assert retrieved_splittedline1["r"] == 2.25
+
+    retrieved_splittedline2 = n.get_lines().loc['NHV1_NHV2_1_2']
+    assert retrieved_splittedline2["r"] == 0.75
+    generators = n.get_generators(all_attributes=True)
+    assert 'GEN3' in generators.index
+    assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
+
+
+def test_revert_create_line_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    assert len(n.get_lines()) == 2
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0)
+    assert len(n.get_lines()) == 4
+
+    pp.network.revert_create_line_on_line(network=n, line_to_be_merged1_id='NHV1_NHV2_1_1',
+                                          line_to_be_merged2_id='NHV1_NHV2_1_2', line_to_be_deleted='test_line',
+                                          merged_line_id='NHV1_NHV2_1')
+    assert len(n.get_lines()) == 2
+
+    retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
+    assert retrieved_line["connected1"]
+    assert retrieved_line["connected2"]
+
+
+def test_create_branch_feeder_bays_twt():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_twt'],
+                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
+                               'rated_u2', 'rated_s'],
+                      data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
+                             400.0, 1.0]])
+    pp.network.create_2_windings_transformer_bays(n, df)
+    retrieved_newtwt = n.get_2_windings_transformers().loc['new_twt']
+    assert retrieved_newtwt["r"] == 5.0
+    assert retrieved_newtwt["x"] == 50.0
+    assert retrieved_newtwt["g"] == 2.0
+    assert retrieved_newtwt["b"] == 4.0
+    assert retrieved_newtwt["rated_u1"] == 225.0
+    assert retrieved_newtwt["rated_u2"] == 400.0
+    assert retrieved_newtwt["rated_s"] == 1.0
+
+
+def test_create_multiple_branch_feeder_bays_twt():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    two_windings_transformers = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'new_twt1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+         'position_order_1': 105, 'position_order_2': 50, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
+         'rated_u2': 50.0, 'rated_s': 60.0},
+        {'id': 'new_twt2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+         'position_order_1': 106, 'position_order_2': 51, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
+         'rated_u2': 50.0, 'rated_s': 60.0},
+    ])
+    pp.network.create_2_windings_transformer_bays(n, two_windings_transformers)
+    new_twt_1 = n.get_2_windings_transformers().loc['new_twt1']
+    assert new_twt_1["r"] == 5.0
+    assert new_twt_1["x"] == 50.0
+    assert new_twt_1["g"] == 20.0
+    assert new_twt_1["b"] == 30.0
+    assert new_twt_1["rated_u1"] == 40.0
+    assert new_twt_1["rated_u2"] == 50.0
+    assert new_twt_1["rated_s"] == 60.0
+    position1 = n.get_extensions('position').loc["new_twt1"]
+    assert all([a == b for a, b in zip(position1.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position1.feeder_name.values, ['new_twt1', 'new_twt1'])])
+    assert all([a == b for a, b in zip(position1.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position1.order.values, [105, 50])])
+    new_twt_2 = n.get_2_windings_transformers().loc['new_twt2']
+    assert new_twt_2["r"] == 5.0
+    assert new_twt_2["x"] == 50.0
+    assert new_twt_2["g"] == 20.0
+    assert new_twt_2["b"] == 30.0
+    assert new_twt_2["rated_u1"] == 40.0
+    assert new_twt_2["rated_u2"] == 50.0
+    assert new_twt_2["rated_s"] == 60.0
+    position2 = n.get_extensions('position').loc["new_twt2"]
+    assert all([a == b for a, b in zip(position2.side.values, ['ONE', 'TWO'])])
+    assert all([a == b for a, b in zip(position2.feeder_name.values, ['new_twt2', 'new_twt2'])])
+    assert all([a == b for a, b in zip(position2.direction.values, ['TOP', 'TOP'])])
+    assert all([a == b for a, b in zip(position2.order.values, [106, 51])])
+
+
+def test_connect_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+
+    retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level2_id"] == "N_VL"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "r"] == 2.25
+
+    retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
+
+def test_revert_connect_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
+
+    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+
+    assert len(n.get_lines()) == 3
+
+    pp.network.revert_connect_voltage_level_on_line(network=n, line1_id='NHV1_NHV2_1_1', line2_id='NHV1_NHV2_1_2',
+                                                    line_id='NHV1_NHV2_1')
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
+
+
+def test_replace_tee_point_by_voltage_level_on_line():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    generators = n.get_generators(all_attributes=True)
+    gen3 = generators.loc['GEN3']
+
+    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0)
+
+    assert len(n.get_lines()) == 4
+
+    pp.network.replace_tee_point_by_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'VLTEST_0',
+                                                          'NewLine1', 'NewLine2')
+
+    # Remove test_line and replace NHV1_NHV2_1_1 and NHV1_NHV2_1_2 by NewLine1 and NewLine2
+    assert len(n.get_lines()) == 3
+
+    retrieved_newline1 = n.get_lines().loc['NewLine1']
+    assert retrieved_newline1["connected1"]
+    assert retrieved_newline1["connected2"]
+
+    retrieved_newline2 = n.get_lines().loc['NewLine1']
+    assert retrieved_newline2["connected1"]
+    assert retrieved_newline2["connected2"]
+
+    assert 'test_line' not in n.get_lines().index
