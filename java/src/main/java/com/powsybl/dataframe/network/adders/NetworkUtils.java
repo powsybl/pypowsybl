@@ -28,7 +28,7 @@ public final class NetworkUtils {
 
     public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections) {
         if (voltageLevels == null) {
-            if (busOrBusbarSections.get(row) != null) {
+            if (busOrBusbarSections != null) {
                 Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
                 if (busOrBusbarSection == null) {
                     throw new PowsyblException(String.format("Bus or busbar section %s not found.", busOrBusbarSections.get(row)));
