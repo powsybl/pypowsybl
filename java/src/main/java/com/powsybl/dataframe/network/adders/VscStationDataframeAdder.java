@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -19,7 +18,7 @@ import com.powsybl.iidm.network.VscConverterStationAdder;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -41,7 +40,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("loss_factor"),
             SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -58,21 +57,20 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
         private final IntSeries voltageRegulatorOn;
+        private final StringSeries busOrBusbarSections;
 
         VscStationSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.lossFactors = dataframe.getDoubles("loss_factor");
             this.targetV = dataframe.getDoubles("target_v");
             this.targetQ = dataframe.getDoubles("target_q");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         VscConverterStationAdder createAdder(Network network, int row) {
-            VscConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            VscConverterStationAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newVscConverterStation();
             setInjectionAttributes(adder, row);
             applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));

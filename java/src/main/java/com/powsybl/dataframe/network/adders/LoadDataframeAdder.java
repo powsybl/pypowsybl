@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -19,7 +18,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -39,7 +38,7 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("type"),
             SeriesMetadata.doubles("p0"),
             SeriesMetadata.doubles("q0"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -55,21 +54,19 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries p0;
         private final DoubleSeries q0;
         private final StringSeries type;
+        private final StringSeries busOrBusbarSections;
 
         LoadSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.p0 = dataframe.getDoubles("p0");
             this.q0 = dataframe.getDoubles("q0");
             this.type = dataframe.getStrings("type");
-
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         LoadAdder createAdder(Network network, int row) {
-            LoadAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            LoadAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newLoad();
             setInjectionAttributes(adder, row);
             applyIfPresent(p0, row, adder::setP0);

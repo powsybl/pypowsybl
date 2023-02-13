@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -18,7 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -39,7 +38,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
             SeriesMetadata.doubles("target_q"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
 
@@ -57,21 +56,20 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries minP;
         private final DoubleSeries targetP;
         private final DoubleSeries targetQ;
+        private final StringSeries busOrBusbarSections;
 
         BatterySeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.maxP = dataframe.getDoubles("max_p");
             this.minP = dataframe.getDoubles("min_p");
             this.targetP = dataframe.getDoubles("target_p");
             this.targetQ = dataframe.getDoubles("target_q");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         BatteryAdder createAdder(Network network, int row) {
-            BatteryAdder batteryAdder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            BatteryAdder batteryAdder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newBattery();
             setInjectionAttributes(batteryAdder, row);
             applyIfPresent(maxP, row, batteryAdder::setMaxP);

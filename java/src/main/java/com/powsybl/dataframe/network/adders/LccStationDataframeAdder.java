@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -18,7 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -37,7 +36,7 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("power_factor"),
             SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -52,19 +51,18 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries voltageLevels;
         private final DoubleSeries powerFactors;
         private final DoubleSeries lossFactors;
+        private final StringSeries busOrBusbarSections;
 
         LccStationSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.powerFactors = dataframe.getDoubles("power_factor");
             this.lossFactors = dataframe.getDoubles("loss_factor");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         LccConverterStationAdder createAdder(Network network, int row) {
-            LccConverterStationAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            LccConverterStationAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newLccConverterStation();
             setInjectionAttributes(adder, row);
             applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
