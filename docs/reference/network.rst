@@ -262,6 +262,8 @@ Advanced network modifications
    replace_tee_point_by_voltage_level_on_line
    revert_connect_voltage_level_on_line
    create_voltage_level_topology
+   create_coupling_device
+
 
 Utility functions
 -----------------

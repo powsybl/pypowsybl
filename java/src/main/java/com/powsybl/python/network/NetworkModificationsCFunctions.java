@@ -8,11 +8,11 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
 import com.powsybl.dataframe.network.adders.FeederBaysTwtSeries;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.NetworkModification;
@@ -33,6 +33,7 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsAfter;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getUnusedOrderPositionsBefore;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getFeedersByConnectable;
@@ -277,7 +278,16 @@ public final class NetworkModificationsCFunctions {
                 return createIntegerArray(Collections.emptyList());
             }
         });
+    }
 
+    static CreateCouplingDeviceBuilder createCouplingDeviceBuilder(UpdatingDataframe df) {
+        CreateCouplingDeviceBuilder builder = new CreateCouplingDeviceBuilder();
+        for (int row = 0; row < df.getRowCount(); row++) {
+            applyIfPresent(df.getStrings("busbar_section_id_1"), row, builder::withBusbarSectionId1);
+            applyIfPresent(df.getStrings("busbar_section_id_2"), row, builder::withBusbarSectionId2);
+            applyIfPresent(df.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
+        }
+        return builder;
     }
 
     @CEntryPoint(name = "createNetworkModification")
