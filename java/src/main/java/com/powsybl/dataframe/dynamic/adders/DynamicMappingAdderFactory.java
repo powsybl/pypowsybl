@@ -27,6 +27,7 @@ public final class DynamicMappingAdderFactory {
                     new GeneratorSynchronousFourWindingsAdder()),
             Map.entry(DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
                     new GeneratorSynchronousFourWindingsProportionalRegulationsAdder()),
+            Map.entry(DynamicMappingType.GENERATOR_SYNCHRONOUS, new GeneratorSynchronousAdder()),
             Map.entry(DynamicMappingType.CURRENT_LIMIT_AUTOMATON, new CurrentLimitAutomatonAdder()));
 
     public static DynamicMappingAdder getAdder(DynamicMappingType type) {

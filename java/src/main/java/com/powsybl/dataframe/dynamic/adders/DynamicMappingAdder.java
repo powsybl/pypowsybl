@@ -26,7 +26,7 @@ public interface DynamicMappingAdder {
     /**
      * Adds elements to the dynamic model mapping, based on a list of dataframes.
      * The first dataframe is considered the "primary" dataframe, other dataframes
-     * can provide additional data (think steps for the tap changers).
+     * can provide additional data.
      */
     void addElements(DynamicModelMapper modelMapping, UpdatingDataframe dataframe);
 

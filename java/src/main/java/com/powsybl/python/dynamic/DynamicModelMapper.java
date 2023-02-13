@@ -14,13 +14,10 @@ import java.util.stream.Collectors;
 
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynawaltz.automatons.CurrentLimitAutomaton;
-import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousFourWindings;
-import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousFourWindingsProportionalRegulations;
-import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindings;
-import com.powsybl.dynawaltz.dynamicmodels.GeneratorSynchronousThreeWindingsProportionalRegulations;
-import com.powsybl.dynawaltz.dynamicmodels.LoadAlphaBeta;
-import com.powsybl.dynawaltz.dynamicmodels.LoadOneTransformer;
+import com.powsybl.dynawaltz.models.automatons.CurrentLimitAutomaton;
+import com.powsybl.dynawaltz.models.generators.GeneratorSynchronous;
+import com.powsybl.dynawaltz.models.loads.LoadAlphaBeta;
+import com.powsybl.dynawaltz.models.loads.LoadOneTransformer;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 
@@ -57,22 +54,24 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
         dynamicModelList.add(() -> new LoadOneTransformer(staticId, staticId, parametersIds));
     }
 
+    public void addGeneratorSynchronous(String staticId, String parametersIds, String generatorLib) {
+        dynamicModelList.add(() -> new GeneratorSynchronous(staticId, staticId, parametersIds, generatorLib));
+    }
+
     public void addGeneratorSynchronousThreeWindings(String staticId, String parametersIds) {
-        dynamicModelList.add(() -> new GeneratorSynchronousThreeWindings(staticId, staticId, parametersIds));
+        addGeneratorSynchronous(staticId, parametersIds, "ThreeWindings");
     }
 
     public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parametersIds) {
-        dynamicModelList.add(
-            () -> new GeneratorSynchronousThreeWindingsProportionalRegulations(staticId, staticId, parametersIds));
+        addGeneratorSynchronous(staticId, parametersIds, "ThreeWindingsProportionalRegulations");
     }
 
     public void addGeneratorSynchronousFourWindings(String staticId, String parametersIds) {
-        dynamicModelList.add(() -> new GeneratorSynchronousFourWindings(staticId, staticId, parametersIds));
+        addGeneratorSynchronous(staticId, parametersIds, "FourWindings");
     }
 
     public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parametersIds) {
-        dynamicModelList.add(
-            () -> new GeneratorSynchronousFourWindingsProportionalRegulations(staticId, staticId, parametersIds));
+        addGeneratorSynchronous(staticId, parametersIds, "FourWindingsProportionalRegulations");
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parametersIds, Branch.Side side) {
