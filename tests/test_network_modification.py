@@ -697,7 +697,7 @@ def test_create_coupling_device_kwargs():
 def test_remove_feeder_bay():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_line'],
-                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
                       data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
                              50.0]])
@@ -717,7 +717,7 @@ def test_remove_feeder_bay():
 def test_create_branch_feeder_bays_line():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_line'],
-                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
                       data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
                              50.0]])
@@ -736,10 +736,10 @@ def test_create_branch_feeder_bays_line():
 def test_create_multiple_branch_feeder_bays_line():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(index='id', data=[
-        {'id': 'new_line1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+        {'id': 'new_line1', 'bus_or_busbar_section_id_1': 'S1VL2_BBS1', 'bus_or_busbar_section_id_2': 'S2VL1_BBS',
          'position_order_1': 105, 'position_order_2': 40, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
          'b2': 50.0},
-        {'id': 'new_line2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S2VL1_BBS',
+        {'id': 'new_line2', 'bus_or_busbar_section_id_1': 'S1VL2_BBS1', 'bus_or_busbar_section_id_2': 'S2VL1_BBS',
          'position_order_1': 106, 'position_order_2': 45, 'r': 5.0, 'x': 50.0, 'g1': 20.0, 'b1': 30.0, 'g2': 40.0,
          'b2': 50.0},
     ])
@@ -836,7 +836,7 @@ def test_revert_create_line_on_line():
 def test_create_branch_feeder_bays_twt():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_twt'],
-                      columns=['id', 'busbar_section_id_1', 'busbar_section_id_2', 'position_order_1',
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
                                'rated_u2', 'rated_s'],
                       data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS1', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
@@ -855,10 +855,10 @@ def test_create_branch_feeder_bays_twt():
 def test_create_multiple_branch_feeder_bays_twt():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     two_windings_transformers = pd.DataFrame.from_records(index='id', data=[
-        {'id': 'new_twt1', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+        {'id': 'new_twt1', 'bus_or_busbar_section_id_1': 'S1VL2_BBS1', 'bus_or_busbar_section_id_2': 'S1VL1_BBS',
          'position_order_1': 105, 'position_order_2': 50, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
          'rated_u2': 50.0, 'rated_s': 60.0},
-        {'id': 'new_twt2', 'busbar_section_id_1': 'S1VL2_BBS1', 'busbar_section_id_2': 'S1VL1_BBS',
+        {'id': 'new_twt2', 'bus_or_busbar_section_id_1': 'S1VL2_BBS1', 'bus_or_busbar_section_id_2': 'S1VL1_BBS',
          'position_order_1': 106, 'position_order_2': 51, 'r': 5.0, 'x': 50.0, 'g': 20.0, 'b': 30.0, 'rated_u1': 40.0,
          'rated_u2': 50.0, 'rated_s': 60.0},
     ])
