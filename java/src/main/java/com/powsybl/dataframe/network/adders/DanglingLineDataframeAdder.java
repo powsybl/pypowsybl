@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -18,7 +17,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -41,7 +40,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("x"),
             SeriesMetadata.doubles("g"),
             SeriesMetadata.doubles("b"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -60,23 +59,22 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries x;
         private final DoubleSeries g;
         private final DoubleSeries b;
+        private final StringSeries busOrBusbarSections;
 
         DanglingLineSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.p0 = dataframe.getDoubles("p0");
             this.q0 = dataframe.getDoubles("q0");
             this.r = dataframe.getDoubles("r");
             this.x = dataframe.getDoubles("x");
             this.g = dataframe.getDoubles("g");
             this.b = dataframe.getDoubles("b");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         DanglingLineAdder createAdder(Network network, int row) {
-            DanglingLineAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            DanglingLineAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newDanglingLine();
             setInjectionAttributes(adder, row);
             applyIfPresent(p0, row, adder::setP0);
