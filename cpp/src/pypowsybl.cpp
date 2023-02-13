@@ -1285,6 +1285,7 @@ void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::stri
 JavaHandle createDynamicSimulationContext() {
     return callJava<JavaHandle>(::createDynamicSimulationContext);
 }
+
 JavaHandle createDynamicModelMapping() {
     return callJava<JavaHandle>(::createDynamicModelMapping);
 }
@@ -1309,12 +1310,12 @@ void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string 
     callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
-void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
-    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
+void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
+    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
 }
 
-void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, std::string parameterSetId) {
-    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), (char*) parameterSetId.c_str());
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent) {
+    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, stateEvent);
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {

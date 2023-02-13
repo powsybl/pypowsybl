@@ -147,15 +147,16 @@ public final class DynamicSimulationCFunctions {
             ObjectHandle eventSupplierHandle,
             CCharPointer eventModelIdPtr,
             CCharPointer staticIdPtr,
-            CCharPointer parameterSetIdPtr,
+            double eventTime,
+            boolean disconnectOrigin,
+            boolean disconnectExtremity,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             String eventModelId = CTypeUtil.toString(eventModelIdPtr);
             String staticId = CTypeUtil.toString(staticIdPtr);
-            String parameterSetId = CTypeUtil.toString(parameterSetIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
             eventSupplier.addEventBranchDisconnection(eventModelId,
-                    staticId, parameterSetId);
+                    staticId, eventTime, disconnectOrigin, disconnectExtremity);
         });
     }
 
@@ -164,15 +165,15 @@ public final class DynamicSimulationCFunctions {
             ObjectHandle eventSupplierHandle,
             CCharPointer eventModelIdPtr,
             CCharPointer staticIdPtr,
-            CCharPointer parameterSetIdPtr,
+            double eventTime,
+            boolean stateEvent,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             String eventModelId = CTypeUtil.toString(eventModelIdPtr);
             String staticId = CTypeUtil.toString(staticIdPtr);
-            String parameterSetId = CTypeUtil.toString(parameterSetIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
             eventSupplier.addEventSetPointBoolean(eventModelId, staticId,
-                    parameterSetId);
+                    eventTime, stateEvent);
         });
     }
 

@@ -162,54 +162,30 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_branch_disconnection(self, event_model_id: str, static_id: str, parameter_set_id: str) -> None:
+    def add_branch_disconnection(self, event_model_id: str, static_id: str, eventTime: float, disconnectOrigin: bool, disconnectExtremity: bool) -> None:
         """ Creates a branch disconnection event
 
         Args:
             event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
-            parameter_set_id (str): dynawaltz parameter id
+            eventTime (float): timestep at which the event happens
+            disconnectOrigin (bool) : the disconnection is made at the origin
+            disconnectExtremity (bool) : the disconnection is made at the extremity
         """
         _pp.add_event_branch_disconnection(
-            self._handle, event_model_id, static_id, parameter_set_id)
+            self._handle, event_model_id, static_id, eventTime, disconnectOrigin, disconnectExtremity)
 
-    def add_set_point_boolean(self, event_model_id: str, static_id: str, parameter_set_id: str) -> None:
+    def add_set_point_boolean(self, event_model_id: str, static_id: str, eventTime: float, stateEvent: bool) -> None:
         """ Creates a generator disconnection event
 
         Args:
             event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
-            parameter_set_id (str): dynawaltz parameter id
+            eventTime (float): timestep at which the event happens
+            stateEvent (bool): TODO
         """
         _pp.add_event_set_point_boolean(
-            self._handle, event_model_id, static_id, parameter_set_id)
-
-    def add_event(self, parameter_set_id: str, event: EventType, static_id: str, event_id: str = None) -> None:
-        """generic add event method
-
-        Args:
-            parameter_set_id (str): dynawaltz parameter id
-            event (EventType): Type of the event
-            static_id (str): network element to disconnect
-            event_id (str, optional): unique id of the event.
-
-        Raises:
-            Exception: If an unknown event is provided
-        """
-        if not event_id:
-            event_id = str(uuid4())
-
-        if event is EventType.BRANCH_DISCONNECTION:
-            _pp.add_event_branch_disconnection(
-                self._handle, event_id, static_id, parameter_set_id)
-            return
-        if event is EventType.SET_POINT_BOOLEAN:
-            _pp.add_event_set_point_boolean(
-                self._handle, event_id, static_id, parameter_set_id)
-            return
-
-        raise Exception(
-            f"Pypowsybl-DynamicSimulationError: Unknown event {event}")
+            self._handle, event_model_id, static_id, eventTime, stateEvent)
 
     @staticmethod
     def get_possible_events() -> _List[EventType]:

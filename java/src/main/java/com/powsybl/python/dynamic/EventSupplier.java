@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawaltz.events.EventQuadripoleDisconnection;
-import com.powsybl.dynawaltz.events.EventSetPointBoolean;
+import com.powsybl.dynawaltz.models.events.EventQuadripoleDisconnection;
+import com.powsybl.dynawaltz.models.events.EventSetPointBoolean;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -34,8 +34,10 @@ public class EventSupplier implements EventModelsSupplier {
      * <p>
      * The event represent the disconnection the given line/transformer
      */
-    public void addEventBranchDisconnection(String eventModelId, String staticId, String parameterSetId) {
-        this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, parameterSetId));
+    public void addEventBranchDisconnection(String eventModelId, String staticId, double eventTime,
+            boolean disconnectOrigin, boolean disconnectExtremity) {
+        this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, eventTime,
+                disconnectOrigin, disconnectExtremity));
     }
 
     /**
@@ -43,8 +45,9 @@ public class EventSupplier implements EventModelsSupplier {
      * <p>
      * The event represent the disconnection of the given generator
      */
-    public void addEventSetPointBoolean(String eventModelId, String staticId, String parameterSetId) {
-        this.eventSupplierList.add(() -> new EventSetPointBoolean(eventModelId, staticId, parameterSetId));
+    public void addEventSetPointBoolean(String eventModelId, String staticId, double eventTime, boolean stateEvent) {
+        this.eventSupplierList
+                .add(() -> new EventSetPointBoolean(eventModelId, staticId, eventTime, stateEvent));
     }
 
     @Override

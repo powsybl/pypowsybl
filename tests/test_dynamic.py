@@ -15,9 +15,6 @@ def set_up():
     pp.set_config_read(False)
 
 
-# TODO: Define a small but meaningful IIDM file as string and parse it on set up
-
-
 def test_get_possible_events():
     assert set(dyn.EventMapping.get_possible_events()) == set([dyn.EventType.BRANCH_DISCONNECTION,
                                                                dyn.EventType.SET_POINT_BOOLEAN])
@@ -55,12 +52,12 @@ def test_dataframe_mapping():
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_event("EQD", dyn.EventType.BRANCH_DISCONNECTION,
-                     "test_quadripole_id")
-    events.add_event("test_parameter_event", dyn.EventType.SET_POINT_BOOLEAN,
-                     "test_generator_id")
-    events.add_event("test_parameter_event", dyn.EventType.SET_POINT_BOOLEAN,
-                     "test_generator_id", "one_event_id")
+    events.add_branch_disconnection(
+        "event_id_1", "test_quadripole_id", 5, True, False)
+    events.add_set_point_boolean(
+        "event_id_2", "test_generator_id", 3.3, True)
+    events.add_set_point_boolean(
+        "event_id_3", "test_generator_id", 8.2, False)
 
 
 def test_add_curve():
