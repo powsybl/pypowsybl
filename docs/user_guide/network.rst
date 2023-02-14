@@ -627,8 +627,8 @@ transformer must be given for both ends and it is possible to indicate the direc
 .. testcode::
 
     pp.network.create_2_windings_transformer_bays(n, id='two_windings_transformer', b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=225, rated_u2=63,
-                busbar_section_id_1='BBS1', position_order_1=35, direction_1='BOTTOM',
-                busbar_section_id_2='VL3_1_1', position_order_2=5, direction_2='TOP')
+                bus_or_busbar_section_id_1='BBS1', position_order_1=35, direction_1='BOTTOM',
+                bus_or_busbar_section_id_2='VL3_1_1', position_order_2=5, direction_2='TOP')
 
 Let's draw the single line diagrams of VL1 and of VL3 to check that the two windings transformer is where it should be:
 
