@@ -5,9 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-import os
 from enum import Enum as _Enum
-from uuid import uuid4
 from typing import List as _List, Union as _Union
 import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
@@ -36,7 +34,7 @@ class ModelMapping:
                                       parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.ALPHA_BETA_LOAD)
 
-    def add_one_transformer_load(self, static_id: str, dynamic_param: str) -> None:
+    def add_one_transformer_load(self, static_id: str, parameter_set_id: str) -> None:
         """
         Add a one transformer load mapping
 
@@ -44,10 +42,10 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.ONE_TRANSFORMER_LOAD)
 
-    def add_generator_synchronous_three_windings(self, static_id: str, dynamic_param: str) -> None:
+    def add_generator_synchronous_three_windings(self, static_id: str, parameter_set_id: str) -> None:
         """
         Add a generator synchronous three windings mapping
 
@@ -55,10 +53,10 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
 
-    def add_generator_synchronous_three_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
+    def add_generator_synchronous_three_windings_proportional_regulations(self, static_id: str, parameter_set_id: str) -> None:
         """
         Add a generator synchronous three windings proportional regulations mapping
 
@@ -66,10 +64,10 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
 
-    def add_generator_synchronous_four_windings(self, static_id: str, dynamic_param: str) -> None:
+    def add_generator_synchronous_four_windings(self, static_id: str, parameter_set_id: str) -> None:
         """
         Add a generator synchronous four windings mapping
 
@@ -77,10 +75,10 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
 
-    def add_generator_synchronous_four_windings_proportional_regulations(self, static_id: str, dynamic_param: str) -> None:
+    def add_generator_synchronous_four_windings_proportional_regulations(self, static_id: str, parameter_set_id: str) -> None:
         """
         Add a generator synchronous four windings proportional regulations mapping
 
@@ -88,10 +86,10 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
 
-    def add_current_limit_automaton(self, static_id: str, dynamic_param: str, branch_side: BranchSide) -> None:
+    def add_current_limit_automaton(self, static_id: str, parameter_set_id: str, branch_side: BranchSide) -> None:
         """
         Add a current limit automaton mapping
 
@@ -99,7 +97,7 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=dynamic_param,
+                                      parameter_set_id=parameter_set_id,
                                       branch_side=branch_side,
                                       mapping_type=DynamicMappingType.CURRENT_LIMIT_AUTOMATON)
 
@@ -162,30 +160,30 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_branch_disconnection(self, event_model_id: str, static_id: str, eventTime: float, disconnectOrigin: bool, disconnectExtremity: bool) -> None:
+    def add_branch_disconnection(self, event_model_id: str, static_id: str, event_time: float, disconnect_origin: bool, disconnect_extremity: bool) -> None:
         """ Creates a branch disconnection event
 
         Args:
             event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
-            eventTime (float): timestep at which the event happens
-            disconnectOrigin (bool) : the disconnection is made at the origin
-            disconnectExtremity (bool) : the disconnection is made at the extremity
+            event_time (float): timestep at which the event happens
+            disconnect_origin (bool) : the disconnection is made at the origin
+            disconnect_extremity (bool) : the disconnection is made at the extremity
         """
         _pp.add_event_branch_disconnection(
-            self._handle, event_model_id, static_id, eventTime, disconnectOrigin, disconnectExtremity)
+            self._handle, event_model_id, static_id, event_time, disconnect_origin, disconnect_extremity)
 
-    def add_set_point_boolean(self, event_model_id: str, static_id: str, eventTime: float, stateEvent: bool) -> None:
+    def add_set_point_boolean(self, event_model_id: str, static_id: str, event_time: float, state_event: bool) -> None:
         """ Creates a generator disconnection event
 
         Args:
             event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
-            eventTime (float): timestep at which the event happens
-            stateEvent (bool): TODO
+            event_time (float): timestep at which the event happens
+            state_event (bool): TODO
         """
         _pp.add_event_set_point_boolean(
-            self._handle, event_model_id, static_id, eventTime, stateEvent)
+            self._handle, event_model_id, static_id, event_time, state_event)
 
     @staticmethod
     def get_possible_events() -> _List[EventType]:
