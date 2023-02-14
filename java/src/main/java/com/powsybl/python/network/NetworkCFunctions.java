@@ -662,12 +662,6 @@ public final class NetworkCFunctions {
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
-    protected static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
-        DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
-        createSeriesMetadata(metadata, res);
-        return res;
-    }
-
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  CCharPointer tableNamePtr, DataframePointer dataframe,

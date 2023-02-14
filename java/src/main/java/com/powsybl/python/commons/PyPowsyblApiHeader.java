@@ -22,8 +22,7 @@ import org.graalvm.word.PointerBase;
 /**
  * Defines java mapping with C structs defined in pypowsybl-api.h header.
  *
- * @author Geoffroy Jamgotchian
- *         {@literal <geoffroy.jamgotchian at rte-france.com>}
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class PyPowsyblApiHeader {
@@ -676,12 +675,12 @@ public final class PyPowsyblApiHeader {
     }
 
     /*
-     * typedef struct series_metadata_struct {
-     * char* name;
-     * int type;
-     * unsigned char is_index;
-     * unsigned char is_modifiable;
-     * } series_metadata;
+    typedef struct series_metadata_struct {
+        char* name;
+        int type;
+        unsigned char  is_index;
+        unsigned char  is_modifiable;
+    } series_metadata;
      */
     @CStruct("series_metadata")
     public interface SeriesMetadataPointer extends PointerBase {

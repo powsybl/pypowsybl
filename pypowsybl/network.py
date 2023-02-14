@@ -4625,15 +4625,14 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
                                     None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 
-def load_from_string(format: str, content: str, parameters: _Dict[str, str] = None,
+def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
                      reporter: _Reporter = None) -> Network:
     """
-    Load a network from a string. format indicates which way to load the network from the content string.
-    The format must be supported.
+    Load a network from a string. File content should be in a supported format.
 
     Args:
-       format:       format of the data, should correspond to the file extension used by this format (XIIDM etc.)
-       content:      content of the network as a string
+       file_name:    file name
+       file_content: file content
        parameters:   a dictionary of import parameters
 
     Returns:
@@ -4641,7 +4640,7 @@ def load_from_string(format: str, content: str, parameters: _Dict[str, str] = No
     """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_string(format, content, parameters,
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
                                                 None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 

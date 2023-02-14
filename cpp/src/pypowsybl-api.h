@@ -260,11 +260,6 @@ typedef struct layout_parameters_struct {
 } layout_parameters;
 
 typedef enum {
-    ONLY_INTERCONNECTIONS = 0,
-    INTERCONNECTION_OR_ZONE_TO_ZONE_PTDF_GT_5PC,
-} xnec_selection_strategy;
-
-typedef enum {
     ALPHA_BETA_LOAD = 0,
     ONE_TRANSFORMER_LOAD,
     CURRENT_LIMIT_AUTOMATON,
