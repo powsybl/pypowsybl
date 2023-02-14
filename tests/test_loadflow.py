@@ -213,7 +213,8 @@ def test_get_provider_parameters_names():
         'maxSlackBusCount',
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
-        'secondaryVoltageControl'
+        'secondaryVoltageControl',
+        'ReactiveLimitsMaxPqPvSwitch'
     ]
 
 

@@ -25,10 +25,12 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
     protected final StringSeries connectableBuses1;
     protected final StringSeries buses1;
     protected final IntSeries nodes1;
+    protected final StringSeries busOrBusbarSections1;
     protected final StringSeries voltageLevels2;
     protected final StringSeries connectableBuses2;
     protected final StringSeries buses2;
     protected final IntSeries nodes2;
+    protected final StringSeries busOrBusbarSections2;
 
     AbstractBranchSeries(UpdatingDataframe dataframe) {
         super(dataframe);
@@ -36,10 +38,12 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
         this.connectableBuses1 = dataframe.getStrings("connectable_bus1_id");
         this.buses1 = dataframe.getStrings("bus1_id");
         this.nodes1 = dataframe.getInts("node1");
+        this.busOrBusbarSections1 = dataframe.getStrings("bus_or_busbar_section_id_1");
         this.voltageLevels2 = dataframe.getStrings("voltage_level2_id");
         this.connectableBuses2 = dataframe.getStrings("connectable_bus2_id");
         this.buses2 = dataframe.getStrings("bus2_id");
         this.nodes2 = dataframe.getInts("node2");
+        this.busOrBusbarSections2 = dataframe.getStrings("bus_or_busbar_section_id_2");
     }
 
     protected void setBranchAttributes(BranchAdder<?> adder, int row) {

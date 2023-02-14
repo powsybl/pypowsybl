@@ -503,7 +503,7 @@ You can add a load and connect it to *BBS3* between the line and the load1 (orde
 
 .. testcode::
 
-    pp.network.create_load_bay(n, id="load2", p0=10.0, q0=3.0, busbar_section_id='BBS3', position_order=15)
+    pp.network.create_load_bay(n, id="load2", p0=10.0, q0=3.0, bus_or_busbar_section_id='BBS3', position_order=15)
 
 You can check that the load was added correctly by drawing a single line diagram of *VL1*:
 
@@ -519,20 +519,20 @@ dangling line on the right of *line1* on *BBS3* and a shunt and a VSC converter 
 .. testcode::
 
     pp.network.create_generator_bay(n, id='generator1', max_p=1000, min_p=0, voltage_regulator_on=True,
-                               target_p=100, target_q=150, target_v=225, busbar_section_id='BBS1',
+                               target_p=100, target_q=150, target_v=225, bus_or_busbar_section_id='BBS1',
                                position_order=5)
-    pp.network.create_dangling_line_bay(n, id='dangling_line1', p0=100, q0=150, r=2, x=2, g=1, b=1, position_order=30, busbar_section_id='BBS3', direction='TOP')
+    pp.network.create_dangling_line_bay(n, id='dangling_line1', p0=100, q0=150, r=2, x=2, g=1, b=1, position_order=30, bus_or_busbar_section_id='BBS3', direction='TOP')
     shunt_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'model_type', 'section_count', 'target_v',
-                 'target_deadband', 'busbar_section_id', 'position_order'],
+                 'target_deadband', 'bus_or_busbar_section_id', 'position_order'],
         data=[('shunt1', 'LINEAR', 1, 221, 2, 'BBS4', 20)])
     model_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
         data=[('shunt1', 0.014, 0.0001, 2)])
     pp.network.create_shunt_compensator_bay(n, shunt_df=shunt_df, linear_model_df=model_df)
-    pp.network.create_vsc_converter_station_bay(n, id='VSC1', target_q=200, voltage_regulator_on=True, loss_factor=1.0, target_v=230, busbar_section_id='BBS4', position_order=30)
+    pp.network.create_vsc_converter_station_bay(n, id='VSC1', target_q=200, voltage_regulator_on=True, loss_factor=1.0, target_v=230, bus_or_busbar_section_id='BBS4', position_order=30)
 
 You can draw the new single line diagrams:
 
@@ -548,5 +548,6 @@ You can draw the new single line diagrams:
 
 .. image:: ../_static/images/test_network_vl2_after_adding_everything.svg
 
-These methods exist for every type of injections.
+These methods exist for every type of injections and also work with bus/breaker voltage levels. Then the injection is simply
+added to the given bus.
 To see them all, please refer to the reference API :doc:`documentation </reference/network>`.

@@ -7,10 +7,8 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.Substation;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.dataframe.update.StringSeries;
+import com.powsybl.iidm.network.*;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
@@ -26,6 +24,28 @@ public final class NetworkUtils {
             throw new PowsyblException("Voltage level " + id + " does not exist.");
         }
         return voltageLevel;
+    }
+
+    public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections) {
+        if (voltageLevels == null) {
+            if (busOrBusbarSections != null) {
+                Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
+                if (busOrBusbarSection == null) {
+                    throw new PowsyblException(String.format("Bus or busbar section %s not found.", busOrBusbarSections.get(row)));
+                }
+                if (busOrBusbarSection instanceof BusbarSection) {
+                    return ((BusbarSection) busOrBusbarSection).getTerminal().getVoltageLevel();
+                } else if (busOrBusbarSection instanceof Bus) {
+                    return ((Bus) busOrBusbarSection).getVoltageLevel();
+                } else {
+                    throw new PowsyblException(String.format("Unsupported type %s for identifiable %s", busOrBusbarSection.getType(), busOrBusbarSection.getId()));
+                }
+            } else {
+                throw new PowsyblException("Voltage level id and bus or busbar section id missing.");
+            }
+        } else {
+            return getVoltageLevelOrThrow(network, voltageLevels.get(row));
+        }
     }
 
     public static Substation getSubstationOrThrow(Network network, String id) {

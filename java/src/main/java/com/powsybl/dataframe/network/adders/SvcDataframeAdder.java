@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
@@ -19,7 +18,7 @@ import com.powsybl.iidm.network.StaticVarCompensatorAdder;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrow;
+import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -41,7 +40,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),
-            SeriesMetadata.strings("busbar_section_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_id"),
             SeriesMetadata.ints("position_order"),
             SeriesMetadata.strings("direction")
     );
@@ -59,22 +58,21 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries regulationModes;
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
+        private final StringSeries busOrBusbarSections;
 
         StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
-            if (voltageLevels == null) {
-                throw new PowsyblException("voltage_level_id is missing");
-            }
             this.bMin = dataframe.getDoubles("b_min");
             this.bMax = dataframe.getDoubles("b_max");
             this.targetQ = dataframe.getDoubles("target_q");
             this.targetV = dataframe.getDoubles("target_v");
             this.regulationModes = dataframe.getStrings("regulation_mode");
+            this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
         StaticVarCompensatorAdder createAdder(Network network, int row) {
-            StaticVarCompensatorAdder adder = getVoltageLevelOrThrow(network, voltageLevels.get(row))
+            StaticVarCompensatorAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
                     .newStaticVarCompensator();
             setInjectionAttributes(adder, row);
             applyIfPresent(bMin, row, adder::setBmin);
