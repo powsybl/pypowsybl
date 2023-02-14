@@ -387,13 +387,13 @@ correctly. For more information about single line diagrams, check the :doc:`rela
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_only_bbs_without_extensions.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_only_bbs_without_extensions.svg
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
-.. image:: ../_static/images/test_network_vl2_only_bbs.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_only_bbs.svg
 
 As you can see on the diagram of *VL1*, the busbar sections are not positioned in any chosen way. It is possible to add position extensions on these busbar sections to precise relative positions. Use *busbarSectionPosition* extension for that purpose. If you want to put the three busbar sections of *VL1* on the same slice, then they need to have the same *section_index*. As they belong to three distinct busbars, their *busbar_index* are different:
 
@@ -410,7 +410,7 @@ You can draw the single line diagram of *VL1* again to check that the busbar sec
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_parallel_bbs.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_parallel_bbs.svg
 
 Now let's connect a load in a close to reality way. The first thing to do is to create switches. To connect a load on *VL1*, you need to add a disconnector
 on each busbar sections of a slice, two open and one closed, and a breaker between the disconnectors and the load.
@@ -457,13 +457,13 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_before_adding_extensions.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_before_adding_extensions.svg
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
-.. image:: ../_static/images/test_network_vl2_before_adding_extensions.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_before_adding_extensions.svg
 
 Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
 You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
@@ -485,18 +485,18 @@ correctly positioned.
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_after_adding_extensions.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_extensions.svg
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
-.. image:: ../_static/images/test_network_vl2_after_adding_extensions.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_extensions.svg
 
-Done but fastidious! That is why Pypowsybl provides ready-for-use methods to create an injection and its bay with a single line.
+Done but fastidious! That is why Pypowsybl provides ready-for-use methods to create an equipment and its bay with a single line.
 The switches are created implicitly. The methods take a busbar section on which the disconnector is
-closed as an argument (note that switches on the other parallel busbar sections are open). You also need to fill the position of the injection
-as well as its characteristics. Optionnally, you can indicate the direction of the injection drawing - by default, on the bottom -,
+closed as an argument (note that switches on the other parallel busbar sections are open). You also need to fill the position of the equipment on the voltage level
+as well as its characteristics. Optionally, you can indicate the direction of the equipment drawing - by default, on the bottom for injections and on top for lines and two windings transformers -,
 if an exception should be raised in case of problem - by default, False - and a reporter to get logs.
 
 You can add a load and connect it to *BBS3* between the line and the load1 (order position between 10 and 20) with:
@@ -511,7 +511,7 @@ You can check that the load was added correctly by drawing a single line diagram
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_after_adding_load.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_load.svg
 
 Now let's connect a generator on *BBS1* on the left of *load1*, a
 dangling line on the right of *line1* on *BBS3* and a shunt and a VSC converter station on *BBS4*:
@@ -540,14 +540,111 @@ You can draw the new single line diagrams:
 
     >>> n.get_single_line_diagram('VL1')
 
-.. image:: ../_static/images/test_network_vl1_after_adding_everything.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_everything.svg
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
-.. image:: ../_static/images/test_network_vl2_after_adding_everything.svg
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_everything.svg
 
 These methods exist for every type of injections and also work with bus/breaker voltage levels. Then the injection is simply
 added to the given bus.
-To see them all, please refer to the reference API :doc:`documentation </reference/network>`.
+
+You can also add lines and two-windings transformers to a network with simple functions that create automatically the topology on both sides.
+For example, you can add a line and connect it between **BBS3** and **BBS4**, right next to line1 (order positions 25 on VL1 and 15 on VL2) with:
+
+.. testcode::
+
+    pp.network.create_line_bays(n, id='line2', r=0.1, x=10, g1=0, b1=0, g2=0, b2=0,
+                                            bus_or_busbar_section_id_1='BBS3',
+                                            position_order_1=25,
+                                            direction_1='TOP',
+                                            bus_or_busbar_section_id_2='BBS4',
+                                            position_order_2=15,
+                                            direction_2='TOP')
+
+Here the direction of the line is specified in the argument, but it is optional and by default TOP.
+You can draw the single line diagrams of both voltage levels to check that the line was added correctly:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_with_new_line2.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_with_new_line2.svg
+
+Now let's see how to add a two windings transformer to our network. Both voltage levels VL1 and VL2 have a nominal voltage of 225kV.
+First, you need a new voltage level VL3, let's say of nominal voltage 63kV, to connect to one of the existing voltage level. Both voltage levels connected through a two-windings
+transformer must be in the same substation, let's pick VL1. You can create VL3 with:
+
+.. testcode::
+
+    n.create_voltage_levels(substation_id='S1', id='VL3', topology_kind='NODE_BREAKER', nominal_v=63)
+
+Now voltage level VL3 is created, but it is empty. The next step is to create the topology of the voltage level, i.e. the busbar sections and disconnectors or switches.
+You can use the same methods as to create VL1 and VL2, or use the built-in function allowing to create in one line the topology of symmetrical voltage levels.
+Let's create the topology with two busbar sections and three sections with breakers between sections one and two
+and disconnectors between sections two and three. You can do that with:
+
+.. testcode::
+
+    pp.network.create_voltage_level_topology(n, id='VL3', busbar_count=2, section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
+
+To check that the topology was correctly created, you can draw the single line diagram of voltage level VL3:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL3')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl3_only_bbs.svg
+
+Now you can add some coupling devices between each section of the new voltage level. For that, you can use the built-in method and you just
+have to specify the two busbar sections on which the switches should be closed. Open switches will automatically be created on the parallel busbar
+sections:
+
+.. testcode::
+
+    pp.network.create_coupling_device(n, busbar_section_id_1=['VL3_1_1', 'VL3_2_2'], busbar_section_id_2=['VL3_1_2', 'VL3_2_3'])
+
+You can create the single line diagram to check that the coupling devices were well created:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL3')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl3_with_coupling_device.svg
+
+Now, you can create a two windings transformer between VL1 and VL3. The features of the transformer must be specified, as well
+as the busbar sections on which it should be connected. You can connect it to BBS1 and to VL3_1_1. The position wanted for the
+transformer must be given for both ends and it is possible to indicate the direction for the diagram:
+
+.. testcode::
+
+    pp.network.create_2_windings_transformer_bays(n, id='two_windings_transformer', b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=225, rated_u2=63,
+                bus_or_busbar_section_id_1='BBS1', position_order_1=35, direction_1='BOTTOM',
+                bus_or_busbar_section_id_2='VL3_1_1', position_order_2=5, direction_2='TOP')
+
+Let's draw the single line diagrams of VL1 and of VL3 to check that the two windings transformer is where it should be:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_with_transformer.svg
+
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL3')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+
+
+Now you know how to create a node-breaker voltage level and its topology, injections, lines and two-windings transformer with the built-in methods
+available in pypowsybl. For a reference of the available methods, please refer to: :doc:`documentation </reference/network>`.
