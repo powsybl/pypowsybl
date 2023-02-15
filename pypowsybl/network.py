@@ -89,11 +89,12 @@ class LayoutParameters:
     This class represents layout parameters for a single line diagram svg generation."""
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 topological_coloring: bool = True):
+                 topological_coloring: bool = True, nodes_infos: bool = False):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
         self._topological_coloring = topological_coloring
+        self._nodes_infos = nodes_infos
 
     @property
     def use_name(self) -> bool:
@@ -115,12 +116,18 @@ class LayoutParameters:
         """When False, coloring is based only on nominal voltage."""
         return self._topological_coloring
 
+    @property
+    def nodes_infos(self) -> bool:
+        """When True, add infos about voltage and angle."""
+        return self._nodes_infos
+
     def _to_c_parameters(self) -> _pp.LayoutParameters:
         c_parameters = _pp.LayoutParameters()
         c_parameters.use_name = self._use_name
         c_parameters.center_name = self._center_name
         c_parameters.diagonal_label = self._diagonal_label
         c_parameters.topological_coloring = self._topological_coloring
+        c_parameters.nodes_infos = self._nodes_infos
         return c_parameters
 
 

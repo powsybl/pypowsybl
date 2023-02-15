@@ -412,7 +412,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("use_name", &pypowsybl::LayoutParameters::use_name)
         .def_readwrite("center_name", &pypowsybl::LayoutParameters::center_name)
         .def_readwrite("diagonal_label", &pypowsybl::LayoutParameters::diagonal_label)
-        .def_readwrite("topological_coloring", &pypowsybl::LayoutParameters::topological_coloring);
+        .def_readwrite("topological_coloring", &pypowsybl::LayoutParameters::topological_coloring)
+        .def_readwrite("nodes_infos", &pypowsybl::LayoutParameters::nodes_infos);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("layout_parameters"));

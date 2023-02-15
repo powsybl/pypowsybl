@@ -818,6 +818,7 @@ public final class NetworkCFunctions {
         cParameters.setCenterName(parameters.layoutParameters.isLabelCentered());
         cParameters.setDiagonalLabel(parameters.layoutParameters.isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.topologicalColoring);
+        cParameters.setAddNodesInfos(parameters.layoutParameters.isAddNodesInfos());
     }
 
     public static LayoutParametersPointer convertToLayoutParametersPointer(LayoutParametersExt parameters) {
@@ -847,7 +848,8 @@ public final class NetworkCFunctions {
         return new LayoutParametersExt(new LayoutParameters()
                 .setUseName(layoutParametersPtr.isUseName())
                 .setLabelCentered(layoutParametersPtr.isCenterName())
-                .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel()),
+                .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel())
+                .setAddNodesInfos(layoutParametersPtr.isAddNodesInfos()),
                 layoutParametersPtr.isTopologicalColoring());
     }
 
