@@ -1281,6 +1281,63 @@ void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::stri
     pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
 }
 
+/*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
+JavaHandle createDynamicSimulationContext() {
+    return callJava<JavaHandle>(::createDynamicSimulationContext);
+}
+
+JavaHandle createDynamicModelMapping() {
+    return callJava<JavaHandle>(::createDynamicModelMapping);
+}
+
+JavaHandle createTimeseriesMapping() {
+    return callJava<JavaHandle>(::createTimeseriesMapping);
+}
+
+JavaHandle createEventMapping() {
+    return callJava<JavaHandle>(::createEventMapping);
+}
+
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop) {
+    return callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
+}
+
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf) {
+    callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, mappingDf);
+}
+
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
+    callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
+}
+
+void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
+    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
+}
+
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent) {
+    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, stateEvent);
+}
+
+std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
+    return callJava<std::string>(::getDynamicSimulationResultsStatus, dynamicSimulationResultsHandle);
+}
+
+SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
+    return new SeriesArray(callJava<array*>(::getDynamicCurve, resultHandle, (char*) curveName.c_str()));
+}
+
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
+    ToStringVector vector(callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
+    return vector.get();
+}
+
+std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getDynamicMappingsMetaData, mappingType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+    }
+
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
     dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);

@@ -258,3 +258,19 @@ typedef struct layout_parameters_struct {
     unsigned char diagonal_label;
     unsigned char topological_coloring;
 } layout_parameters;
+
+typedef enum {
+    ALPHA_BETA_LOAD = 0,
+    ONE_TRANSFORMER_LOAD,
+    CURRENT_LIMIT_AUTOMATON,
+    GENERATOR_SYNCHRONOUS,
+    GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
+    GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
+    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
+    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
+} DynamicMappingType;
+
+typedef enum {
+    ONE = 0,
+    TWO,
+} BranchSide;

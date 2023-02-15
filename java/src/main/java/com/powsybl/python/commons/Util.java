@@ -11,6 +11,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
@@ -312,6 +313,17 @@ public final class Util {
                 return ValidationLevel.STEADY_STATE_HYPOTHESIS;
             default:
                 throw new PowsyblException("Unknown element type : " + levelType);
+        }
+    }
+
+    public static Branch.Side convert(PyPowsyblApiHeader.BranchSide side) {
+        switch (side) {
+            case ONE:
+                return Branch.Side.ONE;
+            case TWO:
+                return Branch.Side.TWO;
+            default:
+                throw new PowsyblException("Unknown element type : " + side);
         }
     }
 

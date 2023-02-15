@@ -15,3 +15,4 @@ relying as much as possible on practical examples.
    sensitivity
    logging
    flowdecomposition
+   dynamic

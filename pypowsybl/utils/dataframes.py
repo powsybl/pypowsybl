@@ -10,8 +10,8 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
-from typing import List
-from typing import Optional as _Optional
+from typing import List, Dict as _Dict
+from typing import Optional as _Optional, Any as _Any
 
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
@@ -19,7 +19,7 @@ from numpy.typing import ArrayLike as _ArrayLike
 import pypowsybl._pypowsybl as _pp
 
 
-def _to_array(value: _ArrayLike) -> np.ndarray:
+def _to_array(value: _Any) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
@@ -30,7 +30,7 @@ def _to_array(value: _ArrayLike) -> np.ndarray:
     return as_array
 
 
-def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _ArrayLike) -> DataFrame:
+def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
@@ -60,7 +60,7 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _ArrayLike) -> D
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame = None, **kwargs: _ArrayLike) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame = None, **kwargs: _Any) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -103,6 +103,27 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
+
+def _find_index_in_metadata(series_metadata: List[_pp.SeriesMetadata]) -> _pp.SeriesMetadata:
+    return [s for s in series_metadata if s.is_index][0]
+
+
+def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> _Dict:
+    """autofill kwargs with a default index (like pandas would do)
+
+    Args:
+        series_metadata (List[_pp.SeriesMetadata]): metadata to make match the id column name
+
+    Returns:
+        Dict: new kwargs with the index if it was not present
+    """
+    index_name = _find_index_in_metadata(series_metadata).name
+    any_value = next(iter(kwargs.values()))
+    col = _to_array(any_value)
+    size = col.shape[0]
+    if index_name not in kwargs:
+        kwargs[index_name] = list(range(size))
+    return kwargs
 
 def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
     """

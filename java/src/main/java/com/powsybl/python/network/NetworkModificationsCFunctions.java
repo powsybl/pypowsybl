@@ -39,7 +39,6 @@ import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.g
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.getFeedersByConnectable;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
-import static com.powsybl.python.network.NetworkCFunctions.createSeriesMetadata;
 
 /**
  * Defines the C functions for network modifications.
@@ -348,7 +347,7 @@ public final class NetworkModificationsCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeNetworkModificationType type = convert(networkModificationType);
             List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
-            return createSeriesMetadata(metadata);
+            return CTypeUtil.createSeriesMetadata(metadata);
         });
     }
 }

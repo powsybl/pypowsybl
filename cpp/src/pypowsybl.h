@@ -550,6 +550,35 @@ LayoutParameters* createLayoutParameters();
 void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
     std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name);
 
+
+//=======dynamic modeling for dynawaltz package==========
+
+//handle creation
+JavaHandle createDynamicSimulationContext();
+JavaHandle createDynamicModelMapping();
+JavaHandle createTimeseriesMapping();
+JavaHandle createEventMapping();
+
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+
+// timeseries/curves mapping
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+
+// events mapping
+void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity);
+void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent);
+
+// dynamic model mapping
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+
+// results
+std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
+std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+
+//=======END OF dynamic modeling for dynawaltz package==========
+
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);

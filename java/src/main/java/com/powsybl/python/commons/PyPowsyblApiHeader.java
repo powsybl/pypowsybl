@@ -903,4 +903,33 @@ public final class PyPowsyblApiHeader {
         void setTopologicalColoring(boolean topologicalColoring);
     }
 
+    @CEnum("DynamicMappingType")
+    public enum DynamicMappingType {
+        ALPHA_BETA_LOAD,
+        ONE_TRANSFORMER_LOAD,
+        GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
+        GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
+        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
+        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
+        CURRENT_LIMIT_AUTOMATON,
+        GENERATOR_SYNCHRONOUS;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native DynamicMappingType fromCValue(int value);
+    }
+
+    @CEnum("BranchSide")
+    public enum BranchSide {
+        ONE,
+        TWO;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native BranchSide fromCValue(int value);
+    }
 }

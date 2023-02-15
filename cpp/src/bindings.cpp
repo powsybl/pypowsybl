@@ -120,6 +120,49 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+void dynamicSimulationBindings(py::module_& m) {
+
+    py::enum_<BranchSide>(m, "BranchSide")
+        .value("ONE", BranchSide::ONE)
+        .value("TWO", BranchSide::TWO);
+
+    py::enum_<DynamicMappingType>(m, "DynamicMappingType")
+        .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
+        .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
+        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
+        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
+        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
+        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
+        .value("GENERATOR_SYNCHRONOUS", DynamicMappingType::GENERATOR_SYNCHRONOUS)
+        .value("CURRENT_LIMIT_AUTOMATON", DynamicMappingType::CURRENT_LIMIT_AUTOMATON);
+
+    //entrypoints for constructors
+    m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
+    m.def("create_dynamic_model_mapping", &pypowsybl::createDynamicModelMapping);
+    m.def("create_timeseries_mapping", &pypowsybl::createTimeseriesMapping);
+    m.def("create_event_mapping", &pypowsybl::createEventMapping);
+
+    //running simulations
+    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
+
+    //model mapping
+    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
+
+    // timeseries/curves mapping
+    m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
+
+    // events mapping
+    m.def("add_event_branch_disconnection", &pypowsybl::addEventBranchDisconnection, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOrigin"), py::arg("disconnectExtremity"));
+    m.def("add_event_set_point_boolean", &pypowsybl::addEventSetPointBoolean, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("eventTime"), py::arg("stateEvent"));
+
+    // Simulation results
+    m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
+    m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
+    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -715,6 +758,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
     m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
+
+    dynamicSimulationBindings(m);
 
     m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 

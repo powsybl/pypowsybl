@@ -7,6 +7,10 @@
 package com.powsybl.python.commons;
 
 import com.oracle.svm.core.SubstrateUtil;
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
+
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
@@ -94,4 +98,25 @@ public final class CTypeUtil {
                 .collect(Collectors.toMap(keys::get, values::get));
     }
 
+    public static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {
+        DataframeMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframeMetadataPointer.class));
+        createSeriesMetadata(metadata, res);
+        return res;
+    }
+
+    public static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
+        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory
+                .calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
+        for (int i = 0; i < metadata.size(); i++) {
+            SeriesMetadata colMetadata = metadata.get(i);
+            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
+            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
+            metadataPtr.setType(Util.convert(colMetadata.getType()));
+            metadataPtr.setIndex(colMetadata.isIndex());
+            metadataPtr.setModifiable(colMetadata.isModifiable());
+            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
+        }
+        cMetadata.setAttributesCount(metadata.size());
+        cMetadata.setAttributesMetadata(seriesMetadataPtr);
+    }
 }
