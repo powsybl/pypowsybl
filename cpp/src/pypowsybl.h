@@ -265,6 +265,7 @@ public:
     bool center_name;
     bool diagonal_label;
     bool topological_coloring;
+    bool nodes_infos;
 };
 
 char* copyStringToCharPtr(const std::string& str);

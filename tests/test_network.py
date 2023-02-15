@@ -685,15 +685,17 @@ def test_variant():
 
 def test_layout_parameters():
     parameters = LayoutParameters()
-    assert False == parameters.use_name
-    assert False == parameters.center_name
-    assert False == parameters.diagonal_label
-    assert True == parameters.topological_coloring
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False)
-    assert True == parameters.use_name
-    assert True == parameters.center_name
-    assert True == parameters.diagonal_label
-    assert False == parameters.topological_coloring
+    assert not parameters.use_name
+    assert not parameters.center_name
+    assert not parameters.diagonal_label
+    assert parameters.topological_coloring
+    assert not parameters.nodes_infos
+    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False, nodes_infos=True)
+    assert parameters.use_name
+    assert parameters.center_name
+    assert parameters.diagonal_label
+    assert not parameters.topological_coloring
+    assert parameters.nodes_infos
 
 
 def test_sld_svg():
@@ -704,7 +706,10 @@ def test_sld_svg():
     sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
-
+    sld2 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                               topological_coloring=True, nodes_infos=True))
+    assert re.search('.*<svg.*', sld2.svg)
+    assert len(sld2.metadata) > 0
 
 def test_sld_nad():
     n = pp.network.create_ieee14()

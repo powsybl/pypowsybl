@@ -159,6 +159,7 @@ class LayoutParameters:
     center_name: bool
     diagonal_label: bool
     topological_coloring: bool
+    nodes_infos: bool
     def __init__(self) -> None: ...
 
 class LimitType:
