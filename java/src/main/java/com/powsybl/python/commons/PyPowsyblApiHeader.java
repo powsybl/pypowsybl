@@ -901,6 +901,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("topological_coloring")
         void setTopologicalColoring(boolean topologicalColoring);
+
+        @CField("nodes_infos")
+        boolean isAddNodesInfos();
+
+        @CField("nodes_infos")
+        void setAddNodesInfos(boolean addNodeInfos);
     }
 
     @CEnum("DynamicMappingType")

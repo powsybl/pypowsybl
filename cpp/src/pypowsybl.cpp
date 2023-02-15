@@ -1242,6 +1242,7 @@ LayoutParameters::LayoutParameters(layout_parameters* src) {
     center_name = (bool) src->center_name;
     diagonal_label = (bool) src->diagonal_label;
     topological_coloring = (bool) src->topological_coloring;
+    nodes_infos = (bool) src->nodes_infos;
 }
 
 void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
@@ -1249,6 +1250,7 @@ void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
     res.center_name = (unsigned char) center_name;
     res.diagonal_label = (unsigned char) diagonal_label;
     res.topological_coloring = (unsigned char) topological_coloring;
+    res.nodes_infos = (unsigned char) nodes_infos;
 }
 
 std::shared_ptr<layout_parameters> LayoutParameters::to_c_struct() const {

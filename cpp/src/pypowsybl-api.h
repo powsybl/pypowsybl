@@ -257,6 +257,7 @@ typedef struct layout_parameters_struct {
     unsigned char center_name;
     unsigned char diagonal_label;
     unsigned char topological_coloring;
+    unsigned char nodes_infos;
 } layout_parameters;
 
 typedef enum {
