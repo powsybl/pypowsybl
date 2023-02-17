@@ -233,3 +233,15 @@ def test_provider_parameters_names():
     assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
+
+def test_with_security_analysis_test_network():
+    net = pp.network._create_network('security_analysis_test_with_current_limits')
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingencies(['LINE_S1S2V1_1', 'LINE_S1S2V1_2', 'LINE_S1S2V2'])
+    result = sa.run_ac(net)
+    assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
+    assert len(result.limit_violations) == 2
+    line_s1s2v1_2_limit_violations = result.limit_violations.loc[('LINE_S1S2V1_2', 'TWT')]
+    assert 93.65 == pytest.approx(line_s1s2v1_2_limit_violations.value, rel=0.01)
+    assert 92.0 == pytest.approx(line_s1s2v1_2_limit_violations.limit, rel=0.01)
+    assert 600 == pytest.approx(line_s1s2v1_2_limit_violations.acceptable_duration, rel=0.01)

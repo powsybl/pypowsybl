@@ -44,7 +44,10 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("three_windings_transformer", (Supplier<Network>) ThreeWindingsTransformerNetworkFactory::create),
             factory("three_windings_transformer_with_current_limits", ThreeWindingsTransformerNetworkFactory::createWithCurrentLimits),
             factory("shunt", (Supplier<Network>) ShuntTestCaseFactory::create),
-            factory("non_linear_shunt", (Supplier<Network>) ShuntTestCaseFactory::createNonLinear)
+            factory("non_linear_shunt", (Supplier<Network>) ShuntTestCaseFactory::createNonLinear),
+            factory("security_analysis_test", () -> SecurityAnalysisTestNetworkFactory.create()),
+            factory("security_analysis_test_with_power_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedPowerLimits()),
+            factory("security_analysis_test_with_current_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedCurrentLimits())
     );
 
     @Override
