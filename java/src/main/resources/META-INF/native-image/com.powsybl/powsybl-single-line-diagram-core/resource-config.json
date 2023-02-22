@@ -2,6 +2,7 @@
   "resources":{
   "includes":[
     {"pattern":"ConvergenceLibrary/.*"},
+    {"pattern":"FlatDesignLibrary/.*"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.sld.layout.VoltageLevelLayoutFactorySmartSelector\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.sld.postprocessor.GraphBuildPostProcessor\\E"},
     {"pattern":"\\QbaseVoltageConstantColors.css\\E"},

@@ -266,6 +266,7 @@ public:
     bool diagonal_label;
     bool topological_coloring;
     bool nodes_infos;
+    std::string component_library_provider;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -360,6 +361,8 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
 std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters);
+
+std::vector<std::string> getSingleLineDiagramComponentLibraryProviderNames();
 
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
 

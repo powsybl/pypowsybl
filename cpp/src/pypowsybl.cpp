@@ -547,6 +547,12 @@ std::vector<std::string> getLoadFlowProviderNames() {
     return formats.get();
 }
 
+std::vector<std::string> getSingleLineDiagramComponentLibraryProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getSingleLineDiagramComponentLibraryProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
 std::vector<std::string> getSecurityAnalysisProviderNames() {
     auto formatsArrayPtr = callJava<array*>(::getSecurityAnalysisProviderNames);
     ToStringVector formats(formatsArrayPtr);
@@ -1243,6 +1249,7 @@ LayoutParameters::LayoutParameters(layout_parameters* src) {
     diagonal_label = (bool) src->diagonal_label;
     topological_coloring = (bool) src->topological_coloring;
     nodes_infos = (bool) src->nodes_infos;
+    component_library_provider = toString(src->component_library_provider);
 }
 
 void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
@@ -1251,6 +1258,7 @@ void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
     res.diagonal_label = (unsigned char) diagonal_label;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.nodes_infos = (unsigned char) nodes_infos;
+    res.component_library_provider = copyStringToCharPtr(component_library_provider);
 }
 
 std::shared_ptr<layout_parameters> LayoutParameters::to_c_struct() const {
