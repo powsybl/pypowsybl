@@ -54,7 +54,7 @@ to control the size of the sub network:
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
 
-Note that similarly to single-line diagrams, a loadflow was run before writing both diagrams so that they display active powers.
+Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers.
 .. code-block:: python
 
     >>> pp.loadflow.run_ac(network)
