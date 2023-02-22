@@ -821,13 +821,13 @@
                         <td>
                             <div class="nad-vl70to120-0 nad-legend-square"/>
                         </td>
-                        <td>118.3 kV / 6.0°</td>
+                        <td> kV / °</td>
                     </tr>
                     <tr>
                         <td>
                             <div class="nad-vl70to120-1 nad-legend-square"/>
                         </td>
-                        <td>119.1 kV / 7.7°</td>
+                        <td> kV / °</td>
                     </tr>
                 </table>
             </div>
@@ -840,7 +840,7 @@
                         <td>
                             <div class="nad-vl180to300-0 nad-legend-square"/>
                         </td>
-                        <td>229.3 kV / 6.6°</td>
+                        <td> kV / °</td>
                     </tr>
                 </table>
             </div>
@@ -853,13 +853,13 @@
                         <td>
                             <div class="nad-vl70to120-0 nad-legend-square"/>
                         </td>
-                        <td>118.6 kV / 7.0°</td>
+                        <td> kV / °</td>
                     </tr>
                     <tr>
                         <td>
                             <div class="nad-vl70to120-1 nad-legend-square"/>
                         </td>
-                        <td>117.2 kV / 4.7°</td>
+                        <td> kV / °</td>
                     </tr>
                 </table>
             </div>
@@ -872,19 +872,19 @@
                         <td>
                             <div class="nad-vl0to30-0 nad-legend-square"/>
                         </td>
-                        <td>14.5 kV / 10.8°</td>
+                        <td> kV / °</td>
                     </tr>
                     <tr>
                         <td>
                             <div class="nad-vl0to30-1 nad-legend-square"/>
                         </td>
-                        <td>14.5 kV / 12.5°</td>
+                        <td> kV / °</td>
                     </tr>
                     <tr>
                         <td>
                             <div class="nad-vl0to30-2 nad-legend-square"/>
                         </td>
-                        <td>14.2 kV / 13.8°</td>
+                        <td> kV / °</td>
                     </tr>
                 </table>
             </div>
@@ -897,7 +897,7 @@
                         <td>
                             <div class="nad-vl70to120-0 nad-legend-square"/>
                         </td>
-                        <td>116.8 kV / 2.4°</td>
+                        <td> kV / °</td>
                     </tr>
                 </table>
             </div>
