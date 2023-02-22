@@ -21,7 +21,7 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 .. code-block:: python
 
     >>> network = pp.network.create_ieee14()
-    >>> pp.loadflow.run_ac(network)
+    >>> result = pp.loadflow.run_ac(network)
     >>> network.write_single_line_diagram_svg('VL4', 'vl4.svg')
 
 .. image:: ../_static/images/ieee14_vl4.svg
@@ -60,5 +60,5 @@ Note that similarly to single-line diagrams, a loadflow can be run before writin
 .. code-block:: python
 
     >>> network = pp.network.create_ieee9()
-    >>> pp.loadflow.run_ac(network)
+    >>> result = pp.loadflow.run_ac(network)
     >>> network.write_network_area_diagram_svg('ieee9.svg')
