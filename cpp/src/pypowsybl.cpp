@@ -1040,6 +1040,10 @@ std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& l
     return providerParameters.get();
 }
 
+SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& provider) {
+    return new SeriesArray(callJava<array*>(::createLoadFlowProviderParametersSeriesArray, (char*) provider.data()));
+}
+
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider) {
     auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getSecurityAnalysisProviderParametersNames, (char*) securityAnalysisProvider.c_str());
     ToStringVector providerParameters(providerParametersArrayPtr);

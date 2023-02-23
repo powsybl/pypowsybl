@@ -547,9 +547,35 @@ def get_provider_parameters_names(provider: str = '') -> _List[str]:
     """
     Get list of parameters for the specified loadflow provider.
 
-    If not specified the provider will be the default one.
+    Args:
+       provider (str): the provider, if not specified the provider will be the default one.
 
     Returns:
         the list of provider's parameters
     """
     return _pypowsybl.get_loadflow_provider_parameters_names(provider)
+
+
+def get_provider_parameters(provider: str = '') -> _DataFrame:
+    """
+    Supported loadflow specific parameters for a given provider.
+
+    Args:
+       provider (str): the provider, if not specified the provider will be the default one.
+
+    Returns:
+        loadflow parameters dataframe
+
+    Examples:
+       .. doctest::
+
+           >>> parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
+           >>> parameters['description']['slackBusSelectionMode']
+           'Slack bus selection mode'
+           >>> parameters['type']['slackBusSelectionMode']
+           'STRING'
+           >>> parameters['default']['slackBusSelectionMode']
+           'MOST_MESHED'
+    """
+    series_array = _pypowsybl.create_loadflow_provider_parameters_series_array(provider)
+    return _create_data_frame_from_series_array(series_array)

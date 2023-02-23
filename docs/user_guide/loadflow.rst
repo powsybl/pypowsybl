@@ -70,6 +70,8 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
+And get a more
+
 For instance, OLF supports configuration of slack bus from its ID like this:
 
 .. doctest::

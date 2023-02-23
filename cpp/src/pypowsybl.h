@@ -337,6 +337,8 @@ LoadFlowParameters* createLoadFlowParameters();
 
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
+SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& provider);
+
 LoadFlowValidationParameters* createValidationConfig();
 
 SecurityAnalysisParameters* createSecurityAnalysisParameters();

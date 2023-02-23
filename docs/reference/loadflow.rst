@@ -20,6 +20,7 @@ Running a loadflow
     get_default_provider
     get_provider_names
     get_provider_parameters_names
+    get_provider_parameters
 
 Parameters
 ----------
@@ -31,6 +32,7 @@ The execution of the loadflow can be customized using loadflow parameters.
 
     Parameters
     get_provider_parameters_names
+    get_provider_parameters
 
 .. include it in the toctree
 .. toctree::
