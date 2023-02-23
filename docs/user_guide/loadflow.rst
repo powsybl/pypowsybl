@@ -73,8 +73,9 @@ We can list supported parameters specific to default provider using:
 And get more detailed informations about theses parameters using:
 
 .. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
-    >>> lf.get_provider_parameters().iloc[:2] # doctest: +NORMALIZE_WHITESPACE
+    >>> lf.get_provider_parameters().iloc[:2]
                                         description    type      default                                possible_values
     name
     slackBusSelectionMode  Slack bus selection mode  STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
