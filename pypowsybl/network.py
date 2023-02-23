@@ -4678,13 +4678,8 @@ def get_extensions_information() -> _DataFrame:
     return _create_data_frame_from_series_array(_pp.get_extensions_information())
 
 
-def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float,
-                        new_line_b1: float,
-                        new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str, line1_id: str = '',
-                        line1_name: str = '', line2_id: str = '', line2_name: str = '',
-                        position_percent: float = 50.0, create_fictitious_substation: bool = False,
-                        fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
-                        fictitious_substation_id: str = '', fictitious_substation_name: str = '') -> None:
+def create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                        reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Connects an existing voltage level to an existing line through a tee point.
 
@@ -4696,34 +4691,40 @@ def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, 
 
     Args:
         network: the network
-        bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-        new_line_id: ID of the new line
-        new_line_r: resistance of the new line, in ohms
-        new_line_x: reactance of the new line, in ohms
-        new_line_b1: shunt susceptance on side 1 of the new line
-        new_line_b2: shunt susceptance on side 2 of the new line
-        new_line_g1: shunt conductance on side 1 of the new line
-        new_line_g2: shunt conductance on side 2 of the new line
-        line_id: the id on of the line on which we want to create a tee point.
-        line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
-        line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
-        line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
-        line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
-        position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
-                    and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-                    between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-        create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
-        fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
-        fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
-        fictitious_substation_id: the ID of the fictitious substation (optional).
-        fictitious_substation_name: the name of the fictitious substation (optional).
+        df: attributes as a dataframe, it should contain:
+            bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+            new_line_id: ID of the new line
+            new_line_r: resistance of the new line, in ohms
+            new_line_x: reactance of the new line, in ohms
+            new_line_b1: shunt susceptance on side 1 of the new line
+            new_line_b2: shunt susceptance on side 2 of the new line
+            new_line_g1: shunt conductance on side 1 of the new line
+            new_line_g2: shunt conductance on side 2 of the new line
+            line_id: the id on of the line on which we want to create a tee point.
+            line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
+            line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
+            line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
+            line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
+            position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
+                        and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+                        between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+            create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
+            fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
+            fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
+            fictitious_substation_id: the ID of the fictitious substation (optional).
+            fictitious_substation_name: the name of the fictitious substation (optional).
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        **kwargs: attributes as keyword arguments
+
     """
-    _pp.create_line_on_line(network._handle, bbs_or_bus_id, new_line_id, new_line_r, new_line_x, new_line_b1,
-                            new_line_b2, new_line_g1, new_line_g2, line_id, line1_id, line1_name, line2_id, line2_name,
-                            position_percent,
-                            create_fictitious_substation, fictitious_voltage_level_id, fictitious_voltage_level_name,
-                            fictitious_substation_id,
-                            fictitious_substation_name)
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_LINE_ON_LINE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str,

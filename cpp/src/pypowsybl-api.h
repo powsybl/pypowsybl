@@ -174,7 +174,8 @@ typedef enum {
     CREATE_COUPLING_DEVICE,
     CREATE_FEEDER_BAY,
     CREATE_LINE_FEEDER,
-    CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER
+    CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER,
+    CREATE_LINE_ON_LINE
 } network_modification_type;
 
 typedef struct matrix_struct {

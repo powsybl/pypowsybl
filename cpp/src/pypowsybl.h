@@ -515,11 +515,6 @@ SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, co
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 
-void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
-    std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
-    std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
-    std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
-
 void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
     std::string mergedLineId, std::string mergedLineName);
 

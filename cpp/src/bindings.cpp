@@ -252,7 +252,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CREATE_COUPLING_DEVICE", network_modification_type::CREATE_COUPLING_DEVICE)
             .value("CREATE_FEEDER_BAY", network_modification_type::CREATE_FEEDER_BAY)
             .value("CREATE_LINE_FEEDER", network_modification_type::CREATE_LINE_FEEDER)
-            .value("CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER", network_modification_type::CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER);
+            .value("CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER", network_modification_type::CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER)
+            .value("CREATE_LINE_ON_LINE", network_modification_type::CREATE_LINE_ON_LINE);
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
@@ -733,10 +734,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL_BRANCHES", pypowsybl::DefaultXnecProvider::ALL_BRANCHES, "Select all branches in a network.")
             .value("INTERCONNECTIONS", pypowsybl::DefaultXnecProvider::INTERCONNECTIONS, "Select all the interconnections in a network.");
 
-    m.def("create_line_on_line", &pypowsybl::createLineOnLine, "create a new line between a tee point and an existing voltage level", py::arg("network"), py::arg("bbs_or_bus_id"),
-            py::arg("new_line_id"), py::arg("new_line_r"), py::arg("new_line_x"), py::arg("new_line_b1"), py::arg("new_line_b2"), py::arg("new_line_g1"), py::arg("new_line_g2"),
-            py::arg("line_id"), py::arg("line1_id"), py::arg("line1_name"), py::arg("line2_id"), py::arg("line2_name"), py::arg("position_percent"),
-            py::arg("create_fictitious_substation"), py::arg("fictitious_voltage_level_id"), py::arg("fictitious_voltage_level_name"), py::arg("fictitious_substation_id"), py::arg("fictitious_substation_name"));
     m.def("revert_create_line_on_line", &pypowsybl::revertCreateLineOnLine, "reverses the action done in the create_line_on_line", py::arg("network"), py::arg("line_to_be_merged1_id"), py::arg("line_to_be_merged2_id"),
             py::arg("line_to_be_deleted_id"), py::arg("merged_line_id"), py::arg("merged_line_name"));
 

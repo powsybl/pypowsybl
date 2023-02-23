@@ -30,7 +30,8 @@ public final class NetworkModifications {
             Map.entry(CREATE_COUPLING_DEVICE, new CouplingDeviceCreation()),
             Map.entry(CREATE_FEEDER_BAY, new CreateFeederBay()),
             Map.entry(CREATE_LINE_FEEDER, new CreateLineFeeder()),
-            Map.entry(CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, new CreateTwoWindingsTransformer())
+            Map.entry(CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, new CreateTwoWindingsTransformer()),
+            Map.entry(CREATE_LINE_ON_LINE, new CreateLineOnLine())
     );
 
     public static NetworkModification getModification(DataframeNetworkModificationType type) {

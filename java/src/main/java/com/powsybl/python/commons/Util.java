@@ -339,6 +339,8 @@ public final class Util {
                 return DataframeNetworkModificationType.CREATE_LINE_FEEDER;
             case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER:
                 return DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
+            case CREATE_LINE_ON_LINE:
+                return DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }

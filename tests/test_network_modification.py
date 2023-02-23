@@ -784,7 +784,8 @@ def test_create_line_on_line():
     assert gen3['target_p'] == 100
     assert gen3['bus_id'] == 'VLTEST_0#0'
 
-    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+    pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0, new_line_x=50.0,
+                                   new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
     retrieved_newline = n.get_lines().loc['test_line']
     assert retrieved_newline["r"] == 5.0
@@ -819,7 +820,8 @@ def test_revert_create_line_on_line():
                         target_v=300, bus_id='VLTEST_0')
     assert len(n.get_lines()) == 2
 
-    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+    pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0, new_line_x=50.0,
+                                   new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
     assert len(n.get_lines()) == 4
 
@@ -946,7 +948,8 @@ def test_replace_tee_point_by_voltage_level_on_line():
     generators = n.get_generators(all_attributes=True)
     gen3 = generators.loc['GEN3']
 
-    pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
+    pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0, new_line_x=50.0,
+                                   new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
 
     assert len(n.get_lines()) == 4
