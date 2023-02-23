@@ -17,7 +17,6 @@ import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.graalvm.nativeimage.UnmanagedMemory;
 
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 /**
@@ -30,8 +29,7 @@ public final class LoadFlowCUtils {
 
     public static LoadFlowProvider getLoadFlowProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultLoadFlowProvider() : name;
-        return ServiceLoader.load(LoadFlowProvider.class).stream()
-                .map(ServiceLoader.Provider::get)
+        return LoadFlowProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
                 .orElseThrow(() -> new PowsyblException("No loadflow provider for name '" + actualName + "'"));

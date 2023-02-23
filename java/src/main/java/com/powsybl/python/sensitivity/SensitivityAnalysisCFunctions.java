@@ -8,7 +8,6 @@ package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
@@ -34,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -58,7 +56,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSensitivityAnalysisProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSensitivityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(SensitivityAnalysisProvider.class).getServices()
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SensitivityAnalysisProvider.findAll()
                 .stream().map(SensitivityAnalysisProvider::getName).collect(Collectors.toList())));
     }
 
@@ -224,8 +222,7 @@ public final class SensitivityAnalysisCFunctions {
 
     private static SensitivityAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
-        return ServiceLoader.load(SensitivityAnalysisProvider.class).stream()
-                .map(ServiceLoader.Provider::get)
+        return SensitivityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
                 .orElseThrow(() -> new PowsyblException("No sensitivity analysis provider for name '" + actualName + "'"));

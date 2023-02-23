@@ -8,7 +8,6 @@ package com.powsybl.python.security;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
@@ -17,7 +16,10 @@ import com.powsybl.python.contingency.ContingencyContainer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
-import com.powsybl.security.*;
+import com.powsybl.security.LimitViolation;
+import com.powsybl.security.SecurityAnalysisParameters;
+import com.powsybl.security.SecurityAnalysisProvider;
+import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.security.results.PreContingencyResult;
@@ -35,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSecurityAnalysisProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSecurityAnalysisProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(SecurityAnalysisProvider.class).getServices()
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SecurityAnalysisProvider.findAll()
                 .stream().map(SecurityAnalysisProvider::getName).collect(Collectors.toList())));
     }
 
@@ -192,8 +193,7 @@ public final class SecurityAnalysisCFunctions {
 
     private static SecurityAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider() : name;
-        return ServiceLoader.load(SecurityAnalysisProvider.class).stream()
-                .map(ServiceLoader.Provider::get)
+        return SecurityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
                 .orElseThrow(() -> new PowsyblException("No security analysis provider for name '" + actualName + "'"));
