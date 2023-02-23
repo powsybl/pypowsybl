@@ -6,10 +6,10 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
 import com.powsybl.sld.svg.DiagramStyleProvider;
 import com.powsybl.sld.util.NominalVoltageDiagramStyleProvider;
@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -66,11 +67,19 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
-        ComponentLibrary componentLibrary = new ConvergenceComponentLibrary();
+        ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibrary)
+                .orElseThrow(() -> new PowsyblException("library with name " + layoutParametersExt.componentLibrary +
+                        " was not found for Single Line Diagram component library"));
         DiagramStyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
                 : new NominalVoltageDiagramStyleProvider(network);
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
                 new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
     }
 
+    static List<String> getComponentLibraryNames() {
+        return ComponentLibrary.findAll()
+                .stream()
+                .map(ComponentLibrary::getName)
+                .collect(Collectors.toList());
+    }
 }
