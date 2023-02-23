@@ -31,7 +31,8 @@ public final class NetworkModifications {
             Map.entry(CREATE_FEEDER_BAY, new CreateFeederBay()),
             Map.entry(CREATE_LINE_FEEDER, new CreateLineFeeder()),
             Map.entry(CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, new CreateTwoWindingsTransformer()),
-            Map.entry(CREATE_LINE_ON_LINE, new CreateLineOnLine())
+            Map.entry(CREATE_LINE_ON_LINE, new CreateLineOnLine()),
+            Map.entry(REVERT_CREATE_LINE_ON_LINE, new RevertCreateLineOnLine())
     );
 
     public static NetworkModification getModification(DataframeNetworkModificationType type) {

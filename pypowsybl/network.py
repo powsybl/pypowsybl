@@ -4685,7 +4685,7 @@ def create_line_on_line(network: Network, df: _DataFrame = None, raise_exception
 
     Connects an existing voltage level (in practice a voltage level where we have some loads or generations)
     to an existing line through a tee point. This method cuts an existing line in two, creating a fictitious
-    voltage level between them (an a fictitious substation if asked).
+    voltage level between them (on a fictitious substation if asked).
     Then it links an existing voltage level to this fictitious voltage level by creating a new line
     described in the provided dataframe.
 
@@ -4727,9 +4727,8 @@ def create_line_on_line(network: Network, df: _DataFrame = None, raise_exception
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str,
-                               line_to_be_deleted: str,
-                               merged_line_id: str, merged_line_name: str = None) -> None:
+def revert_create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                        reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
     It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
@@ -4738,16 +4737,23 @@ def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, lin
 
     Args:
         network: the network
-        line_to_be_merged1_id: The id of the first line connected to the tee point.
-        line_to_be_merged2_id: The id of the second line connected to the tee point.
-        line_to_be_deleted: The tee point line that will be deleted
-        merged_line_id: The id of the new line from the two lines to be merged
-        merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+        df: attributes as a dataframe, it should contain:
+            line_to_be_merged1_id: The id of the first line connected to the tee point.
+            line_to_be_merged2_id: The id of the second line connected to the tee point.
+            line_to_be_deleted: The tee point line that will be deleted
+            merged_line_id: The id of the new line from the two lines to be merged
+            merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        **kwargs: attributes as keyword arguments
     """
-    if merged_line_name is None:
-        merged_line_name = merged_line_id
-    _pp.revert_create_line_on_line(network._handle, line_to_be_merged1_id, line_to_be_merged2_id, line_to_be_deleted,
-                                   merged_line_id, merged_line_name)
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CREATE_LINE_ON_LINE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
@@ -4757,7 +4763,7 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
     This method cuts an existing line in two lines and connect an existing voltage level between them. The voltage level should
-    be added to the network just before calling this method, and should contains at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
+    be added to the network just before calling this method, and should contain at least a configured bus in bus/breaker topology or a bus bar section in node/breaker topology.
 
     Args:
         network: the network

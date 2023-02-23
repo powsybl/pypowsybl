@@ -515,9 +515,6 @@ SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, co
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 
-void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
-    std::string mergedLineId, std::string mergedLineName);
-
 void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
     std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
 

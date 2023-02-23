@@ -108,33 +108,6 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    @CEntryPoint(name = "revertCreateLineOnLine")
-    public static void revertCreateLineOnLine(IsolateThread thread, ObjectHandle networkHandle,
-                                              CCharPointer lineToBeMerged1Id,
-                                              CCharPointer lineToBeMerged2Id,
-                                              CCharPointer lineToBeDeletedId,
-                                              CCharPointer mergedLineId,
-                                              CCharPointer mergedLineName,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String lineToBeMerged1IdStr = CTypeUtil.toString(lineToBeMerged1Id);
-            String lineToBeMerged2IdStr = CTypeUtil.toString(lineToBeMerged2Id);
-            String lineToBeDeletedIdStr = CTypeUtil.toString(lineToBeDeletedId);
-            String mergedLineIdStr = CTypeUtil.toString(mergedLineId);
-            String mergedLineNameStr = CTypeUtil.toString(mergedLineName);
-
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RevertCreateLineOnLine modification = new RevertCreateLineOnLineBuilder()
-                    .withLineToBeMerged1Id(lineToBeMerged1IdStr)
-                    .withLineToBeMerged2Id(lineToBeMerged2IdStr)
-                    .withLineToBeDeletedId(lineToBeDeletedIdStr)
-                    .withMergedLineId(mergedLineIdStr)
-                    .withMergedLineName(mergedLineNameStr)
-                    .build();
-            modification.apply(network);
-        });
-    }
-
     @CEntryPoint(name = "connectVoltageLevelOnLine")
     public static void connectVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
                                                  CCharPointer bbsIdBusId,
