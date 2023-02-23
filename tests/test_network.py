@@ -1542,8 +1542,8 @@ def test_write_svg_file(tmpdir):
     assert exists(data.join('test2_sld.svg'))
     assert exists(data.join('test2_sld.json'))
 
-def test_get_single_line_diagram_component_library_provider_names():
-    assert ['Convergence', 'FlatDesign'] == pp.network.get_single_line_diagram_component_library_provider_names()
+def test_get_single_line_diagram_component_library_names():
+    assert ['Convergence', 'FlatDesign'] == pp.network.get_single_line_diagram_component_library_names()
 
 
 def test_attributes_order():

@@ -801,18 +801,18 @@ public final class NetworkCFunctions {
         public final LayoutParameters layoutParameters;
         public final boolean topologicalColoring;
 
-        public final String componentLibraryProvider;
+        public final String componentLibrary;
 
         public LayoutParametersExt() {
             this(new LayoutParameters(), true, "Convergence");
         }
 
-        public LayoutParametersExt(LayoutParameters layoutParameters, boolean topologicalColoring, String componentLibraryProvider) {
+        public LayoutParametersExt(LayoutParameters layoutParameters, boolean topologicalColoring, String componentLibrary) {
             Objects.requireNonNull(layoutParameters);
             this.layoutParameters = layoutParameters;
             this.layoutParameters.setSvgWidthAndHeightAdded(true);
             this.topologicalColoring = topologicalColoring;
-            this.componentLibraryProvider = componentLibraryProvider;
+            this.componentLibrary = componentLibrary;
         }
     }
 
@@ -822,7 +822,7 @@ public final class NetworkCFunctions {
         cParameters.setDiagonalLabel(parameters.layoutParameters.isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.topologicalColoring);
         cParameters.setAddNodesInfos(parameters.layoutParameters.isAddNodesInfos());
-        cParameters.setComponentLibraryProvider(CTypeUtil.toCharPtr(parameters.componentLibraryProvider));
+        cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.componentLibrary));
     }
 
     public static LayoutParametersPointer convertToLayoutParametersPointer(LayoutParametersExt parameters) {
@@ -855,7 +855,7 @@ public final class NetworkCFunctions {
                 .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(layoutParametersPtr.isAddNodesInfos()),
                 layoutParametersPtr.isTopologicalColoring(),
-                CTypeUtil.toString(layoutParametersPtr.getComponentLibraryProvider()));
+                CTypeUtil.toString(layoutParametersPtr.getComponentLibrary()));
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
@@ -895,9 +895,9 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getSingleLineDiagramComponentLibraryProviderNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryProviderNames()));
+    @CEntryPoint(name = "getSingleLineDiagramComponentLibraryNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryNames()));
     }
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")

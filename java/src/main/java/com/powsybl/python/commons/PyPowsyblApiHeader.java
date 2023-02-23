@@ -908,11 +908,11 @@ public final class PyPowsyblApiHeader {
         @CField("nodes_infos")
         void setAddNodesInfos(boolean addNodeInfos);
 
-        @CField("component_library_provider")
-        CCharPointer getComponentLibraryProvider();
+        @CField("component_library")
+        CCharPointer getComponentLibrary();
 
-        @CField("component_library_provider")
-        void setComponentLibraryProvider(CCharPointer componentLibraryProvider);
+        @CField("component_library")
+        void setComponentLibrary(CCharPointer componentLibrary);
     }
 
     @CEnum("DynamicMappingType")

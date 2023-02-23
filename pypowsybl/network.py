@@ -89,13 +89,13 @@ class LayoutParameters:
     This class represents layout parameters for a single line diagram svg generation."""
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 topological_coloring: bool = True, nodes_infos: bool = False, component_library_provider: str = 'Convergence'):
+                 topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
         self._topological_coloring = topological_coloring
         self._nodes_infos = nodes_infos
-        self._component_library_provider = component_library_provider
+        self._component_library = component_library
 
     @property
     def use_name(self) -> bool:
@@ -123,9 +123,9 @@ class LayoutParameters:
         return self._nodes_infos
 
     @property
-    def component_library_provider(self) -> str:
+    def component_library(self) -> str:
         """name of the library used for component"""
-        return self._component_library_provider
+        return self._component_library
 
     def _to_c_parameters(self) -> _pp.LayoutParameters:
         c_parameters = _pp.LayoutParameters()
@@ -134,7 +134,7 @@ class LayoutParameters:
         c_parameters.diagonal_label = self._diagonal_label
         c_parameters.topological_coloring = self._topological_coloring
         c_parameters.nodes_infos = self._nodes_infos
-        c_parameters.component_library_provider = self._component_library_provider
+        c_parameters.component_library = self._component_library
         return c_parameters
 
 
@@ -5462,5 +5462,9 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
-def get_single_line_diagram_component_library_provider_names() -> _List[str]:
-    return _pp.get_single_line_diagram_component_library_provider_names()
+def get_single_line_diagram_component_library_names() -> _List[str]:
+    """
+
+    :return: the list of component library names that can be used with single line diagram
+    """
+    return _pp.get_single_line_diagram_component_library_names()

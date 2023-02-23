@@ -67,16 +67,16 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
-        ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibraryProvider)
-                .orElseThrow(() -> new PowsyblException("Provider " + layoutParametersExt.componentLibraryProvider +
-                        " for Single Line Diagram component library not found"));
+        ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibrary)
+                .orElseThrow(() -> new PowsyblException("library with name " + layoutParametersExt.componentLibrary +
+                        " was not found for Single Line Diagram component library"));
         DiagramStyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
                 : new NominalVoltageDiagramStyleProvider(network);
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
                 new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
     }
 
-    static List<String> getComponentLibraryProviderNames() {
+    static List<String> getComponentLibraryNames() {
         return ComponentLibrary.findAll()
                 .stream()
                 .map(ComponentLibrary::getName)
