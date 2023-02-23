@@ -16,7 +16,6 @@ import com.powsybl.sensitivity.SensitivityAnalysisParameters;
 import com.powsybl.sensitivity.SensitivityAnalysisProvider;
 
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
@@ -28,8 +27,7 @@ public final class SensitivityAnalysisCUtils {
 
     public static SensitivityAnalysisProvider getSensitivityAnalysisProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
-        return ServiceLoader.load(SensitivityAnalysisProvider.class).stream()
-                .map(ServiceLoader.Provider::get)
+        return SensitivityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
                 .orElseThrow(() -> new PowsyblException("No sensitivity analysis provider for name '" + actualName + "'"));

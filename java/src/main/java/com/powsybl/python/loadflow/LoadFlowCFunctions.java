@@ -7,7 +7,6 @@
 package com.powsybl.python.loadflow;
 
 import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -74,7 +73,7 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "getLoadFlowProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getLoadFlowProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ServiceLoaderCache<>(LoadFlowProvider.class).getServices()
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(LoadFlowProvider.findAll()
                 .stream().map(LoadFlowProvider::getName).collect(Collectors.toList())));
     }
 

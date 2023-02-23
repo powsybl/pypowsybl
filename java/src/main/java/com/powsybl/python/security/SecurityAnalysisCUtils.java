@@ -16,7 +16,6 @@ import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisProvider;
 
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * @author Etienne Lesot <etienne.lesot@rte-france.com>
@@ -28,8 +27,7 @@ public final class SecurityAnalysisCUtils {
 
     public static SecurityAnalysisProvider getSecurityAnalysisProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider() : name;
-        return ServiceLoader.load(SecurityAnalysisProvider.class).stream()
-                .map(ServiceLoader.Provider::get)
+        return SecurityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
                 .findFirst()
                 .orElseThrow(() -> new PowsyblException("No security analysis provider for name '" + actualName + "'"));
