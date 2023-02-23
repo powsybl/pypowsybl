@@ -218,6 +218,14 @@ def test_get_provider_parameters_names():
     ]
 
 
+def test_get_provider_parameters():
+    specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
+    assert 30 == len(specific_parameters)
+    assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
+    assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
+    assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
+
+
 def test_provider_parameters():
     parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
     assert '5' == parameters.provider_parameters['maxIteration']
