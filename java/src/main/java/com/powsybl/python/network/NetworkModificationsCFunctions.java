@@ -12,6 +12,7 @@ import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationT
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.CreateCouplingDeviceBuilder;
+import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.network.BusbarSection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
@@ -26,12 +27,14 @@ import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
+import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
@@ -83,16 +86,6 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    static CreateCouplingDeviceBuilder createCouplingDeviceBuilder(UpdatingDataframe df) {
-        CreateCouplingDeviceBuilder builder = new CreateCouplingDeviceBuilder();
-        for (int row = 0; row < df.getRowCount(); row++) {
-            applyIfPresent(df.getStrings("busbar_section_id_1"), row, builder::withBusbarSectionId1);
-            applyIfPresent(df.getStrings("busbar_section_id_2"), row, builder::withBusbarSectionId2);
-            applyIfPresent(df.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
-        }
-        return builder;
-    }
-
     @CEntryPoint(name = "createNetworkModification")
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
                                                  PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
@@ -119,6 +112,16 @@ public final class NetworkModificationsCFunctions {
             DataframeNetworkModificationType type = convert(networkModificationType);
             List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
             return CTypeUtil.createSeriesMetadata(metadata);
+        });
+    }
+
+    @CEntryPoint(name = "removeFeederBays")
+    public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
+                                        CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
         });
     }
 

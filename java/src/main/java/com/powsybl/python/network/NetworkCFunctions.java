@@ -958,16 +958,6 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "removeFeederBays")
-    public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
-                                    CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
-        });
-    }
-
     @CEntryPoint(name = "getModificationMetadataWithElementType")
     public static DataframesMetadataPointer getModificationMetadataWithElementType(IsolateThread thread,
                                                                                    NetworkModificationType networkModificationType,
