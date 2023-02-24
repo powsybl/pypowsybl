@@ -897,7 +897,7 @@ def test_connect_voltage_level_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
     n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
-    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+    pp.network.connect_voltage_level_on_line(n, bbs_or_bus_id="BBS", line_id="NHV1_NHV2_1", position_percent=75.0)
 
     retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
     assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level1_id"] == "VLHV1"
@@ -921,7 +921,7 @@ def test_revert_connect_voltage_level_on_line():
     assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
     assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
 
-    pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+    pp.network.connect_voltage_level_on_line(n, bbs_or_bus_id="BBS", line_id="NHV1_NHV2_1", position_percent=75.0)
 
     assert len(n.get_lines()) == 3
 

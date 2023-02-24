@@ -4756,9 +4756,8 @@ def revert_create_line_on_line(network: Network, df: _DataFrame = None, raise_ex
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
-                                  line1_id: str = '', line1_name: str = '', line2_id: str = '',
-                                  line2_name: str = '') -> None:
+def connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                  reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -4767,22 +4766,31 @@ def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id:
 
     Args:
         network: the network
-        bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
-        line_id: the ID ot the line on which the voltage level should be connected.
-        position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
-                          and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-                          between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-        line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
-        line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
-        line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
-        line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+        df: attributes as a dataframe, it should contain:
+            bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
+            line_id: the ID ot the line on which the voltage level should be connected.
+            position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
+                              and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+                              between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+            line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
+            line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
+            line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
+            line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        **kwargs: attributes as keyword arguments
     """
-    _pp.connect_voltage_level_on_line(network._handle, bbs_or_bus_id, line_id, line1_id, line1_name, line2_id,
-                                      line2_name, position_percent)
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
-                                         line_name: str = None) -> None:
+def revert_connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
     It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
@@ -4791,14 +4799,22 @@ def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_
 
     Args:
         network: the network
-        line1_id: The id of the first existing line
-        line2_id: The id of the second existing line
-        line_id: The id of the new line to be created
-        line_name: The name of the line to be created (default to line_id)
+        df: attributes as a dataframe, it should contain:
+            line1_id: The id of the first existing line
+            line2_id: The id of the second existing line
+            line_id: The id of the new line to be created
+            line_name: The name of the line to be created (default to line_id)
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        **kwargs: attributes as keyword arguments
     """
-    if line_name is None:
-        line_name = line1_id
-    _pp.revert_connect_voltage_level_on_line(network._handle, line1_id, line2_id, line_id, line_name)
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bool = False, reporter: _Reporter = None,

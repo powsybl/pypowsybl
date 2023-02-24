@@ -1170,18 +1170,6 @@ FlowDecompositionParameters* createFlowDecompositionParameters() {
     return new FlowDecompositionParameters(parameters.get());
 }
 
-void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
-        std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent) {
-    pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(),
-                        (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
-}
-
-void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
-    std::string lineName) {
-    pypowsybl::callJava(::revertConnectVoltageLevelOnLine, network, (char*) line1Id.c_str(), (char*) line2Id.c_str(),
-                        (char*) lineId.c_str(), (char*) lineName.c_str());
-}
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
     return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
 }

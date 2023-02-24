@@ -515,12 +515,6 @@ SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, co
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 
-void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
-    std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
-
-void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
-    std::string lineName);
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
 
 std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);

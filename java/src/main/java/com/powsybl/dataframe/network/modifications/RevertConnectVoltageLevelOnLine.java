@@ -1,0 +1,59 @@
+/**
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
+ */
+package com.powsybl.dataframe.network.modifications;
+
+import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.modification.topology.RevertConnectVoltageLevelOnLineBuilder;
+import com.powsybl.iidm.network.Network;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
+
+/**
+ * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ */
+public class RevertConnectVoltageLevelOnLine implements NetworkModification {
+
+    private static final List<SeriesMetadata> METADATA = List.of(
+            SeriesMetadata.stringIndex("line1_id"),
+            SeriesMetadata.strings("line2_id"),
+            SeriesMetadata.strings("line_id"),
+            SeriesMetadata.strings("line_name")
+    );
+
+    @Override
+    public List<SeriesMetadata> getMetadata() {
+        return METADATA;
+    }
+
+    private RevertConnectVoltageLevelOnLineBuilder createBuilder(UpdatingDataframe dataframe, int row) {
+        RevertConnectVoltageLevelOnLineBuilder builder = new RevertConnectVoltageLevelOnLineBuilder();
+        applyIfPresent(dataframe.getStrings("line1_id"), row, builder::withLine1Id);
+        applyIfPresent(dataframe.getStrings("line2_id"), row, builder::withLine2Id);
+        applyIfPresent(dataframe.getStrings("line_name"), row, builder::withLineName);
+        applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineId);
+        Optional<String> lineName = dataframe.getStringValue("line_name", row);
+        if (lineName.isEmpty()) {
+            applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineName);
+        }
+        return builder;
+    }
+
+    @Override
+    public void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter) {
+        for (int row = 0; row < dataframe.get(0).getRowCount(); row++) {
+            RevertConnectVoltageLevelOnLineBuilder builder = createBuilder(dataframe.get(0), row);
+            builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+        }
+    }
+}

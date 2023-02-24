@@ -587,7 +587,9 @@ public final class PyPowsyblApiHeader {
         CREATE_LINE_FEEDER,
         CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER,
         CREATE_LINE_ON_LINE,
-        REVERT_CREATE_LINE_ON_LINE;
+        REVERT_CREATE_LINE_ON_LINE,
+        CONNECT_VOLTAGE_LEVEL_ON_LINE,
+        REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
 
         @CEnumValue
         public native int getCValue();

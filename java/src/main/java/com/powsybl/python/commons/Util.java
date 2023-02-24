@@ -343,6 +343,10 @@ public final class Util {
                 return DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
             case REVERT_CREATE_LINE_ON_LINE:
                 return DataframeNetworkModificationType.REVERT_CREATE_LINE_ON_LINE;
+            case CONNECT_VOLTAGE_LEVEL_ON_LINE:
+                return DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
+            case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE:
+                return DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }
