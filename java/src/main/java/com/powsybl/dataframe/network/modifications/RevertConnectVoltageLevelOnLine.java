@@ -51,6 +51,9 @@ public class RevertConnectVoltageLevelOnLine implements NetworkModification {
 
     @Override
     public void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter) {
+        if (dataframe.size() != 1) {
+            throw new IllegalArgumentException("Expected only one input dataframe");
+        }
         for (int row = 0; row < dataframe.get(0).getRowCount(); row++) {
             RevertConnectVoltageLevelOnLineBuilder builder = createBuilder(dataframe.get(0), row);
             builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
