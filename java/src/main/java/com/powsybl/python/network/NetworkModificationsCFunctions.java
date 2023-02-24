@@ -11,9 +11,10 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.modification.NetworkModification;
-import com.powsybl.iidm.modification.topology.*;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.modification.topology.CreateCouplingDeviceBuilder;
+import com.powsybl.iidm.network.BusbarSection;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
@@ -108,39 +109,6 @@ public final class NetworkModificationsCFunctions {
             DataframeNetworkModificationType type = convert(networkModificationType);
             NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
         });
-    }
-
-    @CEntryPoint(name = "replaceTeePointByVoltageLevelOnLine")
-    public static void replaceTeePointByVoltageLevelOnLine(IsolateThread thread, ObjectHandle networkHandle,
-                                                           CCharPointer teePointLine1,
-                                                           CCharPointer teePointLine2,
-                                                           CCharPointer teePointLineToRemove,
-                                                           CCharPointer bbsOrBusId,
-                                                           CCharPointer newLine1Id,
-                                                           CCharPointer newLine1Name,
-                                                           CCharPointer newLine2Id,
-                                                           CCharPointer newLine2Name,
-                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-
-        String teePointLine1Str = CTypeUtil.toString(teePointLine1);
-        String teePointLineStr = CTypeUtil.toString(teePointLine2);
-        String teePointLineToRemoveStr = CTypeUtil.toStringOrNull(teePointLineToRemove);
-        String bbsOrBusIdStr = CTypeUtil.toStringOrNull(bbsOrBusId);
-        String newLine1IdStr = CTypeUtil.toStringOrNull(newLine1Id);
-        String newLine1NameStr = CTypeUtil.toStringOrNull(newLine1Name);
-        String newLine2IdStr = CTypeUtil.toStringOrNull(newLine2Id);
-        String newLine2NameStr = CTypeUtil.toStringOrNull(newLine2Name);
-        Network network = ObjectHandles.getGlobal().get(networkHandle);
-        NetworkModification modification = new ReplaceTeePointByVoltageLevelOnLineBuilder()
-                .withTeePointLine1(teePointLine1Str)
-                .withTeePointLine2(teePointLineStr)
-                .withTeePointLineToRemove(teePointLineToRemoveStr)
-                .withBbsOrBusId(bbsOrBusIdStr)
-                .withNewLine1Id(newLine1IdStr)
-                .withNewLine1Name(newLine1NameStr)
-                .withNewLine2Id(newLine2IdStr)
-                .withNewLine2Name(newLine2NameStr).build();
-        modification.apply(network);
     }
 
     @CEntryPoint(name = "getModificationMetadata")

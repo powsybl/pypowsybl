@@ -179,6 +179,7 @@ typedef enum {
     REVERT_CREATE_LINE_ON_LINE,
     CONNECT_VOLTAGE_LEVEL_ON_LINE,
     REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE,
+    REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
 } network_modification_type;
 
 typedef struct matrix_struct {

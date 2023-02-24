@@ -347,6 +347,8 @@ public final class Util {
                 return DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
             case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE:
                 return DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
+            case REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE:
+                return DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }

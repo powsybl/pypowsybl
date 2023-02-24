@@ -256,7 +256,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CREATE_LINE_ON_LINE", network_modification_type::CREATE_LINE_ON_LINE)
             .value("REVERT_CREATE_LINE_ON_LINE", network_modification_type::REVERT_CREATE_LINE_ON_LINE)
             .value("CONNECT_VOLTAGE_LEVEL_ON_LINE", network_modification_type::CONNECT_VOLTAGE_LEVEL_ON_LINE)
-            .value("REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE", network_modification_type::REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE);
+            .value("REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE", network_modification_type::REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
+            .value("REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE", network_modification_type::REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE);
 
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
@@ -736,9 +737,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("GT_5_PERC_ZONE_TO_ZONE_PTDF", pypowsybl::DefaultXnecProvider::GT_5_PERC_ZONE_TO_ZONE_PTDF, "Select branches on base case with greater than 5 perc zone to zone PTDF or that is an interconnection.")
             .value("ALL_BRANCHES", pypowsybl::DefaultXnecProvider::ALL_BRANCHES, "Select all branches in a network.")
             .value("INTERCONNECTIONS", pypowsybl::DefaultXnecProvider::INTERCONNECTIONS, "Select all the interconnections in a network.");
-
-    m.def("replace_tee_point_by_voltage_level_on_line", &pypowsybl::replaceTeePointByVoltageLevelOnLine, "Replace tee point by voltage level on line", py::arg("network"), py::arg("tee_point_line1"), py::arg("tee_point_line2"), py::arg("tee_point_line_to_remove"),
-     py::arg("bbs_or_bus_id"), py::arg("new_line1_id"), py::arg("new_line1_name"), py::arg("new_line2_id"), py::arg("new_line2_name"));
 
     m.def("get_connectables_order_positions", &pypowsybl::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
 

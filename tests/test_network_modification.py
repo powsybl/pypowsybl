@@ -954,8 +954,8 @@ def test_replace_tee_point_by_voltage_level_on_line():
 
     assert len(n.get_lines()) == 4
 
-    pp.network.replace_tee_point_by_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'VLTEST_0',
-                                                          'NewLine1', 'NewLine2')
+    pp.network.replace_tee_point_by_voltage_level_on_line(n, tee_point_line1='NHV1_NHV2_1_1', tee_point_line2='NHV1_NHV2_1_2',
+                                                          tee_point_line_to_remove='test_line', bbs_or_bus_id='VLTEST_0', new_line1_id='NewLine1', new_line2_id='NewLine2')
 
     # Remove test_line and replace NHV1_NHV2_1_1 and NHV1_NHV2_1_2 by NewLine1 and NewLine2
     assert len(n.get_lines()) == 3

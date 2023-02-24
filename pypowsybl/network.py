@@ -5373,37 +5373,37 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str,
-                                               tee_point_line_to_remove: str,
-                                               bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
-                                               new_line1_name: str = None, new_line2_name: str = None) -> None:
+def replace_tee_point_by_voltage_level_on_line(network: Network,  df: _DataFrame = None, raise_exception: bool = False,
+                                               reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
 
     Args:
-        tee_point_line1 : The ID of the existing line connecting the first voltage level to the tee point
-        tee_point_line2 : The ID of the existing line connecting the tee point to the second voltage level
-        tee_point_line_to_remove : The ID of the existing line connecting the tee point to the attached voltage level
-        bbs_or_bus_id : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
-          where we want to connect the new lines new line 1 and new line 2
-        new_line1_id : The ID of the new line connecting the first voltage level to the attached voltage level
-        new_line2_id : The ID of the new line connecting the second voltage level to the attached voltage level
-        new_line1_name : The optional name of the new line connecting the first voltage level to the attached voltage level
-        new_line2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
+        network: the network in which the busbar sections are.
+        df: Attributes as a dataframe. It should contain:
+            tee_point_line1 : The ID of the existing line connecting the first voltage level to the tee point
+            tee_point_line2 : The ID of the existing line connecting the tee point to the second voltage level
+            tee_point_line_to_remove : The ID of the existing line connecting the tee point to the attached voltage level
+            bbs_or_bus_id : The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
+              where we want to connect the new lines new line 1 and new line 2
+            new_line1_id : The ID of the new line connecting the first voltage level to the attached voltage level
+            new_line2_id : The ID of the new line connecting the second voltage level to the attached voltage level
+            new_line1_name : The optional name of the new line connecting the first voltage level to the attached voltage level
+            new_line2_name : The optional name of the new line connecting the second voltage level to the attached voltage level
+        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        reporter: an optional reporter to get functional logs.
+        kwargs: attributes as keyword arguments.
 
     Notes:
         It replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
         and removes the tee point.
     """
-    if new_line1_name is None:
-        new_line1_name = new_line1_id
-    if new_line2_name is None:
-        new_line2_name = new_line2_id
-
-    _pp.replace_tee_point_by_voltage_level_on_line(network._handle, tee_point_line1, tee_point_line2,
-                                                   tee_point_line_to_remove,
-                                                   bbs_or_bus_id, new_line1_id, new_line1_name, new_line2_id,
-                                                   new_line2_name)
+    metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
+    df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+    c_df = _create_c_dataframe(df, metadata)
+    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
+                                    raise_exception,
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,

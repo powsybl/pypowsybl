@@ -34,7 +34,8 @@ public final class NetworkModifications {
             Map.entry(CREATE_LINE_ON_LINE, new CreateLineOnLine()),
             Map.entry(REVERT_CREATE_LINE_ON_LINE, new RevertCreateLineOnLine()),
             Map.entry(CONNECT_VOLTAGE_LEVEL_ON_LINE, new ConnectVoltageLevelOnLine()),
-            Map.entry(REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE, new RevertConnectVoltageLevelOnLine())
+            Map.entry(REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE, new RevertConnectVoltageLevelOnLine()),
+            Map.entry(REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE, new ReplaceTeePointByVoltageLevelOnLine())
     );
 
     public static NetworkModification getModification(DataframeNetworkModificationType type) {
