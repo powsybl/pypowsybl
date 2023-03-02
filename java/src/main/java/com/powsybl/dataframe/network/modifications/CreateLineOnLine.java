@@ -13,12 +13,10 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.CreateLineOnLineBuilder;
-import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.LineAdder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -79,24 +77,20 @@ public class CreateLineOnLine implements NetworkModification {
         applyIfPresent(dataframe.getStrings("line2_id"), row, builder::withLine2Id);
         applyIfPresent(dataframe.getStrings("line1_name"), row, builder::withLine1Name);
         applyIfPresent(dataframe.getStrings("line2_name"), row, builder::withLine2Name);
-        Optional<String> lineIdOptional = dataframe.getStringValue("line_id", row);
-        if (lineIdOptional.isEmpty()) {
-            throw new PowsyblException("LineId cannot be empty.");
-        }
-        Line line = network.getLine(lineIdOptional.get());
-        builder.withLine(line);
+        String lineId = dataframe.getStringValue("line_id", row).orElseThrow(() -> new PowsyblException("LineId cannot be empty."));
+        builder.withLine(network.getLine(lineId));
         boolean createFictitiousSubstation = Boolean.parseBoolean(dataframe.getStringValue("create_fictitious_substation", row).orElse("False"));
         builder.withCreateFictitiousSubstation(createFictitiousSubstation);
         return builder;
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter) {
-        if (dataframe.size() != 1) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+        if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
-        for (int row = 0; row < dataframe.get(0).getRowCount(); row++) {
-            CreateLineOnLineBuilder builder = createBuilder(network, dataframe.get(0), row);
+        for (int row = 0; row < dataframes.get(0).getRowCount(); row++) {
+            CreateLineOnLineBuilder builder = createBuilder(network, dataframes.get(0), row);
             com.powsybl.iidm.modification.NetworkModification modification = builder.build();
             modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         }

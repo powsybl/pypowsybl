@@ -29,13 +29,13 @@ public class CreateLineFeeder implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter) {
-        if (dataframe.size() != 1) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+        if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
-        for (int i = 0; i < dataframe.get(0).getRowCount(); i++) {
+        for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, dataframe.get(0), i);
+            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, dataframes.get(0), i);
             com.powsybl.iidm.modification.NetworkModification modification = builder.build();
             modification.apply(network);
         }
