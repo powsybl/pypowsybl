@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 from numpy import NaN
 import numpy as np
+from pypowsybl import PyPowsyblError
 
 import pypowsybl as pp
 import pathlib
@@ -1666,7 +1667,12 @@ def test_branches():
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
     assert twt.bus2_id == 'S1VL2_0'
-
+    assert twt.connected_1
+    assert twt.connected_2
+    n.update_branches(id='TWT', connected_1=False, connected_2=False)
+    twt = n.get_branches().loc['TWT']
+    assert not twt.connected_1
+    assert not twt.connected_2
 
 def test_terminals():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1678,6 +1684,26 @@ def test_terminals():
     assert line.shape[0] == 2
     assert line.iloc[0].element_side == 'ONE'
     assert line.iloc[1].element_side == 'TWO'
+    n.update_terminals(element_id='GH1', connected=False)
+    terminals = n.get_terminals()
+    gen = terminals.loc['GH1']
+    assert not gen.connected
+    n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='ONE')
+    terminals = n.get_terminals()
+    line = terminals.loc['LINE_S2S3']
+    assert not line.iloc[0].connected
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_terminals(element_id='GH1', connected=False, element_side='ONE')
+    assert "no side ONE for this element" in str(e)
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_terminals(element_id='LINE_S2S3', connected=False)
+    assert "side must be provided for this element" in str(e)
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='THREE')
+    assert "no side THREE for this element" in str(e)
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='side')
+    assert "side must be null, ONE, TWO or THREE" in str(e)
 
 
 if __name__ == '__main__':
