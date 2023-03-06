@@ -15,6 +15,7 @@ import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.network.NetworkUtil;
+import com.powsybl.python.network.SideEnum;
 import com.powsybl.python.network.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -895,12 +896,12 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
-                .booleans("connected_1", branch -> branch.getTerminal1().isConnected(),
+                .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
-                .booleans("connected_2", branch -> branch.getTerminal2().isConnected(),
+                .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal2(), connected))
                 .build();
     }
@@ -914,7 +915,7 @@ public final class NetworkDataframes {
                 .strings("bus_id", terminal -> terminal.getBusView().getBus() == null ? "" :
                         terminal.getBusView().getBus().getId())
                 .strings("element_side", terminal -> terminal.getConnectable() instanceof Branch ?
-                        ((Branch<?>) terminal.getConnectable()).getSide(terminal).toString() : "",
+                                ((Branch<?>) terminal.getConnectable()).getSide(terminal).toString() : "",
                     (terminal, element_side) -> Function.identity())
                 .booleans("connected", Terminal::isConnected, NetworkDataframes::setConnected)
                 .build();
@@ -927,36 +928,39 @@ public final class NetworkDataframes {
         if (connectable == null) {
             throw new PowsyblException("connectable " + id + " not found");
         }
-        String side = dataframe.getStringValue("element_side", index).orElse(null);
-        if (side == null) {
+        String sideStr = dataframe.getStringValue("element_side", index).orElse(null);
+        if (sideStr == null) {
             if (connectable instanceof Branch || connectable instanceof ThreeWindingsTransformer) {
-                throw new PowsyblException("side must be provided for this element");
+                throw new PowsyblException("side must be provided for this element : " + id);
             }
             return connectable.getTerminals().get(0);
-        } else if (side.equals("ONE")) {
-            if (connectable instanceof Branch) {
-                return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
-            } else if (connectable instanceof ThreeWindingsTransformer) {
-                return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.ONE);
-            } else {
-                throw new PowsyblException("no side ONE for this element");
-            }
-        } else if (side.equals("TWO")) {
-            if (connectable instanceof Branch) {
-                return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
-            } else if (connectable instanceof ThreeWindingsTransformer) {
-                return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.TWO);
-            } else {
-                throw new PowsyblException("no side TWO for this element");
-            }
-        } else if (side.equals("THREE")) {
-            if (connectable instanceof ThreeWindingsTransformer) {
-                return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
-            } else {
-                throw new PowsyblException("no side THREE for this element");
-            }
-        } else {
-            throw new PowsyblException("side must be null, ONE, TWO or THREE");
+        }
+        SideEnum side = SideEnum.valueOf(sideStr);
+        switch (side) {
+            case ONE:
+                if (connectable instanceof Branch) {
+                    return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
+                } else if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.ONE);
+                } else {
+                    throw new PowsyblException("no side ONE for this element");
+                }
+            case TWO:
+                if (connectable instanceof Branch) {
+                    return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
+                } else if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.TWO);
+                } else {
+                    throw new PowsyblException("no side TWO for this element");
+                }
+            case THREE:
+                if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
+                } else {
+                    throw new PowsyblException("no side THREE for this element");
+                }
+            default:
+                throw new PowsyblException("side must be ONE, TWO or THREE");
         }
     }
 

@@ -1667,12 +1667,12 @@ def test_branches():
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
     assert twt.bus2_id == 'S1VL2_0'
-    assert twt.connected_1
-    assert twt.connected_2
-    n.update_branches(id='TWT', connected_1=False, connected_2=False)
+    assert twt.connected1
+    assert twt.connected2
+    n.update_branches(id='TWT', connected1=False, connected2=False)
     twt = n.get_branches().loc['TWT']
-    assert not twt.connected_1
-    assert not twt.connected_2
+    assert not twt.connected1
+    assert not twt.connected2
 
 def test_terminals():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1703,7 +1703,7 @@ def test_terminals():
     assert "no side THREE for this element" in str(e)
     with pytest.raises(PyPowsyblError) as e:
         n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='side')
-    assert "side must be null, ONE, TWO or THREE" in str(e)
+    assert "No enum constant" in str(e)
 
 
 if __name__ == '__main__':
