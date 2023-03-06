@@ -15,6 +15,7 @@ import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.network.NetworkUtil;
+import com.powsybl.python.network.SideEnum;
 import com.powsybl.python.network.TemporaryLimitData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -297,7 +298,7 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper buses() {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
-                getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
+                        getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""))
                 .doubles("v_mag", Bus::getV, Bus::setV)
@@ -814,7 +815,7 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper rtcs() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                .filter(t -> t.getRatioTapChanger() != null), NetworkDataframes::getT2OrThrow)
+                        .filter(t -> t.getRatioTapChanger() != null), NetworkDataframes::getT2OrThrow)
                 .stringsIndex("id", TwoWindingsTransformer::getId)
                 .ints("tap", t -> t.getRatioTapChanger().getTapPosition(), (t, p) -> t.getRatioTapChanger().setTapPosition(p))
                 .ints("low_tap", t -> t.getRatioTapChanger().getLowTapPosition())
@@ -848,7 +849,7 @@ public final class NetworkDataframes {
 
     private static NetworkDataframeMapper ptcs() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                .filter(t -> t.getPhaseTapChanger() != null), NetworkDataframes::getT2OrThrow)
+                        .filter(t -> t.getPhaseTapChanger() != null), NetworkDataframes::getT2OrThrow)
                 .stringsIndex("id", TwoWindingsTransformer::getId)
                 .ints("tap", t -> t.getPhaseTapChanger().getTapPosition(), (t, v) -> t.getPhaseTapChanger().setTapPosition(v))
                 .ints("low_tap", t -> t.getPhaseTapChanger().getLowTapPosition())
@@ -869,7 +870,8 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper identifiables() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getIdentifiables().stream(), NetworkDataframes::getT2OrThrow)
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getIdentifiables().stream(),
+                        getOrThrow(Network::getIdentifiable, "Identifiable"))
                 .stringsIndex("id", Identifiable::getId)
                 .strings("type", identifiable -> identifiable.getType().toString())
                 .build();
@@ -877,39 +879,97 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper injections() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
-                        .filter(connectable -> connectable instanceof Injection),
-                NetworkDataframes::getT2OrThrow)
+                                .filter(connectable -> connectable instanceof Injection),
+                        NetworkDataframes::getT2OrThrow)
                 .stringsIndex("id", Connectable::getId)
                 .strings("type", connectable -> connectable.getType().toString())
-                .strings("voltage_level_id", connectable -> ((Injection) connectable).getTerminal().getVoltageLevel().getId())
-                .strings("bus_id", connectable -> ((Injection) connectable).getTerminal().getBusView().getBus() == null ? "" :
-                        ((Injection) connectable).getTerminal().getBusView().getBus().getId())
+                .strings("voltage_level_id", connectable -> ((Injection<?>) connectable).getTerminal().getVoltageLevel().getId())
+                .strings("bus_id", connectable -> ((Injection<?>) connectable).getTerminal().getBusView().getBus() == null ? "" :
+                        ((Injection<?>) connectable).getTerminal().getBusView().getBus().getId())
                 .build();
     }
 
     static NetworkDataframeMapper branches() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getBranchStream, NetworkDataframes::getT2OrThrow)
+        return NetworkDataframeMapperBuilder.ofStream(Network::getBranchStream, getOrThrow(Network::getBranch, "Branch"))
                 .stringsIndex("id", Branch::getId)
                 .strings("type", branch -> branch.getType().toString())
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
+                .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
+                    (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
+                .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
+                    (branch, connected) -> setConnected(branch.getTerminal2(), connected))
                 .build();
     }
 
     static NetworkDataframeMapper terminals() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
-                .flatMap(connectable -> (Stream<Terminal>) connectable.getTerminals().stream()), NetworkDataframes::getT2OrThrow)
-                .stringsIndex("element_id", terminal -> ((Terminal) terminal).getConnectable().getId())
-                .strings("voltage_level_id", terminal -> ((Terminal) terminal).getVoltageLevel().getId())
-                .strings("bus_id", terminal -> ((Terminal) terminal).getBusView().getBus() == null ? "" :
-                        ((Terminal) terminal).getBusView().getBus().getId())
-                .strings("element_side", terminal -> ((Terminal) terminal).getConnectable() instanceof Branch ?
-                        ((Branch) ((Terminal) terminal).getConnectable()).getSide((Terminal) terminal).toString() : "")
+                                .flatMap(connectable -> (Stream<Terminal>) connectable.getTerminals().stream()),
+                        NetworkDataframes::getTerminal)
+                .stringsIndex("element_id", terminal -> terminal.getConnectable().getId())
+                .strings("voltage_level_id", terminal -> terminal.getVoltageLevel().getId())
+                .strings("bus_id", terminal -> terminal.getBusView().getBus() == null ? "" :
+                        terminal.getBusView().getBus().getId())
+                .strings("element_side", terminal -> terminal.getConnectable() instanceof Branch ?
+                                ((Branch<?>) terminal.getConnectable()).getSide(terminal).toString() : "",
+                    (terminal, element_side) -> Function.identity())
+                .booleans("connected", Terminal::isConnected, NetworkDataframes::setConnected)
                 .build();
+    }
+
+    private static Terminal getTerminal(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("element_id", index)
+                .orElseThrow(() -> new IllegalArgumentException("element_id column is missing"));
+        Connectable<?> connectable = network.getConnectable(id);
+        if (connectable == null) {
+            throw new PowsyblException("connectable " + id + " not found");
+        }
+        String sideStr = dataframe.getStringValue("element_side", index).orElse(null);
+        if (sideStr == null) {
+            if (connectable instanceof Branch || connectable instanceof ThreeWindingsTransformer) {
+                throw new PowsyblException("side must be provided for this element : " + id);
+            }
+            return connectable.getTerminals().get(0);
+        }
+        SideEnum side = SideEnum.valueOf(sideStr);
+        switch (side) {
+            case ONE:
+                if (connectable instanceof Branch) {
+                    return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
+                } else if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.ONE);
+                } else {
+                    throw new PowsyblException("no side ONE for this element");
+                }
+            case TWO:
+                if (connectable instanceof Branch) {
+                    return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
+                } else if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.TWO);
+                } else {
+                    throw new PowsyblException("no side TWO for this element");
+                }
+            case THREE:
+                if (connectable instanceof ThreeWindingsTransformer) {
+                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
+                } else {
+                    throw new PowsyblException("no side THREE for this element");
+                }
+            default:
+                throw new PowsyblException("side must be ONE, TWO or THREE");
+        }
+    }
+
+    private static void setConnected(Terminal terminal, boolean connected) {
+        if (connected) {
+            terminal.connect();
+        } else {
+            terminal.disconnect();
+        }
     }
 
     private static Terminal getBranchTerminal(Branch<?> branch, String side) {
@@ -952,7 +1012,7 @@ public final class NetworkDataframes {
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
         return Stream.concat(Stream.concat(network.getGeneratorStream().map(g -> Pair.of(g.getId(), g)),
-                network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g))),
+                        network.getVscConverterStationStream().map(g -> Pair.of(g.getId(), g))),
                 network.getBatteryStream().map(g -> Pair.of(g.getId(), g)));
     }
 

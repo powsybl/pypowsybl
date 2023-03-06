@@ -589,7 +589,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "voltage_level2_id", "bus2_id");
+                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1", "voltage_level2_id", "bus2_id", "connected2");
     }
 
     @Test
@@ -599,6 +599,6 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("element_id", "voltage_level_id", "bus_id", "element_side");
+                .containsExactly("element_id", "voltage_level_id", "bus_id", "element_side", "connected");
     }
 }
