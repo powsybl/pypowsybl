@@ -18,7 +18,7 @@ from typing import (
     Dict as _Dict,
     Optional as _Optional,
     Union as _Union,
-    TYPE_CHECKING as _TYPE_CHECKING
+    TYPE_CHECKING as _TYPE_CHECKING,
 )
 
 from numpy import Inf
@@ -26,6 +26,7 @@ from numpy.typing import ArrayLike as _ArrayLike
 from pandas import DataFrame as _DataFrame
 import networkx as _nx
 import pandas as pd
+from deprecated import deprecated
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
@@ -4734,6 +4735,28 @@ def get_extensions_information() -> _DataFrame:
     return _create_data_frame_from_series_array(_pp.get_extensions_information())
 
 
+@deprecated
+def create_line_on_line(network: Network, bbs_or_bus_id: str, new_line_id: str, new_line_r: float, new_line_x: float,
+                        new_line_b1: float, new_line_b2: float, new_line_g1: float, new_line_g2: float, line_id: str,
+                        line1_id: str = '', line1_name: str = '', line2_id: str = '', line2_name: str = '',
+                        position_percent: float = 50.0, create_fictitious_substation: bool = False,
+                        fictitious_voltage_level_id: str = '', fictitious_voltage_level_name: str = '',
+                        fictitious_substation_id: str = '', fictitious_substation_name: str = '') -> None:
+    """
+    Deprecated, use :meth:`Network.create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                        reporter: _Reporter = None, **kwargs: _ArrayLike)` instead.
+    """
+    create_line_on_line(network, bbs_or_bus_id=bbs_or_bus_id, new_line_id=new_line_id, new_line_r=new_line_r,
+                        new_line_x=new_line_x, new_line_b1=new_line_b1, new_line_b2=new_line_b2, new_line_g1=new_line_g1,
+                        new_line_g2=new_line_g2, line_id=line_id, line1_id=line1_id, line1_name=line1_name,
+                        line2_id=line2_id, line2_name=line2_name, position_percent=position_percent,
+                        create_fictitious_substation=create_fictitious_substation,
+                        fictitious_voltage_level_id=fictitious_voltage_level_id,
+                        fictitious_voltage_level_name=fictitious_voltage_level_name,
+                        fictitious_substation_id=fictitious_substation_id,
+                        fictitious_substation_name=fictitious_substation_name)
+
+
 def create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
@@ -4783,6 +4806,19 @@ def create_line_on_line(network: Network, df: _DataFrame = None, raise_exception
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
+@deprecated
+def revert_create_line_on_line(network: Network, line_to_be_merged1_id: str, line_to_be_merged2_id: str,
+                               line_to_be_deleted: str,
+                               merged_line_id: str, merged_line_name: str = None) -> None:
+    """
+    Deprecated, use revert_create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                        reporter: _Reporter = None, **kwargs: _ArrayLike) instead.
+    """
+    revert_create_line_on_line(network, line_to_be_merged1_id=line_to_be_merged1_id,
+                               line_to_be_merged2_id=line_to_be_merged2_id, line_to_be_deleted=line_to_be_deleted,
+                               merged_line_id=merged_line_id, merged_line_name=merged_line_name)
+
+
 def revert_create_line_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
@@ -4810,6 +4846,15 @@ def revert_create_line_on_line(network: Network, df: _DataFrame = None, raise_ex
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CREATE_LINE_ON_LINE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
+
+@deprecated
+def connect_voltage_level_on_line(network: Network, bbs_or_bus_id: str, line_id: str, position_percent: float = 50.0,
+                                  line1_id: str = '', line1_name: str = '', line2_id: str = '',
+                                  line2_name: str = '') -> None:
+    connect_voltage_level_on_line(network, bbs_or_bus_id=bbs_or_bus_id, line_id=line_id,
+                                  position_percent=position_percent, line1_id=line1_id, line1_name=line1_name,
+                                  line2_id=line2_id, line2_name=line2_name)
 
 
 def connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
@@ -4843,6 +4888,16 @@ def connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
+
+@deprecated
+def revert_connect_voltage_level_on_line(network: Network, line1_id: str, line2_id: str, line_id: str,
+                                         line_name: str = None) -> None:
+    """
+    Deprecated, use revert_connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
+                                         reporter: _Reporter = None, **kwargs: _ArrayLike) instead.
+    """
+    revert_connect_voltage_level_on_line(network, line1_id=line1_id, line2_id=line2_id, line_id=line_id, line_name=line_name)
 
 
 def revert_connect_voltage_level_on_line(network: Network, df: _DataFrame = None, raise_exception: bool = False,
@@ -5427,6 +5482,21 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     if len(positions) == 0:
         return None
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
+
+
+@deprecated
+def replace_tee_point_by_voltage_level_on_line(network: Network, tee_point_line1: str, tee_point_line2: str,
+                                               tee_point_line_to_remove: str,
+                                               bbs_or_bus_id: str, new_line1_id: str, new_line2_id: str,
+                                               new_line1_name: str = None, new_line2_name: str = None) -> None:
+    """
+    Deprecated, use replace_tee_point_by_voltage_level_on_line(network: Network,  df: _DataFrame = None, raise_exception: bool = False,
+                                               reporter: _Reporter = None, **kwargs: _ArrayLike) instead.
+    """
+    replace_tee_point_by_voltage_level_on_line(network, tee_point_line1=tee_point_line1, tee_point_line2=tee_point_line2,
+                                               tee_point_line_to_remove=tee_point_line_to_remove, bbs_or_bus_id=bbs_or_bus_id,
+                                               new_line1_id=new_line1_id, new_line2_id=new_line2_id,
+                                               new_line1_name=new_line1_name, new_line2_name=new_line2_name)
 
 
 def replace_tee_point_by_voltage_level_on_line(network: Network,  df: _DataFrame = None, raise_exception: bool = False,
