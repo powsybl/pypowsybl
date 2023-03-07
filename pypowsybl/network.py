@@ -3042,6 +3042,62 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
+    def update_terminals(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update terminals with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `connected` : element_side must be provided if it is a sided network element
+
+        See Also:
+            :meth:`get_terminals`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_terminals(element_id='GENERATOR_ID', connected=False)
+                network.update_terminals(element_id='LINE_ID', element_side='ONE', connected=True)
+        """
+        return self._update_elements(ElementType.TERMINAL, df, **kwargs)
+
+    def update_branches(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update branches with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `connected_1`
+            - `connected_2`
+
+        See Also:
+            :meth:`get_branches`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_branches(element_id='BRANCH_ID', connected_1=False, connected_2=False)
+        """
+        return self._update_elements(ElementType.BRANCH, df, **kwargs)
+
     def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "", **kwargs: _ArrayLike) -> None:
         """
         Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
