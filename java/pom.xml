@@ -68,7 +68,7 @@
         <graalvm.version>22.2.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.9</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
         <slf4j.version>1.7.30</slf4j.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
