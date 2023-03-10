@@ -8,6 +8,9 @@ Running a load flow
     import pypowsybl as pp
     import pypowsybl.loadflow as lf
     import pypowsybl.network as pn
+    import pandas as pd
+    pd.options.display.max_columns = None
+    pd.options.display.expand_frame_repr = False
 
 You can use the module :mod:`pypowsybl.loadflow` in order to run load flows on networks.
 
