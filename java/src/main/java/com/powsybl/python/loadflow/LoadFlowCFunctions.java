@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.loadflow;
 
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
@@ -15,6 +16,7 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
+import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -168,7 +170,17 @@ public final class LoadFlowCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParametersNames());
+            return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
+        });
+    }
+
+    @CEntryPoint(name = "createLoadFlowProviderParametersSeriesArray")
+    static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createLoadFlowProviderParametersSeriesArray(IsolateThread thread, CCharPointer providerNamePtr,
+                                                                                                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String providerName = CTypeUtil.toString(providerNamePtr);
+            LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
+            return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
         });
     }
 
