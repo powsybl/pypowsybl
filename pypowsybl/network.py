@@ -4917,7 +4917,6 @@ def revert_create_line_on_line(network: Network,  deprecated_line_to_be_merged1_
         deprecated_merged_line_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
     """
-    df_to_concat = None
     if deprecated_line_to_be_merged1_id is not None:
         warnings.warn("Use of deprecated argument line_to_be_merged1_id. Use the dataframe or keyword arguments instead.",
                       DeprecationWarning)
@@ -4940,8 +4939,6 @@ def revert_create_line_on_line(network: Network,  deprecated_line_to_be_merged1_
         kwargs['merged_line_name'] = deprecated_merged_line_name
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    if df_to_concat is not None:
-        df = pd.concat([df, df_to_concat], axis=1)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CREATE_LINE_ON_LINE,
                                     raise_exception,
