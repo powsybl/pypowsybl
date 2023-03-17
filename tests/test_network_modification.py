@@ -818,8 +818,9 @@ def test_create_line_on_line_deprecated_arguments():
                         voltage_regulator_on=True, target_p=100, target_q=150,
                         target_v=300, bus_id='VLTEST_0')
     with pytest.deprecated_call():
-        pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0,
-                                       line_id='NHV1_NHV2_1', position_percent=75.0)
+        pp.network.create_line_on_line(n, 'VLTEST_0', 'test_line', 5.0, 50.0, 2.0, 3.0, 4.0, 5.0, 'NHV1_NHV2_1',
+                                       'NHV1_NHV2_1_1', 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'NHV1_NHV2_1_2', 75.0, True,
+                                       'fictitious_vl', 'fictitious_vl', 'fictitious_substation', 'fictitious_substation')
     retrieved_newline = n.get_lines().loc['test_line']
     assert retrieved_newline["r"] == 5.0
     assert retrieved_newline["x"] == 50.0
@@ -884,7 +885,7 @@ def test_revert_create_line_on_line_deprecated_arg():
                                    line_id='NHV1_NHV2_1', position_percent=75.0)
 
     with pytest.deprecated_call():
-        pp.network.revert_create_line_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'NHV1_NHV2_1')
+        pp.network.revert_create_line_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'test_line', 'NHV1_NHV2_1', 'NHV1_NHV2_1')
     assert len(n.get_lines()) == 2
     retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
     assert retrieved_line["connected1"]
@@ -971,7 +972,8 @@ def test_connect_voltage_level_on_line_deprecated_args():
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
     n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
     with pytest.deprecated_call():
-        pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0)
+        pp.network.connect_voltage_level_on_line(n, "BBS", "NHV1_NHV2_1", 75.0, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_1',
+                                                 'NHV1_NHV2_1_2', 'NHV1_NHV2_1_2')
 
     retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
     assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level1_id"] == "VLHV1"
@@ -1015,9 +1017,8 @@ def test_revert_connect_voltage_level_on_line_deprecated_args():
     n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
     pp.network.connect_voltage_level_on_line(n, bbs_or_bus_id="BBS", line_id="NHV1_NHV2_1", position_percent=75.0)
 
-    assert len(n.get_lines()) == 3
     with pytest.deprecated_call():
-        pp.network.revert_connect_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'NHV1_NHV2_1')
+        pp.network.revert_connect_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2', 'NHV1_NHV2_1', 'NHV1_NHV2_1')
 
     assert len(n.get_lines()) == 2
     retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
@@ -1077,7 +1078,8 @@ def test_replace_tee_point_by_voltage_level_on_line_deprecated_args():
 
     with pytest.deprecated_call():
         pp.network.replace_tee_point_by_voltage_level_on_line(n, 'NHV1_NHV2_1_1', 'NHV1_NHV2_1_2',
-                                                          'test_line', 'VLTEST_0', 'NewLine1', 'NewLine2')
+                                                              'test_line', 'VLTEST_0', 'NewLine1', 'NewLine2',
+                                                              'NewLine1', 'NewLine2')
 
     # Remove test_line and replace NHV1_NHV2_1_1 and NHV1_NHV2_1_2 by NewLine1 and NewLine2
     assert len(n.get_lines()) == 3

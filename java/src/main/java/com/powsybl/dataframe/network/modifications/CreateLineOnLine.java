@@ -40,7 +40,7 @@ public class CreateLineOnLine implements NetworkModification {
             SeriesMetadata.strings("line2_id"),
             SeriesMetadata.strings("line2_name"),
             SeriesMetadata.doubles("position_percent"),
-            SeriesMetadata.strings("create_fictitious_substation"),
+            SeriesMetadata.booleans("create_fictitious_substation"),
             SeriesMetadata.strings("fictitious_voltage_level_id"),
             SeriesMetadata.strings("fictitious_voltage_level_name"),
             SeriesMetadata.strings("fictitious_substation_id"),

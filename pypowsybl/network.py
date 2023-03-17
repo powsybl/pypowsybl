@@ -4889,7 +4889,7 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network,  deprecated_line_to_be_merged1_id: str = None, deprecated_line_to_be_merged2_id: str = None,
+def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_id: str = None, deprecated_line_to_be_merged2_id: str = None,
                                deprecated_line_to_be_deleted: str = None, deprecated_merged_line_id: str = None,
                                deprecated_merged_line_name: str = None, df: _DataFrame = None, raise_exception: bool = False,
                                reporter: _Reporter = None, **kwargs: str) -> None:
