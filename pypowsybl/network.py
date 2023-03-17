@@ -4741,8 +4741,8 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                         deprecated_line1_id: str = None, deprecated_line1_name: str = None, deprecated_line2_id: str = None,
                         deprecated_line2_name: str = None, deprecated_position_percent: float = None,
                         deprecated_create_fictitious_substation: bool = None,
-                        deprecated_fictitious_voltage_level_id: str = None, deprecated_fictitious_voltage_level_name: str = '',
-                        deprecated_fictitious_substation_id: str = '', deprecated_fictitious_substation_name: str = '',
+                        deprecated_fictitious_voltage_level_id: str = None, deprecated_fictitious_voltage_level_name: str = None,
+                        deprecated_fictitious_substation_id: str = None, deprecated_fictitious_substation_name: str = None,
                         df: _DataFrame = None, raise_exception: bool = False,
                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
