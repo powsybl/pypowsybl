@@ -14,26 +14,27 @@ import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
+import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.adders.*;
+import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
+import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Exporter;
-import com.powsybl.iidm.network.ExportersLoader;
-import com.powsybl.iidm.network.ExportersServiceLoader;
-import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.network.ImportConfig;
-import com.powsybl.iidm.network.Importer;
-import com.powsybl.iidm.network.ImportersLoader;
-import com.powsybl.iidm.network.ImportersServiceLoader;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.*;
+import com.powsybl.python.commons.CTypeUtil;
+import com.powsybl.python.commons.Directives;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -956,29 +957,25 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getTwtFeederBaysMetadata")
-    public static DataframeMetadataPointer getTwtFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getModificationMetadataWithElementType")
+    public static DataframesMetadataPointer getModificationMetadataWithElementType(IsolateThread thread,
+                                                                                   NetworkModificationType networkModificationType,
+                                                                                   ElementType elementType,
+                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = FeederBaysTwtSeries.getSeriesMetadata();
-            return CTypeUtil.createSeriesMetadata(seriesMetadata);
-        });
-    }
-
-    @CEntryPoint(name = "getLineFeederBaysMetadata")
-    public static DataframeMetadataPointer getLineFeederBaysMetadata(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            List<SeriesMetadata> seriesMetadata = FeederBaysLineSeries.getSeriesMetadata();
-            return CTypeUtil.createSeriesMetadata(seriesMetadata);
-        });
-    }
-
-    @CEntryPoint(name = "removeFeederBays")
-    public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
-                                    CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
+            DataframeNetworkModificationType modificationType = convert(networkModificationType);
+            DataframeElementType type = convert(elementType);
+            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(modificationType).getMetadata(type);
+            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+            int i = 0;
+            for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                i++;
+            }
+            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+            res.setDataframesMetadata(dataframeMetadataArray);
+            res.setDataframesCount(metadata.size());
+            return res;
         });
     }
 }

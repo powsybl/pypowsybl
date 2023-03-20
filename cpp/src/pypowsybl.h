@@ -517,30 +517,6 @@ SeriesArray* runFlowDecomposition(const JavaHandle& flowDecompositionContext, co
 
 FlowDecompositionParameters* createFlowDecompositionParameters();
 
-void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
-    std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
-    std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
-    std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName);
-
-void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
-    std::string mergedLineId, std::string mergedLineName);
-
-void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
-    std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent);
-
-void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
-    std::string lineName);
-
-void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType);
-
-void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe);
-
-void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe);
-
-std::vector<SeriesMetadata> getLineFeederBaysMetadata();
-
-std::vector<SeriesMetadata> getTwtFeederBaysMetadata();
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id);
 
 std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle network, std::string busbarSectionId, std::string beforeOrAfter);
@@ -552,10 +528,6 @@ void closePypowsybl();
 void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds);
 
 LayoutParameters* createLayoutParameters();
-
-void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
-    std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name);
-
 
 //=======dynamic modeling for dynawaltz package==========
 
@@ -587,6 +559,8 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
+std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
+
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
 }
 #endif //PYPOWSYBL_H

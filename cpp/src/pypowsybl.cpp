@@ -1174,61 +1174,6 @@ FlowDecompositionParameters* createFlowDecompositionParameters() {
     return new FlowDecompositionParameters(parameters.get());
 }
 
-void createLineOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId,
-        std::string newLineId, float newLineR, float newLineX, float newLineB1, float newLineB2, float newLineG1, float newLineG2,
-        std::string lineId, std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent, bool createFictitiousSubstation,
-        std::string fictitiousVoltageLevelId, std::string fictitiousVoltageLevelName, std::string fictitiousSubstationId, std::string fictitiousSubstationName) {
-    pypowsybl::callJava(::createLineOnLine, network, (char*) bbsIdBusId.c_str(),
-                        (char*) newLineId.c_str(), newLineR, newLineX, newLineB1, newLineB2, newLineG1, newLineG2,
-                        (char*) lineId.c_str(), (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(),
-                        positionPercent, createFictitiousSubstation, (char*) fictitiousVoltageLevelId.c_str(), (char*) fictitiousVoltageLevelName.c_str(),
-                        (char*) fictitiousSubstationId.c_str(), (char*) fictitiousSubstationName.c_str());
-}
-
-void revertCreateLineOnLine(pypowsybl::JavaHandle network, std::string lineToBeMerged1Id, std::string lineToBeMerged2Id, std::string lineToBeDeletedId,
-    std::string mergedLineId, std::string mergedLineName) {
-    pypowsybl::callJava(::revertCreateLineOnLine, network, (char*) lineToBeMerged1Id.c_str(), (char*) lineToBeMerged2Id.c_str(),
-                        (char*) lineToBeDeletedId.c_str(), (char*) mergedLineId.c_str(), (char*) mergedLineName.c_str());
-}
-
-void connectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string bbsIdBusId, std::string lineId,
-        std::string line1Id, std::string line1Name, std::string line2Id, std::string line2Name, float positionPercent) {
-    pypowsybl::callJava(::connectVoltageLevelOnLine, network, (char*) bbsIdBusId.c_str(), (char*) lineId.c_str(),
-                        (char*) line1Id.c_str(), (char*) line1Name.c_str(), (char*) line2Id.c_str(), (char*) line2Name.c_str(), positionPercent);
-}
-
-void revertConnectVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string line1Id, std::string line2Id, std::string lineId,
-    std::string lineName) {
-    pypowsybl::callJava(::revertConnectVoltageLevelOnLine, network, (char*) line1Id.c_str(), (char*) line2Id.c_str(),
-                        (char*) lineId.c_str(), (char*) lineName.c_str());
-}
-
-void createFeederBay(pypowsybl::JavaHandle network, bool throwException, JavaHandle* reporter, dataframe_array* dataframes, element_type elementType) {
-    pypowsybl::callJava(::createFeederBay, network, throwException, (reporter == nullptr) ? nullptr : *reporter, dataframes, elementType);
-}
-
-void createBranchFeederBaysLine(pypowsybl::JavaHandle network, dataframe* dataframe) {
-  pypowsybl::callJava(::createBranchFeederBaysLine, network, dataframe);
-}
-
-void createBranchFeederBaysTwt(pypowsybl::JavaHandle network, dataframe* dataframe) {
-  pypowsybl::callJava(::createBranchFeederBaysTwt, network, dataframe);
-}
-
-std::vector<SeriesMetadata> getLineFeederBaysMetadata() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getLineFeederBaysMetadata);
-    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
-    callJava(::freeDataframeMetadata, metadata);
-    return res;
-}
-
-std::vector<SeriesMetadata> getTwtFeederBaysMetadata() {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getTwtFeederBaysMetadata);
-    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
-    callJava(::freeDataframeMetadata, metadata);
-    return res;
-}
-
 SeriesArray* getConnectablesOrderPositions(const JavaHandle& network, const std::string voltage_level_id) {
     return new SeriesArray(callJava<array*>(::getConnectablesOrderPositions, network, (char*) voltage_level_id.c_str()));
 }
@@ -1281,13 +1226,6 @@ LayoutParameters* createLayoutParameters() {
        callJava(::freeLayoutParameters, ptr);
     });
     return new LayoutParameters(parameters.get());
-}
-
-void replaceTeePointByVoltageLevelOnLine(pypowsybl::JavaHandle network, std::string teePointLine1, std::string teePointLine2, std::string teePointLineToRemove,
-        std::string bbsOrBusId, std::string newLine1Id, std::string newLine1Name, std::string newLine2Id, std::string newLine2Name) {
-    pypowsybl::callJava(::replaceTeePointByVoltageLevelOnLine, network, (char*)teePointLine1.c_str(), (char*)teePointLine2.c_str(), (char*)teePointLineToRemove.c_str(),
-     (char*)bbsOrBusId.c_str(), (char*)newLine1Id.c_str(), (char*)newLine1Name.c_str(), (char*)newLine2Id.c_str(),
-     (char*)newLine2Name.c_str());
 }
 
 void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
@@ -1359,8 +1297,18 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
     return res;
 }
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe* dataframe,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
-    pypowsybl::callJava(::createNetworkModification, network, dataframe, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType) {
+    dataframes_metadata* metadata = pypowsybl::callJava<dataframes_metadata*>(::getModificationMetadataWithElementType, networkModificationType, elementType);
+    std::vector<std::vector<SeriesMetadata>> res;
+    for (int i =0; i < metadata->dataframes_count; i++) {
+        res.push_back(convertDataframeMetadata(metadata->dataframes_metadata + i));
+    }
+    pypowsybl::callJava(::freeDataframesMetadata, metadata);
+    return res;
+}
+
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframes,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
+    pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 }

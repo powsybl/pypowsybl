@@ -35,10 +35,7 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("power_factor"),
-            SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.strings("bus_or_busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.doubles("loss_factor")
     );
 
     @Override

@@ -11,22 +11,24 @@ import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.modification.topology.CreateCouplingDeviceBuilder;
+import com.powsybl.iidm.modification.topology.RevertConnectVoltageLevelOnLineBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Coline Piloquet <coline.piloquet at rte-france.com>
  */
-public class CouplingDeviceCreation implements NetworkModification {
+public class RevertConnectVoltageLevelOnLine implements NetworkModification {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("busbar_section_id_1"),
-            SeriesMetadata.strings("busbar_section_id_2"),
-            SeriesMetadata.strings("switch_prefix_id")
+            SeriesMetadata.stringIndex("line1_id"),
+            SeriesMetadata.strings("line2_id"),
+            SeriesMetadata.strings("line_id"),
+            SeriesMetadata.strings("line_name")
     );
 
     @Override
@@ -34,11 +36,16 @@ public class CouplingDeviceCreation implements NetworkModification {
         return METADATA;
     }
 
-    private CreateCouplingDeviceBuilder createBuilder(UpdatingDataframe dataframe, int row) {
-        CreateCouplingDeviceBuilder builder = new CreateCouplingDeviceBuilder();
-        applyIfPresent(dataframe.getStrings("busbar_section_id_1"), row, builder::withBusbarSectionId1);
-        applyIfPresent(dataframe.getStrings("busbar_section_id_2"), row, builder::withBusbarSectionId2);
-        applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
+    private RevertConnectVoltageLevelOnLineBuilder createBuilder(UpdatingDataframe dataframe, int row) {
+        RevertConnectVoltageLevelOnLineBuilder builder = new RevertConnectVoltageLevelOnLineBuilder();
+        applyIfPresent(dataframe.getStrings("line1_id"), row, builder::withLine1Id);
+        applyIfPresent(dataframe.getStrings("line2_id"), row, builder::withLine2Id);
+        applyIfPresent(dataframe.getStrings("line_name"), row, builder::withLineName);
+        applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineId);
+        Optional<String> lineName = dataframe.getStringValue("line_name", row);
+        if (lineName.isEmpty()) {
+            applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineName);
+        }
         return builder;
     }
 
@@ -48,7 +55,7 @@ public class CouplingDeviceCreation implements NetworkModification {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
         for (int row = 0; row < dataframes.get(0).getRowCount(); row++) {
-            CreateCouplingDeviceBuilder builder = createBuilder(dataframes.get(0), row);
+            RevertConnectVoltageLevelOnLineBuilder builder = createBuilder(dataframes.get(0), row);
             builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         }
     }

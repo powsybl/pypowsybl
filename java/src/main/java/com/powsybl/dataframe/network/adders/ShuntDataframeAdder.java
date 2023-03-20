@@ -46,10 +46,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.ints("section_count"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.strings("model_type"),
-            SeriesMetadata.strings("bus_or_busbar_section_id"),
-            SeriesMetadata.ints("position_order"),
-            SeriesMetadata.strings("direction")
+            SeriesMetadata.strings("model_type")
     );
 
     private static final List<SeriesMetadata> LINEAR_SECTIONS_METADATA = List.of(
