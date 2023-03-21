@@ -11,7 +11,7 @@ def test_voltage_level_topology_creation():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -25,7 +25,7 @@ def test_voltage_level_topology_creation_with_no_switch_kind():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     pp.network.create_voltage_level_topology(network=network, switch_kinds='', raise_exception=True, id='VL1',
-                                             busbar_count=1)
+                                             aligned_buses_or_busbar_count=1)
     busbar_sections = network.get_busbar_sections()
     assert 'VL1_1_1' in busbar_sections.index
     switches = network.get_node_breaker_topology('VL1').switches
@@ -37,7 +37,7 @@ def test_voltage_level_topology_creation_from_kwargs():
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     switch = 'BREAKER, DISCONNECTOR'
     pp.network.create_voltage_level_topology(network=network, switch_kinds=switch, raise_exception=True, id='VL1',
-                                             busbar_count=1, )
+                                             aligned_buses_or_busbar_count=1, )
     busbar_sections = network.get_busbar_sections()
     assert busbar_sections[busbar_sections['voltage_level_id'] == 'VL1'].shape[0] == 3
     switches = network.get_node_breaker_topology('VL1').switches
@@ -49,7 +49,7 @@ def test_voltage_level_topology_creation_with_switch_kind_as_list():
     network = pp.network.create_four_substations_node_breaker_network()
     network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -67,8 +67,8 @@ def test_multiple_voltage_levels_creation():
     ])
     network.create_voltage_levels(voltage_levels)
     df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']},
-        {'id': 'VL2', 'busbar_count': 2, 'switch_kinds': ['BREAKER']}
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': ['BREAKER', 'DISCONNECTOR']},
+        {'id': 'VL2', 'aligned_buses_or_busbar_count': 2, 'switch_kinds': ['BREAKER']}
     ])
     pp.network.create_voltage_level_topology(network, df)
     busbar_sections = network.get_busbar_sections()
@@ -81,6 +81,15 @@ def test_multiple_voltage_levels_creation():
     switches = network.get_node_breaker_topology('VL2').switches
     assert switches[switches['kind'] == 'BREAKER'].shape[0] == 2
     assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 4
+
+
+def test_create_voltage_level_topology_bus_breaker():
+    network = pp.network.create_empty()
+    network.create_voltage_levels(id='VL1', topology_kind='BUS_BREAKER', nominal_v=225)
+    pp.network.create_voltage_level_topology(network, id='VL1', aligned_buses_or_busbar_count=3, section_count=2)
+    buses = network.get_bus_breaker_topology('VL1').buses
+    assert buses.shape[0] == 6
+    assert network.get_bus_breaker_topology('VL1').switches.shape[0] == 3
 
 
 def test_no_extensions_created_if_none_in_the_voltage_level():
@@ -659,8 +668,8 @@ def test_create_coupling_device():
     n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
                         section_index=[1, 1, 1])
     assert len(n.get_switches().index) == 0
-    coupling_device = pd.DataFrame.from_records(index='busbar_section_id_1', data=[
-        {'busbar_section_id_1': 'BBS1', 'busbar_section_id_2': 'BBS2'},
+    coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
+        {'bus_or_busbar_section_id_1': 'BBS1', 'bus_or_busbar_section_id_2': 'BBS2'},
     ])
     pp.network.create_coupling_device(n, coupling_device)
     switches = n.get_switches()
@@ -685,13 +694,30 @@ def test_create_coupling_device_kwargs():
     n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
                         section_index=[1, 1, 1])
     assert len(n.get_switches().index) == 0
-    pp.network.create_coupling_device(n, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
+    pp.network.create_coupling_device(n, bus_or_busbar_section_id_1='BBS1', bus_or_busbar_section_id_2='BBS2', switch_prefix_id='sw')
     switches = n.get_switches()
     assert len(switches.index) == 7
     assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
     assert len(switches[switches["open"] == True].index) == 4
     assert len(switches[switches["open"] == False].index) == 3
+
+
+def test_create_coupling_device_bus_breaker():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL', substation_id='S1', topology_kind='BUS_BREAKER',
+                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    n.create_buses(id=['B1', 'B2'], voltage_level_id=['VL', 'VL'])
+
+    assert len(n.get_switches().index) == 0
+
+    pp.network.create_coupling_device(n, bus_or_busbar_section_id_1='B1', bus_or_busbar_section_id_2='B2')
+    switches = n.get_switches()
+
+    assert len(switches.index) == 1
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == False].index) == 1
 
 
 def test_remove_feeder_bay():

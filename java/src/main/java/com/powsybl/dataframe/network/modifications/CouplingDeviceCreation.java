@@ -24,8 +24,8 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 public class CouplingDeviceCreation implements NetworkModification {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("busbar_section_id_1"),
-            SeriesMetadata.strings("busbar_section_id_2"),
+            SeriesMetadata.stringIndex("bus_or_busbar_section_id_1"),
+            SeriesMetadata.strings("bus_or_busbar_section_id_2"),
             SeriesMetadata.strings("switch_prefix_id")
     );
 
@@ -36,8 +36,8 @@ public class CouplingDeviceCreation implements NetworkModification {
 
     private CreateCouplingDeviceBuilder createBuilder(UpdatingDataframe dataframe, int row) {
         CreateCouplingDeviceBuilder builder = new CreateCouplingDeviceBuilder();
-        applyIfPresent(dataframe.getStrings("busbar_section_id_1"), row, builder::withBusbarSectionId1);
-        applyIfPresent(dataframe.getStrings("busbar_section_id_2"), row, builder::withBusbarSectionId2);
+        applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_1"), row, builder::withBusOrBusbarSectionId1);
+        applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_2"), row, builder::withBusOrBusbarSectionId2);
         applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
         return builder;
     }
