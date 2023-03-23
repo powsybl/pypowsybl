@@ -29,7 +29,7 @@ class ContingencyContainerTest {
 
         List<Contingency> contingencies = container1.createContingencies(network);
         assertThat(contingencies).hasSize(2);
-        assertThat(contingencies.get(1).getElements().get(0)).isInstanceOf(BranchContingency.class);
+        assertThat(contingencies.get(1).getElements().get(0)).isInstanceOf(LineContingency.class);
         assertThat(contingencies.get(0).getElements().get(0)).isInstanceOf(GeneratorContingency.class);
 
         network = HvdcTestNetwork.createVsc();
@@ -69,6 +69,23 @@ class ContingencyContainerTest {
         container7.addContingency("exception", List.of("not_exists_id"));
         assertThatThrownBy(() -> container7.createContingencies(EurostagTutorialExample1Factory.create()))
                 .hasMessageContaining("Element 'not_exists_id' not found");
+
+        network = FourSubstationsNodeBreakerFactory.create();
+        var container8 = new ContingencyContainerImpl();
+        container8.addContingency("LD1", List.of("LD1"));
+        assertThat(container8.createContingencies(network))
+                .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(LoadContingency.class));
+
+        var container9 = new ContingencyContainerImpl();
+        container9.addContingency("S1VL2_BBS2_LD4_DISCONNECTOR", List.of("S1VL2_BBS2_LD4_DISCONNECTOR"));
+        assertThat(container9.createContingencies(network))
+                .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(SwitchContingency.class));
+
+        network = BatteryNetworkFactory.create();
+        var container10 = new ContingencyContainerImpl();
+        container10.addContingency("BAT", List.of("BAT"));
+        assertThat(container10.createContingencies(network))
+                .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(BatteryContingency.class));
     }
 
 }
