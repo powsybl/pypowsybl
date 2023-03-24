@@ -525,7 +525,7 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
 
-void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds);
+void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter);
 
 LayoutParameters* createLayoutParameters();
 

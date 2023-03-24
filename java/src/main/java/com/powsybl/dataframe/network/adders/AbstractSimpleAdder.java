@@ -30,7 +30,7 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
 
     @FunctionalInterface
     public interface AdditionStrategy {
-        void add(Network network, UpdatingDataframe df, InjectionAdder<?> adder, int row, boolean throwException, Reporter reporter);
+        void add(Network network, UpdatingDataframe df, InjectionAdder<?, ?> adder, int row, boolean throwException, Reporter reporter);
     }
 
     public void addElementsWithBay(Network network, UpdatingDataframe dataframe, boolean throwException, Reporter reporter) {
@@ -45,7 +45,7 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
         //do nothing
     }
 
-    private void add(InjectionAdder<?> injectionAdder) {
+    private void add(InjectionAdder<?, ?> injectionAdder) {
         if (injectionAdder instanceof LoadAdder) {
             ((LoadAdder) injectionAdder).add();
         } else if (injectionAdder instanceof BatteryAdder) {
@@ -67,7 +67,7 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
         }
     }
 
-    private void addWithBay(Network network, UpdatingDataframe dataframe, InjectionAdder<?> injectionAdder, int row, boolean throwException, Reporter reporter) {
+    private void addWithBay(Network network, UpdatingDataframe dataframe, InjectionAdder<?, ?> injectionAdder, int row, boolean throwException, Reporter reporter) {
         String busOrBusbarSectionId = dataframe.getStrings("bus_or_busbar_section_id").get(row);
         OptionalInt injectionPositionOrder = dataframe.getIntValue("position_order", row);
         ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(dataframe.getStringValue("direction", row).orElse("BOTTOM"));

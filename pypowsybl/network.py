@@ -5521,7 +5521,8 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]]) -> None:
+def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]], raise_exception: bool = False,
+                       reporter: _Reporter = None) -> None:
     """
     Remove feeder bays it means the connectable will be removed and all equipment connecting
     these network element to a bus bar (breaker, disconnector, ...).
@@ -5529,10 +5530,59 @@ def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]
     Args:
         network: the network to which we want to remove the feeder bay
         connectable_ids: either a list or a single string to indicate which equipment will be removed with their feeder bay.
+        raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if isinstance(connectable_ids, str):
         connectable_ids = [connectable_ids]
-    _pp.remove_feeder_bays(network._handle, connectable_ids)
+    _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER, raise_exception,
+                           None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+
+
+def remove_voltage_levels(network: Network, voltage_level_ids: _Union[str, _List[str]], raise_exception: bool = False,
+                       reporter: _Reporter = None) -> None:
+    """
+    Remove voltage levels and all their connectables.
+
+    Args:
+        network: the network from which we want to remove the voltage levels
+        voltage_level_ids: either a list or a single string to indicate which voltage levels should be removed.
+        raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+    """
+    if isinstance(voltage_level_ids, str):
+        voltage_level_ids = [voltage_level_ids]
+    _pp.remove_elements_modification(network._handle, voltage_level_ids, None, _pp.RemoveModificationType.REMOVE_VOLTAGE_LEVEL, raise_exception,
+                                     None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+
+
+def remove_hvdc_lines(network: Network, hvdc_line_ids: _Union[str, _List[str]],
+                      shunt_compensator_ids: _Dict[str, _Union[str, _List[str]]] = None,
+                      raise_exception: bool = False, reporter: _Reporter = None) -> None:
+    """
+    Removes hvdc lines and their LCC or SVC converter stations. In the case of a LCC converter station, a list of shunt
+    compensators can be specified to be deleted as well.
+
+    Args:
+        network: the network containing the HVDC lines
+        hvdc_line_ids: the ids of the HVDC lines, either as a string or a list of strings.
+        shunt_compensator_ids: the ids of the shunt compensators associated to
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+         be logged. Default is False.
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+    """
+    c_df = None
+    if isinstance(hvdc_line_ids, str):
+        hvdc_line_ids = [hvdc_line_ids]
+    if shunt_compensator_ids is not None:
+        shunt_compensator_ids = {k: ', '.join(map(str, v)) if isinstance(v, list) else v for k, v in shunt_compensator_ids.items()}
+        df = pd.DataFrame(shunt_compensator_ids, index=['shunt_compensator'])
+        df.index.name = 'shunt_compensator'
+        c_df = _create_properties_c_dataframe(df)
+    _pp.remove_elements_modification(network._handle, hvdc_line_ids, c_df, _pp.RemoveModificationType.REMOVE_HVDC_LINE, raise_exception,
+                                     None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
@@ -5783,6 +5833,7 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_COUPLING_DEVICE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
 
 def get_single_line_diagram_component_library_names() -> _List[str]:
     """
