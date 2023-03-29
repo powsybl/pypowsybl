@@ -33,8 +33,10 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         if (identifiable == null) {
             throw new PowsyblException("Element '" + elementId + "' not found");
         }
-        if (identifiable instanceof Branch) {
-            return new BranchContingency(elementId);
+        if (identifiable instanceof Line) {
+            return new LineContingency(elementId);
+        } else if (identifiable instanceof TwoWindingsTransformer) {
+            return new TwoWindingsTransformerContingency(elementId);
         } else if (identifiable instanceof HvdcLine) {
             return new HvdcLineContingency(elementId);
         } else if (identifiable instanceof BusbarSection) {
@@ -49,6 +51,12 @@ public class ContingencyContainerImpl implements ContingencyContainer {
             return new ShuntCompensatorContingency(elementId);
         } else if (identifiable instanceof ThreeWindingsTransformer) {
             return new ThreeWindingsTransformerContingency(elementId);
+        } else if (identifiable instanceof Load) {
+            return new LoadContingency(elementId);
+        } else if (identifiable instanceof Battery) {
+            return new BatteryContingency(elementId);
+        } else if (identifiable instanceof Switch) {
+            return new SwitchContingency(elementId);
         } else {
             throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
         }
