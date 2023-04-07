@@ -128,7 +128,7 @@ def test_dc_analysis():
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[['First contingency', 'NHV1_NHV2_1', '', 'ACTIVE_POWER', '', 500, 2147483647, 1, 900, 'ONE']])
+        data=[['First contingency', 'NHV1_NHV2_1', '', 'ACTIVE_POWER', 'permanent', 500, 2147483647, 1, 900, 'ONE']])
     pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
 
 
@@ -138,7 +138,7 @@ def test_provider_names():
 
 def test_provider_parameters():
     # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
-    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
+    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxNewtonRaphsonIterations': '3'})
     n = pp.network.create_ieee14()
     result = pp.security.create_analysis().run_ac(n, parameters)
     assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED
@@ -222,7 +222,7 @@ def test_security_analysis_parameters():
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
     # loadflow parameters only and specific parameters
-    result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxIteration': '1'})))
+    result = sa.run_ac(network, parameters=pp.security.Parameters(load_flow_parameters=pp.loadflow.Parameters(provider_parameters={'maxNewtonRaphsonIterations': '1'})))
     assert result.limit_violations.empty
     assert len(result.post_contingency_results) == 0
     assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED
@@ -260,6 +260,6 @@ def test_different_equipment_contingency():
     sa.add_single_element_contingency('TWT', 'Twt contingency')
     sa.add_single_element_contingency('S1VL1_BBS1_GEN_DISCONNECTOR', 'Switch contingency')
     sa_result = sa.run_ac(n)
-    assert 'Load contingency' in sa_result.post_contingency_results.keys()
     assert 'Twt contingency' in sa_result.post_contingency_results.keys()
+    assert 'Load contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()

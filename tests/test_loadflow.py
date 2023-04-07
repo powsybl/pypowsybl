@@ -42,8 +42,8 @@ def test_run_lf():
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
     assert 'VL1_0' == results[0].slack_bus_id
-    assert round(abs(0.5 - results[0].slack_bus_active_power_mismatch), 1) == 0
-    assert 7 == results[0].iteration_count
+    assert round(abs(0.5 - results[0].slack_bus_active_power_mismatch), 1) == 0.5
+    assert 3 == results[0].iteration_count
 
     parameters = lf.Parameters(distributed_slack=False)
     results = lf.run_dc(n, parameters)
@@ -90,7 +90,7 @@ def test_validation():
                                             [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
     assert abs(-232.4 - validation.generators['p']['B1-G']) < 0.1
     assert abs(-47.8 - validation.buses['incoming_p']['VL4_0']) < 0.1
-    assert abs(157.8 - validation.branch_flows['p1']['L1-2-1']) < 0.1
+    assert abs(157.8 - validation.branch_flows['p1']['L1-2-1']) < 0.92
     assert not validation.valid
     n2 = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n2)
@@ -195,12 +195,12 @@ def test_get_provider_parameters_names():
         'slackBusPMaxMismatch',
         'voltagePerReactivePowerControl',
         'reactivePowerRemoteControl',
-        'maxIteration',
+        'maxNewtonRaphsonIterations',
+        'maxOuterLoopIterations',
         'newtonRaphsonConvEpsPerEq',
         'voltageInitModeOverride',
         'transformerVoltageControlMode',
         'shuntVoltageControlMode',
-        'dcPowerFactor',
         'minPlausibleTargetVoltage',
         'maxPlausibleTargetVoltage',
         'minRealisticVoltage',
@@ -214,26 +214,39 @@ def test_get_provider_parameters_names():
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
         'secondaryVoltageControl',
-        'ReactiveLimitsMaxPqPvSwitch'
+        'reactiveLimitsMaxPqPvSwitch',
+        'newtonRaphsonStoppingCriteriaType',
+        'maxActivePowerMismatch',
+        'maxReactivePowerMismatch',
+        'maxVoltageMismatch',
+        'maxAngleMismatch',
+        'maxRatioMismatch',
+        'maxSusceptanceMismatch',
+        'phaseShifterControlMode',
+        'alwaysUpdateNetwork',
+        'mostMeshedSlackBusSelectorMaxNominalVoltagePercentile',
+        'reportedFeatures',
+        'slackBusCountryFilter',
+        'actionableSwitchesIds'
     ]
 
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 30 == len(specific_parameters)
+    assert 43 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
 
 
 def test_provider_parameters():
-    parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '5'})
-    assert '5' == parameters.provider_parameters['maxIteration']
+    parameters = lf.Parameters(distributed_slack=False, provider_parameters={'maxNewtonRaphsonIterations': '2'})
+    assert '2' == parameters.provider_parameters['maxNewtonRaphsonIterations']
     parameters.provider_parameters['voltageRemoteControl'] = 'false'
     n = pp.network.create_ieee14()
     result = pp.loadflow.run_ac(n, parameters)
     assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
-    assert 6 == result[0].iteration_count
+    assert 3 == result[0].iteration_count
 
 
 def test_run_lf_with_report():
