@@ -31,7 +31,7 @@ class InjectionSeries extends IdentifiableSeries {
         this.nodes = dataframe.getInts("node");
     }
 
-    protected void setInjectionAttributes(InjectionAdder<?> adder, int row) {
+    protected void setInjectionAttributes(InjectionAdder<?, ?> adder, int row) {
         setIdentifiableAttributes(adder, row);
         applyIfPresent(connectableBuses, row, adder::setConnectableBus);
         applyIfPresent(buses, row, adder::setBus);

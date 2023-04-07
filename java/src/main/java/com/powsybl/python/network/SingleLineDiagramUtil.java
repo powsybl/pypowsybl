@@ -11,9 +11,9 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
-import com.powsybl.sld.svg.DiagramStyleProvider;
-import com.powsybl.sld.util.NominalVoltageDiagramStyleProvider;
-import com.powsybl.sld.util.TopologicalStyleProvider;
+import com.powsybl.sld.svg.styles.StyleProvider;
+import com.powsybl.sld.svg.styles.NominalVoltageStyleProvider;
+import com.powsybl.sld.svg.styles.iidm.TopologicalStyleProvider;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -70,8 +70,8 @@ public final class SingleLineDiagramUtil {
         ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibrary)
                 .orElseThrow(() -> new PowsyblException("library with name " + layoutParametersExt.componentLibrary +
                         " was not found for Single Line Diagram component library"));
-        DiagramStyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
-                : new NominalVoltageDiagramStyleProvider(network);
+        StyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
+                : new NominalVoltageStyleProvider();
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
                 new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
     }
