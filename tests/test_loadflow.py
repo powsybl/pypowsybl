@@ -42,7 +42,7 @@ def test_run_lf():
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
     assert 'VL1_0' == results[0].slack_bus_id
-    assert round(abs(0.5 - results[0].slack_bus_active_power_mismatch), 1) == 0.5
+    assert abs(results[0].slack_bus_active_power_mismatch) < 0.01
     assert 3 == results[0].iteration_count
 
     parameters = lf.Parameters(distributed_slack=False)
@@ -90,7 +90,8 @@ def test_validation():
                                             [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
     assert abs(-232.4 - validation.generators['p']['B1-G']) < 0.1
     assert abs(-47.8 - validation.buses['incoming_p']['VL4_0']) < 0.1
-    assert abs(157.8 - validation.branch_flows['p1']['L1-2-1']) < 0.92
+    print(validation.branch_flows['p1']['L1-2-1'])
+    assert abs(156.9 - validation.branch_flows['p1']['L1-2-1']) < 0.1
     assert not validation.valid
     n2 = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n2)

@@ -260,6 +260,6 @@ def test_different_equipment_contingency():
     sa.add_single_element_contingency('TWT', 'Twt contingency')
     sa.add_single_element_contingency('S1VL1_BBS1_GEN_DISCONNECTOR', 'Switch contingency')
     sa_result = sa.run_ac(n)
-    assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Load contingency' in sa_result.post_contingency_results.keys()
+    assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()
