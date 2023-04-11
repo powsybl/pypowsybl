@@ -1,0 +1,2 @@
+#Batteries (sim1/InitialState)
+#"variant" "num" "bus" "con. bus" "substation" "p0 (MW)" "q0 (MW)" "minP (MW)" "maxP (MW)" "minQmaxP (MVar)" "minQ0 (MVar)" "minQminP (MVar)" "maxQmaxP (MVar)" "maxQ0 (MVar)" "maxQminP (MVar)" "fault" "curative" "id" "description" "P (MW)" "Q (MVar)"

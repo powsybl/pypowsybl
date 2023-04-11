@@ -1,0 +1,2 @@
+#HVDC lines (sim1/InitialState)
+#"variant" "num" "type" "converterStation1" "converterStation2" "r (ohm)" "nomV (KV)" "convertersMode" "targetP (MW)" "maxP (MW)" "fault" "curative" "id" "description"

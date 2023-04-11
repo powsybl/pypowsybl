@@ -1,0 +1,2 @@
+#VSC Converter Stations (sim1/InitialState)
+#"variant" "num" "bus" "con. bus" "substation" "minP (MW)" "maxP (MW)" "minQmaxP (MVar)" "minQ0 (MVar)" "minQminP (MVar)" "maxQmaxP (MVar)" "maxQ0 (MVar)" "maxQminP (MVar)" "v regul." "targetV (pu)" "targetQ (MVar)" "lossFactor (%PDC)" "fault" "curative" "id" "description" "P (MW)" "Q (MVar)"
