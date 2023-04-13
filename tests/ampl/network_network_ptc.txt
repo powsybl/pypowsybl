@@ -1,2 +1,0 @@
-#Phase tap changers (sim1/InitialState)
-#"variant" "num" "tap" "table" "fault" "curative" "id"

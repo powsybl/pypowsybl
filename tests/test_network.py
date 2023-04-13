@@ -5,29 +5,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import copy
-import re
-import unittest
 import datetime
 import os
+import pathlib
+import re
+import tempfile
+import unittest
 from os.path import exists
 
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 import pandas as pd
 import pytest
 from numpy import NaN
-import numpy as np
-from pypowsybl import PyPowsyblError
 
 import pypowsybl as pp
-import pathlib
-import matplotlib.pyplot as plt
-import networkx as nx
-
-from pypowsybl.network import ValidationLevel, LayoutParameters
-
-import util
-import tempfile
-
 import pypowsybl.report as rp
+import util
+from pypowsybl import PyPowsyblError
+from pypowsybl.network import ValidationLevel, LayoutParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -58,17 +55,20 @@ def test_dump_to_string():
 
 def test_dump_ampl():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    n.dump(TEST_DIR.joinpath('ampl/network.dat'), format='AMPL')
-    file_names = os.listdir(TEST_DIR.joinpath('ampl'))
-    file_names_expected = ['network_network_vsc_converter_stations.txt', 'network_network_branches.txt',
-                           'network_network_rtc.txt', 'network_network_generators.txt',
-                           'network_network_substations.txt', 'network_network_tct.txt', 'network_network_loads.txt',
-                           'network_network_lcc_converter_stations.txt', 'network_network_static_var_compensators.txt',
-                           'network_network_hvdc.txt', 'network_network_limits.txt', 'network_network_shunts.txt',
-                           'network_network_batteries.txt', 'network_network_ptc.txt', 'network_network_buses.txt']
-    assert len(file_names) == len(file_names_expected)
-    for file_name in file_names:
-        assert file_name in file_names_expected
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        ampl_base_file = tmp_dir_path.joinpath('ampl')
+        n.dump(ampl_base_file, format='AMPL')
+        file_names = os.listdir(tmp_dir_path)
+        file_names_expected = ['ampl_network_vsc_converter_stations.txt', 'ampl_network_branches.txt',
+                               'ampl_network_rtc.txt', 'ampl_network_generators.txt',
+                               'ampl_network_substations.txt', 'ampl_network_tct.txt', 'ampl_network_loads.txt',
+                               'ampl_network_lcc_converter_stations.txt', 'ampl_network_static_var_compensators.txt',
+                               'ampl_network_hvdc.txt', 'ampl_network_limits.txt', 'ampl_network_shunts.txt',
+                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt']
+        assert len(file_names) == len(file_names_expected)
+        for file_name in file_names:
+            assert file_name in file_names_expected
 
 
 def test_get_import_format():
