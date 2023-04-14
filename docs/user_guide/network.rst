@@ -73,7 +73,7 @@ The supported formats are:
 .. doctest::
 
    >>> pp.network.get_export_formats()
-   ['CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
+   ['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
 
 .. Note::
 
