@@ -5,28 +5,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import copy
-import re
-import unittest
 import datetime
+import os
+import pathlib
+import re
+import tempfile
+import unittest
 from os.path import exists
 
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 import pandas as pd
 import pytest
 from numpy import NaN
-import numpy as np
-from pypowsybl import PyPowsyblError
 
 import pypowsybl as pp
-import pathlib
-import matplotlib.pyplot as plt
-import networkx as nx
-
-from pypowsybl.network import ValidationLevel, LayoutParameters
-
-import util
-import tempfile
-
 import pypowsybl.report as rp
+import util
+from pypowsybl import PyPowsyblError
+from pypowsybl.network import ValidationLevel, LayoutParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -53,6 +51,24 @@ def test_dump_to_string():
     xml = bat_path.read_text()
     n = pp.network.load(str(bat_path))
     assert xml == n.dump_to_string()
+
+
+def test_dump_ampl():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        ampl_base_file = tmp_dir_path.joinpath('ampl')
+        n.dump(ampl_base_file, format='AMPL')
+        file_names = os.listdir(tmp_dir_path)
+        file_names_expected = ['ampl_network_vsc_converter_stations.txt', 'ampl_network_branches.txt',
+                               'ampl_network_rtc.txt', 'ampl_network_generators.txt',
+                               'ampl_network_substations.txt', 'ampl_network_tct.txt', 'ampl_network_loads.txt',
+                               'ampl_network_lcc_converter_stations.txt', 'ampl_network_static_var_compensators.txt',
+                               'ampl_network_hvdc.txt', 'ampl_network_limits.txt', 'ampl_network_shunts.txt',
+                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt']
+        assert len(file_names) == len(file_names_expected)
+        for file_name in file_names:
+            assert file_name in file_names_expected
 
 
 def test_get_import_format():
@@ -84,7 +100,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = pp.network.get_export_formats()
-    assert ['CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+    assert ['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'] == formats
 
 
 def test_load_network():
@@ -691,7 +707,8 @@ def test_layout_parameters():
     assert not parameters.diagonal_label
     assert parameters.topological_coloring
     assert not parameters.nodes_infos
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False, nodes_infos=True)
+    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
+                                  nodes_infos=True)
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
@@ -704,13 +721,15 @@ def test_sld_svg():
     sld = n.get_single_line_diagram('S1VL1')
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False))
+    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                               topological_coloring=False))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
     sld2 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
                                                                topological_coloring=True, nodes_infos=True))
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
+
 
 def test_sld_nad():
     n = pp.network.create_ieee14()
@@ -1543,6 +1562,7 @@ def test_write_svg_file(tmpdir):
     assert exists(data.join('test2_sld.svg'))
     assert exists(data.join('test2_sld.json'))
 
+
 def test_get_single_line_diagram_component_library_names():
     assert ['Convergence', 'FlatDesign'] == pp.network.get_single_line_diagram_component_library_names()
 
@@ -1673,6 +1693,7 @@ def test_branches():
     twt = n.get_branches().loc['TWT']
     assert not twt.connected1
     assert not twt.connected2
+
 
 def test_terminals():
     n = pp.network.create_four_substations_node_breaker_network()
