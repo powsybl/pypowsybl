@@ -5524,8 +5524,8 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
 def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]], raise_exception: bool = False,
                        reporter: _Reporter = None) -> None:
     """
-    Remove feeder bays it means the connectable will be removed and all equipment connecting
-    these network element to a bus bar (breaker, disconnector, ...).
+    Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
+    them to a bus or busbar (breaker, disconnector, ...).
 
     Args:
         network: the network to which we want to remove the feeder bay
@@ -5533,6 +5533,12 @@ def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]
         raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
          be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+
+    Examples:
+
+    .. code-block:: python
+
+        pp.network.remove_feeder_bays(network, connectable_ids=['load1', 'line3'])
     """
     if isinstance(connectable_ids, str):
         connectable_ids = [connectable_ids]
@@ -5543,7 +5549,9 @@ def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]
 def remove_voltage_levels(network: Network, voltage_level_ids: _Union[str, _List[str]], raise_exception: bool = False,
                        reporter: _Reporter = None) -> None:
     """
-    Remove voltage levels and all their connectables.
+    Remove all voltage levels from a list and all their connectables.
+    The lines and two windings transformers will also be removed in the voltage level on the other side as well as their switches.
+    The HVDC lines will be removed and their converter station too on both side.
 
     Args:
         network: the network from which we want to remove the voltage levels
