@@ -71,6 +71,44 @@ def test_dump_ampl():
             assert file_name in file_names_expected
 
 
+def test_dump_import_iidm():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        iidm_file = tmp_dir_path.joinpath('test.xiidm')
+        n.dump(iidm_file, format='XIIDM')
+        file_names = os.listdir(tmp_dir_path)
+        assert len(file_names) == 1
+        assert 'test.xiidm' in file_names
+        n2 = pp.network.load(iidm_file)
+        assert isinstance(n2, pp.network.Network)
+
+
+def test_dump_matpower():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        mat_file = tmp_dir_path.joinpath('test.mat')
+        n.dump(mat_file, format='MATPOWER')
+        file_names = os.listdir(tmp_dir_path)
+        assert len(file_names) == 1
+        assert 'test.mat' in file_names
+        n2 = pp.network.load(mat_file)
+        assert isinstance(n2, pp.network.Network)
+
+def test_dump_ucte():
+    n = pp.network.load(str(TEST_DIR.joinpath('test.uct')))
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        ucte_file = tmp_dir_path.joinpath('test.uct')
+        n.dump(ucte_file, format='UCTE')
+        file_names = os.listdir(tmp_dir_path)
+        assert len(file_names) == 1
+        assert 'test.uct' in file_names
+        n2 = pp.network.load(ucte_file)
+        assert isinstance(n2, pp.network.Network)
+
+
 def test_get_import_format():
     formats = pp.network.get_import_formats()
     assert ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
@@ -401,14 +439,14 @@ def test_generator_disconnected_bus_breaker_id():
     gen1 = generators.loc[gen1_id]
     assert 'VLGEN_0' == gen1['bus_id']
     assert 'NGEN' == gen1['bus_breaker_bus_id']
-    assert True == gen1['connected']
+    assert gen1['connected']
 
     n.disconnect(gen1_id)
     generators = n.get_generators(attributes=['bus_id', 'bus_breaker_bus_id', 'connected'])
     gen1 = generators.loc[gen1_id]
     assert '' == gen1['bus_id']
     assert 'NGEN' == gen1['bus_breaker_bus_id']
-    assert False == gen1['connected']
+    assert not gen1['connected']
 
 
 def test_ratio_tap_changer_steps_data_frame():
