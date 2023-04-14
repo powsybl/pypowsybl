@@ -364,6 +364,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-glsk-document-ucte</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-ampl-converter</artifactId>
+        </dependency>
 
         <!-- test -->
         <dependency>
