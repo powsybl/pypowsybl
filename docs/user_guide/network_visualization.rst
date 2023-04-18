@@ -18,6 +18,7 @@ Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
     >>> network.get_single_line_diagram('VL4')
 
 Note that a loadflow can be run before writing the diagram so that it displays reactive and active powers:
+
 .. code-block:: python
 
     >>> network = pp.network.create_ieee14()
@@ -57,6 +58,7 @@ to control the size of the sub network:
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
 
 Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers, for instance:
+
 .. code-block:: python
 
     >>> network = pp.network.create_ieee9()
