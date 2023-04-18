@@ -27,7 +27,7 @@ class IdentifiableSeries {
         this.names = dataframe.getStrings("name");
     }
 
-    protected void setIdentifiableAttributes(IdentifiableAdder<?> adder, int row) {
+    protected void setIdentifiableAttributes(IdentifiableAdder<?, ?> adder, int row) {
         applyIfPresent(ids, row, adder::setId);
         applyIfPresent(names, row, adder::setName);
     }

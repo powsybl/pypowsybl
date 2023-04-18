@@ -58,29 +58,29 @@ def test_sensitivity_analysis():
     assert (3, 2) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.080991, abs=1e-6)
-    assert df['L1-5-1']['B3-G'] == pytest.approx(-0.172505, abs=1e-6)
+    assert df['L1-5-1']['B3-G'] == pytest.approx(-0.172497, abs=1e-6)
     assert df['L2-3-1']['B1-G'] == pytest.approx(-0.013675, abs=1e-6)
     assert df['L2-3-1']['B2-G'] == pytest.approx(0.013675, abs=1e-6)
-    assert df['L2-3-1']['B3-G'] == pytest.approx(-0.545675, abs=1e-6)
+    assert df['L2-3-1']['B3-G'] == pytest.approx(-0.545682, abs=1e-6)
 
     df = r.get_reference_flows('m')
     assert df.shape == (1, 2)
-    assert df['L1-5-1']['reference_flows'] == pytest.approx(72.224, abs=1e-3)
-    assert df['L2-3-1']['reference_flows'] == pytest.approx(69.851, abs=1e-3)
+    assert df['L1-5-1']['reference_flows'] == pytest.approx(72.246, abs=1e-3)
+    assert df['L2-3-1']['reference_flows'] == pytest.approx(69.831, abs=1e-3)
 
     df = r.get_branch_flows_sensitivity_matrix('m', 'L1-2-1')
     assert df.shape == (3, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.5, abs=1e-6)
     assert df['L1-5-1']['B3-G'] == pytest.approx(-0.5, abs=1e-6)
-    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084428, abs=1e-6)
-    assert df['L2-3-1']['B2-G'] == pytest.approx(0.084428, abs=1e-6)
-    assert df['L2-3-1']['B3-G'] == pytest.approx(-0.490377, abs=1e-6)
+    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084423, abs=1e-6)
+    assert df['L2-3-1']['B2-G'] == pytest.approx(0.084423, abs=1e-6)
+    assert df['L2-3-1']['B3-G'] == pytest.approx(-0.490385, abs=1e-6)
 
     df = r.get_reference_flows('m', 'L1-2-1')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['reference_flows'] == pytest.approx(225.7, abs=1e-3)
-    assert df['L2-3-1']['reference_flows'] == pytest.approx(43.935, abs=1e-3)
+    assert df['L2-3-1']['reference_flows'] == pytest.approx(43.921, abs=1e-3)
 
     assert r.get_branch_flows_sensitivity_matrix('m', 'aaa') is None
 
@@ -91,7 +91,7 @@ def test_sensitivity_analysis():
     df = r.get_branch_flows_sensitivity_matrix('postContingency', 'L1-2-1')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
-    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084428, abs=1e-6)
+    assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084423, abs=1e-6)
 
 
 def test_voltage_sensitivities():
@@ -249,7 +249,7 @@ def test_no_output_matrices_available():
 
 def test_provider_parameters():
     # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
-    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxIteration': '1'})
+    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxNewtonRaphsonIterations': '1'})
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
