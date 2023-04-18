@@ -90,7 +90,6 @@ def test_validation():
                                             [ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.BUSES])
     assert abs(-232.4 - validation.generators['p']['B1-G']) < 0.1
     assert abs(-47.8 - validation.buses['incoming_p']['VL4_0']) < 0.1
-    print(validation.branch_flows['p1']['L1-2-1'])
     assert abs(156.9 - validation.branch_flows['p1']['L1-2-1']) < 0.1
     assert not validation.valid
     n2 = pp.network.create_four_substations_node_breaker_network()
