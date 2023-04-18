@@ -100,14 +100,21 @@ def test_dump_matpower():
 
 
 def test_dump_ucte():
-    n = pp.network.load(str(TEST_DIR.joinpath('test.uct')))
+    ucte_local_path = TEST_DIR.joinpath('test.uct')
+    n = pp.network.load(str(ucte_local_path))
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
-        ucte_file = tmp_dir_path.joinpath('test.uct')
-        n.dump(ucte_file, format='UCTE')
+        ucte_temporary_path = tmp_dir_path.joinpath('test.uct')
+        n.dump(ucte_temporary_path, format='UCTE')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.uct' in file_names
+        with open(ucte_temporary_path, 'r') as test_file:
+            with open(ucte_local_path, 'r') as expected_file:
+                #remove header with specific date
+                test_file_str = test_file.read()[0] + test_file.read()[3:]
+                expected_file_str = expected_file.read()[0] + expected_file.read()[3:]
+                assert test_file_str == expected_file_str
 
 
 def test_get_import_format():
