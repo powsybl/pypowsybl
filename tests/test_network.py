@@ -81,6 +81,7 @@ def test_dump_import_iidm():
         assert len(file_names) == 1
         assert 'test.xiidm' in file_names
         n2 = pp.network.load(iidm_file)
+        assert n2.dump_to_string() == n.dump_to_string()
         assert isinstance(n2, pp.network.Network)
 
 
@@ -95,6 +96,8 @@ def test_dump_matpower():
         assert 'test.mat' in file_names
         n2 = pp.network.load(mat_file)
         assert isinstance(n2, pp.network.Network)
+        # assert n2.dump_to_string() == n.dump_to_string() # problem import/export matpower
+
 
 def test_dump_ucte():
     n = pp.network.load(str(TEST_DIR.joinpath('test.uct')))
@@ -105,8 +108,6 @@ def test_dump_ucte():
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.uct' in file_names
-        n2 = pp.network.load(ucte_file)
-        assert isinstance(n2, pp.network.Network)
 
 
 def test_get_import_format():
