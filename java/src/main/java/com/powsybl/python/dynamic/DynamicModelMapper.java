@@ -18,6 +18,7 @@ import com.powsybl.dynawaltz.models.automatons.CurrentLimitAutomaton;
 import com.powsybl.dynawaltz.models.generators.GeneratorSynchronous;
 import com.powsybl.dynawaltz.models.loads.LoadAlphaBeta;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformer;
+import com.powsybl.dynawaltz.models.utils.SideConverter;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.Network;
 
@@ -75,7 +76,7 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parametersIds, Branch.Side side) {
-        dynamicModelList.add(() -> new CurrentLimitAutomaton(staticId, staticId, parametersIds, side));
+        dynamicModelList.add(() -> new CurrentLimitAutomaton(staticId, staticId, parametersIds, SideConverter.convert(side)));
     }
 
 }
