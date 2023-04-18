@@ -15,7 +15,7 @@ public abstract class AbstractFeederBaysSeries {
     public CreateBranchFeederBaysBuilder createBuilder(Network n, UpdatingDataframe dataframe, int row) {
         AbstractBranchSeries series = createTypedSeries(dataframe);
         CreateBranchFeederBaysBuilder builder = new CreateBranchFeederBaysBuilder();
-        BranchAdder<?> lAdder = series.create(n, row);
+        BranchAdder<?, ?> lAdder = series.create(n, row);
         builder.withBranchAdder(lAdder);
         applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_1"), row, builder::withBusOrBusbarSectionId1);
         applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_2"), row, builder::withBusOrBusbarSectionId2);

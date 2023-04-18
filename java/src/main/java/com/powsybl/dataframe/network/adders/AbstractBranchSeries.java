@@ -46,7 +46,7 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
         this.busOrBusbarSections2 = dataframe.getStrings("bus_or_busbar_section_id_2");
     }
 
-    protected void setBranchAttributes(BranchAdder<?> adder, int row) {
+    protected void setBranchAttributes(BranchAdder<?, ?> adder, int row) {
         setIdentifiableAttributes(adder, row);
         applyIfPresent(voltageLevels1, row, adder::setVoltageLevel1);
         applyIfPresent(connectableBuses1, row, adder::setConnectableBus1);
