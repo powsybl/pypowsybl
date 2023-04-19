@@ -11,10 +11,7 @@ import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
-import com.powsybl.iidm.network.Branch;
-import com.powsybl.iidm.network.Injection;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoWindingsTransformer;
+import com.powsybl.iidm.network.*;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.sensitivity.*;
@@ -232,14 +229,23 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                                                 false, cCtx);
                                     }
                                 } else {
-                                    if (variableSetsById.containsKey(variableId)) {
+                                    HvdcLine hvdcLine = network.getHvdcLine(variableId);
+                                    if (hvdcLine != null) {
                                         for (ContingencyContext cCtx : contingencyContexts) {
                                             handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
-                                                    SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
-                                                    true, cCtx);
+                                                    SensitivityVariableType.HVDC_LINE_ACTIVE_POWER, variableId,
+                                                    false, cCtx);
                                         }
                                     } else {
-                                        throw new PowsyblException("Variable '" + variableId + "' not found");
+                                        if (variableSetsById.containsKey(variableId)) {
+                                            for (ContingencyContext cCtx : contingencyContexts) {
+                                                handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                                        SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
+                                                        true, cCtx);
+                                            }
+                                        } else {
+                                            throw new PowsyblException("Variable '" + variableId + "' not found");
+                                        }
                                     }
                                 }
                             }
