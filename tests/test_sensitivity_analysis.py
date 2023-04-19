@@ -249,7 +249,8 @@ def test_no_output_matrices_available():
 
 def test_provider_parameters():
     # setting max iterations to 5 will cause the computation to fail, if correctly taken into account
-    parameters = pp.loadflow.Parameters(distributed_slack=False, provider_parameters={'maxNewtonRaphsonIterations': '1'})
+    parameters = pp.loadflow.Parameters(distributed_slack=False,
+                                        provider_parameters={'maxNewtonRaphsonIterations': '1'})
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
@@ -297,3 +298,13 @@ def test_provider_parameters_names():
     assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir']
     with pytest.raises(pp.PyPowsyblError, match='No sensitivity analysis provider for name \'unknown\''):
         pp.sensitivity.get_provider_parameters_names('unknown')
+
+
+def test_hvdc():
+    network = pp.network.create_four_substations_node_breaker_network()
+    analysis = pp.sensitivity.create_dc_analysis()
+    analysis.set_branch_flow_factor_matrix(["LINE_S2S3"], ["HVDC1"])
+    results = analysis.run(network)
+    assert {'default': ['HVDC1']} == results.branch_data_frame_index
+    assert {'default': ['LINE_S2S3']} == results.branches_ids
+    pytest.approx(results.get_branch_flows_sensitivity_matrix().loc['HVDC1']['LINE_S2S3'], 0.7824, 0.001)
