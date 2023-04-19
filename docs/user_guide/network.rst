@@ -267,7 +267,7 @@ Once you're done working with your variant, you can remove it:
    >>> network.remove_variant('Variant')
 
 
-Creating network elements
+Create network elements
 -------------------------
 
 pypowsybl provides methods to add new elements (substations, lines, ...)
@@ -514,7 +514,7 @@ You can check that the load was added correctly by drawing a single line diagram
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_load.svg
 
 Now let's connect a generator on *BBS1* on the left of *load1*, a
-dangling line on the right of *line1* on *BBS3* and a shunt and a VSC converter station on *BBS4*:
+dangling line on the right of *line1* on *BBS3* and a shunt on *BBS4*:
 
 .. testcode::
 
@@ -532,7 +532,6 @@ dangling line on the right of *line1* on *BBS3* and a shunt and a VSC converter 
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
         data=[('shunt1', 0.014, 0.0001, 2)])
     pp.network.create_shunt_compensator_bay(n, shunt_df=shunt_df, linear_model_df=model_df)
-    pp.network.create_vsc_converter_station_bay(n, id='VSC1', target_q=200, voltage_regulator_on=True, loss_factor=1.0, target_v=230, bus_or_busbar_section_id='BBS4', position_order=30)
 
 You can draw the new single line diagrams:
 
@@ -645,6 +644,105 @@ Let's draw the single line diagrams of VL1 and of VL3 to check that the two wind
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
 
+To add a HVDC line to the network, you can first add the two converter stations, just like any other injection.
+Let's add one on the busbar section BBS3 of VL1 on the right and one on BBS4 on the right too:
+
+.. testcode::
+
+    pp.network.create_vsc_converter_station_bay(n, id=['VSC1', 'VSC2'], target_q=[200, 200], voltage_regulator_on=[True, True], loss_factor=[1.0, 1.0],
+                target_v=[230, 230], bus_or_busbar_section_id=['BBS3', 'BBS4'], position_order=[30, 40])
+
+Now you can add the HVDC line with:
+
+.. testcode::
+
+    n.create_hvdc_lines(id='HVDC_line', converter_station1_id='VSC1', converter_station2_id='VSC2',
+                          r=1.0, nominal_v=400, converters_mode='SIDE_1_RECTIFIER_SIDE_2_INVERTER',
+                          max_p=1000, target_p=800)
+
+The single line diagrams of voltage levels VL1 and VL2 are now:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_with_hvdc.svg
+
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_with_hvdc.svg
 
 Now you know how to create a node-breaker voltage level and its topology, injections, lines and two-windings transformer with the built-in methods
 available in pypowsybl. For a reference of the available methods, please refer to: :doc:`documentation </reference/network>`.
+
+Remove groups of elements
+-------------------------
+PyPowsybl provides build-in methods to remove existing elements such as feeders, voltage levels and HVDC lines.
+With these methods, it is possible to easily remove injections, lines and two windings transformers as well as the switches connecting them to a voltage level.
+Let's work on the network created in the section above.
+
+You can remove the load1 with:
+
+.. testcode::
+
+    pp.network.remove_feeder_bays(n, 'load1')
+
+The single line diagram of VL1 is then:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_without_load1.svg
+
+You can see that the load was removed, as well as all the breaker and disconnectors that was connecting it to the busbar section.
+
+If you want to remove a HVDC line, you can use the built-in method that will remove not only the line but also the two converting stations and their switches.
+
+You can remove HVDC_line with:
+
+.. testcode::
+
+    pp.network.remove_hvdc_lines(n, 'HVDC_line')
+
+You can check on the single line diagram that everything went good:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_without_hvdc.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL2')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl2_without_hvdc.svg
+
+Finally, it is also possible to remove a full voltage level, with all its connectables. The lines and two windings transformers will be removed
+as well as their topology on both sides and the HVDC lines will be removed as well as their converter stations on both sides too.
+
+For example, you can remove VL2 with:
+
+.. testcode::
+
+    pp.network.remove_voltage_levels(n, 'VL2')
+
+The remaining voltage levels VL1 and VL3 are then:
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL1')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl1_after_removing_vl2.svg
+
+.. code-block:: python
+
+    >>> n.get_single_line_diagram('VL3')
+
+.. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+
+On the diagrams, you can see that all the lines that were connecting VL1 to VL2 have been removed as well as their switches. On VL3, nothing was done as nothing was connected between VL2 and VL3.

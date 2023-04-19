@@ -1093,3 +1093,41 @@ def test_replace_tee_point_by_voltage_level_on_line_deprecated_args():
     assert retrieved_newline2["connected2"]
 
     assert 'test_line' not in n.get_lines().index
+
+
+def test_remove_voltage_level():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='VLTEST', substation_id='P1', topology_kind='BUS_BREAKER', nominal_v=400, low_voltage_limit=380, high_voltage_limit=420)
+    n.create_buses(id='B1', voltage_level_id='VLTEST')
+    n.create_loads(id='LOADTEST', voltage_level_id='VLTEST', bus_id='B1', p0=100, q0=10)
+    n.create_lines(id='LINETEST', voltage_level1_id='VLTEST', bus1_id='B1', voltage_level2_id='VLGEN', bus2_id='NGEN',
+                   b1=0, b2=0, g1=0, g2=0, r=0.5, x=10)
+
+    assert 'VLTEST' in n.get_voltage_levels().index
+
+    retrieved_load = n.get_loads().loc['LOADTEST']
+
+    assert retrieved_load['voltage_level_id'] == 'VLTEST'
+    assert retrieved_load['connected']
+    assert retrieved_load['p0'] == 100.0
+    assert retrieved_load['q0'] == 10.0
+
+    pp.network.remove_voltage_levels(n, 'VLTEST')
+
+    assert 'VLTEST' not in n.get_voltage_levels().index
+    assert 'LOADTEST' not in n.get_loads().index
+    assert 'LINETEST' not in n.get_lines().index
+
+
+def test_remove_hvdc():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.network.remove_hvdc_lines(n, 'HVDC2', {'HVDC2': 'SHUNT'})
+
+    assert 'HVDC2' not in n.get_hvdc_lines().index
+    assert 'SHUNT' not in n.get_shunt_compensators().index
+    assert n.get_lcc_converter_stations().empty
+
+    pp.network.remove_hvdc_lines(n, 'HVDC1')
+
+    assert 'HVDC1' not in n.get_hvdc_lines().index
+    assert n.get_vsc_converter_stations().empty

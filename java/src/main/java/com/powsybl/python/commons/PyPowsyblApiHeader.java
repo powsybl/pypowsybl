@@ -599,6 +599,19 @@ public final class PyPowsyblApiHeader {
         public static native NetworkModificationType fromCValue(int value);
     }
 
+    @CEnum("remove_modification_type")
+    public enum RemoveModificationType {
+        REMOVE_FEEDER,
+        REMOVE_VOLTAGE_LEVEL,
+        REMOVE_HVDC_LINE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RemoveModificationType fromCValue(int value);
+    }
+
     @CStruct("matrix")
     public interface MatrixPointer extends PointerBase {
 

@@ -182,6 +182,12 @@ typedef enum {
     REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
 } network_modification_type;
 
+typedef enum {
+    REMOVE_FEEDER = 0,
+    REMOVE_VOLTAGE_LEVEL,
+    REMOVE_HVDC_LINE,
+} remove_modification_type;
+
 typedef struct matrix_struct {
     int row_count;
     int column_count;
