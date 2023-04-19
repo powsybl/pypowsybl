@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.SwitchKind;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -29,11 +30,11 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.ints("low_busbar_index"),
-            SeriesMetadata.ints("busbar_count"),
+            SeriesMetadata.ints("low_bus_or_busbar_index"),
+            SeriesMetadata.ints("aligned_buses_or_busbar_count"),
             SeriesMetadata.ints("low_section_index"),
             SeriesMetadata.ints("section_count"),
-            SeriesMetadata.strings("busbar_section_prefix_id"),
+            SeriesMetadata.strings("bus_or_busbar_section_prefix_id"),
             SeriesMetadata.strings("switch_prefix_id"),
             SeriesMetadata.strings("switch_kinds")
     );
@@ -52,12 +53,20 @@ public class VoltageLevelTopologyCreation implements NetworkModification {
                 .map(SwitchKind::valueOf)
                 .collect(Collectors.toList());
         applyIfPresent(dataframe.getStrings("id"), row, builder::withVoltageLevelId);
-        applyIfPresent(dataframe.getInts("low_busbar_index"), row, builder::withLowBusOrBusbarIndex);
-        applyIfPresent(dataframe.getInts("busbar_count"), row, builder::withAlignedBusesOrBusbarCount);
+        applyIfPresent(dataframe.getInts("low_bus_or_busbar_index"), row, builder::withLowBusOrBusbarIndex);
+        applyIfPresent(dataframe.getInts("aligned_buses_or_busbar_count"), row, builder::withAlignedBusesOrBusbarCount);
         applyIfPresent(dataframe.getInts("low_section_index"), row, builder::withLowSectionIndex);
         builder.withSectionCount(switchKindList.size() + 1);
         applyIfPresent(dataframe.getStrings("busbar_section_prefix_id"), row, builder::withBusbarSectionPrefixId);
         applyIfPresent(dataframe.getStrings("switch_prefix_id"), row, builder::withSwitchPrefixId);
+        OptionalInt sectionCount = dataframe.getIntValue("section_count", row);
+        if (sectionCount.isEmpty()) {
+            if (!switchKindList.isEmpty()) {
+                builder.withSectionCount(switchKindList.size() + 1);
+            }
+        } else {
+            builder.withSectionCount(sectionCount.getAsInt());
+        }
         builder.withSwitchKinds(switchKindList);
         return builder;
     }

@@ -18,7 +18,7 @@ from typing import (
     Dict as _Dict,
     Optional as _Optional,
     Union as _Union,
-    TYPE_CHECKING as _TYPE_CHECKING,
+    TYPE_CHECKING as _TYPE_CHECKING
 )
 
 from numpy import Inf
@@ -5752,7 +5752,8 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
 def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise_exception: bool = False,
                                   reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
-    Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number of sections.
+    Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number
+    of sections.
 
     Args:
         network: the network in which the busbar sections are.
@@ -5761,30 +5762,35 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
         reporter: an optional reporter to get functional logs.
         kwargs: attributes as keyword arguments.
     Notes:
-        The voltage level must be created and in node/breaker topology.
-        Busbar sections will be created, as well as disconnectors or breakers between each section depending on the
-        switch_kind list.
+        The voltage level must be created and in node/breaker or bus/breaker topology.
+        In node/breaker topology, busbar sections will be created, as well as disconnectors or breakers between each
+        section depending on the switch_kind list.
+        In bus/breaker topology, a matrix of buses will be created containing section_count x aligned_buses_or_busbar_count
+        buses. The buses on the same row of the matrix will be connected via a breaker.
 
         The input dataframe expects these attributes:
         - **voltage_level_id**: the identifier of the voltage level where the topology should be created.
-        - **low_busbar_index**: the lowest busbar index to be used. By default, 1 (no other busbar sections).
-        - **busbar_count**: the total number of busbar to be created.
+        - **low_bus_or_busbar_index**: the lowest bus or busbar index to be used. By default, 1 (no other buses or
+        busbar sections).
+        - **aligned_buses_or_busbar_count**: the total number of busbar or rows of buses to be created.
         - **low_section_index**: the lowest section index to be used. By default, 1.
-        - **busbar_section_prefix_id**: an optional prefix to put on the names of the created busbar sections. By
-        default, nothing.
+        - **bus_or_busbar_section_prefix_id**: an optional prefix to put on the names of the created buses or
+        busbar sections. By default, nothing.
         - **switch_prefix_id**: an optional prefix to put on the names of the created switches. By default, nothing.
         - **switch_kinds**: string or list containing the type of switch between each section. It should contain
         section_count - 1 switches and should look like that 'BREAKER, DISCONNECTOR' or ['BREAKER', 'DISCONNECTOR'].
+        - **section_count**: optionally in node/breaker, required in bus/breaker, the number of sections to be created.
 
     Examples:
 
     .. code-block:: python
-        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL', busbar_count=3,
-                                                 section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
+        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
+                                                aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
-    df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
+    if 'switch_kinds' in df.columns:
+        df['switch_kinds'] = df['switch_kinds'].map(transform_list_to_str)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
                                     raise_exception,
@@ -5814,17 +5820,18 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
         kwargs: Attributes as keyword arguments.
 
     Notes:
-        The voltage level containing the busbar sections must be described in node/breaker topology.
-        A closed breaker will be created as well as a closed disconnector on both given busbar sections to connect them.
-        If the topology extensions are present on the busbar sections then on every parallel busbar section, an open
-        disconnectors will be created to connect them to the breaker. If the two given busbar sections are the only two
-        parallel busbar sections, and they have the same section index then, only two closed disconnectors will be
-        created.
+        The voltage level containing the busbar sections can be described in node/breaker or bus/breaker topology.
+        In node/breaker topology, a closed breaker will be created as well as a closed disconnector on both given busbar
+        sections to connect them. If the topology extensions are present on the busbar sections then on every parallel
+        busbar section, an open disconnectors will be created to connect them to the breaker. If the two given busbar
+        sections are the only two parallel busbar sections, and they have the same section index then, only two closed
+        disconnectors will be created.
+        In bus/breaker topology, a closed breaker will be created between two buses.
 
         The input dataframe expects these attributes:
 
-        - **busbar_section_id_1**: the identifier of the busbars section on side 1
-        - **busbar_section_id_2**: the identifier of the busbars section on side 2
+        - **bus_or_busbar_section_id_1**: the identifier of the bus or of the busbar section on side 1
+        - **bus_or_busbar_section_id_2**: the identifier of the bus or of the busbar section on side 2
         - **switch_prefix_id**: an optional prefix for all the switches
 
     Examples:
@@ -5832,7 +5839,8 @@ def create_coupling_device(network: Network, df: _DataFrame = None, raise_except
         .. code-block:: python
 
             pp.network.create_coupling_device(
-                            network, busbar_section_id_1='BBS1', busbar_section_id_2='BBS2', switch_prefix_id='sw')
+                            network, bus_or_busbar_section_id_1='BBS1', bus_or_busbar_section_id_2='BBS2',
+                            switch_prefix_id='sw')
 
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)

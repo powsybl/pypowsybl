@@ -593,7 +593,7 @@ and disconnectors between sections two and three. You can do that with:
 
 .. testcode::
 
-    pp.network.create_voltage_level_topology(n, id='VL3', busbar_count=2, section_count=3, switch_kinds='BREAKER, DISCONNECTOR')
+    pp.network.create_voltage_level_topology(n, id='VL3', aligned_buses_or_busbar_count=2, switch_kinds='BREAKER, DISCONNECTOR')
 
 To check that the topology was correctly created, you can draw the single line diagram of voltage level VL3:
 
@@ -609,7 +609,7 @@ sections:
 
 .. testcode::
 
-    pp.network.create_coupling_device(n, busbar_section_id_1=['VL3_1_1', 'VL3_2_2'], busbar_section_id_2=['VL3_1_2', 'VL3_2_3'])
+    pp.network.create_coupling_device(n, bus_or_busbar_section_id_1=['VL3_1_1', 'VL3_2_2'], bus_or_busbar_section_id_2=['VL3_1_2', 'VL3_2_3'])
 
 You can create the single line diagram to check that the coupling devices were well created:
 
