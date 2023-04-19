@@ -6,12 +6,15 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
+import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
+import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.BusbarSection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
@@ -30,6 +33,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -113,13 +117,35 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    @CEntryPoint(name = "removeFeederBays")
-    public static void removeFeederBays(IsolateThread thread, ObjectHandle networkHandle,
-                                        CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "removeElementsModification")
+    public static void removeElementsModification(IsolateThread thread, ObjectHandle networkHandle,
+                                                  CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount,
+                                                  PyPowsyblApiHeader.DataframePointer extraDataDfPtr,
+                                                  PyPowsyblApiHeader.RemoveModificationType removeModificationType,
+                                                  boolean throwException, ObjectHandle reporterHandle,
+                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network));
+            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_FEEDER) {
+                ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+            } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_VOLTAGE_LEVEL) {
+                ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+            } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
+                UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
+                ids.forEach(hvdcId -> {
+                    List<String> shuntCompensatorList = Collections.EMPTY_LIST;
+                    if (extraDataDf != null) {
+                        Optional<String> shuntCompensatorOptional = extraDataDf.getStringValue(hvdcId, 0);
+                        String shuntCompensator = shuntCompensatorOptional.isEmpty() || shuntCompensatorOptional.get().isEmpty() ? "," :
+                                shuntCompensatorOptional.get();
+                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).collect(Collectors.toList());
+                    }
+                    new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+
+                });
+            }
         });
     }
 

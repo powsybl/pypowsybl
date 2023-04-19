@@ -259,6 +259,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE", network_modification_type::REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
             .value("REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE", network_modification_type::REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE);
 
+    py::enum_<remove_modification_type>(m, "RemoveModificationType")
+        .value("REMOVE_FEEDER", remove_modification_type::REMOVE_FEEDER)
+        .value("REMOVE_VOLTAGE_LEVEL", remove_modification_type::REMOVE_VOLTAGE_LEVEL)
+        .value("REMOVE_HVDC_LINE", remove_modification_type::REMOVE_HVDC_LINE);
+
     m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
@@ -748,7 +753,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
-    m.def("remove_feeder_bays", &pypowsybl::removeFeederBays, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"));
+    m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
 
     dynamicSimulationBindings(m);
 

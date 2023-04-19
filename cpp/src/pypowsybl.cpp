@@ -1228,9 +1228,9 @@ LayoutParameters* createLayoutParameters() {
     return new LayoutParameters(parameters.get());
 }
 
-void removeFeederBays(pypowsybl::JavaHandle network, const std::vector<std::string>&  connectableIds) {
+void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter) {
     ToCharPtrPtr connectableIdsPtr(connectableIds);
-    pypowsybl::callJava(::removeFeederBays, network, connectableIdsPtr.get(), connectableIds.size());
+    pypowsybl::callJava(::removeElementsModification, network, connectableIdsPtr.get(), connectableIds.size(), dataframe, removeModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
 /*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
