@@ -1311,4 +1311,8 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
     pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
+void moveConnectable(pypowsybl::JavaHandle network, std::string equipmentId, std::string idBusOrigin, std::string idBusDestination) {
+    pypowsybl::callJava(::moveConnectable, network, (char*) equipmentId.c_str(), (char*) idBusOrigin.c_str(), (char*) idBusDestination.c_str());
+}
+
 }

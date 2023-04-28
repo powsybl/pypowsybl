@@ -762,4 +762,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_network_modification_metadata_with_element_type", &pypowsybl::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
 
     m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+
+    m.def("move_connectable", &pypowsybl::moveConnectable, "Move connectable", py::arg("network"), py::arg("equipment_id"), py::arg("bus_origin_id"), py::arg("bus_destination_id"));
 }

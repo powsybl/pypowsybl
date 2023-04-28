@@ -238,4 +238,24 @@ public final class NetworkUtil {
         return feeders.build();
     }
 
+    public static void moveConnectable(Network network, String equipmentId, String busOrigin, String busDestination) {
+        Bus b = network.getBusBreakerView().getBus(busOrigin);
+        if (b == null) {
+            throw new PowsyblException("Cannot find bus origin " + busOrigin + " in the bus breaker view");
+        }
+        if (network.getBusBreakerView().getBus(busDestination) == null) {
+            throw new PowsyblException("Cannot find bus destination " + busDestination + " in the bus breaker view");
+        }
+
+        boolean foundTerminal = false;
+        for (Terminal t : b.getConnectedTerminals()) {
+            if (t.getConnectable().getId().equals(equipmentId)) {
+                t.getBusBreakerView().moveConnectable(busDestination, true);
+                foundTerminal = true;
+            }
+        }
+        if (!foundTerminal) {
+            throw new PowsyblException("Could not find terminal for equipment " + equipmentId + " in bus " + busOrigin);
+        }
+    }
 }

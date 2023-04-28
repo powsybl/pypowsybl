@@ -978,4 +978,17 @@ public final class NetworkCFunctions {
             return res;
         });
     }
+
+    @CEntryPoint(name = "moveConnectable")
+    public static void moveConnectable(IsolateThread thread, ObjectHandle networkHandle, CCharPointer equipmentId,
+                                          CCharPointer busOrigin, CCharPointer busDestination,
+                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String idEq = CTypeUtil.toString(equipmentId);
+            String idBusOrigin = CTypeUtil.toString(busOrigin);
+            String idBusDestination = CTypeUtil.toString(busDestination);
+            NetworkUtil.moveConnectable(network, idEq, idBusOrigin, idBusDestination);
+        });
+    }
 }

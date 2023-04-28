@@ -1772,6 +1772,9 @@ def test_terminals():
         n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='side')
     assert "No enum constant" in str(e)
 
+def test_move_connectable():
+    n = pp.network.create_ieee14()
+    pp.network.move_connectable(network=n, equipment_id='L1-2-1', bus_origin_id='B1', bus_destination_id='B5')
 
 if __name__ == '__main__':
     unittest.main()

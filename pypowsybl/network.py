@@ -5796,6 +5796,8 @@ def create_voltage_level_topology(network: Network, df: _DataFrame = None, raise
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
+def move_connectable(network: Network, equipment_id: str, bus_origin_id: str, bus_destination_id: str) -> None:
+    _pp.move_connectable(network._handle, equipment_id, bus_origin_id, bus_destination_id)
 
 def transform_list_to_str(entry: _Union[str, _List[str]]) -> str:
     if isinstance(entry, list):
