@@ -951,14 +951,14 @@ class Network:  # pylint: disable=too-many-public-methods
             - **p2**: the active flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MW)
             - **q2**: the reactive flow on the transformer at its "2" side, ``NaN`` if no loadflow has been computed  (in MVAr)
             - **i2**: the current on the transformer at its "2" side, ``NaN`` if no loadflow has been computed (in A)
-            - **voltage_level1_id**: voltage level where the line is connected, on side 1
-            - **voltage_level2_id**: voltage level where the line is connected, on side 2
-            - **bus1_id**: bus where this line is connected, on side 1
-            - **bus2_id**: bus where this line is connected, on side 2
-            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this line is connected, on side 1
-            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this line is connected, on side 2
-            - **node1** (optional): node where this line is connected on side 1, in node-breaker voltage levels
-            - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
+            - **voltage_level1_id**: voltage level where the transformer is connected, on side 1
+            - **voltage_level2_id**: voltage level where the transformer is connected, on side 2
+            - **bus1_id**: bus where this transformer is connected, on side 1
+            - **bus2_id**: bus where this transformer is connected, on side 2
+            - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this transformer is connected, on side 1
+            - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this transformer is connected, on side 2
+            - **node1** (optional): node where this transformer is connected on side 1, in node-breaker voltage levels
+            - **node2** (optional): node where this transformer is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
             - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
             - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
