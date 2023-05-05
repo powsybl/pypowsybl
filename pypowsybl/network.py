@@ -1597,7 +1597,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation the busbar section is connected
               - **bus_id**: bus this busbar section belongs to
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view this busbar section  belongs to
-              - **node**  (optional): node associated to the this busbar section, in node-breaker voltage levels
+              - **node**  (optional): node associated to the busbar section, in node-breaker voltage levels
               - **connected**: ``True`` if the busbar section is connected to a bus
 
             This dataframe is indexed by the id of the busbar sections
