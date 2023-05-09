@@ -70,14 +70,17 @@ Information can be obtained on buses, branches and three windings transformers.
     >>> security_analysis.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
     >>> results = security_analysis.run_ac(network)
     >>> results.bus_results
-                                             v_mag  v_angle
+                                            v_mag  v_angle
     contingency_id voltage_level_id bus_id
                    VLHV2            NHV2   389.95    -3.51
+    NGEN_NHV1      VLHV2            NHV2   569.04    -1.71
     NHV1_NHV2_1    VLHV2            NHV2   366.58    -7.50
     >>> results.branch_results
                                    p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id branch_id
                    NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
+    NGEN_NHV1      NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
+                   NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
     NHV1_NHV2_1    NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83            NaN
 
 
