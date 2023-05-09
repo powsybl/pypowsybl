@@ -103,6 +103,7 @@ jobs:
           name: pypowsybl-wheel-linux-${{ matrix.python.name }}
           path: wheelhouse/*.whl
 
+
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
