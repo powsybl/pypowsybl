@@ -33,6 +33,17 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout olf sources
+        uses: actions/checkout@v3
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: fix_svc_inf
+          path: powsybl-open-loadflow
+
+      - name: Build and install olf
+        shell: bash
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install'
+
       - name: Checkout sources
         uses: actions/checkout@v3
         with:
@@ -86,6 +97,12 @@ jobs:
         working-directory: ./docs
         run: make doctest
 
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
+          path: wheelhouse/*.whl
+
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
@@ -102,8 +119,8 @@ jobs:
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp39,
+            version: '3.9',
           }
 
     steps:
@@ -114,6 +131,16 @@ jobs:
           java-version: '11'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout olf sources
+        uses: actions/checkout@v3
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: fix_svc_inf
+          path: powsybl-open-loadflow
+
+      - name: Build and install olf
+        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -149,3 +176,9 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
+          path: dist/*.whl
