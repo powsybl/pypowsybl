@@ -41,7 +41,7 @@ jobs:
       - name: Build and install core
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
           echo "CORE_MAVEN_PROJECT_VERSION=$(mvn help:evaluate --file powsybl-core/pom.xml -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -55,7 +55,7 @@ jobs:
       - name: Build and install olf
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
           echo "OLF_MAVEN_PROJECT_VERSION=$(mvn help:evaluate --file powsybl-open-loadflow/pom.xml -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -69,7 +69,7 @@ jobs:
       - name: Build and install sld
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --batch-mode -DskipTests=true --file powsybl-single-line-diagram/pom.xml install
           echo "SLD_MAVEN_PROJECT_VERSION=$(mvn help:evaluate --file powsybl-single-line-diagram/pom.xml -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -83,7 +83,7 @@ jobs:
       - name: Build and install dynawo
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --batch-mode -DskipTests=true --file powsybl-dynawo/pom.xml install
           echo "DYNAWO_MAVEN_PROJECT_VERSION=$(mvn help:evaluate --file powsybl-dynawo/pom.xml -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -97,7 +97,7 @@ jobs:
       - name: Build and install entsoe
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --batch-mode -DskipTests=true --file powsybl-entsoe/pom.xml install
           echo "ENTSOE_MAVEN_PROJECT_VERSION=$(mvn help:evaluate --file powsybl-entsoe/pom.xml -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -110,7 +110,7 @@ jobs:
       - name: Build and install dependencies
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn --file powsybl-dependencies/pom.xml --batch-mode versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_MAVEN_PROJECT_VERSION }}
           mvn --file powsybl-dependencies/pom.xml --batch-mode versions:set-property -Dproperty=powsybl-open-loadflow.version -DnewVersion=${{ env.OLF_MAVEN_PROJECT_VERSION }}
           mvn --file powsybl-dependencies/pom.xml --batch-mode versions:set-property -Dproperty=powsybl-sld.version -DnewVersion=${{ env.SLD_MAVEN_PROJECT_VERSION }}
@@ -128,7 +128,7 @@ jobs:
         working-directory: ./java
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=${{ env.DEP_MAVEN_PROJECT_VERSION }}
 
       - name: Setup path
@@ -140,7 +140,7 @@ jobs:
       - name: Build wheel
         shell: bash
         run: |
-          source scl_source enable rh-maven33
+          . /opt/rh/rh-maven33/enable
           python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
