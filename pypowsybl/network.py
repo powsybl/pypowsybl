@@ -403,7 +403,8 @@ class Network:  # pylint: disable=too-many-public-methods
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
-                                       depth: int = 0) -> None:
+                                       depth: int = 0, high_nominal_voltage_bound: float = -1,
+                                       low_nominal_voltage_bound: float = -1) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -417,9 +418,11 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
-        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth)
+        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
+                                           low_nominal_voltage_bound)
 
-    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0) -> Svg:
+    def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0,
+                                 high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1) -> Svg:
         """
         Create a network area diagram.
 
@@ -434,7 +437,8 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
-        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth))
+        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
+                                                    high_nominal_voltage_bound, low_nominal_voltage_bound))
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,
@@ -3098,7 +3102,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.BRANCH, df, **kwargs)
 
-    def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "", **kwargs: _ArrayLike) -> None:
+    def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "",
+                          **kwargs: _ArrayLike) -> None:
         """
         Update extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
@@ -3118,7 +3123,8 @@ class Network:  # pylint: disable=too-many-public-methods
         c_df = _create_c_dataframe(df, metadata)
         _pp.update_extensions(self._handle, extension_name, table_name, c_df)
 
-    def create_extensions(self, extension_name: str, df: _Union[_DataFrame, _List[_Optional[_DataFrame]]] = None, **kwargs: _ArrayLike) -> None:
+    def create_extensions(self, extension_name: str, df: _Union[_DataFrame, _List[_Optional[_DataFrame]]] = None,
+                          **kwargs: _ArrayLike) -> None:
         """
         create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
 
@@ -4737,12 +4743,16 @@ def get_extensions_information() -> _DataFrame:
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
                         deprecated_new_line_r: float = None, deprecated_new_line_x: float = None,
                         deprecated_new_line_b1: float = None, deprecated_new_line_b2: float = None,
-                        deprecated_new_line_g1: float = None, deprecated_new_line_g2: float = None, deprecated_line_id: str = None,
-                        deprecated_line1_id: str = None, deprecated_line1_name: str = None, deprecated_line2_id: str = None,
+                        deprecated_new_line_g1: float = None, deprecated_new_line_g2: float = None,
+                        deprecated_line_id: str = None,
+                        deprecated_line1_id: str = None, deprecated_line1_name: str = None,
+                        deprecated_line2_id: str = None,
                         deprecated_line2_name: str = None, deprecated_position_percent: float = None,
                         deprecated_create_fictitious_substation: bool = None,
-                        deprecated_fictitious_voltage_level_id: str = None, deprecated_fictitious_voltage_level_name: str = None,
-                        deprecated_fictitious_substation_id: str = None, deprecated_fictitious_substation_name: str = None,
+                        deprecated_fictitious_voltage_level_id: str = None,
+                        deprecated_fictitious_voltage_level_name: str = None,
+                        deprecated_fictitious_substation_id: str = None,
+                        deprecated_fictitious_substation_name: str = None,
                         df: _DataFrame = None, raise_exception: bool = False,
                         reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
@@ -4861,24 +4871,29 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                       DeprecationWarning)
         kwargs['position_percent'] = deprecated_position_percent
     if deprecated_create_fictitious_substation is not None:
-        warnings.warn("Use of deprecated argument create_fictitious_substation. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument create_fictitious_substation. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['create_fictitious_substation'] = deprecated_create_fictitious_substation
     if deprecated_fictitious_voltage_level_id is not None:
-        warnings.warn("Use of deprecated argument fictitious_voltage_level_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument fictitious_voltage_level_id. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['fictitious_voltage_level_id'] = deprecated_fictitious_voltage_level_id
     if deprecated_fictitious_voltage_level_name is not None:
-        warnings.warn("Use of deprecated argument fictitious_voltage_level_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument fictitious_voltage_level_name. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['fictitious_voltage_level_name'] = deprecated_fictitious_voltage_level_name
     if deprecated_fictitious_substation_id is not None:
-        warnings.warn("Use of deprecated argument fictitious_substation_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument fictitious_substation_id. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['fictitious_substation_id'] = deprecated_fictitious_substation_id
     if deprecated_fictitious_substation_name is not None:
-        warnings.warn("Use of deprecated argument fictitious_substation_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument fictitious_substation_name. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['fictitious_substation_name'] = deprecated_fictitious_substation_name
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
@@ -4889,9 +4904,11 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_id: str = None, deprecated_line_to_be_merged2_id: str = None,
+def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_id: str = None,
+                               deprecated_line_to_be_merged2_id: str = None,
                                deprecated_line_to_be_deleted: str = None, deprecated_merged_line_id: str = None,
-                               deprecated_merged_line_name: str = None, df: _DataFrame = None, raise_exception: bool = False,
+                               deprecated_merged_line_name: str = None, df: _DataFrame = None,
+                               raise_exception: bool = False,
                                reporter: _Reporter = None, **kwargs: str) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
@@ -4918,12 +4935,14 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
         **kwargs: attributes as keyword arguments
     """
     if deprecated_line_to_be_merged1_id is not None:
-        warnings.warn("Use of deprecated argument line_to_be_merged1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument line_to_be_merged1_id. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['line_to_be_merged1_id'] = deprecated_line_to_be_merged1_id
     if deprecated_line_to_be_merged2_id is not None:
-        warnings.warn("Use of deprecated argument line_to_be_merged2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument line_to_be_merged2_id. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['line_to_be_merged2_id'] = deprecated_line_to_be_merged2_id
     if deprecated_line_to_be_deleted is not None:
         warnings.warn("Use of deprecated argument line_to_be_deleted. Use the dataframe or keyword arguments instead.",
@@ -4945,10 +4964,12 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_line_id: str = None,
+def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: str = None,
+                                  deprecated_line_id: str = None,
                                   deprecated_position_percent: float = None, deprecated_line1_id: str = None,
                                   deprecated_line1_name: str = None, deprecated_line2_id: str = None,
-                                  deprecated_line2_name: str = None, df: _DataFrame = None, raise_exception: bool = False,
+                                  deprecated_line2_name: str = None, df: _DataFrame = None,
+                                  raise_exception: bool = False,
                                   reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
@@ -4981,25 +5002,32 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
         **kwargs: attributes as keyword arguments
     """
     if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
     if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line_id'] = deprecated_line_id
     if deprecated_position_percent is not None:
-        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['position_percent'] = deprecated_position_percent
     if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line1_id'] = deprecated_line1_id
     if deprecated_line1_name is not None:
-        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line1_name'] = deprecated_line1_name
     if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line2_id'] = deprecated_line2_id
     if deprecated_line2_name is not None:
-        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line2_name'] = deprecated_line2_name
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
@@ -5009,7 +5037,8 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: str = None, deprecated_line2_id: str = None,
+def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: str = None,
+                                         deprecated_line2_id: str = None,
                                          deprecated_line_id: str = None, deprecated_line_name: str = None,
                                          df: _DataFrame = None, raise_exception: bool = False,
                                          reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
@@ -5036,7 +5065,8 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
         **kwargs: attributes as keyword arguments
     """
     if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
+                      DeprecationWarning)
         kwargs['line1_id'] = deprecated_line1_id
     if deprecated_line2_id is not None:
         warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
@@ -5053,7 +5083,8 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE,
+    _pp.create_network_modification(network._handle, [c_df],
+                                    NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
@@ -5392,14 +5423,17 @@ def _create_feeder_bay(network: Network, dfs: _List[_Optional[_DataFrame]], elem
         to the bus.
 
     """
-    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY, element_type)
+    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY,
+                                                                       element_type)
     c_dfs = _get_c_dataframes_and_add_element_type(dfs, metadata, element_type, **kwargs)
     _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.CREATE_FEEDER_BAY, raise_exception,
-                                    None if reporter is None else reporter._reporter_model) #pylint: disable=protected-access
+                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def _get_c_dataframes_and_add_element_type(dfs: _List[_Optional[_DataFrame]], metadata: _List[_List[_pp.SeriesMetadata]],
-                                           element_type: _pp.ElementType, **kwargs: _ArrayLike) -> _List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes_and_add_element_type(dfs: _List[_Optional[_DataFrame]],
+                                           metadata: _List[_List[_pp.SeriesMetadata]],
+                                           element_type: _pp.ElementType, **kwargs: _ArrayLike) -> _List[
+    _Optional[_pp.Dataframe]]:
     c_dfs: _List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
@@ -5513,7 +5547,8 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
     See Also:
         :meth:`Network.create_2_windings_transformers`
     """
-    metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, ElementType.TWO_WINDINGS_TRANSFORMER)[0]
+    metadata = _pp.get_network_modification_metadata_with_element_type(
+        NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, ElementType.TWO_WINDINGS_TRANSFORMER)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df],
@@ -5542,12 +5577,13 @@ def remove_feeder_bays(network: Network, connectable_ids: _Union[str, _List[str]
     """
     if isinstance(connectable_ids, str):
         connectable_ids = [connectable_ids]
-    _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER, raise_exception,
-                           None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+    _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER,
+                                     raise_exception,
+                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def remove_voltage_levels(network: Network, voltage_level_ids: _Union[str, _List[str]], raise_exception: bool = False,
-                       reporter: _Reporter = None) -> None:
+                          reporter: _Reporter = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
     The lines and two windings transformers will also be removed in the voltage level on the other side as well as their switches.
@@ -5562,8 +5598,9 @@ def remove_voltage_levels(network: Network, voltage_level_ids: _Union[str, _List
     """
     if isinstance(voltage_level_ids, str):
         voltage_level_ids = [voltage_level_ids]
-    _pp.remove_elements_modification(network._handle, voltage_level_ids, None, _pp.RemoveModificationType.REMOVE_VOLTAGE_LEVEL, raise_exception,
-                                     None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+    _pp.remove_elements_modification(network._handle, voltage_level_ids, None,
+                                     _pp.RemoveModificationType.REMOVE_VOLTAGE_LEVEL, raise_exception,
+                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def remove_hvdc_lines(network: Network, hvdc_line_ids: _Union[str, _List[str]],
@@ -5585,12 +5622,14 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: _Union[str, _List[str]],
     if isinstance(hvdc_line_ids, str):
         hvdc_line_ids = [hvdc_line_ids]
     if shunt_compensator_ids is not None:
-        shunt_compensator_ids = {k: ', '.join(map(str, v)) if isinstance(v, list) else v for k, v in shunt_compensator_ids.items()}
+        shunt_compensator_ids = {k: ', '.join(map(str, v)) if isinstance(v, list) else v for k, v in
+                                 shunt_compensator_ids.items()}
         df = pd.DataFrame(shunt_compensator_ids, index=['shunt_compensator'])
         df.index.name = 'shunt_compensator'
         c_df = _create_properties_c_dataframe(df)
-    _pp.remove_elements_modification(network._handle, hvdc_line_ids, c_df, _pp.RemoveModificationType.REMOVE_HVDC_LINE, raise_exception,
-                                     None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+    _pp.remove_elements_modification(network._handle, hvdc_line_ids, c_df, _pp.RemoveModificationType.REMOVE_HVDC_LINE,
+                                     raise_exception,
+                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> _DataFrame:
@@ -5672,12 +5711,16 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_point_line1: str =None,
-                                               deprecated_tee_point_line2: str = None, deprecated_tee_point_line_to_remove: str = None,
-                                               deprecated_bbs_or_bus_id: str = None, deprecated_new_line1_id: str = None,
-                                               deprecated_new_line2_id: str = None, deprecated_new_line1_name: str = None,
+def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_point_line1: str = None,
+                                               deprecated_tee_point_line2: str = None,
+                                               deprecated_tee_point_line_to_remove: str = None,
+                                               deprecated_bbs_or_bus_id: str = None,
+                                               deprecated_new_line1_id: str = None,
+                                               deprecated_new_line2_id: str = None,
+                                               deprecated_new_line1_name: str = None,
                                                deprecated_new_line2_name: str = None, df: _DataFrame = None,
-                                               raise_exception: bool = False, reporter: _Reporter = None, **kwargs: _ArrayLike) -> None:
+                                               raise_exception: bool = False, reporter: _Reporter = None,
+                                               **kwargs: _ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
 
@@ -5718,8 +5761,9 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
                       DeprecationWarning)
         kwargs['tee_point_line2'] = deprecated_tee_point_line2
     if deprecated_tee_point_line_to_remove is not None:
-        warnings.warn("Use of deprecated argument tee_point_line_to_remove. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated argument tee_point_line_to_remove. Use the dataframe or keyword arguments instead.",
+            DeprecationWarning)
         kwargs['tee_point_line_to_remove'] = deprecated_tee_point_line_to_remove
     if deprecated_bbs_or_bus_id is not None:
         warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
@@ -5744,7 +5788,8 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
-    _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
+    _pp.create_network_modification(network._handle, [c_df],
+                                    NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 

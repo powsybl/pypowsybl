@@ -903,22 +903,28 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
-                                                  CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
+                                                  double highNominalVoltageBound, double lowNominalVoltageBound,
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound);
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramSvg")
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
-                                                        int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int voltageLevelIdCount, int depth, double highNominalVoltageBound,
+                                                        double lowNominalVoltageBound, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth);
+            if (highNominalVoltageBound < lowNominalVoltageBound) {
+                throw new IllegalArgumentException("to filter voltage level on network area diagram, highNominalVoltageBound must be higher than lowNominalVoltageBound");
+            }
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound);
             return CTypeUtil.toCharPtr(svg);
         });
     }

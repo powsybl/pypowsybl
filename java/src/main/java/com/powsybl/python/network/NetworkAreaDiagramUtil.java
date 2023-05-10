@@ -6,11 +6,12 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.commons.PowsyblException;
+import com.powsybl.iidm.network.*;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
 import com.powsybl.nad.svg.SvgParameters;
+import com.powsybl.nad.utils.iidm.IidmUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -19,7 +20,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -30,32 +31,136 @@ public final class NetworkAreaDiagramUtil {
     private NetworkAreaDiagramUtil() {
     }
 
-    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer) {
+    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer,
+                         double highNominalVoltageBound, double lowNominalVoltageBound) {
         SvgParameters svgParameters = new SvgParameters()
                 .setSvgWidthAndHeightAdded(true)
                 .setFixedWidth(800)
                 .setFixedHeight(600);
-        Predicate<VoltageLevel> filter =  voltageLevelIds.size() > 0
-                ? VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth)
+        Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
+                ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
         new NetworkAreaDiagram(network, filter)
                 .draw(writer, svgParameters);
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth) {
+        return getSvg(network, voltageLevelIds, depth, -1, -1);
+    }
+
+    static String getSvg(Network network, List<String> voltageLevelIds, int depth,
+                         double highNominalVoltageBound, double lowNominalVoltageBound) {
         try (StringWriter writer = new StringWriter()) {
-            writeSvg(network, voltageLevelIds, depth, writer);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound);
             return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile) {
+    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile,
+                         Double highNominalVoltageBound, Double lowNominalVoltageBound) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
-            writeSvg(network, voltageLevelIds, depth, writer);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds,
+                                                      double highNominalVoltageBound,
+                                                      double lowNominalVoltageBound, int depth) {
+        Objects.requireNonNull(network);
+        Objects.requireNonNull(voltageLevelIds);
+        Set<VoltageLevel> startingSet = new HashSet<>();
+
+        for (String voltageLevelId : voltageLevelIds) {
+            VoltageLevel vl = network.getVoltageLevel(voltageLevelId);
+            if (vl == null) {
+                throw new PowsyblException("Unknown voltage level id '" + voltageLevelId + "'");
+            }
+            if (highNominalVoltageBound > 0) {
+                if (vl.getNominalV() < lowNominalVoltageBound || vl.getNominalV() > highNominalVoltageBound) {
+                    throw new PowsyblException("vl '" + voltageLevelId +
+                            "' has his nominal voltage out of the indicated thresholds");
+                }
+            }
+            startingSet.add(vl);
+        }
+
+        Set<VoltageLevel> voltageLevels = new HashSet<>();
+        traverseVoltageLevels(startingSet, depth, voltageLevels, highNominalVoltageBound, lowNominalVoltageBound);
+        return new VoltageLevelFilter(voltageLevels);
+    }
+
+    private static void traverseVoltageLevels(Set<VoltageLevel> voltageLevelsDepth, int depth, Set<VoltageLevel> visitedVoltageLevels,
+                                              double highNominalVoltageBound, double lowNominalVoltageBound) {
+        if (depth >= 0) {
+            Set<VoltageLevel> nextDepthVoltageLevels = new HashSet<>();
+            for (VoltageLevel vl : voltageLevelsDepth) {
+                if (!visitedVoltageLevels.contains(vl)) {
+                    if (highNominalVoltageBound > 0) {
+                        if (vl.getNominalV() >= lowNominalVoltageBound
+                                && vl.getNominalV() <= highNominalVoltageBound) {
+                            visitedVoltageLevels.add(vl);
+                            vl.visitEquipments(new VlVisitor(nextDepthVoltageLevels, visitedVoltageLevels));
+                        }
+                    } else {
+                        visitedVoltageLevels.add(vl);
+                        vl.visitEquipments(new VlVisitor(nextDepthVoltageLevels, visitedVoltageLevels));
+                    }
+                }
+            }
+
+            traverseVoltageLevels(nextDepthVoltageLevels, depth - 1, visitedVoltageLevels, highNominalVoltageBound, lowNominalVoltageBound);
+        }
+    }
+
+    private static class VlVisitor extends DefaultTopologyVisitor {
+        private final Set<VoltageLevel> nextDepthVoltageLevels;
+        private final Set<VoltageLevel> visitedVoltageLevels;
+
+        public VlVisitor(Set<VoltageLevel> nextDepthVoltageLevels, Set<VoltageLevel> visitedVoltageLevels) {
+            this.nextDepthVoltageLevels = nextDepthVoltageLevels;
+            this.visitedVoltageLevels = visitedVoltageLevels;
+        }
+
+        public void visitLine(Line line, Branch.Side side) {
+            this.visitBranch(line, side);
+        }
+
+        public void visitTwoWindingsTransformer(TwoWindingsTransformer twt, Branch.Side side) {
+            this.visitBranch(twt, side);
+        }
+
+        public void visitThreeWindingsTransformer(ThreeWindingsTransformer twt, ThreeWindingsTransformer.Side side) {
+            if (side == ThreeWindingsTransformer.Side.ONE) {
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.TWO));
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.THREE));
+            } else if (side == ThreeWindingsTransformer.Side.TWO) {
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.ONE));
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.THREE));
+            } else {
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.ONE));
+                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.TWO));
+            }
+
+        }
+
+        public void visitHvdcConverterStation(HvdcConverterStation<?> converterStation) {
+            converterStation.getOtherConverterStation().ifPresent(c -> this.visitTerminal(c.getTerminal()));
+        }
+
+        private void visitBranch(Branch<?> branch, Branch.Side side) {
+            this.visitTerminal(branch.getTerminal(IidmUtils.getOpposite(side)));
+        }
+
+        private void visitTerminal(Terminal terminal) {
+            VoltageLevel voltageLevel = terminal.getVoltageLevel();
+            if (!this.visitedVoltageLevels.contains(voltageLevel)) {
+                this.nextDepthVoltageLevels.add(voltageLevel);
+            }
+
         }
     }
 }
