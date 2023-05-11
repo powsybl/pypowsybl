@@ -787,11 +787,14 @@ def test_sld_nad():
     assert re.search('.*<svg.*', sld.svg)
     sld = n.get_network_area_diagram(['VL1', 'VL2'])
     assert re.search('.*<svg.*', sld.svg)
+    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', sld.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
         n.write_network_area_diagram_svg(test_svg, None)
         n.write_network_area_diagram_svg(test_svg, ['VL1'])
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
+        n.write_network_area_diagram_svg('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
 
 
 def test_current_limits():
