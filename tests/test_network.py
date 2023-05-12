@@ -971,6 +971,37 @@ def test_3_windings_transformers():
     df = n.get_3_windings_transformers(all_attributes=True)
     assert not df['fictitious']['3WT']
     # test update
+    n.update_3_windings_transformers(id='3WT', r1=20, x1=2, g1=0.008, b1=0.0007, rated_u1=125, rated_s1=10,
+                                     ratio_tap_position1=1, phase_tap_position1=1, r2=22, x2=1, g2=0.009, b2=0.0009, rated_u2=127, rated_s2=11,
+                                     ratio_tap_position2=1, phase_tap_position2=1, r3=24, x3=3, g3=0.01, b3=0.001, rated_u3=129, rated_s3=12,
+                                     ratio_tap_position3=2, phase_tap_position3=1, connected3=False, fictitious=True)
+    t3wt = n.get_3_windings_transformers(all_attributes=True).loc['3WT']
+    assert 20 == t3wt.r1
+    assert 2 == t3wt.x1
+    assert 0.008 == t3wt.g1
+    assert 0.0007 == t3wt.b1
+    assert 125 == t3wt.rated_u1
+    assert 10 == t3wt.rated_s1
+    assert -99999 == t3wt.ratio_tap_position1
+    assert -99999 == t3wt.phase_tap_position1
+    assert 22 == t3wt.r2
+    assert 1 == t3wt.x2
+    assert 0.009 == t3wt.g2
+    assert 0.0009 == t3wt.b2
+    assert 127 == t3wt.rated_u2
+    assert 11 == t3wt.rated_s2
+    assert 1 == t3wt.ratio_tap_position2
+    assert -99999 == t3wt.phase_tap_position2
+    assert 24 == t3wt.r3
+    assert 3 == t3wt.x3
+    assert 0.01 == t3wt.g3
+    assert 0.001 == t3wt.b3
+    assert 129 == t3wt.rated_u3
+    assert 12 == t3wt.rated_s3
+    assert 2 == t3wt.ratio_tap_position3
+    assert -99999 == t3wt.phase_tap_position3
+    assert not t3wt.connected3
+    assert t3wt.fictitious
 
 
 def test_busbar_sections():
