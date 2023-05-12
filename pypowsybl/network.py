@@ -2749,6 +2749,67 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.TWO_WINDINGS_TRANSFORMER, df, **kwargs)
 
+    def update_3_windings_transformers(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update 3 windings transformers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `r1`
+            - `x1`
+            - `g1`
+            - `b1`
+            - `rated_u1`
+            - `rated_s1`
+            - `p1`
+            - `q1`
+            - `connected1`
+            - `ratio_tap_position1`
+            - `phase_tap_position1`
+            - `r2`
+            - `x2`
+            - `g2`
+            - `b2`
+            - `rated_u2`
+            - `rated_s2`
+            - `p2`
+            - `q2`
+            - `connected2`
+            - `ratio_tap_position2`
+            - `phase_tap_position2`
+            - `r3`
+            - `x3`
+            - `g3`
+            - `b3`
+            - `rated_u3`
+            - `rated_s3`
+            - `p3`
+            - `q3`
+            - `connected3`
+            - `ratio_tap_position3`
+            - `phase_tap_position3`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_3_windings_transformers`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_3_windings_transformers(id='T-1', connected1=False, connected2=False, connected3=False)
+                network.update_3_windings_transformers(id=['T-1', 'T-2'], r3=[0.5, 2.0], x3=[5, 10])
+        """
+        return self._update_elements(ElementType.THREE_WINDINGS_TRANSFORMER, df, **kwargs)
+
     def update_ratio_tap_changers(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Update ratio tap changers with data provided as a :class:`~pandas.DataFrame` or as named arguments.
