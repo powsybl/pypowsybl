@@ -5499,7 +5499,7 @@ def create_line_bays(network: Network, df: _DataFrame = None, raise_exception: b
         - **bus_or_busbar_section_id_1**: the identifier of the bus or of the busbar section on side 1
         - **position_order_1**: in node/breaker, the position of the feeder on side 1
         - **direction_1**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 1
-        - **busbar_section_id_2**: the identifier of the bus or of the busbar section on side 2
+        - **bus_or_busbar_section_id_2**: the identifier of the bus or of the busbar section on side 2
         - **position_order_2**: in node/breaker, the position of the feeder on side 2
         - **direction_2**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 2
 
@@ -5508,10 +5508,10 @@ def create_line_bays(network: Network, df: _DataFrame = None, raise_exception: b
         .. code-block:: python
 
             pp.network.create_line_bays(network, id='L', r=0.1, x=10, g1=0, b1=0, g2=0, b2=0,
-                                        busbar_section_id_1='BBS1',
+                                        bus_or_busbar_section_id_1='BBS1',
                                         position_order_1=115,
                                         direction_1='TOP',
-                                        busbar_section_id_2='BBS2',
+                                        bus_or_busbar_section_id_2='BBS2',
                                         position_order_2=121,
                                         direction_2='BOTTOM')
 
@@ -5564,10 +5564,10 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
 
             pp.network.create_2_windings_transformers_bays(
                             network, id='L', b=1e-6, g=1e-6, r=0.5, x=10, rated_u1=400, rated_u2=225,
-                            busbar_section_id_1='BBS1',
+                            bus_or_busbar_section_id_1='BBS1',
                             position_order_1=115,
                             direction_1='TOP',
-                            busbar_section_id_2='BBS2',
+                            bus_or_busbar_section_id_2='BBS2',
                             position_order_2=121,
                             direction_2='BOTTOM')
 
