@@ -79,11 +79,10 @@ public final class NetworkAreaDiagramUtil {
             if (vl == null) {
                 throw new PowsyblException("Unknown voltage level id '" + voltageLevelId + "'");
             }
-            if (highNominalVoltageBound > 0) {
-                if (vl.getNominalV() < lowNominalVoltageBound || vl.getNominalV() > highNominalVoltageBound) {
-                    throw new PowsyblException("vl '" + voltageLevelId +
-                            "' has his nominal voltage out of the indicated thresholds");
-                }
+            if ((lowNominalVoltageBound > 0 && vl.getNominalV() < lowNominalVoltageBound) ||
+                    (highNominalVoltageBound > 0 && vl.getNominalV() > highNominalVoltageBound)) {
+                throw new PowsyblException("vl '" + voltageLevelId +
+                        "' has his nominal voltage out of the indicated thresholds");
             }
             startingSet.add(vl);
         }
@@ -99,21 +98,31 @@ public final class NetworkAreaDiagramUtil {
             Set<VoltageLevel> nextDepthVoltageLevels = new HashSet<>();
             for (VoltageLevel vl : voltageLevelsDepth) {
                 if (!visitedVoltageLevels.contains(vl)) {
-                    if (highNominalVoltageBound > 0) {
+                    if (highNominalVoltageBound > 0 && lowNominalVoltageBound > 0) {
                         if (vl.getNominalV() >= lowNominalVoltageBound
                                 && vl.getNominalV() <= highNominalVoltageBound) {
-                            visitedVoltageLevels.add(vl);
-                            vl.visitEquipments(new VlVisitor(nextDepthVoltageLevels, visitedVoltageLevels));
+                            traverseVoltageLevel(visitedVoltageLevels, nextDepthVoltageLevels, vl);
+                        }
+                    } else if (highNominalVoltageBound > 0) {
+                        if (vl.getNominalV() <= highNominalVoltageBound) {
+                            traverseVoltageLevel(visitedVoltageLevels, nextDepthVoltageLevels, vl);
+                        }
+                    } else if (lowNominalVoltageBound > 0) {
+                        if (vl.getNominalV() >= lowNominalVoltageBound) {
+                            traverseVoltageLevel(visitedVoltageLevels, nextDepthVoltageLevels, vl);
                         }
                     } else {
-                        visitedVoltageLevels.add(vl);
-                        vl.visitEquipments(new VlVisitor(nextDepthVoltageLevels, visitedVoltageLevels));
+                        traverseVoltageLevel(visitedVoltageLevels, nextDepthVoltageLevels, vl);
                     }
                 }
             }
-
             traverseVoltageLevels(nextDepthVoltageLevels, depth - 1, visitedVoltageLevels, highNominalVoltageBound, lowNominalVoltageBound);
         }
+    }
+
+    private static void traverseVoltageLevel(Set<VoltageLevel> visitedVoltageLevels, Set<VoltageLevel> nextDepthVoltageLevels, VoltageLevel vl) {
+        visitedVoltageLevels.add(vl);
+        vl.visitEquipments(new VlVisitor(nextDepthVoltageLevels, visitedVoltageLevels));
     }
 
     private static class VlVisitor extends DefaultTopologyVisitor {

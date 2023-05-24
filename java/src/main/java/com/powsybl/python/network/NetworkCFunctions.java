@@ -921,9 +921,6 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            if (highNominalVoltageBound < lowNominalVoltageBound) {
-                throw new IllegalArgumentException("to filter voltage level on network area diagram, highNominalVoltageBound must be higher than lowNominalVoltageBound");
-            }
             String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound);
             return CTypeUtil.toCharPtr(svg);
         });
