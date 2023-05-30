@@ -7,6 +7,7 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
@@ -15,6 +16,9 @@ import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -24,11 +28,18 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.zip.GZIPInputStream;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -358,4 +369,70 @@ public final class Util {
         }
     }
 
+    public static byte[] binaryBufferToBytes(ByteBuffer buffer) {
+        if (buffer.hasArray()) {
+            return buffer.array();
+        } else {
+            byte[] byteBuffer = new byte[buffer.remaining()];
+            buffer.get(byteBuffer, 0, buffer.remaining());
+            return byteBuffer;
+        }
+    }
+
+    public static InputStream binaryBufferToStream(ByteBuffer buffer) {
+        if (buffer.hasArray()) {
+            return new ByteArrayInputStream(buffer.array());
+        } else {
+            return new ByteBufferInputStream(buffer);
+        }
+    }
+
+    private static final byte[] ZIP_SIGNATURE = new byte[] {0x50, 0x4B, 0x03, 0x04};
+    private static final byte[] GZIP_SIGNATURE = new byte[] {0x1F, (byte) 0x8B};
+    private static final byte[] XZ_SIGNATURE = new byte[] {(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
+    private static final byte[] BZIP2_SIGNATURE = new byte[] {0x42, 0x5A, 0x68};
+    private static final byte[] ZSTD_SIGNATURE = new byte[] {0x28, (byte) 0xB5, 0x2F, (byte) 0xFD};
+
+    private static boolean compareSignature(ByteBuffer buffer, byte[] signature) {
+        byte[] header = new byte[signature.length];
+        buffer.mark();
+        buffer.get(header, 0, signature.length);
+        buffer.reset();
+        return Arrays.equals(signature, header);
+    }
+
+    public static Optional<CompressionFormat> detectCompressionFormat(ByteBuffer buffer) {
+        if (compareSignature(buffer, ZIP_SIGNATURE)) {
+            return Optional.of(CompressionFormat.ZIP);
+        } else if (compareSignature(buffer, GZIP_SIGNATURE)) {
+            return Optional.of(CompressionFormat.GZIP);
+        } else if (compareSignature(buffer, XZ_SIGNATURE)) {
+            return Optional.of(CompressionFormat.XZ);
+        } else if (compareSignature(buffer, BZIP2_SIGNATURE)) {
+            return Optional.of(CompressionFormat.BZIP2);
+        } else if (compareSignature(buffer, ZSTD_SIGNATURE)) {
+            return Optional.of(CompressionFormat.ZSTD);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public static InputStream deCompressedInputStream(InputStream is, Optional<CompressionFormat> format) throws IOException {
+        if (format.isPresent()) {
+            switch (format.get()) {
+                case BZIP2:
+                    return new BZip2CompressorInputStream(is);
+                case GZIP:
+                    return new GZIPInputStream(is);
+                case XZ:
+                    return new XZCompressorInputStream(is);
+                case ZSTD:
+                    return new ZstdCompressorInputStream(is);
+                default:
+                    throw new PowsyblException("Unssuported format " + format.get().name());
+            }
+        } else {
+            return is;
+        }
+    }
 }

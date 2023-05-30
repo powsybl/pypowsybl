@@ -8,6 +8,7 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 from os import PathLike as _PathLike
 import sys as _sys
+import io as _io
 import datetime as _datetime
 from datetime import timezone as _timezone
 import warnings
@@ -4850,6 +4851,14 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     return Network(_pp.load_network(file, parameters,
                                     None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
+def load_from_binary_buffer(file_name: str, buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+    """
+    """
+    if parameters is None:
+        parameters = {}
+    return Network(_pp.load_network_from_binary_buffer(file_name, buffer.getbuffer(), parameters,
+                                                None if reporter is None else reporter._reporter_model))
+
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
                      reporter: _Reporter = None) -> Network:
@@ -4864,11 +4873,7 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Returns:
         The loaded network
     """
-    if parameters is None:
-        parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
-                                                None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
-
+    return load_from_binary_buffer(file_name, _io.BytesIO(bytes(file_content, 'ascii')), parameters, reporter)
 
 def get_extensions_names() -> _List[str]:
     """

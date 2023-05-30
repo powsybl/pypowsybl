@@ -8,7 +8,9 @@ package com.powsybl.python.network;
 
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.commons.datasource.MemDataSource;
+import com.powsybl.commons.datasource.ReadOnlyDataSource;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
@@ -29,13 +31,11 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
+import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.layout.LayoutParameters;
 import org.apache.commons.io.IOUtils;
@@ -46,13 +46,12 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.*;
+import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -162,6 +161,34 @@ public final class NetworkCFunctions {
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "loadNetworkFromBinaryBuffer")
+    public static ObjectHandle loadNetworkFromBinaryBuffer(IsolateThread thread, CCharPointer fileName, PointerBase data, int dataSize, CCharPointerPointer parameterNamesPtrPtr,
+                                                           int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String fileNameStr = CTypeUtil.toString(fileName);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ByteBuffer buffer = CTypeConversion.asByteBuffer(data, dataSize);
+            Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+            if (reporter == null) {
+                reporter = ReporterModel.NO_OP;
+            }
+            if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                ReadOnlyDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), fileNameStr);
+                Network network = Network.read(ds, parameters, reporter);
+                return ObjectHandles.getGlobal().create(network);
+            } else {
+                try (InputStream is = deCompressedInputStream(binaryBufferToStream(buffer), format)) {
+                    Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                    return ObjectHandles.getGlobal().create(network);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
         });
     }

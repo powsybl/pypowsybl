@@ -595,7 +595,7 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
                               parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkBinaryBuffer(const std::string& fileName, py::buffer byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -606,7 +606,9 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
+
+    py::buffer_info info = byteBuffer.request();
+    return callJava<JavaHandle>(::loadNetworkFromBinaryBuffer, (char*) fileName.data(), static_cast<char*>(info.ptr), info.size,
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
