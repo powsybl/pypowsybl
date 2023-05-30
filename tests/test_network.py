@@ -11,6 +11,7 @@ import pathlib
 import re
 import tempfile
 import unittest
+import io
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -19,6 +20,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy import NaN
+import bz2
+import gzip
+import lzma
 
 import pypowsybl as pp
 import pypowsybl.report as rp
@@ -45,6 +49,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     n = pp.network.load_from_string('simple-eu.uct', file_content)
     assert 1 == len(n.get_substations())
 
+def test_load_compressed():
+  with open(DATA_DIR.joinpath('simple-eu.uct'), "rb") as fh:
+      network_data = io.BytesIO(fh.read()).read()
+
+      bz2data = bz2.compress(network_data)
+      n = pp.network.load_from_binary_buffer('simple-eu.uct', io.BytesIO(bz2data))
+      assert 10 == len(n.get_substations())
+
+      gzipdata = gzip.compress(network_data)
+      n = pp.network.load_from_binary_buffer('simple-eu.uct', io.BytesIO(gzipdata))
+      assert 10 == len(n.get_substations())
+
+      xzdata = lzma.compress(network_data)
+      n = pp.network.load_from_binary_buffer('simple-eu.uct', io.BytesIO(xzdata))
+      assert 10 == len(n.get_substations())
 
 def test_dump_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')

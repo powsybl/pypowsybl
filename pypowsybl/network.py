@@ -292,7 +292,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
+        self._handle = _pp.load_network_from_binary_buffer('tmp.xiidm', _io.BytesIO(bytes(xml, 'ascii')).getbuffer(), {}, None)
         self.__init_from_handle()
 
     def __init_from_handle(self) -> None:
