@@ -7,16 +7,14 @@
  */
 package com.powsybl.python.dynamic;
 
+import com.powsybl.dynamicsimulation.EventModel;
+import com.powsybl.dynamicsimulation.EventModelsSupplier;
+import com.powsybl.iidm.network.Network;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import com.powsybl.dynamicsimulation.EventModel;
-import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawaltz.models.events.EventQuadripoleDisconnection;
-import com.powsybl.dynawaltz.models.events.EventSetPointBoolean;
-import com.powsybl.iidm.network.Network;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -36,8 +34,8 @@ public class EventSupplier implements EventModelsSupplier {
      */
     public void addEventBranchDisconnection(String eventModelId, String staticId, double eventTime,
             boolean disconnectOrigin, boolean disconnectExtremity) {
-        this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, eventTime,
-                disconnectOrigin, disconnectExtremity));
+//        this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, eventTime,
+//                disconnectOrigin, disconnectExtremity));
     }
 
     /**
@@ -46,12 +44,12 @@ public class EventSupplier implements EventModelsSupplier {
      * The event represent the disconnection of the given generator
      */
     public void addEventSetPointBoolean(String eventModelId, String staticId, double eventTime, boolean stateEvent) {
-        this.eventSupplierList
-                .add(() -> new EventSetPointBoolean(eventModelId, staticId, eventTime, stateEvent));
+//        this.eventSupplierList
+//                .add(() -> new EventSetPointBoolean(eventModelId, staticId, eventTime, stateEvent));
     }
 
     @Override
     public List<EventModel> get(Network network) {
-        return eventSupplierList.stream().map(supplier -> supplier.get()).collect(Collectors.toList());
+        return eventSupplierList.stream().map(Supplier::get).collect(Collectors.toList());
     }
 }
