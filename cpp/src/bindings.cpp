@@ -212,6 +212,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
+            .value("TIE_LINE", element_type::TIE_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)

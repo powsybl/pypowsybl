@@ -1246,6 +1246,10 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
+    def get_tie_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
+                           **kwargs: _ArrayLike) -> _DataFrame:
+        return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, **kwargs)
+
     def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None,
                                    **kwargs: _ArrayLike) -> _DataFrame:
         r"""

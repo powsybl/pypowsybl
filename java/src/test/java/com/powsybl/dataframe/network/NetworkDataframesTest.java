@@ -29,9 +29,12 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static com.powsybl.dataframe.DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES;
@@ -255,6 +258,20 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
                         "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "ucte-x-node-code", "fictitious", "tie_line_id");
+    }
+
+    @Test
+    void tieLines() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLine();
+        List<Series> series = createDataFrame(TIE_LINE, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "ucte_xnode_code");
+        List<Series> allAttributeSeries = createDataFrame(TIE_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "ucte_xnode_code", "fictitious");
     }
 
     @Test

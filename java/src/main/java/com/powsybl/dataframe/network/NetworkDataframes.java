@@ -64,6 +64,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
+        mappers.put(DataframeElementType.TIE_LINE, tieLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
         mappers.put(DataframeElementType.STATIC_VAR_COMPENSATOR, svcs());
@@ -599,6 +600,18 @@ public final class NetworkDataframes {
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
+                .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper tieLines() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getTieLineStream, getOrThrow(Network::getTieLine, "Tie line"))
+                .stringsIndex("id", TieLine::getId)
+                .strings("name", tl -> tl.getOptionalName().orElse(""))
+                .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
+                .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
+                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getUcteXnodeCode(), ""))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
