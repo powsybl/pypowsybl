@@ -598,6 +598,7 @@ public final class NetworkDataframes {
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
                 .build();
     }
