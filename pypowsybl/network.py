@@ -4298,6 +4298,38 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
 
+    def create_tie_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Creates tie lines.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new tie line
+            - **name**: an optional human-readable name
+            - **dangling_line1_id**: the ID of the first dangling line
+              It must already exist.
+            - **dangling_line2_id**: the ID of the second dangling line
+              It must already exist.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_tie_lines(id='tie_line_1', dangling_line1_id='DL-1', dangling_line2_id='DL-2')
+
+        """
+        return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
+
     def add_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
         Adds aliases to network elements.
