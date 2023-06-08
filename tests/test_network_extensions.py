@@ -69,56 +69,6 @@ def test_create_extensions():
     assert generators_extensions['droop']['GEN2'] == pytest.approx(1.3, abs=1e-3)
 
 
-def test_merged_xnode():
-    network = pn.load(str(DATA_DIR / 'uxTestGridForMerging.uct'))
-    merged_x_nodes = network.get_extensions('mergedXnode')
-    x = merged_x_nodes.loc['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1']
-    assert x.code == 'XXXXXX11'
-    assert (x.line1, x.line2) == ('BBBBBB11 XXXXXX11 1', 'FFFFFF11 XXXXXX11 1')
-    assert (x.r_dp, x.x_dp, x.g1_dp, x.g2_dp, x.b1_dp, x.b2_dp) == (0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
-
-    network.update_extensions('mergedXnode', id='BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1', code='XXXXXX15',
-                              line1='BBBBBB11 XXXXXX11 1', line2='FFFFFF11 XXXXXX11 1',
-                              r_dp=0.6, x_dp=0.6, g1_dp=0.6, g2_dp=0.6, b1_dp=0.6, b2_dp=0.6,
-                              p1=0, q1=0, p2=0, q2=0)
-    x = network.get_extensions('mergedXnode').loc['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1']
-    assert x.code == 'XXXXXX15'
-    assert (x.line1, x.line2) == ('BBBBBB11 XXXXXX11 1', 'FFFFFF11 XXXXXX11 1')
-    assert (x.r_dp, x.x_dp, x.g1_dp, x.g2_dp, x.b1_dp, x.b2_dp) == (0.6, 0.6, 0.6, 0.6, 0.6, 0.6)
-    assert (x.p1, x.q1, x.p2, x.q2) == (0, 0, 0, 0)
-
-    network.remove_extensions('mergedXnode', ['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1',
-                                              'BBBBBB11 XXXXXX12 1 + FFFFFF11 XXXXXX12 1'])
-    assert network.get_extensions('mergedXnode').empty
-
-    network.create_extensions('mergedXnode', id='BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1', code='XXXXXX11',
-                              line1='BBBBBB11 XXXXXX11 1', line2='FFFFFF11 XXXXXX11 1',
-                              r_dp=0.4, x_dp=0.4, g1_dp=0.4, g2_dp=0.4, b1_dp=0.4, b2_dp=0.4,
-                              p1=0, q1=0, p2=0, q2=0)
-    x = network.get_extensions('mergedXnode').loc['BBBBBB11 XXXXXX11 1 + FFFFFF11 XXXXXX11 1']
-    assert x.code == 'XXXXXX11'
-    assert (x.line1, x.line2) == ('BBBBBB11 XXXXXX11 1', 'FFFFFF11 XXXXXX11 1')
-    assert (x.r_dp, x.x_dp, x.g1_dp, x.g2_dp, x.b1_dp, x.b2_dp) == (0.4, 0.4, 0.4, 0.4, 0.4, 0.4)
-    assert (x.p1, x.q1, x.p2, x.q2) == (0, 0, 0, 0)
-
-
-def test_xnode():
-    network = pn.load(str(DATA_DIR / 'simple-eu-xnode.uct'))
-    x = network.get_extensions('xnode').loc['NNL2AA1  XXXXXX11 1']
-    assert x.code == 'XXXXXX11'
-
-    network.update_extensions('xnode', id='NNL2AA1  XXXXXX11 1', code='XXXXXX12')
-    e = network.get_extensions('xnode').loc['NNL2AA1  XXXXXX11 1']
-    assert e.code == 'XXXXXX12'
-
-    network.remove_extensions('xnode', ['NNL2AA1  XXXXXX11 1'])
-    assert network.get_extensions('xnode').empty
-
-    network.create_extensions('xnode', id='NNL2AA1  XXXXXX11 1', code='XXXXXX13')
-    e = network.get_extensions('xnode').loc['NNL2AA1  XXXXXX11 1']
-    assert e.code == 'XXXXXX13'
-
-
 def test_entsoe_area():
     network = pn.load(str(DATA_DIR / 'germanTsos.uct'))
     area = network.get_extensions('entsoeArea').loc['D4NEUR']
@@ -500,16 +450,12 @@ def test_get_extensions_information():
                'attributes'] == 'index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)'
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
-    assert extensions_information.loc['mergedXnode']['detail'] == 'Provides information about the border point between 2 TSOs on a merged line'
-    assert extensions_information.loc['mergedXnode']['attributes'] == 'index : id (str), code (str), line1 (str), line2 (str), r_dp (float), x_dp (float), g1_dp (float), b1_dp (float), g2_dp (float), b2_dp (float), p1 (float), q1 (float), p2 (float), q2 (float)'
     assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
     assert extensions_information.loc['activePowerControl']['attributes'] == 'index : id (str), participate (bool), droop (float)'
     assert extensions_information.loc['entsoeCategory']['detail'] == 'Provides Entsoe category code for a generator'
     assert extensions_information.loc['entsoeCategory']['attributes'] == 'index : id (str), code (int)'
     assert extensions_information.loc['entsoeArea']['detail'] == 'Provides Entsoe geographical code for a substation'
     assert extensions_information.loc['entsoeArea']['attributes'] == 'index : id (str), code (str)'
-    assert extensions_information.loc['xnode']['detail'] == 'Provides information about the border point of a TSO on a dangling line'
-    assert extensions_information.loc['xnode']['attributes'] == 'index : id (str), code (str)'
     assert extensions_information.loc['generatorShortCircuit']['detail'] == 'it contains the transitory reactance of a generator needed to compute short circuit. A subtransitory reactance can also be contained'
     assert extensions_information.loc['generatorShortCircuit']['attributes'] == 'index : id (str), direct_sub_trans_x (float), direct_trans_x (float), step_up_transformer_x (float)'
     assert extensions_information.loc['identifiableShortCircuit']['detail'] == 'it contains max and min values of current allowed during short circuit on a network element'

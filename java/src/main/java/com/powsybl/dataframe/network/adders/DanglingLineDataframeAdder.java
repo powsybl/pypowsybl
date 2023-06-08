@@ -39,7 +39,8 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("r"),
             SeriesMetadata.doubles("x"),
             SeriesMetadata.doubles("g"),
-            SeriesMetadata.doubles("b")
+            SeriesMetadata.doubles("b"),
+            SeriesMetadata.strings("ucte_xnode_code")
     );
 
     @Override
@@ -57,6 +58,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries g;
         private final DoubleSeries b;
         private final StringSeries busOrBusbarSections;
+        private final StringSeries ucteXnodeCode;
 
         DanglingLineSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -68,6 +70,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             this.g = dataframe.getDoubles("g");
             this.b = dataframe.getDoubles("b");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
+            this.ucteXnodeCode = dataframe.getStrings("ucte_xnode_code");
         }
 
         DanglingLineAdder createAdder(Network network, int row) {
@@ -80,6 +83,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(x, row, adder::setX);
             applyIfPresent(g, row, adder::setG);
             applyIfPresent(b, row, adder::setB);
+            applyIfPresent(ucteXnodeCode, row, adder::setUcteXnodeCode);
             return adder;
         }
     }

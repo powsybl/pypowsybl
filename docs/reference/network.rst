@@ -98,6 +98,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_terminals
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
+   Network.get_tie_lines
 
 
 Network elements update
@@ -110,6 +111,7 @@ Network elements can be modified using dataframes:
    :nosignatures:
 
    Network.update_2_windings_transformers
+   Network.update_3_windings_transformers
    Network.update_batteries
    Network.update_buses
    Network.update_dangling_lines
@@ -165,6 +167,7 @@ Network elements can be created or removed using the following methods:
    Network.create_switches
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
+   Network.create_tie_lines
    Network.remove_elements
 
 

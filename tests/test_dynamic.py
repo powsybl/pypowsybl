@@ -52,12 +52,9 @@ def test_dataframe_mapping():
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_branch_disconnection(
-        "event_id_1", "test_quadripole_id", 5, True, False)
-    events.add_set_point_boolean(
-        "event_id_2", "test_generator_id", 3.3, True)
-    events.add_set_point_boolean(
-        "event_id_3", "test_generator_id", 8.2, False)
+    events.add_branch_disconnection("test_quadripole_id", 5, True, False)
+    events.add_injection_disconnection("test_generator_id", 3.3, True)
+    events.add_injection_disconnection("test_generator_id", 8.2, False)
 
 
 def test_add_curve():

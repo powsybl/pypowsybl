@@ -828,3 +828,62 @@ def test_error_messages():
     check_unknown_voltage_level_error_message(network.create_dangling_lines)
     check_unknown_voltage_level_error_message(network.create_lcc_converter_stations)
     check_unknown_voltage_level_error_message(network.create_vsc_converter_stations)
+
+
+def test_tie_line_creation():
+    network = pn.create_empty()
+    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
+    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                                  low_voltage_limit=[200, 200],
+                                  nominal_v=[225, 225],
+                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                  ucte_xnode_code=['XNODE', 'XNODE'])
+    df = pd.DataFrame.from_records(
+        columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
+        data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
+        index='id')
+    network.create_tie_lines(df)
+    assert 'TIE_LINE_TEST' in network.get_tie_lines().index
+
+
+def test_tie_line_creation2():
+    network = pn.create_empty()
+    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
+    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                                  low_voltage_limit=[200, 200],
+                                  nominal_v=[225, 225],
+                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                  ucte_xnode_code=['XNODE1', 'XNODE'])
+    df = pd.DataFrame.from_records(
+        columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
+        data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
+        index='id')
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_tie_lines(df)
+    assert exc.match("AC tie Line 'TIE_LINE_TEST': ucteXnodeCode is not consistent")
+
+
+def test_tie_line_kwargs():
+    network = pn.create_empty()
+    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
+    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                                  low_voltage_limit=[200, 200],
+                                  nominal_v=[225, 225],
+                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1])
+    network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='DL_TEST', dangling_line2_id='DL_TEST2')
+    assert 'TIE_LINE_TEST' in network.get_tie_lines().index
+
+    network.remove_elements('TIE_LINE_TEST')
+    assert network.get_tie_lines().empty

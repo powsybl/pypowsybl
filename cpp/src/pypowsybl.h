@@ -366,9 +366,9 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound);
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound);
 
 JavaHandle createSecurityAnalysis();
 
@@ -543,8 +543,8 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity);
-void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent);
+void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity);
+void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent);
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);

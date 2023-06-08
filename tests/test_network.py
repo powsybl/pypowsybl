@@ -135,7 +135,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 8 == len(parameters)
+    assert 9 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -787,11 +787,20 @@ def test_sld_nad():
     assert re.search('.*<svg.*', sld.svg)
     sld = n.get_network_area_diagram(['VL1', 'VL2'])
     assert re.search('.*<svg.*', sld.svg)
+    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', sld.svg)
+    sld = n.get_network_area_diagram('VL6', low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', sld.svg)
+    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
+    assert re.search('.*<svg.*', sld.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
         n.write_network_area_diagram_svg(test_svg, None)
         n.write_network_area_diagram_svg(test_svg, ['VL1'])
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
+        n.write_network_area_diagram_svg('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+        n.write_network_area_diagram_svg('VL6', low_nominal_voltage_bound=10, depth=10)
+        n.write_network_area_diagram_svg('VL6', high_nominal_voltage_bound=50, depth=10)
 
 
 def test_current_limits():
@@ -860,9 +869,9 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'ucte-x-node-code'],
+                                     'connected', 'ucte-x-node-code', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
-                                   '']])
+                                   '', '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
@@ -870,8 +879,8 @@ def test_dangling_lines():
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                     'bus_id',
-                                    'connected', 'ucte-x-node-code'],
-                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '']])
+                                    'connected', 'ucte-x-node-code', 'tie_line_id'],
+                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '', '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
@@ -971,6 +980,37 @@ def test_3_windings_transformers():
     df = n.get_3_windings_transformers(all_attributes=True)
     assert not df['fictitious']['3WT']
     # test update
+    n.update_3_windings_transformers(id='3WT', r1=20, x1=2, g1=0.008, b1=0.0007, rated_u1=125, rated_s1=10,
+                                     ratio_tap_position1=1, phase_tap_position1=1, r2=22, x2=1, g2=0.009, b2=0.0009, rated_u2=127, rated_s2=11,
+                                     ratio_tap_position2=1, phase_tap_position2=1, r3=24, x3=3, g3=0.01, b3=0.001, rated_u3=129, rated_s3=12,
+                                     ratio_tap_position3=2, phase_tap_position3=1, connected3=False, fictitious=True)
+    t3wt = n.get_3_windings_transformers(all_attributes=True).loc['3WT']
+    assert 20 == t3wt.r1
+    assert 2 == t3wt.x1
+    assert 0.008 == t3wt.g1
+    assert 0.0007 == t3wt.b1
+    assert 125 == t3wt.rated_u1
+    assert 10 == t3wt.rated_s1
+    assert -99999 == t3wt.ratio_tap_position1
+    assert -99999 == t3wt.phase_tap_position1
+    assert 22 == t3wt.r2
+    assert 1 == t3wt.x2
+    assert 0.009 == t3wt.g2
+    assert 0.0009 == t3wt.b2
+    assert 127 == t3wt.rated_u2
+    assert 11 == t3wt.rated_s2
+    assert 1 == t3wt.ratio_tap_position2
+    assert -99999 == t3wt.phase_tap_position2
+    assert 24 == t3wt.r3
+    assert 3 == t3wt.x3
+    assert 0.01 == t3wt.g3
+    assert 0.001 == t3wt.b3
+    assert 129 == t3wt.rated_u3
+    assert 12 == t3wt.rated_s3
+    assert 2 == t3wt.ratio_tap_position3
+    assert -99999 == t3wt.phase_tap_position3
+    assert not t3wt.connected3
+    assert t3wt.fictitious
 
 
 def test_busbar_sections():

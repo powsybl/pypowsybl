@@ -733,14 +733,14 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
     return svgAndMetadata.get();
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth) {
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound) {
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound);
 }
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth) {
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound) {
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth));
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -1262,12 +1262,12 @@ void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string 
     callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
-void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
-    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
+void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
+    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
 }
 
-void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent) {
-    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, stateEvent);
+void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent) {
+    callJava<>(::addEventInjectionDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, stateEvent);
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {

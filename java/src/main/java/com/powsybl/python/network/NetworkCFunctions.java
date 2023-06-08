@@ -445,6 +445,8 @@ public final class NetworkCFunctions {
                         default:
                             throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
+                } else if (identifiable instanceof TieLine) {
+                    ((TieLine) identifiable).remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
@@ -903,22 +905,25 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
-                                                  CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
+                                                  double highNominalVoltageBound, double lowNominalVoltageBound,
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound);
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramSvg")
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
-                                                        int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int voltageLevelIdCount, int depth, double highNominalVoltageBound,
+                                                        double lowNominalVoltageBound, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound);
             return CTypeUtil.toCharPtr(svg);
         });
     }

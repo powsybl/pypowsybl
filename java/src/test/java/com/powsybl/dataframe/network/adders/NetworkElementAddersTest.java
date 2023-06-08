@@ -10,8 +10,6 @@ import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
 import com.powsybl.entsoe.util.EntsoeGeographicalCode;
-import com.powsybl.entsoe.util.MergedXnode;
-import com.powsybl.entsoe.util.Xnode;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.*;
@@ -380,26 +378,6 @@ class NetworkElementAddersTest {
     }
 
     @Test
-    void xnodeExtension() {
-        var network = DanglingLineNetworkFactory.create();
-        String lId = "DL";
-        String code = "XXXXXX11";
-
-        DanglingLine l = network.getDanglingLine(lId);
-        Xnode extension = l.getExtension(Xnode.class);
-        assertNull(extension);
-
-        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "id", lId);
-        addStringColumn(dataframe, "code", code);
-        NetworkElementAdders.addExtensions("xnode", network, singletonList(dataframe));
-
-        extension = l.getExtension(Xnode.class);
-        assertNotNull(extension);
-        assertEquals(code, extension.getCode());
-    }
-
-    @Test
     void generatorEntsoeCategoryExtension() {
         var network = EurostagTutorialExample1Factory.create();
         String lId = "GEN";
@@ -417,49 +395,6 @@ class NetworkElementAddersTest {
         extension = g.getExtension(GeneratorEntsoeCategory.class);
         assertNotNull(extension);
         assertEquals(code, extension.getCode());
-    }
-
-    @Test
-    void mergedXnodeExtension() {
-        var network = EurostagTutorialExample1Factory.create();
-        String lId = "NHV1_NHV2_1";
-
-        Line l = network.getLine(lId);
-        MergedXnode extension = l.getExtension(MergedXnode.class);
-        assertNull(extension);
-
-        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "id", lId);
-        addStringColumn(dataframe, "code", "XXXXXX11");
-        addStringColumn(dataframe, "line1", "");
-        addStringColumn(dataframe, "line2", "");
-        addDoubleColumn(dataframe, "r_dp", 0.5);
-        addDoubleColumn(dataframe, "x_dp", 0.75);
-        addDoubleColumn(dataframe, "g1_dp", 0.46);
-        addDoubleColumn(dataframe, "b1_dp", 0.27);
-        addDoubleColumn(dataframe, "g2_dp", 0.47);
-        addDoubleColumn(dataframe, "b2_dp", 0.44);
-        addDoubleColumn(dataframe, "p1", 1.0);
-        addDoubleColumn(dataframe, "q1", 2.0);
-        addDoubleColumn(dataframe, "p2", 1.5);
-        addDoubleColumn(dataframe, "q2", 2.5);
-        NetworkElementAdders.addExtensions("mergedXnode", network, singletonList(dataframe));
-
-        extension = l.getExtension(MergedXnode.class);
-        assertNotNull(extension);
-        assertEquals("XXXXXX11", extension.getCode());
-        assertEquals("", extension.getLine1Name());
-        assertEquals("", extension.getLine2Name());
-        assertEquals(0.5, extension.getRdp());
-        assertEquals(0.75, extension.getXdp());
-        assertEquals(0.46, extension.getG1dp());
-        assertEquals(0.27, extension.getB1dp());
-        assertEquals(0.47, extension.getG2dp());
-        assertEquals(0.44, extension.getB2dp());
-        assertEquals(1.0, extension.getXnodeP1());
-        assertEquals(2.0, extension.getXnodeQ1());
-        assertEquals(1.5, extension.getXnodeP2());
-        assertEquals(2.5, extension.getXnodeQ2());
     }
 
     @Test

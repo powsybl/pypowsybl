@@ -64,6 +64,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
+        mappers.put(DataframeElementType.TIE_LINE, tieLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
         mappers.put(DataframeElementType.STATIC_VAR_COMPENSATOR, svcs());
@@ -206,6 +207,24 @@ public final class NetworkDataframes {
     private static <U extends Branch<U>> BooleanSeriesMapper.BooleanUpdater<U> connectBranchSide2() {
         return (g, b) -> {
             Boolean res = b ? g.getTerminal2().connect() : g.getTerminal2().disconnect();
+        };
+    }
+
+    private static <U extends ThreeWindingsTransformer> BooleanSeriesMapper.BooleanUpdater<U> connectLeg1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getLeg1().getTerminal().connect() : g.getLeg1().getTerminal().disconnect();
+        };
+    }
+
+    private static <U extends ThreeWindingsTransformer> BooleanSeriesMapper.BooleanUpdater<U> connectLeg2() {
+        return (g, b) -> {
+            Boolean res = b ? g.getLeg2().getTerminal().connect() : g.getLeg2().getTerminal().disconnect();
+        };
+    }
+
+    private static <U extends ThreeWindingsTransformer> BooleanSeriesMapper.BooleanUpdater<U> connectLeg3() {
+        return (g, b) -> {
+            Boolean res = b ? g.getLeg3().getTerminal().connect() : g.getLeg3().getTerminal().disconnect();
         };
     }
 
@@ -513,8 +532,8 @@ public final class NetworkDataframes {
                 .doubles("b1", twt -> twt.getLeg1().getB(), (twt, v) -> twt.getLeg1().setB(v))
                 .doubles("rated_u1", twt -> twt.getLeg1().getRatedU(), (twt, v) -> twt.getLeg1().setRatedU(v))
                 .doubles("rated_s1", twt -> twt.getLeg1().getRatedS(), (twt, v) -> twt.getLeg1().setRatedS(v))
-                .ints("ratio_tap_position1", getRatioTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
-                .ints("phase_tap_position1", getPhaseTapPosition(t -> t.getLeg1()), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
+                .ints("ratio_tap_position1", getRatioTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
+                .ints("phase_tap_position1", getPhaseTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
                 .doubles("p1", twt -> twt.getLeg1().getTerminal().getP(), (twt, v) -> twt.getLeg1().getTerminal().setP(v))
                 .doubles("q1", twt -> twt.getLeg1().getTerminal().getQ(), (twt, v) -> twt.getLeg1().getTerminal().setQ(v))
                 .doubles("i1", twt -> twt.getLeg1().getTerminal().getI())
@@ -522,15 +541,15 @@ public final class NetworkDataframes {
                 .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
                 .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), false)
                 .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
-                .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected())
+                .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
                 .doubles("r2", twt -> twt.getLeg2().getR(), (twt, v) -> twt.getLeg2().setR(v))
                 .doubles("x2", twt -> twt.getLeg2().getX(), (twt, v) -> twt.getLeg2().setX(v))
                 .doubles("g2", twt -> twt.getLeg2().getG(), (twt, v) -> twt.getLeg2().setG(v))
                 .doubles("b2", twt -> twt.getLeg2().getB(), (twt, v) -> twt.getLeg2().setB(v))
                 .doubles("rated_u2", twt -> twt.getLeg2().getRatedU(), (twt, v) -> twt.getLeg2().setRatedU(v))
                 .doubles("rated_s2", twt -> twt.getLeg2().getRatedS(), (twt, v) -> twt.getLeg2().setRatedS(v))
-                .ints("ratio_tap_position2", getRatioTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
-                .ints("phase_tap_position2", getPhaseTapPosition(t -> t.getLeg2()), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
+                .ints("ratio_tap_position2", getRatioTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
+                .ints("phase_tap_position2", getPhaseTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
                 .doubles("p2", twt -> twt.getLeg2().getTerminal().getP(), (twt, v) -> twt.getLeg2().getTerminal().setP(v))
                 .doubles("q2", twt -> twt.getLeg2().getTerminal().getQ(), (twt, v) -> twt.getLeg2().getTerminal().setQ(v))
                 .doubles("i2", twt -> twt.getLeg2().getTerminal().getI())
@@ -538,15 +557,15 @@ public final class NetworkDataframes {
                 .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
                 .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), false)
                 .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
-                .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected())
+                .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
                 .doubles("r3", twt -> twt.getLeg3().getR(), (twt, v) -> twt.getLeg3().setR(v))
                 .doubles("x3", twt -> twt.getLeg3().getX(), (twt, v) -> twt.getLeg3().setX(v))
                 .doubles("g3", twt -> twt.getLeg3().getG(), (twt, v) -> twt.getLeg3().setG(v))
                 .doubles("b3", twt -> twt.getLeg3().getB(), (twt, v) -> twt.getLeg3().setB(v))
                 .doubles("rated_u3", twt -> twt.getLeg3().getRatedU(), (twt, v) -> twt.getLeg3().setRatedU(v))
                 .doubles("rated_s3", twt -> twt.getLeg3().getRatedS(), (twt, v) -> twt.getLeg3().setRatedS(v))
-                .ints("ratio_tap_position3", getRatioTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
-                .ints("phase_tap_position3", getPhaseTapPosition(t -> t.getLeg3()), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
+                .ints("ratio_tap_position3", getRatioTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
+                .ints("phase_tap_position3", getPhaseTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
                 .doubles("p3", twt -> twt.getLeg3().getTerminal().getP(), (twt, v) -> twt.getLeg3().getTerminal().setP(v))
                 .doubles("q3", twt -> twt.getLeg3().getTerminal().getQ(), (twt, v) -> twt.getLeg3().getTerminal().setQ(v))
                 .doubles("i3", twt -> twt.getLeg3().getTerminal().getI())
@@ -554,7 +573,7 @@ public final class NetworkDataframes {
                 .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
                 .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
                 .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
-                .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected())
+                .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -579,6 +598,19 @@ public final class NetworkDataframes {
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
+                .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper tieLines() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getTieLineStream, getOrThrow(Network::getTieLine, "Tie line"))
+                .stringsIndex("id", TieLine::getId)
+                .strings("name", tl -> tl.getOptionalName().orElse(""))
+                .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
+                .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
+                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getUcteXnodeCode(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
