@@ -1249,6 +1249,27 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
                            **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
+        Get a dataframe of tie lines.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of tie lines.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dangling_line1_id**: The ID of the first dangling line
+              - **dangling_line2_id**: The ID of the second dangling line
+              - **ucte_xnode_code**: The UCTE xnode code of the tie line, obtained from the dangling lines.
+
+            This dataframe is indexed by the id of the dangling lines
+        """
         return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, **kwargs)
 
     def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None,
@@ -4302,7 +4323,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def create_tie_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """
-        Creates tie lines.
+        Creates tie lines from two dangling lines.
+        Both dangling lines must have the same UCTE Xnode code.
 
         Args:
             df: Attributes as a dataframe.
