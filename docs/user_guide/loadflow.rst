@@ -82,7 +82,7 @@ And get more detailed informations about theses parameters using:
                                         description    type      default                                possible_values
     name
     slackBusSelectionMode  Slack bus selection mode  STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
-    slackBusesIds                     Slack bus IDs  STRING
+    slackBusesIds                     Slack bus IDs  STRING_LIST
 
 For instance, OLF supports configuration of slack bus from its ID like this:
 
