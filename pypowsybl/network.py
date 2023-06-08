@@ -1197,6 +1197,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
+              - **ucte-xnode-code** (optional): the UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
 
             This dataframe is indexed by the id of the dangling lines
 
@@ -3621,6 +3622,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
+            - **ucte-xnode-code**: the optional UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
 
         Examples:
             Using keyword arguments:
