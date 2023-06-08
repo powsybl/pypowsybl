@@ -869,9 +869,9 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'ucte-x-node-code'],
+                                     'connected', 'ucte-x-node-code', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
-                                   '']])
+                                   '', '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
@@ -879,8 +879,8 @@ def test_dangling_lines():
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                     'bus_id',
-                                    'connected', 'ucte-x-node-code'],
-                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '']])
+                                    'connected', 'ucte-x-node-code', 'tie_line_id'],
+                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '', '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])

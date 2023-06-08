@@ -160,30 +160,28 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_branch_disconnection(self, event_model_id: str, static_id: str, event_time: float, disconnect_origin: bool, disconnect_extremity: bool) -> None:
+    def add_branch_disconnection(self, static_id: str, event_time: float, disconnect_origin: bool, disconnect_extremity: bool) -> None:
         """ Creates a branch disconnection event
 
         Args:
-            event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
             event_time (float): timestep at which the event happens
             disconnect_origin (bool) : the disconnection is made at the origin
             disconnect_extremity (bool) : the disconnection is made at the extremity
         """
         _pp.add_event_branch_disconnection(
-            self._handle, event_model_id, static_id, event_time, disconnect_origin, disconnect_extremity)
+            self._handle, static_id, event_time, disconnect_origin, disconnect_extremity)
 
-    def add_set_point_boolean(self, event_model_id: str, static_id: str, event_time: float, state_event: bool) -> None:
-        """ Creates a generator disconnection event
+    def add_injection_disconnection(self, static_id: str, event_time: float, state_event: bool) -> None:
+        """ Creates an injection disconnection event
 
         Args:
-            event_model_id (str): unique id of the event
             static_id (str): network element to disconnect
             event_time (float): timestep at which the event happens
             state_event (bool): TODO
         """
-        _pp.add_event_set_point_boolean(
-            self._handle, event_model_id, static_id, event_time, state_event)
+        _pp.add_event_injection_disconnection(
+            self._handle, static_id, event_time, state_event)
 
     @staticmethod
     def get_possible_events() -> _List[EventType]:

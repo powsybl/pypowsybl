@@ -7,24 +7,25 @@
  */
 package com.powsybl.python.dynamic;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.dynawaltz.models.events.EventInjectionDisconnection;
+import com.powsybl.dynawaltz.models.events.EventQuadripoleDisconnection;
+import com.powsybl.iidm.network.*;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
 public class EventSupplier implements EventModelsSupplier {
-    private List<Supplier<EventModel>> eventSupplierList;
 
-    public EventSupplier() {
-        eventSupplierList = new LinkedList<>();
-    }
+    private final List<Function<Network, EventModel>> eventSupplierList = new ArrayList<>();
 
     /**
      * According to Dynawaltz staticId must refer to a line or a two winding
@@ -32,24 +33,49 @@ public class EventSupplier implements EventModelsSupplier {
      * <p>
      * The event represent the disconnection the given line/transformer
      */
-    public void addEventBranchDisconnection(String eventModelId, String staticId, double eventTime,
-            boolean disconnectOrigin, boolean disconnectExtremity) {
-//        this.eventSupplierList.add(() -> new EventQuadripoleDisconnection(eventModelId, staticId, eventTime,
-//                disconnectOrigin, disconnectExtremity));
+    public void addEventBranchDisconnection(String staticId, double eventTime, boolean disconnectOrigin, boolean disconnectExtremity) {
+        eventSupplierList.add(network -> {
+            Branch<?> branch = network.getBranch(staticId);
+            if (branch == null) {
+                throw new PowsyblException("Branch '" + staticId + "' not found");
+            }
+            return new EventQuadripoleDisconnection(branch, eventTime, disconnectOrigin, disconnectExtremity);
+        });
     }
 
     /**
      * According to Dynawaltz staticId must refer to a generator
      * <p>
-     * The event represent the disconnection of the given generator
+     * The event represent the disconnection of the given generator, load, static var compensator or shunt compensator
      */
-    public void addEventSetPointBoolean(String eventModelId, String staticId, double eventTime, boolean stateEvent) {
-//        this.eventSupplierList
-//                .add(() -> new EventSetPointBoolean(eventModelId, staticId, eventTime, stateEvent));
+    public void addEventInjectionDisconnection(String staticId, double eventTime, boolean stateEvent) {
+        eventSupplierList.add(network -> {
+            Generator generator = network.getGenerator(staticId);
+            if (generator != null) {
+                return new EventInjectionDisconnection(generator, eventTime, stateEvent);
+            } else {
+                Load load = network.getLoad(staticId);
+                if (load != null) {
+                    return new EventInjectionDisconnection(load, eventTime, stateEvent);
+                } else {
+                    StaticVarCompensator svc = network.getStaticVarCompensator(staticId);
+                    if (svc != null) {
+                        return new EventInjectionDisconnection(svc, eventTime, stateEvent);
+                    } else {
+                        ShuntCompensator sc = network.getShuntCompensator(staticId);
+                        if (sc != null) {
+                            return new EventInjectionDisconnection(sc, eventTime, stateEvent);
+                        } else {
+                            throw new PowsyblException("Generator, load, static var compensator or shunt compensator '" + staticId + "' not found");
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public List<EventModel> get(Network network) {
-        return eventSupplierList.stream().map(Supplier::get).collect(Collectors.toList());
+        return eventSupplierList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }
