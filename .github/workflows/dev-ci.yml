@@ -137,7 +137,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: fix_svc_inf
+          ref: svc_sensi_v_eps
           path: powsybl-open-loadflow
 
       - name: Build and install olf
