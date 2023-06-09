@@ -1268,6 +1268,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **dangling_line1_id**: The ID of the first dangling line
               - **dangling_line2_id**: The ID of the second dangling line
               - **ucte_xnode_code**: The UCTE xnode code of the tie line, obtained from the dangling lines.
+              - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the dangling lines
         """
@@ -3189,6 +3190,33 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_branches(element_id='BRANCH_ID', connected_1=False, connected_2=False)
         """
         return self._update_elements(ElementType.BRANCH, df, **kwargs)
+
+    def update_tie_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update tie lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `fictitious`
+
+        See Also:
+            :meth:`get_tie_lines`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_tie_lines(element_id='TIE_LINE_ID', fictitious=True)
+        """
+        return self._update_elements(ElementType.TIE_LINE, df, **kwargs)
 
     def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "",
                           **kwargs: _ArrayLike) -> None:

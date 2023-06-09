@@ -850,7 +850,7 @@ def test_tie_line_creation():
     assert 'TIE_LINE_TEST' in network.get_tie_lines().index
 
 
-def test_tie_line_creation2():
+def test_tie_line_creation_fail_if_xnodes_are_different():
     network = pn.create_empty()
     network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
     network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
@@ -884,6 +884,9 @@ def test_tie_line_kwargs():
                                   p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1])
     network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='DL_TEST', dangling_line2_id='DL_TEST2')
     assert 'TIE_LINE_TEST' in network.get_tie_lines().index
+
+    network.update_tie_lines(id='TIE_LINE_TEST', fictitious=True)
+    assert network.get_tie_lines(True).loc['TIE_LINE_TEST'].fictitious == True
 
     network.remove_elements('TIE_LINE_TEST')
     assert network.get_tie_lines().empty
