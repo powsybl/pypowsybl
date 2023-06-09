@@ -145,35 +145,29 @@ public final class DynamicSimulationCFunctions {
     @CEntryPoint(name = "addEventBranchDisconnection")
     public static void addEventBranchDisconnection(IsolateThread thread,
             ObjectHandle eventSupplierHandle,
-            CCharPointer eventModelIdPtr,
             CCharPointer staticIdPtr,
             double eventTime,
             boolean disconnectOrigin,
             boolean disconnectExtremity,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            String eventModelId = CTypeUtil.toString(eventModelIdPtr);
             String staticId = CTypeUtil.toString(staticIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventBranchDisconnection(eventModelId,
-                    staticId, eventTime, disconnectOrigin, disconnectExtremity);
+            eventSupplier.addEventBranchDisconnection(staticId, eventTime, disconnectOrigin, disconnectExtremity);
         });
     }
 
-    @CEntryPoint(name = "addEventSetPointBoolean")
-    public static void addEventSetPointBoolean(IsolateThread thread,
+    @CEntryPoint(name = "addEventInjectionDisconnection")
+    public static void addEventInjectionDisconnection(IsolateThread thread,
             ObjectHandle eventSupplierHandle,
-            CCharPointer eventModelIdPtr,
             CCharPointer staticIdPtr,
             double eventTime,
             boolean stateEvent,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            String eventModelId = CTypeUtil.toString(eventModelIdPtr);
             String staticId = CTypeUtil.toString(staticIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventSetPointBoolean(eventModelId, staticId,
-                    eventTime, stateEvent);
+            eventSupplier.addEventInjectionDisconnection(staticId, eventTime, stateEvent);
         });
     }
 

@@ -154,8 +154,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_branch_disconnection", &pypowsybl::addEventBranchDisconnection, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOrigin"), py::arg("disconnectExtremity"));
-    m.def("add_event_set_point_boolean", &pypowsybl::addEventSetPointBoolean, py::arg("event_mapping_handle"), py::arg("event_model_id"), py::arg("static_id"), py::arg("eventTime"), py::arg("stateEvent"));
+    m.def("add_event_branch_disconnection", &pypowsybl::addEventBranchDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOrigin"), py::arg("disconnectExtremity"));
+    m.def("add_event_injection_disconnection", &pypowsybl::addEventInjectionDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("stateEvent"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
@@ -212,6 +212,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
+            .value("TIE_LINE", element_type::TIE_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
             .value("STATIC_VAR_COMPENSATOR", element_type::STATIC_VAR_COMPENSATOR)

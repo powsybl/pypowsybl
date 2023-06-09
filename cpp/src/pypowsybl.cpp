@@ -1262,12 +1262,12 @@ void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string 
     callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
-void addEventBranchDisconnection(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
-    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
+void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
+    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
 }
 
-void addEventSetPointBoolean(JavaHandle eventMappingHandle, std::string eventModelId, std::string staticId, double eventTime, bool stateEvent) {
-    callJava<>(::addEventSetPointBoolean, eventMappingHandle, (char*) eventModelId.c_str(), (char*) staticId.c_str(), eventTime, stateEvent);
+void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent) {
+    callJava<>(::addEventInjectionDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, stateEvent);
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {

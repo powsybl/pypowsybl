@@ -1197,6 +1197,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
+              - **ucte-xnode-code**: the UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+              - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
 
@@ -1245,6 +1247,32 @@ class Network:  # pylint: disable=too-many-public-methods
             == === === === ================ ====== =========
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+
+    def get_tie_lines(self, all_attributes: bool = False, attributes: _List[str] = None,
+                           **kwargs: _ArrayLike) -> _DataFrame:
+        r"""
+        Get a dataframe of tie lines.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of tie lines.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dangling_line1_id**: The ID of the first dangling line
+              - **dangling_line2_id**: The ID of the second dangling line
+              - **ucte_xnode_code**: The UCTE xnode code of the tie line, obtained from the dangling lines.
+              - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
+
+            This dataframe is indexed by the id of the dangling lines
+        """
+        return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, **kwargs)
 
     def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: _List[str] = None,
                                    **kwargs: _ArrayLike) -> _DataFrame:
@@ -3163,6 +3191,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.BRANCH, df, **kwargs)
 
+    def update_tie_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Update tie lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `fictitious`
+
+        See Also:
+            :meth:`get_tie_lines`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_tie_lines(element_id='TIE_LINE_ID', fictitious=True)
+        """
+        return self._update_elements(ElementType.TIE_LINE, df, **kwargs)
+
     def update_extensions(self, extension_name: str, df: _DataFrame = None, table_name: str = "",
                           **kwargs: _ArrayLike) -> None:
         """
@@ -3617,6 +3672,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
+            - **ucte-xnode-code**: the optional UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
 
         Examples:
             Using keyword arguments:
@@ -4293,6 +4349,39 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`create_minmax_reactive_limits`
         """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
+    def create_tie_lines(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
+        """
+        Creates tie lines from two dangling lines.
+        Both dangling lines must have the same UCTE Xnode code.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new tie line
+            - **name**: an optional human-readable name
+            - **dangling_line1_id**: the ID of the first dangling line
+              It must already exist.
+            - **dangling_line2_id**: the ID of the second dangling line
+              It must already exist.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_tie_lines(id='tie_line_1', dangling_line1_id='DL-1', dangling_line2_id='DL-2')
+
+        """
+        return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def add_aliases(self, df: _DataFrame = None, **kwargs: _ArrayLike) -> None:
         """

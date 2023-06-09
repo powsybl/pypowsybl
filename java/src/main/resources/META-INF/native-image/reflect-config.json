@@ -154,46 +154,6 @@
   "name":"javax.management.ObjectName"
 },
 {
-  "name":"javax.xml.bind.annotation.XmlAccessorType"
-},
-{
-  "name":"javax.xml.bind.annotation.XmlElement",
-  "methods":[{"name":"type","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.XmlElementDecl",
-  "methods":[{"name":"scope","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.XmlElementRef",
-  "methods":[{"name":"type","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.XmlElements"
-},
-{
-  "name":"javax.xml.bind.annotation.XmlEnum",
-  "methods":[{"name":"value","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.XmlEnumValue"
-},
-{
-  "name":"javax.xml.bind.annotation.XmlType",
-  "methods":[{"name":"factoryClass","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.adapters.CollapsedStringAdapter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
-  "methods":[
-    {"name":"type","parameterTypes":[] },
-    {"name":"value","parameterTypes":[] }
-  ]
-},
-{
   "name":"sun.security.provider.MD5",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },

@@ -163,6 +163,8 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE:
                 return PyPowsyblApiHeader.ElementType.DANGLING_LINE;
+            case TIE_LINE:
+                return PyPowsyblApiHeader.ElementType.TIE_LINE;
             case LCC_CONVERTER_STATION:
                 return PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION:
@@ -232,6 +234,8 @@ public final class Util {
                 return DataframeElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE:
                 return DataframeElementType.DANGLING_LINE;
+            case TIE_LINE:
+                return DataframeElementType.TIE_LINE;
             case LCC_CONVERTER_STATION:
                 return DataframeElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION:

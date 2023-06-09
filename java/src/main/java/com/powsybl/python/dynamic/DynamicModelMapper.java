@@ -7,11 +7,7 @@
  */
 package com.powsybl.python.dynamic;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynawaltz.models.automatons.CurrentLimitAutomaton;
@@ -20,21 +16,35 @@ import com.powsybl.dynawaltz.models.loads.LoadAlphaBeta;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformer;
 import com.powsybl.dynawaltz.models.utils.SideConverter;
 import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
 public class DynamicModelMapper implements DynamicModelsSupplier {
 
-    private LinkedList<Supplier<DynamicModel>> dynamicModelList;
-
-    public DynamicModelMapper() {
-        dynamicModelList = new LinkedList<>();
-    }
+    private final List<Function<Network, DynamicModel>> dynamicModelList = new ArrayList<>();
 
     public List<DynamicModel> get(Network network) {
-        return dynamicModelList.stream().map(supplier -> supplier.get()).collect(Collectors.toList());
+        return dynamicModelList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    @NotNull
+    private static Load getLoad(String staticId, Network network) {
+        Load load = network.getLoad(staticId);
+        if (load == null) {
+            throw new PowsyblException("Load '" + staticId + "' not found");
+        }
+        return load;
     }
 
     /**
@@ -42,8 +52,11 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
      *
      * @param staticId also determines the dynamic id of the element
      */
-    public void addAlphaBetaLoad(String staticId, String parametersIds) {
-        dynamicModelList.add(() -> new LoadAlphaBeta(staticId, staticId, parametersIds));
+    public void addAlphaBetaLoad(String staticId, String parameterSetId) {
+        dynamicModelList.add(network -> {
+            Load load = getLoad(staticId, network);
+            return new LoadAlphaBeta(staticId, load, parameterSetId, "LoadAlphaBeta");
+        });
     }
 
     /**
@@ -51,32 +64,46 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
      *
      * @param staticId also determines the dynamic id of the element
      */
-    public void addOneTransformerLoad(String staticId, String parametersIds) {
-        dynamicModelList.add(() -> new LoadOneTransformer(staticId, staticId, parametersIds));
+    public void addOneTransformerLoad(String staticId, String parameterSetId) {
+        dynamicModelList.add(network -> {
+            Load load = getLoad(staticId, network);
+            return new LoadOneTransformer(staticId, load, parameterSetId);
+        });
     }
 
-    public void addGeneratorSynchronous(String staticId, String parametersIds, String generatorLib) {
-        dynamicModelList.add(() -> new GeneratorSynchronous(staticId, staticId, parametersIds, generatorLib));
+    public void addGeneratorSynchronous(String staticId, String parameterSetId, String generatorLib) {
+        dynamicModelList.add(network -> {
+            Generator gen = network.getGenerator(staticId);
+            if (gen == null) {
+                throw new PowsyblException("Generator '" + staticId + "' not found");
+            }
+            return new GeneratorSynchronous(staticId, gen, parameterSetId, generatorLib);
+        });
     }
 
-    public void addGeneratorSynchronousThreeWindings(String staticId, String parametersIds) {
-        addGeneratorSynchronous(staticId, parametersIds, "ThreeWindings");
+    public void addGeneratorSynchronousThreeWindings(String staticId, String parameterSetId) {
+        addGeneratorSynchronous(staticId, parameterSetId, "ThreeWindings");
     }
 
-    public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parametersIds) {
-        addGeneratorSynchronous(staticId, parametersIds, "ThreeWindingsProportionalRegulations");
+    public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parameterSetId) {
+        addGeneratorSynchronous(staticId, parameterSetId, "ThreeWindingsProportionalRegulations");
     }
 
-    public void addGeneratorSynchronousFourWindings(String staticId, String parametersIds) {
-        addGeneratorSynchronous(staticId, parametersIds, "FourWindings");
+    public void addGeneratorSynchronousFourWindings(String staticId, String parameterSetId) {
+        addGeneratorSynchronous(staticId, parameterSetId, "FourWindings");
     }
 
-    public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parametersIds) {
-        addGeneratorSynchronous(staticId, parametersIds, "FourWindingsProportionalRegulations");
+    public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parameterSetId) {
+        addGeneratorSynchronous(staticId, parameterSetId, "FourWindingsProportionalRegulations");
     }
 
-    public void addCurrentLimitAutomaton(String staticId, String parametersIds, Branch.Side side) {
-        dynamicModelList.add(() -> new CurrentLimitAutomaton(staticId, staticId, parametersIds, SideConverter.convert(side)));
+    public void addCurrentLimitAutomaton(String staticId, String parameterSetId, Branch.Side side) {
+        dynamicModelList.add(network -> {
+            Branch<?> branch = network.getBranch(staticId);
+            if (branch == null) {
+                throw new PowsyblException("Branch '" + staticId + "' not found");
+            }
+            return new CurrentLimitAutomaton(staticId, parameterSetId, branch, SideConverter.convert(side), "CurrentLimitAutomaton");
+        });
     }
-
 }

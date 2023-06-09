@@ -445,6 +445,8 @@ public final class NetworkCFunctions {
                         default:
                             throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
+                } else if (identifiable instanceof TieLine) {
+                    ((TieLine) identifiable).remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
