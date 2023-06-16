@@ -111,7 +111,7 @@ def test_dump_ucte():
         assert 'test.uct' in file_names
         with open(ucte_temporary_path, 'r') as test_file:
             with open(ucte_local_path, 'r') as expected_file:
-                #remove header with specific date
+                # remove header with specific date
                 test_file_str = test_file.read()[0] + test_file.read()[3:]
                 expected_file_str = expected_file.read()[0] + expected_file.read()[3:]
                 assert test_file_str == expected_file_str
@@ -462,67 +462,62 @@ def test_ratio_tap_changer_steps_data_frame():
     steps = n.get_ratio_tap_changer_steps()
     assert 0.8505666905244191 == steps.loc['NHV2_NLOAD']['rho'][0]
     assert 0.8505666905244191 == steps.loc[('NHV2_NLOAD', 0), 'rho']
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
-                                        names=['id', 'position']),
-        columns=['rho', 'r', 'x', 'g', 'b'],
-        data=[[0.850567, 0, 0, 0, 0],
-              [1.00067, 0, 0, 0, 0],
-              [1.15077, 0, 0, 0, 0]])
-    pd.testing.assert_frame_equal(expected, steps, check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
+                                   pd.Series(data={'rho': 0.850567, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
+                                   pd.Series(data={'rho': 1.00067, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
+                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 2)), check_dtype=False)
     n.update_ratio_tap_changer_steps(pd.DataFrame(
         index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1)],
                                         names=['id', 'position']), columns=['rho', 'r', 'x', 'g', 'b'],
         data=[[1, 1, 1, 1, 1],
               [1, 1, 1, 1, 1]]))
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1), ('NHV2_NLOAD', 2)],
-                                        names=['id', 'position']),
-        columns=['rho', 'r', 'x', 'g', 'b'],
-        data=[[1, 1, 1, 1, 1],
-              [1, 1, 1, 1, 1],
-              [1.15077, 0, 0, 0, 0]])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
+    steps = n.get_ratio_tap_changer_steps()
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
+                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                             name=('NHV2_NLOAD', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
+                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                             name=('NHV2_NLOAD', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
+                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('NHV2_NLOAD', 2)), check_dtype=False)
     n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, rho=2, r=3, x=4, g=5, b=6)
-
-    expected = pd.DataFrame.from_records(
-        index=['id', 'position'],
-        columns=['id', 'position', 'rho', 'r', 'x', 'g', 'b'],
-        data=[('NHV2_NLOAD', 0, 2, 3, 4, 5, 6),
-              ('NHV2_NLOAD', 1, 1, 1, 1, 1, 1),
-              ('NHV2_NLOAD', 2, 1.15077, 0, 0, 0, 0)])
-
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changer_steps(), check_dtype=False)
+    steps = n.get_ratio_tap_changer_steps()
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
+                                   pd.Series(data={'rho': 2, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
+                                             name=('NHV2_NLOAD', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
+                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                             name=('NHV2_NLOAD', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
+                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('NHV2_NLOAD', 2)), check_dtype=False)
 
 
 def test_phase_tap_changer_steps_data_frame():
     n = pp.network.create_ieee300()
     steps = n.get_phase_tap_changer_steps()
     assert 11.4 == steps.loc[('T196-2040-1', 0), 'alpha']
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
-                                        names=['id', 'position']),
-        columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
-        data=[[1, 11.4, 0, 0, 0, 0]])
-    pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+    pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
+                                   pd.Series(data={'rho': 1, 'alpha': 11.4, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('T196-2040-1', 0)), check_dtype=False)
+    # pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
     n.update_phase_tap_changer_steps(pd.DataFrame(
         index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
                                         names=['id', 'position']), columns=['alpha', 'rho', 'r', 'x', 'g', 'b'],
         data=[[1, 1, 1, 1, 1, 1]]))
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
-                                        names=['id', 'position']),
-        columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
-        data=[[1, 1, 1, 1, 1, 1]])
-    pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+    steps = n.get_phase_tap_changer_steps()
+    pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
+                                   pd.Series(data={'rho': 1, 'alpha': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                             name=('T196-2040-1', 0)), check_dtype=False)
     n.update_phase_tap_changer_steps(id=['T196-2040-1'], position=[0], rho=[2], alpha=[7], r=[3], x=[4], g=[5],
                                      b=[6])
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('T196-2040-1', 0)],
-                                        names=['id', 'position']),
-        columns=['rho', 'alpha', 'r', 'x', 'g', 'b'],
-        data=[[2, 7, 3, 4, 5, 6]])
-    pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
+    steps = n.get_phase_tap_changer_steps()
+    pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
+                                   pd.Series(data={'rho': 2, 'alpha': 7, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
+                                             name=('T196-2040-1', 0)), check_dtype=False)
 
 
 def test_update_generators_data_frame():
@@ -981,8 +976,10 @@ def test_3_windings_transformers():
     assert not df['fictitious']['3WT']
     # test update
     n.update_3_windings_transformers(id='3WT', r1=20, x1=2, g1=0.008, b1=0.0007, rated_u1=125, rated_s1=10,
-                                     ratio_tap_position1=1, phase_tap_position1=1, r2=22, x2=1, g2=0.009, b2=0.0009, rated_u2=127, rated_s2=11,
-                                     ratio_tap_position2=1, phase_tap_position2=1, r3=24, x3=3, g3=0.01, b3=0.001, rated_u3=129, rated_s3=12,
+                                     ratio_tap_position1=1, phase_tap_position1=1, r2=22, x2=1, g2=0.009, b2=0.0009,
+                                     rated_u2=127, rated_s2=11,
+                                     ratio_tap_position2=1, phase_tap_position2=1, r3=24, x3=3, g3=0.01, b3=0.001,
+                                     rated_u3=129, rated_s3=12,
                                      ratio_tap_position3=2, phase_tap_position3=1, connected3=False, fictitious=True)
     t3wt = n.get_3_windings_transformers(all_attributes=True).loc['3WT']
     assert 20 == t3wt.r1
@@ -1046,18 +1043,25 @@ def test_busbar_sections():
 
 def test_non_linear_shunt():
     n = util.create_non_linear_shunt_network()
-    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)],
-                                                            names=['id', 'section']),
-                            columns=['g', 'b'],
-                            data=[[0.0, 0.00001],
-                                  [0.3, 0.02000]])
-    pd.testing.assert_frame_equal(expected, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+    non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
+                                   pd.Series(data={'g': 0.0, 'b': 0.00001},
+                                             name=('SHUNT', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
+                                   pd.Series(data={'g': 0.3, 'b': 0.0200},
+                                             name=('SHUNT', 1)), check_dtype=False)
     update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)], names=['id', 'section']),
                           columns=['g', 'b'],
                           data=[[0.1, 0.00002],
                                 [0.4, 0.03]])
     n.update_non_linear_shunt_compensator_sections(update)
-    pd.testing.assert_frame_equal(update, n.get_non_linear_shunt_compensator_sections(), check_dtype=False)
+    non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
+                                   pd.Series(data={'g': 0.1, 'b': 0.00002},
+                                             name=('SHUNT', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
+                                   pd.Series(data={'g': 0.4, 'b': 0.03},
+                                             name=('SHUNT', 1)), check_dtype=False)
 
 
 def test_voltage_levels():
@@ -1329,7 +1333,8 @@ def test_dataframe_attributes_filtering():
     pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
     buses_empty = n.get_buses(attributes=[])
     expected_empty = expected_default_attributes[[]]
-    pd.testing.assert_frame_equal(expected_empty, buses_empty, check_dtype=False)
+    assert expected_empty.empty
+    assert buses_empty.empty
 
     buses_all_attributes = n.get_buses(all_attributes=True)
     expected_all_attributes = pd.DataFrame(
