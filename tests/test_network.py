@@ -65,6 +65,17 @@ def test_load_compressed():
       n = pp.network.load_from_binary_buffer('simple-eu.uct', io.BytesIO(xzdata))
       assert 10 == len(n.get_substations())
 
+def test_load_cgmes_zipped():
+    with open(DATA_DIR.joinpath('CGMES_Full.zip'), "rb") as fh:
+        n = pp.network.load_from_binary_buffers('CGMES_Full.zip', [io.BytesIO(fh.read())])
+        assert 3 == len(n.get_substations())
+
+def test_load_cgmes_two_zip():
+    cgmesPartial = open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb")
+    boundary = open(DATA_DIR.joinpath('Boundary.zip'), "rb")
+    n = pp.network.load_from_binary_buffers('CGMES_FULL.zip', [io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
+    assert 3 == len(n.get_substations())
+
 def test_dump_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     xml = bat_path.read_text()
