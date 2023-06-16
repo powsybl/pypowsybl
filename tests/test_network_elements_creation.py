@@ -699,12 +699,13 @@ id  p    min_q    max_q
 GEN 0    -556.8   557.4
 GEN 200  -553.514 536.4
     """))
-    expected = dataframe_from_string("""
-id  num p    min_q    max_q
-GEN   0 0    -556.8   557.4
-GEN   1 200  -553.514 536.4
-    """, index=['id', 'num'])
-    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points(), check_dtype=False)
+    reactive_capability_curve_points = network.get_reactive_capability_curve_points()
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GEN', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -556.8, 'max_q': 557.4},
+                                             name=('GEN', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GEN', 1)],
+                                   pd.Series(data={'p': 200, 'min_q': -553.514, 'max_q': 536.4},
+                                             name=('GEN', 1)), check_dtype=False)
 
     # Batteries
     network = util.create_battery_network()
@@ -718,8 +719,13 @@ num  p  min_q max_q
 0   50    -50   100
 1   60   -100    50
     """, index='num')
-    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['BAT'],
-                                  check_dtype=False)
+    battery_curve_points = network.get_reactive_capability_curve_points().loc['BAT']
+    assert battery_curve_points.loc[0]['p'] == 50
+    assert battery_curve_points.loc[0]['min_q'] == -50
+    assert battery_curve_points.loc[0]['max_q'] == 100
+    assert battery_curve_points.loc[1]['p'] == 60
+    assert battery_curve_points.loc[1]['min_q'] == -100
+    assert battery_curve_points.loc[1]['max_q'] == 50
 
     # VSCs
     network = pn.create_four_substations_node_breaker_network()
@@ -728,13 +734,13 @@ num  p  min_q max_q
 VSC1  50    -50      100
 VSC1  60   -100       50
 """))
-    expected = dataframe_from_string("""
-num p    min_q    max_q
-0   50    -50     100
-1   60  -100      50
-""", index='num')
-    pd.testing.assert_frame_equal(expected, network.get_reactive_capability_curve_points().loc['VSC1'],
-                                  check_dtype=False)
+    vsc_curve_points = network.get_reactive_capability_curve_points().loc['VSC1']
+    assert vsc_curve_points.loc[0]['p'] == 50
+    assert vsc_curve_points.loc[0]['min_q'] == -50
+    assert vsc_curve_points.loc[0]['max_q'] == 100
+    assert vsc_curve_points.loc[1]['p'] == 60
+    assert vsc_curve_points.loc[1]['min_q'] == -100
+    assert vsc_curve_points.loc[1]['max_q'] == 50
 
 
 def test_delete_elements_eurostag():
