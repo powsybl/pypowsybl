@@ -595,7 +595,7 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
                               parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-JavaHandle loadNetworkBinaryBuffer(const std::string& fileName, py::buffer byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkFromBinaryBuffers(const std::string& fileName, std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -607,10 +607,20 @@ JavaHandle loadNetworkBinaryBuffer(const std::string& fileName, py::buffer byteB
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
 
-    py::buffer_info info = byteBuffer.request();
-    return callJava<JavaHandle>(::loadNetworkFromBinaryBuffer, (char*) fileName.data(), static_cast<char*>(info.ptr), info.size,
+    char** dataPtrs = new char*[byteBuffers.size()];
+    int* dataSizes = new int[byteBuffers.size()];
+    for(int i=0; i < byteBuffers.size(); ++i) {
+        py::buffer_info info = byteBuffers[i].request();
+        dataPtrs[i] = static_cast<char*>(info.ptr);
+        dataSizes[i] = info.size;
+    }
+
+    JavaHandle networkHandle = callJava<JavaHandle>(::loadNetworkFromBinaryBuffers, (char*) fileName.data(), dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+    delete[] dataPtrs;
+    delete[] dataSizes;
+    return networkHandle;
 }
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {

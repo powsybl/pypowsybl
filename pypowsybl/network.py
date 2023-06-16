@@ -292,7 +292,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        self._handle = _pp.load_network_from_binary_buffer('tmp.xiidm', _io.BytesIO(bytes(xml, 'ascii')).getbuffer(), {}, None)
+        self._handle = _pp.load_network_from_binary_buffers('tmp.xiidm', [_io.BytesIO(bytes(xml, 'ascii')).getbuffer()], {}, None)
         self.__init_from_handle()
 
     def __init_from_handle(self) -> None:
@@ -4854,11 +4854,17 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
 def load_from_binary_buffer(file_name: str, buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     """
+    return load_from_binary_buffers(file_name, [buffer], parameters, reporter)
+
+def load_from_binary_buffers(file_name: str, buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+    """
+    """
     if parameters is None:
         parameters = {}
-    return Network(_pp.load_network_from_binary_buffer(file_name, buffer.getbuffer(), parameters,
+    buffersParam = []
+    for b in buffers: buffersParam.append(b.getbuffer())
+    return Network(_pp.load_network_from_binary_buffers(file_name, buffersParam, parameters,
                                                 None if reporter is None else reporter._reporter_model))
-
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
                      reporter: _Reporter = None) -> Network:

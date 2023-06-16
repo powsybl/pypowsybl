@@ -334,7 +334,7 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-JavaHandle loadNetworkBinaryBuffer(const std::string& fileName, py::buffer byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+JavaHandle loadNetworkFromBinaryBuffers(const std::string& fileName, std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 

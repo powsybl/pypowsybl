@@ -8,9 +8,7 @@ package com.powsybl.python.network;
 
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.datasource.CompressionFormat;
-import com.powsybl.commons.datasource.MemDataSource;
-import com.powsybl.commons.datasource.ReadOnlyDataSource;
+import com.powsybl.commons.datasource.*;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
@@ -47,7 +45,6 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
-import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
 import java.io.*;
@@ -165,31 +162,37 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "loadNetworkFromBinaryBuffer")
-    public static ObjectHandle loadNetworkFromBinaryBuffer(IsolateThread thread, CCharPointer fileName, PointerBase data, int dataSize, CCharPointerPointer parameterNamesPtrPtr,
+    @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
+    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointer fileName, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileNameStr = CTypeUtil.toString(fileName);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            ByteBuffer buffer = CTypeConversion.asByteBuffer(data, dataSize);
-            Optional<CompressionFormat> format = detectCompressionFormat(buffer);
-            if (reporter == null) {
-                reporter = ReporterModel.NO_OP;
-            }
-            if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                ReadOnlyDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), fileNameStr);
-                Network network = Network.read(ds, parameters, reporter);
-                return ObjectHandles.getGlobal().create(network);
-            } else {
-                try (InputStream is = deCompressedInputStream(binaryBufferToStream(buffer), format)) {
-                    Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
-                    return ObjectHandles.getGlobal().create(network);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
+            List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
+            List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
+            for (int i = 0; i < bufferCount; ++i) {
+                ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
+                Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+                if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                    dataSourceList.add(new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), fileNameStr));
+                } else {
+                    try (InputStream is = deCompressedInputStream(binaryBufferToStream(buffer), format)) {
+                        ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource(DataSourceUtil.getBaseName(fileNameStr));
+                        ds.putData(fileNameStr, is);
+                        dataSourceList.add(ds);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
             }
+            if (reporter == null) {
+                reporter = Reporter.NO_OP;
+            }
+            MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+            Network network = Network.read(dataSource, parameters, reporter);
+            return ObjectHandles.getGlobal().create(network);
         });
     }
 
