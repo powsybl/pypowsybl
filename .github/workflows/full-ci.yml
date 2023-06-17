@@ -127,7 +127,7 @@ jobs:
           }
           - {
             name: windows,
-            os: windows-2019,
+            os: windows-2022,
           }
         python:
           - {
