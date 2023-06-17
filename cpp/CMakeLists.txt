@@ -64,7 +64,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 # as of GraalVM 23.0.0 G1 GC is only supported on Linux ADM64
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${OS_BITS} STREQUAL "64")
     set(NATIVE_IMAGE_GC "G1")
 else()
     set(NATIVE_IMAGE_GC "serial")
