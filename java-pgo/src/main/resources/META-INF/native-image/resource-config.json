@@ -1,0 +1,9 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\Qdata/realGrid/CGMES_v2.4.15_RealGridTestConfiguration_EQ_V2.xml\\E"},
+    {"pattern":"\\Qdata/realGrid/CGMES_v2.4.15_RealGridTestConfiguration_SSH_V2.xml\\E"},
+    {"pattern":"\\Qdata/realGrid/CGMES_v2.4.15_RealGridTestConfiguration_SV_V2.xml\\E"},
+    {"pattern":"\\Qdata/realGrid/CGMES_v2.4.15_RealGridTestConfiguration_TP_V2.xml\\E"}
+  ]}
+}
