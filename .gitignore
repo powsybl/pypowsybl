@@ -1,6 +1,9 @@
 # IntelliJ
-.idea
+.idea/
 *.iml
+
+# Maven
+target/
 
 # Byte-compiled / optimized
 __pycache__/
@@ -47,8 +50,6 @@ build/
 
 #build
 build/*
-.idea/*
-*.iml
 .vscode
 tests/_trial_temp/*
 

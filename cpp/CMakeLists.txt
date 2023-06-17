@@ -70,13 +70,15 @@ else()
     set(NATIVE_IMAGE_GC "serial")
 endif()
 
+set(NATIVE_IMAGE_PGO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../profile/default.iprof)
+
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
 ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}/src
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} --no-fallback --shared --gc=${NATIVE_IMAGE_GC} --pgo=${NATIVE_IMAGE_PGO_FILE} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}/src
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
