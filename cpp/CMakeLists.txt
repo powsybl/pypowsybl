@@ -70,7 +70,7 @@ else()
     set(NATIVE_IMAGE_GC "serial")
 endif()
 
-set(NATIVE_IMAGE_PGO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../profile/default.iprof)
+set(NATIVE_IMAGE_PGO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../java-pgo/default.iprof)
 
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
