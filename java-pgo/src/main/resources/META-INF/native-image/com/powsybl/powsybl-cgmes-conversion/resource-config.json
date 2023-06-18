@@ -1,6 +1,0 @@
-{
-  "resources":{
-  "includes":[
-    {"pattern":"\\QMETA-INF/services/com.powsybl.cgmes.conversion.CgmesImportPostProcessor\\E"}
-  ]}
-}
