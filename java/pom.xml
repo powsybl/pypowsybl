@@ -61,8 +61,6 @@
     <version>0.24.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>11</java.version>
-
         <commons-collections4.version>4.4</commons-collections4.version>
         <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
