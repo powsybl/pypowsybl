@@ -130,7 +130,7 @@ jobs:
 
       - name: Build wheel
         env:
-          MACOSX_DEPLOYMENT_TARGET: "10.15" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
         run: python setup.py bdist_wheel
 
       - name: Install wheel
