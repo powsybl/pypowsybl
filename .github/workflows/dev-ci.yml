@@ -25,6 +25,9 @@ jobs:
           }
 
     steps:
+      - name: Install MacOS packages
+        run: brew install bzip2
+
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
