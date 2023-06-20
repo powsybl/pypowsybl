@@ -44,13 +44,11 @@ jobs:
             version: '3.11',
           }
         exclude:
-          - config:
-            - {
+          - config: {
               name: darwin,
               os: macos-11,
             }
-            python:
-            - {
+            python: {
               name: cp37,
               version: '3.7',
             }
