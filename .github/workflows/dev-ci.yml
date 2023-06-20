@@ -16,12 +16,12 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-12,
+            os: macos-11,
           }
         python:
           - {
             name: cp37,
-            version: '3.7.16',
+            version: '3.7.15',
           }
 
     steps:
