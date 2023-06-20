@@ -202,7 +202,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
-                                                   CCharPointer providerName, boolean dc,  ObjectHandle reporterHandle,
+                                                   CCharPointer providerName, boolean dc, ObjectHandle reporterHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);

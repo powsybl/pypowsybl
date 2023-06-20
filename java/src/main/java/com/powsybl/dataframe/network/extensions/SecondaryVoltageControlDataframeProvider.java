@@ -101,7 +101,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
             String id = updatingDataframe.getStringValue("unit_id", lineNumber).orElse(null);
             ControlZone zone = ext.getControlZones().stream()
                     .filter(controlZone -> {
-                        return  controlZone.getControlUnits().stream()
+                        return controlZone.getControlUnits().stream()
                                 .anyMatch(controlUnit -> {
                                     return controlUnit.getId().equals(id);
                                 });

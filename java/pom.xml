@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>powsybl-parent</artifactId>
-        <version>4</version>
+        <version>11</version>
         <relativePath/>
     </parent>
 
@@ -61,19 +61,12 @@
     <version>0.24.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>11</java.version>
-
-        <assertj.version>3.11.0</assertj.version>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <graalvm.version>22.2.0</graalvm.version>
+        <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
-        <logback.version>1.2.9</logback.version>
         <mapdb.version>3.0.8</mapdb.version>
-        <slf4j.version>1.7.30</slf4j.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <powsybl-dependencies.version>2023.2.1</powsybl-dependencies.version>
     </properties>
 
@@ -82,7 +75,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <!-- Run shade goal on package phase -->
                     <execution>
@@ -136,11 +128,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-        </plugin>
         </plugins>
     </build>
 
@@ -184,13 +171,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
             <scope>compile</scope>
         </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
@@ -283,7 +268,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -384,7 +368,6 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

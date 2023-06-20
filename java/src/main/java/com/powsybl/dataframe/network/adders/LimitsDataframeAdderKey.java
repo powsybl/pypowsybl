@@ -3,7 +3,7 @@ package com.powsybl.dataframe.network.adders;
 import java.util.Objects;
 
 public class LimitsDataframeAdderKey {
-    private final  String elementId;
+    private final String elementId;
     private final String side;
     private final String limitType;
 
