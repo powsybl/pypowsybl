@@ -16,7 +16,7 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-11,
+            os: macos-12,
           }
         python:
           - {
@@ -48,9 +48,6 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-          SYSTEM_VERSION_COMPAT: 0
         run: python setup.py bdist_wheel
 
       - name: Install wheel
