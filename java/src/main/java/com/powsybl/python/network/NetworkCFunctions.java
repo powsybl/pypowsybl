@@ -6,8 +6,6 @@
  */
 package com.powsybl.python.network;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.MemDataSource;
@@ -72,8 +70,8 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
 @CContext(Directives.class)
 public final class NetworkCFunctions {
 
-    private static final Supplier<ExportersLoader> EXPORTERS_LOADER_SUPPLIER = Suppliers.memoize(ExportersServiceLoader::new);
-    private static final Supplier<ImportersLoader> IMPORTERS_LOADER_SUPPLIER = Suppliers.memoize(ImportersServiceLoader::new);
+    private static final ExportersLoader EXPORTERS_LOADER_SUPPLIER = new ExportersServiceLoader();
+    private static final ImportersLoader IMPORTERS_LOADER_SUPPLIER = new ImportersServiceLoader();
 
     private NetworkCFunctions() {
     }
@@ -141,7 +139,7 @@ public final class NetworkCFunctions {
             if (reporter == null) {
                 reporter = ReporterModel.NO_OP;
             }
-            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -160,7 +158,7 @@ public final class NetworkCFunctions {
                 if (reporter == null) {
                     reporter = ReporterModel.NO_OP;
                 }
-                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -182,7 +180,7 @@ public final class NetworkCFunctions {
             if (reporter == null) {
                 reporter = ReporterModel.NO_OP;
             }
-            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
+            network.write(EXPORTERS_LOADER_SUPPLIER, formatStr, parameters, Paths.get(fileStr), reporter);
         });
     }
 
