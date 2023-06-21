@@ -151,6 +151,15 @@ jobs:
             name: cp311,
             version: '3.11',
           }
+        exclude: # exclude MacOS Python 3.7 because does not work anymore
+          - config: {
+              name: darwin,
+              os: macos-11,
+            }
+            python: {
+              name: cp37,
+              version: '3.7',
+            }
 
     steps:
       - name: Setup GraalVM
