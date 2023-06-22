@@ -379,14 +379,6 @@ public final class Util {
         }
     }
 
-    public static InputStream binaryBufferToStream(ByteBuffer buffer) {
-        if (buffer.hasArray()) {
-            return new ByteArrayInputStream(buffer.array());
-        } else {
-            return new ByteBufferInputStream(buffer);
-        }
-    }
-
     private static final byte[] ZIP_SIGNATURE = new byte[] {0x50, 0x4B, 0x03, 0x04};
     private static final byte[] GZIP_SIGNATURE = new byte[] {0x1F, (byte) 0x8B};
     private static final byte[] XZ_SIGNATURE = new byte[] {(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
