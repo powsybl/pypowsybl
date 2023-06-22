@@ -595,7 +595,23 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
                               parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-JavaHandle loadNetworkFromBinaryBuffers(const std::string& fileName, std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    return callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
+                           parameterNamesPtr.get(), parameterNames.size(),
+                           parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+}
+
+JavaHandle loadCgmesNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -615,7 +631,7 @@ JavaHandle loadNetworkFromBinaryBuffers(const std::string& fileName, std::vector
         dataSizes[i] = info.size;
     }
 
-    JavaHandle networkHandle = callJava<JavaHandle>(::loadNetworkFromBinaryBuffers, (char*) fileName.data(), dataPtrs, dataSizes, byteBuffers.size(),
+    JavaHandle networkHandle = callJava<JavaHandle>(::loadCgmesNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
     delete[] dataPtrs;

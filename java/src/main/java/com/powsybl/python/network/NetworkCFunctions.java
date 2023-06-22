@@ -162,12 +162,11 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
-    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointer fileName, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
+    @CEntryPoint(name = "loadCgmesNetworkFromBinaryBuffers")
+    public static ObjectHandle loadCgmesNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            String fileNameStr = CTypeUtil.toString(fileName);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
             List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
@@ -176,15 +175,9 @@ public final class NetworkCFunctions {
                 ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
                 Optional<CompressionFormat> format = detectCompressionFormat(buffer);
                 if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                    dataSourceList.add(new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), fileNameStr));
+                    dataSourceList.add(new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), "basename"));
                 } else {
-                    try (InputStream is = deCompressedInputStream(binaryBufferToStream(buffer), format)) {
-                        ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource(DataSourceUtil.getBaseName(fileNameStr));
-                        ds.putData(fileNameStr, is);
-                        dataSourceList.add(ds);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
+                    throw new PowsyblException("Network loading from memory buffer only supported with zipped CGMES.");
                 }
             }
             if (reporter == null) {

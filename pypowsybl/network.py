@@ -292,7 +292,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def __setstate__(self, state: _Dict[str, str]) -> None:
         xml = state['xml']
-        self._handle = _pp.load_network_from_binary_buffers('tmp.xiidm', [_io.BytesIO(bytes(xml, 'ascii')).getbuffer()], {}, None)
+        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
         self.__init_from_handle()
 
     def __init_from_handle(self) -> None:
@@ -4851,19 +4851,19 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     return Network(_pp.load_network(file, parameters,
                                     None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
-def load_from_binary_buffer(file_name: str, buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+def load_cgmes_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     """
-    return load_from_binary_buffers(file_name, [buffer], parameters, reporter)
+    return load_cgmes_from_binary_buffers([buffer], parameters, reporter)
 
-def load_from_binary_buffers(file_name: str, buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+def load_cgmes_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     """
     if parameters is None:
         parameters = {}
-    buffersParam = []
-    for b in buffers: buffersParam.append(b.getbuffer())
-    return Network(_pp.load_network_from_binary_buffers(file_name, buffersParam, parameters,
+    buffer_list = []
+    for b in buffers: buffer_list.append(b.getbuffer())
+    return Network(_pp.load_cgmes_network_from_binary_buffers(buffer_list, parameters,
                                                 None if reporter is None else reporter._reporter_model))
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
@@ -4879,7 +4879,10 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
     Returns:
         The loaded network
     """
-    return load_from_binary_buffer(file_name, _io.BytesIO(bytes(file_content, 'ascii')), parameters, reporter)
+    if parameters is None:
+        parameters = {}
+    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
+                                                None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
 def get_extensions_names() -> _List[str]:
     """
