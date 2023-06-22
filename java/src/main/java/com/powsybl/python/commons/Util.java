@@ -28,7 +28,6 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
