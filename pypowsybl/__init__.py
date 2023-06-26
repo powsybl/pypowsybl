@@ -20,7 +20,7 @@ from pypowsybl import (
     perunit
 )
 
-__version__ = '0.23.1'
+__version__ = '0.23.2'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load math library
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
