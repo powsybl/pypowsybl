@@ -1993,12 +1993,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **rho**: the voltage ratio (in per unit)
+              - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **alpha**: the angle difference (in degree)
-              - **r**: the resistance of the phase tap changer step (in Ohm)
-              - **x**: The reactance of the phase tap changer step (Ohm)
-              - **g**: the conductance of the phase tap changer step (in Siemens)
-              - **b**: the susceptance of the phase tap changer step (in Siemens)
+              - **r**: The resistance deviation in percent of nominal value (%)
+              - **x**: The reactance deviation in percent of nominal value (%)
+              - **g**: The conductance deviation in percent of nominal value (%)
+              - **b**: The susceptance deviation in percent of nominal value (%)
 
             This dataframe is index by the id of the transformer and the position of the phase tap changer step
 
