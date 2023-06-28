@@ -4853,11 +4853,29 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
 
 def load_cgmes_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
+    Load a network from a binary buffer. Only zipped CGMES is supported.
+
+    Args:
+       buffer:    The BytesIO data buffer
+       parameters:  A dictionary of import parameters
+       reporter: The reporter
+
+    Returns:
+        The loaded network
     """
     return load_cgmes_from_binary_buffers([buffer], parameters, reporter)
 
 def load_cgmes_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
+    Load a network from a list of binary buffers. Only zipped CGMES are supported.
+
+    Args:
+       buffers:  The list of BytesIO data buffer
+       parameters:  A dictionary of import parameters
+       reporter: The reporter
+
+    Returns:
+        The loaded network
     """
     if parameters is None:
         parameters = {}
