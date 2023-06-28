@@ -116,6 +116,23 @@ def test_flow_transfer():
     assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
     assert branch_results.loc['NHV1_NHV2_2', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
 
+def test_analysis_load_action():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    sa_result = sa.run_ac(n)
+    assert len(sa_result.post_contingency_results) == 1
+    assert sa_result.pre_contingency_result.status.name == 'CONVERGED'
+    assert sa_result.post_contingency_results['First contingency'].status.name == 'CONVERGED'
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[
+            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
+            ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
+        ])
+    pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
 
 def test_dc_analysis():
     n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()

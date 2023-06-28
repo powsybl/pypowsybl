@@ -455,6 +455,21 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
+
+    m.def("add_load_reactive_power_action", &pypowsybl::addLoadReactivePowerAction, "Add a load reactive power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("reactive_power"));
+
+    m.def("add_generator_active_power_action", &pypowsybl::addGeneratorActivePowerAction, "Add a generator active power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("generator_id"), py::arg("is_relative"), py::arg("active_power"));
+
+    m.def("add_switch_action", &pypowsybl::addSwitchAction, "Add a switch action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
+
+    m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
+          py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"));
+
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("CURRENT", pypowsybl::LimitType::CURRENT)
             .value("LOW_VOLTAGE", pypowsybl::LimitType::LOW_VOLTAGE)

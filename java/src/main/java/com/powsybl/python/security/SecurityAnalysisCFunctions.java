@@ -20,9 +20,12 @@ import com.powsybl.security.LimitViolation;
 import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisProvider;
 import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.action.*;
+import com.powsybl.security.condition.TrueCondition;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.security.results.PreContingencyResult;
+import com.powsybl.security.strategy.OperatorStrategy;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -291,6 +294,124 @@ public final class SecurityAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);
             return Util.createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
+        });
+    }
+
+    @CEntryPoint(name = "addLoadActivePowerAction")
+    public static void addLoadActivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                CCharPointer actionId, CCharPointer loadId, boolean relativeValue,
+                                                double activePowerValue,
+                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String loadIdStr = CTypeUtil.toString(loadId);
+            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                    .withLoadId(loadIdStr)
+                    .withRelativeValue(relativeValue)
+                    .withActivePowerValue(activePowerValue)
+                    .build();
+            analysisContext.addAction(action);
+            System.out.println("Creating action " + actionIdStr + " on load " + loadIdStr + " relativeV " + relativeValue + " P " + activePowerValue);
+        });
+    }
+
+    @CEntryPoint(name = "addLoadReactivePowerAction")
+    public static void addLoadReactivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                CCharPointer actionId, CCharPointer loadId, boolean relativeValue,
+                                                double reactivePowerValue,
+                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String loadIdStr = CTypeUtil.toString(loadId);
+            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                    .withLoadId(loadIdStr)
+                    .withRelativeValue(relativeValue)
+                    .withReactivePowerValue(reactivePowerValue)
+                    .build();
+            analysisContext.addAction(action);
+            System.out.println("Creating action " + actionIdStr + " on load " + loadIdStr + " relativeV " + relativeValue + " Q " + reactivePowerValue);
+        });
+    }
+
+    @CEntryPoint(name = "addGeneratorActivePowerAction")
+    public static void addGeneratorActivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                          CCharPointer actionId, CCharPointer generatorId, boolean relativeValue, double activePower,
+                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String generatorIdStr = CTypeUtil.toString(generatorId);
+            GeneratorActionBuilder builder = new GeneratorActionBuilder().withId(actionIdStr)
+                    .withGeneratorId(generatorIdStr);
+            if (relativeValue) {
+                builder.withActivePowerRelativeValue(relativeValue);
+            }
+            builder.withActivePowerValue(activePower);
+            analysisContext.addAction(builder.build());
+            System.out.println("Creating action " + actionIdStr + " on generator " + generatorIdStr + " relativeV " + relativeValue + " P " + activePower);
+        });
+    }
+
+    @CEntryPoint(name = "addSwitchAction")
+    public static void addSwitchAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                         CCharPointer actionId, CCharPointer switchId, boolean open,
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String switchIdStr = CTypeUtil.toString(switchId);
+            SwitchAction action = new SwitchAction(actionIdStr, switchIdStr, open);
+            analysisContext.addAction(action);
+            System.out.println("Creating action " + actionIdStr + " on switch " + switchIdStr + " open " + open);
+        });
+    }
+
+    @CEntryPoint(name = "addPhaseTapChangerPositionAction")
+    public static void addPhaseTapChangerPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+        });
+    }
+
+    @CEntryPoint(name = "addPhaseTapChangerRegulationAction")
+    public static void addPhaseTapChangerRegulationAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+        });
+    }
+
+    @CEntryPoint(name = "addRatioTapChangerPositionAction")
+    public static void addRatioTapChangerPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+        });
+    }
+
+    @CEntryPoint(name = "addRatioTapChangerRegulationAction")
+    public static void addRatioTapChangerRegulationAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+        });
+    }
+
+    @CEntryPoint(name = "addShuntCompensatorPositionAction")
+    public static void addShuntCompensatorPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+        });
+    }
+
+    @CEntryPoint(name = "addOperatorStrategy")
+    public static void addOperatorStrategy(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                         CCharPointer operationStrategyId, CCharPointer contingencyId,
+                                         CCharPointerPointer actions, int actionCount,
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String operationStrategyIdStr = CTypeUtil.toString(operationStrategyId);
+            String contingencyIdStr = CTypeUtil.toString(contingencyId);
+            List<String> actionsStrList = CTypeUtil.toStringList(actions, actionCount);
+            OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
+                    ContingencyContext.specificContingency(contingencyIdStr), new TrueCondition(), actionsStrList);
+            analysisContext.addOperatorStrategy(op);
+            System.out.println("Add operator strategy " + operationStrategyIdStr);
         });
     }
 }

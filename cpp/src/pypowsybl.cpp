@@ -790,6 +790,27 @@ JavaHandle createSensitivityAnalysis() {
     return callJava<JavaHandle>(::createSensitivityAnalysis);
 }
 
+void addLoadActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double activePower) {
+    callJava(::addLoadActivePowerAction, analysisContext, (char*) actionId.data(), (char*) loadId.data(), relativeValue, activePower);
+}
+
+void addLoadReactivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double reactivePower) {
+    callJava(::addLoadReactivePowerAction, analysisContext, (char*) actionId.data(), (char*) loadId.data(), relativeValue, reactivePower);
+}
+
+void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& generatorId, bool relativeValue, double activePower) {
+    callJava(::addGeneratorActivePowerAction, analysisContext, (char*) actionId.data(), (char*) generatorId.data(), relativeValue, activePower);
+}
+
+void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open) {
+    callJava(::addSwitchAction, analysisContext, (char*) actionId.data(), (char*)  switchId.data(), open);
+}
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds) {
+    ToCharPtrPtr actions(actionsIds);
+    callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actions.get(), actionsIds.size());
+}
+
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
     z->id = copyStringToCharPtr(id);

@@ -384,6 +384,16 @@ JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const 
 
 JavaHandle createSensitivityAnalysis();
 
+void addLoadActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double activePower);
+
+void addLoadReactivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double reactivePower);
+
+void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& generatorId, bool relativeValue, double activePower);
+
+void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open);
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds);
+
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
 void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
