@@ -73,6 +73,7 @@ private:
 
 typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
+typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
@@ -446,6 +447,8 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
 PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
+
+OperatorStrategyResultArray* getOperatorStrategyResults(const JavaHandle& securityAnalysisResult);
 
 pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
 

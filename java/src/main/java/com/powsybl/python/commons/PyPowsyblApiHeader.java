@@ -521,6 +521,27 @@ public final class PyPowsyblApiHeader {
         PostContingencyResultPointer addressOf(int index);
     }
 
+    @CStruct("operator_strategy_result")
+    public interface OperatorStrategyResultPointer extends PointerBase {
+
+        @CField("operator_strategy_id")
+        CCharPointer getOperatorStrategyId();
+
+        @CField("operator_strategy_id")
+        void setOperatorStrategyId(CCharPointer contingencyId);
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CFieldAddress("limit_violations")
+        ArrayPointer<LimitViolationPointer> limitViolations();
+
+        OperatorStrategyResultPointer addressOf(int index);
+    }
+
     @CEnum("element_type")
     public enum ElementType {
         BUS,

@@ -540,6 +540,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
     bindArray<pypowsybl::PostContingencyResultArray>(m, "PostContingencyResultArray");
 
+    py::class_<operator_strategy_result>(m, "OperatorStrategyResult")
+            .def_property_readonly("operator_strategy_id", [](const operator_strategy_result& r) {
+                return r.operator_strategy_id;
+            })
+            .def_property_readonly("status", [](const operator_strategy_result& r) {
+                return static_cast<pypowsybl::PostContingencyComputationStatus>(r.status);
+            })
+            .def_property_readonly("limit_violations", [](const operator_strategy_result& r) {
+                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+            });
+    bindArray<pypowsybl::OperatorStrategyResultArray>(m, "OperatorStrategyResultArray");
+
     py::class_<pre_contingency_result>(m, "PreContingencyResult")
             .def_property_readonly("status", [](const pre_contingency_result& r) {
                 return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
@@ -669,6 +681,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
     m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
+    m.def("get_operator_strategy_results", &pypowsybl::getOperatorStrategyResults, "get operator strategy results of a security analysis", py::arg("result"));
     m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
     m.def("get_node_breaker_view_internal_connections", &pypowsybl::getNodeBreakerViewInternalConnections,
     "get all internal connections for a voltage level", py::arg("network"), py::arg("voltage_level"));

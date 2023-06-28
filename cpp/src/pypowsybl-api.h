@@ -114,6 +114,12 @@ typedef struct pre_contingency_result_struct {
     array limit_violations;
 } pre_contingency_result;
 
+typedef struct operator_strategy_result_struct {
+    char* operator_strategy_id;
+    int status;
+    array limit_violations;
+} operator_strategy_result;
+
 typedef enum {
     BUS = 0,
     LINE,

@@ -9,7 +9,7 @@ import pandas as _pd
 import pypowsybl.loadflow
 from prettytable import PrettyTable as _PrettyTable
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import PostContingencyResult, PreContingencyResult, LimitViolation, ContingencyContextType
+from pypowsybl._pypowsybl import PostContingencyResult, PreContingencyResult, OperatorStrategyResult, LimitViolation, ContingencyContextType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import (
@@ -31,6 +31,15 @@ def _post_contingency_result_repr(self: PostContingencyResult) -> str:
 
 PostContingencyResult.__repr__ = _post_contingency_result_repr  # type: ignore
 
+def _operator_strategy_result_repr(self: OperatorStrategyResult) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"operator_strategy_id={self.operator_strategy_id!r}" \
+           f", status={self.status.name}" \
+           f", limit_violations=[{len(self.limit_violations)}]" \
+           f")"
+
+
+OperatorStrategyResult.__repr__ = _operator_strategy_result_repr  # type: ignore
 
 def _pre_contingency_result_repr(self: PreContingencyResult) -> str:
     return f"{self.__class__.__name__}(" \
@@ -175,10 +184,14 @@ class SecurityAnalysisResult:
         self._handle = handle
         self._pre_contingency_result = _pypowsybl.get_pre_contingency_result(self._handle)
         post_contingency_results = _pypowsybl.get_post_contingency_results(self._handle)
+        operator_strategy_results = _pypowsybl.get_operator_strategy_results(self._handle)
         self._post_contingency_results = {}
+        self._operator_strategy_results = {}
         for result in post_contingency_results:
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
+        for result in operator_strategy_results:
+            self._operator_strategy_results[result.operator_strategy_id] = result
         self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
@@ -205,6 +218,25 @@ class SecurityAnalysisResult:
         result = self._post_contingency_results[contingency_id]
         if not result:
             raise KeyError(f'Contingency {contingency_id} not found')
+        return result
+
+    @property
+    def operator_strategy_results(self) -> _Dict[str, OperatorStrategyResult]:
+        """
+        Results for the operator strategies, as a dictionary operator strategy ID -> result.
+        """
+        return self._operator_strategy_results
+
+    def find_operator_strategy_results(self, operator_strategy_id: str) -> PostContingencyResult:
+        """
+        Result for the specified operator strategy
+
+        Returns:
+            Result for the specified operator strategy.
+        """
+        result = self._operator_strategy_results[operator_strategy_id]
+        if not result:
+            raise KeyError(f'Operator strategy {operator_strategy_id} not found')
         return result
 
     def get_table(self) -> _PrettyTable:

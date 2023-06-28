@@ -127,6 +127,11 @@ Array<post_contingency_result>::~Array() {
 }
 
 template<>
+Array<operator_strategy_result>::~Array() {
+    callJava<>(::freeOperatorStrategyResultArrayPointer, delegate_);
+}
+
+template<>
 Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
@@ -973,6 +978,10 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 
 PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult) {
     return new PostContingencyResultArray(callJava<array*>(::getPostContingencyResults, securityAnalysisResult));
+}
+
+OperatorStrategyResultArray* getOperatorStrategyResults(const JavaHandle& securityAnalysisResult) {
+    return new OperatorStrategyResultArray(callJava<array*>(::getOperatorStrategyResults, securityAnalysisResult));
 }
 
 pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult) {
