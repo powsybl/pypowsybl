@@ -611,7 +611,7 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
                            parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-JavaHandle loadCgmesNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -631,7 +631,7 @@ JavaHandle loadCgmesNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers
         dataSizes[i] = info.size;
     }
 
-    JavaHandle networkHandle = callJava<JavaHandle>(::loadCgmesNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
+    JavaHandle networkHandle = callJava<JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
     delete[] dataPtrs;

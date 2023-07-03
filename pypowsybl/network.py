@@ -4851,7 +4851,7 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     return Network(_pp.load_network(file, parameters,
                                     None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
-def load_cgmes_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+def load_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a binary buffer. Only zipped CGMES is supported.
 
@@ -4863,9 +4863,9 @@ def load_cgmes_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, st
     Returns:
         The loaded network
     """
-    return load_cgmes_from_binary_buffers([buffer], parameters, reporter)
+    return load_from_binary_buffers([buffer], parameters, reporter)
 
-def load_cgmes_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+def load_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported.
 
@@ -4881,7 +4881,7 @@ def load_cgmes_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dic
         parameters = {}
     buffer_list = []
     for b in buffers: buffer_list.append(b.getbuffer())
-    return Network(_pp.load_cgmes_network_from_binary_buffers(buffer_list, parameters,
+    return Network(_pp.load_network_from_binary_buffers(buffer_list, parameters,
                                                 None if reporter is None else reporter._reporter_model))
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,

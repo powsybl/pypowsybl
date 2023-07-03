@@ -162,8 +162,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "loadCgmesNetworkFromBinaryBuffers")
-    public static ObjectHandle loadCgmesNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
+    @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
+    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {

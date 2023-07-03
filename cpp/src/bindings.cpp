@@ -290,7 +290,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
               py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("reporter"));
 
-    m.def("load_cgmes_network_from_binary_buffers", &pypowsybl::loadCgmesNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_binary_buffers", &pypowsybl::loadNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("reporter"));
 
     m.def("dump_network", &pypowsybl::dumpNetwork, "Dump network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
