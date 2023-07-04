@@ -10,7 +10,7 @@ import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
-import com.powsybl.dataframe.network.modifications.NetworkModifications;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
@@ -102,7 +102,7 @@ public final class NetworkModificationsCFunctions {
                 dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             DataframeNetworkModificationType type = convert(networkModificationType);
-            NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
+            DataframeNetworkModifications.applyModification(type, network, dfs, throwException, reporter);
         });
     }
 
@@ -112,7 +112,7 @@ public final class NetworkModificationsCFunctions {
                                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeNetworkModificationType type = convert(networkModificationType);
-            List<SeriesMetadata> metadata = NetworkModifications.getModification(type).getMetadata();
+            List<SeriesMetadata> metadata = DataframeNetworkModifications.getModification(type).getMetadata();
             return CTypeUtil.createSeriesMetadata(metadata);
         });
     }

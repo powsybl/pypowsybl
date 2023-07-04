@@ -19,11 +19,12 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
+import com.powsybl.dataframe.network.PyNetworkExtensions;
 import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
-import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
-import com.powsybl.dataframe.network.modifications.NetworkModifications;
+import com.powsybl.dataframe.network.modifications.DataframeNetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -32,6 +33,21 @@ import com.powsybl.iidm.reducer.*;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframesMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ElementType;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.FilterAttributesType;
+import com.powsybl.python.commons.PyPowsyblApiHeader.LayoutParametersPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.NetworkMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.NetworkModificationType;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ValidationLevelType;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoidPointerPointer;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
@@ -371,7 +387,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsInformation")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, NetworkExtensions::getExtensionInformation);
+        return doCatch(exceptionHandlerPtr, PyNetworkExtensions::getExtensionInformation);
     }
 
     @CEntryPoint(name = "createElement")
@@ -968,7 +984,8 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             DataframeNetworkModificationType modificationType = convert(networkModificationType);
             DataframeElementType type = convert(elementType);
-            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(modificationType).getMetadata(type);
+            List<List<SeriesMetadata>> metadata = DataframeNetworkModifications.getModification(modificationType)
+                    .getMetadata(type);
             DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
             int i = 0;
             for (List<SeriesMetadata> dataframeMetadata : metadata) {

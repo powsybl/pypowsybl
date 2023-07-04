@@ -7,6 +7,7 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.SideEnum;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;

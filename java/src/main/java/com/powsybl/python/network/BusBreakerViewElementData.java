@@ -1,5 +1,6 @@
 package com.powsybl.python.network;
 
+import com.powsybl.dataframe.SideEnum;
 import com.powsybl.iidm.network.IdentifiableType;
 
 import java.util.Optional;

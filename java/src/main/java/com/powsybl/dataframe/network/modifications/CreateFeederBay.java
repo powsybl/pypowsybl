@@ -23,7 +23,7 @@ import static com.powsybl.python.commons.Util.convert;
 /**
  * @author Coline Piloquet <coline.piloquet at rte-france.com>
  */
-public class CreateFeederBay implements NetworkModification {
+public class CreateFeederBay implements DataframeNetworkModification {
 
     private static final List<SeriesMetadata> ADDITIONNAL_METADATA = List.of(
             SeriesMetadata.strings("bus_or_busbar_section_id"),
