@@ -37,6 +37,7 @@ import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.layout.LayoutParameters;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -175,9 +176,22 @@ public final class NetworkCFunctions {
                 ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
                 Optional<CompressionFormat> format = detectCompressionFormat(buffer);
                 if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                    dataSourceList.add(new InMemoryZipFileDataSource(binaryBufferToBytes(buffer), "basename"));
+                    InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
+                    String commonBasename = null;
+                    try {
+                        for (String filename : ds.listNames(".*")) {
+                            String basename = DataSourceUtil.getBaseName(filename);
+                            commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+                        }
+                    } catch (IOException e) {
+                        throw new PowsyblException("Unsupported network data format in zip buffer.");
+                    }
+                    if (commonBasename != null) {
+                        ds.setBaseName(commonBasename);
+                    }
+                    dataSourceList.add(ds);
                 } else {
-                    throw new PowsyblException("Network loading from memory buffer only supported with zipped CGMES.");
+                    throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
                 }
             }
             if (reporter == null) {

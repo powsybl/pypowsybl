@@ -26,9 +26,17 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
         this.basename = basename;
     }
 
+    public InMemoryZipFileDataSource(byte[] zipFileBytes) {
+        this.zipFileBytes = zipFileBytes;
+    }
+
     @Override
     public String getBaseName() {
         return basename;
+    }
+
+    public void setBaseName(String basename) {
+        this.basename = basename;
     }
 
     @Override

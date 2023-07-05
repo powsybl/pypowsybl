@@ -4853,7 +4853,7 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
 
 def load_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
-    Load a network from a binary buffer. Only zipped CGMES is supported.
+    Load a network from a binary buffer.
 
     Args:
        buffer:    The BytesIO data buffer
@@ -4867,7 +4867,7 @@ def load_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = N
 
 def load_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
     """
-    Load a network from a list of binary buffers. Only zipped CGMES are supported.
+    Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
 
     Args:
        buffers:  The list of BytesIO data buffer
