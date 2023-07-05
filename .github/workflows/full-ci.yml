@@ -3,9 +3,9 @@ name: Full CI
 on:
   push:
     branches:
-      - main
-    tags:
-      - 'v*.*.*'
+      # on all branches except main where full build will be run
+      - '*'
+      - '!main'
 
 jobs:
   manylinux_build:
@@ -150,15 +150,6 @@ jobs:
             name: cp311,
             version: '3.11',
           }
-        exclude: # exclude MacOS Python 3.7 because does not work anymore
-          - config: {
-              name: darwin,
-              os: macos-11,
-            }
-            python: {
-              name: cp37,
-              version: '3.7',
-            }
 
     steps:
       - name: Setup GraalVM
