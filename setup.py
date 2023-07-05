@@ -10,10 +10,9 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
-
+from packaging.version import parse
 
 class PyPowsyblExtension(Extension):
     def __init__(self):
@@ -30,8 +29,8 @@ class PyPowsyblBuild(build_ext):
                                ", ".join(e.name for e in self.extensions))
 
         if platform.system() == "Windows":
-            cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-            if cmake_version < '3.1.0':
+            cmake_version = parse(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
+            if cmake_version < parse('3.1.0'):
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
 
         for ext in self.extensions:
@@ -68,46 +67,7 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
-# long description from the github readme
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
 setup(
-    name='pypowsybl',
-    author='Geoffroy Jamgotchian',
-    author_email="geoffroy.jamgotchian@gmail.com",
-    description='A PowSyBl Python API',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/powsybl/pypowsybl",
-    packages=find_packages(),
-    include_package_data=True,
-    package_data={
-        'pypowsybl': ['py.typed', '*.pyi']
-    },
     ext_modules=[PyPowsyblExtension()],
     cmdclass=dict(build_ext=PyPowsyblBuild),
-    zip_safe=False,
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: MacOS",
-        "Operating System :: Microsoft :: Windows",
-    ],
-    python_requires='>=3.7',
-    install_requires=[
-        'prettytable',
-        'numpy>=1.20.0',
-        'pandas>=1.4.4; sys_platform == "darwin" and platform_machine == "arm64"',
-        'pandas>=1.3.5; sys_platform != "darwin" or platform_machine != "arm64"',
-        'networkx'
-    ],
 )
