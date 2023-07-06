@@ -1,3 +1,9 @@
+/**
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package com.powsybl.python.datasource;
 
 import com.powsybl.commons.datasource.DataSourceUtil;
@@ -15,11 +21,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
+ */
 public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
 
-    byte[] zipFileBytes;
+    private final byte[] zipFileBytes;
 
-    String basename;
+    private String basename;
 
     public InMemoryZipFileDataSource(byte[] zipFileBytes, String basename) {
         this.zipFileBytes = zipFileBytes;

@@ -20,9 +20,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy import NaN
-import bz2
-import gzip
-import lzma
 
 import pypowsybl as pp
 import pypowsybl.report as rp
@@ -55,9 +52,9 @@ def test_load_cgmes_zipped():
         assert 3 == len(n.get_substations())
 
 def test_load_cgmes_two_zip():
-    cgmesPartial = open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb")
-    boundary = open(DATA_DIR.joinpath('Boundary.zip'), "rb")
-    n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
+    with open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb") as cgmesPartial:
+        with open(DATA_DIR.joinpath('Boundary.zip'), "rb") as boundary:
+            n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
     assert 3 == len(n.get_substations())
 
 def test_load_zipped_xiidm():
