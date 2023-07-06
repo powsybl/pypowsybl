@@ -16,9 +16,6 @@ import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
-import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -28,8 +25,6 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +33,6 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
-import java.util.zip.GZIPInputStream;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -405,25 +399,6 @@ public final class Util {
             return Optional.of(CompressionFormat.ZSTD);
         } else {
             return Optional.empty();
-        }
-    }
-
-    public static InputStream deCompressedInputStream(InputStream is, Optional<CompressionFormat> format) throws IOException {
-        if (format.isPresent()) {
-            switch (format.get()) {
-                case BZIP2:
-                    return new BZip2CompressorInputStream(is);
-                case GZIP:
-                    return new GZIPInputStream(is);
-                case XZ:
-                    return new XZCompressorInputStream(is);
-                case ZSTD:
-                    return new ZstdCompressorInputStream(is);
-                default:
-                    throw new PowsyblException("Unssuported format " + format.get().name());
-            }
-        } else {
-            return is;
         }
     }
 }
