@@ -11,6 +11,7 @@ import pathlib
 import re
 import tempfile
 import unittest
+import io
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -45,6 +46,21 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     n = pp.network.load_from_string('simple-eu.uct', file_content)
     assert 1 == len(n.get_substations())
 
+def test_load_cgmes_zipped():
+    with open(DATA_DIR.joinpath('CGMES_Full.zip'), "rb") as fh:
+        n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
+        assert 3 == len(n.get_substations())
+
+def test_load_cgmes_two_zip():
+    with open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb") as cgmesPartial:
+        with open(DATA_DIR.joinpath('Boundary.zip'), "rb") as boundary:
+            n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
+    assert 3 == len(n.get_substations())
+
+def test_load_zipped_xiidm():
+    with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
+        n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
+        assert 2 == len(n.get_substations())
 
 def test_dump_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
