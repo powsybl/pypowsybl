@@ -1,6 +1,8 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"\\QCIM16.sparql\\E"}
+    {"pattern":"\\QCIM14.sparql\\E"},
+    {"pattern":"\\QCIM16.sparql\\E"},
+    {"pattern":"\\QCIM100.sparql\\E"}
   ]}
 }
