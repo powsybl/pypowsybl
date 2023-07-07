@@ -20,6 +20,8 @@ Following methods may be used to create a new network instance:
 
    load
    load_from_string
+   load_from_binary_buffer
+   load_from_binary_buffers
    create_empty
    create_ieee9
    create_ieee14

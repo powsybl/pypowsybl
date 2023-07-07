@@ -14,6 +14,10 @@
 #include <stdexcept>
 #include "pypowsybl-api.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/buffer_info.h>
+namespace py = pybind11;
+
 namespace pypowsybl {
 
 class PyPowsyblError : public std::runtime_error {
@@ -331,6 +335,8 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+
+JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
