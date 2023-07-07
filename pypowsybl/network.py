@@ -404,7 +404,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: _Union[str, _List[str]] = None,
                                        depth: int = 0, high_nominal_voltage_bound: float = -1,
-                                       low_nominal_voltage_bound: float = -1) -> None:
+                                       low_nominal_voltage_bound: float = -1, edge_name_displayed: bool = False) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -419,10 +419,11 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                           low_nominal_voltage_bound)
+                                           low_nominal_voltage_bound, edge_name_displayed)
 
     def get_network_area_diagram(self, voltage_level_ids: _Union[str, _List[str]] = None, depth: int = 0,
-                                 high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1) -> Svg:
+                                 high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
+                                 edge_name_displayed: bool = False) -> Svg:
         """
         Create a network area diagram.
 
@@ -438,7 +439,7 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
-                                                    high_nominal_voltage_bound, low_nominal_voltage_bound))
+                                                    high_nominal_voltage_bound, low_nominal_voltage_bound, edge_name_displayed))
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: _Set[float] = None,
                          countries: _Set[str] = None,

@@ -32,11 +32,12 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer,
-                         double highNominalVoltageBound, double lowNominalVoltageBound) {
+                         double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed) {
         SvgParameters svgParameters = new SvgParameters()
                 .setSvgWidthAndHeightAdded(true)
                 .setFixedWidth(800)
-                .setFixedHeight(600);
+                .setFixedHeight(600)
+                .setEdgeNameDisplayed(edgeNameDisplayed);
         Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
@@ -44,14 +45,14 @@ public final class NetworkAreaDiagramUtil {
                 .draw(writer, svgParameters);
     }
 
-    static String getSvg(Network network, List<String> voltageLevelIds, int depth) {
-        return getSvg(network, voltageLevelIds, depth, -1, -1);
+    static String getSvg(Network network, List<String> voltageLevelIds, int depth, boolean edgeNameDisplayed) {
+        return getSvg(network, voltageLevelIds, depth, -1, -1, edgeNameDisplayed);
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth,
-                         double highNominalVoltageBound, double lowNominalVoltageBound) {
+                         double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed) {
         try (StringWriter writer = new StringWriter()) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
             return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -59,9 +60,9 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile,
-                         Double highNominalVoltageBound, Double lowNominalVoltageBound) {
+                         Double highNominalVoltageBound, Double lowNominalVoltageBound, boolean edgeNameDisplayed) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
