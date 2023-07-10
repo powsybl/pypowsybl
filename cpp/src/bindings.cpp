@@ -57,7 +57,7 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
                 column->data.ptr = pypowsybl::copyVectorStringToCharPtrPtr(values);
             }
             catch(const py::cast_error& e) {
-                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected string");  
+                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected string");
             }
         } else if (type == 1) {
             try {
@@ -66,7 +66,7 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
                 column->data.ptr = pypowsybl::copyVectorDouble(values);
             }
             catch(const py::cast_error& e) {
-                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected float");  
+                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected float");
             }
         } else if (type == 2 || type == 3) {
             try {
@@ -76,7 +76,7 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
             }
             catch(const py::cast_error& e) {
                 std::string expected = type == 2 ? "int" : "bool";
-                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected " + expected);  
+                throw pypowsybl::PyPowsyblError("Data of column \"" + columnsNames[indice] + "\" has the wrong type, expected " + expected);
             }
         }
     }
@@ -334,7 +334,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
             .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
             .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.");
-    
+
     py::enum_<pypowsybl::PostContingencyComputationStatus>(m, "PostContingencyComputationStatus", "Loadflow status for one connected component after contingency for security analysis.")
             .value("CONVERGED", pypowsybl::PostContingencyComputationStatus::CONVERGED, "The loadflow has converged.")
             .value("FAILED", pypowsybl::PostContingencyComputationStatus::FAILED, "The loadflow has failed.")
@@ -660,7 +660,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
 
-    m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"), 
+    m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"),
           py::arg("is_index"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
@@ -721,13 +721,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
-    m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements", 
+    m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("ids"));
     m.def("get_network_extensions_dataframe_metadata", &pypowsybl::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
           py::arg("name"), py::arg("table_name"));
     m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
-    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name", 
+    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
     m.def("create_reporter_model", &pypowsybl::createReporterModel, "Create a reporter model", py::arg("task_key"), py::arg("default_name"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
@@ -743,7 +743,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_glsk_factors_start_timestamp", &pypowsybl::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
 
     m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
-    
+
     m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
 
     m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Add a contingency for flow decomposition",
