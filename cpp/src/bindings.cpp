@@ -163,6 +163,32 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
 }
 
+void openReacBinding(py::module_& m) {
+    py::enum_<OpenReacStatus>(m, "OpenReacStatus")
+        .value("OK", OpenReacStatus::OK)
+        .value("NOT_OK", OpenReacStatus::NOT_OK);
+
+    py::enum_<OpenReacObjective>(m, "OpenReacObjective")
+        .value("MIN_GENERATION", OpenReacObjective::MIN_GENERATION)
+        .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", OpenReacObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
+        .value("SPECIFIC_VOLTAGE_PROFILE", OpenReacObjective::SPECIFIC_VOLTAGE_PROFILE);
+
+    m.def("create_open_reac_params", &pypowsybl::createOpenReacParams);
+    m.def("create_voltage_limit_override", &pypowsybl::createVoltageLimitOverride, py::arg("min_voltage"), py::arg("max_voltage"));
+
+    m.def("open_reac_add_variable_shunt_compensators", &pypowsybl::OpenReacAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("open_reac_add_constant_q_generators", &pypowsybl::OpenReacAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("open_reac_add_variable_two_windings_transformers", &pypowsybl::OpenReacAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("open_reac_add_specific_voltage_limits", &pypowsybl::OpenReacAddSpecificVoltageLimits, py::arg("id_ptr"), py::arg("min_voltage"), py::arg("params_handle"), py::arg("max_voltage"));
+
+    m.def("open_reac_add_algorithm_param", &pypowsybl::OpenReacAddAlgorithmParam, py::arg("params_handle"), py::arg("key_ptr"), py::arg("value_ptr"));
+    m.def("open_reac_set_objective", &pypowsybl::OpenReacSetObjective, py::arg("params_handle"), py::arg("c_objective"));
+    m.def("open_reac_set_objective_distance", &pypowsybl::OpenReacSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
+    m.def("run_open_reac", &pypowsybl::runOpenReac, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
+
+    m.def("open_reac_apply_all_modifications", &pypowsybl::OpenReacApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
+}
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
 
@@ -760,6 +786,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
 
     dynamicSimulationBindings(m);
+    openReacBinding(m);
 
     m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 

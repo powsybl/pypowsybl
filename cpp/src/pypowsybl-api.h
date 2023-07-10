@@ -291,3 +291,14 @@ typedef enum {
     ONE = 0,
     TWO,
 } BranchSide;
+
+typedef enum {
+    OK = 0,
+    NOT_OK,
+} OpenReacStatus;
+
+typedef enum {
+    MIN_GENERATION = 0,
+    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+    SPECIFIC_VOLTAGE_PROFILE,
+} OpenReacObjective;

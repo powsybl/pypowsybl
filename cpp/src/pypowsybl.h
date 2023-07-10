@@ -562,6 +562,19 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawaltz package==========
+//=======Open Reac Mapping========
+JavaHandle createOpenReacParams();
+JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage);
+void OpenReacAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage);
+void OpenReacAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr);
+void OpenReacAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr);
+void OpenReacAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr);
+void OpenReacAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr);
+void OpenReacSetObjective(JavaHandle paramsHandle, OpenReacObjective cObjective);
+void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist);
+void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle);
+JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle);
+//=======End of Open Reac Mapping========
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 

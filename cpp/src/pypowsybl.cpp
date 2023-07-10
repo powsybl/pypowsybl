@@ -1339,4 +1339,47 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
     pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
+JavaHandle createOpenReacParams() {
+    return pypowsybl::callJava<JavaHandle>(::createOpenReacParams);
+}
+
+JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage) {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageLimitOverride, minVoltage, maxVoltage);
+}
+
+void OpenReacAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage) {
+    pypowsybl::callJava(::OpenReacAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
+}
+
+void OpenReacAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::OpenReacAddVariableShuntCompensators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void OpenReacAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::OpenReacAddConstantQGenerators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void OpenReacAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::OpenReacAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
+}
+
+void OpenReacAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr) {
+    pypowsybl::callJava(::OpenReacAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
+}
+
+void OpenReacSetObjective(JavaHandle paramsHandle, OpenReacObjective cObjective) {
+    pypowsybl::callJava(::OpenReacSetObjective, paramsHandle, cObjective);
+}
+
+void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist) {
+    pypowsybl::callJava(::OpenReacSetObjectiveDistance, paramsHandle, dist);
+}
+
+void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle) {
+    pypowsybl::callJava(::OpenReacApplyAllModifications, resultHandle, networkHandle);
+}
+
+JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle) {
+    return pypowsybl::callJava<JavaHandle>(::runOpenReac, debug, networkHandle, paramsHandle);
+}
 }

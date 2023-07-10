@@ -353,6 +353,11 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-ampl-converter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-open-reac</artifactId>
+            <version>0.2.0</version>
+        </dependency>
 
         <!-- test -->
         <dependency>
