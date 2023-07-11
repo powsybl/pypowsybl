@@ -1,12 +1,6 @@
-from typing import List, Union
+from typing import List
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
-
-
-class OpenReacParameters:
-    # referencing class to self return typing
-    ...
-
 
 class OpenReacParameters:
     """
@@ -16,69 +10,43 @@ class OpenReacParameters:
         self._handle = _pp.create_open_reac_params()
         pass
 
-    def add_variable_shunt_compensators(self, shunt_id: Union[str, List[str]]) -> OpenReacParameters:
-        if type(shunt_id) == list:
-            for id in shunt_id:
-                _pp.open_reac_add_variable_shunt_compensators(self._handle, id)
-        else:
-            _pp.open_reac_add_variable_shunt_compensators(
-                self._handle, shunt_id)
-        return self
+    def add_variable_shunt_compensators(self, shunt_id_list: List[str]) -> None:
+        for id in shunt_id_list:
+            _pp.open_reac_add_variable_shunt_compensators(self._handle, id)
 
-    def add_constant_q_generators(self, generator_id: Union[str, List[str]]) -> OpenReacParameters:
-        if type(generator_id) == list:
-            for id in generator_id:
-                _pp.open_reac_add_constant_q_generators(self._handle, id)
-        else:
-            _pp.open_reac_add_constant_q_generators(
-                self._handle, generator_id)
-        return self
+    def add_constant_q_generators(self, generator_id: List[str]) -> None:
+        for id in generator_id:
+            _pp.open_reac_add_constant_q_generators(self._handle, id)
 
-    def add_variable_two_windings_transformers(self, transformer_id: Union[str, List[str]]) -> OpenReacParameters:
-        if type(transformer_id) == list:
-            for id in transformer_id:
-                _pp.open_reac_add_variable_two_windings_transformers(
-                    self._handle, id)
-        else:
+    def add_variable_two_windings_transformers(self, transformer_id: List[str]) -> None:
+        for id in transformer_id:
             _pp.open_reac_add_variable_two_windings_transformers(
-                self._handle, transformer_id)
-        return self
+                self._handle, id)
 
-    def add_specific_voltage_limits(self, voltage_id: Union[str, List[str]],
-                                    lower_limit: Union[float, List[float]],
-                                    upper_limit: Union[float, List[float]]) -> OpenReacParameters:
-        if type(voltage_id) == list:
-            nb_voltages_ids = len(voltage_id)
-            if type(lower_limit) == list and type(upper_limit) == list and nb_voltages_ids == len(lower_limit) and nb_voltages_ids == len(upper_limit):
-                for i in range(nb_voltages_ids):
-                    _pp.open_reac_add_specific_voltage_limits(
-                        voltage_id[i], lower_limit[i], self._handle, upper_limit[i])
-            else:
-                raise f"error of length or type of {voltage_id}, {lower_limit}, {upper_limit}"
+    def add_specific_voltage_limits(self, voltage_id: List[str],
+                                    lower_limit: List[float],
+                                    upper_limit: List[float]) -> None:
+        nb_voltages_ids = len(voltage_id)
+        if nb_voltages_ids == len(lower_limit) and nb_voltages_ids == len(upper_limit):
+            for i in range(nb_voltages_ids):
+                _pp.open_reac_add_specific_voltage_limits(
+                    voltage_id[i], lower_limit[i], self._handle, upper_limit[i])
         else:
-            _pp.open_reac_add_specific_voltage_limits(
-                voltage_id, lower_limit, self._handle, upper_limit)
-        return self
+            raise TypeError(f"error of length of {voltage_id}, {lower_limit}, {upper_limit}")
 
-    def add_algorithm_param(self, keys: Union[str, List[str]], values: Union[str, List[str]]) -> OpenReacParameters:
-        if type(keys) == list:
-            if type(values) == list and len(keys) == len(values):
-                for i in range(len(values)):
-                    _pp.open_reac_add_algorithm_param(
-                        self._handle, keys[i], values[i])
-            else:
-                raise f"error of length or type of {keys}, {values}"
+    def add_algorithm_param(self, keys: List[str], values: List[str]) -> None:
+        if len(keys) == len(values):
+            for i in range(len(values)):
+                _pp.open_reac_add_algorithm_param(
+                    self._handle, keys[i], values[i])
         else:
-            _pp.open_reac_add_algorithm_param(self._handle, keys, values)
-        return self
+            raise TypeError(f"error of length of {keys}, {values}")
 
-    def set_objective(self, objective: _pp.OpenReacObjective) -> OpenReacParameters:
+    def set_objective(self, objective: _pp.OpenReacObjective) -> None:
         _pp.open_reac_set_objective(self._handle, objective)
-        return self
 
-    def set_objective_distance(self, distance: float) -> OpenReacParameters:
+    def set_objective_distance(self, distance: float) -> None:
         _pp.open_reac_set_objective_distance(self._handle, distance)
-        return self
 
 
 class OpenReacResults:
