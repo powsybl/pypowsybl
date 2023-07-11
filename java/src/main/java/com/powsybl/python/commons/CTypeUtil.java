@@ -10,6 +10,7 @@ import com.oracle.svm.core.SubstrateUtil;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
@@ -96,6 +97,20 @@ public final class CTypeUtil {
         return IntStream.range(0, keys.size())
                 .boxed()
                 .collect(Collectors.toMap(keys::get, values::get));
+    }
+
+    public static StringMap fromStringMap(Map<String, String> stringMap) {
+        StringMap mapPtr = UnmanagedMemory.calloc(SizeOf.get(StringMap.class));
+        mapPtr.setLength(stringMap.size());
+        List<String> keys = new ArrayList<>(stringMap.size());
+        List<String> values = new ArrayList<>(stringMap.size());
+        stringMap.entrySet().forEach(entry -> {
+            keys.add(entry.getKey());
+            values.add(entry.getValue());
+        });
+        mapPtr.setKeys(Util.getStringListAsPtr(keys));
+        mapPtr.setValues(Util.getStringListAsPtr(values));
+        return mapPtr;
     }
 
     public static DataframeMetadataPointer createSeriesMetadata(List<SeriesMetadata> metadata) {

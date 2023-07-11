@@ -109,11 +109,20 @@ public final class Util {
     }
 
     public static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
+        return allocArrayPointer(getStringListAsPtr(stringList), stringList.size());
+    }
+
+    /**
+     * Unsafe to use without an indicator of size !
+     *
+     * @param stringList the string list to transform into a pointer
+     */
+    public static CCharPointerPointer getStringListAsPtr(List<String> stringList) {
         CCharPointerPointer stringListPtr = UnmanagedMemory.calloc(stringList.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < stringList.size(); i++) {
             stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
         }
-        return allocArrayPointer(stringListPtr, stringList.size());
+        return stringListPtr;
     }
 
     public static ArrayPointer<CDoublePointer> createDoubleArray(List<Double> doubleList) {

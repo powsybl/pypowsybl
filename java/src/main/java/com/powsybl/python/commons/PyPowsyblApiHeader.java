@@ -74,6 +74,27 @@ public final class PyPowsyblApiHeader {
         UnmanagedMemory.free(arrayPointer);
     }
 
+    @CStruct("string_map")
+    public interface StringMap extends PointerBase {
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        @CField("keys")
+        CCharPointerPointer getKeys();
+
+        @CField("keys")
+        void setKeys(CCharPointerPointer keys);
+
+        @CField("values")
+        CCharPointerPointer getValues();
+
+        @CField("values")
+        void setValues(CCharPointerPointer values);
+    }
+
     @CStruct("network_metadata")
     public interface NetworkMetadataPointer extends PointerBase {
 

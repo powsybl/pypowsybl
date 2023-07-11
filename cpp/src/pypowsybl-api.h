@@ -17,6 +17,12 @@ typedef struct array_struct {
     int length;
 } array;
 
+typedef struct string_map_struct {
+    int length;
+    char** keys;
+    char** values;
+} string_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
