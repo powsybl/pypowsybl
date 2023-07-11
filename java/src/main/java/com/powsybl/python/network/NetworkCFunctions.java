@@ -6,11 +6,9 @@
  */
 package com.powsybl.python.network;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.datasource.MemDataSource;
+import com.powsybl.commons.datasource.*;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.computation.local.LocalComputationManager;
@@ -31,16 +29,15 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
+import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.layout.LayoutParameters;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -48,13 +45,11 @@ import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.WordFactory;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -72,8 +67,8 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
 @CContext(Directives.class)
 public final class NetworkCFunctions {
 
-    private static final Supplier<ExportersLoader> EXPORTERS_LOADER_SUPPLIER = Suppliers.memoize(ExportersServiceLoader::new);
-    private static final Supplier<ImportersLoader> IMPORTERS_LOADER_SUPPLIER = Suppliers.memoize(ImportersServiceLoader::new);
+    private static final ExportersLoader EXPORTERS_LOADER_SUPPLIER = new ExportersServiceLoader();
+    private static final ImportersLoader IMPORTERS_LOADER_SUPPLIER = new ImportersServiceLoader();
 
     private NetworkCFunctions() {
     }
@@ -141,7 +136,7 @@ public final class NetworkCFunctions {
             if (reporter == null) {
                 reporter = ReporterModel.NO_OP;
             }
-            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -160,11 +155,51 @@ public final class NetworkCFunctions {
                 if (reporter == null) {
                     reporter = ReporterModel.NO_OP;
                 }
-                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER.get(), reporter);
+                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+        });
+    }
+
+    @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
+    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
+                                                           int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
+            List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
+            for (int i = 0; i < bufferCount; ++i) {
+                ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
+                Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+                if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                    InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
+                    String commonBasename = null;
+                    try {
+                        for (String filename : ds.listNames(".*")) {
+                            String basename = DataSourceUtil.getBaseName(filename);
+                            commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+                        }
+                    } catch (IOException e) {
+                        throw new PowsyblException("Unsupported network data format in zip buffer.");
+                    }
+                    if (commonBasename != null) {
+                        ds.setBaseName(commonBasename);
+                    }
+                    dataSourceList.add(ds);
+                } else {
+                    throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
+                }
+            }
+            if (reporter == null) {
+                reporter = Reporter.NO_OP;
+            }
+            MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+            Network network = Network.read(dataSource, parameters, reporter);
+            return ObjectHandles.getGlobal().create(network);
         });
     }
 
@@ -182,7 +217,7 @@ public final class NetworkCFunctions {
             if (reporter == null) {
                 reporter = ReporterModel.NO_OP;
             }
-            network.write(EXPORTERS_LOADER_SUPPLIER.get(), formatStr, parameters, Paths.get(fileStr), reporter);
+            network.write(EXPORTERS_LOADER_SUPPLIER, formatStr, parameters, Paths.get(fileStr), reporter);
         });
     }
 

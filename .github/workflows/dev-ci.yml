@@ -28,9 +28,8 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.2.0'
-          java-version: '11'
-          components: 'native-image'
+          java-version: '17'
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout olf sources
@@ -116,7 +115,7 @@ jobs:
           }
           - {
             name: windows,
-            os: windows-2019,
+            os: windows-2022,
           }
         python:
           - {
@@ -128,9 +127,8 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.2.0'
-          java-version: '11'
-          components: 'native-image'
+          java-version: '17'
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout olf sources

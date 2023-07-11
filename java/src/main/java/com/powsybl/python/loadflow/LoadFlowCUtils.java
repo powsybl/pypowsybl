@@ -84,7 +84,7 @@ public final class LoadFlowCUtils {
      * Creates loadflow parameters from its C representation, for the given loadflow provider.
      * The provider is used to instantiate implementation-specific parameters.
      */
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc,  LoadFlowParametersPointer cParameters,
+    public static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer cParameters,
                                                               LoadFlowProvider provider) {
         LoadFlowParameters parameters = convertLoadFlowParameters(dc, cParameters);
         Map<String, String> specificParametersProperties = getSpecificParameters(cParameters);
@@ -102,7 +102,7 @@ public final class LoadFlowCUtils {
         return parameters;
     }
 
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc,  LoadFlowParametersPointer cParameters,
+    public static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer cParameters,
                                                               String providerName) {
         return createLoadFlowParameters(dc, cParameters, getLoadFlowProvider(providerName));
     }

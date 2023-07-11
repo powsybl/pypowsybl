@@ -298,17 +298,45 @@ def test_voltage_level_per_unit():
 def test_reactive_capability_curve_points_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
     n = per_unit_view(n, 100)
-    expected = pd.DataFrame(
-        index=pd.MultiIndex.from_tuples([('GH1', 0), ('GH1', 1), ('GH2', 0), ('GH2', 1), ('GH3', 0),
-                                         ('GH3', 1), ('GTH1', 0), ('GTH1', 1), ('GTH2', 0), ('GTH2', 1),
-                                         ('VSC1', 0), ('VSC1', 1)], names=['id', 'num']),
-        columns=['p', 'min_q', 'max_q'],
-        data=[[0, -7.69, 8.6], [1, -8.65, 9.46], [0, -5.57, 5.57], [2, -5.53, 5.36],
-              [0, -6.81, 6.88], [2, -6.81725, 7.1635], [0, -0.768, 0.774],
-              [1, -0.74, 0.76], [0, -1.69, 2], [4, -1.75, 1.76], [-1, -5.5, 5.7],
-              [1, -5.5, 5.7]])
-    pd.testing.assert_frame_equal(expected, n.get_reactive_capability_curve_points(), check_dtype=False,
-                                  atol=1e-2)
+    reactive_capability_curve_points = n.get_reactive_capability_curve_points()
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH1', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -7.69, 'max_q': 8.6},
+                                             name=('GH1', 0)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH1', 1)],
+                                   pd.Series(data={'p': 1, 'min_q': -8.65, 'max_q': 9.46},
+                                             name=('GH1', 1)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH2', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -5.57, 'max_q': 5.57},
+                                             name=('GH2', 0)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH2', 1)],
+                                   pd.Series(data={'p': 2, 'min_q': -5.53, 'max_q': 5.36},
+                                             name=('GH2', 1)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH3', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -6.81, 'max_q': 6.88},
+                                             name=('GH3', 0)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH3', 1)],
+                                   pd.Series(data={'p': 2, 'min_q': -6.82, 'max_q': 7.16},
+                                             name=('GH3', 1)), check_dtype=False, atol=True)
+
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GTH1', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -0.77, 'max_q': 0.77},
+                                             name=('GTH1', 0)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GTH1', 1)],
+                                   pd.Series(data={'p': 0, 'min_q': -0.74, 'max_q': 0.76},
+                                             name=('GTH1', 1)), check_dtype=False, atol=True)
+
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GTH2', 0)],
+                                   pd.Series(data={'p': 0, 'min_q': -1.69, 'max_q': 2},
+                                             name=('GTH2', 0)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GTH2', 1)],
+                                   pd.Series(data={'p': 4, 'min_q': -1.75, 'max_q': 1.76},
+                                             name=('GTH2', 1)), check_dtype=False, atol=True)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('VSC1', 0)],
+                                   pd.Series(data={'p': -1, 'min_q': -5.5, 'max_q': 5.7},
+                                             name=('VSC1', 0)), check_dtype=False, atol=1e-2)
+    pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('VSC1', 1)],
+                                   pd.Series(data={'p': 1, 'min_q': -5.5, 'max_q': 5.7},
+                                             name=('VSC1', 1)), check_dtype=False, atol=1e-2)
 
 
 def test_three_windings_transformer_per_unit():

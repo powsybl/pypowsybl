@@ -214,7 +214,7 @@ def test_get_provider_parameters_names():
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
         'secondaryVoltageControl',
-        'secondaryVoltageControlPilotPointVoltageSensiEpsilon',
+        'controllerToPilotPointVoltageSensiEpsilon',
         'reactiveLimitsMaxPqPvSwitch',
         'newtonRaphsonStoppingCriteriaType',
         'maxActivePowerMismatch',

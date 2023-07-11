@@ -76,7 +76,7 @@ public class ConnectablePositionDataframeProvider extends AbstractSingleDatafram
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getFeeders, this::getOrThrow)
                 .stringsIndex("id", ConnectablePositionFeederData::getId)
-                .strings("side", feeder ->  feeder.getSide() == null ? null : feeder.getSide().toString())
+                .strings("side", feeder -> feeder.getSide() == null ? null : feeder.getSide().toString())
                 .ints("order", ConnectablePositionFeederData::getOrder)
                 .strings("feeder_name", ConnectablePositionFeederData::getFeederName)
                 .strings("direction", ConnectablePositionFeederData::getDirection)

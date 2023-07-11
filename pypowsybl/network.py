@@ -8,6 +8,7 @@ from __future__ import annotations  # Necessary for type alias like _DataFrame t
 
 from os import PathLike as _PathLike
 import sys as _sys
+import io as _io
 import datetime as _datetime
 from datetime import timezone as _timezone
 import warnings
@@ -1917,11 +1918,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **rho**:
-              - **r**: the resistance of the ratio tap changer step (in Ohm)
-              - **x**: The reactance of the ratio tap changer step (Ohm)
-              - **g**: the conductance of the ratio tap changer step (in Siemens)
-              - **b**: the susceptance of the ratio tap changer step (in Siemens)
+              - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
+              - **r**: The resistance deviation in percent of nominal value (%)
+              - **x**: The reactance deviation in percent of nominal value (%)
+              - **g**: The conductance deviation in percent of nominal value (%)
+              - **b**: The susceptance deviation in percent of nominal value (%)
 
             This dataframe is index by the id of the transformer and the position of the ratio tap changer step
 
@@ -1993,12 +1994,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **rho**: the voltage ratio (in per unit)
+              - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **alpha**: the angle difference (in degree)
-              - **r**: the resistance of the phase tap changer step (in Ohm)
-              - **x**: The reactance of the phase tap changer step (Ohm)
-              - **g**: the conductance of the phase tap changer step (in Siemens)
-              - **b**: the susceptance of the phase tap changer step (in Siemens)
+              - **r**: The resistance deviation in percent of nominal value (%)
+              - **x**: The reactance deviation in percent of nominal value (%)
+              - **g**: The conductance deviation in percent of nominal value (%)
+              - **b**: The susceptance deviation in percent of nominal value (%)
 
             This dataframe is index by the id of the transformer and the position of the phase tap changer step
 
@@ -4850,6 +4851,38 @@ def load(file: _Union[str, _PathLike], parameters: _Dict[str, str] = None, repor
     return Network(_pp.load_network(file, parameters,
                                     None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
+def load_from_binary_buffer(buffer: _io.BytesIO, parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+    """
+    Load a network from a binary buffer.
+
+    Args:
+       buffer:    The BytesIO data buffer
+       parameters:  A dictionary of import parameters
+       reporter: The reporter
+
+    Returns:
+        The loaded network
+    """
+    return load_from_binary_buffers([buffer], parameters, reporter)
+
+def load_from_binary_buffers(buffers: _List[_io.BytesIO], parameters: _Dict[str, str] = None, reporter: _Reporter = None) -> Network:
+    """
+    Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
+
+    Args:
+       buffers:  The list of BytesIO data buffer
+       parameters:  A dictionary of import parameters
+       reporter: The reporter
+
+    Returns:
+        The loaded network
+    """
+    if parameters is None:
+        parameters = {}
+    buffer_list = []
+    for b in buffers: buffer_list.append(b.getbuffer())
+    return Network(_pp.load_network_from_binary_buffers(buffer_list, parameters,
+                                                None if reporter is None else reporter._reporter_model))
 
 def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, str] = None,
                      reporter: _Reporter = None) -> Network:
@@ -4868,7 +4901,6 @@ def load_from_string(file_name: str, file_content: str, parameters: _Dict[str, s
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters,
                                                 None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
-
 
 def get_extensions_names() -> _List[str]:
     """

@@ -50,6 +50,14 @@ The supported formats are the following:
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
 
 
+Loading a network from a binary byte buffer (io.BytesIO) is possible.
+Only zipped network loading are supported for now, but inside the zip file the supported network format are the same as pp.network.load.
+
+.. doctest::
+
+        with open('battery_xiidm.zip', "rb") as fh:
+            n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
+
 You may also create your own network from scratch, see below.
 
 
