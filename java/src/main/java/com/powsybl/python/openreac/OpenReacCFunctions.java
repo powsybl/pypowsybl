@@ -28,6 +28,7 @@ import com.powsybl.openreac.parameters.output.OpenReacResult;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 
 @CContext(Directives.class)
 public final class OpenReacCFunctions {
@@ -119,11 +120,17 @@ public final class OpenReacCFunctions {
     }
 
     @CEntryPoint(name = "OpenReacGetStatus")
-    public static void openReacGetStatus(IsolateThread thread, ObjectHandle resultHandle,
-            ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static OpenReacStatus openReacGetStatus(IsolateThread thread, ObjectHandle resultHandle,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
-        Network network = ObjectHandles.getGlobal().get(networkHandle);
-        doCatch(exceptionHandlerPtr, () -> result.applyAllModifications(network));
+        return doCatch(exceptionHandlerPtr, () -> OpenReacStatus.fromJavaEnum(result.getStatus()));
+    }
+
+    @CEntryPoint(name = "OpenReacGetIndicators")
+    public static StringMap openReacGetIndicators(IsolateThread thread, ObjectHandle resultHandle,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.fromStringMap(result.getIndicators()));
     }
 
     @CEntryPoint(name = "runOpenReac")
@@ -162,6 +169,14 @@ public final class OpenReacCFunctions {
     public enum OpenReacStatus {
         OK,
         NOT_OK;
+
+        public static OpenReacStatus fromJavaEnum(com.powsybl.openreac.parameters.output.OpenReacStatus obj) {
+            if (com.powsybl.openreac.parameters.output.OpenReacStatus.OK.equals(obj)) {
+                return OK;
+            } else {
+                return NOT_OK;
+            }
+        }
 
         @CEnumValue
         public native int getCValue();

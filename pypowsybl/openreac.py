@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 
@@ -58,6 +58,12 @@ class OpenReacResults:
 
     def apply_all_modification(self, network: _Network) -> None:
         _pp.open_reac_apply_all_modifications(self._handle, network._handle)
+
+    def get_status(self) -> _pp.OpenReacStatus:
+        return _pp.open_reac_get_status(self._handle)
+
+    def get_indicators(self) -> Dict[str, str]:
+        return _pp.open_reac_get_indicators(self._handle)
 
 
 def run_open_reac(network: _Network, params: OpenReacParameters, debug: bool) -> OpenReacResults:

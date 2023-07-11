@@ -187,6 +187,8 @@ void openReacBinding(py::module_& m) {
     m.def("run_open_reac", &pypowsybl::runOpenReac, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
     m.def("open_reac_apply_all_modifications", &pypowsybl::OpenReacApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
+    m.def("open_reac_get_status", &pypowsybl::OpenReacGetStatus, py::arg("result_handle"));
+    m.def("open_reac_get_indicators", &pypowsybl::OpenReacGetIndicators, py::arg("result_handle"));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {

@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -90,6 +91,17 @@ public final class Util {
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return 0;
+        }
+    }
+
+    public static <T extends Enum<?>> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr,
+            Supplier<T> supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return null;
         }
     }
 

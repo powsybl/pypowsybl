@@ -90,6 +90,10 @@ std::vector<T> toVector(array* arrayPtr) {
 
 template<>
 std::vector<std::string> toVector(array* arrayPtr);
+/**
+ * Creates a map from the structure and ***FREE*** the memory of the pointer !
+*/
+std::map<std::string, std::string> convertMapStructToStdMap(string_map* map);
 
 enum class LoadFlowComponentStatus {
     CONVERGED = 0,
@@ -573,6 +577,8 @@ void OpenReacAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std:
 void OpenReacSetObjective(JavaHandle paramsHandle, OpenReacObjective cObjective);
 void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist);
 void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle);
+OpenReacStatus OpenReacGetStatus(JavaHandle resultHandle);
+const std::map<std::string, std::string> OpenReacGetIndicators(JavaHandle resultHandle);
 JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle);
 //=======End of Open Reac Mapping========
 

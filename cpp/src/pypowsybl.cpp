@@ -238,6 +238,18 @@ private:
 };
 
 
+std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
+    std::map<std::string, std::string> stdStringMap;
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        char** valuePtr = (char**) map->values + i;
+        // ternary is to protect from UB with nullptr
+        stdStringMap.emplace(std::string(*keyPtr ? *keyPtr : ""), std::string(*valuePtr ? *valuePtr : ""));
+    }
+    callJava<>(::freeStringMap, map);
+    return stdStringMap;
+}
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1377,6 +1389,15 @@ void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist) {
 
 void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle) {
     pypowsybl::callJava(::OpenReacApplyAllModifications, resultHandle, networkHandle);
+}
+
+OpenReacStatus OpenReacGetStatus(JavaHandle resultHandle) {
+    return pypowsybl::callJava<OpenReacStatus>(::OpenReacGetStatus, resultHandle);
+}
+
+const std::map<std::string, std::string> OpenReacGetIndicators(JavaHandle resultHandle) {
+    string_map* indicators = pypowsybl::callJava<string_map*>(::OpenReacGetIndicators, resultHandle);
+    return convertMapStructToStdMap(indicators);
 }
 
 JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle) {
