@@ -69,7 +69,6 @@
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2023.2.2</powsybl-dependencies.version>
         <zstdjni.version>1.5.2-5</zstdjni.version>
-        <powsybl-open-loadflow.version>1.3.0-SNAPSHOT</powsybl-open-loadflow.version>
     </properties>
 
     <build>
@@ -157,13 +156,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- olf -->
-            <dependency>
-                <groupId>com.powsybl</groupId>
-                <artifactId>powsybl-open-loadflow</artifactId>
-                <version>${powsybl-open-loadflow.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.powsybl</groupId>
                 <artifactId>powsybl-dependencies</artifactId>

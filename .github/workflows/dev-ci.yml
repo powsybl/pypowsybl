@@ -16,9 +16,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp311,
+            abi: cp311,
+            version: '3.11',
           }
 
     steps:
@@ -32,16 +32,16 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout olf sources
+      - name: Checkout core sources
         uses: actions/checkout@v3
         with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: svc_sensi_v_eps
-          path: powsybl-open-loadflow
+          repository: powsybl/powsybl-core
+          ref:  release-v5.3.2-and-matpower
+          path: powsybl-core
 
-      - name: Build and install olf
+      - name: Build and install core
         shell: bash
-        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install'
+        run: scl enable rh-maven33 'mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install'
 
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -119,8 +119,8 @@ jobs:
           }
         python:
           - {
-            name: cp39,
-            version: '3.9',
+            name: cp311,
+            version: '3.11',
           }
 
     steps:
@@ -131,15 +131,15 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout olf sources
+      - name: Checkout core sources
         uses: actions/checkout@v3
         with:
-          repository: powsybl/powsybl-open-loadflow
-          ref: svc_sensi_v_eps
-          path: powsybl-open-loadflow
+          repository: powsybl/powsybl-core
+          ref:  release-v5.3.2-and-matpower
+          path: powsybl-core
 
-      - name: Build and install olf
-        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
+      - name: Build and install core
+        run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
 
       - name: Checkout sources
         uses: actions/checkout@v3
