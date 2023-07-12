@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
 
@@ -8,39 +8,38 @@ class OpenReacParameters:
 
     def __init__(self) -> None:
         self._handle = _pp.create_open_reac_params()
-        pass
 
     def add_variable_shunt_compensators(self, shunt_id_list: List[str]) -> None:
         for id in shunt_id_list:
             _pp.open_reac_add_variable_shunt_compensators(self._handle, id)
 
     def add_constant_q_generators(self, generator_id: List[str]) -> None:
+        '''
+        Indicate to OpenReac that the given generators have a fixed reactance.
+        '''
         for id in generator_id:
             _pp.open_reac_add_constant_q_generators(self._handle, id)
 
     def add_variable_two_windings_transformers(self, transformer_id: List[str]) -> None:
+        '''
+        Indicate to OpenReac that the given 2wt have a variable ratio.
+        '''
         for id in transformer_id:
             _pp.open_reac_add_variable_two_windings_transformers(
                 self._handle, id)
 
-    def add_specific_voltage_limits(self, voltage_id: List[str],
-                                    lower_limit: List[float],
-                                    upper_limit: List[float]) -> None:
-        nb_voltages_ids = len(voltage_id)
-        if nb_voltages_ids == len(lower_limit) and nb_voltages_ids == len(upper_limit):
-            for i in range(nb_voltages_ids):
-                _pp.open_reac_add_specific_voltage_limits(
-                    voltage_id[i], lower_limit[i], self._handle, upper_limit[i])
-        else:
-            raise TypeError(f"error of length of {voltage_id}, {lower_limit}, {upper_limit}")
+    def add_specific_voltage_limits(self, limits: Dict[str, Tuple[float, float]]) -> None:
+        '''
+        Indicate to OpenReac to override the network voltages limits. Use this if OpenReac cannot converge because of infeasibility.
+        keys are voltage ids, values are (lower limit, upper limit)
+        '''
+        for key in limits:
+            _pp.open_reac_add_specific_voltage_limits(
+                key, limits[key][0], self._handle, limits[key][1])
 
-    def add_algorithm_param(self, keys: List[str], values: List[str]) -> None:
-        if len(keys) == len(values):
-            for i in range(len(values)):
-                _pp.open_reac_add_algorithm_param(
-                    self._handle, keys[i], values[i])
-        else:
-            raise TypeError(f"error of length of {keys}, {values}")
+    def add_algorithm_param(self, entries: List[Tuple[str, str]]) -> None:
+        for i in range(len(entries)):
+            _pp.open_reac_add_algorithm_param(self._handle, entries[i][0], entries[i][1])
 
     def set_objective(self, objective: _pp.OpenReacObjective) -> None:
         _pp.open_reac_set_objective(self._handle, objective)
