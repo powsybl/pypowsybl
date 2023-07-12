@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2020-2023, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
+ */
 package com.powsybl.python.openreac;
 
 import static com.powsybl.python.commons.Util.doCatch;
@@ -9,9 +16,6 @@ import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.CContext;
-import org.graalvm.nativeimage.c.constant.CEnum;
-import org.graalvm.nativeimage.c.constant.CEnumLookup;
-import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.slf4j.Logger;
@@ -23,13 +27,18 @@ import com.powsybl.openreac.OpenReacConfig;
 import com.powsybl.openreac.OpenReacRunner;
 import com.powsybl.openreac.parameters.input.OpenReacParameters;
 import com.powsybl.openreac.parameters.input.VoltageLimitOverride;
-import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.output.OpenReacResult;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.OpenReacObjective;
+import com.powsybl.python.commons.PyPowsyblApiHeader.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
+import com.powsybl.python.commons.Util;
 
+/**
+ * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ */
 @CContext(Directives.class)
 public final class OpenReacCFunctions {
     private OpenReacCFunctions() {
@@ -101,7 +110,7 @@ public final class OpenReacCFunctions {
             OpenReacObjective cObjective,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-        doCatch(exceptionHandlerPtr, () -> params.setObjective(cObjective.obj));
+        doCatch(exceptionHandlerPtr, () -> params.setObjective(Util.convert(cObjective)));
     }
 
     @CEntryPoint(name = "OpenReacSetObjectiveDistance")
@@ -123,7 +132,7 @@ public final class OpenReacCFunctions {
     public static OpenReacStatus openReacGetStatus(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
-        return doCatch(exceptionHandlerPtr, () -> OpenReacStatus.fromJavaEnum(result.getStatus()));
+        return doCatch(exceptionHandlerPtr, () -> Util.convert(result.getStatus()));
     }
 
     @CEntryPoint(name = "OpenReacGetIndicators")
@@ -146,42 +155,4 @@ public final class OpenReacCFunctions {
         return ObjectHandles.getGlobal().create(result);
     }
 
-    @CEnum("OpenReacObjective")
-    public enum OpenReacObjective {
-        MIN_GENERATION(OpenReacOptimisationObjective.MIN_GENERATION),
-        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT(OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT),
-        SPECIFIC_VOLTAGE_PROFILE(OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE);
-
-        public final OpenReacOptimisationObjective obj;
-
-        private OpenReacObjective(OpenReacOptimisationObjective obj) {
-            this.obj = obj;
-        }
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native OpenReacObjective fromCValue(int value);
-    }
-
-    @CEnum("OpenReacStatus")
-    public enum OpenReacStatus {
-        OK,
-        NOT_OK;
-
-        public static OpenReacStatus fromJavaEnum(com.powsybl.openreac.parameters.output.OpenReacStatus obj) {
-            if (com.powsybl.openreac.parameters.output.OpenReacStatus.OK.equals(obj)) {
-                return OK;
-            } else {
-                return NOT_OK;
-            }
-        }
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native OpenReacStatus fromCValue(int value);
-    }
 }

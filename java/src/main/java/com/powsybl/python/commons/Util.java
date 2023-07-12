@@ -14,7 +14,10 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
+import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.OpenReacObjective;
+import com.powsybl.python.commons.PyPowsyblApiHeader.OpenReacStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
@@ -380,6 +383,27 @@ public final class Util {
                 return DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
+        }
+    }
+
+    public static OpenReacStatus convert(com.powsybl.openreac.parameters.output.OpenReacStatus obj) {
+        if (com.powsybl.openreac.parameters.output.OpenReacStatus.OK.equals(obj)) {
+            return OpenReacStatus.OK;
+        } else {
+            return OpenReacStatus.NOT_OK;
+        }
+    }
+
+    public static OpenReacOptimisationObjective convert(OpenReacObjective obj) {
+        switch (obj) {
+            case MIN_GENERATION:
+                return OpenReacOptimisationObjective.MIN_GENERATION;
+            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT:
+                return OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
+            case SPECIFIC_VOLTAGE_PROFILE:
+                return OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
+            default:
+                throw new PowsyblException("Unknown OpenReacObjective type: " + obj);
         }
     }
 

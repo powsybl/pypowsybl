@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -986,5 +987,31 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native BranchSide fromCValue(int value);
+    }
+
+
+    @CEnum("OpenReacObjective")
+    public enum OpenReacObjective {
+        MIN_GENERATION,
+        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+        SPECIFIC_VOLTAGE_PROFILE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native OpenReacObjective fromCValue(int value);
+    }
+
+    @CEnum("OpenReacStatus")
+    public enum OpenReacStatus {
+        OK,
+        NOT_OK;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native OpenReacStatus fromCValue(int value);
     }
 }
