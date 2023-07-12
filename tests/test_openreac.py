@@ -7,8 +7,7 @@
 import pypowsybl as pp
 import pypowsybl.openreac as openreac
 import pytest
-import pandas as pd
-
+from pypowsybl._pypowsybl import OpenReacObjective
 
 @pytest.fixture(autouse=True)
 def set_up():
@@ -23,5 +22,7 @@ def test_parameters():
     params.add_algorithm_param([("foo", "bar"), ("bar", "bar2")])
     params.add_specific_voltage_limits({"vl_id": (0.5,1.2)})
 
+    params.set_objective(OpenReacObjective.SPECIFIC_VOLTAGE_PROFILE)
+    params.set_objective_distance(1.3)
 
 # can't test runner because it need ampl and knitro.
