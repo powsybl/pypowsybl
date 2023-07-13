@@ -15,10 +15,11 @@ jobs:
     strategy:
       matrix:
         python:
+# to revert!!!!!!!!!!
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp311,
+            abi: cp311,
+            version: '3.11',
           }
 
     steps:
@@ -100,9 +101,10 @@ jobs:
             os: windows-2022,
           }
         python:
+# to revert!!!!!!!!!!
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp311,
+            version: '3.11',
           }
 
     steps:
