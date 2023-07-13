@@ -32,10 +32,10 @@ public final class SingleLineDiagramUtil {
     private SingleLineDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.SldParametersExt sldParametersExt) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
              Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
-            writeSvg(network, containerId, writer, metadataWriter, layoutParametersExt);
+            writeSvg(network, containerId, writer, metadataWriter, sldParametersExt);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -51,9 +51,9 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.SldParametersExt sldParametersExt) {
         try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
-            writeSvg(network, containerId, writer, writerMeta, layoutParametersExt);
+            writeSvg(network, containerId, writer, writerMeta, sldParametersExt);
             writer.flush();
             writerMeta.flush();
             return List.of(writer.toString(), writerMeta.toString());
@@ -63,17 +63,12 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer) {
-        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.LayoutParametersExt());
+        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.SldParametersExt());
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
-        ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibrary)
-                .orElseThrow(() -> new PowsyblException("library with name " + layoutParametersExt.componentLibrary +
-                        " was not found for Single Line Diagram component library"));
-        StyleProvider styleProvider = layoutParametersExt.topologicalColoring ? new TopologicalStyleProvider(network)
-                : new NominalVoltageStyleProvider();
-        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, layoutParametersExt.layoutParameters, componentLibrary,
-                new DefaultDiagramLabelProvider(network, componentLibrary, layoutParametersExt.layoutParameters), styleProvider, "");
+    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.SldParametersExt sldParametersExt) {
+        //TODO faire une traduction des paramètres Sld de pypowsybl et des paramètres Sld de diagram
+        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParametersExt.sldParameters);
     }
 
     static List<String> getComponentLibraryNames() {
