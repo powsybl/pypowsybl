@@ -43,7 +43,6 @@ from .layout_parameters import LayoutParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
-
 class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pp.JavaHandle):
@@ -178,7 +177,7 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
-                                      parameters: LayoutParameters = None) -> None:
+                                      parameters: SldParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -188,12 +187,13 @@ class Network:  # pylint: disable=too-many-public-methods
             metadata_file: a json metadata file path
             parameters: layout parameters to adjust the rendering of the diagram
         """
+
         svg_file = path_to_str(svg_file)
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
                                           '' if metadata_file is None else path_to_str(metadata_file), p)
 
-    def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: SldParameters = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
@@ -204,7 +204,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the single line diagram
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
