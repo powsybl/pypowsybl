@@ -8,6 +8,7 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
 import com.powsybl.nad.svg.SvgParameters;
@@ -38,11 +39,13 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedWidth(800)
                 .setFixedHeight(600)
                 .setEdgeNameDisplayed(edgeNameDisplayed);
+                .setFixedHeight(600);
+        NadParameters nadParameters = NadParameters.builder().withSvgParameters(svgParameters);
+
         Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
-        new NetworkAreaDiagram(network, filter)
-                .draw(writer, svgParameters);
+        NetworkAreaDiagram.draw(network, writer, nadParameters, filter)
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth, boolean edgeNameDisplayed) {
