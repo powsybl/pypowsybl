@@ -15,11 +15,10 @@ jobs:
     strategy:
       matrix:
         python:
-# to revert!!!!!!!!!!
           - {
-            name: cp311,
-            abi: cp311,
-            version: '3.11',
+            name: cp38,
+            abi: cp38,
+            version: '3.8',
           }
 
     steps:
@@ -86,12 +85,6 @@ jobs:
         working-directory: ./docs
         run: make doctest
 
-      - name: Upload wheel
-        uses: actions/upload-artifact@v3
-        with:
-          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
-          path: wheelhouse/*.whl
-
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
@@ -107,10 +100,9 @@ jobs:
             os: windows-2022,
           }
         python:
-# to revert!!!!!!!!!!
           - {
-            name: cp311,
-            version: '3.11',
+            name: cp38,
+            version: '3.8',
           }
 
     steps:
@@ -155,9 +147,3 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v3
-        with:
-          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
