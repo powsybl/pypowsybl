@@ -69,6 +69,11 @@
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2023.2.2</powsybl-dependencies.version>
         <zstdjni.version>1.5.2-5</zstdjni.version>
+        <powsybl-core.version>5.3.2</powsybl-core.version>
+        <powsybl-open-loadflow.version>1.2.2</powsybl-open-loadflow.version>
+        <powsybl-diagram.version>3.3.2</powsybl-diagram.version>
+        <powsybl-dynawo.version>1.14.0</powsybl-dynawo.version>
+        <powsybl-entsoe.version>2.4.0</powsybl-entsoe.version>
     </properties>
 
     <build>
@@ -156,10 +161,45 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- core -->
             <dependency>
                 <groupId>com.powsybl</groupId>
-                <artifactId>powsybl-dependencies</artifactId>
-                <version>${powsybl-dependencies.version}</version>
+                <artifactId>powsybl-core</artifactId>
+                <version>${powsybl-core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- diagram: sld / nad -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>powsybl-diagram</artifactId>
+                <version>${powsybl-diagram.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- olf -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-open-loadflow</artifactId>
+                <version>${powsybl-open-loadflow.version}</version>
+            </dependency>
+
+            <!-- dynawo -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-dynawo</artifactId>
+                <version>${powsybl-dynawo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- entsoe -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-entsoe</artifactId>
+                <version>${powsybl-entsoe.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
