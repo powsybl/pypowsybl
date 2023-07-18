@@ -58,7 +58,7 @@ public final class VoltageInitializerCFunctions {
     public static ObjectHandle createVoltageLimitOverride(IsolateThread thread, double minVoltage, double maxVoltage,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr,
-                () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(minVoltage, maxVoltage)));
+            () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(minVoltage, maxVoltage)));
     }
 
     @CEntryPoint(name = "VoltageInitializerAddSpecificVoltageLimits")
@@ -100,7 +100,7 @@ public final class VoltageInitializerCFunctions {
             CCharPointer valuePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr,
-                () -> params.addAlgorithmParam(CTypeUtil.toString(keyPtr), CTypeUtil.toString(valuePtr)));
+            () -> params.addAlgorithmParam(CTypeUtil.toString(keyPtr), CTypeUtil.toString(valuePtr)));
     }
 
     @CEntryPoint(name = "VoltageInitializerSetObjective")
