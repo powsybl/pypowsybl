@@ -4,7 +4,7 @@ Voltage Initializer
 
 .. module:: pypowsybl.voltage_initializer
 
-The voltage_initializatier module is a tool to initialize voltage of a network before a loadflow and can prevent divergence.
+The voltage_initializer module is a tool to initialize voltage of a network before a loadflow and can prevent divergence.
 
 Run the voltage initializer
 ------------
