@@ -62,7 +62,7 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerAddSpecificVoltageLimits")
-    public static void openReacAddSpecificVoltageLimits(IsolateThread thread, CCharPointer idPtr, double minVoltage,
+    public static void addSpecificVoltageLimits(IsolateThread thread, CCharPointer idPtr, double minVoltage,
             ObjectHandle paramsHandle, double maxVoltage,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
@@ -72,7 +72,7 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerAddVariableShuntCompensators")
-    public static void openReacAddVariableShuntCompensators(IsolateThread thread, ObjectHandle paramsHandle,
+    public static void addVariableShuntCompensators(IsolateThread thread, ObjectHandle paramsHandle,
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
@@ -80,7 +80,7 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerAddConstantQGenerators")
-    public static void openReacAddConstantQGenerators(IsolateThread thread, ObjectHandle paramsHandle,
+    public static void addConstantQGenerators(IsolateThread thread, ObjectHandle paramsHandle,
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
@@ -88,7 +88,7 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerAddVariableTwoWindingsTransformers")
-    public static void openReacAddVariableTwoWindingsTransformers(IsolateThread thread, ObjectHandle paramsHandle,
+    public static void addVariableTwoWindingsTransformers(IsolateThread thread, ObjectHandle paramsHandle,
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
@@ -96,7 +96,7 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerAddAlgorithmParam")
-    public static void openReacAddAlgorithmParam(IsolateThread thread, ObjectHandle paramsHandle, CCharPointer keyPtr,
+    public static void addAlgorithmParam(IsolateThread thread, ObjectHandle paramsHandle, CCharPointer keyPtr,
             CCharPointer valuePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr,
@@ -104,21 +104,21 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerSetObjective")
-    public static void openReacSetObjective(IsolateThread thread, ObjectHandle paramsHandle,
+    public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
             VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setObjective(Util.convert(cObjective)));
     }
 
     @CEntryPoint(name = "VoltageInitializerSetObjectiveDistance")
-    public static void openReacSetObjectiveDistance(IsolateThread thread, ObjectHandle paramsHandle, double dist,
+    public static void setObjectiveDistance(IsolateThread thread, ObjectHandle paramsHandle, double dist,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setObjectiveDistance(dist));
     }
 
     @CEntryPoint(name = "VoltageInitializerApplyAllModifications")
-    public static void openReacApplyAllModifications(IsolateThread thread, ObjectHandle resultHandle,
+    public static void applyAllModifications(IsolateThread thread, ObjectHandle resultHandle,
             ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -126,14 +126,14 @@ public final class VoltageInitializerCFunctions {
     }
 
     @CEntryPoint(name = "VoltageInitializerGetStatus")
-    public static VoltageInitializerStatus openReacGetStatus(IsolateThread thread, ObjectHandle resultHandle,
+    public static VoltageInitializerStatus getStatus(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
         return doCatch(exceptionHandlerPtr, () -> Util.convert(result.getStatus()));
     }
 
     @CEntryPoint(name = "VoltageInitializerGetIndicators")
-    public static StringMap openReacGetIndicators(IsolateThread thread, ObjectHandle resultHandle,
+    public static StringMap getIndicators(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
         return doCatch(exceptionHandlerPtr, () -> CTypeUtil.fromStringMap(result.getIndicators()));
