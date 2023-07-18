@@ -30,17 +30,17 @@ def test_parameters():
 def test_runner():
     from pypowsybl import network, voltage_initializer
     from pypowsybl._pypowsybl import VoltageInitializerObjective
-    params = voltage_initializer.OpenReacParameters()
+    params = voltage_initializer.VoltageInitializerParameters()
     n = network.create_eurostag_tutorial_example1_network()
     some_gen_id = n.get_generators().iloc[0].name
     params.add_constant_q_generators([some_gen_id])
-    # no shunts in this network
+    # no shunts in eurostag_tutorial_example1_network
     # some_shunt_id = n.get_shunt_compensators().iloc[0].name
     # params.add_variable_shunt_compensators([n.get_shunt_compensators().iloc[0].name])
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
-    params.add_algorithm_param([("foo", "bar"), ("bar", "gazfazf")])
+    params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
     results = voltage_initializer.run_open_reac(n, params, True)
@@ -48,3 +48,24 @@ def test_runner():
 
     print(results.get_status())
     print(results.get_indicators())
+
+from pypowsybl import network, voltage_initializer
+from pypowsybl._pypowsybl import VoltageInitializerObjective
+params = voltage_initializer.VoltageInitializerParameters()
+n = network.create_eurostag_tutorial_example1_network()
+some_gen_id = n.get_generators().iloc[0].name
+params.add_constant_q_generators([some_gen_id])
+# no shunts in eurostag_tutorial_example1_network
+# some_shunt_id = n.get_shunt_compensators().iloc[0].name
+# params.add_variable_shunt_compensators([n.get_shunt_compensators().iloc[0].name])
+some_2wt_id = n.get_2_windings_transformers().iloc[0].name
+params.add_variable_two_windings_transformers([some_2wt_id])
+
+params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
+params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
+
+results = voltage_initializer.run_open_reac(n, params, True)
+results.apply_all_modification(n)
+
+print(results.get_status())
+print(results.get_indicators())
