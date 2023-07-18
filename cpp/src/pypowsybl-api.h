@@ -301,10 +301,10 @@ typedef enum {
 typedef enum {
     OK = 0,
     NOT_OK,
-} OpenReacStatus;
+} VoltageInitializerStatus;
 
 typedef enum {
     MIN_GENERATION = 0,
     BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
     SPECIFIC_VOLTAGE_PROFILE,
-} OpenReacObjective;
+} VoltageInitializerObjective;

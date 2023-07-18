@@ -567,19 +567,19 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawaltz package==========
 //=======Open Reac Mapping========
-JavaHandle createOpenReacParams();
+JavaHandle createVoltageInitializerParams();
 JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage);
-void OpenReacAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage);
-void OpenReacAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr);
-void OpenReacAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr);
-void OpenReacAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr);
-void OpenReacAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr);
-void OpenReacSetObjective(JavaHandle paramsHandle, OpenReacObjective cObjective);
-void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist);
-void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle);
-OpenReacStatus OpenReacGetStatus(JavaHandle resultHandle);
-const std::map<std::string, std::string> OpenReacGetIndicators(JavaHandle resultHandle);
-JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle);
+void VoltageInitializerAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage);
+void VoltageInitializerAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr);
+void VoltageInitializerAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr);
+void VoltageInitializerAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr);
+void VoltageInitializerAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr);
+void VoltageInitializerSetObjective(JavaHandle paramsHandle, VoltageInitializerObjective cObjective);
+void VoltageInitializerSetObjectiveDistance(JavaHandle paramsHandle, double dist);
+void VoltageInitializerApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle);
+VoltageInitializerStatus VoltageInitializerGetStatus(JavaHandle resultHandle);
+const std::map<std::string, std::string> VoltageInitializerGetIndicators(JavaHandle resultHandle);
+JavaHandle runVoltageInitializer(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle);
 //=======End of Open Reac Mapping========
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);

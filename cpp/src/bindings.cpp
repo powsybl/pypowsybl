@@ -163,32 +163,32 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
 }
 
-void openReacBinding(py::module_& m) {
-    py::enum_<OpenReacStatus>(m, "OpenReacStatus")
-        .value("OK", OpenReacStatus::OK)
-        .value("NOT_OK", OpenReacStatus::NOT_OK);
+void VoltageInitializerBinding(py::module_& m) {
+    py::enum_<VoltageInitializerStatus>(m, "VoltageInitializerStatus")
+        .value("OK", VoltageInitializerStatus::OK)
+        .value("NOT_OK", VoltageInitializerStatus::NOT_OK);
 
-    py::enum_<OpenReacObjective>(m, "OpenReacObjective")
-        .value("MIN_GENERATION", OpenReacObjective::MIN_GENERATION)
-        .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", OpenReacObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
-        .value("SPECIFIC_VOLTAGE_PROFILE", OpenReacObjective::SPECIFIC_VOLTAGE_PROFILE);
+    py::enum_<VoltageInitializerObjective>(m, "VoltageInitializerObjective")
+        .value("MIN_GENERATION", VoltageInitializerObjective::MIN_GENERATION)
+        .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", VoltageInitializerObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
+        .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
-    m.def("create_open_reac_params", &pypowsybl::createOpenReacParams);
+    m.def("create_voltage_initializer_params", &pypowsybl::createVoltageInitializerParams);
     m.def("create_voltage_limit_override", &pypowsybl::createVoltageLimitOverride, py::arg("min_voltage"), py::arg("max_voltage"));
 
-    m.def("open_reac_add_variable_shunt_compensators", &pypowsybl::OpenReacAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("open_reac_add_constant_q_generators", &pypowsybl::OpenReacAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("open_reac_add_variable_two_windings_transformers", &pypowsybl::OpenReacAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("open_reac_add_specific_voltage_limits", &pypowsybl::OpenReacAddSpecificVoltageLimits, py::arg("id_ptr"), py::arg("min_voltage"), py::arg("params_handle"), py::arg("max_voltage"));
+    m.def("voltage_initializer_add_variable_shunt_compensators", &pypowsybl::VoltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_constant_q_generators", &pypowsybl::VoltageInitializerAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_variable_two_windings_transformers", &pypowsybl::VoltageInitializerAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_specific_voltage_limits", &pypowsybl::VoltageInitializerAddSpecificVoltageLimits, py::arg("id_ptr"), py::arg("min_voltage"), py::arg("params_handle"), py::arg("max_voltage"));
 
-    m.def("open_reac_add_algorithm_param", &pypowsybl::OpenReacAddAlgorithmParam, py::arg("params_handle"), py::arg("key_ptr"), py::arg("value_ptr"));
-    m.def("open_reac_set_objective", &pypowsybl::OpenReacSetObjective, py::arg("params_handle"), py::arg("c_objective"));
-    m.def("open_reac_set_objective_distance", &pypowsybl::OpenReacSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
-    m.def("run_open_reac", &pypowsybl::runOpenReac, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
+    m.def("voltage_initializer_add_algorithm_param", &pypowsybl::VoltageInitializerAddAlgorithmParam, py::arg("params_handle"), py::arg("key_ptr"), py::arg("value_ptr"));
+    m.def("voltage_initializer_set_objective", &pypowsybl::VoltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
+    m.def("voltage_initializer_set_objective_distance", &pypowsybl::VoltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
+    m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
-    m.def("open_reac_apply_all_modifications", &pypowsybl::OpenReacApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
-    m.def("open_reac_get_status", &pypowsybl::OpenReacGetStatus, py::arg("result_handle"));
-    m.def("open_reac_get_indicators", &pypowsybl::OpenReacGetIndicators, py::arg("result_handle"));
+    m.def("voltage_initializer_apply_all_modifications", &pypowsybl::VoltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
+    m.def("voltage_initializer_get_status", &pypowsybl::VoltageInitializerGetStatus, py::arg("result_handle"));
+    m.def("voltage_initializer_get_indicators", &pypowsybl::VoltageInitializerGetIndicators, py::arg("result_handle"));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
@@ -788,7 +788,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
 
     dynamicSimulationBindings(m);
-    openReacBinding(m);
+    VoltageInitializerBinding(m);
 
     m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 

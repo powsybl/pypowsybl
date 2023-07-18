@@ -1351,56 +1351,56 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
     pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
 }
 
-JavaHandle createOpenReacParams() {
-    return pypowsybl::callJava<JavaHandle>(::createOpenReacParams);
+JavaHandle createVoltageInitializerParams() {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageInitializerParams);
 }
 
 JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage) {
     return pypowsybl::callJava<JavaHandle>(::createVoltageLimitOverride, minVoltage, maxVoltage);
 }
 
-void OpenReacAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage) {
-    pypowsybl::callJava(::OpenReacAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
+void VoltageInitializerAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage) {
+    pypowsybl::callJava(::VoltageInitializerAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
 }
 
-void OpenReacAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr) {
-    pypowsybl::callJava(::OpenReacAddVariableShuntCompensators, paramsHandle, (char*) idPtr.c_str());
+void VoltageInitializerAddVariableShuntCompensators(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::VoltageInitializerAddVariableShuntCompensators, paramsHandle, (char*) idPtr.c_str());
 }
 
-void OpenReacAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr) {
-    pypowsybl::callJava(::OpenReacAddConstantQGenerators, paramsHandle, (char*) idPtr.c_str());
+void VoltageInitializerAddConstantQGenerators(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::VoltageInitializerAddConstantQGenerators, paramsHandle, (char*) idPtr.c_str());
 }
 
-void OpenReacAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr) {
-    pypowsybl::callJava(::OpenReacAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
+void VoltageInitializerAddVariableTwoWindingsTransformers(JavaHandle paramsHandle, std::string idPtr) {
+    pypowsybl::callJava(::VoltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
 }
 
-void OpenReacAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr) {
-    pypowsybl::callJava(::OpenReacAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
+void VoltageInitializerAddAlgorithmParam(JavaHandle paramsHandle, std::string keyPtr, std::string valuePtr) {
+    pypowsybl::callJava(::VoltageInitializerAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
 }
 
-void OpenReacSetObjective(JavaHandle paramsHandle, OpenReacObjective cObjective) {
-    pypowsybl::callJava(::OpenReacSetObjective, paramsHandle, cObjective);
+void VoltageInitializerSetObjective(JavaHandle paramsHandle, VoltageInitializerObjective cObjective) {
+    pypowsybl::callJava(::VoltageInitializerSetObjective, paramsHandle, cObjective);
 }
 
-void OpenReacSetObjectiveDistance(JavaHandle paramsHandle, double dist) {
-    pypowsybl::callJava(::OpenReacSetObjectiveDistance, paramsHandle, dist);
+void VoltageInitializerSetObjectiveDistance(JavaHandle paramsHandle, double dist) {
+    pypowsybl::callJava(::VoltageInitializerSetObjectiveDistance, paramsHandle, dist);
 }
 
-void OpenReacApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle) {
-    pypowsybl::callJava(::OpenReacApplyAllModifications, resultHandle, networkHandle);
+void VoltageInitializerApplyAllModifications(JavaHandle resultHandle, JavaHandle networkHandle) {
+    pypowsybl::callJava(::VoltageInitializerApplyAllModifications, resultHandle, networkHandle);
 }
 
-OpenReacStatus OpenReacGetStatus(JavaHandle resultHandle) {
-    return pypowsybl::callJava<OpenReacStatus>(::OpenReacGetStatus, resultHandle);
+VoltageInitializerStatus VoltageInitializerGetStatus(JavaHandle resultHandle) {
+    return pypowsybl::callJava<VoltageInitializerStatus>(::VoltageInitializerGetStatus, resultHandle);
 }
 
-const std::map<std::string, std::string> OpenReacGetIndicators(JavaHandle resultHandle) {
-    string_map* indicators = pypowsybl::callJava<string_map*>(::OpenReacGetIndicators, resultHandle);
+const std::map<std::string, std::string> VoltageInitializerGetIndicators(JavaHandle resultHandle) {
+    string_map* indicators = pypowsybl::callJava<string_map*>(::VoltageInitializerGetIndicators, resultHandle);
     return convertMapStructToStdMap(indicators);
 }
 
-JavaHandle runOpenReac(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle) {
-    return pypowsybl::callJava<JavaHandle>(::runOpenReac, debug, networkHandle, paramsHandle);
+JavaHandle runVoltageInitializer(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle) {
+    return pypowsybl::callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 }

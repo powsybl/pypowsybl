@@ -990,8 +990,8 @@ public final class PyPowsyblApiHeader {
     }
 
 
-    @CEnum("OpenReacObjective")
-    public enum OpenReacObjective {
+    @CEnum("VoltageInitializerObjective")
+    public enum VoltageInitializerObjective {
         MIN_GENERATION,
         BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
         SPECIFIC_VOLTAGE_PROFILE;
@@ -1000,11 +1000,11 @@ public final class PyPowsyblApiHeader {
         public native int getCValue();
 
         @CEnumLookup
-        public static native OpenReacObjective fromCValue(int value);
+        public static native VoltageInitializerObjective fromCValue(int value);
     }
 
-    @CEnum("OpenReacStatus")
-    public enum OpenReacStatus {
+    @CEnum("VoltageInitializerStatus")
+    public enum VoltageInitializerStatus {
         OK,
         NOT_OK;
 
@@ -1012,6 +1012,6 @@ public final class PyPowsyblApiHeader {
         public native int getCValue();
 
         @CEnumLookup
-        public static native OpenReacStatus fromCValue(int value);
+        public static native VoltageInitializerStatus fromCValue(int value);
     }
 }

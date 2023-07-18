@@ -8,7 +8,7 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
-from pypowsybl import _pypowsybl
+from pypowsybl import _pypowsybl, voltage_initializer
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
@@ -17,8 +17,7 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
-    perunit,
-    openreac
+    perunit
 )
 
 __version__ = '0.24.0.dev1'
@@ -38,7 +37,7 @@ __all__ = [
     "glsk",
     "flowdecomposition",
     "perunit",
-    "openreac"
+    "voltage_initializer"
 ]
 
 
