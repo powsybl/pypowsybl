@@ -44,7 +44,7 @@ Here is a simple starting example:
     params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
-    results = voltage_initializer.run_open_reac(n, params, True)
+    results = voltage_initializer.run(n, params, True)
     results.apply_all_modification(n)
 
     print(results.get_status())
