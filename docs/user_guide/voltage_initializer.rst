@@ -47,6 +47,6 @@ Here is a simple starting example:
     results = voltage_initializer.run(n, params, True)
     results.apply_all_modification(n)
 
-    print(results.get_status())
-    print(results.get_indicators())
+    print(results.status())
+    print(results.indicators())
 
