@@ -39,7 +39,6 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedWidth(800)
                 .setFixedHeight(600)
                 .setEdgeNameDisplayed(edgeNameDisplayed);
-                .setFixedHeight(600);
         NadParameters nadParameters = NadParameters.builder().withSvgParameters(svgParameters);
 
         Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
