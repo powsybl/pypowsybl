@@ -185,7 +185,7 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
             metadata_file: a json metadata file path
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
         """
 
         svg_file = path_to_str(svg_file)
@@ -199,7 +199,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             container_id: a voltage level id or a substation id
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
 
         Returns:
             the single line diagram

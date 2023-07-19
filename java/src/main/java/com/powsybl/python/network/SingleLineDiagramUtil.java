@@ -67,7 +67,6 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.SldParametersExt sldParametersExt) {
-        //TODO faire une traduction des paramètres Sld de pypowsybl et des paramètres Sld de diagram
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParametersExt.sldParameters);
     }
 
