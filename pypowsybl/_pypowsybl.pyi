@@ -179,12 +179,12 @@ class JavaHandle:
 class Dataframe:
     ...
 
-class LayoutParameters:
+class SldParameters:
     use_name: bool
     center_name: bool
     diagonal_label: bool
-    topological_coloring: bool
     nodes_infos: bool
+    topological_coloring: bool
     component_library: str
     def __init__(self) -> None: ...
 
