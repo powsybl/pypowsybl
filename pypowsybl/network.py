@@ -85,17 +85,17 @@ class Svg:
         return self._content
 
 
-class SldParameters: //TODO
+class SldParameters:
     """
     This class represents sld parameters for a single line diagram svg generation."""
 
-    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, nodes_infos: bool = False,
+                 topological_coloring: bool = True, component_library: str = 'Convergence'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
-        self._topological_coloring = topological_coloring
         self._nodes_infos = nodes_infos
+        self._topological_coloring = topological_coloring
         self._component_library = component_library
 
     @property
@@ -128,8 +128,8 @@ class SldParameters: //TODO
         """name of the library used for component"""
         return self._component_library
 
-    def _to_c_parameters(self) -> _pp.LayoutParameters:
-        c_parameters = _pp.LayoutParameters()
+    def _to_c_parameters(self) -> _pp.SldParameters:
+        c_parameters = _pp.SldParameters()
         c_parameters.use_name = self._use_name
         c_parameters.center_name = self._center_name
         c_parameters.diagonal_label = self._diagonal_label
@@ -381,7 +381,7 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
             metadata_file: a json metadata file path
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
         """
         svg_file = _path_to_str(svg_file)
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
@@ -394,7 +394,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             container_id: a voltage level id or a substation id
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
 
         Returns:
             the single line diagram

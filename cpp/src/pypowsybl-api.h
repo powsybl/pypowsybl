@@ -267,14 +267,14 @@ typedef struct flow_decomposition_parameters_struct {
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
 
-typedef struct layout_parameters_struct {
+typedef struct sld_parameters_struct {
     unsigned char use_name;
     unsigned char center_name;
     unsigned char diagonal_label;
-    unsigned char topological_coloring;
     unsigned char nodes_infos;
+    unsigned char topological_coloring;
     char* component_library;
-} layout_parameters;
+} sld_parameters;
 
 typedef enum {
     ALPHA_BETA_LOAD = 0,

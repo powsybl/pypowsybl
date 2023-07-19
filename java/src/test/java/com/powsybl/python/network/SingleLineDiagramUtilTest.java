@@ -52,9 +52,9 @@ class SingleLineDiagramUtilTest {
     @Test
     void testSvgAndMetadata() throws IOException {
         Network network = FourSubstationsNodeBreakerFactory.create();
-        NetworkCFunctions.LayoutParametersExt layoutParametersExt = new NetworkCFunctions.LayoutParametersExt();
+        NetworkCFunctions.SldParametersExt sldParametersExt = new NetworkCFunctions.SldParametersExt();
         try (StringWriter writer = new StringWriter(); StringWriter metadataWriter = new StringWriter()) {
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", layoutParametersExt);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", sldParametersExt);
             assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(SingleLineDiagramUtil.class.getResourceAsStream("/sld.svg"))), StandardCharsets.UTF_8)),
                     fixSvg(TestUtil.normalizeLineSeparator(svgAndMeta.get(0))));
             assertTrue(svgAndMeta.get(1).length() > 0);

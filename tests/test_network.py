@@ -25,7 +25,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -757,20 +757,19 @@ def test_variant():
     assert 1 == len(n.get_variant_ids())
 
 
-def test_layout_parameters():
-    parameters = LayoutParameters()
+def test_sld_parameters():
+    parameters = SldParameters()
     assert not parameters.use_name
     assert not parameters.center_name
     assert not parameters.diagonal_label
-    assert parameters.topological_coloring
     assert not parameters.nodes_infos
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
-                                  nodes_infos=True)
+    assert parameters.topological_coloring
+    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True, nodes_infos=True, topological_coloring=False)
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
-    assert not parameters.topological_coloring
     assert parameters.nodes_infos
+    assert not parameters.topological_coloring
 
 
 def test_sld_svg():
@@ -778,12 +777,12 @@ def test_sld_svg():
     sld = n.get_single_line_diagram('S1VL1')
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+    sld1 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                                                topological_coloring=False))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
-    sld2 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                               topological_coloring=True, nodes_infos=True))
+    sld2 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True, nodes_infos=True,
+                                                               topological_coloring=True))
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 

@@ -259,17 +259,17 @@ public:
     int sensitivity_variable_batch_size;
 };
 
-class LayoutParameters {
+class SldParameters {
 public:
-    LayoutParameters(layout_parameters* src);
-    std::shared_ptr<layout_parameters> to_c_struct() const;
-    void layout_to_c_struct(layout_parameters& params) const;
+    SldParameters(sld_parameters* src);
+    std::shared_ptr<sld_parameters> to_c_struct() const;
+    void sld_to_c_struct(sld_parameters& params) const;
 
     bool use_name;
     bool center_name;
     bool diagonal_label;
-    bool topological_coloring;
     bool nodes_infos;
+    bool topological_coloring;
     std::string component_library;
 };
 
@@ -533,7 +533,7 @@ void closePypowsybl();
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter);
 
-LayoutParameters* createLayoutParameters();
+SldParameters* createSldParameters();
 
 //=======dynamic modeling for dynawaltz package==========
 
