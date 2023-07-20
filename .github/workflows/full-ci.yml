@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: yum install -y rh-maven33-maven zlib-devel.x86_64
+        run: yum install -y zlib-devel.x86_64
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -65,7 +65,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          scl enable rh-maven33 'python3 setup.py bdist_wheel'
+          python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel

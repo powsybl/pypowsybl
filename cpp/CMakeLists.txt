@@ -51,7 +51,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(MATH_NATIVE_INSTALL_EXTRA_COMMAND COMMAND install_name_tool -id @loader_path/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB})
 endif()
 
-ExternalProject_Add(mvn
+ExternalProject_Add(./mvnw
     SOURCE_DIR ${PYPOWSYBL_JAVA_SRC_DIR}
     PATCH_COMMAND mvn --batch-mode clean package
     CONFIGURE_COMMAND ""

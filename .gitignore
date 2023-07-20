@@ -8,6 +8,9 @@
 # Maven
 target/
 
+# Maven wrapper jar
+java/.mvn/wrapper/*.jar
+
 # Byte-compiled / optimized
 __pycache__/
 *.py[cod]
