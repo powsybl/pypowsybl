@@ -44,7 +44,7 @@ public final class NetworkAreaDiagramUtil {
         Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
-        NetworkAreaDiagram.draw(network, writer, nadParameters, filter)
+        NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth, boolean edgeNameDisplayed) {
