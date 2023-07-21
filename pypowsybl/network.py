@@ -604,6 +604,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
               - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
+              - **rated_s** : The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
@@ -2437,6 +2438,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `target_p`
             - `max_p`
             - `min_p`
+            - `rated_s`
             - `target_v`
             - `target_q`
             - `voltage_regulator_on`
