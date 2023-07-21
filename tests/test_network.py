@@ -402,7 +402,7 @@ def test_svc_data_frame():
                                   check_dtype=False, atol=1e-2)
 
 
-def test_create_generators_data_frame():
+def test_generators_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators(all_attributes=True)
     assert 'OTHER' == generators['energy_source']['GEN']
@@ -414,6 +414,9 @@ def test_create_generators_data_frame():
     assert 9999.99 == generators['max_q_at_p']['GEN']
     assert -9999.99 == generators['min_q_at_target_p']['GEN']
     assert 9999.99 == generators['max_q_at_target_p']['GEN']
+    n.update_generators(id='GEN', rated_s=100)
+    generators = n.get_generators(all_attributes=True)
+    assert 100 == generators['rated_s']['GEN']
     n = pp.network.create_four_substations_node_breaker_network()
     generators = n.get_generators(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
