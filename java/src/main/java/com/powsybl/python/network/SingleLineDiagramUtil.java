@@ -6,14 +6,9 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.svg.DefaultDiagramLabelProvider;
-import com.powsybl.sld.svg.styles.StyleProvider;
-import com.powsybl.sld.svg.styles.NominalVoltageStyleProvider;
-import com.powsybl.sld.svg.styles.iidm.TopologicalStyleProvider;
 
 import java.io.IOException;
 import java.io.StringWriter;
