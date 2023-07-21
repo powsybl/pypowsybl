@@ -808,12 +808,38 @@ void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std:
 }
 
 void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open) {
-    callJava(::addSwitchAction, analysisContext, (char*) actionId.data(), (char*)  switchId.data(), open);
+    callJava(::addSwitchAction, analysisContext, (char*) actionId.data(), (char*) switchId.data(), open);
 }
 
-void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds) {
-    ToCharPtrPtr actions(actionsIds);
-    callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actions.get(), actionsIds.size());
+void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
+                                      bool isRelative, int tapPosition) {
+    callJava(::addPhaseTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+}
+
+void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
+                                      bool isRelative, int tapPosition) {
+    callJava(::addRatioTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+}
+
+void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId,
+                                       int sectionCount) {
+    callJava(::addShuntCompensatorPositionAction, analysisContext, (char*) actionId.data(), (char*) shuntId.data(), sectionCount);
+}
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
+                         condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters) {
+    ToCharPtrPtr actionsPtr(actionsIds);
+    ToCharPtrPtr subjectIdsPtr(subjectIds);
+    std::vector<int> violationTypes;
+    std::cout << "violationTypesFilters size" << violationTypesFilters.size() << std::endl;
+    for(int i = 0; i < violationTypesFilters.size(); ++i) {
+        violationTypes.push_back(violationTypesFilters[i]);
+    }
+    ToIntPtr violationTypesPtr(violationTypes);
+    std::cout << "Building operator strategy " << (int) conditionType << std::endl;
+    callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actionsPtr.get(), actionsIds.size(),
+        conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
+    std::cout << "Building operator strategy / "<< std::endl;
 }
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {

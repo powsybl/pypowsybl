@@ -467,8 +467,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_switch_action", &pypowsybl::addSwitchAction, "Add a switch action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
 
+    m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a switch action",
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tapPosition"));
+
+    m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a switch action",
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tapPosition"));
+
+    m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a switch action",
+              py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
+
     m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
-          py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"));
+          py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
+          py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
 
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("CURRENT", pypowsybl::LimitType::CURRENT)
@@ -479,6 +489,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("NONE", pypowsybl::Side::NONE)
             .value("ONE", pypowsybl::Side::ONE)
             .value("TWO", pypowsybl::Side::TWO);
+
+    py::enum_<violation_type>(m, "ViolationType")
+            .value("ACTIVE_POWER", violation_type::ACTIVE_POWER)
+            .value("APPARENT_POWER", violation_type::APPARENT_POWER)
+            .value("CURRENT", violation_type::CURRENT)
+            .value("LOW_VOLTAGE", violation_type::LOW_VOLTAGE)
+            .value("HIGH_VOLTAGE", violation_type::HIGH_VOLTAGE)
+            .value("LOW_SHORT_CIRCUIT_CURRENT", violation_type::LOW_SHORT_CIRCUIT_CURRENT)
+            .value("HIGH_SHORT_CIRCUIT_CURRENT", violation_type::HIGH_SHORT_CIRCUIT_CURRENT)
+            .value("OTHER", violation_type::OTHER);
+
+    py::enum_<condition_type>(m, "ConditionType")
+            .value("TRUE_CONDITION", condition_type::TRUE_CONDITION)
+            .value("ALL_VIOLATION_CONDITION", condition_type::ALL_VIOLATION_CONDITION)
+            .value("ANY_VIOLATION_CONDITION", condition_type::ANY_VIOLATION_CONDITION)
+            .value("AT_LEAST_ONE_VIOLATION_CONDITION", condition_type::AT_LEAST_ONE_VIOLATION_CONDITION);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {

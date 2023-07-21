@@ -17,9 +17,8 @@ import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.WordFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -87,6 +86,18 @@ public final class CTypeUtil {
             ints.add(j);
         }
         return ints;
+    }
+
+    /**
+     * Convert an int list to a set of enum using the specified converter
+     */
+    public static <T> Set<T> toEnumSet(CIntPointer intPointer, int length, IntFunction<T> converter) {
+        Set<T> enumSet = new HashSet<>();
+        for (int i = 0; i < length; i++) {
+            T value = converter.apply(intPointer.read(i));
+            enumSet.add(value);
+        }
+        return enumSet;
     }
 
     public static Map<String, String> toStringMap(CCharPointerPointer keysPointer, int keysCount,

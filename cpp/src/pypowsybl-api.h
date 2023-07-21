@@ -166,6 +166,24 @@ typedef enum {
 } validation_type;
 
 typedef enum {
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER,
+} violation_type;
+
+typedef enum {
+    TRUE_CONDITION = 0,
+    ALL_VIOLATION_CONDITION,
+    ANY_VIOLATION_CONDITION,
+    AT_LEAST_ONE_VIOLATION_CONDITION,
+} condition_type;
+
+typedef enum {
     EQUIPMENT = 0,
     STEADY_STATE_HYPOTHESIS,
 } validation_level_type;

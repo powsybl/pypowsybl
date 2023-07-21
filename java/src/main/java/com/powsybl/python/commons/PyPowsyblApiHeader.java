@@ -13,10 +13,7 @@ import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.struct.*;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.VoidPointer;
+import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -621,6 +618,23 @@ public final class PyPowsyblApiHeader {
         public static native NetworkModificationType fromCValue(int value);
     }
 
+    @CEnum("violation_type")
+    public enum LimitViolationType {
+        ACTIVE_POWER,
+        APPARENT_POWER,
+        CURRENT,
+        LOW_VOLTAGE,
+        HIGH_VOLTAGE,
+        LOW_SHORT_CIRCUIT_CURRENT,
+        HIGH_SHORT_CIRCUIT_CURRENT,
+        OTHER;
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native LimitViolationType fromCValue(int value);
+    }
+
     @CEnum("remove_modification_type")
     public enum RemoveModificationType {
         REMOVE_FEEDER,
@@ -986,5 +1000,18 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native BranchSide fromCValue(int value);
+    }
+
+    @CEnum("condition_type")
+    public enum ConditionType {
+        TRUE_CONDITION,
+        ALL_VIOLATION_CONDITION,
+        ANY_VIOLATION_CONDITION,
+        AT_LEAST_ONE_VIOLATION_CONDITION;
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ConditionType fromCValue(int value);
     }
 }

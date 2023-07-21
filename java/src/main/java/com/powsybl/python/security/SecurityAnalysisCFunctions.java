@@ -16,12 +16,9 @@ import com.powsybl.python.contingency.ContingencyContainer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
-import com.powsybl.security.LimitViolation;
-import com.powsybl.security.SecurityAnalysisParameters;
-import com.powsybl.security.SecurityAnalysisProvider;
-import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.*;
 import com.powsybl.security.action.*;
-import com.powsybl.security.condition.TrueCondition;
+import com.powsybl.security.condition.*;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
 import com.powsybl.security.results.PostContingencyResult;
@@ -36,6 +33,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -418,32 +416,47 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "addPhaseTapChangerPositionAction")
-    public static void addPhaseTapChangerPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addPhaseTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                        CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
+                                                        int tapPosition, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-        });
-    }
-
-    @CEntryPoint(name = "addPhaseTapChangerRegulationAction")
-    public static void addPhaseTapChangerRegulationAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String transformerIdStr = CTypeUtil.toString(transformerId);
+            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
+            analysisContext.addAction(pstAction);
+            System.out.println("Creating action " + actionIdStr + " on transformer " + transformerIdStr + " pos " + tapPosition);
         });
     }
 
     @CEntryPoint(name = "addRatioTapChangerPositionAction")
-    public static void addRatioTapChangerPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addRatioTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                        CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
+                                                        int tapPosition, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-        });
-    }
-
-    @CEntryPoint(name = "addRatioTapChangerRegulationAction")
-    public static void addRatioTapChangerRegulationAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String transformerIdStr = CTypeUtil.toString(transformerId);
+            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
+            analysisContext.addAction(ratioTapChangerAction);
+            System.out.println("Creating action " + actionIdStr + " on transformer " + transformerIdStr + " pos " + tapPosition);
         });
     }
 
     @CEntryPoint(name = "addShuntCompensatorPositionAction")
-    public static void addShuntCompensatorPositionAction(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addShuntCompensatorPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                         CCharPointer actionId, CCharPointer shuntCompensatorId, int sectionCount,
+                                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String shuntCompensatorIdStr = CTypeUtil.toString(shuntCompensatorId);
+            ShuntCompensatorPositionActionBuilder builder = new ShuntCompensatorPositionActionBuilder();
+            ShuntCompensatorPositionAction action = builder.withId(actionIdStr)
+                    .withShuntCompensatorId(shuntCompensatorIdStr)
+                    .withSectionCount(sectionCount)
+                    .build();
+            analysisContext.addAction(action);
         });
     }
 
@@ -451,16 +464,45 @@ public final class SecurityAnalysisCFunctions {
     public static void addOperatorStrategy(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                          CCharPointer operationStrategyId, CCharPointer contingencyId,
                                          CCharPointerPointer actions, int actionCount,
+                                         PyPowsyblApiHeader.ConditionType conditionType,
+                                         CCharPointerPointer subjectIds, int subjectIdsCount,
+                                         CIntPointer violationTypes, int violationTypesCount,
                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String operationStrategyIdStr = CTypeUtil.toString(operationStrategyId);
             String contingencyIdStr = CTypeUtil.toString(contingencyId);
             List<String> actionsStrList = CTypeUtil.toStringList(actions, actionCount);
+
+            Condition condition = buildCondition(conditionType, subjectIds, subjectIdsCount, violationTypes, violationTypesCount);
+
             OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
-                    ContingencyContext.specificContingency(contingencyIdStr), new TrueCondition(), actionsStrList);
+                    ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
-            System.out.println("Add operator strategy " + operationStrategyIdStr);
         });
+    }
+
+    private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
+                                            CCharPointerPointer subjectIds, int subjectIdsCount,
+                                            CIntPointer violationTypes, int violationTypesCount) {
+        System.out.println("Building subjectIdsStrList" + subjectIdsCount);
+        List<String> subjectIdsStrList = CTypeUtil.toStringList(subjectIds, subjectIdsCount);
+        System.out.println("Building violationTypesC : " + violationTypesCount);
+        Set<PyPowsyblApiHeader.LimitViolationType> violationTypesC = CTypeUtil.toEnumSet(
+                violationTypes, violationTypesCount, PyPowsyblApiHeader.LimitViolationType::fromCValue);
+        Set<LimitViolationType> violationTypesFilter = violationTypesC.stream().map(Util::convert).collect(Collectors.toSet());
+
+        switch (conditionType) {
+            case TRUE_CONDITION :
+                return new TrueCondition();
+            case ALL_VIOLATION_CONDITION :
+                return new AllViolationCondition(subjectIdsStrList, violationTypesFilter);
+            case ANY_VIOLATION_CONDITION :
+                return new AnyViolationCondition(violationTypesFilter);
+            case AT_LEAST_ONE_VIOLATION_CONDITION :
+                return new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
+            default:
+                throw new PowsyblException("Unsupported condition type " + conditionType);
+        }
     }
 }

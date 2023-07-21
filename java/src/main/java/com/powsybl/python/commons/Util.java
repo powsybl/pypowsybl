@@ -16,6 +16,7 @@ import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.security.LimitViolationType;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -399,6 +400,29 @@ public final class Util {
             return Optional.of(CompressionFormat.ZSTD);
         } else {
             return Optional.empty();
+        }
+    }
+
+    public static LimitViolationType convert(PyPowsyblApiHeader.LimitViolationType violationType) {
+        switch (violationType) {
+            case ACTIVE_POWER:
+                return LimitViolationType.ACTIVE_POWER;
+            case APPARENT_POWER:
+                return LimitViolationType.APPARENT_POWER;
+            case CURRENT:
+                return LimitViolationType.CURRENT;
+            case LOW_VOLTAGE:
+                return LimitViolationType.LOW_VOLTAGE;
+            case HIGH_VOLTAGE:
+                return LimitViolationType.HIGH_VOLTAGE;
+            case LOW_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
+            case HIGH_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
+            case OTHER:
+                return LimitViolationType.OTHER;
+            default:
+                throw new PowsyblException("Unknown limit violation type: " + violationType);
         }
     }
 }

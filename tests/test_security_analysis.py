@@ -9,6 +9,7 @@ import pytest
 import pypowsybl as pp
 import pandas as pd
 import pypowsybl.report as rp
+from pypowsybl._pypowsybl import ConditionType
 
 
 @pytest.fixture(autouse=True)
@@ -266,3 +267,48 @@ def test_different_equipment_contingency():
     assert 'Load contingency' in sa_result.post_contingency_results.keys()
     assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()
+
+def test_load_action():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'Line contingency')
+    sa.add_load_active_power_action('LoadAction1', 'LOAD', False, 750.0)
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['LoadAction1'])
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert len(sa_result.find_post_contingency_result('Line contingency').limit_violations) == 2
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+    assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
+
+def test_load_action_with_any_violation_condition():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('LINE_S3S4', 'Line contingency')
+    sa.add_load_active_power_action('LoadAction1', 'LD6', False, 750.0)
+
+    #LINE_S3S4 does not generate limit violations, OperatorStrategy1 should be applied but not OperatorStrategy2
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['LoadAction1'], ConditionType.TRUE_CONDITION)
+    sa.add_operator_strategy('OperatorStrategy2', 'Line contingency', ['LoadAction1'], ConditionType.ANY_VIOLATION_CONDITION)
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert len(sa_result.find_post_contingency_result('Line contingency').limit_violations) == 0
+
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+    assert 'OperatorStrategy2' not in sa_result.operator_strategy_results.keys()
+
+def test_load_action_with_all_violation_condition():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'Line contingency')
+    sa.add_load_active_power_action('LoadAction1', 'LOAD', False, 750.0)
+
+    #OperatorStrategy1 will be applied because we have a violation on NHV1_NHV2_2 after contingency
+    #OperatorStrategy2 should not be applied because there is not violation on UnknownLine
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['LoadAction1'], ConditionType.ALL_VIOLATION_CONDITION , ['NHV1_NHV2_2'])
+    sa.add_operator_strategy('OperatorStrategy2', 'Line contingency', ['LoadAction1'], ConditionType.ALL_VIOLATION_CONDITION, ['NHV1_NHV2_2', 'UnknownLine'])
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert len(sa_result.find_post_contingency_result('Line contingency').limit_violations) == 2
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+    assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
+    assert 'OperatorStrategy2' not in sa_result.operator_strategy_results.keys()

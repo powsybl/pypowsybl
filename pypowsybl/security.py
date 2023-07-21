@@ -9,7 +9,7 @@ import pandas as _pd
 import pypowsybl.loadflow
 from prettytable import PrettyTable as _PrettyTable
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import PostContingencyResult, PreContingencyResult, OperatorStrategyResult, LimitViolation, ContingencyContextType
+from pypowsybl._pypowsybl import PostContingencyResult, PreContingencyResult, OperatorStrategyResult, LimitViolation, ContingencyContextType, ConditionType, ViolationType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network as _Network
 from pypowsybl.util import (
@@ -225,6 +225,7 @@ class SecurityAnalysisResult:
         """
         Results for the operator strategies, as a dictionary operator strategy ID -> result.
         """
+
         return self._operator_strategy_results
 
     def find_operator_strategy_results(self, operator_strategy_id: str) -> PostContingencyResult:
@@ -423,10 +424,16 @@ class SecurityAnalysis(_ContingencyContainer):
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
-    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: _List[str]) -> None:
+    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: _List[str],
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids=None,
+                              violation_types=None) -> None:
         """
         """
-        _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids)
+        if violation_types is None:
+            violation_types = []
+        if violation_subject_ids is None:
+            violation_subject_ids = []
+        _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids, condition_type, violation_subject_ids, violation_types)
 
 def create_analysis() -> SecurityAnalysis:
     """ Creates a security analysis objet, which can be used to run a security analysis on a network
