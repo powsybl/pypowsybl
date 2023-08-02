@@ -425,8 +425,8 @@ class SecurityAnalysis(_ContingencyContainer):
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
     def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: _List[str],
-                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids=None,
-                              violation_types=None) -> None:
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: _List[str] = None,
+                              violation_types: _List[ViolationType] = None) -> None:
         """
         """
         if violation_types is None:
