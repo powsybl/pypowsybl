@@ -98,13 +98,13 @@ def test_monitored_elements():
     assert bus_results.loc['NGEN_NHV1', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(569.038987, abs=1e-2)
     assert bus_results.loc['NHV1_NHV2_1', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(366.58, abs=1e-2)
 
-    assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'branch_id']
+    assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'operatorstrategy_id', 'branch_id']
     assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
     assert len(branch_results) == 4
-    assert branch_results.loc['', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.05, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.05, abs=1e-2)
-    assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
+    assert branch_results.loc['', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
+    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.05, abs=1e-2)
+    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.05, abs=1e-2)
+    assert branch_results.loc['NHV1_NHV2_1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
 
 
 def test_flow_transfer():
@@ -114,8 +114,8 @@ def test_flow_transfer():
     sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
     sa_result = sa.run_ac(n)
     branch_results = sa_result.branch_results
-    assert branch_results.loc['NHV1_NHV2_1', 'NHV1_NHV2_2']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
-    assert branch_results.loc['NHV1_NHV2_2', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
+    assert branch_results.loc['NHV1_NHV2_1', '', 'NHV1_NHV2_2']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
+    assert branch_results.loc['NHV1_NHV2_2', '', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
 
 
 def test_dc_analysis():
@@ -312,3 +312,19 @@ def test_load_action_with_all_violation_condition():
     assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
     assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
     assert 'OperatorStrategy2' not in sa_result.operator_strategy_results.keys()
+
+def test_switch_action():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('S4VL1_BBS_LD6_DISCONNECTOR', 'Breaker contingency')
+    sa.add_switch_action('SwitchAction', 'S4VL1_BBS_LD6_DISCONNECTOR', False)
+    sa.add_operator_strategy('OperatorStrategy1', 'Breaker contingency', ['SwitchAction'], ConditionType.TRUE_CONDITION)
+    sa.add_monitored_elements(branch_ids=['LINE_S3S4'])
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    #Contingency open a switch, then action close it
+    #Check p1 on line is the same pre contingency and post remedial action
+    assert df.loc['', '', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
+    assert df.loc['Breaker contingency', '', 'LINE_S3S4']['p1'] == pytest.approx(0.0, abs=1e-2)
+    assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)

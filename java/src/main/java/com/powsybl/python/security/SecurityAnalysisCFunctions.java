@@ -359,7 +359,6 @@ public final class SecurityAnalysisCFunctions {
                     .withActivePowerValue(activePowerValue)
                     .build();
             analysisContext.addAction(action);
-            System.out.println("Creating action " + actionIdStr + " on load " + loadIdStr + " relativeV " + relativeValue + " P " + activePowerValue);
         });
     }
 
@@ -378,7 +377,6 @@ public final class SecurityAnalysisCFunctions {
                     .withReactivePowerValue(reactivePowerValue)
                     .build();
             analysisContext.addAction(action);
-            System.out.println("Creating action " + actionIdStr + " on load " + loadIdStr + " relativeV " + relativeValue + " Q " + reactivePowerValue);
         });
     }
 
@@ -397,7 +395,6 @@ public final class SecurityAnalysisCFunctions {
             }
             builder.withActivePowerValue(activePower);
             analysisContext.addAction(builder.build());
-            System.out.println("Creating action " + actionIdStr + " on generator " + generatorIdStr + " relativeV " + relativeValue + " P " + activePower);
         });
     }
 
@@ -411,7 +408,6 @@ public final class SecurityAnalysisCFunctions {
             String switchIdStr = CTypeUtil.toString(switchId);
             SwitchAction action = new SwitchAction(actionIdStr, switchIdStr, open);
             analysisContext.addAction(action);
-            System.out.println("Creating action " + actionIdStr + " on switch " + switchIdStr + " open " + open);
         });
     }
 
@@ -425,7 +421,6 @@ public final class SecurityAnalysisCFunctions {
             String transformerIdStr = CTypeUtil.toString(transformerId);
             PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
             analysisContext.addAction(pstAction);
-            System.out.println("Creating action " + actionIdStr + " on transformer " + transformerIdStr + " pos " + tapPosition);
         });
     }
 
@@ -439,7 +434,6 @@ public final class SecurityAnalysisCFunctions {
             String transformerIdStr = CTypeUtil.toString(transformerId);
             RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
             analysisContext.addAction(ratioTapChangerAction);
-            System.out.println("Creating action " + actionIdStr + " on transformer " + transformerIdStr + " pos " + tapPosition);
         });
     }
 
@@ -485,9 +479,7 @@ public final class SecurityAnalysisCFunctions {
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
                                             CCharPointerPointer subjectIds, int subjectIdsCount,
                                             CIntPointer violationTypes, int violationTypesCount) {
-        System.out.println("Building subjectIdsStrList" + subjectIdsCount);
         List<String> subjectIdsStrList = CTypeUtil.toStringList(subjectIds, subjectIdsCount);
-        System.out.println("Building violationTypesC : " + violationTypesCount);
         Set<PyPowsyblApiHeader.LimitViolationType> violationTypesC = CTypeUtil.toEnumSet(
                 violationTypes, violationTypesCount, PyPowsyblApiHeader.LimitViolationType::fromCValue);
         Set<LimitViolationType> violationTypesFilter = violationTypesC.stream().map(Util::convert).collect(Collectors.toSet());

@@ -831,15 +831,12 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
     ToCharPtrPtr actionsPtr(actionsIds);
     ToCharPtrPtr subjectIdsPtr(subjectIds);
     std::vector<int> violationTypes;
-    std::cout << "violationTypesFilters size" << violationTypesFilters.size() << std::endl;
     for(int i = 0; i < violationTypesFilters.size(); ++i) {
         violationTypes.push_back(violationTypesFilters[i]);
     }
     ToIntPtr violationTypesPtr(violationTypes);
-    std::cout << "Building operator strategy " << (int) conditionType << std::endl;
     callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actionsPtr.get(), actionsIds.size(),
         conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
-    std::cout << "Building operator strategy / "<< std::endl;
 }
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
