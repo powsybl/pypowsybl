@@ -70,10 +70,10 @@
         <powsybl-dependencies.version>2023.2.4</powsybl-dependencies.version>
         <zstdjni.version>1.5.2-5</zstdjni.version>
         <powsybl-core.version>5.3.2</powsybl-core.version>
-        <powsybl-open-loadflow.version>1.2.2</powsybl-open-loadflow.version>
+        <powsybl-open-loadflow.version>1.2.4-SNAPSHOT</powsybl-open-loadflow.version>
         <powsybl-diagram.version>3.3.2</powsybl-diagram.version>
-        <powsybl-dynawo.version>1.14.0</powsybl-dynawo.version>
-        <powsybl-entsoe.version>2.4.0</powsybl-entsoe.version>
+        <powsybl-dynawo.version>1.14.1</powsybl-dynawo.version>
+        <powsybl-entsoe.version>2.5.0</powsybl-entsoe.version>
     </properties>
 
     <build>
