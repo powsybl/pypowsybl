@@ -568,5 +568,42 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
+
+//=======short-circuit analysis==========
+enum ShortCircuitStudioType {
+    SUB_TRANSIENT = 0,
+    TRANSIENT,
+    STEADY_STATE
+};
+
+class ShortCircuitAnalysisParameters {
+public:
+    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
+    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
+
+	bool with_voltage_result;
+	bool with_feeder_result;
+	bool with_limit_violations;
+	ShortCircuitStudioType study_type;
+	bool with_fortescue_result;
+	double min_voltage_drop_proportional_threshold;
+
+	std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
+std::string getDefaultShortCircuitAnalysisProvider();
+std::vector<std::string> getShortCircuitAnalysisProviderNames();
+ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters();
+std::vector<std::string> getShortCircuitAnalysisProviderParametersNames(const std::string& shortCircuitAnalysisProvider);
+JavaHandle createShortCircuitAnalysis();
+JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
+std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType);
+void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType);
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
+
 }
 #endif //PYPOWSYBL_H

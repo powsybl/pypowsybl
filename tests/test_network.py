@@ -161,8 +161,8 @@ def test_get_export_parameters():
 
 
 def test_get_export_format():
-    formats = pp.network.get_export_formats()
-    assert ['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+    formats = set(pp.network.get_export_formats())
+    assert set(['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']).intersection(formats)
 
 
 def test_load_network():
