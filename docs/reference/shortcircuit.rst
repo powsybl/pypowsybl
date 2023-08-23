@@ -1,12 +1,11 @@
 Short-circuit analysis
-=================
+======================
 
 .. module:: pypowsybl.shortcircuit
 
-The security analysis module allows to .
 
 Run a short-circuit analysis
------------------------
+----------------------------
 
 You can run a short-circuit analysis using the following methods:
 
@@ -34,7 +33,7 @@ The execution of the short-circuit analysis can be customized using short-circui
 
 
 Define faults
--------------------------------------------
+-------------
 
 You can define faults to be simulated with the following methods:
 

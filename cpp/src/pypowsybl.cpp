@@ -1348,13 +1348,13 @@ void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr)
 
 ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src)
 {
-	with_voltage_result = (bool) src->with_voltage_result;
-	with_feeder_result = (bool) src->with_feeder_result;
-	with_limit_violations = (bool) src->with_limit_violations;
-	study_type = static_cast<ShortCircuitStudioType>(src->study_type);
-	with_fortescue_result = (bool) src->with_fortescue_result;
-	with_voltage_result = (bool) src->with_voltage_result;
-	min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
+    with_voltage_result = (bool) src->with_voltage_result;
+    with_feeder_result = (bool) src->with_feeder_result;
+    with_limit_violations = (bool) src->with_limit_violations;
+    study_type = static_cast<ShortCircuitStudyType>(src->study_type);
+    with_fortescue_result = (bool) src->with_fortescue_result;
+    with_voltage_result = (bool) src->with_voltage_result;
+    min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
 
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -1367,12 +1367,12 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->with_limit_violations = (bool) with_limit_violations;
     res->study_type = study_type;
     res->with_fortescue_result = (bool) with_fortescue_result;
-	
-	res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+
+    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
     res->provider_parameters_values_count = provider_parameters_values.size();
-	
+    
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<shortcircuit_analysis_parameters>(res, [](shortcircuit_analysis_parameters* ptr){
         deleteShortCircuitAnalysisParameters(ptr);
@@ -1380,14 +1380,14 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     });
 }
 
-	void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider) {
+void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider) {
     callJava<>(::setDefaultShortCircuitAnalysisProvider, (char*) shortCircuitAnalysisProvider.data());
-}	
+}
 
 std::string getDefaultShortCircuitAnalysisProvider() {
     return toString(callJava<char*>(::getDefaultShortCircuitAnalysisProvider));
-}	
-	
+}
+
 std::vector<std::string> getShortCircuitAnalysisProviderNames() {
     auto formatsArrayPtr = callJava<array*>(::getShortCircuitAnalysisProviderNames);
     ToStringVector formats(formatsArrayPtr);
@@ -1431,14 +1431,14 @@ void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, Shor
 
 SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getFaultResults, shortCircuitAnalysisResult));
-}	
+}
 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getMagnitudeFeederResults, shortCircuitAnalysisResult));
-}	
+}
 
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getLimitViolationsResults, shortCircuitAnalysisResult));
-}	
+}
 
 }

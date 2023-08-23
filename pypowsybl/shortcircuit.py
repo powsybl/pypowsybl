@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # iicense, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
@@ -16,7 +17,7 @@ import pandas as _pd
 from numpy.typing import ArrayLike as _ArrayLike
 from pandas import DataFrame as _DataFrame
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudioType
+from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
 from pypowsybl.network import Network as _Network
 from pypowsybl.report import Reporter as _Reporter
 from pypowsybl.util import (
@@ -26,7 +27,7 @@ from pypowsybl.utils.dataframes import (
     _get_c_dataframes
 )
 
-ShortCircuitStudioType.__module__ = __name__
+ShortCircuitStudyType.__module__ = __name__
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
@@ -44,7 +45,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     def __init__(self,
                  with_feeder_result: bool = None,
                  with_limit_violations: bool = None,
-                 study_type: ShortCircuitStudioType = None,
+                 study_type: ShortCircuitStudyType = None,
                  provider_parameters: _Dict[str, str] = None):
         self._init_with_default_values()
         if with_feeder_result is not None:
@@ -66,7 +67,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self._init_from_c(_pypowsybl.ShortCircuitAnalysisParameters())
         self.with_feeder_result = False
         self.with_limit_violations = False
-        self.study_type = ShortCircuitStudioType.TRANSIENT
+        self.study_type = ShortCircuitStudyType.TRANSIENT
 
     def _to_c_parameters(self) -> _pypowsybl.ShortCircuitAnalysisParameters:
         c_parameters = _pypowsybl.ShortCircuitAnalysisParameters()
@@ -152,8 +153,8 @@ class ShortCircuitAnalysis():
 
             - **id**: the id of the fault.
             - **element_id**: the id of the bus on which the fault will be simulated (bus/view topology).
-            - **r**: The fault resistance to ground.
-            - **x**: The fault reactance to ground.
+            - **r**: The fault resistance to ground, in Ohm.
+            - **x**: The fault reactance to ground, in Ohm.
 
         Examples:
 

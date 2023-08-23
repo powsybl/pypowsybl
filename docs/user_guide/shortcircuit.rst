@@ -29,7 +29,7 @@ Optionally, depending on specific parameters for the simulation, the results con
     >>> # create a network
     >>> n = pn.create_four_substations_node_breaker_network()
     >>> # sets some short-circuit parameters
-    >>> pars = pp.shortcircuit.Parameters(with_feeder_result = False, with_limit_violations = False, study_type = pp.shortcircuit.ShortCircuitStudioType.TRANSIENT)
+    >>> pars = pp.shortcircuit.Parameters(with_feeder_result = False, with_limit_violations = False, study_type = pp.shortcircuit.ShortCircuitStudyType.TRANSIENT)
     >>> # create a short-circuit analysis context
     >>> sc = pp.shortcircuit.create_analysis()
     >>> # create a bus fault on the first two buses

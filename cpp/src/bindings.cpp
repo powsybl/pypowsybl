@@ -767,12 +767,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
 
-    py::enum_<pypowsybl::ShortCircuitStudioType>(m, "ShortCircuitStudioType", "Indicates the type of short circuit study/")
-            .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudioType::SUB_TRANSIENT,
+    py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
+            .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
                    "It is the first stage of the short circuit, right when the fault happens. The subtransient reactance of generators will be used.")
-            .value("TRANSIENT", pypowsybl::ShortCircuitStudioType::TRANSIENT,
+            .value("TRANSIENT", pypowsybl::ShortCircuitStudyType::TRANSIENT,
                    "The second stage of the short circuit, before the system stabilizes. The transient reactance of generators will be used.")
-            .value("STEADY_STATE", pypowsybl::ShortCircuitStudioType::STEADY_STATE,
+            .value("STEADY_STATE", pypowsybl::ShortCircuitStudyType::STEADY_STATE,
                    "The last stage of the short circuit, once all transient effects are gone.");
 
     py::class_<pypowsybl::ShortCircuitAnalysisParameters>(m, "ShortCircuitAnalysisParameters")
@@ -786,10 +786,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
         .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
 
-	m.def("set_default_shortcircuit_analysis_provider", &pypowsybl::setDefaultShortCircuitAnalysisProvider, "Set default short-circuit analysis provider", py::arg("provider"));
-	m.def("get_default_shortcircuit_analysis_provider", &pypowsybl::getDefaultShortCircuitAnalysisProvider, "Get default short-circuit analysis provider");
-	m.def("get_shortcircuit_provider_names", &pypowsybl::getShortCircuitAnalysisProviderNames, "Get supported short-circuit analysis providers");
-	m.def("get_shortcircuit_provider_parameters_names", &pypowsybl::getShortCircuitAnalysisProviderParametersNames, "get provider parameters for a short-circuit analysis provider", py::arg("provider"));
+    m.def("set_default_shortcircuit_analysis_provider", &pypowsybl::setDefaultShortCircuitAnalysisProvider, "Set default short-circuit analysis provider", py::arg("provider"));
+    m.def("get_default_shortcircuit_analysis_provider", &pypowsybl::getDefaultShortCircuitAnalysisProvider, "Get default short-circuit analysis provider");
+    m.def("get_shortcircuit_provider_names", &pypowsybl::getShortCircuitAnalysisProviderNames, "Get supported short-circuit analysis providers");
+    m.def("get_shortcircuit_provider_parameters_names", &pypowsybl::getShortCircuitAnalysisProviderParametersNames, "get provider parameters for a short-circuit analysis provider", py::arg("provider"));
     m.def("create_shortcircuit_analysis", &pypowsybl::createShortCircuitAnalysis, "Create a short-circuit analysis");
     m.def("run_shortcircuit_analysis", &pypowsybl::runShortCircuitAnalysis, "Run a short-circuit analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("shortcircuit_analysis_context"), py::arg("network"), py::arg("parameters"),

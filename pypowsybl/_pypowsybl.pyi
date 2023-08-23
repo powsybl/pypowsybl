@@ -500,11 +500,11 @@ class DefaultXnecProvider:
     @property
     def name(self) -> str: ...
 
-class ShortCircuitStudioType:
-    __members__: ClassVar[Dict[str, ShortCircuitStudioType]] = ...  # read-only
-    SUB_TRANSIENT: ClassVar[ShortCircuitStudioType] = ...
-    TRANSIENT: ClassVar[ShortCircuitStudioType] = ...
-    STEADY_STATE: ClassVar[ShortCircuitStudioType] = ...
+class ShortCircuitStudyType:
+    __members__: ClassVar[Dict[str, ShortCircuitStudyType]] = ...  # read-only
+    SUB_TRANSIENT: ClassVar[ShortCircuitStudyType] = ...
+    TRANSIENT: ClassVar[ShortCircuitStudyType] = ...
+    STEADY_STATE: ClassVar[ShortCircuitStudyType] = ...
 
 class ShortCircuitFaultType:
     __members__: ClassVar[Dict[str, ShortCircuitFaultType]] = ...  # read-only
@@ -515,7 +515,7 @@ class ShortCircuitAnalysisParameters:
     with_voltage_result: bool
     with_feeder_result: bool
     with_limit_violations: bool
-    study_type: ShortCircuitStudioType
+    study_type: ShortCircuitStudyType
     with_fortescue_result: bool
     min_voltage_drop_proportional_threshold: float
     provider_parameters_keys: List[str]

@@ -570,7 +570,7 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
 
 //=======short-circuit analysis==========
-enum ShortCircuitStudioType {
+enum ShortCircuitStudyType {
     SUB_TRANSIENT = 0,
     TRANSIENT,
     STEADY_STATE
@@ -581,14 +581,14 @@ public:
     ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
     std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
 
-	bool with_voltage_result;
-	bool with_feeder_result;
-	bool with_limit_violations;
-	ShortCircuitStudioType study_type;
-	bool with_fortescue_result;
-	double min_voltage_drop_proportional_threshold;
+    bool with_voltage_result;
+    bool with_feeder_result;
+    bool with_limit_violations;
+    ShortCircuitStudyType study_type;
+    bool with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
 
-	std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
 

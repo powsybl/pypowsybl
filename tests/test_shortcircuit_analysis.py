@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 #
 import pypowsybl as pp
 import pypowsybl.network as pn
@@ -38,11 +39,11 @@ def test_run_analysis():
 
     # sets some short-circuit parameters
     pars = pp.shortcircuit.Parameters(with_feeder_result = False, with_limit_violations = False,
-                                      study_type = pp.shortcircuit.ShortCircuitStudioType.TRANSIENT)
+                                      study_type = pp.shortcircuit.ShortCircuitStudyType.TRANSIENT)
     assert pars is not None
     assert pars.with_feeder_result == False
     assert pars.with_limit_violations == False
-    assert pars.study_type == pp.shortcircuit.ShortCircuitStudioType.TRANSIENT
+    assert pars.study_type == pp.shortcircuit.ShortCircuitStudyType.TRANSIENT
 
     # create a short-circuit analysis context
     sc = pp.shortcircuit.create_analysis()
