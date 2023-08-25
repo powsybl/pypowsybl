@@ -144,7 +144,7 @@ class ShortCircuitAnalysis():
 
         Notes:
             The current implementation allows the simulation of three-phased bus faults, where
-            the fault resistance and reactance are connected to the ground in series.
+            the fault resistance and reactance, when specified, are connected to the ground in series.
 
             Data may be provided as a dataframe or as keyword arguments.
             In the latter case, all arguments must have the same length.
@@ -153,8 +153,8 @@ class ShortCircuitAnalysis():
 
             - **id**: the id of the fault.
             - **element_id**: the id of the bus on which the fault will be simulated (bus/view topology).
-            - **r**: The fault resistance to ground, in Ohm.
-            - **x**: The fault reactance to ground, in Ohm.
+            - **r**: The fault resistance to ground, in Ohm (optional).
+            - **x**: The fault reactance to ground, in Ohm (optional).
 
         Examples:
 
@@ -170,6 +170,9 @@ class ShortCircuitAnalysis():
 
             # or, define faults as a dataframe
             analysis.set_faults(pd.DataFrame.from_records(index='id', data=[{'id': 'F1', 'element_id': buses.index[0], 'r': 1, 'x': 2}]))
+
+            # or, since resistance and reactance are not mandatory parameters
+            analysis.set_faults(pd.DataFrame.from_records(index='id', data=[{'id': 'F1', 'element_id': buses.index[0]}]))
         """
         self._set_faults(ShortCircuitFaultType.BUS_FAULT, [df], **kwargs)
 

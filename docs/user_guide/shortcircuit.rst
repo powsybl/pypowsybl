@@ -11,7 +11,7 @@ Note that, currently, no simulator is integrated in pypowsybl to perform the sho
 Short-circuit analysis
 ----------------------
 
-The current APIs allow the simulation of three-phased bus faults, where the fault resistance and reactance are connected to the ground in series.
+The current APIs allow the simulation of three-phased bus faults, where the fault resistance and reactance, when specified, are connected to the ground in series.
 
 To perform a short-circuit analysis, you need a network and at least a fault to simulate on this network.
 The results of the analysis contain the computed current and voltages on the network after the fault, in three-phased magnitude.
