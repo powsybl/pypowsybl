@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2020, RTE (http://www.rte-france.com)
+# Copyright (c) 2023, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
-# iicense, v. 2.0. If a copy of the MPL was not distributed with this
+# License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Union as _Union, List as _List, Callable as _Callable, Optional as _Optional
 import pandas as _pd
 
+from flowdecomposition.impl.parameters import Parameters
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
 from pypowsybl.network import Network as _Network
@@ -19,87 +20,6 @@ import pypowsybl.loadflow
 # in particular for sphinx documentation to work correctly,
 # and add some documentation
 ContingencyContextType.__module__ = __name__
-
-class Parameters:  # pylint: disable=too-few-public-methods
-    """
-    Parameters for a flowdecomposition execution.
-
-    All parameters are first read from you configuration file, then overridden with
-    the constructor arguments.
-
-    .. currentmodule:: pypowsybl.flowdecomposition
-
-    Args:
-        enable_losses_compensation: Enable losses compensation.
-            Use ``True`` to enable AC losses compensation on the DC network.
-        losses_compensation_epsilon: Filter loads from the losses compensation.
-            The loads with a too small absolute active power will be not be connected to the network.
-            Use ``pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON = -1`` to disable filtering.
-        sensitivity_epsilon: Filter sensitivity values
-            The absolute small sensitivity values will be ignored.
-            Use ``pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON = -1`` to disable filtering.
-        rescale_enabled: Rescale the flow decomposition to the AC reference.
-            Use``True`` to rescale flow decomposition to the AC reference.
-        dc_fallback_enabled_after_ac_divergence: Defines the fallback bahavior after an AC divergence
-            Use ``True`` to run DC loadflow if an AC loadflow diverges (default).
-            Use ``False`` to throw an exception if an AC loadflow diverges.
-        sensitivity_variable_batch_size: Defines the chunk size for sensitivity analysis.
-            This will reduce memory footprint of flow decomposition but increase computation time.
-            If setting a too high value, a max integer error may be thrown.
-    """
-    DISABLE_LOSSES_COMPENSATION_EPSILON = -1
-    DISABLE_SENSITIVITY_EPSILON = -1
-
-    def __init__(self,
-                 enable_losses_compensation: bool = None,
-                 losses_compensation_epsilon: float = None,
-                 sensitivity_epsilon: float = None,
-                 rescale_enabled: bool = None,
-                 dc_fallback_enabled_after_ac_divergence: bool = None,
-                 sensitivity_variable_batch_size: int = None):
-
-        self._init_with_default_values()
-        if enable_losses_compensation is not None:
-            self.enable_losses_compensation = enable_losses_compensation
-        if losses_compensation_epsilon is not None:
-            self.losses_compensation_epsilon = losses_compensation_epsilon
-        if sensitivity_epsilon is not None:
-            self.sensitivity_epsilon = sensitivity_epsilon
-        if rescale_enabled is not None:
-            self.rescale_enabled = rescale_enabled
-        if dc_fallback_enabled_after_ac_divergence is not None:
-            self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
-        if sensitivity_variable_batch_size is not None:
-            self.sensitivity_variable_batch_size = sensitivity_variable_batch_size
-
-    def _init_with_default_values(self) -> None:
-        default_parameters = _pypowsybl.FlowDecompositionParameters()
-        self.enable_losses_compensation = default_parameters.enable_losses_compensation
-        self.losses_compensation_epsilon = default_parameters.losses_compensation_epsilon
-        self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
-        self.rescale_enabled = default_parameters.rescale_enabled
-        self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
-        self.sensitivity_variable_batch_size = default_parameters.sensitivity_variable_batch_size
-
-    def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
-        c_parameters = _pypowsybl.FlowDecompositionParameters()
-        c_parameters.enable_losses_compensation = self.enable_losses_compensation
-        c_parameters.losses_compensation_epsilon = self.losses_compensation_epsilon
-        c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
-        c_parameters.rescale_enabled = self.rescale_enabled
-        c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
-        c_parameters.sensitivity_variable_batch_size = self.sensitivity_variable_batch_size
-        return c_parameters
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"enable_losses_compensation={self.enable_losses_compensation!r}" \
-               f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}" \
-               f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
-               f", rescale_enabled={self.rescale_enabled!r}" \
-               f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
-               f", sensitivity_variable_batch_size={self.sensitivity_variable_batch_size}" \
-               f")"
 
 
 class FlowDecomposition:
@@ -257,10 +177,10 @@ class FlowDecomposition:
                 >>> flow_decomposition_parameters = pp.flowdecomposition.Parameters()
                 >>> load_flow_parameters = pp.loadflow.Parameters()
                 >>> branch_ids = ['NHV1_NHV2_1', 'NHV1_NHV2_2']
-                >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
+                >>> flowdecomposition = pp.flowdecomposition.create_decomposition()
                 ...     .add_single_element_contingencies(branch_ids)
                 ...     .add_monitored_elements(branch_ids, branch_ids)
-                >>> flow_decomposition.run(network, flow_decomposition_parameters=flow_decomposition_parameters, load_flow_parameters=load_flow_parameters)
+                >>> flowdecomposition.run(network, flow_decomposition_parameters=flow_decomposition_parameters, load_flow_parameters=load_flow_parameters)
 
             It outputs something like:
 
@@ -278,18 +198,3 @@ class FlowDecomposition:
         lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
         res = _pypowsybl.run_flow_decomposition(self._handle, network._handle, fd_p, lf_p)
         return create_data_frame_from_series_array(res)
-
-def create_decomposition() -> FlowDecomposition:
-    """ Creates a flow decomposition objet, which can be used to run a flow decomposition on a network
-
-    Example:
-        .. code-block::
-
-            >>> flow_decomposition = pp.flowdecomposition.create_decomposition()
-            >>> flow_decomposition.add_monitored_elements(['line_1', 'line_2'])
-            >>> flow_decomposition.run(network)
-
-    Returns:
-        A flow decomposition object, which allows to run a flow decomposition on a network.
-    """
-    return FlowDecomposition(_pypowsybl.create_flow_decomposition())

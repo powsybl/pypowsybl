@@ -9,7 +9,7 @@ import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 import util
-from pypowsybl.perunit import per_unit_view
+from pypowsybl.network import per_unit_view
 
 
 def test_bus_per_unit():

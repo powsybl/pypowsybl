@@ -201,7 +201,7 @@ def test_security_analysis_parameters():
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
     sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='First contingency')
 
-    # default security analysis
+    # default sensitivity analysis
     result = sa.run_ac(network, parameters=pp.security.Parameters())
     expected = pd.DataFrame.from_records(
         index=['contingency_id', 'subject_id'],

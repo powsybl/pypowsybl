@@ -17,7 +17,6 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
-    perunit,
     shortcircuit
 )
 
@@ -37,7 +36,6 @@ __all__ = [
     "sensitivity",
     "glsk",
     "flowdecomposition",
-    "perunit",
     "shortcircuit"
 ]
 

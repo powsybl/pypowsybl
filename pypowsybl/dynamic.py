@@ -10,7 +10,7 @@ from typing import List as _List, Union as _Union
 import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType, BranchSide
-from pypowsybl.network import Network as _Network
+from pypowsybl.network import Network
 from pypowsybl.util import create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe
 
@@ -224,7 +224,7 @@ class Simulation:
         self._handle = _pp.create_dynamic_simulation_context()
 
     def run(self,
-            network: _Network,
+            network: Network,
             model_mapping: ModelMapping,
             event_mapping: EventMapping,
             timeseries_mapping: CurveMapping,
