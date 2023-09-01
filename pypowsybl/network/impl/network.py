@@ -34,6 +34,7 @@ from pypowsybl._pypowsybl import ValidationLevel
 import pypowsybl
 from pypowsybl.network.impl.bus_breaker_topology import BusBreakerTopology
 from pypowsybl.network.impl.node_breaker_topology import NodeBreakerTopology
+from pypowsybl.network.impl.layout_parameters import LayoutParameters
 from pypowsybl.network.impl.svg import Svg
 from pypowsybl.network.impl.util import create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
 from pypowsybl.utils.dataframes import (
