@@ -10,12 +10,13 @@ import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
-from pypowsybl.network import Network
+from pypowsybl.network.impl.network import Network
 from pypowsybl.util import (
     ContingencyContainer
 )
 from pypowsybl.report import Reporter
-from security import Parameters, SecurityAnalysisResult
+from pypowsybl.security.impl.parameters import Parameters
+from pypowsybl.security.impl.security_analysis_result import SecurityAnalysisResult
 
 ComputationStatus.__name__ = 'ComputationStatus'
 ComputationStatus.__module__ = __name__

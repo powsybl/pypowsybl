@@ -31,11 +31,11 @@ from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
 from pypowsybl._pypowsybl import ValidationLevel
 
-import pypowsybl.network
-from network.impl.bus_breaker_topology import BusBreakerTopology
-from network.impl.node_breaker_topology import NodeBreakerTopology
-from network.impl.svg import Svg
-from network.impl.util import create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
+import pypowsybl
+from pypowsybl.network.impl.bus_breaker_topology import BusBreakerTopology
+from pypowsybl.network.impl.node_breaker_topology import NodeBreakerTopology
+from pypowsybl.network.impl.svg import Svg
+from pypowsybl.network.impl.util import create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
 from pypowsybl.utils.dataframes import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,

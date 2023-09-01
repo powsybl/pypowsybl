@@ -8,7 +8,7 @@ import pypowsybl._pypowsybl as _pp
 import networkx as nx
 from pandas import DataFrame
 
-from network.impl.util import create_data_frame_from_series_array
+from pypowsybl.network.impl.util import create_data_frame_from_series_array
 
 
 class BusBreakerTopology:

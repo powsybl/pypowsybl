@@ -16,11 +16,11 @@ from pypowsybl._pypowsybl import (
     BalanceType,
     VoltageInitMode
 )
-from pypowsybl.network import Network as _Network
+from pypowsybl.network.impl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
 from pypowsybl.report import Reporter as _Reporter
-from loadflow.impl.component_result import ComponentResult
-from loadflow.impl.parameters import Parameters
+from pypowsybl.loadflow.impl.component_result import ComponentResult
+from pypowsybl.loadflow.impl.parameters import Parameters
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,

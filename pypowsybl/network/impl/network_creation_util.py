@@ -2,11 +2,10 @@ import io
 from os import PathLike
 from typing import Union, Dict, List
 
-from network.impl.network import Network
 import pypowsybl._pypowsybl as _pp
-
-from network.impl.util import _path_to_str
-from report import Reporter
+from pypowsybl.network.impl.util import _path_to_str
+from pypowsybl.network.impl.network import Network
+from pypowsybl.report import Reporter
 
 
 def _create_network(name: str, network_id: str = '') -> Network:

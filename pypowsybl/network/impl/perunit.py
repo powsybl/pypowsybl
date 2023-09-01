@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from numpy.typing import ArrayLike
 from pypowsybl import _pypowsybl
-from network.impl.network import ElementType, Network
+from pypowsybl.network.impl.network import ElementType, Network
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs
 
 

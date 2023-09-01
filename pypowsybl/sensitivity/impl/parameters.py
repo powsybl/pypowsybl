@@ -6,8 +6,8 @@
 #
 from typing import Dict
 
-from loadflow import Parameters as lfParameters
-from loadflow.impl.loadflow import _parameters_from_c
+from pypowsybl.loadflow.impl.parameters import Parameters as lfParameters
+from pypowsybl.loadflow.impl.loadflow import _parameters_from_c
 from pypowsybl import _pypowsybl
 
 class Parameters:  # pylint: disable=too-few-public-methods

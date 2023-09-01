@@ -12,9 +12,9 @@ import pandas as pd
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ValidationType
 
-from loadflow.impl.parameters import Parameters
-from loadflow.impl.loadflow import _parameters_from_c
-from pypowsybl.network import Network
+from pypowsybl.loadflow.impl.parameters import Parameters
+from pypowsybl.loadflow.impl.loadflow import _parameters_from_c
+from pypowsybl.network.impl.network import Network
 from pypowsybl.util import create_data_frame_from_series_array
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,

@@ -9,10 +9,10 @@ from __future__ import annotations
 from typing import Union as _Union, List as _List, Callable as _Callable, Optional as _Optional
 import pandas as _pd
 
-from flowdecomposition.impl.parameters import Parameters
+from pypowsybl.flowdecomposition.impl.parameters import Parameters
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
-from pypowsybl.network import Network as _Network
+from pypowsybl.network.impl.network import Network as _Network
 from pypowsybl.util import create_data_frame_from_series_array
 import pypowsybl.loadflow
 

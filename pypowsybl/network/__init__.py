@@ -68,4 +68,4 @@ from .impl.network_element_modification_util import (
     create_2_windings_transformer_bays,
     remove_feeder_bays
 )
-from .impl.perunit import (per_unit_view)
+from .impl.perunit import (PerUnitView, per_unit_view)

@@ -10,12 +10,12 @@ from typing import List
 
 from pypowsybl._pypowsybl import PyPowsyblError
 
-import glsk
-from network import Network
+import pypowsybl.glsk as glsk
+from pypowsybl.network.impl.network import Network
 from pypowsybl import _pypowsybl
-from sensitivity.impl.zone import Zone
-from sensitivity.impl.dc_sensitivity_analysis import DcSensitivityAnalysis
-from sensitivity.impl.ac_sensitivity_analysis import AcSensitivityAnalysis
+from pypowsybl.sensitivity.impl.zone import Zone
+from pypowsybl.sensitivity.impl.dc_sensitivity_analysis import DcSensitivityAnalysis
+from pypowsybl.sensitivity.impl.ac_sensitivity_analysis import AcSensitivityAnalysis
 
 class ZoneKeyType(Enum):
     GENERATOR_TARGET_P = 0

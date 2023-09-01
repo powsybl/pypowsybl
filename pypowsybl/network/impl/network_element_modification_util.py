@@ -13,14 +13,14 @@ import warnings
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
-from network.impl.network import Network
-from report import Reporter
+from pypowsybl.network.impl.network import Network
+from pypowsybl.report import Reporter
 from pypowsybl.utils.dataframes import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
     _create_properties_c_dataframe
 )
-from network.impl.util import create_data_frame_from_series_array
+from pypowsybl.network.impl.util import create_data_frame_from_series_array
 
 
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,

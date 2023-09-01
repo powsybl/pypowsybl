@@ -19,6 +19,7 @@ from pypowsybl import (
     flowdecomposition,
     shortcircuit
 )
+from pypowsybl.network import per_unit_view
 
 __version__ = '0.25.0.dev1'
 
