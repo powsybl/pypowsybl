@@ -6,15 +6,13 @@
 #
 from __future__ import annotations
 from typing import List, Dict
-
-
 from pypowsybl import _pypowsybl
 from pypowsybl.util import ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl.sensitivity.impl.zone import Zone
 
-
 TO_REMOVE = 'TO_REMOVE'
+
 
 class SensitivityAnalysis(ContingencyContainer):
     """ Base class for sensitivity analysis. Do not instantiate it directly!"""

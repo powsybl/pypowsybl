@@ -5,22 +5,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import (
-    List as _List
-)
-from pandas import DataFrame as _DataFrame
-
+from typing import List
+from pandas import DataFrame
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
-    VoltageInitMode
+    VoltageInitMode,
+    LoadFlowValidationParameters,
+    run_loadflow_validation
 )
-from pypowsybl.network.impl.network import Network as _Network
-from pypowsybl.util import create_data_frame_from_series_array as _create_data_frame_from_series_array
-from pypowsybl.report import Reporter as _Reporter
+from pypowsybl.network.impl.network import Network
+from pypowsybl.util import _create_data_frame_from_series_array
+from pypowsybl.report import Reporter
 from pypowsybl.loadflow.impl.component_result import ComponentResult
 from pypowsybl.loadflow.impl.parameters import Parameters
+from pypowsybl.loadflow.impl.validation_result import ValidationResult
+from pypowsybl.loadflow.impl.validation_parameters import ValidationParameters, ValidationType
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -30,17 +31,8 @@ BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 
 
-
-def _parameters_from_c(c_parameters: _pypowsybl.LoadFlowParameters) -> Parameters:
-    """
-    Converts C struct to python parameters (bypassing python constructor)
-    """
-    res = Parameters.__new__(Parameters)
-    res._init_from_c(c_parameters)
-    return res
-
-
-def run_ac(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
+def run_ac(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> List[
+    ComponentResult]:  # pylint: disable=protected-access
     """
     Run an AC loadflow on a network.
 
@@ -54,10 +46,12 @@ def run_ac(network: _Network, parameters: Parameters = None, provider: str = '',
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider, None if reporter is None else reporter._reporter_model)] # pylint: disable=protected-access
+    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
+                                                                    None if reporter is None else reporter._reporter_model)]  # pylint: disable=protected-access
 
 
-def run_dc(network: _Network, parameters: Parameters = None, provider: str = '', reporter: _Reporter = None) -> _List[ComponentResult]:
+def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> List[
+    ComponentResult]:  # pylint: disable=protected-access
     """
     Run a DC loadflow on a network.
 
@@ -71,7 +65,8 @@ def run_dc(network: _Network, parameters: Parameters = None, provider: str = '',
         A list of component results, one for each component of the network.
     """
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, True, p, provider, None if reporter is None else reporter._reporter_model)]  # pylint: disable=protected-access
+    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, True, p, provider,
+                                                                    None if reporter is None else reporter._reporter_model)]  # pylint: disable=protected-access
 
 
 def set_default_provider(provider: str) -> None:
@@ -94,7 +89,7 @@ def get_default_provider() -> str:
     return _pypowsybl.get_default_loadflow_provider()
 
 
-def get_provider_names() -> _List[str]:
+def get_provider_names() -> List[str]:
     """
     Get list of supported provider names.
 
@@ -104,7 +99,7 @@ def get_provider_names() -> _List[str]:
     return _pypowsybl.get_loadflow_provider_names()
 
 
-def get_provider_parameters_names(provider: str = None) -> _List[str]:
+def get_provider_parameters_names(provider: str = None) -> List[str]:
     """
     Get list of parameters for the specified loadflow provider.
 
@@ -117,7 +112,7 @@ def get_provider_parameters_names(provider: str = None) -> _List[str]:
     return _pypowsybl.get_loadflow_provider_parameters_names('' if provider is None else provider)
 
 
-def get_provider_parameters(provider: str = None) -> _DataFrame:
+def get_provider_parameters(provider: str = None) -> DataFrame:
     """
     Supported loadflow specific parameters for a given provider.
 
@@ -140,3 +135,33 @@ def get_provider_parameters(provider: str = None) -> _DataFrame:
     """
     series_array = _pypowsybl.create_loadflow_provider_parameters_series_array('' if provider is None else provider)
     return _create_data_frame_from_series_array(series_array)
+
+
+def run_validation(network: Network, validation_types: List[ValidationType] = None,
+                   validation_parameters: ValidationParameters = None) -> ValidationResult:
+    """
+    Checks that the network data are consistent with AC loadflow equations.
+
+    Args:
+        network: The network to be checked.
+        validation_types: The types of data to be checked. If None, all types will be checked.
+        validation_parameters: The parameters to run the validation with.
+
+    Returns:
+        The validation result.
+    """
+    if validation_types is None:
+        validation_types = ValidationType.ALL
+    validation_config = validation_parameters.to_c_parameters() if validation_parameters is not None else LoadFlowValidationParameters()
+    res_by_type = {}
+    for validation_type in validation_types:
+        series_array = run_loadflow_validation(network._handle, validation_type, validation_config)
+        res_by_type[validation_type] = _create_data_frame_from_series_array(series_array)
+
+    return ValidationResult(buses=res_by_type.get(ValidationType.BUSES, None),
+                            branch_flows=res_by_type.get(ValidationType.FLOWS, None),
+                            generators=res_by_type.get(ValidationType.GENERATORS, None),
+                            svcs=res_by_type.get(ValidationType.SVCS, None),
+                            shunts=res_by_type.get(ValidationType.SHUNTS, None),
+                            twts=res_by_type.get(ValidationType.TWTS, None),
+                            t3wts=res_by_type.get(ValidationType.TWTS3W, None))

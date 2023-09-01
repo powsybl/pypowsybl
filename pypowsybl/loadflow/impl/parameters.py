@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Sequence, Dict
-from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
-    VoltageInitMode
+    VoltageInitMode,
+    LoadFlowParameters
 )
 
 # enforcing some class metadata on classes imported from C extension,
@@ -110,7 +110,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
-    def _init_from_c(self, c_parameters: _pypowsybl.LoadFlowParameters) -> None:
+    def _init_from_c(self, c_parameters: LoadFlowParameters) -> None:
         self.voltage_init_mode = c_parameters.voltage_init_mode
         self.transformer_voltage_control_on = c_parameters.transformer_voltage_control_on
         self.no_generator_reactive_limits = c_parameters.no_generator_reactive_limits
@@ -127,10 +127,10 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.provider_parameters = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
 
     def _init_with_default_values(self) -> None:
-        self._init_from_c(_pypowsybl.LoadFlowParameters())
+        self._init_from_c(LoadFlowParameters())
 
-    def _to_c_parameters(self) -> _pypowsybl.LoadFlowParameters:
-        c_parameters = _pypowsybl.LoadFlowParameters()
+    def _to_c_parameters(self) -> LoadFlowParameters:
+        c_parameters = LoadFlowParameters()
         c_parameters.voltage_init_mode = self.voltage_init_mode
         c_parameters.transformer_voltage_control_on = self.transformer_voltage_control_on
         c_parameters.no_generator_reactive_limits = self.no_generator_reactive_limits

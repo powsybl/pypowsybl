@@ -15,14 +15,14 @@ from .impl.loadflow import (
     get_default_provider,
     get_provider_names,
     set_default_provider,
-    get_provider_parameters
+    get_provider_parameters,
+    run_validation
 )
 
-from .impl.validation import (
-    run_validation,
+from .impl.validation_parameters import (
     ValidationType,
-    ValidationResult,
     ValidationParameters
 )
+from .impl.validation_result import ValidationResult
 from .impl.parameters import Parameters
 from .impl.component_result import ComponentResult, ComponentStatus

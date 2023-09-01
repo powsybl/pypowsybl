@@ -6,21 +6,21 @@
 #
 from typing import List, Optional, Union, Dict
 
-import pandas as pd
-from numpy._typing import ArrayLike
-from pandas import DataFrame
 import warnings
+import pandas as pd
+from pandas import DataFrame
+from numpy._typing import ArrayLike
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl.report import Reporter
 from pypowsybl.utils.dataframes import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
     _create_properties_c_dataframe
 )
-from pypowsybl.network.impl.util import create_data_frame_from_series_array
+from pypowsybl.network.impl.util import _create_data_frame_from_series_array
 
 
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
@@ -849,8 +849,6 @@ def transform_list_to_str(entry: Union[str, List[str]]) -> str:
         return ','.join(str(e.replace(' ', '')) for e in entry)
     if isinstance(entry, str):
         return entry.replace(' ', '')
-    else:
-        raise _pp.PyPowsyblError("argument should be a list of str or a str")
 
 
 def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = False,
@@ -1008,7 +1006,7 @@ def get_connectables_order_positions(network: Network, voltage_level_id: str) ->
         taken order positions by every connectable at the scale of a voltage level.
     """
     series_array = _pp.get_connectables_order_positions(network._handle, voltage_level_id)
-    position_df = create_data_frame_from_series_array(series_array).sort_values(by=['order_position'])
+    position_df = _create_data_frame_from_series_array(series_array).sort_values(by=['order_position'])
     position_df['extension_name'] = position_df.apply(lambda row: row['extension_name'].rstrip(), axis=1)
     return position_df
 

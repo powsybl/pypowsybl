@@ -11,7 +11,7 @@ from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
 
-from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.util import _create_data_frame_from_series_array
 
 # Type definition
 ParamsDict = Optional[Dict[str, str]]
@@ -76,7 +76,7 @@ def get_import_parameters(fmt: str) -> DataFrame:
            'false'
     """
     series_array = _pp.create_importer_parameters_series_array(fmt)
-    return create_data_frame_from_series_array(series_array)
+    return _create_data_frame_from_series_array(series_array)
 
 
 def get_export_parameters(fmt: str) -> DataFrame:
@@ -90,7 +90,7 @@ def get_export_parameters(fmt: str) -> DataFrame:
         export parameters dataframe
     """
     series_array = _pp.create_exporter_parameters_series_array(fmt)
-    return create_data_frame_from_series_array(series_array)
+    return _create_data_frame_from_series_array(series_array)
 
 
 def get_extensions_names() -> List[str]:
@@ -110,7 +110,7 @@ def get_extensions_information() -> DataFrame:
     Returns:
         a dataframe with information about extensions
     """
-    return create_data_frame_from_series_array(_pp.get_extensions_information())
+    return _create_data_frame_from_series_array(_pp.get_extensions_information())
 
 
 def get_single_line_diagram_component_library_names() -> List[str]:

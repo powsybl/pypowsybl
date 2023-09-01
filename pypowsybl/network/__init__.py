@@ -11,8 +11,8 @@ from .impl.network import (
 )
 
 from .impl.svg import Svg
-from .impl.bus_breaker_topology import (BusBreakerTopology)
-from .impl.node_breaker_topology import (NodeBreakerTopology)
+from .impl.bus_breaker_topology import BusBreakerTopology
+from .impl.node_breaker_topology import NodeBreakerTopology
 from .impl.layout_parameters import LayoutParameters
 from .impl.network_creation_util import (
     create_empty,
@@ -40,8 +40,7 @@ from .impl.util import (
     get_export_formats,
     get_import_parameters,
     get_export_parameters,
-    get_extensions_information,
-    _path_to_str
+    get_extensions_information
 )
 from .impl.network_element_modification_util import (
     create_line_on_line,

@@ -11,7 +11,7 @@ from prettytable import PrettyTable
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PreContingencyResult, PostContingencyResult
-from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.util import _create_data_frame_from_series_array
 
 
 class SecurityAnalysisResult:
@@ -27,7 +27,7 @@ class SecurityAnalysisResult:
         for result in post_contingency_results:
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
-        self._limit_violations = create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
+        self._limit_violations = _create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
     def pre_contingency_result(self) -> PreContingencyResult:
@@ -86,18 +86,18 @@ class SecurityAnalysisResult:
         """
         Results (P, Q, I) for monitored branches.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
+        return _create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
 
     @property
     def bus_results(self) -> pd.DataFrame:
         """
         Bus results (voltage angle and magnitude) for monitored voltage levels.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
+        return _create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
 
     @property
     def three_windings_transformer_results(self) -> pd.DataFrame:
         """
         Results (P, Q, I) for monitored three winding transformers.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
+        return _create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))

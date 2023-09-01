@@ -3,8 +3,9 @@ from os import PathLike
 from typing import Union, Dict, List
 
 import pypowsybl._pypowsybl as _pp
+
+from pypowsybl.network import Network
 from pypowsybl.network.impl.util import _path_to_str
-from pypowsybl.network.impl.network import Network
 from pypowsybl.report import Reporter
 
 

@@ -27,16 +27,14 @@ from pandas import DataFrame
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import ElementType
-from pypowsybl._pypowsybl import NetworkModificationType
-from pypowsybl._pypowsybl import ValidationLevel
+from pypowsybl._pypowsybl import ElementType, ValidationLevel
 
 import pypowsybl
 from pypowsybl.network.impl.bus_breaker_topology import BusBreakerTopology
 from pypowsybl.network.impl.node_breaker_topology import NodeBreakerTopology
 from pypowsybl.network.impl.layout_parameters import LayoutParameters
 from pypowsybl.network.impl.svg import Svg
-from pypowsybl.network.impl.util import create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
+from pypowsybl.network.impl.util import _create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
 from pypowsybl.utils.dataframes import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -300,7 +298,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array)
-        result = create_data_frame_from_series_array(series_array)
+        result = _create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
         return result
@@ -3140,10 +3138,10 @@ class Network:  # pylint: disable=too-many-public-methods
             limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
         current_limits.index.rename('branch_id', inplace=True)
         current_limits.set_index('name', append=True, inplace=True)
+        columns = ['side', 'value', 'acceptable_duration']
         if 'fictitious' in current_limits.columns:
-            return current_limits[['side', 'value', 'acceptable_duration', 'fictitious']]
-        else:
-            return current_limits[['side', 'value', 'acceptable_duration']]
+            columns.append('fictitious')
+        return current_limits[columns]
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
@@ -4336,7 +4334,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
-        return create_data_frame_from_series_array(
+        return _create_data_frame_from_series_array(
             _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> DataFrame:

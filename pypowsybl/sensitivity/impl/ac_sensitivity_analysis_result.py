@@ -60,4 +60,3 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
 
         data = np.array(matrix, copy=False)
         return pd.DataFrame(data=data, columns=self.bus_ids, index=['reference_voltages'])
-

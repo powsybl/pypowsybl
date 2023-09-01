@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from enum import Enum
 from typing import Dict, List
 from pypowsybl._pypowsybl import PyPowsyblError
 

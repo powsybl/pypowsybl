@@ -1,8 +1,8 @@
 from pandas import DataFrame
-import pypowsybl._pypowsybl as _pp
 import networkx as _nx
+import pypowsybl._pypowsybl as _pp
 
-from pypowsybl.network.impl.util import create_data_frame_from_series_array
+from pypowsybl.network.impl.util import _create_data_frame_from_series_array
 
 
 class NodeBreakerTopology:
@@ -15,11 +15,11 @@ class NodeBreakerTopology:
     """
 
     def __init__(self, network_handle: _pp.JavaHandle, voltage_level_id: str):
-        self._internal_connections = create_data_frame_from_series_array(
+        self._internal_connections = _create_data_frame_from_series_array(
             _pp.get_node_breaker_view_internal_connections(network_handle, voltage_level_id))
-        self._switchs = create_data_frame_from_series_array(
+        self._switchs = _create_data_frame_from_series_array(
             _pp.get_node_breaker_view_switches(network_handle, voltage_level_id))
-        self._nodes = create_data_frame_from_series_array(
+        self._nodes = _create_data_frame_from_series_array(
             _pp.get_node_breaker_view_nodes(network_handle, voltage_level_id))
 
     @property

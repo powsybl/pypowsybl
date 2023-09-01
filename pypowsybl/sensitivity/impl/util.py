@@ -10,7 +10,7 @@ from typing import List
 
 from pypowsybl._pypowsybl import PyPowsyblError
 
-import pypowsybl.glsk as glsk
+from pypowsybl import glsk
 from pypowsybl.network.impl.network import Network
 from pypowsybl import _pypowsybl
 from pypowsybl.sensitivity.impl.zone import Zone
@@ -152,4 +152,3 @@ def get_provider_parameters_names(provider: str = '') -> List[str]:
         the list of provider's parameters
     """
     return _pypowsybl.get_sensitivity_analysis_provider_parameters_names(provider)
-

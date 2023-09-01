@@ -13,7 +13,7 @@ from pypowsybl.flowdecomposition.impl.parameters import Parameters
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
 from pypowsybl.network.impl.network import Network as _Network
-from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.util import _create_data_frame_from_series_array
 import pypowsybl.loadflow
 
 # enforcing some class metadata on classes imported from C extension,
@@ -194,7 +194,7 @@ class FlowDecomposition:
             NHV1_NHV2_2_NHV1_NHV2_1 NHV1_NHV2_2 NHV1_NHV2_1          FR       BE        610.562161             600.0             0.0         0.0      0.0           0.0             600.0               0.0
             ======================= =========== ============== ======== ======== ================= ================= =============== =========== ======== ============= ================= =================
         """
-        fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()
-        lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
+        fd_p = flow_decomposition_parameters._to_c_parameters() if flow_decomposition_parameters is not None else _pypowsybl.FlowDecompositionParameters()  # pylint: disable=protected-access
+        lf_p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
         res = _pypowsybl.run_flow_decomposition(self._handle, network._handle, fd_p, lf_p)
-        return create_data_frame_from_series_array(res)
+        return _create_data_frame_from_series_array(res)

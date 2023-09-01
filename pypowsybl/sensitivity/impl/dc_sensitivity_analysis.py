@@ -35,9 +35,8 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         """
         sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                            lfParameters) else parameters
-        p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()
+        p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return DcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider,
-                                                None if reporter is None else reporter._reporter_model),
-            # pylint: disable=protected-access
+                                                None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)

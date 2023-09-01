@@ -44,7 +44,7 @@ class SecurityAnalysis(ContingencyContainer):
         """
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
-        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
+        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
                                              None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
@@ -64,9 +64,9 @@ class SecurityAnalysis(ContingencyContainer):
         """
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
-        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()
+        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,  # pylint: disable=protected-access
                                              None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
@@ -136,4 +136,3 @@ class SecurityAnalysis(ContingencyContainer):
         """
         return self.add_monitored_elements(ContingencyContextType.SPECIFIC, contingency_ids,
                                            branch_ids, voltage_level_ids, three_windings_transformer_ids)
-

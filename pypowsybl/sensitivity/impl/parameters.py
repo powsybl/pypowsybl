@@ -7,7 +7,7 @@
 from typing import Dict
 
 from pypowsybl.loadflow.impl.parameters import Parameters as lfParameters
-from pypowsybl.loadflow.impl.loadflow import _parameters_from_c
+from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -39,13 +39,13 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        self.load_flow_parameters = _parameters_from_c(default_parameters.loadflow_parameters)
+        self.load_flow_parameters = parameters_from_c(default_parameters.loadflow_parameters)
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
         c_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()
+        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()  # pylint: disable=protected-access
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters

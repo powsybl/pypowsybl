@@ -78,4 +78,3 @@ class DcSensitivityAnalysisResult:
             return None
         data = np.array(matrix, copy=False)
         return pd.DataFrame(data=data, columns=self.branches_ids[matrix_id], index=['reference_flows'])
-

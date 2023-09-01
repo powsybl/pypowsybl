@@ -49,7 +49,7 @@ class ContingencyContainer:
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
 
-def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> _pd.DataFrame:
+def _create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> _pd.DataFrame:
     series_dict = {}
     index_data = []
     index_names = []

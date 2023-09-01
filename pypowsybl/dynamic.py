@@ -10,8 +10,8 @@ from typing import List as _List, Union as _Union
 import pandas as _pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType, BranchSide
-from pypowsybl.network import Network
-from pypowsybl.util import create_data_frame_from_series_array
+from pypowsybl.network.impl.network import Network
+from pypowsybl.util import _create_data_frame_from_series_array
 from pypowsybl.utils.dataframes import _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe
 
 
@@ -210,7 +210,7 @@ class SimulationResult:
 
     def _get_curve(self, curve_name: str) -> _pd.DataFrame:
         series_array = _pp.get_dynamic_curve(self._handle, curve_name)
-        return create_data_frame_from_series_array(series_array)
+        return _create_data_frame_from_series_array(series_array)
 
     def _get_all_curves(self) -> _pd.DataFrame:
         curve_name_lst = _pp.get_all_dynamic_curves_ids(self._handle)
@@ -219,7 +219,7 @@ class SimulationResult:
         return _pd.concat(df_curves, axis=1)
 
 
-class Simulation:
+class Simulation:  # pylint: disable=too-few-public-methods
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_simulation_context()
 
