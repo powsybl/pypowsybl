@@ -481,8 +481,8 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getMagnitudeFaultResults)
                 .stringsIndex("id", f -> f.getFault().getId())
                 .enums("status", FaultResult.Status.class, f -> f.getStatus())
-                .doubles("shortCircuitPower", MagnitudeFaultResult::getShortCircuitPower)
-                .strings("timeConstant", f -> f.getTimeConstant() != null ? f.getTimeConstant().toString() : null)
+                .doubles("short_circuit_power", MagnitudeFaultResult::getShortCircuitPower)
+                .strings("time_constant", f -> f.getTimeConstant() != null ? f.getTimeConstant().toString() : null)
                 .doubles("current", MagnitudeFaultResult::getCurrent)
                 .doubles("voltage", MagnitudeFaultResult::getVoltage)
                 .build();

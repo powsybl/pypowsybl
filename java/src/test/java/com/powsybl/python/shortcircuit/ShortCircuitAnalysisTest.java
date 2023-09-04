@@ -71,7 +71,7 @@ class ShortCircuitAnalysisTest {
         List<Series> faultResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisFaultResultsMapper(), fakeResults);
         Assertions.assertThat(faultResultsSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "status", "shortCircuitPower", "timeConstant", "current", "voltage");
+                .containsExactly("id", "status", "short_circuit_power", "time_constant", "current", "voltage");
         Assertions.assertThat(faultResultsSeries.get(0).getStrings())
                 .containsExactly("f1", "f2");
         Assertions.assertThat(faultResultsSeries.get(1).getStrings())
