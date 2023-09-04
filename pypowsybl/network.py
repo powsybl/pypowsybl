@@ -5301,8 +5301,8 @@ def create_load_bay(network: Network, df: _DataFrame = None, raise_exception: bo
         - **p0**: active power load, in MW
         - **q0**: reactive power load, in MVar
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **load_position_order**: in node/breaker, the order of the load, will fill the ConnectablePosition extension
-        - **load_direction**: optionally, in node/breaker, the direction of the load, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the load, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the load, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
@@ -5336,8 +5336,8 @@ def create_battery_bay(network: Network, df: _DataFrame = None, raise_exception:
         - **target_p**: active power consumption, in MW
         - **target_q**: reactive power consumption, in MVar
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **battery_position_order**: in node/breaker, the order of the battery, will fill the ConnectablePosition extension
-        - **battery_direction**: optionally, in node/breaker, the direction of the battery, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the battery, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the battery, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
@@ -5375,8 +5375,8 @@ def create_generator_bay(network: Network, df: _DataFrame = None, raise_exceptio
         - **target_v**: target voltage in kV, when the generator regulates voltage
         - **voltage_regulator_on**: true if the generator regulates voltage
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **generator_position_order**: in node/breaker, the order of the generator, will fill the ConnectablePosition extension
-        - **generator_direction**: optionally, in node/breaker, the direction of the generator, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the generator, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the generator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
@@ -5413,8 +5413,8 @@ def create_dangling_line_bay(network: Network, df: _DataFrame = None, raise_exce
         - **g**: the shunt conductance, in S
         - **b**: the shunt susceptance, in S
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **dangling_line_position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
-        - **dangling_line_direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, **kwargs)
@@ -5452,8 +5452,8 @@ def create_shunt_compensator_bay(network: Network, shunt_df: _DataFrame,
         - **target_v**: an optional target voltage in kV
         - **target_v**: an optional deadband for the target voltage, in kV
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **shunt_compensator_position_order**: in node/breaker, the order of the shunt compensator, will fill the ConnectablePosition extension
-        - **shunt_compensator_direction**: optionally, in node/breaker, the direction of the shunt compensator, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the shunt compensator, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the shunt compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
         Valid attributes for the linear sections models are:
 
@@ -5509,8 +5509,8 @@ def create_static_var_compensator_bay(network: Network, df: _DataFrame = None, r
         - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
         - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **static_var_compensator_position_order**: in node/breaker, the order of the static var compensator, will fill the ConnectablePosition extension
-        - **static_var_compensator_direction**: optionally, in node/breaker, the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the static var compensator, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
@@ -5543,8 +5543,8 @@ def create_lcc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         - **power_factor**: the power factor (ratio of the active power to the apparent power)
         - **loss_factor**: the loss factor of the station
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **lcc_converter_station_position_order**: in node/breaker, the order of the lcc converter station, will fill the ConnectablePosition extension
-        - **lcc_converter_station_direction**: optionally, in node/breaker, the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the lcc converter station, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
@@ -5579,8 +5579,8 @@ def create_vsc_converter_station_bay(network: Network, df: _DataFrame = None, ra
         - **target_v**: the target voltage, in kV, when the station regulates voltage
         - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **vsc_converter_station_position_order**: in node/breaker, the order of the vsc converter station, will fill the ConnectablePosition extension
-        - **vsc_converter_station_direction**: optionally, in node/breaker, the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the vsc converter station, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
     return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
@@ -5655,11 +5655,11 @@ def create_line_bays(network: Network, df: _DataFrame = None, raise_exception: b
         additional following attributes:
 
         - **bus_or_busbar_section_id_1**: the identifier of the bus or of the busbar section on side 1
-        - **position_order_1**: in node/breaker, the position of the feeder on side 1
-        - **direction_1**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 1
+        - **position_order_1**: in node/breaker, the position of the line on side 1
+        - **direction_1**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the line on side 1
         - **bus_or_busbar_section_id_2**: the identifier of the bus or of the busbar section on side 2
-        - **position_order_2**: in node/breaker, the position of the feeder on side 2
-        - **direction_2**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 2
+        - **position_order_2**: in node/breaker, the position of the line on side 2
+        - **direction_2**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the line on side 2
 
     Examples:
 
@@ -5710,11 +5710,11 @@ def create_2_windings_transformer_bays(network: Network, df: _DataFrame = None, 
         additional following attributes:
 
         - **bus_or_busbar_section_id_1**: the identifier of the bus or of the busbar section on side 1
-        - **position_order_1**: in node/breaker topology, the position of the feeder on side 1
-        - **direction_1**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 1
+        - **position_order_1**: in node/breaker topology, the position of the transformer on side 1
+        - **direction_1**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the transformer on side 1
         - **bus_or_busbar_section_id_2**: the identifier of the bus or of the busbar section on side 2
-        - **position_order_2**: in node/breaker, the position of the feeder on side 2
-        - **direction_2**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the feeder on side 2
+        - **position_order_2**: in node/breaker, the position of the transformer on side 2
+        - **direction_2**: optionally, in node/breaker, the direction, TOP or BOTTOM, of the transformer on side 2
 
     Examples:
 
