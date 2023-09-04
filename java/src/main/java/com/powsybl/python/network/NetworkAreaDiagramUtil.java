@@ -39,7 +39,7 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedWidth(800)
                 .setFixedHeight(600)
                 .setEdgeNameDisplayed(edgeNameDisplayed);
-        NadParameters nadParameters = NadParameters.builder().withSvgParameters(svgParameters);
+        NadParameters nadParameters = new NadParameters().setSvgParameters(svgParameters);
 
         Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)

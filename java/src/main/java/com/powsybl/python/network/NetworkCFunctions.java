@@ -850,13 +850,17 @@ public final class NetworkCFunctions {
             this.svgParameters = svgParameters;
             this.topologicalColoring = topologicalColoring;
             this.componentLibrary = componentLibrary;
-            SldParametersBuilder sldParametersBuilder = new SldParametersBuilder()
-                    .withSvgParameters(svgParameters)
-                    .withComponentLibrary(ComponentLibrary.find(componentLibrary).orElseGet(ConvergenceComponentLibrary::new));
+
+            SldParameters sldParameters = new SldParameters()
+                    .setSvgParameters(svgParameters)
+                    .setComponentLibrary(ComponentLibrary.find(componentLibrary).orElseGet(ConvergenceComponentLibrary::new));
+
             if (!topologicalColoring) {
-                sldParametersBuilder.withStyleProviderFactory(NominalVoltageStyleProviderFactory);
+                sldParameters.setStyleProviderFactory(NominalVoltageStyleProviderFactory);
             }
-            this.sldParameters = sldParametersBuilder.build();
+
+            this.sldParameters = sldParameters;
+
         }
     }
 
