@@ -966,4 +966,82 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native BranchSide fromCValue(int value);
     }
+
+    @CStruct("shortcircuit_analysis_parameters")
+    public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
+
+        @CField("with_voltage_result")
+        boolean isWithVoltageResult();
+
+        @CField("with_voltage_result")
+        void setWithVoltageResult(boolean withVoltageResult);
+
+        @CField("with_feeder_result")
+        boolean isWithFeederResult();
+
+        @CField("with_feeder_result")
+        void setWithFeederResult(boolean withFeederResult);
+
+        @CField("with_limit_violations")
+        boolean isWithLimitViolations();
+
+        @CField("with_limit_violations")
+        void setWithLimitViolations(boolean withLimitViolations);
+
+        @CField("study_type")
+        int getStudyType();
+
+        @CField("study_type")
+        void setStudyType(int studyType);
+
+        @CField("with_fortescue_result")
+        boolean isWithFortescueResult();
+
+        @CField("with_fortescue_result")
+        void setWithFortescueResult(boolean withFortescueResult);
+
+        @CField("min_voltage_drop_proportional_threshold")
+        double getMinVoltageDropProportionalThreshold();
+
+        @CField("min_voltage_drop_proportional_threshold")
+        void setMinVoltageDropProportionalThreshold(double minVoltageDropProportionalThreshold);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
+    @CEnum("ShortCircuitFaultType")
+    public enum ShortCircuitFaultType {
+        BUS_FAULT,
+        BRANCH_FAULT;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ShortCircuitFaultType fromCValue(int value);
+    }
+
+
 }

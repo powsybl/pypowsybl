@@ -291,3 +291,21 @@ typedef enum {
     ONE = 0,
     TWO,
 } BranchSide;
+
+typedef struct shortcircuit_analysis_parameters_struct {
+    unsigned char with_voltage_result;
+    unsigned char with_feeder_result;
+    unsigned char with_limit_violations;
+    int study_type;
+    unsigned char with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} shortcircuit_analysis_parameters;
+
+typedef enum {
+    BUS_FAULT = 0,
+    BRANCH_FAULT,
+} ShortCircuitFaultType;

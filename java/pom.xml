@@ -263,6 +263,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-flow-decomposition</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-shortcircuit-api</artifactId>
+        </dependency>
 
         <!-- runtime -->
         <dependency>

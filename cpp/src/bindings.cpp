@@ -766,4 +766,45 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_network_modification_metadata_with_element_type", &pypowsybl::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
 
     m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+
+    py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
+            .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
+                   "It is the first stage of the short circuit, right when the fault happens. The subtransient reactance of generators will be used.")
+            .value("TRANSIENT", pypowsybl::ShortCircuitStudyType::TRANSIENT,
+                   "The second stage of the short circuit, before the system stabilizes. The transient reactance of generators will be used.")
+            .value("STEADY_STATE", pypowsybl::ShortCircuitStudyType::STEADY_STATE,
+                   "The last stage of the short circuit, once all transient effects are gone.");
+
+    py::class_<pypowsybl::ShortCircuitAnalysisParameters>(m, "ShortCircuitAnalysisParameters")
+        .def(py::init(&pypowsybl::createShortCircuitAnalysisParameters))
+        .def_readwrite("with_voltage_result", &pypowsybl::ShortCircuitAnalysisParameters::with_voltage_result)
+        .def_readwrite("with_feeder_result", &pypowsybl::ShortCircuitAnalysisParameters::with_feeder_result)
+        .def_readwrite("with_limit_violations", &pypowsybl::ShortCircuitAnalysisParameters::with_limit_violations)
+        .def_readwrite("study_type", &pypowsybl::ShortCircuitAnalysisParameters::study_type)
+        .def_readwrite("with_fortescue_result", &pypowsybl::ShortCircuitAnalysisParameters::with_fortescue_result)
+        .def_readwrite("min_voltage_drop_proportional_threshold", &pypowsybl::ShortCircuitAnalysisParameters::min_voltage_drop_proportional_threshold)
+        .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
+        .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
+
+    m.def("set_default_shortcircuit_analysis_provider", &pypowsybl::setDefaultShortCircuitAnalysisProvider, "Set default short-circuit analysis provider", py::arg("provider"));
+    m.def("get_default_shortcircuit_analysis_provider", &pypowsybl::getDefaultShortCircuitAnalysisProvider, "Get default short-circuit analysis provider");
+    m.def("get_shortcircuit_provider_names", &pypowsybl::getShortCircuitAnalysisProviderNames, "Get supported short-circuit analysis providers");
+    m.def("get_shortcircuit_provider_parameters_names", &pypowsybl::getShortCircuitAnalysisProviderParametersNames, "get provider parameters for a short-circuit analysis provider", py::arg("provider"));
+    m.def("create_shortcircuit_analysis", &pypowsybl::createShortCircuitAnalysis, "Create a short-circuit analysis");
+    m.def("run_shortcircuit_analysis", &pypowsybl::runShortCircuitAnalysis, "Run a short-circuit analysis", py::call_guard<py::gil_scoped_release>(),
+          py::arg("shortcircuit_analysis_context"), py::arg("network"), py::arg("parameters"),
+          py::arg("provider"), py::arg("reporter"));
+
+    py::enum_<ShortCircuitFaultType>(m, "ShortCircuitFaultType")
+            .value("BUS_FAULT", ShortCircuitFaultType::BUS_FAULT)
+            .value("BRANCH_FAULT", ShortCircuitFaultType::BRANCH_FAULT);
+
+    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata", py::arg("fault_type"));
+    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"),  py::arg("faultType"));
+    m.def("get_fault_results", &pypowsybl::getFaultResults, "gets the fault results computed after short-circuit analysis",
+          py::arg("result"));
+    m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",
+          py::arg("result"));
+    m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
+
 }

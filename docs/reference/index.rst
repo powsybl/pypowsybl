@@ -13,3 +13,4 @@ of pypowsybl classes and methods.
    sensitivity
    flowdecomposition
    dynamic
+   shortcircuit
