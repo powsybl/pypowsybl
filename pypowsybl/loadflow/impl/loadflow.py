@@ -15,7 +15,7 @@ from pypowsybl._pypowsybl import (
     run_loadflow_validation
 )
 from pypowsybl.network.impl.network import Network
-from pypowsybl.util import _create_data_frame_from_series_array
+from pypowsybl.utils.util import _create_data_frame_from_series_array
 from pypowsybl.report import Reporter
 from pypowsybl.loadflow.impl.component_result import ComponentResult
 from pypowsybl.loadflow.impl.parameters import Parameters
@@ -30,8 +30,8 @@ BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 
 
-def run_ac(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> List[
-    ComponentResult]:  # pylint: disable=protected-access
+def run_ac(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> \
+        List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run an AC loadflow on a network.
 
@@ -44,13 +44,13 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
     Returns:
         A list of component results, one for each component of the network.
     """
-    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
                                                                     None if reporter is None else reporter._reporter_model)]  # pylint: disable=protected-access
 
 
-def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> List[
-    ComponentResult]:  # pylint: disable=protected-access
+def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: Reporter = None) -> \
+        List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run a DC loadflow on a network.
 
@@ -63,7 +63,7 @@ def run_dc(network: Network, parameters: Parameters = None, provider: str = '', 
     Returns:
         A list of component results, one for each component of the network.
     """
-    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, True, p, provider,
                                                                     None if reporter is None else reporter._reporter_model)]  # pylint: disable=protected-access
 

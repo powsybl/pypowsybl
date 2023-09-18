@@ -8,7 +8,7 @@ import pandas as pd
 
 from pypowsybl import _pypowsybl
 
-from pypowsybl.util import _create_data_frame_from_series_array
+from pypowsybl.utils.util import _create_data_frame_from_series_array
 
 
 class ShortCircuitAnalysisResult:

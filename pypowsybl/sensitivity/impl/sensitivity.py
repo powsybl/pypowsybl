@@ -7,7 +7,7 @@
 from __future__ import annotations
 from typing import List, Dict
 from pypowsybl import _pypowsybl
-from pypowsybl.util import ContingencyContainer
+from pypowsybl.utils.util import ContingencyContainer
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl.sensitivity.impl.zone import Zone
 

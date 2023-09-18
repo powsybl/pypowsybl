@@ -10,7 +10,7 @@ from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network.impl.network import Network
-from pypowsybl.util import (
+from pypowsybl.utils.util import (
     ContingencyContainer
 )
 from pypowsybl.report import Reporter

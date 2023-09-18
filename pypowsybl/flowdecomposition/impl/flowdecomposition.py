@@ -13,7 +13,7 @@ from pypowsybl.flowdecomposition.impl.parameters import Parameters
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
 from pypowsybl.network.impl.network import Network as _Network
-from pypowsybl.util import _create_data_frame_from_series_array
+from pypowsybl.utils.util import _create_data_frame_from_series_array
 import pypowsybl.loadflow
 
 # enforcing some class metadata on classes imported from C extension,

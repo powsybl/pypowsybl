@@ -11,7 +11,7 @@ from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
 
-from pypowsybl.util import _create_data_frame_from_series_array
+from pypowsybl.utils.util import _create_data_frame_from_series_array
 
 # Type definition
 ParamsDict = Optional[Dict[str, str]]
