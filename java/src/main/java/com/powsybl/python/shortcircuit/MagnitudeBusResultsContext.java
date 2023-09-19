@@ -19,7 +19,7 @@ public class MagnitudeBusResultsContext extends MagnitudeShortCircuitBusResults 
     private final String faultId;
 
     public MagnitudeBusResultsContext(String faultId, MagnitudeShortCircuitBusResults busResults) {
-        super(busResults.getVoltageLevelId(), busResults.getBusId(), busResults.getInitialVoltageMagnitude(), busResults.getVoltageDropProportional(), busResults.getVoltage());
+        super(busResults.getVoltageLevelId(), busResults.getBusId(), busResults.getInitialVoltageMagnitude(), busResults.getVoltage(), busResults.getVoltageDropProportional());
         this.faultId = Objects.requireNonNull(faultId);
     }
 
