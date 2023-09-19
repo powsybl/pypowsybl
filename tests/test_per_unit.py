@@ -4,12 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-
+from pypowsybl import per_unit_view
 import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 import util
-from pypowsybl.perunit import per_unit_view
 
 
 def test_bus_per_unit():

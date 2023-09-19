@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
 #
 import os as _os
 import inspect as _inspect
@@ -17,9 +18,9 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
-    perunit,
     shortcircuit
 )
+from pypowsybl.network import per_unit_view
 
 __version__ = '0.25.0.dev1'
 
@@ -37,7 +38,6 @@ __all__ = [
     "sensitivity",
     "glsk",
     "flowdecomposition",
-    "perunit",
     "shortcircuit"
 ]
 
