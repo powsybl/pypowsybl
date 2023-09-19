@@ -5,10 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pandas as pd
-
 from pypowsybl import _pypowsybl
-
-from pypowsybl.utils.util import _create_data_frame_from_series_array
+from pypowsybl.utils import create_data_frame_from_series_array
 
 
 class ShortCircuitAnalysisResult:
@@ -24,18 +22,18 @@ class ShortCircuitAnalysisResult:
         """
         contains the results, for each fault, in a dataframe representation.
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_fault_results(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_fault_results(self._handle))
 
     @property
     def feeder_results(self) -> pd.DataFrame:
         """
         contains the contributions of each feeder to the short circuit current, in a dataframe representation.
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle))
 
     @property
     def limit_violations(self) -> pd.DataFrame:
         """
         contains a list of all the violations after the fault, in a dataframe representation.
         """
-        return _create_data_frame_from_series_array(_pypowsybl.get_short_circuit_limit_violations(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_limit_violations(self._handle))

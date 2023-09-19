@@ -6,7 +6,7 @@
 #
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl.utils.util import _create_data_frame_from_series_array
+from pypowsybl.utils import create_data_frame_from_series_array
 
 
 class SimulationResult:
@@ -31,7 +31,7 @@ class SimulationResult:
 
     def _get_curve(self, curve_name: str) -> pd.DataFrame:
         series_array = _pp.get_dynamic_curve(self._handle, curve_name)
-        return _create_data_frame_from_series_array(series_array)
+        return create_data_frame_from_series_array(series_array)
 
     def _get_all_curves(self) -> pd.DataFrame:
         curve_name_lst = _pp.get_all_dynamic_curves_ids(self._handle)

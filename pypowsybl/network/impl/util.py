@@ -5,17 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from os import PathLike
-from typing import List, Optional, Dict, Union
-
+from typing import List, Optional, Dict
 from pandas import DataFrame
-
 import pypowsybl._pypowsybl as _pp
-
-from pypowsybl.utils.util import _create_data_frame_from_series_array
+from pypowsybl.utils import create_data_frame_from_series_array
 
 # Type definition
 ParamsDict = Optional[Dict[str, str]]
-PathOrStr = Union[str, PathLike]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -24,12 +20,6 @@ def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
 
 
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
-
-
-def _path_to_str(path: PathOrStr) -> str:
-    if isinstance(path, str):
-        return path
-    return path.__fspath__()
 
 
 def get_import_formats() -> List[str]:
@@ -76,7 +66,7 @@ def get_import_parameters(fmt: str) -> DataFrame:
            'false'
     """
     series_array = _pp.create_importer_parameters_series_array(fmt)
-    return _create_data_frame_from_series_array(series_array)
+    return create_data_frame_from_series_array(series_array)
 
 
 def get_export_parameters(fmt: str) -> DataFrame:
@@ -90,7 +80,7 @@ def get_export_parameters(fmt: str) -> DataFrame:
         export parameters dataframe
     """
     series_array = _pp.create_exporter_parameters_series_array(fmt)
-    return _create_data_frame_from_series_array(series_array)
+    return create_data_frame_from_series_array(series_array)
 
 
 def get_extensions_names() -> List[str]:
@@ -110,7 +100,7 @@ def get_extensions_information() -> DataFrame:
     Returns:
         a dataframe with information about extensions
     """
-    return _create_data_frame_from_series_array(_pp.get_extensions_information())
+    return create_data_frame_from_series_array(_pp.get_extensions_information())
 
 
 def get_single_line_diagram_component_library_names() -> List[str]:

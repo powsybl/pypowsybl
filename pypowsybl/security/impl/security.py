@@ -9,16 +9,15 @@ import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
-from pypowsybl.network.impl.network import Network
-from pypowsybl.utils.util import (
-    ContingencyContainer
-)
+from pypowsybl.network import Network
+from .contingency_container import ContingencyContainer
 from pypowsybl.report import Reporter
-from pypowsybl.security.impl.parameters import Parameters
-from pypowsybl.security.impl.security_analysis_result import SecurityAnalysisResult
+from .parameters import Parameters
+from .security_analysis_result import SecurityAnalysisResult
 
 ComputationStatus.__name__ = 'ComputationStatus'
 ComputationStatus.__module__ = __name__
+
 
 class SecurityAnalysis(ContingencyContainer):
     """
@@ -65,7 +64,8 @@ class SecurityAnalysis(ContingencyContainer):
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,  # pylint: disable=protected-access
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
+                                             # pylint: disable=protected-access
                                              None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,

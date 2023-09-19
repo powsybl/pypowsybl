@@ -9,17 +9,15 @@ from typing import List, Optional
 from numpy._typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl.report import Reporter
-
 from pypowsybl.network import Network
-
-from pypowsybl.utils.dataframes import _get_c_dataframes
-
+from pypowsybl.utils import _get_c_dataframes
 from pypowsybl import _pypowsybl
-from pypowsybl.shortcircuit.impl.parameters import Parameters
-from pypowsybl.shortcircuit.impl.short_circuit_analysis_result import ShortCircuitAnalysisResult
-
+from .parameters import Parameters
+from .short_circuit_analysis_result import ShortCircuitAnalysisResult
 from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
+
 ShortCircuitStudyType.__module__ = __name__
+
 
 class ShortCircuitAnalysis:
     """
@@ -29,13 +27,11 @@ class ShortCircuitAnalysis:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-
     def _set_faults(self, fault_type: ShortCircuitFaultType, dfs: List[Optional[DataFrame]],
                     **kwargs: ArrayLike) -> None:
         metadata = _pypowsybl.get_faults_dataframes_metadata(fault_type)
         c_dfs = _get_c_dataframes(dfs, [metadata], **kwargs)
         _pypowsybl.set_faults(self._handle, c_dfs[0], fault_type)
-
 
     def set_faults(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -79,7 +75,6 @@ class ShortCircuitAnalysis:
         """
         self._set_faults(ShortCircuitFaultType.BUS_FAULT, [df], **kwargs)
 
-
     def run(self, network: Network, parameters: Parameters = None,
             provider: str = '', reporter: Reporter = None) -> ShortCircuitAnalysisResult:
         """ Runs an short-circuit analysis.
@@ -92,10 +87,11 @@ class ShortCircuitAnalysis:
         Returns:
             A short-circuit analysis result.
         """
-        p = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters() # pylint: disable=protected-access
+        p = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
 
         return ShortCircuitAnalysisResult(
             _pypowsybl.run_shortcircuit_analysis(self._handle, network._handle, p, provider,
-                                                 None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
+                                                 None if reporter is None else reporter._reporter_model)
+            # pylint: disable=protected-access
             # pylint: disable=protected-access
         )

@@ -11,16 +11,18 @@ from typing import List
 from pypowsybl._pypowsybl import PyPowsyblError
 
 from pypowsybl import glsk
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl import _pypowsybl
-from pypowsybl.sensitivity.impl.zone import Zone
-from pypowsybl.sensitivity.impl.dc_sensitivity_analysis import DcSensitivityAnalysis
-from pypowsybl.sensitivity.impl.ac_sensitivity_analysis import AcSensitivityAnalysis
+from .zone import Zone
+from .dc_sensitivity_analysis import DcSensitivityAnalysis
+from .ac_sensitivity_analysis import AcSensitivityAnalysis
+
 
 class ZoneKeyType(Enum):
     GENERATOR_TARGET_P = 0
     GENERATOR_MAX_P = 1
     LOAD_P0 = 2
+
 
 def create_empty_zone(id: str) -> Zone:
     return Zone(id)

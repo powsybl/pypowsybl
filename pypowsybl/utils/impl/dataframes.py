@@ -13,7 +13,6 @@ Provides utility methods for dataframes handling:
 """
 from typing import List, Dict as _Dict
 from typing import Optional as _Optional, Any as _Any
-
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
@@ -126,6 +125,7 @@ def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _A
         kwargs[index_name] = list(range(size))
     return kwargs
 
+
 def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
     """
        Creates the C representation of a dataframe of properties.
@@ -173,7 +173,8 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     return DataFrame(index=index, data=data)
 
 
-def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]], **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]],
+                      **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
     c_dfs: List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     for i, df in enumerate(dfs):

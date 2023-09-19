@@ -6,10 +6,9 @@
 #
 from typing import Union
 from pypowsybl import _pypowsybl
-from pypowsybl.network.impl.network import _path_to_str # pylint: disable=protected-access
+from pypowsybl.utils import path_to_str  # pylint: disable=protected-access
 from os import PathLike
-
-from pypowsybl.glsk.impl.glsk_document import GLSKDocument
+from .glsk_document import GLSKDocument
 
 
 def load(file: Union[str, PathLike]) -> GLSKDocument:
@@ -22,5 +21,5 @@ def load(file: Union[str, PathLike]) -> GLSKDocument:
     Returns:
         A GLSK document object.
     """
-    file = _path_to_str(file)
+    file = path_to_str(file)
     return GLSKDocument(_pypowsybl.create_glsk_document(file))

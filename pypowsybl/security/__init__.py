@@ -16,3 +16,4 @@ from .impl.util import (
     get_provider_names,
     get_provider_parameters_names
 )
+from .impl.contingency_container import ContingencyContainer

@@ -6,7 +6,7 @@
 #
 from datetime import datetime
 from typing import List
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl import _pypowsybl
 
 

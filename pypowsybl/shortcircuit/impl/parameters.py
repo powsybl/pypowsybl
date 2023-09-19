@@ -12,6 +12,7 @@ from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
 ShortCircuitStudyType.__module__ = __name__
 ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'
 
+
 class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a short-circuit analysis execution.
@@ -25,6 +26,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         with_limit_violations: indicates whether limit violations should be returned after the computation
         study_type: indicates the type of short circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE
     """
+
     def __init__(self,
                  with_feeder_result: bool = None,
                  with_limit_violations: bool = None,
@@ -44,7 +46,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.with_feeder_result = c_parameters.with_feeder_result
         self.with_limit_violations = c_parameters.with_limit_violations
         self.study_type = c_parameters.study_type
-        self.provider_parameters = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+        self.provider_parameters = dict(
+            zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(_pypowsybl.ShortCircuitAnalysisParameters())

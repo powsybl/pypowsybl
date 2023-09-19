@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-import pypowsybl._pypowsybl as _pp # pylint: disable=protected-access
+import pypowsybl._pypowsybl as _pp  # pylint: disable=protected-access
 
 
 class Reporter:  # pylint: disable=too-few-public-methods

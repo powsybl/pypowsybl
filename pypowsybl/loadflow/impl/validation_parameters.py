@@ -5,9 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from pypowsybl._pypowsybl import ValidationType, LoadFlowValidationParameters
-
-from pypowsybl.loadflow.impl.parameters import Parameters
-from pypowsybl.loadflow.impl.util import parameters_from_c
+from .parameters import Parameters
+from .util import parameters_from_c
 
 ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,
                       ValidationType.SVCS, ValidationType.TWTS, ValidationType.TWTS3W]

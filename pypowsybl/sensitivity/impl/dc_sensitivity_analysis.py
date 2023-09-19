@@ -6,13 +6,13 @@
 #
 from typing import Union
 
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl.report import Reporter
-from pypowsybl.sensitivity.impl.sensitivity import SensitivityAnalysis
-from pypowsybl.sensitivity.impl.dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
+from .sensitivity import SensitivityAnalysis
+from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from pypowsybl import _pypowsybl
-from pypowsybl.loadflow.impl.parameters import Parameters as lfParameters
-from pypowsybl.sensitivity.impl.parameters import Parameters
+from pypowsybl.loadflow import Parameters as lfParameters
+from .parameters import Parameters
 
 
 class DcSensitivityAnalysis(SensitivityAnalysis):

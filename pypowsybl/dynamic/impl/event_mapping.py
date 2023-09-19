@@ -6,7 +6,7 @@
 #
 from typing import List
 
-from pypowsybl.dynamic.impl.util import EventType
+from .util import EventType
 from pypowsybl import _pypowsybl as _pp
 
 

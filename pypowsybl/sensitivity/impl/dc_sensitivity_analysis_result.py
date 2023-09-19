@@ -13,6 +13,7 @@ from pypowsybl import _pypowsybl
 
 TO_REMOVE = 'TO_REMOVE'
 
+
 class DcSensitivityAnalysisResult:
     """
     Represents the result of a DC sensitivity analysis.
@@ -51,7 +52,7 @@ class DcSensitivityAnalysisResult:
         data = np.array(matrix, copy=False)
 
         df = pd.DataFrame(data=data, columns=self.branches_ids[matrix_id],
-                           index=self.branch_data_frame_index[matrix_id])
+                          index=self.branch_data_frame_index[matrix_id])
 
         # substract second power transfer zone to first one
         i = 0
@@ -73,7 +74,8 @@ class DcSensitivityAnalysisResult:
         Returns:
             the branches active power flows
         """
-        matrix= _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id, '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id,
+                                                '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
         data = np.array(matrix, copy=False)

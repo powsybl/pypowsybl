@@ -6,9 +6,10 @@
 #
 from typing import Dict
 
-from pypowsybl.loadflow.impl.parameters import Parameters as lfParameters
+from pypowsybl.loadflow import Parameters as lfParameters
 from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
+
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """

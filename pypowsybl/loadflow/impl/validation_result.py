@@ -8,6 +8,8 @@ from typing import Optional
 import pandas as pd
 
 OptionalDf = Optional[pd.DataFrame]
+
+
 class ValidationResult:
     """
     The result of a loadflow validation.

@@ -4,12 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl.dynamic.impl.event_mapping import EventMapping
-from pypowsybl.dynamic.impl.model_mapping import ModelMapping
-from pypowsybl.dynamic.impl.simulation_result import SimulationResult
-from pypowsybl.dynamic.impl.curve_mapping import CurveMapping
+from .event_mapping import EventMapping
+from .model_mapping import ModelMapping
+from .simulation_result import SimulationResult
+from .curve_mapping import CurveMapping
 
 
 class Simulation:  # pylint: disable=too-few-public-methods

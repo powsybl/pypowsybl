@@ -9,8 +9,9 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from pypowsybl.sensitivity.impl.dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
+from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from pypowsybl import _pypowsybl
+
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     """

@@ -8,7 +8,7 @@ from typing import Union
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType, BranchSide # pylint: disable=protected-access
-from pypowsybl.utils.dataframes import \
+from pypowsybl.utils import \
     _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe # pylint: disable=protected-access
 
 

@@ -10,6 +10,7 @@ from pypowsybl._pypowsybl import LoadFlowComponentStatus as ComponentStatus
 ComponentStatus.__name__ = 'ComponentStatus'
 ComponentStatus.__module__ = __name__
 
+
 # Pure python wrapper for C ext object
 # although it adds some boiler plate code, it integrates better with tools such as sphinx
 class ComponentResult:

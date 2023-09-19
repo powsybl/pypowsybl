@@ -5,13 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List, Union
-from pypowsybl.network.impl.network import Network
+from pypowsybl.network import Network
 from pypowsybl.report import Reporter
-from pypowsybl.sensitivity.impl.ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
-from pypowsybl.sensitivity.impl.sensitivity import SensitivityAnalysis
+from .ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
+from .sensitivity import SensitivityAnalysis
 from pypowsybl import _pypowsybl
-from pypowsybl.sensitivity.impl.parameters import Parameters
-from pypowsybl.loadflow.impl.parameters import Parameters as LfParameters
+from .parameters import Parameters
+from pypowsybl.loadflow import Parameters as LfParameters
 
 
 class AcSensitivityAnalysis(SensitivityAnalysis):
@@ -51,6 +51,8 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
                                                                                            LfParameters) else parameters
         p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=W0212
         return AcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider,
+                                                None if reporter is None else reporter._reporter_model),
+            # pylint: disable=protected-access
             branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
             bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)

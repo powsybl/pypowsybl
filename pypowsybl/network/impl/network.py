@@ -30,17 +30,18 @@ import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType, ValidationLevel
 
 import pypowsybl
-from pypowsybl.network.impl.bus_breaker_topology import BusBreakerTopology
-from pypowsybl.network.impl.node_breaker_topology import NodeBreakerTopology
-from pypowsybl.network.impl.layout_parameters import LayoutParameters
-from pypowsybl.network.impl.svg import Svg
-from pypowsybl.network.impl.util import _create_data_frame_from_series_array, PathOrStr, ParamsDict, _path_to_str
-from pypowsybl.utils.dataframes import (
+from .bus_breaker_topology import BusBreakerTopology
+from .node_breaker_topology import NodeBreakerTopology
+from .layout_parameters import LayoutParameters
+from .svg import Svg
+from .util import create_data_frame_from_series_array, ParamsDict
+from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
     _create_properties_c_dataframe,
     _adapt_properties_kwargs,
-    _get_c_dataframes
+    _get_c_dataframes,
+    path_to_str, PathOrStr
 )
 from pypowsybl.report import Reporter
 
@@ -145,7 +146,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.dump('network.xiidm.gz')  # produces a gzipped file
                 network.dump('/path/to/network.uct', format='UCTE')
         """
-        file = _path_to_str(file)
+        file = path_to_str(file)
         if parameters is None:
             parameters = {}
         _pp.dump_network(self._handle, file, format, parameters,
@@ -190,10 +191,10 @@ class Network:  # pylint: disable=too-many-public-methods
             metadata_file: a json metadata file path
             parameters: layout parameters to adjust the rendering of the diagram
         """
-        svg_file = _path_to_str(svg_file)
+        svg_file = path_to_str(svg_file)
         p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
-                                          '' if metadata_file is None else _path_to_str(metadata_file), p)
+                                          '' if metadata_file is None else path_to_str(metadata_file), p)
 
     def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
@@ -222,7 +223,7 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
         """
-        svg_file = _path_to_str(svg_file)
+        svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
@@ -298,7 +299,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array)
-        result = _create_data_frame_from_series_array(series_array)
+        result = create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
         return result
@@ -4334,7 +4335,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The extra id column in the resulting dataframe provides the link to the extensions parent elements
         """
-        return _create_data_frame_from_series_array(
+        return create_data_frame_from_series_array(
             _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> DataFrame:

@@ -14,13 +14,13 @@ from pypowsybl._pypowsybl import (
     LoadFlowValidationParameters,
     run_loadflow_validation
 )
-from pypowsybl.network.impl.network import Network
-from pypowsybl.utils.util import _create_data_frame_from_series_array
+from pypowsybl.network import Network
+from pypowsybl.utils import create_data_frame_from_series_array
 from pypowsybl.report import Reporter
-from pypowsybl.loadflow.impl.component_result import ComponentResult
-from pypowsybl.loadflow.impl.parameters import Parameters
-from pypowsybl.loadflow.impl.validation_result import ValidationResult
-from pypowsybl.loadflow.impl.validation_parameters import ValidationParameters, ValidationType
+from .component_result import ComponentResult
+from .parameters import Parameters
+from .validation_result import ValidationResult
+from .validation_parameters import ValidationParameters, ValidationType
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -133,7 +133,7 @@ def get_provider_parameters(provider: str = None) -> DataFrame:
            'MOST_MESHED'
     """
     series_array = _pypowsybl.create_loadflow_provider_parameters_series_array('' if provider is None else provider)
-    return _create_data_frame_from_series_array(series_array)
+    return create_data_frame_from_series_array(series_array)
 
 
 def run_validation(network: Network, validation_types: List[ValidationType] = None,
@@ -155,7 +155,7 @@ def run_validation(network: Network, validation_types: List[ValidationType] = No
     res_by_type = {}
     for validation_type in validation_types:
         series_array = run_loadflow_validation(network._handle, validation_type, validation_config)
-        res_by_type[validation_type] = _create_data_frame_from_series_array(series_array)
+        res_by_type[validation_type] = create_data_frame_from_series_array(series_array)
 
     return ValidationResult(buses=res_by_type.get(ValidationType.BUSES, None),
                             branch_flows=res_by_type.get(ValidationType.FLOWS, None),

@@ -9,7 +9,7 @@ from typing import Dict
 from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as LfParameters
-from pypowsybl.security.impl.increased_violations_parameters import IncreasedViolationsParameters
+from .increased_violations_parameters import IncreasedViolationsParameters
 
 
 class Parameters:  # pylint: disable=too-few-public-methods

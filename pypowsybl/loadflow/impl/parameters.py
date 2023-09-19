@@ -19,6 +19,7 @@ VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 
+
 class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a loadflow execution.
@@ -124,7 +125,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.dc_use_transformer_ratio = c_parameters.dc_use_transformer_ratio
         self.countries_to_balance = c_parameters.countries_to_balance
         self.connected_component_mode = c_parameters.connected_component_mode
-        self.provider_parameters = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+        self.provider_parameters = dict(
+            zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(LoadFlowParameters())

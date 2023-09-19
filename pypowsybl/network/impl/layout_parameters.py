@@ -6,6 +6,7 @@
 #
 import pypowsybl._pypowsybl as _pp
 
+
 class LayoutParameters:
     """
     This class represents layout parameters for a single line diagram svg generation."""

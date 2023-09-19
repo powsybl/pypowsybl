@@ -6,7 +6,8 @@
 #
 from typing import List
 from pypowsybl import _pypowsybl
-from pypowsybl.shortcircuit.impl.short_circuit_analysis import ShortCircuitAnalysis
+from .short_circuit_analysis import ShortCircuitAnalysis
+
 
 def create_analysis() -> ShortCircuitAnalysis:
     """ Creates a short-circuit analysis object, which can be used to run a short-circuit analysis on a network

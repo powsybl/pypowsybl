@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2023, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from pypowsybl import _pypowsybl
+
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """

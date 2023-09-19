@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from pypowsybl.flowdecomposition.impl.flowdecomposition import FlowDecomposition
+from .flowdecomposition import FlowDecomposition
 from pypowsybl import _pypowsybl
 
 

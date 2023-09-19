@@ -10,9 +10,9 @@ from typing import Union, Dict, List
 
 import pypowsybl._pypowsybl as _pp
 
-from pypowsybl.network import Network
-from pypowsybl.network.impl.util import _path_to_str
+from .network import Network
 from pypowsybl.report import Reporter
+from pypowsybl.utils import path_to_str
 
 
 def _create_network(name: str, network_id: str = '') -> Network:
@@ -181,7 +181,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
             network = pp.network.load('network.uct')
             ...
     """
-    file = _path_to_str(file)
+    file = path_to_str(file)
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network(file, parameters,
