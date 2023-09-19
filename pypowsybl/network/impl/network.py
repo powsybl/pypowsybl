@@ -28,13 +28,6 @@ import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType, ValidationLevel
-
-import pypowsybl
-from .bus_breaker_topology import BusBreakerTopology
-from .node_breaker_topology import NodeBreakerTopology
-from .layout_parameters import LayoutParameters
-from .svg import Svg
-from .util import create_data_frame_from_series_array, ParamsDict
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -44,6 +37,11 @@ from pypowsybl.utils import (
     path_to_str, PathOrStr
 )
 from pypowsybl.report import Reporter
+from .bus_breaker_topology import BusBreakerTopology
+from .node_breaker_topology import NodeBreakerTopology
+from .layout_parameters import LayoutParameters
+from .svg import Svg
+from .util import create_data_frame_from_series_array, ParamsDict
 
 
 class Network:  # pylint: disable=too-many-public-methods
@@ -51,7 +49,6 @@ class Network:  # pylint: disable=too-many-public-methods
     def __init__(self, handle: _pp.JavaHandle):
         self._handle = handle
         self.__init_from_handle()
-        self.__class__ = pypowsybl.network.Network
 
     @property
     def id(self) -> str:

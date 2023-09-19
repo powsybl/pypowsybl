@@ -8,11 +8,11 @@ from typing import Union
 
 from pypowsybl.network import Network
 from pypowsybl.report import Reporter
-from .sensitivity import SensitivityAnalysis
-from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as lfParameters
 from .parameters import Parameters
+from .sensitivity import SensitivityAnalysis
+from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 
 
 class DcSensitivityAnalysis(SensitivityAnalysis):

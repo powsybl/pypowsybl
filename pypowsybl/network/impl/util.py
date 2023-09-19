@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from os import PathLike
 from typing import List, Optional, Dict
 from pandas import DataFrame
 import pypowsybl._pypowsybl as _pp

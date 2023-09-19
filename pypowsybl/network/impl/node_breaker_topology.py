@@ -7,7 +7,6 @@
 from pandas import DataFrame
 import networkx as _nx
 import pypowsybl._pypowsybl as _pp
-
 from pypowsybl.utils import create_data_frame_from_series_array
 
 

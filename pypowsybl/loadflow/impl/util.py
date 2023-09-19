@@ -4,8 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .parameters import Parameters
 from pypowsybl import _pypowsybl
+from .parameters import Parameters
 
 
 def parameters_from_c(c_parameters: _pypowsybl.LoadFlowParameters) -> Parameters:

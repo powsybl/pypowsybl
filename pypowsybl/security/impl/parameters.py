@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict
-
 from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as LfParameters

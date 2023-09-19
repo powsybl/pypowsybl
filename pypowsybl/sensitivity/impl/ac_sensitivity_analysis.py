@@ -5,13 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List, Union
+from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
 from pypowsybl.report import Reporter
+from pypowsybl.loadflow import Parameters as LfParameters
 from .ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
 from .sensitivity import SensitivityAnalysis
-from pypowsybl import _pypowsybl
 from .parameters import Parameters
-from pypowsybl.loadflow import Parameters as LfParameters
 
 
 class AcSensitivityAnalysis(SensitivityAnalysis):

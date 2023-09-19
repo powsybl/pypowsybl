@@ -12,9 +12,9 @@ from pypowsybl.report import Reporter
 from pypowsybl.network import Network
 from pypowsybl.utils import _get_c_dataframes
 from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
 from .parameters import Parameters
 from .short_circuit_analysis_result import ShortCircuitAnalysisResult
-from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
 
 ShortCircuitStudyType.__module__ = __name__
 

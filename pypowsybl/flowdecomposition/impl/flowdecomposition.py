@@ -8,12 +8,12 @@
 from __future__ import annotations
 from typing import Union, List, Callable, Optional
 import pandas as pd
-from .parameters import Parameters
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
 from pypowsybl.network import Network
 from pypowsybl.utils import create_data_frame_from_series_array
 import pypowsybl.loadflow
+from .parameters import Parameters
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,

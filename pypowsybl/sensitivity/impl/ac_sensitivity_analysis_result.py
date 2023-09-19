@@ -5,12 +5,10 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict, List, Optional
-
 import numpy as np
 import pandas as pd
-
-from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from pypowsybl import _pypowsybl
+from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):

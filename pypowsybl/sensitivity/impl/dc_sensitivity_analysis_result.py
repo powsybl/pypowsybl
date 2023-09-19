@@ -5,10 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict, List, Optional
-
 import numpy as np
 import pandas as pd
-
 from pypowsybl import _pypowsybl
 
 TO_REMOVE = 'TO_REMOVE'

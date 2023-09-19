@@ -5,9 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List
-
-from .util import EventType
 from pypowsybl import _pypowsybl as _pp
+from .util import EventType
 
 
 class EventMapping:

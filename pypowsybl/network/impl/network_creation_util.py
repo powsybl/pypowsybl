@@ -7,12 +7,10 @@
 import io
 from os import PathLike
 from typing import Union, Dict, List
-
 import pypowsybl._pypowsybl as _pp
-
-from .network import Network
 from pypowsybl.report import Reporter
 from pypowsybl.utils import path_to_str
+from .network import Network
 
 
 def _create_network(name: str, network_id: str = '') -> Network:

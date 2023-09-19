@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List, Callable
-
 from pypowsybl import _pypowsybl
 
 

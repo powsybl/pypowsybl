@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from os import PathLike
-from typing import Union as Union
+from typing import Union
 import pandas as pd
 from pypowsybl import _pypowsybl
 

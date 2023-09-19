@@ -8,7 +8,7 @@ from typing import List
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import LimitViolation, PreContingencyResult, PostContingencyResult
-from pypowsybl.security.impl.security import SecurityAnalysis
+from .security import SecurityAnalysis
 
 
 def create_analysis() -> SecurityAnalysis:

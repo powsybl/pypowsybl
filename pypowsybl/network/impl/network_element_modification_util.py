@@ -13,7 +13,6 @@ from numpy._typing import ArrayLike
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
-from .network import Network
 from pypowsybl.report import Reporter
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
@@ -21,6 +20,7 @@ from pypowsybl.utils import (
     _create_properties_c_dataframe,
     create_data_frame_from_series_array
 )
+from .network import Network
 
 
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,

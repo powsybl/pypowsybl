@@ -5,10 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict
-
 import pandas as pd
 from prettytable import PrettyTable
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PreContingencyResult, PostContingencyResult
 from pypowsybl.utils import create_data_frame_from_series_array

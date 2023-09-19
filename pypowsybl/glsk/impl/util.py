@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Union
+from os import PathLike
 from pypowsybl import _pypowsybl
 from pypowsybl.utils import path_to_str  # pylint: disable=protected-access
-from os import PathLike
 from .glsk_document import GLSKDocument
 
 
