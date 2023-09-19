@@ -1441,4 +1441,8 @@ SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalys
     return new SeriesArray(callJava<array*>(::getLimitViolationsResults, shortCircuitAnalysisResult));
 }
 
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getMagnitudeBusResults, shortCircuitAnalysisResult));
+}
+
 }
