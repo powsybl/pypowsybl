@@ -9,7 +9,7 @@ from typing import List, Optional, Union, Dict
 import warnings
 import pandas as pd
 from pandas import DataFrame
-from numpy._typing import ArrayLike
+from numpy.typing import ArrayLike
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
