@@ -57,4 +57,4 @@ When the short-circuit analysis is completed, you can inspect its results:
     ShortCircuitAnalysisResult.fault_results
     ShortCircuitAnalysisResult.feeder_results
     ShortCircuitAnalysisResult.limit_violations
-    ShortCircuitAnalysisResult.short_circuit_bus_results
+    ShortCircuitAnalysisResult.voltage_bus_results
