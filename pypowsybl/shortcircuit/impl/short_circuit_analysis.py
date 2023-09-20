@@ -6,7 +6,7 @@
 #
 from typing import List, Optional
 
-from numpy._typing import ArrayLike
+from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl.report import Reporter
 from pypowsybl.network import Network
