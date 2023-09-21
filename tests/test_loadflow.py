@@ -268,3 +268,9 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n2, reporter=reporter)
     report3 = str(reporter)
     assert len(report3) > len(report2)
+
+
+def test_result_status_as_bool():
+    n = pp.network.create_ieee14()
+    r = pp.loadflow.run_ac(n)
+    assert r[0]
