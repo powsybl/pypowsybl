@@ -90,15 +90,13 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
     def y(self, df: pd.DataFrame, r_col: str, x_col: str):
         return df.apply(lambda row: np.reciprocal(np.complex128(row[r_col] + row[x_col] * 1j)), axis=1)
 
-    def _per_unit_g_not_same_nom_v(self, df: pd.DataFrame, columns: List[str], r_col: str, x_col: str, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
-        for col in columns:
-            ytr = self.y(df, r_col, x_col)
-            df[col] = (df[col] * nominal_v1 * nominal_v1 + (nominal_v1 - nominal_v2) * nominal_v1 * ytr.apply(lambda row: row.real)) / self.sn
+    def _per_unit_g_not_same_nom_v(self, df: pd.DataFrame, column: str, r_col: str, x_col: str, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
+        ytr = self.y(df, r_col, x_col)
+        df[column] = (df[column] * nominal_v1 * nominal_v1 + (nominal_v1 - nominal_v2) * nominal_v1 * ytr.apply(lambda row: row.real)) / self.sn
 
-    def _per_unit_b_not_same_nom_v(self, df: pd.DataFrame, columns: List[str], r_col: str, x_col: str, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
-        for col in columns:
-            ytr = self.y(df, r_col, x_col)
-            df[col] = (df[col] * nominal_v1 * nominal_v1 + (nominal_v1 - nominal_v2) * nominal_v1 * ytr.apply(lambda row: row.imag)) / self.sn
+    def _per_unit_b_not_same_nom_v(self, df: pd.DataFrame, column: str, r_col: str, x_col: str, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
+        ytr = self.y(df, r_col, x_col)
+        df[column] = (df[column] * nominal_v1 * nominal_v1 + (nominal_v1 - nominal_v2) * nominal_v1 * ytr.apply(lambda row: row.imag)) / self.sn
 
     def _per_unit_i(self, df: pd.DataFrame, columns: List[str], nominal_v: pd.Series) -> None:
         factor = self.sn * 10 ** 3 / (self.sqrt3 * nominal_v)
@@ -186,10 +184,10 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_p(lines, ['p1', 'p2', 'q1', 'q2'])
         self._per_unit_i(lines, ['i1'], nominal_v1)
         self._per_unit_i(lines, ['i2'], nominal_v2)
-        self._per_unit_g_not_same_nom_v(lines, ['g1'], 'r', 'x', nominal_v1, nominal_v2)
-        self._per_unit_g_not_same_nom_v(lines, ['g2'], 'r', 'x', nominal_v2, nominal_v1)
-        self._per_unit_b_not_same_nom_v(lines, ['b1'], 'r', 'x', nominal_v1, nominal_v2)
-        self._per_unit_b_not_same_nom_v(lines, ['b2'], 'r', 'x', nominal_v2, nominal_v1)
+        self._per_unit_g_not_same_nom_v(lines, 'g1', 'r', 'x', nominal_v1, nominal_v2)
+        self._per_unit_g_not_same_nom_v(lines, 'g2', 'r', 'x', nominal_v2, nominal_v1)
+        self._per_unit_b_not_same_nom_v(lines, 'b1', 'r', 'x', nominal_v1, nominal_v2)
+        self._per_unit_b_not_same_nom_v(lines, 'b2', 'r', 'x', nominal_v2, nominal_v1)
         self._per_unit_r_not_same_nom_v(lines, ['r', 'x'], nominal_v1, nominal_v2)
         return lines
 
