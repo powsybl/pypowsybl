@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
+from typing import List, Union
 import math
 import pandas as pd
 import numpy as np
@@ -87,7 +87,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         for col in columns:
             df[col] *= factor
 
-    def y(self, df: pd.DataFrame, r_col: str, x_col: str) -> pd.Series:
+    def y(self, df: pd.DataFrame, r_col: str, x_col: str) -> Union[pd.DataFrame, pd.Series]:
         return df.apply(lambda row: np.reciprocal(np.complex128(row[r_col] + row[x_col] * 1j)), axis = 1)
 
     def _per_unit_g_not_same_nom_v(self, df: pd.DataFrame, column: str, ytr: pd.Series, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
