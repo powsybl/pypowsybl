@@ -273,4 +273,4 @@ def test_run_lf_with_report():
 def test_result_status_as_bool():
     n = pp.network.create_ieee14()
     r = pp.loadflow.run_ac(n)
-    assert r[0]
+    assert r[0].status
