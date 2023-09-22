@@ -11,6 +11,7 @@ public final class PyPowsyblConfiguration {
     private static String defaultLoadflowProvider = "OpenLoadFlow";
     private static String defaultSecurityAnalysisProvider = "OpenLoadFlow";
     private static String defaultSensitivityAnalysisProvider = "OpenLoadFlow";
+    private static String defaultShortCircuitAnalysisProvider = "";
 
     private PyPowsyblConfiguration() {
     }
@@ -51,5 +52,13 @@ public final class PyPowsyblConfiguration {
 
     public static void setDefaultSensitivityAnalysisProvider(String sensitivityAnalysisProvider) {
         defaultSensitivityAnalysisProvider = sensitivityAnalysisProvider;
+    }
+
+    public static String getDefaultShortCircuitAnalysisProvider() {
+        return defaultShortCircuitAnalysisProvider;
+    }
+
+    public static void setDefaultShortCircuitAnalysisProvider(String shortCircuitAnalysisProvider) {
+        defaultShortCircuitAnalysisProvider = shortCircuitAnalysisProvider;
     }
 }

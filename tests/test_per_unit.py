@@ -4,12 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-
+from pypowsybl import per_unit_view
 import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 import util
-from pypowsybl.perunit import per_unit_view
+import pytest
 
 
 def test_bus_per_unit():
@@ -43,14 +43,14 @@ def test_generator_per_unit():
     n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'reactive_limits_kind',
+        columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s', 'reactive_limits_kind',
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, 'MIN_MAX', 1.02, 3.01, True, '', -3.03, -1.12641,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, '', -3.03, -1.12641,
                3.16461,
                'VLGEN', 'VLGEN_0', True],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 'MIN_MAX', 1.02, 3.01, True, '',
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True, '',
                -3.03,
                -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
@@ -60,13 +60,13 @@ def test_generator_per_unit():
     n.update_generators(generators2)
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'reactive_limits_kind',
+        columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s', 'reactive_limits_kind',
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, 'MIN_MAX', 1.1, 3.02, False, '', -3.03, -1.12641, NaN,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, '', -3.03, -1.12641, NaN,
                'VLGEN', '', False],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, 'MIN_MAX', 1.02, 3.01, True, '',
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True, '',
                -3.03,
                -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
@@ -414,3 +414,14 @@ def test_ratio_tap_changers_per_unit():
                                      'alpha'],
                             data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+
+def test_lines_not_same_nominal_voltage_per_unit():
+    n = pp.network.create_ieee14()
+    n = per_unit_view(n, 100)
+    lines = n.get_lines()
+    assert lines.loc['L7-8-1']['r'] == 0
+    assert lines.loc['L7-8-1']['x'] == pytest.approx(0.17615, rel=1e-5)
+    assert lines.loc['L7-8-1']['g1'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['g2'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['b1'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['b2'] == pytest.approx(0, rel=1e-16)

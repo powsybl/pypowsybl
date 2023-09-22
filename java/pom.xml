@@ -58,7 +58,7 @@
     </developers>
 
     <packaging>jar</packaging>
-    <version>0.24.0-SNAPSHOT</version>
+    <version>0.25.0-SNAPSHOT</version>
 
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
@@ -67,7 +67,7 @@
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2023.2.2</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2023.2.4</powsybl-dependencies.version>
         <zstdjni.version>1.5.2-5</zstdjni.version>
     </properties>
 
@@ -141,7 +141,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>${maven-shade-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>shade</id>
@@ -263,6 +262,10 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-flow-decomposition</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-shortcircuit-api</artifactId>
         </dependency>
 
         <!-- runtime -->

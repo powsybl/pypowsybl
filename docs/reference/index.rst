@@ -13,4 +13,5 @@ of pypowsybl classes and methods.
    sensitivity
    flowdecomposition
    dynamic
+   shortcircuit
    voltage_initialization

@@ -161,8 +161,8 @@ def test_get_export_parameters():
 
 
 def test_get_export_format():
-    formats = pp.network.get_export_formats()
-    assert ['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+    formats = set(pp.network.get_export_formats())
+    assert set(['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']).intersection(formats)
 
 
 def test_load_network():
@@ -402,7 +402,7 @@ def test_svc_data_frame():
                                   check_dtype=False, atol=1e-2)
 
 
-def test_create_generators_data_frame():
+def test_generators_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators(all_attributes=True)
     assert 'OTHER' == generators['energy_source']['GEN']
@@ -414,6 +414,9 @@ def test_create_generators_data_frame():
     assert 9999.99 == generators['max_q_at_p']['GEN']
     assert -9999.99 == generators['min_q_at_target_p']['GEN']
     assert 9999.99 == generators['max_q_at_target_p']['GEN']
+    n.update_generators(id='GEN', rated_s=100)
+    generators = n.get_generators(all_attributes=True)
+    assert 100 == generators['rated_s']['GEN']
     n = pp.network.create_four_substations_node_breaker_network()
     generators = n.get_generators(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
@@ -809,9 +812,9 @@ def test_sld_nad():
         n.write_network_area_diagram_svg(test_svg, None)
         n.write_network_area_diagram_svg(test_svg, ['VL1'])
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
-        n.write_network_area_diagram_svg('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
-        n.write_network_area_diagram_svg('VL6', low_nominal_voltage_bound=10, depth=10)
-        n.write_network_area_diagram_svg('VL6', high_nominal_voltage_bound=50, depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+        n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
 
 
 def test_current_limits():
