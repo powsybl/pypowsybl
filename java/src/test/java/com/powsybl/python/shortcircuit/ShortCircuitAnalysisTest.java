@@ -63,8 +63,11 @@ class ShortCircuitAnalysisTest {
         MagnitudeFeederResult mfr1 = new MagnitudeFeederResult("connect1", 1.1);
         MagnitudeFeederResult mfr2 = new MagnitudeFeederResult("connect2", 1.2);
 
-        FaultResult fr1 = new MagnitudeFaultResult(f1, 1.0, List.of(mfr1, mfr2), List.of(lv1, lv2), 5.0, FaultResult.Status.SUCCESS);
-        FaultResult fr2 = new MagnitudeFaultResult(f2, 2.0, Collections.emptyList(), List.of(lv3, lv4, lv5), 6.0, FaultResult.Status.SUCCESS);
+        MagnitudeShortCircuitBusResults mbr1 = new MagnitudeShortCircuitBusResults("VL1", "bus1", 10.0, 8.0, 20.0);
+        MagnitudeShortCircuitBusResults mbr2 = new MagnitudeShortCircuitBusResults("VL2", "bus2", 15.0, 13.5, 10.0);
+
+        FaultResult fr1 = new MagnitudeFaultResult(f1, 1.0, List.of(mfr1, mfr2), List.of(lv1, lv2), 5.0, List.of(mbr1), null, FaultResult.Status.SUCCESS);
+        FaultResult fr2 = new MagnitudeFaultResult(f2, 2.0, Collections.emptyList(), List.of(lv3, lv4, lv5), 6.0, List.of(mbr2), null, FaultResult.Status.SUCCESS);
 
         ShortCircuitAnalysisResult fakeResults = new ShortCircuitAnalysisResult(List.of(fr1, fr2));
 
@@ -105,5 +108,22 @@ class ShortCircuitAnalysisTest {
                 .containsExactly("f1", "f1", "f2", "f2", "f2");
         Assertions.assertThat(limitViolationsSeries.get(1).getStrings())
                 .containsExactly("subj1", "subj2", "subj3", "subj4", "subj5");
+
+        List<Series> busResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeBusResultsMapper(), fakeResults);
+        Assertions.assertThat(busResultsSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "voltage_level_id", "bus_id", "initial_voltage_magnitude", "voltage_drop_proportional", "voltage");
+        Assertions.assertThat(busResultsSeries.get(0).getStrings())
+                .containsExactly("f1", "f2");
+        Assertions.assertThat(busResultsSeries.get(1).getStrings())
+                .containsExactly("VL1", "VL2");
+        Assertions.assertThat(busResultsSeries.get(2).getStrings())
+                .containsExactly("bus1", "bus2");
+        Assertions.assertThat(busResultsSeries.get(3).getDoubles())
+                .containsExactly(10.0, 15.0);
+        Assertions.assertThat(busResultsSeries.get(4).getDoubles())
+                .containsExactly(20.0, 10.0);
+        Assertions.assertThat(busResultsSeries.get(5).getDoubles())
+                .containsExactly(8.0, 13.5);
     }
 }

@@ -838,5 +838,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",
           py::arg("result"));
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
+    m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"));
 
 }

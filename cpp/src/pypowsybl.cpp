@@ -1360,7 +1360,6 @@ void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr)
 
 ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src)
 {
-    with_voltage_result = (bool) src->with_voltage_result;
     with_feeder_result = (bool) src->with_feeder_result;
     with_limit_violations = (bool) src->with_limit_violations;
     study_type = static_cast<ShortCircuitStudyType>(src->study_type);
@@ -1379,6 +1378,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->with_limit_violations = (bool) with_limit_violations;
     res->study_type = study_type;
     res->with_fortescue_result = (bool) with_fortescue_result;
+    res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
 
     res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();
@@ -1451,6 +1451,10 @@ SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult) {
 
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getLimitViolationsResults, shortCircuitAnalysisResult));
+}
+
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getMagnitudeBusResults, shortCircuitAnalysisResult));
 }
 
 JavaHandle createVoltageInitializerParams() {
