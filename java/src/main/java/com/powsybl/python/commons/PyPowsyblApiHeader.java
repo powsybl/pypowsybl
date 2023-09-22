@@ -1065,9 +1065,6 @@ public final class PyPowsyblApiHeader {
         public static native ShortCircuitFaultType fromCValue(int value);
     }
 
-
-
-
     @CEnum("VoltageInitializerObjective")
     public enum VoltageInitializerObjective {
         MIN_GENERATION,

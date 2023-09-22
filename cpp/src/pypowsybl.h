@@ -566,7 +566,9 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawaltz package==========
+
 //=======Open Reac Mapping========
+
 JavaHandle createVoltageInitializerParams();
 JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage);
 void VoltageInitializerAddSpecificVoltageLimits(std::string idPtr, double minVoltage, JavaHandle paramsHandle, double maxVoltage);
@@ -580,6 +582,7 @@ void VoltageInitializerApplyAllModifications(JavaHandle resultHandle, JavaHandle
 VoltageInitializerStatus VoltageInitializerGetStatus(JavaHandle resultHandle);
 const std::map<std::string, std::string> VoltageInitializerGetIndicators(JavaHandle resultHandle);
 JavaHandle runVoltageInitializer(bool debug, JavaHandle networkHandle, JavaHandle paramsHandle);
+
 //=======End of Open Reac Mapping========
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);

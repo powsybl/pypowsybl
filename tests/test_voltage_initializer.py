@@ -44,7 +44,7 @@ def test_runner():
     params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
     results = voltage_initializer.run(n, params, True)
-    results.apply_all_modification(n)
+    results.apply_all_modifications(n)
 
     print(results.status())
     print(results.indicators())

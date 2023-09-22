@@ -1,3 +1,10 @@
+#
+# Copyright (c) 2023, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
 from typing import Dict, List, Tuple
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.network import Network as _Network
@@ -12,7 +19,7 @@ class VoltageInitializerParameters:
 
     def add_variable_shunt_compensators(self, shunt_id_list: List[str]) -> None:
         '''
-        Indicate to VoltageInitializer that the given generators have a fixed reactance.
+        Indicate to voltage initializer that the given shunt compensator has a variable susceptance.
 
         Args:
             shunt_id_list: List of shunt ids.
@@ -23,7 +30,7 @@ class VoltageInitializerParameters:
 
     def add_constant_q_generators(self, generator_id_list: List[str]) -> None:
         '''
-        Indicate to VoltageInitializer that the given generators have a fixed reactance.
+        Indicate to voltage initializer that the given generator have a constant target reactive power.
 
         Args:
             generator_id_list: List of generator ids.
@@ -33,7 +40,7 @@ class VoltageInitializerParameters:
 
     def add_variable_two_windings_transformers(self, transformer_id_list: List[str]) -> None:
         '''
-        Indicate to VoltageInitializer that the given 2wt have a variable ratio.
+        Indicate to voltage initializer that the given 2wt have a variable ratio.
 
         Args:
             transformer_id_list: List of transformer ids.
@@ -44,7 +51,8 @@ class VoltageInitializerParameters:
 
     def add_specific_voltage_limits(self, limits: Dict[str, Tuple[float, float]]) -> None:
         '''
-        Indicate to VoltageInitializer to override the network voltages limits. Use this if VoltageInitializer cannot converge because of infeasibility.
+        Indicate to voltage initializer to override the network voltages limits.
+        Use this if voltage initializer cannot converge because of infeasibility.
 
         Args:
             limits: A dictionary keys are voltage ids, values are (lower limit, upper limit)
@@ -87,7 +95,7 @@ class VoltageInitializerParameters:
 
 class VoltageInitializerResults:
     """
-    Stores the result of an VoltageInitializer run.
+    Stores the result of a voltage initializer run.
     """
 
     def __init__(self, result_handle: _pp.JavaHandle) -> None:
@@ -97,9 +105,9 @@ class VoltageInitializerResults:
         self._indicators: Dict[str, str] = _pp.voltage_initializer_get_indicators(
             self._handle)
 
-    def apply_all_modification(self, network: _Network) -> None:
+    def apply_all_modifications(self, network: _Network) -> None:
         '''
-        Apply all the modifications VoltageInitializer found.
+        Apply all the modifications voltage initializer found to the network.
 
         Args:
             network: the network on which the modifications are to be applied.
@@ -123,15 +131,14 @@ class VoltageInitializerResults:
         return self._indicators
 
 
-def run(network: _Network, params: VoltageInitializerParameters, debug: bool) -> VoltageInitializerResults:
+def run(network: _Network, params: VoltageInitializerParameters = VoltageInitializerParameters(), debug: bool = False) -> VoltageInitializerResults:
     """
-    Run VoltageInitializer on the network with the given params.
+    Run voltage initializer on the network with the given params.
 
     Args:
         network: Network on which VoltageInitializer will run
         params: The parameters use to customize the run
         debug: if true, the tmp directory of the VoltageInitializer run will not be erased.
     """
-    result_handle = _pp.run_voltage_initializer(
-        debug, network._handle, params._handle)
+    result_handle = _pp.run_voltage_initializer(debug, network._handle, params._handle)
     return VoltageInitializerResults(result_handle)
