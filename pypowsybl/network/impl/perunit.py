@@ -87,8 +87,8 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         for col in columns:
             df[col] *= factor
 
-    def y(self, df: pd.DataFrame, r_col: str, x_col: str) -> pd.Series:
-        return pd.Series(df.apply(lambda row: np.reciprocal(np.complex128(row[r_col] + row[x_col] * 1j)), axis = 1))
+    def _y(self, df: pd.DataFrame, r_col: str, x_col: str) -> pd.Series:
+        return pd.Series(df.apply(lambda row: np.reciprocal(np.complex128(row[r_col] + row[x_col] * 1j)), axis=1))
 
     def _per_unit_g_not_same_nom_v(self, df: pd.DataFrame, column: str, ytr: pd.Series, nominal_v1: pd.Series, nominal_v2: pd.Series) -> None:
         df[column] = (df[column] * nominal_v1 * nominal_v1 + (nominal_v1 - nominal_v2) * nominal_v1 * ytr.apply(lambda row: row.real)) / self.sn
@@ -182,7 +182,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_p(lines, ['p1', 'p2', 'q1', 'q2'])
         self._per_unit_i(lines, ['i1'], nominal_v1)
         self._per_unit_i(lines, ['i2'], nominal_v2)
-        ytr = self.y(lines, 'r', 'x')
+        ytr = self._y(lines, 'r', 'x')
         self._per_unit_r_not_same_nom_v(lines, ['r', 'x'], nominal_v1, nominal_v2)
         self._per_unit_g_not_same_nom_v(lines, 'g1', ytr, nominal_v1, nominal_v2)
         self._per_unit_g_not_same_nom_v(lines, 'g2', ytr, nominal_v2, nominal_v1)
