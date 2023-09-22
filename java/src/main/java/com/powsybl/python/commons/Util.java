@@ -15,6 +15,7 @@ import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationT
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
+import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
@@ -386,25 +387,16 @@ public final class Util {
         }
     }
 
-    public static VoltageInitializerStatus convert(com.powsybl.openreac.parameters.output.OpenReacStatus obj) {
-        if (com.powsybl.openreac.parameters.output.OpenReacStatus.OK.equals(obj)) {
-            return VoltageInitializerStatus.OK;
-        } else {
-            return VoltageInitializerStatus.NOT_OK;
-        }
+    public static VoltageInitializerStatus convert(OpenReacStatus status) {
+        return status == OpenReacStatus.OK ? VoltageInitializerStatus.OK : VoltageInitializerStatus.NOT_OK;
     }
 
     public static OpenReacOptimisationObjective convert(VoltageInitializerObjective obj) {
-        switch (obj) {
-            case MIN_GENERATION:
-                return OpenReacOptimisationObjective.MIN_GENERATION;
-            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT:
-                return OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
-            case SPECIFIC_VOLTAGE_PROFILE:
-                return OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
-            default:
-                throw new PowsyblException("Unknown VoltageInitializerObjective type: " + obj);
-        }
+        return switch (obj) {
+            case MIN_GENERATION -> OpenReacOptimisationObjective.MIN_GENERATION;
+            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT -> OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
+            case SPECIFIC_VOLTAGE_PROFILE -> OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
+        };
     }
 
     public static byte[] binaryBufferToBytes(ByteBuffer buffer) {

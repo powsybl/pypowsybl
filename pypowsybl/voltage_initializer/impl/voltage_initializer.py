@@ -123,6 +123,7 @@ class VoltageInitializerResults:
         '''
         voltage_initializer_apply_all_modifications(self._handle, network._handle)
 
+    @property
     def status(self) -> VoltageInitializerStatus:
         '''
         If the optimisation failed, it can be useful to check the indicators.
@@ -131,6 +132,7 @@ class VoltageInitializerResults:
         '''
         return self._status
 
+    @property
     def indicators(self) -> Dict[str, str]:
         '''
         Returns:

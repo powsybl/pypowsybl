@@ -31,20 +31,17 @@ Here is a simple starting example:
 
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
-    params = voltage_initializer.VoltageInitializerParameters()
+    params = v_init.VoltageInitializerParameters()
     n = pp.network.create_eurostag_tutorial_example1_network()
     some_gen_id = n.get_generators().iloc[0].name
     params.add_constant_q_generators([some_gen_id])
-    # no shunts in eurostag_tutorial_example1_network
-    # some_shunt_id = n.get_shunt_compensators().iloc[0].name
-    # params.add_variable_shunt_compensators([n.get_shunt_compensators().iloc[0].name])
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
     params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
-    results = voltage_initializer.run(n, params, True)
+    results = v_init.run(n, params)
     results.apply_all_modification(n)
 
     print(results.status())

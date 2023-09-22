@@ -1,9 +1,7 @@
-#
-# Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+# Copyright (c) 2023, RTE (http://www.rte-france.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
 import pypowsybl as pp
 import pypowsybl.voltage_initializer as va
 import pytest
@@ -19,7 +17,7 @@ def test_parameters():
     params.add_variable_two_windings_transformers(["twt1", "twt2"])
 
     params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
-    params.add_specific_voltage_limits({"vl_id": (0.5,1.2)})
+    params.add_specific_voltage_limits({"vl_id": (0.5, 1.2)})
 
     params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)
@@ -27,22 +25,19 @@ def test_parameters():
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")
 def test_runner():
-    from pypowsybl import network, voltage_initializer as va
-    params = va.VoltageInitializerParameters()
+    from pypowsybl import network, voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
     n = network.create_eurostag_tutorial_example1_network()
     some_gen_id = n.get_generators().iloc[0].name
     params.add_constant_q_generators([some_gen_id])
-    # no shunts in eurostag_tutorial_example1_network
-    # some_shunt_id = n.get_shunt_compensators().iloc[0].name
-    # params.add_variable_shunt_compensators([n.get_shunt_compensators().iloc[0].name])
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
     params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
-    params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
+    params.set_objective(v_init.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
-    results = va.run(n, params, True)
+    results = v_init.run(n, params, True)
     results.apply_all_modifications(n)
 
-    print(results.status())
-    print(results.indicators())
+    assert results.status == v_init.VoltageInitializerStatus.OK
+    assert len(results.indicators) == 78

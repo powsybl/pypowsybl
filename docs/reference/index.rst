@@ -14,4 +14,4 @@ of pypowsybl classes and methods.
    flowdecomposition
    dynamic
    shortcircuit
-   voltage_initialization
+   voltage_initializer

@@ -80,8 +80,8 @@ public final class NetworkAreaDiagramUtil {
             if (vl == null) {
                 throw new PowsyblException("Unknown voltage level id '" + voltageLevelId + "'");
             }
-            if ((lowNominalVoltageBound > 0 && vl.getNominalV() < lowNominalVoltageBound) ||
-                    (highNominalVoltageBound > 0 && vl.getNominalV() > highNominalVoltageBound)) {
+            if (lowNominalVoltageBound > 0 && vl.getNominalV() < lowNominalVoltageBound ||
+                    highNominalVoltageBound > 0 && vl.getNominalV() > highNominalVoltageBound) {
                 throw new PowsyblException("vl '" + voltageLevelId +
                         "' has his nominal voltage out of the indicated thresholds");
             }
