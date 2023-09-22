@@ -604,6 +604,7 @@ void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, Shor
 SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult);
 
 }
 #endif //PYPOWSYBL_H

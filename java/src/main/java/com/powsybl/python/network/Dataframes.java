@@ -25,14 +25,12 @@ import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
 import com.powsybl.python.security.ThreeWindingsTransformerResultContext;
 import com.powsybl.python.shortcircuit.LimitViolationFaultContext;
+import com.powsybl.python.shortcircuit.MagnitudeBusResultsContext;
 import com.powsybl.python.shortcircuit.MagnitudeFeederResultContext;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
-import com.powsybl.shortcircuit.FaultResult;
-import com.powsybl.shortcircuit.MagnitudeFaultResult;
-import com.powsybl.shortcircuit.MagnitudeFeederResult;
-import com.powsybl.shortcircuit.ShortCircuitAnalysisResult;
+import com.powsybl.shortcircuit.*;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -543,4 +541,30 @@ public final class Dataframes {
                 .build();
     }
 
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper() {
+        return SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
+    }
+
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();
+
+    public static List<MagnitudeBusResultsContext> getMagnitudeBusResultsContexts(ShortCircuitAnalysisResult result) {
+        List<MagnitudeBusResultsContext> busResults = result.getFaultResults().stream()
+                .flatMap(a -> a.getShortCircuitBusResults()
+                        .stream()
+                        .map(ss -> new MagnitudeBusResultsContext(a.getFault().getId(), (MagnitudeShortCircuitBusResults) ss)))
+                .collect(Collectors.toList());
+        return busResults;
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeBusResultsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeBusResultsContext>()
+                .itemsProvider(Dataframes::getMagnitudeBusResultsContexts)
+                .stringsIndex("id", MagnitudeBusResultsContext::getFaultId)
+                .stringsIndex("voltage_level_id", MagnitudeBusResultsContext::getVoltageLevelId)
+                .stringsIndex("bus_id", MagnitudeBusResultsContext::getBusId)
+                .doubles("initial_voltage_magnitude", MagnitudeBusResultsContext::getInitialVoltageMagnitude)
+                .doubles("voltage_drop_proportional", MagnitudeBusResultsContext::getVoltageDropProportional)
+                .doubles("voltage", MagnitudeBusResultsContext::getVoltage)
+                .build();
+    }
 }

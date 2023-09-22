@@ -37,3 +37,11 @@ class ShortCircuitAnalysisResult:
         contains a list of all the violations after the fault, in a dataframe representation.
         """
         return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_limit_violations(self._handle))
+
+    @property
+    def voltage_bus_results(self) -> pd.DataFrame:
+        """
+        contains a list of all the short circuit voltage bus results, in a dataframe representation.
+        It should be empty when the parameter with_voltage_result is set to false
+        """
+        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_bus_results(self._handle))
