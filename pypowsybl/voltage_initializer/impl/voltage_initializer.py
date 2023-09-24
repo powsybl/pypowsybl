@@ -27,6 +27,7 @@ from pypowsybl.network import Network
 
 class VoltageInitializerParameters:
     """
+    Parameters of a voltage initializer run.
     """
 
     def __init__(self) -> None:
@@ -106,7 +107,7 @@ class VoltageInitializerParameters:
 
 class VoltageInitializerResults:
     """
-    Stores the result of a voltage initializer run.
+    Results of a voltage initializer run.
     """
 
     def __init__(self, result_handle: JavaHandle) -> None:
@@ -146,9 +147,9 @@ def run(network: Network, params: VoltageInitializerParameters = VoltageInitiali
     Run voltage initializer on the network with the given params.
 
     Args:
-        network: Network on which VoltageInitializer will run
-        params: The parameters use to customize the run
-        debug: if true, the tmp directory of the VoltageInitializer run will not be erased.
+        network: Network on which voltage initializer will run
+        params: The parameters used to customize the run
+        debug: if true, the tmp directory of the voltage initializer run will not be erased.
     """
     result_handle = run_voltage_initializer(debug, network._handle, params._handle)
     return VoltageInitializerResults(result_handle)
