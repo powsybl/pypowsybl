@@ -9,7 +9,7 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
-from pypowsybl import _pypowsybl
+from pypowsybl import _pypowsybl, voltage_initializer
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
@@ -38,7 +38,8 @@ __all__ = [
     "sensitivity",
     "glsk",
     "flowdecomposition",
-    "shortcircuit"
+    "shortcircuit",
+    "voltage_initializer"
 ]
 
 

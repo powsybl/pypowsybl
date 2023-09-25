@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -72,6 +73,27 @@ public final class PyPowsyblApiHeader {
     public static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
+    }
+
+    @CStruct("string_map")
+    public interface StringMap extends PointerBase {
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        @CField("keys")
+        CCharPointerPointer getKeys();
+
+        @CField("keys")
+        void setKeys(CCharPointerPointer keys);
+
+        @CField("values")
+        CCharPointerPointer getValues();
+
+        @CField("values")
+        void setValues(CCharPointerPointer values);
     }
 
     @CStruct("network_metadata")
@@ -1043,5 +1065,28 @@ public final class PyPowsyblApiHeader {
         public static native ShortCircuitFaultType fromCValue(int value);
     }
 
+    @CEnum("VoltageInitializerObjective")
+    public enum VoltageInitializerObjective {
+        MIN_GENERATION,
+        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+        SPECIFIC_VOLTAGE_PROFILE;
 
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerObjective fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerStatus")
+    public enum VoltageInitializerStatus {
+        OK,
+        NOT_OK;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerStatus fromCValue(int value);
+    }
 }

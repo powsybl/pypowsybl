@@ -17,6 +17,12 @@ typedef struct array_struct {
     int length;
 } array;
 
+typedef struct string_map_struct {
+    int length;
+    char** keys;
+    char** values;
+} string_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
@@ -309,3 +315,14 @@ typedef enum {
     BUS_FAULT = 0,
     BRANCH_FAULT,
 } ShortCircuitFaultType;
+
+typedef enum {
+    OK = 0,
+    NOT_OK,
+} VoltageInitializerStatus;
+
+typedef enum {
+    MIN_GENERATION = 0,
+    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+    SPECIFIC_VOLTAGE_PROFILE,
+} VoltageInitializerObjective;

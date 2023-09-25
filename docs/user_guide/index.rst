@@ -17,3 +17,4 @@ relying as much as possible on practical examples.
    flowdecomposition
    dynamic
    shortcircuit
+   voltage_initializer

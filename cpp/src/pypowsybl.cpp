@@ -238,6 +238,18 @@ private:
 };
 
 
+std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
+    std::map<std::string, std::string> stdStringMap;
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        char** valuePtr = (char**) map->values + i;
+        // ternary is to protect from UB with nullptr
+        stdStringMap.emplace(std::string(*keyPtr ? *keyPtr : ""), std::string(*valuePtr ? *valuePtr : ""));
+    }
+    callJava<>(::freeStringMap, map);
+    return stdStringMap;
+}
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1372,7 +1384,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
     res->provider_parameters_values_count = provider_parameters_values.size();
-    
+
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<shortcircuit_analysis_parameters>(res, [](shortcircuit_analysis_parameters* ptr){
         deleteShortCircuitAnalysisParameters(ptr);
@@ -1443,6 +1455,59 @@ SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalys
 
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult) {
     return new SeriesArray(callJava<array*>(::getMagnitudeBusResults, shortCircuitAnalysisResult));
+}
+
+JavaHandle createVoltageInitializerParams() {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageInitializerParams);
+}
+
+JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage) {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageLimitOverride, minVoltage, maxVoltage);
+}
+
+void voltageInitializerAddSpecificVoltageLimits(const std::string& idPtr, double minVoltage, const JavaHandle& paramsHandle, double maxVoltage) {
+    pypowsybl::callJava(::voltageInitializerAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
+}
+
+void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddVariableShuntCompensators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddConstantQGenerators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr) {
+    pypowsybl::callJava(::voltageInitializerAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
+}
+
+void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
+    pypowsybl::callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
+}
+
+void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
+    pypowsybl::callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
+}
+
+void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
+    pypowsybl::callJava(::voltageInitializerApplyAllModifications, resultHandle, networkHandle);
+}
+
+VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle) {
+    return pypowsybl::callJava<VoltageInitializerStatus>(::voltageInitializerGetStatus, resultHandle);
+}
+
+std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHandle& resultHandle) {
+    string_map* indicators = pypowsybl::callJava<string_map*>(::voltageInitializerGetIndicators, resultHandle);
+    return convertMapStructToStdMap(indicators);
+}
+
+JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, const JavaHandle& paramsHandle) {
+    return pypowsybl::callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
 }
