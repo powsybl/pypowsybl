@@ -783,6 +783,13 @@ std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vecto
     return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed));
 }
 
+std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth) {
+    ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
+    auto displayedVoltageLevelIdsArrayPtr = callJava<array*>(::getDisplayedVoltageLevels, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
+    ToStringVector displayedVoltageLevelIds(displayedVoltageLevelIdsArrayPtr);
+    return displayedVoltageLevelIds.get();
+}
+
 JavaHandle createSecurityAnalysis() {
     return callJava<JavaHandle>(::createSecurityAnalysis);
 }

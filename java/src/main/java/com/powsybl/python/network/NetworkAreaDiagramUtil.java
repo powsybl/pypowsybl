@@ -93,6 +93,14 @@ public final class NetworkAreaDiagramUtil {
         return new VoltageLevelFilter(voltageLevels);
     }
 
+    public static List<String> getDisplayedVoltageLevels(Network network, List<String> voltageLevelIds, int depth) {
+        NetworkGraphBuilder builder = new NetworkGraphBuilder(network, VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth));
+        return builder.getVoltageLevels().stream()
+                .map(VoltageLevel::getId)
+                .sorted()
+                .toList();
+    }
+
     private static void traverseVoltageLevels(Set<VoltageLevel> voltageLevelsDepth, int depth, Set<VoltageLevel> visitedVoltageLevels,
                                               double highNominalVoltageBound, double lowNominalVoltageBound) {
         if (depth >= 0) {

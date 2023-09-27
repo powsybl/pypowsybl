@@ -31,4 +31,14 @@ class NetworkAreaDiagramUtilTest {
         assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.svg"))), StandardCharsets.UTF_8)),
                      TestUtil.normalizeLineSeparator(svg));
     }
+
+    @Test
+    void testGetVisibleVoltageLevels() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLine();
+        List<String> ids = NetworkAreaDiagram.getDisplayedVoltageLevels(network, List.of("VLHV1"), 1);
+        assertEquals("VLGEN, VLHV1, VLHV2", String.join(", ", ids));
+
+        ids = NetworkAreaDiagram.getDisplayedVoltageLevels(network, List.of("VLHV1"), 2);
+        assertEquals("VLGEN, VLHV1, VLHV2, VLLOAD", String.join(", ", ids));
+    }
 }
