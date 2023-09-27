@@ -10,12 +10,13 @@ import com.google.common.io.ByteStreams;
 import com.powsybl.commons.test.TestUtil;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.test.*;
+import com.powsybl.nad.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
