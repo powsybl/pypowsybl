@@ -13,7 +13,7 @@ from .impl.network import (
 from .impl.svg import Svg
 from .impl.bus_breaker_topology import BusBreakerTopology
 from .impl.node_breaker_topology import NodeBreakerTopology
-from .impl.layout_parameters import LayoutParameters
+from .impl.sld_parameters import SldParameters
 from .impl.network_creation_util import (
     create_empty,
     create_ieee9,
