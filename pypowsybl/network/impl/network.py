@@ -187,12 +187,8 @@ class Network:  # pylint: disable=too-many-public-methods
             metadata_file: a json metadata file path
             parameters: single-line diagram parameters to adjust the rendering of the diagram
         """
-<<<<<<< HEAD:pypowsybl/network/impl/network.py
 
         svg_file = path_to_str(svg_file)
-=======
-        svg_file = _path_to_str(svg_file)
->>>>>>> 38b1ae2bd6164bfe61e38a901c11bf3c00355199:pypowsybl/network.py
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
                                           '' if metadata_file is None else path_to_str(metadata_file), p)
@@ -208,14 +204,9 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the single line diagram
         """
-<<<<<<< HEAD:pypowsybl/network/impl/network.py
 
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
-=======
-        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
-        svg_and_metadata: _List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
->>>>>>> 38b1ae2bd6164bfe61e38a901c11bf3c00355199:pypowsybl/network.py
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
