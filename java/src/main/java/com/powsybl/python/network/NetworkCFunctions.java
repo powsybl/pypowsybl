@@ -964,8 +964,8 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDisplayedVoltageLevels")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
-                                                        int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
+                                                                                                                   int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);

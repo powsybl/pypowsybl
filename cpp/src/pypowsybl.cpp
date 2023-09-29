@@ -785,7 +785,7 @@ std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vecto
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth) {
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    auto displayedVoltageLevelIdsArrayPtr = callJava<array*>(::getDisplayedVoltageLevels, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
+    auto displayedVoltageLevelIdsArrayPtr = callJava<array*>(::getNetworkAreaDiagramDisplayedVoltageLevels, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
     ToStringVector displayedVoltageLevelIds(displayedVoltageLevelIdsArrayPtr);
     return displayedVoltageLevelIds.get();
 }
