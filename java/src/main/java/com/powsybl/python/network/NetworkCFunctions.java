@@ -35,7 +35,11 @@ import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
+import com.powsybl.sld.SldParameters;
+import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.SvgParameters;
+import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -856,7 +860,7 @@ public final class NetworkCFunctions {
                     .setComponentLibrary(ComponentLibrary.find(componentLibrary).orElseGet(ConvergenceComponentLibrary::new));
 
             if (!topologicalColoring) {
-                sldParameters.setStyleProviderFactory(NominalVoltageStyleProviderFactory);
+                sldParameters.setStyleProviderFactory(new NominalVoltageStyleProviderFactory());
             }
 
             this.sldParameters = sldParameters;
