@@ -7,17 +7,17 @@
 import pypowsybl._pypowsybl as _pp
 
 
-class LayoutParameters:
+class SldParameters:
     """
-    This class represents layout parameters for a single line diagram svg generation."""
+    This class represents sld parameters for a single line diagram svg generation."""
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
+                 nodes_infos: bool = False, topological_coloring: bool = True, component_library: str = 'Convergence'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
-        self._topological_coloring = topological_coloring
         self._nodes_infos = nodes_infos
+        self._topological_coloring = topological_coloring
         self._component_library = component_library
 
     @property
@@ -36,22 +36,22 @@ class LayoutParameters:
         return self._diagonal_label
 
     @property
-    def topological_coloring(self) -> bool:
-        """When False, coloring is based only on nominal voltage."""
-        return self._topological_coloring
-
-    @property
     def nodes_infos(self) -> bool:
         """When True, add infos about voltage and angle."""
         return self._nodes_infos
+
+    @property
+    def topological_coloring(self) -> bool:
+        """When False, coloring is based only on nominal voltage."""
+        return self._topological_coloring
 
     @property
     def component_library(self) -> str:
         """name of the library used for component"""
         return self._component_library
 
-    def _to_c_parameters(self) -> _pp.LayoutParameters:
-        c_parameters = _pp.LayoutParameters()
+    def _to_c_parameters(self) -> _pp.SldParameters:
+        c_parameters = _pp.SldParameters()
         c_parameters.use_name = self._use_name
         c_parameters.center_name = self._center_name
         c_parameters.diagonal_label = self._diagonal_label

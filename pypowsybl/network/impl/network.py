@@ -39,7 +39,7 @@ from pypowsybl.utils import (
 from pypowsybl.report import Reporter
 from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
-from .layout_parameters import LayoutParameters
+from .sld_parameters import SldParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
