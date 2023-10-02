@@ -214,7 +214,6 @@ def test_get_provider_parameters_names():
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
         'secondaryVoltageControl',
-        'controllerToPilotPointVoltageSensiEpsilon',
         'reactiveLimitsMaxPqPvSwitch',
         'newtonRaphsonStoppingCriteriaType',
         'maxActivePowerMismatch',
@@ -230,7 +229,8 @@ def test_get_provider_parameters_names():
         'slackBusCountryFilter',
         'actionableSwitchesIds',
         'asymmetrical',
-        'minNominalVoltageTargetVoltageCheck'
+        'minNominalVoltageTargetVoltageCheck',
+        'reactivePowerDispatchMode'
     ]
 
 
