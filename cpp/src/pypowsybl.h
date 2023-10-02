@@ -90,6 +90,10 @@ std::vector<T> toVector(array* arrayPtr) {
 
 template<>
 std::vector<std::string> toVector(array* arrayPtr);
+/**
+ * Creates a map from the structure and ***FREE*** the memory of the pointer !
+*/
+std::map<std::string, std::string> convertMapStructToStdMap(string_map* map);
 
 enum class LoadFlowComponentStatus {
     CONVERGED = 0,
@@ -563,10 +567,66 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawaltz package==========
 
+//=======Voltage initializer mapping========
+
+JavaHandle createVoltageInitializerParams();
+JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage);
+void voltageInitializerAddSpecificVoltageLimits(const std::string& idPtr, double minVoltage, const JavaHandle& paramsHandle, double maxVoltage);
+void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr);
+void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
+void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
+void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr);
+void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
+void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
+void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
+VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);
+std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHandle& resultHandle);
+JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, const JavaHandle& paramsHandle);
+
+//=======End of voltage initializer mapping========
+
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType);
 
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
+
+//=======short-circuit analysis==========
+enum ShortCircuitStudyType {
+    SUB_TRANSIENT = 0,
+    TRANSIENT,
+    STEADY_STATE
+};
+
+class ShortCircuitAnalysisParameters {
+public:
+    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
+    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
+
+    bool with_voltage_result;
+    bool with_feeder_result;
+    bool with_limit_violations;
+    ShortCircuitStudyType study_type;
+    bool with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
+std::string getDefaultShortCircuitAnalysisProvider();
+std::vector<std::string> getShortCircuitAnalysisProviderNames();
+ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters();
+std::vector<std::string> getShortCircuitAnalysisProviderParametersNames(const std::string& shortCircuitAnalysisProvider);
+JavaHandle createShortCircuitAnalysis();
+JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
+std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType);
+void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType);
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult);
+
 }
 #endif //PYPOWSYBL_H

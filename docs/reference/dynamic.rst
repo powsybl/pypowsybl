@@ -27,9 +27,9 @@ EventMapping
    :toctree: api/
 
     EventMapping
+    EventMapping.get_possible_events
     EventMapping.add_branch_disconnection
-    EventMapping.add_set_point_boolean
-    EventMapping.add_event
+    EventMapping.add_injection_disconnection
 
 CurveMapping
 ------------

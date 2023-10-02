@@ -14,8 +14,6 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
-import com.powsybl.iidm.network.Exporter;
-import com.powsybl.iidm.network.Importer;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
@@ -26,9 +24,13 @@ import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
 import com.powsybl.python.security.ThreeWindingsTransformerResultContext;
+import com.powsybl.python.shortcircuit.LimitViolationFaultContext;
+import com.powsybl.python.shortcircuit.MagnitudeBusResultsContext;
+import com.powsybl.python.shortcircuit.MagnitudeFeederResultContext;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.shortcircuit.*;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -457,5 +459,112 @@ public final class Dataframes {
             .map(XnecWithDecompositionContext::new)
             .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
             .collect(Collectors.toList());
+    }
+
+    // shortcircuit
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper() {
+        return SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
+    }
+
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER = createMagnitudeFaultResultsMapper();
+
+    private static List<MagnitudeFaultResult> getMagnitudeFaultResults(ShortCircuitAnalysisResult result) {
+        return result.getFaultResults().stream().filter(f -> f instanceof MagnitudeFaultResult)
+                .map(f -> (MagnitudeFaultResult) f)
+                .collect(Collectors.toList());
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFaultResultsMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFaultResult>()
+                .itemsProvider(Dataframes::getMagnitudeFaultResults)
+                .stringsIndex("id", f -> f.getFault().getId())
+                .enums("status", FaultResult.Status.class, f -> f.getStatus())
+                .doubles("short_circuit_power", MagnitudeFaultResult::getShortCircuitPower)
+                .strings("time_constant", f -> f.getTimeConstant() != null ? f.getTimeConstant().toString() : null)
+                .doubles("current", MagnitudeFaultResult::getCurrent)
+                .doubles("voltage", MagnitudeFaultResult::getVoltage)
+                .build();
+    }
+
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisLimitViolationsResultsMapper() {
+        return SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER;
+    }
+
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER = createLimitViolationsFaultMapper();
+
+    public static List<LimitViolationFaultContext> getFaultLimitViolations(ShortCircuitAnalysisResult result) {
+        List<LimitViolationFaultContext> limitViolations = result.getFaultResults().stream()
+                .flatMap(a -> a.getLimitViolations()
+                        .stream()
+                        .map(ss -> new LimitViolationFaultContext(a.getFault().getId(), ss)))
+                .collect(Collectors.toList());
+        return limitViolations;
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createLimitViolationsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, LimitViolationFaultContext>()
+                .itemsProvider(Dataframes::getFaultLimitViolations)
+                .stringsIndex("id", LimitViolationFaultContext::getFaultId)
+                .stringsIndex("subject_id", LimitViolation::getSubjectId)
+                .strings("subject_name", p -> Objects.toString(p.getSubjectName(), ""))
+                .enums("limit_type", LimitViolationType.class, LimitViolation::getLimitType)
+                .strings("limit_name", p -> Objects.toString(p.getLimitName(), ""))
+                .doubles("limit", LimitViolation::getLimit)
+                .ints("acceptable_duration", LimitViolation::getAcceptableDuration)
+                .doubles("limit_reduction", LimitViolation::getLimitReduction)
+                .doubles("value", LimitViolation::getValue)
+                .strings("side", p -> Objects.toString(p.getSide(), ""))
+                .build();
+    }
+
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper() {
+        return SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
+    }
+
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER = createMagnitudeFeederMapper();
+
+    public static List<MagnitudeFeederResultContext> getMagnitudeFeederResultContexts(ShortCircuitAnalysisResult result) {
+        List<MagnitudeFeederResultContext> feederResults = result.getFaultResults().stream()
+                .flatMap(a -> a.getFeederResults()
+                        .stream()
+                        .map(ss -> new MagnitudeFeederResultContext(a.getFault().getId(), (MagnitudeFeederResult) ss)))
+                .collect(Collectors.toList());
+        return feederResults;
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFeederMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFeederResultContext>()
+                .itemsProvider(Dataframes::getMagnitudeFeederResultContexts)
+                .stringsIndex("id", MagnitudeFeederResultContext::getFaultId)
+                .stringsIndex("connectable_id", MagnitudeFeederResultContext::getConnectableId)
+                .doubles("current", MagnitudeFeederResultContext::getCurrent)
+                .build();
+    }
+
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper() {
+        return SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
+    }
+
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();
+
+    public static List<MagnitudeBusResultsContext> getMagnitudeBusResultsContexts(ShortCircuitAnalysisResult result) {
+        List<MagnitudeBusResultsContext> busResults = result.getFaultResults().stream()
+                .flatMap(a -> a.getShortCircuitBusResults()
+                        .stream()
+                        .map(ss -> new MagnitudeBusResultsContext(a.getFault().getId(), (MagnitudeShortCircuitBusResults) ss)))
+                .collect(Collectors.toList());
+        return busResults;
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeBusResultsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeBusResultsContext>()
+                .itemsProvider(Dataframes::getMagnitudeBusResultsContexts)
+                .stringsIndex("id", MagnitudeBusResultsContext::getFaultId)
+                .stringsIndex("voltage_level_id", MagnitudeBusResultsContext::getVoltageLevelId)
+                .stringsIndex("bus_id", MagnitudeBusResultsContext::getBusId)
+                .doubles("initial_voltage_magnitude", MagnitudeBusResultsContext::getInitialVoltageMagnitude)
+                .doubles("voltage_drop_proportional", MagnitudeBusResultsContext::getVoltageDropProportional)
+                .doubles("voltage", MagnitudeBusResultsContext::getVoltage)
+                .build();
     }
 }

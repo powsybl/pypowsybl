@@ -14,7 +14,11 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.ValidationLevel;
+import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
+import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
@@ -33,6 +37,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -93,6 +98,17 @@ public final class Util {
         }
     }
 
+    public static <T extends Enum<?>> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr,
+            Supplier<T> supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return null;
+        }
+    }
+
     public interface PointerProvider<T extends WordBase> {
 
         T get();
@@ -109,11 +125,20 @@ public final class Util {
     }
 
     public static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
+        return allocArrayPointer(getStringListAsPtr(stringList), stringList.size());
+    }
+
+    /**
+     * Unsafe to use without an indicator of size !
+     *
+     * @param stringList the string list to transform into a pointer
+     */
+    public static CCharPointerPointer getStringListAsPtr(List<String> stringList) {
         CCharPointerPointer stringListPtr = UnmanagedMemory.calloc(stringList.size() * SizeOf.get(CCharPointerPointer.class));
         for (int i = 0; i < stringList.size(); i++) {
             stringListPtr.addressOf(i).write(CTypeUtil.toCharPtr(stringList.get(i)));
         }
-        return allocArrayPointer(stringListPtr, stringList.size());
+        return stringListPtr;
     }
 
     public static ArrayPointer<CDoublePointer> createDoubleArray(List<Double> doubleList) {
@@ -360,6 +385,18 @@ public final class Util {
             default:
                 throw new PowsyblException("Unknown network modification type: " + networkModificationType);
         }
+    }
+
+    public static VoltageInitializerStatus convert(OpenReacStatus status) {
+        return status == OpenReacStatus.OK ? VoltageInitializerStatus.OK : VoltageInitializerStatus.NOT_OK;
+    }
+
+    public static OpenReacOptimisationObjective convert(VoltageInitializerObjective obj) {
+        return switch (obj) {
+            case MIN_GENERATION -> OpenReacOptimisationObjective.MIN_GENERATION;
+            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT -> OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
+            case SPECIFIC_VOLTAGE_PROFILE -> OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
+        };
     }
 
     public static byte[] binaryBufferToBytes(ByteBuffer buffer) {

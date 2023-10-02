@@ -238,6 +238,18 @@ private:
 };
 
 
+std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
+    std::map<std::string, std::string> stdStringMap;
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        char** valuePtr = (char**) map->values + i;
+        // ternary is to protect from UB with nullptr
+        stdStringMap.emplace(std::string(*keyPtr ? *keyPtr : ""), std::string(*valuePtr ? *valuePtr : ""));
+    }
+    callJava<>(::freeStringMap, map);
+    return stdStringMap;
+}
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1337,6 +1349,165 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframes,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
     pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+}
+
+/*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
+
+void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+}
+
+ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src)
+{
+    with_feeder_result = (bool) src->with_feeder_result;
+    with_limit_violations = (bool) src->with_limit_violations;
+    study_type = static_cast<ShortCircuitStudyType>(src->study_type);
+    with_fortescue_result = (bool) src->with_fortescue_result;
+    with_voltage_result = (bool) src->with_voltage_result;
+    min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
+
+    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
+    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+}
+
+std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters::to_c_struct() const {
+    shortcircuit_analysis_parameters* res = new shortcircuit_analysis_parameters();
+    res->with_voltage_result = (bool) with_voltage_result;
+    res->with_feeder_result = (bool) with_feeder_result;
+    res->with_limit_violations = (bool) with_limit_violations;
+    res->study_type = study_type;
+    res->with_fortescue_result = (bool) with_fortescue_result;
+    res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
+
+    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+    res->provider_parameters_keys_count = provider_parameters_keys.size();
+    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+    res->provider_parameters_values_count = provider_parameters_values.size();
+
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<shortcircuit_analysis_parameters>(res, [](shortcircuit_analysis_parameters* ptr){
+        deleteShortCircuitAnalysisParameters(ptr);
+        delete ptr;
+    });
+}
+
+void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider) {
+    callJava<>(::setDefaultShortCircuitAnalysisProvider, (char*) shortCircuitAnalysisProvider.data());
+}
+
+std::string getDefaultShortCircuitAnalysisProvider() {
+    return toString(callJava<char*>(::getDefaultShortCircuitAnalysisProvider));
+}
+
+std::vector<std::string> getShortCircuitAnalysisProviderNames() {
+    auto formatsArrayPtr = callJava<array*>(::getShortCircuitAnalysisProviderNames);
+    ToStringVector formats(formatsArrayPtr);
+    return formats.get();
+}
+
+std::vector<std::string> getShortCircuitAnalysisProviderParametersNames(const std::string& shortCircuitAnalysisProvider) {
+    auto providerParametersArrayPtr = pypowsybl::callJava<array*>(::getShortCircuitAnalysisProviderParametersNames, (char*) shortCircuitAnalysisProvider.c_str());
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
+JavaHandle createShortCircuitAnalysis() {
+    return callJava<JavaHandle>(::createShortCircuitAnalysis);
+}
+
+JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters,
+    const std::string& provider, JavaHandle* reporter) {
+    auto c_parameters = parameters.to_c_struct();
+    return callJava<JavaHandle>(::runShortCircuitAnalysis, shortCircuitAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
+}
+
+ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters() {
+    shortcircuit_analysis_parameters* parameters_ptr = callJava<shortcircuit_analysis_parameters*>(::createShortCircuitAnalysisParameters);
+    auto parameters = std::shared_ptr<shortcircuit_analysis_parameters>(parameters_ptr, [](shortcircuit_analysis_parameters* ptr){
+        callJava(::freeShortCircuitAnalysisParameters, ptr);
+    });
+    return new ShortCircuitAnalysisParameters(parameters.get());
+}
+
+std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType) {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getFaultsDataframeMetaData, faultType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
+
+void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType) {
+    pypowsybl::callJava<>(::setFaults, analysisContext, faultType, dataframe);
+}
+
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getFaultResults, shortCircuitAnalysisResult));
+}
+
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getMagnitudeFeederResults, shortCircuitAnalysisResult));
+}
+
+SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getLimitViolationsResults, shortCircuitAnalysisResult));
+}
+
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult) {
+    return new SeriesArray(callJava<array*>(::getMagnitudeBusResults, shortCircuitAnalysisResult));
+}
+
+JavaHandle createVoltageInitializerParams() {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageInitializerParams);
+}
+
+JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage) {
+    return pypowsybl::callJava<JavaHandle>(::createVoltageLimitOverride, minVoltage, maxVoltage);
+}
+
+void voltageInitializerAddSpecificVoltageLimits(const std::string& idPtr, double minVoltage, const JavaHandle& paramsHandle, double maxVoltage) {
+    pypowsybl::callJava(::voltageInitializerAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
+}
+
+void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddVariableShuntCompensators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddConstantQGenerators, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
+}
+
+void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr) {
+    pypowsybl::callJava(::voltageInitializerAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
+}
+
+void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
+    pypowsybl::callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
+}
+
+void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
+    pypowsybl::callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
+}
+
+void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
+    pypowsybl::callJava(::voltageInitializerApplyAllModifications, resultHandle, networkHandle);
+}
+
+VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle) {
+    return pypowsybl::callJava<VoltageInitializerStatus>(::voltageInitializerGetStatus, resultHandle);
+}
+
+std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHandle& resultHandle) {
+    string_map* indicators = pypowsybl::callJava<string_map*>(::voltageInitializerGetIndicators, resultHandle);
+    return convertMapStructToStdMap(indicators);
+}
+
+JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, const JavaHandle& paramsHandle) {
+    return pypowsybl::callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
 }

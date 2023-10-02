@@ -17,6 +17,12 @@ typedef struct array_struct {
     int length;
 } array;
 
+typedef struct string_map_struct {
+    int length;
+    char** keys;
+    char** values;
+} string_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
@@ -291,3 +297,32 @@ typedef enum {
     ONE = 0,
     TWO,
 } BranchSide;
+
+typedef struct shortcircuit_analysis_parameters_struct {
+    unsigned char with_voltage_result;
+    unsigned char with_feeder_result;
+    unsigned char with_limit_violations;
+    int study_type;
+    unsigned char with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} shortcircuit_analysis_parameters;
+
+typedef enum {
+    BUS_FAULT = 0,
+    BRANCH_FAULT,
+} ShortCircuitFaultType;
+
+typedef enum {
+    OK = 0,
+    NOT_OK,
+} VoltageInitializerStatus;
+
+typedef enum {
+    MIN_GENERATION = 0,
+    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+    SPECIFIC_VOLTAGE_PROFILE,
+} VoltageInitializerObjective;

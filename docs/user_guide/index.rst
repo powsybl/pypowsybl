@@ -16,3 +16,5 @@ relying as much as possible on practical examples.
    logging
    flowdecomposition
    dynamic
+   shortcircuit
+   voltage_initializer
