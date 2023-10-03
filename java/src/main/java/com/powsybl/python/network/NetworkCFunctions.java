@@ -582,13 +582,12 @@ public final class NetworkCFunctions {
                              ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Network[] otherNetworks = new Network[othersCount];
             for (int i = 0; i < othersCount; ++i) {
                 ObjectHandle handleToMerge = othersHandle.read(i);
                 Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
-                otherNetworks[i] = otherNetwork;
+                network = Network.merge(network, otherNetwork);
             }
-            network.merge(otherNetworks);
+
         });
     }
 

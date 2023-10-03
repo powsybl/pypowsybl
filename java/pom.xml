@@ -70,7 +70,7 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2023.3.0</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.2.0</powsybl-open-reac.version>
-        <zstdjni.version>1.5.2-5</zstdjni.version>
+        <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
 
     <build>
