@@ -83,7 +83,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(x, row, adder::setX);
             applyIfPresent(g, row, adder::setG);
             applyIfPresent(b, row, adder::setB);
-            applyIfPresent(ucteXnodeCode, row, adder::setUcteXnodeCode);
+            applyIfPresent(ucteXnodeCode, row, adder::setPairingKey);
             return adder;
         }
     }

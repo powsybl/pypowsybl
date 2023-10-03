@@ -151,7 +151,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 9 == len(parameters)
+    assert 12 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -1204,8 +1204,8 @@ def test_network_merge():
     assert 6 == len(be.get_voltage_levels())
     nl = pp.network.create_micro_grid_nl_network()
     assert 4 == len(nl.get_voltage_levels())
-    be.merge(nl)
-    assert 10 == len(be.get_voltage_levels())
+    beAndNl = pp.network.merge([be, nl])
+    assert 10 == len(beAndNl.get_voltage_levels())
 
 
 def test_linear_shunt_compensator_sections():

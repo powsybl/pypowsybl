@@ -8,6 +8,7 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
 import com.powsybl.nad.svg.SvgParameters;
@@ -20,7 +21,10 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -38,11 +42,12 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedWidth(800)
                 .setFixedHeight(600)
                 .setEdgeNameDisplayed(edgeNameDisplayed);
-        Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
+        Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
-        new NetworkAreaDiagram(network, filter)
-                .draw(writer, svgParameters);
+        NadParameters nadParameters = new NadParameters()
+                .setSvgParameters(svgParameters);
+        NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth, boolean edgeNameDisplayed) {
