@@ -247,6 +247,15 @@ public final class NetworkUtil {
             throw new PowsyblException("Cannot find bus destination " + busDestination + " in the bus breaker view");
         }
 
+        boolean updateRegulatingTerminal = false;
+        Generator gen = network.getGenerator(equipmentId);
+        if (gen != null && gen.getRegulatingTerminal().equals(gen.getTerminal())) {
+            //Equipment is a generator, move connectable does not update regulating terminal properly,
+            //If generator is regulating on its terminal we have to update it manually
+            //Fix to do properly within move connectable in powsybl-core
+            updateRegulatingTerminal = true;
+        }
+
         boolean foundTerminal = false;
         for (Terminal t : b.getConnectedTerminals()) {
             if (t.getConnectable().getId().equals(equipmentId)) {
@@ -256,6 +265,9 @@ public final class NetworkUtil {
         }
         if (!foundTerminal) {
             throw new PowsyblException("Could not find terminal for equipment " + equipmentId + " in bus " + busOrigin);
+        }
+        if (updateRegulatingTerminal) {
+            gen.setRegulatingTerminal(gen.getTerminal());
         }
     }
 }
