@@ -10,6 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.iidm.network.extensions.SlackTerminal;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.List;
@@ -258,8 +259,21 @@ public final class NetworkUtil {
 
         boolean foundTerminal = false;
         for (Terminal t : b.getConnectedTerminals()) {
-            if (t.getConnectable().getId().equals(equipmentId)) {
+            Connectable<?> connectable = t.getConnectable();
+            if (connectable.getId().equals(equipmentId)) {
+                SlackTerminal slackTerminal = t.getVoltageLevel().getExtension(SlackTerminal.class);
+                //Terminal of the connectable was a slack terminal, mus be updated after the move...
+                boolean updateSlackTerminal = slackTerminal != null && slackTerminal.getTerminal().equals(t);
+
                 t.getBusBreakerView().moveConnectable(busDestination, true);
+
+                if (updateSlackTerminal) {
+                    for (Terminal newTerminal : connectable.getTerminals()) {
+                        if (newTerminal.getBusBreakerView().getBus().getId().equals(busDestination)) {
+                            slackTerminal.setTerminal(newTerminal);
+                        }
+                    }
+                }
                 foundTerminal = true;
             }
         }
