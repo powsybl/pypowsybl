@@ -3193,6 +3193,26 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
+    def merge(self, networks: Union[Network, Sequence[Network]]) -> None:
+        """
+        Merges networks into this one.
+
+        Args:
+            networks:  List of networks to be merged into this one.
+
+        Examples:
+            If you have 3 networks, you can merge this way:
+
+            .. code-block:: python
+
+                network1.merge([network2, network3])
+
+            Note that network1 is modified: it absorbs network2 and network3.
+        """
+        if isinstance(networks, Network):
+            networks = [networks]
+        self._handle = _pp.merge([self._handle] + [n._handle for n in networks])
+
     def _create_elements(self, element_type: ElementType, dfs: List[Optional[DataFrame]],
                          **kwargs: ArrayLike) -> None:
         metadata = _pp.get_network_elements_creation_dataframes_metadata(element_type)

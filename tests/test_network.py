@@ -1204,6 +1204,15 @@ def test_network_merge():
     assert 6 == len(be.get_voltage_levels())
     nl = pp.network.create_micro_grid_nl_network()
     assert 4 == len(nl.get_voltage_levels())
+    be.merge(nl)
+    assert 10 == len(be.get_voltage_levels())
+
+
+def test_network_new_merge():
+    be = pp.network.create_micro_grid_be_network()
+    assert 6 == len(be.get_voltage_levels())
+    nl = pp.network.create_micro_grid_nl_network()
+    assert 4 == len(nl.get_voltage_levels())
     beAndNl = pp.network.merge([be, nl])
     assert 10 == len(beAndNl.get_voltage_levels())
 
