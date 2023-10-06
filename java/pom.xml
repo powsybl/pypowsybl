@@ -68,7 +68,7 @@
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2023.3.0</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2023.3.1</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.2.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
