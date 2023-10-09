@@ -46,7 +46,6 @@ public final class NetworkAreaDiagramUtil {
         Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
-      
         NadParameters nadParameters = new NadParameters()
                 .setSvgParameters(svgParameters);
 
