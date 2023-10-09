@@ -874,7 +874,7 @@ def test_tie_line_creation_fail_if_xnodes_are_different():
         index='id')
     with pytest.raises(PyPowsyblError) as exc:
         network.create_tie_lines(df)
-    assert exc.match("AC tie Line 'TIE_LINE_TEST': ucteXnodeCode is not consistent")
+    assert exc.match("AC tie Line 'TIE_LINE_TEST': pairingKey is not consistent")
 
 
 def test_tie_line_kwargs():

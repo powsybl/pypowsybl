@@ -598,7 +598,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
+                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
@@ -611,7 +611,7 @@ public final class NetworkDataframes {
                 .strings("name", tl -> tl.getOptionalName().orElse(""))
                 .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
                 .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
-                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getUcteXnodeCode(), ""))
+                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();

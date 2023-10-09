@@ -214,7 +214,6 @@ def test_get_provider_parameters_names():
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
         'secondaryVoltageControl',
-        'controllerToPilotPointVoltageSensiEpsilon',
         'reactiveLimitsMaxPqPvSwitch',
         'newtonRaphsonStoppingCriteriaType',
         'maxActivePowerMismatch',
@@ -230,13 +229,15 @@ def test_get_provider_parameters_names():
         'slackBusCountryFilter',
         'actionableSwitchesIds',
         'asymmetrical',
-        'minNominalVoltageTargetVoltageCheck'
+        'minNominalVoltageTargetVoltageCheck',
+        'reactivePowerDispatchMode',
+        'outerLoopNames'
     ]
 
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 46 == len(specific_parameters)
+    assert 47 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']

@@ -528,17 +528,17 @@ JavaHandle createNetwork(const std::string& name, const std::string& id) {
     return callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
 }
 
-void merge(JavaHandle network, std::vector<JavaHandle>& others) {
-    std::vector<void*> othersPtrs;
-    othersPtrs.reserve(others.size());
-    for(int i = 0; i < others.size(); ++i) {
-      void* ptr = others[i];
-      othersPtrs.push_back(ptr);
+JavaHandle merge(std::vector<JavaHandle>& networks) {
+    std::vector<void*> networksPtrs;
+    networksPtrs.reserve(networks.size());
+    for (int i = 0; i < networks.size(); ++i) {
+        void* ptr = networks[i];
+        networksPtrs.push_back(ptr);
     }
-    int count = othersPtrs.size();
-    void** networksData = (void**)othersPtrs.data();
+    int networkCount = networksPtrs.size();
+    void** networksData = (void**) networksPtrs.data();
 
-    callJava<>(::merge, network, networksData, count);
+    return callJava<JavaHandle>(::merge, networksData, networkCount);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
