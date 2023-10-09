@@ -36,6 +36,7 @@ import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.layout.LayoutParameters;
+import com.powsybl.sld.svg.SvgParameters;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -574,17 +575,16 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "merge")
-    public static void merge(IsolateThread thread, ObjectHandle networkHandle, VoidPointerPointer othersHandle, int othersCount,
-                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Network[] otherNetworks = new Network[othersCount];
-            for (int i = 0; i < othersCount; ++i) {
-                ObjectHandle handleToMerge = othersHandle.read(i);
-                Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
-                otherNetworks[i] = otherNetwork;
+    public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network[] networks = new Network[networkCount];
+            for (int i = 0; i < networkCount; ++i) {
+                ObjectHandle networkHandle = networkHandles.read(i);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                networks[i] = network;
             }
-            network.merge(otherNetworks);
+            return ObjectHandles.getGlobal().create(Network.merge(networks));
         });
     }
 
@@ -837,29 +837,31 @@ public final class NetworkCFunctions {
 
     public static class LayoutParametersExt {
         public final LayoutParameters layoutParameters;
+        public final SvgParameters svgParameters;
         public final boolean topologicalColoring;
 
         public final String componentLibrary;
 
         public LayoutParametersExt() {
-            this(new LayoutParameters(), true, "Convergence");
+            this(new LayoutParameters(), new SvgParameters(), true, "Convergence");
         }
 
-        public LayoutParametersExt(LayoutParameters layoutParameters, boolean topologicalColoring, String componentLibrary) {
+        public LayoutParametersExt(LayoutParameters layoutParameters, SvgParameters svgParameters, boolean topologicalColoring, String componentLibrary) {
             Objects.requireNonNull(layoutParameters);
             this.layoutParameters = layoutParameters;
-            this.layoutParameters.setSvgWidthAndHeightAdded(true);
+            this.svgParameters = svgParameters;
+            this.svgParameters.setSvgWidthAndHeightAdded(true);
             this.topologicalColoring = topologicalColoring;
             this.componentLibrary = componentLibrary;
         }
     }
 
     public static void copyToCLayoutParameters(LayoutParametersExt parameters, LayoutParametersPointer cParameters) {
-        cParameters.setUseName(parameters.layoutParameters.isUseName());
-        cParameters.setCenterName(parameters.layoutParameters.isLabelCentered());
-        cParameters.setDiagonalLabel(parameters.layoutParameters.isLabelDiagonal());
+        cParameters.setUseName(parameters.svgParameters.isUseName());
+        cParameters.setCenterName(parameters.svgParameters.isLabelCentered());
+        cParameters.setDiagonalLabel(parameters.svgParameters.isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.topologicalColoring);
-        cParameters.setAddNodesInfos(parameters.layoutParameters.isAddNodesInfos());
+        cParameters.setAddNodesInfos(parameters.svgParameters.isAddNodesInfos());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.componentLibrary));
     }
 
@@ -887,11 +889,12 @@ public final class NetworkCFunctions {
     }
 
     public static LayoutParametersExt convertLayoutParameters(LayoutParametersPointer layoutParametersPtr) {
-        return new LayoutParametersExt(new LayoutParameters()
-                .setUseName(layoutParametersPtr.isUseName())
-                .setLabelCentered(layoutParametersPtr.isCenterName())
-                .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(layoutParametersPtr.isAddNodesInfos()),
+        return new LayoutParametersExt(new LayoutParameters(),
+                new SvgParameters()
+                        .setUseName(layoutParametersPtr.isUseName())
+                        .setLabelCentered(layoutParametersPtr.isCenterName())
+                        .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel())
+                        .setAddNodesInfos(layoutParametersPtr.isAddNodesInfos()),
                 layoutParametersPtr.isTopologicalColoring(),
                 CTypeUtil.toString(layoutParametersPtr.getComponentLibrary()));
     }

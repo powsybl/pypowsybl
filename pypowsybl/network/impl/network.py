@@ -3211,7 +3211,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if isinstance(networks, Network):
             networks = [networks]
-        return _pp.merge(self._handle, [n._handle for n in networks])
+        self._handle = _pp.merge([self._handle] + [n._handle for n in networks])
 
     def _create_elements(self, element_type: ElementType, dfs: List[Optional[DataFrame]],
                          **kwargs: ArrayLike) -> None:
