@@ -103,7 +103,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         if (branchFlowFactorsMatrix.containsKey(matrixId)) {
             throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
         }
-        MatrixInfo info = new MatrixInfo(contingencyContextType, SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchesIds, variablesIds, contingencyIds);
+        MatrixInfo info = new MatrixInfo(contingencyContextType, SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchesIds, variablesIds, contingencyIds);
         branchFlowFactorsMatrix.put(matrixId, info);
     }
 
@@ -201,7 +201,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                     }
                 }
 
-                if (matrix.getFunctionType() == SensitivityFunctionType.BRANCH_ACTIVE_POWER) {
+                if (matrix.getFunctionType() == SensitivityFunctionType.BRANCH_ACTIVE_POWER_1) {
                     for (int row = 0; row < rows.size(); row++) {
                         String variableId = rows.get(row);
                         Injection<?> injection = getInjection(network, variableId);
@@ -213,7 +213,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                             }
                             if (injection != null) {
                                 for (ContingencyContext cCtx : contingencyContexts) {
-                                    handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                    handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
                                             SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
                                             false, cCtx);
                                 }
@@ -224,7 +224,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                                         throw new PowsyblException("Transformer '" + variableId + "' is not a phase shifter");
                                     }
                                     for (ContingencyContext cCtx : contingencyContexts) {
-                                        handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                        handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
                                                 SensitivityVariableType.TRANSFORMER_PHASE, variableId,
                                                 false, cCtx);
                                     }
@@ -232,14 +232,14 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                                     HvdcLine hvdcLine = network.getHvdcLine(variableId);
                                     if (hvdcLine != null) {
                                         for (ContingencyContext cCtx : contingencyContexts) {
-                                            handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                            handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
                                                     SensitivityVariableType.HVDC_LINE_ACTIVE_POWER, variableId,
                                                     false, cCtx);
                                         }
                                     } else {
                                         if (variableSetsById.containsKey(variableId)) {
                                             for (ContingencyContext cCtx : contingencyContexts) {
-                                                handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER, branchId,
+                                                handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
                                                         SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
                                                         true, cCtx);
                                             }

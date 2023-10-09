@@ -21,7 +21,10 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -39,11 +42,14 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedWidth(800)
                 .setFixedHeight(600)
                 .setEdgeNameDisplayed(edgeNameDisplayed);
-        NadParameters nadParameters = new NadParameters().setSvgParameters(svgParameters);
 
-        Predicate<VoltageLevel> filter = voltageLevelIds.size() > 0
+        Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
+      
+        NadParameters nadParameters = new NadParameters()
+                .setSvgParameters(svgParameters);
+
         NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
 

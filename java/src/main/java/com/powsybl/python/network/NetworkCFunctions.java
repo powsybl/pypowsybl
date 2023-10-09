@@ -578,17 +578,16 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "merge")
-    public static void merge(IsolateThread thread, ObjectHandle networkHandle, VoidPointerPointer othersHandle, int othersCount,
-                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Network[] otherNetworks = new Network[othersCount];
-            for (int i = 0; i < othersCount; ++i) {
-                ObjectHandle handleToMerge = othersHandle.read(i);
-                Network otherNetwork = ObjectHandles.getGlobal().get(handleToMerge);
-                otherNetworks[i] = otherNetwork;
+    public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network[] networks = new Network[networkCount];
+            for (int i = 0; i < networkCount; ++i) {
+                ObjectHandle networkHandle = networkHandles.read(i);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                networks[i] = network;
             }
-            network.merge(otherNetworks);
+            return ObjectHandles.getGlobal().create(Network.merge(networks));
         });
     }
 
@@ -840,6 +839,7 @@ public final class NetworkCFunctions {
     }
 
     public static class SldParametersExt {
+
         public final SvgParameters svgParameters;
         public final boolean topologicalColoring;
         public final String componentLibrary;
@@ -851,7 +851,8 @@ public final class NetworkCFunctions {
 
         public SldParametersExt(SvgParameters svgParameters, boolean topologicalColoring, String componentLibrary) {
             Objects.requireNonNull(svgParameters);
-            this.svgParameters = svgParameters;
+            this.svgParameters = svgParameters.setSvgWidthAndHeightAdded(true);
+
             this.topologicalColoring = topologicalColoring;
             this.componentLibrary = componentLibrary;
 
@@ -908,6 +909,7 @@ public final class NetworkCFunctions {
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos()),
                 sldParametersPtr.isTopologicalColoring(),
                 CTypeUtil.toString(sldParametersPtr.getComponentLibrary()));
+
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
