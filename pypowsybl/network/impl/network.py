@@ -195,7 +195,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                           '' if metadata_file is None else path_to_str(metadata_file), p)
 
 
-   def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
+    def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
                                                                            parameters: LayoutParameters = None) -> None:
         """
         Ensure backward compatibility for get_single_line_diagram(self, container_id: str, parameters: SldParameters = None) -> Svg
@@ -222,7 +222,7 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
-   def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
         """
         Ensure backward compatibility for get_single_line_diagram(self, container_id: str, parameters: SldParameters = None) -> Svg
         """
