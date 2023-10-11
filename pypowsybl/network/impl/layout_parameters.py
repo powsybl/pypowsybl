@@ -5,13 +5,16 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from .sld_parameters import SldParameters
+from .parent_parameters import ParentParameters
 
 
-class LayoutParameters:
+class LayoutParameters(ParentParameters):
     """
-    This class is only used for backward compatibility and represents sld parameters for a single line diagram svg generation."""
+    This class is only used for backward compatibility and represents sld parameters for a single line diagram svg
+    generation."""
 
-    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False, topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
+    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
+                 topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label

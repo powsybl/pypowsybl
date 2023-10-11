@@ -5,9 +5,10 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pypowsybl._pypowsybl as _pp
+from .parent_parameters import ParentParameters
 
 
-class SldParameters:
+class SldParameters(ParentParameters):
     """
     This class represents sld parameters for a single line diagram svg generation."""
 
