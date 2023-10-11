@@ -46,10 +46,12 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     n = pp.network.load_from_string('simple-eu.uct', file_content)
     assert 1 == len(n.get_substations())
 
+
 def test_load_cgmes_zipped():
     with open(DATA_DIR.joinpath('CGMES_Full.zip'), "rb") as fh:
         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
         assert 3 == len(n.get_substations())
+
 
 def test_load_cgmes_two_zip():
     with open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb") as cgmesPartial:
@@ -57,10 +59,12 @@ def test_load_cgmes_two_zip():
             n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
     assert 3 == len(n.get_substations())
 
+
 def test_load_zipped_xiidm():
     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
         assert 2 == len(n.get_substations())
+
 
 def test_dump_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
@@ -482,11 +486,14 @@ def test_ratio_tap_changer_steps_data_frame():
     assert 0.8505666905244191 == steps.loc['NHV2_NLOAD']['rho'][0]
     assert 0.8505666905244191 == steps.loc[('NHV2_NLOAD', 0), 'rho']
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
-                                   pd.Series(data={'rho': 0.850567, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 0)), check_dtype=False)
+                                   pd.Series(data={'rho': 0.850567, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('NHV2_NLOAD', 0)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
-                                   pd.Series(data={'rho': 1.00067, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 1)), check_dtype=False)
+                                   pd.Series(data={'rho': 1.00067, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('NHV2_NLOAD', 1)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
-                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0}, name=('NHV2_NLOAD', 2)), check_dtype=False)
+                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                             name=('NHV2_NLOAD', 2)), check_dtype=False)
     n.update_ratio_tap_changer_steps(pd.DataFrame(
         index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1)],
                                         names=['id', 'position']), columns=['rho', 'r', 'x', 'g', 'b'],
@@ -767,12 +774,14 @@ def test_sld_parameters():
     assert not parameters.diagonal_label
     assert not parameters.nodes_infos
     assert parameters.topological_coloring
-    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True, nodes_infos=True, topological_coloring=False)
+    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
+                               nodes_infos=True)
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert parameters.nodes_infos
     assert not parameters.topological_coloring
+
 
 def test_layout_parameters():
     parameters = LayoutParameters()
@@ -781,12 +790,14 @@ def test_layout_parameters():
     assert not parameters.diagonal_label
     assert parameters.topological_coloring
     assert not parameters.nodes_infos
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False, nodes_infos=True)
+    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
+                                  nodes_infos=True)
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert not parameters.topological_coloring
     assert parameters.nodes_infos
+
 
 def test_sld_svg():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -794,22 +805,26 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
     sld1 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                               topological_coloring=False))
+                                                            topological_coloring=False))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
-    sld2 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True, nodes_infos=True,
-                                                               topological_coloring=True))
+    sld2 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                            nodes_infos=True, topological_coloring=True))
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 
+
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
-    sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False))
+    sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                              topological_coloring=False))
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=True, nodes_infos=True))
+    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                               topological_coloring=True, nodes_infos=True))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
+
 
 def test_sld_nad():
     n = pp.network.create_ieee14()
@@ -832,7 +847,8 @@ def test_sld_nad():
         n.write_network_area_diagram_svg(test_svg, None)
         n.write_network_area_diagram_svg(test_svg, ['VL1'])
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
-        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10,
+                                         depth=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
 
