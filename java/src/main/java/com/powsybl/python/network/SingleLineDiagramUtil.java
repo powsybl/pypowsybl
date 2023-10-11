@@ -8,6 +8,7 @@ package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
+import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
 
 import java.io.IOException;
@@ -27,10 +28,10 @@ public final class SingleLineDiagramUtil {
     private SingleLineDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.SldParametersExt sldParametersExt) {
+    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
              Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
-            writeSvg(network, containerId, writer, metadataWriter, sldParametersExt);
+            writeSvg(network, containerId, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -46,9 +47,9 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.SldParametersExt sldParametersExt) {
+    static List<String> getSvgAndMetadata(Network network, String containerId, SldParameters sldParameters) {
         try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
-            writeSvg(network, containerId, writer, writerMeta, sldParametersExt);
+            writeSvg(network, containerId, writer, writerMeta, sldParameters);
             writer.flush();
             writerMeta.flush();
             return List.of(writer.toString(), writerMeta.toString());
@@ -57,12 +58,18 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer) {
-        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.SldParametersExt());
+    static SldParameters createSldParameters() {
+        SldParameters sldParameters = new SldParameters();
+        sldParameters.getSvgParameters().setSvgWidthAndHeightAdded(true);
+        return sldParameters;
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.SldParametersExt sldParametersExt) {
-        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParametersExt.sldParameters);
+    static void writeSvg(Network network, String containerId, Writer writer) {
+        writeSvg(network, containerId, writer, new StringWriter(), createSldParameters());
+    }
+
+    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
+        SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
     }
 
     static List<String> getComponentLibraryNames() {

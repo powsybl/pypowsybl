@@ -29,7 +29,10 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.*;
+import com.powsybl.python.commons.CTypeUtil;
+import com.powsybl.python.commons.Directives;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -38,7 +41,7 @@ import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
-import com.powsybl.sld.svg.SvgParameters;
+import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -838,47 +841,16 @@ public final class NetworkCFunctions {
         });
     }
 
-    public static class SldParametersExt {
-
-        public final SvgParameters svgParameters;
-        public final boolean topologicalColoring;
-        public final String componentLibrary;
-        public final SldParameters sldParameters;
-
-        public SldParametersExt() {
-            this(new SvgParameters(), true, "Convergence");
-        }
-
-        public SldParametersExt(SvgParameters svgParameters, boolean topologicalColoring, String componentLibrary) {
-            Objects.requireNonNull(svgParameters);
-            this.svgParameters = svgParameters.setSvgWidthAndHeightAdded(true);
-
-            this.topologicalColoring = topologicalColoring;
-            this.componentLibrary = componentLibrary;
-
-            SldParameters sldParameters = new SldParameters()
-                    .setSvgParameters(svgParameters)
-                    .setComponentLibrary(ComponentLibrary.find(componentLibrary).orElseGet(ConvergenceComponentLibrary::new));
-
-            if (!topologicalColoring) {
-                sldParameters.setStyleProviderFactory(new NominalVoltageStyleProviderFactory());
-            }
-
-            this.sldParameters = sldParameters;
-
-        }
+    public static void copyToCSldParameters(SldParameters parameters, SldParametersPointer cParameters) {
+        cParameters.setUseName(parameters.getSvgParameters().isUseName());
+        cParameters.setCenterName(parameters.getSvgParameters().isLabelCentered());
+        cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
+        cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
+        cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
     }
 
-    public static void copyToCSldParameters(SldParametersExt parameters, SldParametersPointer cParameters) {
-        cParameters.setUseName(parameters.svgParameters.isUseName());
-        cParameters.setCenterName(parameters.svgParameters.isLabelCentered());
-        cParameters.setDiagonalLabel(parameters.svgParameters.isLabelDiagonal());
-        cParameters.setTopologicalColoring(parameters.topologicalColoring);
-        cParameters.setAddNodesInfos(parameters.svgParameters.isAddNodesInfos());
-        cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.componentLibrary));
-    }
-
-    public static SldParametersPointer convertToSldParametersPointer(SldParametersExt parameters) {
+    public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
         SldParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SldParametersPointer.class));
         copyToCSldParameters(parameters, paramsPtr);
         return paramsPtr;
@@ -886,7 +858,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "createSldParameters")
     public static SldParametersPointer createSldParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(new SldParametersExt()));
+        return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters()));
     }
 
     public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
@@ -901,15 +873,17 @@ public final class NetworkCFunctions {
         });
     }
 
-    public static SldParametersExt convertSldParameters(SldParametersPointer sldParametersPtr) {
-        return new SldParametersExt(new SvgParameters()
+    public static SldParameters convertSldParameters(SldParametersPointer sldParametersPtr) {
+        String componentLibraryName = CTypeUtil.toString(sldParametersPtr.getComponentLibrary());
+        SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
+                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory() : new NominalVoltageStyleProviderFactory())
+                .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
+        sldParameters.getSvgParameters()
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos()),
-                sldParametersPtr.isTopologicalColoring(),
-                CTypeUtil.toString(sldParametersPtr.getComponentLibrary()));
-
+                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos());
+        return sldParameters;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
@@ -921,8 +895,8 @@ public final class NetworkCFunctions {
             String containerIdStr = CTypeUtil.toString(containerId);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
-            SldParametersExt sldParametersExt = convertSldParameters(sldParametersPtr);
-            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParametersExt);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
         });
     }
 
@@ -943,8 +917,8 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
-            SldParametersExt sldParametersExt = convertSldParameters(sldParametersPtr);
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParametersExt);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });
     }

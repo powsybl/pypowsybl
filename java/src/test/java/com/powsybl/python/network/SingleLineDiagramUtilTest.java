@@ -10,6 +10,7 @@ import com.google.common.io.ByteStreams;
 import com.powsybl.commons.test.TestUtil;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
+import com.powsybl.sld.SldParameters;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -38,14 +39,11 @@ class SingleLineDiagramUtilTest {
     @Test
     void testSvgAndMetadata() throws IOException {
         Network network = FourSubstationsNodeBreakerFactory.create();
-        NetworkCFunctions.SldParametersExt sldParametersExt = new NetworkCFunctions.SldParametersExt();
-        try (StringWriter writer = new StringWriter(); StringWriter metadataWriter = new StringWriter()) {
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", sldParametersExt);
+        SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters();
+        List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, "S1VL1", sldParameters);
 
-            assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(SingleLineDiagramUtil.class.getResourceAsStream("/sld.svg"))), StandardCharsets.UTF_8)),
-                    TestUtil.normalizeLineSeparator(svgAndMeta.get(0)));
-            assertFalse(svgAndMeta.get(1).isEmpty());
-        }
+        assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(SingleLineDiagramUtil.class.getResourceAsStream("/sld.svg"))), StandardCharsets.UTF_8)),
+                     TestUtil.normalizeLineSeparator(svgAndMeta.get(0)));
+        assertFalse(svgAndMeta.get(1).isEmpty());
     }
-
 }
