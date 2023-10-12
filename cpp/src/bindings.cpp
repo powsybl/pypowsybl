@@ -226,6 +226,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("merge", &pypowsybl::merge, "Merge several networks");
 
+    m.def("get_sub_network", &pypowsybl::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
+
+    m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
+
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
@@ -260,7 +264,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
             .value("INJECTION", element_type::INJECTION)
             .value("BRANCH", element_type::BRANCH)
-            .value("TERMINAL", element_type::TERMINAL);
+            .value("TERMINAL", element_type::TERMINAL)
+            .value("SUB_NETWORK", element_type::SUB_NETWORK);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)

@@ -301,6 +301,16 @@ class Network:  # pylint: disable=too-many-public-methods
             result = result[attributes]
         return result
 
+    def get_sub_networks(self, all_attributes: bool = False, attributes: List[str] = None,
+                         **kwargs: ArrayLike) -> DataFrame:
+        return self.get_elements(ElementType.SUB_NETWORK, all_attributes, attributes, **kwargs)
+
+    def get_sub_network(self, sub_network_id: str) -> Network:
+        return Network(_pp.get_sub_network(self._handle, sub_network_id))
+
+    def detach(self) -> None:
+        self._handle = _pp.detach_sub_network(self._handle)
+
     def get_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                   **kwargs: ArrayLike) -> DataFrame:
         r"""

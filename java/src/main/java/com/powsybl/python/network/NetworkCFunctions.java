@@ -1021,4 +1021,26 @@ public final class NetworkCFunctions {
             return res;
         });
     }
+
+    @CEntryPoint(name = "getSubNetwork")
+    public static ObjectHandle getSubNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer subNetworkId, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String subNetworkIdStr = CTypeUtil.toString(subNetworkId);
+            Network subnetwork = network.getSubnetwork(subNetworkIdStr);
+            if (subnetwork == null) {
+                throw new PowsyblException("Sub network '" + subNetworkIdStr + "' not found");
+            }
+            return ObjectHandles.getGlobal().create(subnetwork);
+        });
+    }
+
+    @CEntryPoint(name = "detachSubNetwork")
+    public static ObjectHandle detachSubNetwork(IsolateThread thread, ObjectHandle subNetworkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
+            Network detachNetwork = subNetwork.detach();
+            return ObjectHandles.getGlobal().create(detachNetwork);
+        });
+    }
 }

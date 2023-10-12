@@ -309,6 +309,8 @@ public final class Util {
                 return DataframeElementType.BRANCH;
             case IDENTIFIABLE:
                 return DataframeElementType.IDENTIFIABLE;
+            case SUB_NETWORK:
+                return DataframeElementType.SUB_NETWORK;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
