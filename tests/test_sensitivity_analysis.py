@@ -10,6 +10,7 @@ import pypowsybl as pp
 import pandas as pd
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+from pypowsybl.sensitivity import SensitivityFunctionType, ContingencyContextType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -308,3 +309,19 @@ def test_hvdc():
     assert {'default': ['HVDC1']} == results.branch_data_frame_index
     assert {'default': ['LINE_S2S3']} == results.branches_ids
     pytest.approx(results.get_branch_flows_sensitivity_matrix().loc['HVDC1']['LINE_S2S3'], 0.7824, 0.001)
+
+
+def test_add_branch_factor_matrix():
+    network = pp.network.create_four_substations_node_breaker_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+
+    analysis.add_branch_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                                      SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, 'test')
+    analysis.add_branch_factor_matrix(['LINE_S2S3'], ['GTH1'], [], ContingencyContextType.NONE,
+                                      SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'test1')
+    analysis.add_branch_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                                      SensitivityFunctionType.BRANCH_CURRENT_1, 'test2')
+    result = analysis.run(network)
+    pytest.approx(result.get_branch_flows_sensitivity_matrix('test').loc['GTH2']['LINE_S3S4'], 30.5280, 0.001)
+    assert 0.8 == result.get_branch_flows_sensitivity_matrix('test1').loc['GTH1']['LINE_S2S3']
+    pytest.approx(result.get_branch_flows_sensitivity_matrix('test2').loc['GTH2']['LINE_S3S4'], -0.4668, 0.001)

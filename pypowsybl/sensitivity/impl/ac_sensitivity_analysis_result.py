@@ -13,9 +13,9 @@ from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 
 class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     """
-    Represents the result of a AC sensitivity analysis.
+    Represents the result of an AC sensitivity analysis.
 
-    The result contains computed values (so called "reference" values) and sensitivity values
+    The result contains computed values (so-called "reference" values) and sensitivity values
     of requested factors, on the base case and on post contingency states.
     """
 

@@ -177,6 +177,18 @@ typedef enum {
 } contingency_context_type;
 
 typedef enum {
+    BRANCH_ACTIVE_POWER_1=0,
+    BRANCH_CURRENT_1,
+    BRANCH_REACTIVE_POWER_1,
+    BRANCH_ACTIVE_POWER_2,
+    BRANCH_CURRENT_2,
+    BRANCH_REACTIVE_POWER_2,
+    BRANCH_ACTIVE_POWER_3,
+    BRANCH_CURRENT_3,
+    BRANCH_REACTIVE_POWER_3,
+} sensitivity_function_type;
+
+typedef enum {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,
     CREATE_COUPLING_DEVICE,
     CREATE_FEEDER_BAY,

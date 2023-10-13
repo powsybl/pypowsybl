@@ -581,6 +581,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_branch_flow_factor_matrix", &pypowsybl::addBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
               py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"));
 
+    m.def("add_branch_factor_matrix", &pypowsybl::addBranchFactorMatrix, "Add a branch factor matrix to a sensitivity analysis",
+              py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"), 
+              py::arg("contingencies_ids"), py::arg("contingency_context_type"), py::arg("sensitivity_function_type"));
+
     m.def("add_precontingency_branch_flow_factor_matrix", &pypowsybl::addPreContingencyBranchFlowFactorMatrix, "Add a branch_flow factor matrix to a sensitivity analysis",
                   py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"));
 
@@ -682,6 +686,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", contingency_context_type::ALL)
             .value("NONE", contingency_context_type::NONE)
             .value("SPECIFIC", contingency_context_type::SPECIFIC);
+
+    py::enum_<sensitivity_function_type>(m, "SensitivityFunctionType")
+            .value("BRANCH_ACTIVE_POWER_1", sensitivity_function_type::BRANCH_ACTIVE_POWER_1)
+            .value("BRANCH_CURRENT_1",sensitivity_function_type::BRANCH_CURRENT_1)
+            .value("BRANCH_REACTIVE_POWER_1",sensitivity_function_type::BRANCH_REACTIVE_POWER_1)
+            .value("BRANCH_ACTIVE_POWER_2",sensitivity_function_type::BRANCH_ACTIVE_POWER_2)
+            .value("BRANCH_CURRENT_2",sensitivity_function_type::BRANCH_CURRENT_2)
+            .value("BRANCH_REACTIVE_POWER_2",sensitivity_function_type::BRANCH_REACTIVE_POWER_2)
+            .value("BRANCH_ACTIVE_POWER_3",sensitivity_function_type::BRANCH_ACTIVE_POWER_3)
+            .value("BRANCH_CURRENT_3",sensitivity_function_type::BRANCH_CURRENT_3)
+            .value("BRANCH_REACTIVE_POWER_3",sensitivity_function_type::BRANCH_REACTIVE_POWER_3);
 
     m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
     m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));

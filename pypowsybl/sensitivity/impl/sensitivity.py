@@ -6,9 +6,10 @@
 #
 from __future__ import annotations
 from typing import List, Dict
+
 from pypowsybl import _pypowsybl
 from pypowsybl.security import ContingencyContainer
-from pypowsybl._pypowsybl import PyPowsyblError
+from pypowsybl._pypowsybl import PyPowsyblError, ContingencyContextType, SensitivityFunctionType
 from .zone import Zone
 
 TO_REMOVE = 'TO_REMOVE'
@@ -134,5 +135,43 @@ class SensitivityAnalysis(ContingencyContainer):
 
         _pypowsybl.add_postcontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids,
                                                                  flatten_variables_ids, contingencies_ids)
+        self.branches_ids[matrix_id] = branches_ids
+        self.branch_data_frame_index[matrix_id] = branch_data_frame_index
+
+    def add_branch_factor_matrix(self, branches_ids: List[str], variables_ids: List[str], contingencies_ids: List[str],
+                                 contingency_context_type: ContingencyContextType,
+                                 sensitivity_function_type: SensitivityFunctionType,
+                                 matrix_id: str = 'default') -> None:
+        """
+        Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
+
+        A variable could be:
+         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a zone ID
+         - a couple of zone ID to define a transfer between 2 zones
+
+        sensitivity_function_type can be:
+         - BRANCH_ACTIVE_POWER_1
+         - BRANCH_CURRENT_1
+         - BRANCH_REACTIVE_POWER_1
+         - BRANCH_ACTIVE_POWER_2
+         - BRANCH_CURRENT_2
+         - BRANCH_REACTIVE_POWER_2
+         - BRANCH_ACTIVE_POWER_3
+         - BRANCH_CURRENT_3
+         - BRANCH_REACTIVE_POWER_3
+
+        Args:
+            branches_ids:               IDs of branches for which the sensitivities for the sensitivity_function_type should be computed
+            variables_ids:              variables which may impact branch flows,to which we should compute sensitivities
+            contingencies_ids:          List of the IDs of the contingencies to simulate
+            contingency_context_type:   the contingency context type it could be ALL, NONE or SPECIFIC
+            sensitivity_function_type:  the type of sensitivity to compute
+            matrix_id:                  The matrix unique identifier, to be used to retrieve the sensibility value
+        """
+        (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
+        _pypowsybl.add_branch_factor_matrix(self._handle, matrix_id, branches_ids,
+                                            flatten_variables_ids, contingencies_ids, contingency_context_type,
+                                            sensitivity_function_type)
         self.branches_ids[matrix_id] = branches_ids
         self.branch_data_frame_index[matrix_id] = branch_data_frame_index

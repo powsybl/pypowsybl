@@ -20,6 +20,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.sensitivity.SensitivityFunctionType;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
@@ -99,7 +100,7 @@ public final class Util {
     }
 
     public static <T extends Enum<?>> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr,
-            Supplier<T> supplier) {
+                                                Supplier<T> supplier) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
@@ -314,17 +315,26 @@ public final class Util {
         }
     }
 
+    public static SensitivityFunctionType convert(PyPowsyblApiHeader.SensitivityFunctionType type) {
+        return switch (type) {
+            case BRANCH_ACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_1;
+            case BRANCH_CURRENT_1 -> SensitivityFunctionType.BRANCH_CURRENT_1;
+            case BRANCH_REACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_1;
+            case BRANCH_ACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_2;
+            case BRANCH_CURRENT_2 -> SensitivityFunctionType.BRANCH_CURRENT_2;
+            case BRANCH_REACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_2;
+            case BRANCH_ACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_3;
+            case BRANCH_CURRENT_3 -> SensitivityFunctionType.BRANCH_CURRENT_3;
+            case BRANCH_REACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_3;
+        };
+    }
+
     public static ContingencyContextType convert(PyPowsyblApiHeader.RawContingencyContextType type) {
-        switch (type) {
-            case ALL:
-                return ContingencyContextType.ALL;
-            case NONE:
-                return ContingencyContextType.NONE;
-            case SPECIFIC:
-                return ContingencyContextType.SPECIFIC;
-            default:
-                throw new PowsyblException("Unknown contingency context type : " + type);
-        }
+        return switch (type) {
+            case ALL -> ContingencyContextType.ALL;
+            case NONE -> ContingencyContextType.NONE;
+            case SPECIFIC -> ContingencyContextType.SPECIFIC;
+        };
     }
 
     public static PyPowsyblApiHeader.ValidationLevelType convert(ValidationLevel level) {
@@ -409,11 +419,11 @@ public final class Util {
         }
     }
 
-    private static final byte[] ZIP_SIGNATURE = new byte[] {0x50, 0x4B, 0x03, 0x04};
-    private static final byte[] GZIP_SIGNATURE = new byte[] {0x1F, (byte) 0x8B};
-    private static final byte[] XZ_SIGNATURE = new byte[] {(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
-    private static final byte[] BZIP2_SIGNATURE = new byte[] {0x42, 0x5A, 0x68};
-    private static final byte[] ZSTD_SIGNATURE = new byte[] {0x28, (byte) 0xB5, 0x2F, (byte) 0xFD};
+    private static final byte[] ZIP_SIGNATURE = new byte[]{0x50, 0x4B, 0x03, 0x04};
+    private static final byte[] GZIP_SIGNATURE = new byte[]{0x1F, (byte) 0x8B};
+    private static final byte[] XZ_SIGNATURE = new byte[]{(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
+    private static final byte[] BZIP2_SIGNATURE = new byte[]{0x42, 0x5A, 0x68};
+    private static final byte[] ZSTD_SIGNATURE = new byte[]{0x28, (byte) 0xB5, 0x2F, (byte) 0xFD};
 
     private static boolean compareSignature(ByteBuffer buffer, byte[] signature) {
         byte[] header = new byte[signature.length];

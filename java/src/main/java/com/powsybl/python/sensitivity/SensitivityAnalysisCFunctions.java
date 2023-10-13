@@ -99,6 +99,25 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addBranchFactorMatrix")
+    public static void addBranchFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                             CCharPointerPointer branchIdPtrPtr, int branchIdCount,
+                                             CCharPointerPointer variableIdPtrPtr, int variableIdCount,
+                                             CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
+                                             CCharPointer matrixIdPtr,
+                                             PyPowsyblApiHeader.RawContingencyContextType contingencyContextType,
+                                             PyPowsyblApiHeader.SensitivityFunctionType sensitivityFunctionType,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+            String matrixId = CTypeUtil.toString(matrixIdPtr);
+            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
+            analysisContext.addBranchFactorMatrix(matrixId, branchesIds, variablesIds, contingencies, Util.convert(contingencyContextType), Util.convert(sensitivityFunctionType));
+        });
+    }
+
     @CEntryPoint(name = "addBranchFlowFactorMatrix")
     public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer branchIdPtrPtr, int branchIdCount,

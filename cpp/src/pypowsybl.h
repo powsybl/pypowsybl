@@ -393,6 +393,9 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
 void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                                const std::vector<std::string>& variablesIds);
 
+void addBranchFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                            const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType, sensitivity_function_type sensitivityFunctionType);                               
+
 void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                                              const std::vector<std::string>& variablesIds);
 

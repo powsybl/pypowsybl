@@ -876,6 +876,16 @@ void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnaly
                   variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), (char*) matrixId.c_str());
 }
 
+void addBranchFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                            const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType, sensitivity_function_type sensitivityFunctionType) {
+       ToCharPtrPtr branchIdPtr(branchesIds);
+       ToCharPtrPtr variableIdPtr(variablesIds);
+       ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
+       callJava(::addBranchFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), 
+                  (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType);
+}
+
 void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds,
                                const std::vector<std::string>& targetVoltageIds) {
     ToCharPtrPtr busVoltageIdPtr(busIds);

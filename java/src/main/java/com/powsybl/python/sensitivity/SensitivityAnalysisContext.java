@@ -119,6 +119,16 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         addBranchFlowFactorMatrix(matrixId, ContingencyContextType.SPECIFIC, branchesIds, variablesIds, contingencies);
     }
 
+    void addBranchFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds,
+                                   List<String> contingencies, ContingencyContextType contingencyContextType,
+                                   SensitivityFunctionType sensitivityFunctionType) {
+        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
+            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
+        }
+        MatrixInfo info = new MatrixInfo(contingencyContextType, sensitivityFunctionType, branchesIds, variablesIds, contingencies);
+        branchFlowFactorsMatrix.put(matrixId, info);
+    }
+
     public void setVariableSets(List<SensitivityVariableSet> variableSets) {
         this.variableSets = Objects.requireNonNull(variableSets);
     }
@@ -201,63 +211,74 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                     }
                 }
 
-                if (matrix.getFunctionType() == SensitivityFunctionType.BRANCH_ACTIVE_POWER_1) {
-                    for (int row = 0; row < rows.size(); row++) {
-                        String variableId = rows.get(row);
-                        Injection<?> injection = getInjection(network, variableId);
-                        for (int column = 0; column < columns.size(); column++) {
-                            String branchId = columns.get(column);
-                            Branch<?> branch = network.getBranch(branchId);
-                            if (branch == null) {
-                                throw new PowsyblException("Branch '" + branchId + "' not found");
-                            }
-                            if (injection != null) {
-                                for (ContingencyContext cCtx : contingencyContexts) {
-                                    handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
-                                            SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
-                                            false, cCtx);
+                switch (matrix.getFunctionType()) {
+                    case BRANCH_ACTIVE_POWER_1 -> {
+                        for (String variableId : rows) {
+                            Injection<?> injection = getInjection(network, variableId);
+                            for (String branchId : columns) {
+                                Branch<?> branch = network.getBranch(branchId);
+                                if (branch == null) {
+                                    throw new PowsyblException("Branch '" + branchId + "' not found");
                                 }
-                            } else {
-                                TwoWindingsTransformer twt = network.getTwoWindingsTransformer(variableId);
-                                if (twt != null) {
-                                    if (twt.getPhaseTapChanger() == null) {
-                                        throw new PowsyblException("Transformer '" + variableId + "' is not a phase shifter");
-                                    }
+                                if (injection != null) {
                                     for (ContingencyContext cCtx : contingencyContexts) {
                                         handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
-                                                SensitivityVariableType.TRANSFORMER_PHASE, variableId,
+                                                SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
                                                 false, cCtx);
                                     }
                                 } else {
-                                    HvdcLine hvdcLine = network.getHvdcLine(variableId);
-                                    if (hvdcLine != null) {
+                                    TwoWindingsTransformer twt = network.getTwoWindingsTransformer(variableId);
+                                    if (twt != null) {
+                                        if (twt.getPhaseTapChanger() == null) {
+                                            throw new PowsyblException("Transformer '" + variableId + "' is not a phase shifter");
+                                        }
                                         for (ContingencyContext cCtx : contingencyContexts) {
                                             handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
-                                                    SensitivityVariableType.HVDC_LINE_ACTIVE_POWER, variableId,
+                                                    SensitivityVariableType.TRANSFORMER_PHASE, variableId,
                                                     false, cCtx);
                                         }
                                     } else {
-                                        if (variableSetsById.containsKey(variableId)) {
+                                        HvdcLine hvdcLine = network.getHvdcLine(variableId);
+                                        if (hvdcLine != null) {
                                             for (ContingencyContext cCtx : contingencyContexts) {
                                                 handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
-                                                        SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
-                                                        true, cCtx);
+                                                        SensitivityVariableType.HVDC_LINE_ACTIVE_POWER, variableId,
+                                                        false, cCtx);
                                             }
                                         } else {
-                                            throw new PowsyblException("Variable '" + variableId + "' not found");
+                                            if (variableSetsById.containsKey(variableId)) {
+                                                for (ContingencyContext cCtx : contingencyContexts) {
+                                                    handler.onFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchId,
+                                                            SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId,
+                                                            true, cCtx);
+                                                }
+                                            } else {
+                                                throw new PowsyblException("Variable '" + variableId + "' not found");
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                } else if (matrix.getFunctionType() == SensitivityFunctionType.BUS_VOLTAGE) {
-                    for (int row = 0; row < rows.size(); row++) {
-                        String targetVoltageId = rows.get(row);
-                        for (int column = 0; column < columns.size(); column++) {
-                            String busVoltageId = columns.get(column);
-                            handler.onFactor(SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
-                                    SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId, false, ContingencyContext.all());
+                    case BUS_VOLTAGE -> {
+                        for (String targetVoltageId : rows) {
+                            for (String busVoltageId : columns) {
+                                handler.onFactor(SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
+                                        SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId, false, ContingencyContext.all());
+                            }
+                        }
+                    }
+                    case BRANCH_REACTIVE_POWER_1, BRANCH_REACTIVE_POWER_2, BRANCH_REACTIVE_POWER_3, BRANCH_CURRENT_1, BRANCH_CURRENT_2, BRANCH_CURRENT_3 -> {
+                        for (String targetVoltageId : rows) {
+                            for (String branchId : columns) {
+                                Branch<?> branch = network.getBranch(branchId);
+                                if (branch == null) {
+                                    throw new PowsyblException("Branch '" + branchId + "' not found");
+                                }
+                                handler.onFactor(matrix.getFunctionType(), branchId,
+                                        SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId, false, ContingencyContext.all());
+                            }
                         }
                     }
                 }
