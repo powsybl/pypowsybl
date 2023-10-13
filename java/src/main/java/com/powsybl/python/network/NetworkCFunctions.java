@@ -29,14 +29,20 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
-import com.powsybl.python.commons.*;
+import com.powsybl.python.commons.CTypeUtil;
+import com.powsybl.python.commons.Directives;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
-import com.powsybl.sld.layout.LayoutParameters;
-import com.powsybl.sld.svg.SvgParameters;
+import com.powsybl.sld.SldParameters;
+import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.ConvergenceComponentLibrary;
+import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
+import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -835,81 +841,62 @@ public final class NetworkCFunctions {
         });
     }
 
-    public static class LayoutParametersExt {
-        public final LayoutParameters layoutParameters;
-        public final SvgParameters svgParameters;
-        public final boolean topologicalColoring;
-
-        public final String componentLibrary;
-
-        public LayoutParametersExt() {
-            this(new LayoutParameters(), new SvgParameters(), true, "Convergence");
-        }
-
-        public LayoutParametersExt(LayoutParameters layoutParameters, SvgParameters svgParameters, boolean topologicalColoring, String componentLibrary) {
-            Objects.requireNonNull(layoutParameters);
-            this.layoutParameters = layoutParameters;
-            this.svgParameters = svgParameters;
-            this.svgParameters.setSvgWidthAndHeightAdded(true);
-            this.topologicalColoring = topologicalColoring;
-            this.componentLibrary = componentLibrary;
-        }
+    public static void copyToCSldParameters(SldParameters parameters, SldParametersPointer cParameters) {
+        cParameters.setUseName(parameters.getSvgParameters().isUseName());
+        cParameters.setCenterName(parameters.getSvgParameters().isLabelCentered());
+        cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
+        cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
+        cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
     }
 
-    public static void copyToCLayoutParameters(LayoutParametersExt parameters, LayoutParametersPointer cParameters) {
-        cParameters.setUseName(parameters.svgParameters.isUseName());
-        cParameters.setCenterName(parameters.svgParameters.isLabelCentered());
-        cParameters.setDiagonalLabel(parameters.svgParameters.isLabelDiagonal());
-        cParameters.setTopologicalColoring(parameters.topologicalColoring);
-        cParameters.setAddNodesInfos(parameters.svgParameters.isAddNodesInfos());
-        cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.componentLibrary));
-    }
-
-    public static LayoutParametersPointer convertToLayoutParametersPointer(LayoutParametersExt parameters) {
-        LayoutParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LayoutParametersPointer.class));
-        copyToCLayoutParameters(parameters, paramsPtr);
+    public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
+        SldParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SldParametersPointer.class));
+        copyToCSldParameters(parameters, paramsPtr);
         return paramsPtr;
     }
 
-    @CEntryPoint(name = "createLayoutParameters")
-    public static LayoutParametersPointer createLayoutParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLayoutParametersPointer(new LayoutParametersExt()));
+    @CEntryPoint(name = "createSldParameters")
+    public static SldParametersPointer createSldParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters()));
     }
 
-    public static void freeLayoutParametersPointer(LayoutParametersPointer layoutParametersPtr) {
-        UnmanagedMemory.free(layoutParametersPtr);
+    public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
+        UnmanagedMemory.free(sldParametersPtr);
     }
 
-    @CEntryPoint(name = "freeLayoutParameters")
-    public static void freeLayoutParameters(IsolateThread thread, LayoutParametersPointer layoutParametersPtr,
+    @CEntryPoint(name = "freeSldParameters")
+    public static void freeSldParameters(IsolateThread thread, SldParametersPointer sldParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            freeLayoutParametersPointer(layoutParametersPtr);
+            freeSldParametersPointer(sldParametersPtr);
         });
     }
 
-    public static LayoutParametersExt convertLayoutParameters(LayoutParametersPointer layoutParametersPtr) {
-        return new LayoutParametersExt(new LayoutParameters(),
-                new SvgParameters()
-                        .setUseName(layoutParametersPtr.isUseName())
-                        .setLabelCentered(layoutParametersPtr.isCenterName())
-                        .setLabelDiagonal(layoutParametersPtr.isDiagonalLabel())
-                        .setAddNodesInfos(layoutParametersPtr.isAddNodesInfos()),
-                layoutParametersPtr.isTopologicalColoring(),
-                CTypeUtil.toString(layoutParametersPtr.getComponentLibrary()));
+    public static SldParameters convertSldParameters(SldParametersPointer sldParametersPtr) {
+        String componentLibraryName = CTypeUtil.toString(sldParametersPtr.getComponentLibrary());
+        SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
+                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory() : new NominalVoltageStyleProviderFactory())
+                .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
+        sldParameters.getSvgParameters()
+                .setUseName(sldParametersPtr.isUseName())
+                .setLabelCentered(sldParametersPtr.isCenterName())
+                .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
+                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos());
+        return sldParameters;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                 CCharPointer svgFile, CCharPointer metadataFile, LayoutParametersPointer layoutParametersPtr,
+                                                 CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
-            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
-            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, layoutParametersExt);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
         });
     }
 
@@ -926,12 +913,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                                                        LayoutParametersPointer layoutParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                        SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
-            LayoutParametersExt layoutParametersExt = convertLayoutParameters(layoutParametersPtr);
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, layoutParametersExt);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });
     }
