@@ -6,14 +6,10 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
-import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
-import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
-import com.powsybl.sld.svg.styles.StyleProviderFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,10 +28,10 @@ public final class SingleLineDiagramUtil {
     private SingleLineDiagramUtil() {
     }
 
-    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+    static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
              Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
-            writeSvg(network, containerId, writer, metadataWriter, layoutParametersExt);
+            writeSvg(network, containerId, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -51,9 +47,9 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static List<String> getSvgAndMetadata(Network network, String containerId, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
+    static List<String> getSvgAndMetadata(Network network, String containerId, SldParameters sldParameters) {
         try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
-            writeSvg(network, containerId, writer, writerMeta, layoutParametersExt);
+            writeSvg(network, containerId, writer, writerMeta, sldParameters);
             writer.flush();
             writerMeta.flush();
             return List.of(writer.toString(), writerMeta.toString());
@@ -62,21 +58,17 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer) {
-        writeSvg(network, containerId, writer, new StringWriter(), new NetworkCFunctions.LayoutParametersExt());
+    static SldParameters createSldParameters() {
+        SldParameters sldParameters = new SldParameters();
+        sldParameters.getSvgParameters().setSvgWidthAndHeightAdded(true);
+        return sldParameters;
     }
 
-    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, NetworkCFunctions.LayoutParametersExt layoutParametersExt) {
-        ComponentLibrary componentLibrary = ComponentLibrary.find(layoutParametersExt.componentLibrary)
-                .orElseThrow(() -> new PowsyblException("library with name " + layoutParametersExt.componentLibrary +
-                        " was not found for Single Line Diagram component library"));
-        StyleProviderFactory styleProviderFactory = layoutParametersExt.topologicalColoring ? new DefaultStyleProviderFactory()
-                : new NominalVoltageStyleProviderFactory();
-        SldParameters sldParameters = new SldParameters()
-                .setComponentLibrary(componentLibrary)
-                .setLayoutParameters(layoutParametersExt.layoutParameters)
-                .setSvgParameters(layoutParametersExt.svgParameters)
-                .setStyleProviderFactory(styleProviderFactory);
+    static void writeSvg(Network network, String containerId, Writer writer) {
+        writeSvg(network, containerId, writer, new StringWriter(), createSldParameters());
+    }
+
+    static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
     }
 

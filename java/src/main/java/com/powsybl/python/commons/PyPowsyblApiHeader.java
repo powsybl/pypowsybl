@@ -919,8 +919,8 @@ public final class PyPowsyblApiHeader {
         void setSensitivityVariableBatchSize(int sensitivityVariableBatchSize);
     }
 
-    @CStruct("layout_parameters")
-    public interface LayoutParametersPointer extends PointerBase {
+    @CStruct("sld_parameters")
+    public interface SldParametersPointer extends PointerBase {
 
         @CField("use_name")
         boolean isUseName();
@@ -940,17 +940,17 @@ public final class PyPowsyblApiHeader {
         @CField("diagonal_label")
         void setDiagonalLabel(boolean diagonalLabel);
 
-        @CField("topological_coloring")
-        boolean isTopologicalColoring();
-
-        @CField("topological_coloring")
-        void setTopologicalColoring(boolean topologicalColoring);
-
         @CField("nodes_infos")
         boolean isAddNodesInfos();
 
         @CField("nodes_infos")
         void setAddNodesInfos(boolean addNodeInfos);
+
+        @CField("topological_coloring")
+        boolean isTopologicalColoring();
+
+        @CField("topological_coloring")
+        void setTopologicalColoring(boolean topologicalColoring);
 
         @CField("component_library")
         CCharPointer getComponentLibrary();
