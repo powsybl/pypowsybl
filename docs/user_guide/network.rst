@@ -756,7 +756,7 @@ The remaining voltage levels VL1 and VL3 are then:
 On the diagrams, you can see that all the lines that were connecting VL1 to VL2 have been removed as well as their switches. On VL3, nothing was done as nothing was connected between VL2 and VL3.
 
 Network merging
-----------------------------------------
+---------------
 
 Pypowsybl provides methods to merge and detach networks. For example we can merge the 2 CGMES microgrids like this:
 
