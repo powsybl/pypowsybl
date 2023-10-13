@@ -238,6 +238,8 @@ public final class Util {
                 return PyPowsyblApiHeader.ElementType.BRANCH;
             case IDENTIFIABLE:
                 return PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
+            case SUB_NETWORK:
+                return PyPowsyblApiHeader.ElementType.SUB_NETWORK;
             default:
                 throw new PowsyblException("Unknown element type : " + type);
         }
