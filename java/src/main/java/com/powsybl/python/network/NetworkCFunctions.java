@@ -355,23 +355,15 @@ public final class NetworkCFunctions {
 
     private static DataframeFilter createDataframeFilter(FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, DataframePointer selectedElementsDataframe) {
         List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
-        AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-        switch (filterAttributesType) {
-            case ALL_ATTRIBUTES:
-                filterType = AttributeFilterType.ALL_ATTRIBUTES;
-                break;
-            case SELECTION_ATTRIBUTES:
-                filterType = AttributeFilterType.INPUT_ATTRIBUTES;
-                break;
-            case DEFAULT_ATTRIBUTES:
-                filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-                break;
-        }
+        AttributeFilterType filterType = switch (filterAttributesType) {
+            case ALL_ATTRIBUTES -> AttributeFilterType.ALL_ATTRIBUTES;
+            case SELECTION_ATTRIBUTES -> AttributeFilterType.INPUT_ATTRIBUTES;
+            case DEFAULT_ATTRIBUTES -> AttributeFilterType.DEFAULT_ATTRIBUTES;
+        };
 
-        DataframeFilter dataframeFilter = selectedElementsDataframe.isNonNull()
+        return selectedElementsDataframe.isNonNull()
                 ? new DataframeFilter(filterType, attributes, createDataframe(selectedElementsDataframe))
                 : new DataframeFilter(filterType, attributes);
-        return dataframeFilter;
     }
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
@@ -463,12 +455,12 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
             elementIds.forEach(elementId -> {
-                Identifiable identifiable = network.getIdentifiable(elementId);
+                Identifiable<?> identifiable = network.getIdentifiable(elementId);
                 if (identifiable == null) {
                     throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
                 }
                 if (identifiable instanceof Connectable) {
-                    ((Connectable) identifiable).remove();
+                    ((Connectable<?>) identifiable).remove();
                 } else if (identifiable instanceof HvdcLine) {
                     ((HvdcLine) identifiable).remove();
                 } else if (identifiable instanceof VoltageLevel) {
@@ -478,14 +470,10 @@ public final class NetworkCFunctions {
                 } else if (identifiable instanceof Switch) {
                     VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
                     switch (voltageLevel.getTopologyKind()) {
-                        case NODE_BREAKER:
-                            voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
-                            break;
-                        case BUS_BREAKER:
-                            voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
-                            break;
-                        default:
-                            throw new PowsyblException("this voltage level does not have a proper topology kind");
+                        case NODE_BREAKER -> voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                        case BUS_BREAKER -> voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                        default ->
+                                throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
                 } else if (identifiable instanceof TieLine) {
                     ((TieLine) identifiable).remove();
@@ -661,7 +649,7 @@ public final class NetworkCFunctions {
                     StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
                     for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
                         String id = idSerie.get(i);
-                        Identifiable identifiable = network.getIdentifiable(id);
+                        Identifiable<?> identifiable = network.getIdentifiable(id);
                         if (identifiable != null) {
                             identifiable.setProperty(seriesName, columnSerie.get(i));
                         } else {

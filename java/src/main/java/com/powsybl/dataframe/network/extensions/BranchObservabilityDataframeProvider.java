@@ -32,8 +32,8 @@ public class BranchObservabilityDataframeProvider extends AbstractSingleDatafram
                 .filter(Objects::nonNull);
     }
 
-    private BranchObservability getOrThrow(Network network, String id) {
-        Branch branch = network.getBranch(id);
+    private BranchObservability<?> getOrThrow(Network network, String id) {
+        Branch<?> branch = network.getBranch(id);
         if (branch == null) {
             throw new PowsyblException("Invalid branch id : could not find " + id);
         }
@@ -56,7 +56,7 @@ public class BranchObservabilityDataframeProvider extends AbstractSingleDatafram
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", branchObservability -> ((Branch) branchObservability.getExtendable()).getId())
+                .stringsIndex("id", branchObservability -> ((Branch<?>) branchObservability.getExtendable()).getId())
                 .booleans("observable", BranchObservability::isObservable)
                 .doubles("p1_standard_deviation", branchObservability -> branchObservability.getQualityP1() != null ?
                                 branchObservability.getQualityP1().getStandardDeviation() : Double.NaN,

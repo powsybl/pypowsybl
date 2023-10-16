@@ -127,7 +127,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         if (acceptableDuration == -1) {
             applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
         } else {
-            LoadingLimitsAdder.TemporaryLimitAdder temporaryLimitAdder = adder.beginTemporaryLimit()
+            LoadingLimitsAdder.TemporaryLimitAdder<?> temporaryLimitAdder = adder.beginTemporaryLimit()
                     .setAcceptableDuration(acceptableDuration);
             applyIfPresent(series.getNames(), row, temporaryLimitAdder::setName);
             applyIfPresent(series.getValues(), row, temporaryLimitAdder::setValue);
@@ -195,26 +195,23 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static Branch.Side toBranchSide(TemporaryLimitData.Side side) {
-        switch (side) {
-            case ONE:
-                return Branch.Side.ONE;
-            case TWO:
-                return Branch.Side.TWO;
-            default:
-                throw new PowsyblException("Invalid value for branch side: " + side);
-        }
+        return switch (side) {
+            case ONE -> Branch.Side.ONE;
+            case TWO -> Branch.Side.TWO;
+            default -> throw new PowsyblException("Invalid value for branch side: " + side);
+        };
     }
 
     private static FlowsLimitsHolder getLimitsHolder(Network network, IdentifiableType identifiableType, String elementId, TemporaryLimitData.Side side) {
         switch (identifiableType) {
-            case LINE:
-            case TWO_WINDINGS_TRANSFORMER:
+            case LINE, TWO_WINDINGS_TRANSFORMER -> {
                 Branch<?> branch = network.getBranch(elementId);
                 if (branch == null) {
                     throw new PowsyblException("Branch " + elementId + " does not exist.");
                 }
                 return getBranchAsFlowsLimitsHolder(branch, toBranchSide(side));
-            case DANGLING_LINE:
+            }
+            case DANGLING_LINE -> {
                 DanglingLine dl = network.getDanglingLine(elementId);
                 if (dl == null) {
                     throw new PowsyblException("Dangling line " + elementId + " does not exist.");
@@ -223,37 +220,31 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
                     throw new PowsyblException("Invalid value for dangling line side: " + side + ", must be NONE");
                 }
                 return dl;
-            case THREE_WINDINGS_TRANSFORMER:
+            }
+            case THREE_WINDINGS_TRANSFORMER -> {
                 ThreeWindingsTransformer transformer = network.getThreeWindingsTransformer(elementId);
                 if (transformer == null) {
                     throw new PowsyblException("Three windings transformer " + elementId + " does not exist.");
                 }
-                switch (side) {
-                    case ONE:
-                        return transformer.getLeg1();
-                    case TWO:
-                        return transformer.getLeg2();
-                    case THREE:
-                        return transformer.getLeg3();
-                    default:
-                        throw new PowsyblException("Invalid value for three windings transformer side: " + side);
-                }
-            default:
-                throw new PowsyblException("Cannot create operational limits for element of type " + identifiableType);
+                return switch (side) {
+                    case ONE -> transformer.getLeg1();
+                    case TWO -> transformer.getLeg2();
+                    case THREE -> transformer.getLeg3();
+                    default -> throw new PowsyblException("Invalid value for three windings transformer side: " + side);
+                };
+            }
+            default ->
+                    throw new PowsyblException("Cannot create operational limits for element of type " + identifiableType);
         }
     }
 
     private static LoadingLimitsAdder getAdder(Network network, IdentifiableType identifiableType, String elementId, LimitType type, TemporaryLimitData.Side side) {
         FlowsLimitsHolder limitsHolder = getLimitsHolder(network, identifiableType, elementId, side);
-        switch (type) {
-            case CURRENT:
-                return limitsHolder.newCurrentLimits();
-            case ACTIVE_POWER:
-                return limitsHolder.newActivePowerLimits();
-            case APPARENT_POWER:
-                return limitsHolder.newApparentPowerLimits();
-            default:
-                throw new PowsyblException(String.format("Limit type %s does not exist.", type));
-        }
+        return switch (type) {
+            case CURRENT -> limitsHolder.newCurrentLimits();
+            case ACTIVE_POWER -> limitsHolder.newActivePowerLimits();
+            case APPARENT_POWER -> limitsHolder.newApparentPowerLimits();
+            default -> throw new PowsyblException(String.format("Limit type %s does not exist.", type));
+        };
     }
 }

@@ -50,24 +50,23 @@ public final class NetworkUtil {
         if (!(equipment instanceof Connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (equipment instanceof Injection) {
-            Injection<?> injection = (Injection<?>) equipment;
+        if (equipment instanceof Injection<?> injection) {
             if (connected) {
                 return injection.getTerminal().connect();
             } else {
                 return injection.getTerminal().disconnect();
             }
-        } else if (equipment instanceof Branch) {
-            Branch<?> branch = (Branch<?>) equipment;
+        } else if (equipment instanceof Branch<?> branch) {
+            boolean done1;
+            boolean done2;
             if (connected) {
-                boolean done1 = branch.getTerminal1().connect();
-                boolean done2 = branch.getTerminal2().connect();
-                return done1 || done2;
+                done1 = branch.getTerminal1().connect();
+                done2 = branch.getTerminal2().connect();
             } else {
-                boolean done1 = branch.getTerminal1().disconnect();
-                boolean done2 = branch.getTerminal2().disconnect();
-                return done1 || done2;
+                done1 = branch.getTerminal1().disconnect();
+                done2 = branch.getTerminal2().disconnect();
             }
+            return done1 || done2;
         }
         return false;
     }
@@ -82,7 +81,7 @@ public final class NetworkUtil {
         return bus != null && bus.getSynchronousComponent().getNum() == ComponentConstants.MAIN_NUM;
     }
 
-    private static boolean filter(Branch branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc,
+    private static boolean filter(Branch<?> branch, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc,
                                   boolean notConnectedToSameBusAtBothSides) {
         Terminal terminal1 = branch.getTerminal1();
         Terminal terminal2 = branch.getTerminal2();
@@ -107,14 +106,12 @@ public final class NetworkUtil {
         if (notConnectedToSameBusAtBothSides) {
             Bus bus1 = branch.getTerminal1().getBusView().getBus();
             Bus bus2 = branch.getTerminal2().getBusView().getBus();
-            if (bus1 != null && bus2 != null && bus1.getId().equals(bus2.getId())) {
-                return false;
-            }
+            return bus1 == null || bus2 == null || !bus1.getId().equals(bus2.getId());
         }
         return true;
     }
 
-    private static boolean filter(Injection injection, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc) {
+    private static boolean filter(Injection<?> injection, Set<Double> nominalVoltages, Set<String> countries, boolean mainCc, boolean mainSc) {
         Terminal terminal = injection.getTerminal();
         VoltageLevel voltageLevel = terminal.getVoltageLevel();
         if (!(nominalVoltages.isEmpty()
@@ -128,48 +125,30 @@ public final class NetworkUtil {
         if (mainCc && !isInMainCc(terminal)) {
             return false;
         }
-        if (mainSc && !isInMainSc(terminal)) {
-            return false;
-        }
-        return true;
+        return !mainSc || isInMainSc(terminal);
     }
 
     static List<String> getElementsIds(Network network, PyPowsyblApiHeader.ElementType elementType, Set<Double> nominalVoltages,
                                        Set<String> countries, boolean mainCc, boolean mainSc, boolean notConnectedToSameBusAtBothSides) {
-        List<String> elementsIds;
-        switch (elementType) {
-            case LINE:
-                elementsIds = network.getLineStream()
-                        .filter(l -> filter(l, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            case TWO_WINDINGS_TRANSFORMER:
-                elementsIds = network.getTwoWindingsTransformerStream()
-                        .filter(twt -> filter(twt, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            case GENERATOR:
-                elementsIds = network.getGeneratorStream()
-                        .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            case LOAD:
-                elementsIds = network.getLoadStream()
-                        .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
-                        .map(Identifiable::getId)
-                        .collect(Collectors.toList());
-                break;
-
-            default:
-                throw new PowsyblException("Unsupported element type:" + elementType);
-        }
-        return elementsIds;
+        return switch (elementType) {
+            case LINE -> network.getLineStream()
+                    .filter(l -> filter(l, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
+                    .map(Identifiable::getId)
+                    .collect(Collectors.toList());
+            case TWO_WINDINGS_TRANSFORMER -> network.getTwoWindingsTransformerStream()
+                    .filter(twt -> filter(twt, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides))
+                    .map(Identifiable::getId)
+                    .collect(Collectors.toList());
+            case GENERATOR -> network.getGeneratorStream()
+                    .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
+                    .map(Identifiable::getId)
+                    .collect(Collectors.toList());
+            case LOAD -> network.getLoadStream()
+                    .filter(g -> filter(g, nominalVoltages, countries, mainCc, mainSc))
+                    .map(Identifiable::getId)
+                    .collect(Collectors.toList());
+            default -> throw new PowsyblException("Unsupported element type:" + elementType);
+        };
     }
 
     public static Stream<TemporaryLimitData> getLimits(Network network) {
@@ -215,22 +194,22 @@ public final class NetworkUtil {
     public static Stream<ConnectablePositionFeederData> getFeeders(Network network) {
         Stream.Builder<ConnectablePositionFeederData> feeders = Stream.builder();
         network.getConnectableStream().forEach(connectable -> {
-            ConnectablePosition connectablePosition = (ConnectablePosition) connectable.getExtension(ConnectablePosition.class);
+            ConnectablePosition<?> connectablePosition = (ConnectablePosition<?>) connectable.getExtension(ConnectablePosition.class);
             if (connectablePosition != null) {
                 if (connectablePosition.getFeeder() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
                             connectablePosition.getFeeder(), null));
                 }
                 if (connectablePosition.getFeeder1() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
                             connectablePosition.getFeeder1(), SideEnum.ONE));
                 }
                 if (connectablePosition.getFeeder2() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
                             connectablePosition.getFeeder2(), SideEnum.TWO));
                 }
                 if (connectablePosition.getFeeder3() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
                             connectablePosition.getFeeder3(), SideEnum.THREE));
                 }
             }

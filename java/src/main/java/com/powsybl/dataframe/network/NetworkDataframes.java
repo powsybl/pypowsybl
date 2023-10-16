@@ -274,7 +274,7 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static String getRegulatedElementId(Injection injection) {
+    private static String getRegulatedElementId(Injection<?> injection) {
         Terminal terminal;
         if (injection instanceof Generator) {
             terminal = ((Generator) injection).getRegulatingTerminal();
@@ -292,7 +292,7 @@ public final class NetworkDataframes {
         return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
     }
 
-    private static void setRegulatedElement(Injection injection, String elementId) {
+    private static void setRegulatedElement(Injection<?> injection, String elementId) {
         Network network = injection.getNetwork();
         Identifiable<?> identifiable = network.getIdentifiable(elementId);
         if (identifiable instanceof Injection) {
@@ -420,10 +420,9 @@ public final class NetworkDataframes {
     static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
         ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new PowsyblException("id is missing")));
-        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
+        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel shuntNonLinear)) {
             throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
         } else {
-            ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
             int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
             return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
@@ -970,7 +969,7 @@ public final class NetworkDataframes {
         }
         SideEnum side = SideEnum.valueOf(sideStr);
         switch (side) {
-            case ONE:
+            case ONE -> {
                 if (connectable instanceof Branch) {
                     return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
                 } else if (connectable instanceof ThreeWindingsTransformer) {
@@ -978,7 +977,8 @@ public final class NetworkDataframes {
                 } else {
                     throw new PowsyblException("no side ONE for this element");
                 }
-            case TWO:
+            }
+            case TWO -> {
                 if (connectable instanceof Branch) {
                     return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
                 } else if (connectable instanceof ThreeWindingsTransformer) {
@@ -986,14 +986,15 @@ public final class NetworkDataframes {
                 } else {
                     throw new PowsyblException("no side TWO for this element");
                 }
-            case THREE:
+            }
+            case THREE -> {
                 if (connectable instanceof ThreeWindingsTransformer) {
                     return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
                 } else {
                     throw new PowsyblException("no side THREE for this element");
                 }
-            default:
-                throw new PowsyblException("side must be ONE, TWO or THREE");
+            }
+            default -> throw new PowsyblException("side must be ONE, TWO or THREE");
         }
     }
 
@@ -1149,11 +1150,11 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
                 .strings("alias", Pair::getRight)
-                .strings("alias_type", pair -> ((Optional<String>) pair.getLeft().getAliasType(pair.getRight())).orElse(""))
+                .strings("alias_type", pair -> pair.getLeft().getAliasType(pair.getRight()).orElse(""))
                 .build();
     }
 
-    private static Stream<Pair<Identifiable, String>> getAliasesData(Network network) {
+    private static Stream<Pair<Identifiable<?>, String>> getAliasesData(Network network) {
         return network.getIdentifiables().stream()
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));
