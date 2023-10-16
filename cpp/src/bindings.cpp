@@ -455,23 +455,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
           py::arg("validation_type"), py::arg("validation_parameters"));
 
-    py::class_<pypowsybl::LayoutParameters>(m, "LayoutParameters")
-        .def(py::init(&pypowsybl::createLayoutParameters))
-        .def_readwrite("use_name", &pypowsybl::LayoutParameters::use_name)
-        .def_readwrite("center_name", &pypowsybl::LayoutParameters::center_name)
-        .def_readwrite("diagonal_label", &pypowsybl::LayoutParameters::diagonal_label)
-        .def_readwrite("topological_coloring", &pypowsybl::LayoutParameters::topological_coloring)
-        .def_readwrite("nodes_infos", &pypowsybl::LayoutParameters::nodes_infos)
-        .def_readwrite("component_library", &pypowsybl::LayoutParameters::component_library);
+    py::class_<pypowsybl::SldParameters>(m, "SldParameters")
+        .def(py::init(&pypowsybl::createSldParameters))
+        .def_readwrite("use_name", &pypowsybl::SldParameters::use_name)
+        .def_readwrite("center_name", &pypowsybl::SldParameters::center_name)
+        .def_readwrite("diagonal_label", &pypowsybl::SldParameters::diagonal_label)
+        .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
+        .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
+        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
-          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("layout_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("container_id"), py::arg("layout_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
