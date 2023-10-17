@@ -197,19 +197,19 @@ public final class NetworkUtil {
             ConnectablePosition<?> connectablePosition = (ConnectablePosition<?>) connectable.getExtension(ConnectablePosition.class);
             if (connectablePosition != null) {
                 if (connectablePosition.getFeeder() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(connectablePosition.getExtendable().getId(),
                             connectablePosition.getFeeder(), null));
                 }
                 if (connectablePosition.getFeeder1() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(connectablePosition.getExtendable().getId(),
                             connectablePosition.getFeeder1(), SideEnum.ONE));
                 }
                 if (connectablePosition.getFeeder2() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(connectablePosition.getExtendable().getId(),
                             connectablePosition.getFeeder2(), SideEnum.TWO));
                 }
                 if (connectablePosition.getFeeder3() != null) {
-                    feeders.add(new ConnectablePositionFeederData(((Connectable<?>) connectablePosition.getExtendable()).getId(),
+                    feeders.add(new ConnectablePositionFeederData(connectablePosition.getExtendable().getId(),
                             connectablePosition.getFeeder3(), SideEnum.THREE));
                 }
             }

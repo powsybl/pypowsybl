@@ -461,22 +461,22 @@ public final class NetworkCFunctions {
                 }
                 if (identifiable instanceof Connectable) {
                     ((Connectable<?>) identifiable).remove();
-                } else if (identifiable instanceof HvdcLine) {
-                    ((HvdcLine) identifiable).remove();
-                } else if (identifiable instanceof VoltageLevel) {
-                    ((VoltageLevel) identifiable).remove();
-                } else if (identifiable instanceof Substation) {
-                    ((Substation) identifiable).remove();
-                } else if (identifiable instanceof Switch) {
-                    VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
+                } else if (identifiable instanceof HvdcLine hvdcLine) {
+                    hvdcLine.remove();
+                } else if (identifiable instanceof VoltageLevel voltageLevel) {
+                    voltageLevel.remove();
+                } else if (identifiable instanceof Substation substation) {
+                    substation.remove();
+                } else if (identifiable instanceof Switch sw) {
+                    VoltageLevel voltageLevel = sw.getVoltageLevel();
                     switch (voltageLevel.getTopologyKind()) {
                         case NODE_BREAKER -> voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
                         case BUS_BREAKER -> voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
                         default ->
                                 throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
-                } else if (identifiable instanceof TieLine) {
-                    ((TieLine) identifiable).remove();
+                } else if (identifiable instanceof TieLine tieLine) {
+                    tieLine.remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
@@ -495,18 +495,13 @@ public final class NetworkCFunctions {
             PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
-                case STRING_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
-                    break;
-                case DOUBLE_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
-                    break;
-                case INT_SERIES_TYPE:
-                case BOOLEAN_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
+                case STRING_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
+                case DOUBLE_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
+                case INT_SERIES_TYPE, BOOLEAN_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
+                default -> throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
             }
         }
         return updatingDataframe;

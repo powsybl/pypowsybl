@@ -276,12 +276,12 @@ public final class NetworkDataframes {
 
     private static String getRegulatedElementId(Injection<?> injection) {
         Terminal terminal;
-        if (injection instanceof Generator) {
-            terminal = ((Generator) injection).getRegulatingTerminal();
-        } else if (injection instanceof VscConverterStation) {
-            terminal = ((VscConverterStation) injection).getRegulatingTerminal();
-        } else if (injection instanceof StaticVarCompensator) {
-            terminal = ((StaticVarCompensator) injection).getRegulatingTerminal();
+        if (injection instanceof Generator generator) {
+            terminal = generator.getRegulatingTerminal();
+        } else if (injection instanceof VscConverterStation converterStation) {
+            terminal = converterStation.getRegulatingTerminal();
+        } else if (injection instanceof StaticVarCompensator svc) {
+            terminal = svc.getRegulatingTerminal();
         } else {
             throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
         }
@@ -972,8 +972,8 @@ public final class NetworkDataframes {
             case ONE -> {
                 if (connectable instanceof Branch) {
                     return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
-                } else if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.ONE);
+                } else if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeWindingsTransformer.Side.ONE);
                 } else {
                     throw new PowsyblException("no side ONE for this element");
                 }
@@ -981,15 +981,15 @@ public final class NetworkDataframes {
             case TWO -> {
                 if (connectable instanceof Branch) {
                     return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
-                } else if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.TWO);
+                } else if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeWindingsTransformer.Side.TWO);
                 } else {
                     throw new PowsyblException("no side TWO for this element");
                 }
             }
             case THREE -> {
-                if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
+                if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeWindingsTransformer.Side.THREE);
                 } else {
                     throw new PowsyblException("no side THREE for this element");
                 }
