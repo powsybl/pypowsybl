@@ -35,7 +35,7 @@ public:
         if (thread_ == nullptr) {
             int c = graal_attach_thread(isolate, &thread_);
             if (c != 0) {
-                throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
+                throw std::runtime_error("graal_attach_thread error: " + std::to_string(c));
             }
             shouldDetach = true;
        }
