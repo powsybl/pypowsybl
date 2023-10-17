@@ -757,7 +757,7 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
     return new SeriesArray(callJava<array*>(::runLoadFlowValidation, network, validationType, c_validation_parameters.get()));
 }
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const LayoutParameters& parameters) {
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
     auto c_parameters = parameters.to_c_struct();
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
@@ -766,7 +766,7 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const LayoutParameters& parameters) {
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters) {
     auto c_parameters = parameters.to_c_struct();
     auto svgAndMetadataArrayPtr = callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
@@ -1239,40 +1239,40 @@ void closePypowsybl() {
     pypowsybl::callJava(::closePypowsybl);
 }
 
-LayoutParameters::LayoutParameters(layout_parameters* src) {
+SldParameters::SldParameters(sld_parameters* src) {
     use_name = (bool) src->use_name;
     center_name = (bool) src->center_name;
     diagonal_label = (bool) src->diagonal_label;
-    topological_coloring = (bool) src->topological_coloring;
     nodes_infos = (bool) src->nodes_infos;
+    topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
 }
 
-void LayoutParameters::layout_to_c_struct(layout_parameters& res) const {
+void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.use_name = (unsigned char) use_name;
     res.center_name = (unsigned char) center_name;
     res.diagonal_label = (unsigned char) diagonal_label;
-    res.topological_coloring = (unsigned char) topological_coloring;
     res.nodes_infos = (unsigned char) nodes_infos;
+    res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
 }
 
-std::shared_ptr<layout_parameters> LayoutParameters::to_c_struct() const {
-    layout_parameters* res = new layout_parameters();
-    layout_to_c_struct(*res);
+std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
+    sld_parameters* res = new sld_parameters();
+    sld_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
-    return std::shared_ptr<layout_parameters>(res, [](layout_parameters* ptr){
+    return std::shared_ptr<sld_parameters>(res, [](sld_parameters* ptr){
         delete ptr;
     });
 }
 
-LayoutParameters* createLayoutParameters() {
-    layout_parameters* parameters_ptr = callJava<layout_parameters*>(::createLayoutParameters);
-    auto parameters = std::shared_ptr<layout_parameters>(parameters_ptr, [](layout_parameters* ptr){
+SldParameters* createSldParameters() {
+    sld_parameters* parameters_ptr = callJava<sld_parameters*>(::createSldParameters);
+    auto parameters = std::shared_ptr<sld_parameters>(parameters_ptr, [](sld_parameters* ptr){
        //Memory has been allocated on java side, we need to clean it up on java side
-       callJava(::freeLayoutParameters, ptr);
+       callJava(::freeSldParameters, ptr);
     });
-    return new LayoutParameters(parameters.get());
+    return new SldParameters(parameters.get());
 }
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter) {
