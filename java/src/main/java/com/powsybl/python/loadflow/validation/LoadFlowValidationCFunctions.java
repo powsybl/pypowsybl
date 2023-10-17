@@ -78,52 +78,33 @@ public final class LoadFlowValidationCFunctions {
                                                                    ValidationConfig validationConfig) {
         InMemoryValidationWriter writer = new InMemoryValidationWriter();
         switch (validationType) {
-            case FLOWS:
-                ValidationType.FLOWS.check(network, validationConfig, writer);
-                break;
-            case BUSES:
-                ValidationType.BUSES.check(network, validationConfig, writer);
-                break;
-            case GENERATORS:
-                ValidationType.GENERATORS.check(network, validationConfig, writer);
-                break;
-            case SVCS:
-                ValidationType.SVCS.check(network, validationConfig, writer);
-                break;
-            case SHUNTS:
-                ValidationType.SHUNTS.check(network, validationConfig, writer);
-                break;
-            case TWTS:
-                ValidationType.TWTS.check(network, validationConfig, writer);
-                break;
-            case TWTS3W:
-                ValidationType.TWTS3W.check(network, validationConfig, writer);
-                break;
-            default:
-                throw new PowsyblException("Validation '" + validationType + "' not supported");
+            case FLOWS -> ValidationType.FLOWS.check(network, validationConfig, writer);
+            case BUSES -> ValidationType.BUSES.check(network, validationConfig, writer);
+            case GENERATORS -> ValidationType.GENERATORS.check(network, validationConfig, writer);
+            case SVCS -> ValidationType.SVCS.check(network, validationConfig, writer);
+            case SHUNTS -> ValidationType.SHUNTS.check(network, validationConfig, writer);
+            case TWTS -> ValidationType.TWTS.check(network, validationConfig, writer);
+            case TWTS3W -> ValidationType.TWTS3W.check(network, validationConfig, writer);
+            default -> throw new PowsyblException("Validation '" + validationType + "' not supported");
         }
         return writer;
     }
 
     private static ArrayPointer<SeriesPointer> createCDataFrame(InMemoryValidationWriter validationWriter, PyPowsyblApiHeader.ValidationType validationType) {
-        switch (validationType) {
-            case FLOWS:
-                return Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
-            case BUSES:
-                return Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
-            case GENERATORS:
-                return Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
-            case SVCS:
-                return Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData());
-            case SHUNTS:
-                return Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
-            case TWTS:
-                return Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData());
-            case TWTS3W:
-                return Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
-            default:
-                throw new PowsyblException("Validation '" + validationType + "' not supported");
-        }
+        return switch (validationType) {
+            case FLOWS ->
+                    Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
+            case BUSES ->
+                    Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
+            case GENERATORS ->
+                    Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
+            case SVCS -> Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData());
+            case SHUNTS ->
+                    Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
+            case TWTS -> Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData());
+            case TWTS3W ->
+                    Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
+        };
     }
 
     @CEntryPoint(name = "createValidationConfig")

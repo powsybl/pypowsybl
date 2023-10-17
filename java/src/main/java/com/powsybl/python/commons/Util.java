@@ -6,7 +6,6 @@
  */
 package com.powsybl.python.commons;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
@@ -99,7 +98,7 @@ public final class Util {
     }
 
     public static <T extends Enum<?>> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr,
-            Supplier<T> supplier) {
+                                                Supplier<T> supplier) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
@@ -158,237 +157,136 @@ public final class Util {
     }
 
     public static int convert(SeriesDataType type) {
-        switch (type) {
-            case STRING:
-                return CDataframeHandler.STRING_SERIES_TYPE;
-            case DOUBLE:
-                return CDataframeHandler.DOUBLE_SERIES_TYPE;
-            case INT:
-                return CDataframeHandler.INT_SERIES_TYPE;
-            case BOOLEAN:
-                return CDataframeHandler.BOOLEAN_SERIES_TYPE;
-            default:
-                throw new IllegalStateException("Unexpected series type: " + type);
-        }
+        return switch (type) {
+            case STRING -> CDataframeHandler.STRING_SERIES_TYPE;
+            case DOUBLE -> CDataframeHandler.DOUBLE_SERIES_TYPE;
+            case INT -> CDataframeHandler.INT_SERIES_TYPE;
+            case BOOLEAN -> CDataframeHandler.BOOLEAN_SERIES_TYPE;
+        };
     }
 
     public static PyPowsyblApiHeader.ElementType convert(DataframeElementType type) {
-        switch (type) {
-            case BUS:
-                return PyPowsyblApiHeader.ElementType.BUS;
-            case LINE:
-                return PyPowsyblApiHeader.ElementType.LINE;
-            case TWO_WINDINGS_TRANSFORMER:
-                return PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER;
-            case THREE_WINDINGS_TRANSFORMER:
-                return PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
-            case GENERATOR:
-                return PyPowsyblApiHeader.ElementType.GENERATOR;
-            case LOAD:
-                return PyPowsyblApiHeader.ElementType.LOAD;
-            case BATTERY:
-                return PyPowsyblApiHeader.ElementType.BATTERY;
-            case SHUNT_COMPENSATOR:
-                return PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE:
-                return PyPowsyblApiHeader.ElementType.DANGLING_LINE;
-            case TIE_LINE:
-                return PyPowsyblApiHeader.ElementType.TIE_LINE;
-            case LCC_CONVERTER_STATION:
-                return PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
-            case VSC_CONVERTER_STATION:
-                return PyPowsyblApiHeader.ElementType.VSC_CONVERTER_STATION;
-            case STATIC_VAR_COMPENSATOR:
-                return PyPowsyblApiHeader.ElementType.STATIC_VAR_COMPENSATOR;
-            case SWITCH:
-                return PyPowsyblApiHeader.ElementType.SWITCH;
-            case VOLTAGE_LEVEL:
-                return PyPowsyblApiHeader.ElementType.VOLTAGE_LEVEL;
-            case SUBSTATION:
-                return PyPowsyblApiHeader.ElementType.SUBSTATION;
-            case BUSBAR_SECTION:
-                return PyPowsyblApiHeader.ElementType.BUSBAR_SECTION;
-            case HVDC_LINE:
-                return PyPowsyblApiHeader.ElementType.HVDC_LINE;
-            case RATIO_TAP_CHANGER_STEP:
-                return PyPowsyblApiHeader.ElementType.RATIO_TAP_CHANGER_STEP;
-            case PHASE_TAP_CHANGER_STEP:
-                return PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER_STEP;
-            case RATIO_TAP_CHANGER:
-                return PyPowsyblApiHeader.ElementType.RATIO_TAP_CHANGER;
-            case PHASE_TAP_CHANGER:
-                return PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER;
-            case REACTIVE_CAPABILITY_CURVE_POINT:
-                return PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
-            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
-                return PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case LINEAR_SHUNT_COMPENSATOR_SECTION:
-                return PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS:
-                return PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
-            case MINMAX_REACTIVE_LIMITS:
-                return PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
-            case ALIAS:
-                return PyPowsyblApiHeader.ElementType.ALIAS;
-            case TERMINAL:
-                return PyPowsyblApiHeader.ElementType.TERMINAL;
-            case INJECTION:
-                return PyPowsyblApiHeader.ElementType.INJECTION;
-            case BRANCH:
-                return PyPowsyblApiHeader.ElementType.BRANCH;
-            case IDENTIFIABLE:
-                return PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
-            case SUB_NETWORK:
-                return PyPowsyblApiHeader.ElementType.SUB_NETWORK;
-            default:
-                throw new PowsyblException("Unknown element type : " + type);
-        }
+        return switch (type) {
+            case BUS -> PyPowsyblApiHeader.ElementType.BUS;
+            case LINE -> PyPowsyblApiHeader.ElementType.LINE;
+            case TWO_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER;
+            case THREE_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
+            case GENERATOR -> PyPowsyblApiHeader.ElementType.GENERATOR;
+            case LOAD -> PyPowsyblApiHeader.ElementType.LOAD;
+            case BATTERY -> PyPowsyblApiHeader.ElementType.BATTERY;
+            case SHUNT_COMPENSATOR -> PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
+            case DANGLING_LINE -> PyPowsyblApiHeader.ElementType.DANGLING_LINE;
+            case TIE_LINE -> PyPowsyblApiHeader.ElementType.TIE_LINE;
+            case LCC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
+            case VSC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.VSC_CONVERTER_STATION;
+            case STATIC_VAR_COMPENSATOR -> PyPowsyblApiHeader.ElementType.STATIC_VAR_COMPENSATOR;
+            case SWITCH -> PyPowsyblApiHeader.ElementType.SWITCH;
+            case VOLTAGE_LEVEL -> PyPowsyblApiHeader.ElementType.VOLTAGE_LEVEL;
+            case SUBSTATION -> PyPowsyblApiHeader.ElementType.SUBSTATION;
+            case BUSBAR_SECTION -> PyPowsyblApiHeader.ElementType.BUSBAR_SECTION;
+            case HVDC_LINE -> PyPowsyblApiHeader.ElementType.HVDC_LINE;
+            case RATIO_TAP_CHANGER_STEP -> PyPowsyblApiHeader.ElementType.RATIO_TAP_CHANGER_STEP;
+            case PHASE_TAP_CHANGER_STEP -> PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER_STEP;
+            case RATIO_TAP_CHANGER -> PyPowsyblApiHeader.ElementType.RATIO_TAP_CHANGER;
+            case PHASE_TAP_CHANGER -> PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER;
+            case REACTIVE_CAPABILITY_CURVE_POINT -> PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION ->
+                    PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
+            case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
+            case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
+            case MINMAX_REACTIVE_LIMITS -> PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
+            case ALIAS -> PyPowsyblApiHeader.ElementType.ALIAS;
+            case TERMINAL -> PyPowsyblApiHeader.ElementType.TERMINAL;
+            case INJECTION -> PyPowsyblApiHeader.ElementType.INJECTION;
+            case BRANCH -> PyPowsyblApiHeader.ElementType.BRANCH;
+            case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
+            case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
+        };
     }
 
     public static DataframeElementType convert(PyPowsyblApiHeader.ElementType type) {
-        switch (type) {
-            case BUS:
-                return DataframeElementType.BUS;
-            case LINE:
-                return DataframeElementType.LINE;
-            case TWO_WINDINGS_TRANSFORMER:
-                return DataframeElementType.TWO_WINDINGS_TRANSFORMER;
-            case THREE_WINDINGS_TRANSFORMER:
-                return DataframeElementType.THREE_WINDINGS_TRANSFORMER;
-            case GENERATOR:
-                return DataframeElementType.GENERATOR;
-            case LOAD:
-                return DataframeElementType.LOAD;
-            case BATTERY:
-                return DataframeElementType.BATTERY;
-            case SHUNT_COMPENSATOR:
-                return DataframeElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE:
-                return DataframeElementType.DANGLING_LINE;
-            case TIE_LINE:
-                return DataframeElementType.TIE_LINE;
-            case LCC_CONVERTER_STATION:
-                return DataframeElementType.LCC_CONVERTER_STATION;
-            case VSC_CONVERTER_STATION:
-                return DataframeElementType.VSC_CONVERTER_STATION;
-            case STATIC_VAR_COMPENSATOR:
-                return DataframeElementType.STATIC_VAR_COMPENSATOR;
-            case SWITCH:
-                return DataframeElementType.SWITCH;
-            case VOLTAGE_LEVEL:
-                return DataframeElementType.VOLTAGE_LEVEL;
-            case SUBSTATION:
-                return DataframeElementType.SUBSTATION;
-            case BUSBAR_SECTION:
-                return DataframeElementType.BUSBAR_SECTION;
-            case HVDC_LINE:
-                return DataframeElementType.HVDC_LINE;
-            case RATIO_TAP_CHANGER_STEP:
-                return DataframeElementType.RATIO_TAP_CHANGER_STEP;
-            case PHASE_TAP_CHANGER_STEP:
-                return DataframeElementType.PHASE_TAP_CHANGER_STEP;
-            case RATIO_TAP_CHANGER:
-                return DataframeElementType.RATIO_TAP_CHANGER;
-            case PHASE_TAP_CHANGER:
-                return DataframeElementType.PHASE_TAP_CHANGER;
-            case REACTIVE_CAPABILITY_CURVE_POINT:
-                return DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
-            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION:
-                return DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case LINEAR_SHUNT_COMPENSATOR_SECTION:
-                return DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS:
-                return DataframeElementType.OPERATIONAL_LIMITS;
-            case MINMAX_REACTIVE_LIMITS:
-                return DataframeElementType.MINMAX_REACTIVE_LIMITS;
-            case ALIAS:
-                return DataframeElementType.ALIAS;
-            case TERMINAL:
-                return DataframeElementType.TERMINAL;
-            case INJECTION:
-                return DataframeElementType.INJECTION;
-            case BRANCH:
-                return DataframeElementType.BRANCH;
-            case IDENTIFIABLE:
-                return DataframeElementType.IDENTIFIABLE;
-            case SUB_NETWORK:
-                return DataframeElementType.SUB_NETWORK;
-            default:
-                throw new PowsyblException("Unknown element type : " + type);
-        }
+        return switch (type) {
+            case BUS -> DataframeElementType.BUS;
+            case LINE -> DataframeElementType.LINE;
+            case TWO_WINDINGS_TRANSFORMER -> DataframeElementType.TWO_WINDINGS_TRANSFORMER;
+            case THREE_WINDINGS_TRANSFORMER -> DataframeElementType.THREE_WINDINGS_TRANSFORMER;
+            case GENERATOR -> DataframeElementType.GENERATOR;
+            case LOAD -> DataframeElementType.LOAD;
+            case BATTERY -> DataframeElementType.BATTERY;
+            case SHUNT_COMPENSATOR -> DataframeElementType.SHUNT_COMPENSATOR;
+            case DANGLING_LINE -> DataframeElementType.DANGLING_LINE;
+            case TIE_LINE -> DataframeElementType.TIE_LINE;
+            case LCC_CONVERTER_STATION -> DataframeElementType.LCC_CONVERTER_STATION;
+            case VSC_CONVERTER_STATION -> DataframeElementType.VSC_CONVERTER_STATION;
+            case STATIC_VAR_COMPENSATOR -> DataframeElementType.STATIC_VAR_COMPENSATOR;
+            case SWITCH -> DataframeElementType.SWITCH;
+            case VOLTAGE_LEVEL -> DataframeElementType.VOLTAGE_LEVEL;
+            case SUBSTATION -> DataframeElementType.SUBSTATION;
+            case BUSBAR_SECTION -> DataframeElementType.BUSBAR_SECTION;
+            case HVDC_LINE -> DataframeElementType.HVDC_LINE;
+            case RATIO_TAP_CHANGER_STEP -> DataframeElementType.RATIO_TAP_CHANGER_STEP;
+            case PHASE_TAP_CHANGER_STEP -> DataframeElementType.PHASE_TAP_CHANGER_STEP;
+            case RATIO_TAP_CHANGER -> DataframeElementType.RATIO_TAP_CHANGER;
+            case PHASE_TAP_CHANGER -> DataframeElementType.PHASE_TAP_CHANGER;
+            case REACTIVE_CAPABILITY_CURVE_POINT -> DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
+            case NON_LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
+            case LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
+            case OPERATIONAL_LIMITS -> DataframeElementType.OPERATIONAL_LIMITS;
+            case MINMAX_REACTIVE_LIMITS -> DataframeElementType.MINMAX_REACTIVE_LIMITS;
+            case ALIAS -> DataframeElementType.ALIAS;
+            case TERMINAL -> DataframeElementType.TERMINAL;
+            case INJECTION -> DataframeElementType.INJECTION;
+            case BRANCH -> DataframeElementType.BRANCH;
+            case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
+            case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
+        };
     }
 
     public static ContingencyContextType convert(PyPowsyblApiHeader.RawContingencyContextType type) {
-        switch (type) {
-            case ALL:
-                return ContingencyContextType.ALL;
-            case NONE:
-                return ContingencyContextType.NONE;
-            case SPECIFIC:
-                return ContingencyContextType.SPECIFIC;
-            default:
-                throw new PowsyblException("Unknown contingency context type : " + type);
-        }
+        return switch (type) {
+            case ALL -> ContingencyContextType.ALL;
+            case NONE -> ContingencyContextType.NONE;
+            case SPECIFIC -> ContingencyContextType.SPECIFIC;
+        };
     }
 
     public static PyPowsyblApiHeader.ValidationLevelType convert(ValidationLevel level) {
-        switch (level) {
-            case EQUIPMENT:
-                return PyPowsyblApiHeader.ValidationLevelType.EQUIPMENT;
-            case STEADY_STATE_HYPOTHESIS:
-                return PyPowsyblApiHeader.ValidationLevelType.STEADY_STATE_HYPOTHESIS;
-            default:
-                throw new PowsyblException("Unknown element type : " + level);
-        }
+        return switch (level) {
+            case EQUIPMENT -> PyPowsyblApiHeader.ValidationLevelType.EQUIPMENT;
+            case STEADY_STATE_HYPOTHESIS -> PyPowsyblApiHeader.ValidationLevelType.STEADY_STATE_HYPOTHESIS;
+        };
     }
 
     public static ValidationLevel convert(PyPowsyblApiHeader.ValidationLevelType levelType) {
-        switch (levelType) {
-            case EQUIPMENT:
-                return ValidationLevel.EQUIPMENT;
-            case STEADY_STATE_HYPOTHESIS:
-                return ValidationLevel.STEADY_STATE_HYPOTHESIS;
-            default:
-                throw new PowsyblException("Unknown element type : " + levelType);
-        }
+        return switch (levelType) {
+            case EQUIPMENT -> ValidationLevel.EQUIPMENT;
+            case STEADY_STATE_HYPOTHESIS -> ValidationLevel.STEADY_STATE_HYPOTHESIS;
+        };
     }
 
     public static Branch.Side convert(PyPowsyblApiHeader.BranchSide side) {
-        switch (side) {
-            case ONE:
-                return Branch.Side.ONE;
-            case TWO:
-                return Branch.Side.TWO;
-            default:
-                throw new PowsyblException("Unknown element type : " + side);
-        }
+        return switch (side) {
+            case ONE -> Branch.Side.ONE;
+            case TWO -> Branch.Side.TWO;
+        };
     }
 
     public static DataframeNetworkModificationType convert(PyPowsyblApiHeader.NetworkModificationType networkModificationType) {
-        switch (networkModificationType) {
-            case VOLTAGE_LEVEL_TOPOLOGY_CREATION:
-                return DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
-            case CREATE_COUPLING_DEVICE:
-                return DataframeNetworkModificationType.CREATE_COUPLING_DEVICE;
-            case CREATE_FEEDER_BAY:
-                return DataframeNetworkModificationType.CREATE_FEEDER_BAY;
-            case CREATE_LINE_FEEDER:
-                return DataframeNetworkModificationType.CREATE_LINE_FEEDER;
-            case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER:
-                return DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
-            case CREATE_LINE_ON_LINE:
-                return DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
-            case REVERT_CREATE_LINE_ON_LINE:
-                return DataframeNetworkModificationType.REVERT_CREATE_LINE_ON_LINE;
-            case CONNECT_VOLTAGE_LEVEL_ON_LINE:
-                return DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
-            case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE:
-                return DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
-            case REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE:
-                return DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
-            default:
-                throw new PowsyblException("Unknown network modification type: " + networkModificationType);
-        }
+        return switch (networkModificationType) {
+            case VOLTAGE_LEVEL_TOPOLOGY_CREATION -> DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
+            case CREATE_COUPLING_DEVICE -> DataframeNetworkModificationType.CREATE_COUPLING_DEVICE;
+            case CREATE_FEEDER_BAY -> DataframeNetworkModificationType.CREATE_FEEDER_BAY;
+            case CREATE_LINE_FEEDER -> DataframeNetworkModificationType.CREATE_LINE_FEEDER;
+            case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER ->
+                    DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
+            case CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
+            case REVERT_CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.REVERT_CREATE_LINE_ON_LINE;
+            case CONNECT_VOLTAGE_LEVEL_ON_LINE -> DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
+            case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE ->
+                    DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
+            case REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE ->
+                    DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
+        };
     }
 
     public static VoltageInitializerStatus convert(OpenReacStatus status) {
@@ -413,11 +311,11 @@ public final class Util {
         }
     }
 
-    private static final byte[] ZIP_SIGNATURE = new byte[] {0x50, 0x4B, 0x03, 0x04};
-    private static final byte[] GZIP_SIGNATURE = new byte[] {0x1F, (byte) 0x8B};
-    private static final byte[] XZ_SIGNATURE = new byte[] {(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
-    private static final byte[] BZIP2_SIGNATURE = new byte[] {0x42, 0x5A, 0x68};
-    private static final byte[] ZSTD_SIGNATURE = new byte[] {0x28, (byte) 0xB5, 0x2F, (byte) 0xFD};
+    private static final byte[] ZIP_SIGNATURE = new byte[]{0x50, 0x4B, 0x03, 0x04};
+    private static final byte[] GZIP_SIGNATURE = new byte[]{0x1F, (byte) 0x8B};
+    private static final byte[] XZ_SIGNATURE = new byte[]{(byte) 0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
+    private static final byte[] BZIP2_SIGNATURE = new byte[]{0x42, 0x5A, 0x68};
+    private static final byte[] ZSTD_SIGNATURE = new byte[]{0x28, (byte) 0xB5, 0x2F, (byte) 0xFD};
 
     private static boolean compareSignature(ByteBuffer buffer, byte[] signature) {
         byte[] header = new byte[signature.length];
