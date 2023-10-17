@@ -58,41 +58,34 @@ public class ConnectablePositionDataframeAdder extends AbstractSimpleAdder {
             this.side = dataframe.getStrings("side");
         }
 
-        void createAdder(Network network, int row, Map<String, ConnectablePositionAdder> adderMap) {
-            ConnectablePositionAdder adder;
+        void createAdder(Network network, int row, Map<String, ConnectablePositionAdder<?>> adderMap) {
+            ConnectablePositionAdder<?> adder;
             if (adderMap.containsKey(this.id.get(row))) {
                 adder = adderMap.get(this.id.get(row));
             } else {
-                Identifiable identifiable = network.getIdentifiable(this.id.get(row));
-                Connectable connectable;
+                Identifiable<?> identifiable = network.getIdentifiable(this.id.get(row));
+                Connectable<?> connectable;
                 if (identifiable instanceof Connectable) {
-                    connectable = (Connectable) identifiable;
+                    connectable = (Connectable<?>) identifiable;
                 } else {
                     throw new PowsyblException("id must be an id of a Connectable");
                 }
-                adder = (ConnectablePositionAdder) connectable.newExtension(ConnectablePositionAdder.class);
+                adder = (ConnectablePositionAdder<?>) connectable.newExtension(ConnectablePositionAdder.class);
                 adderMap.put(this.id.get(row), adder);
             }
             if (this.side == null || this.side.get(row).equals("")) {
                 createFeeder(adder.newFeeder(), row);
             } else {
                 switch (SideEnum.valueOf(this.side.get(row))) {
-                    case ONE:
-                        createFeeder(adder.newFeeder1(), row);
-                        break;
-                    case TWO:
-                        createFeeder(adder.newFeeder2(), row);
-                        break;
-                    case THREE:
-                        createFeeder(adder.newFeeder3(), row);
-                        break;
-                    default:
-                        throw new PowsyblException("side must be ONE, TWO, THREE or None");
+                    case ONE -> createFeeder(adder.newFeeder1(), row);
+                    case TWO -> createFeeder(adder.newFeeder2(), row);
+                    case THREE -> createFeeder(adder.newFeeder3(), row);
+                    default -> throw new PowsyblException("side must be ONE, TWO, THREE or None");
                 }
             }
         }
 
-        void createFeeder(ConnectablePositionAdder.FeederAdder feederAdder, int row) {
+        void createFeeder(ConnectablePositionAdder.FeederAdder<?> feederAdder, int row) {
             feederAdder.withDirection(ConnectablePosition.Direction.valueOf(this.direction.get(row)))
                     .withName(this.feederName.get(row))
                     .withOrder(this.order.get(row))
@@ -103,7 +96,7 @@ public class ConnectablePositionDataframeAdder extends AbstractSimpleAdder {
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
         ConnectablePositionSeries series = new ConnectablePositionSeries(dataframe);
-        Map<String, ConnectablePositionAdder> adderMap = new HashMap<>();
+        Map<String, ConnectablePositionAdder<?>> adderMap = new HashMap<>();
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.createAdder(network, row, adderMap);
         }
