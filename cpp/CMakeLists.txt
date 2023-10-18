@@ -53,7 +53,7 @@ endif()
 
 ExternalProject_Add(mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_SRC_DIR}
-    PATCH_COMMAND mvn --batch-mode clean package
+    PATCH_COMMAND ./mvnw --batch-mode clean package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

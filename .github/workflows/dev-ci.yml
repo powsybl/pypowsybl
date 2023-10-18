@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: yum install -y rh-maven33-maven zlib-devel.x86_64
+        run: yum install -y zlib-devel.x86_64
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          scl enable rh-maven33 'python3 setup.py bdist_wheel'
+          python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel
@@ -128,9 +128,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Build wheel
+      - name: Build wheel (MacOS)
+        if: matrix.config.name == 'darwin'
         env:
           MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+        run: python setup.py bdist_wheel
+
+      - name: Build wheel (Windows)
+        if: matrix.config.name == 'windows'
+        shell: cmd # needed by the maven wrapper
         run: python setup.py bdist_wheel
 
       - name: Install wheel
