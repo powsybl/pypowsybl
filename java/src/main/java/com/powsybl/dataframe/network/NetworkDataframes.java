@@ -53,6 +53,7 @@ public final class NetworkDataframes {
 
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
+        mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
         mappers.put(DataframeElementType.BUS, buses());
         mappers.put(DataframeElementType.LINE, lines());
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
@@ -314,6 +315,13 @@ public final class NetworkDataframes {
             throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
                     ": the regulated element may only be a busbar section or an injection.");
         }
+    }
+
+    private static NetworkDataframeMapper subNetworks() {
+        return NetworkDataframeMapperBuilder.ofStream(n -> n.getSubnetworks().stream(),
+                        getOrThrow(Network::getSubnetwork, "SubNetwork"))
+                .stringsIndex("id", Identifiable::getId)
+                .build();
     }
 
     static NetworkDataframeMapper buses() {

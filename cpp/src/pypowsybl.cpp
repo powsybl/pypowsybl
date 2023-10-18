@@ -546,6 +546,14 @@ JavaHandle merge(std::vector<JavaHandle>& networks) {
     return callJava<JavaHandle>(::merge, networksData, networkCount);
 }
 
+JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetworkId) {
+    return callJava<JavaHandle>(::getSubNetwork, network, (char*) subNetworkId.data());
+}
+
+JavaHandle detachSubNetwork(const JavaHandle& subNetwork) {
+    return callJava<JavaHandle>(::detachSubNetwork, subNetwork);
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     auto formatsArrayPtr = callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);

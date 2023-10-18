@@ -312,6 +312,10 @@ JavaHandle createNetwork(const std::string& name, const std::string& id);
 
 JavaHandle merge(std::vector<JavaHandle>& others);
 
+JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetworkId);
+
+JavaHandle detachSubNetwork(const JavaHandle& subNetwork);
+
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
