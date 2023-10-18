@@ -41,5 +41,6 @@ public enum DataframeElementType {
     IDENTIFIABLE,
     INJECTION,
     BRANCH,
-    TERMINAL
+    TERMINAL,
+    SUB_NETWORK
 }

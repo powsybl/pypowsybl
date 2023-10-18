@@ -200,6 +200,7 @@ public final class Util {
             case INJECTION -> PyPowsyblApiHeader.ElementType.INJECTION;
             case BRANCH -> PyPowsyblApiHeader.ElementType.BRANCH;
             case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
+            case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
         };
     }
 
@@ -237,6 +238,7 @@ public final class Util {
             case INJECTION -> DataframeElementType.INJECTION;
             case BRANCH -> DataframeElementType.BRANCH;
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
+            case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
         };
     }
 
