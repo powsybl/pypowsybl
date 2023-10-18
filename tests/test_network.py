@@ -1241,7 +1241,26 @@ def test_network_merge():
     nl = pp.network.create_micro_grid_nl_network()
     assert 4 == len(nl.get_voltage_levels())
     be.merge(nl)
-    assert 10 == len(be.get_voltage_levels())
+    merge = be
+    assert 10 == len(merge.get_voltage_levels())
+    sub_networks = merge.get_sub_networks()
+    expected_sub_networks = pd.DataFrame(index=pd.Series(name='id',
+                                                         data=['urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73', 'urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86']))
+    pd.testing.assert_frame_equal(expected_sub_networks, sub_networks, check_dtype=False)
+    be_from_merge = merge.get_sub_network('urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73')
+    assert 6 == len(be_from_merge.get_voltage_levels())
+    nl_from_merge = merge.get_sub_network('urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86')
+    assert 4 == len(nl_from_merge.get_voltage_levels())
+    be_from_merge.detach()
+    assert 6 == len(be_from_merge.get_voltage_levels())
+    assert 4 == len(merge.get_voltage_levels()) # only remain NL in the merge
+    sub_networks = merge.get_sub_networks()
+    expected_sub_networks = pd.DataFrame(index=pd.Series(name='id',
+                                                         data=['urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86']))
+    pd.testing.assert_frame_equal(expected_sub_networks, sub_networks, check_dtype=False)
+    nl_from_merge.detach()
+    assert 4 == len(nl_from_merge.get_voltage_levels())
+    assert 0 == len(merge.get_voltage_levels()) # merge is empty
 
 
 def test_linear_shunt_compensator_sections():

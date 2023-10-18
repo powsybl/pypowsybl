@@ -153,6 +153,7 @@ typedef enum {
     INJECTION,
     BRANCH,
     TERMINAL,
+    SUB_NETWORK
 } element_type;
 
 typedef enum {

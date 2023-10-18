@@ -72,11 +72,11 @@ public class BranchObservabilityDataframeAdder extends AbstractSimpleAdder {
 
         void create(Network network, int row) {
             String id = this.id.get(row);
-            Branch branch = network.getBranch(id);
+            Branch<?> branch = network.getBranch(id);
             if (branch == null) {
                 throw new PowsyblException("Invalid branch id : could not find " + id);
             }
-            BranchObservabilityAdder adder = (BranchObservabilityAdder) branch.newExtension(BranchObservabilityAdder.class);
+            BranchObservabilityAdder<?> adder = (BranchObservabilityAdder<?>) branch.newExtension(BranchObservabilityAdder.class);
             SeriesUtils.applyBooleanIfPresent(observable, row, adder::withObservable);
             SeriesUtils.applyIfPresent(p1StandardDeviation, row, adder::withStandardDeviationP1);
             SeriesUtils.applyBooleanIfPresent(p1Redundant, row, adder::withRedundantP1);
