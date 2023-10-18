@@ -45,14 +45,14 @@ public class ConnectablePositionDataframeProvider extends AbstractSingleDatafram
                 .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
         String side = dataframe.getStringValue("side", index)
                 .orElse("");
-        Identifiable identifiable = network.getIdentifiable(id);
-        Connectable connectable;
+        Identifiable<?> identifiable = network.getIdentifiable(id);
+        Connectable<?> connectable;
         if (identifiable instanceof Connectable) {
-            connectable = (Connectable) identifiable;
+            connectable = (Connectable<?>) identifiable;
         } else {
             throw new PowsyblException("id must be an id of a Connectable");
         }
-        ConnectablePosition connectablePosition = (ConnectablePosition) connectable.getExtension(ConnectablePosition.class);
+        ConnectablePosition<?> connectablePosition = (ConnectablePosition<?>) connectable.getExtension(ConnectablePosition.class);
         if (connectablePosition == null) {
             throw new PowsyblException("Connectable '" + id + "' has no ConnectablePosition extension");
         }
@@ -60,16 +60,11 @@ public class ConnectablePositionDataframeProvider extends AbstractSingleDatafram
             return new ConnectablePositionFeederData(id, connectablePosition.getFeeder(), null);
         }
         SideEnum sideEnum = SideEnum.valueOf(side);
-        switch (sideEnum) {
-            case ONE:
-                return new ConnectablePositionFeederData(id, connectablePosition.getFeeder1(), sideEnum);
-            case TWO:
-                return new ConnectablePositionFeederData(id, connectablePosition.getFeeder2(), sideEnum);
-            case THREE:
-                return new ConnectablePositionFeederData(id, connectablePosition.getFeeder3(), sideEnum);
-            default:
-                throw new PowsyblException("side must be ONE, TWO, THREE or None");
-        }
+        return switch (sideEnum) {
+            case ONE -> new ConnectablePositionFeederData(id, connectablePosition.getFeeder1(), sideEnum);
+            case TWO -> new ConnectablePositionFeederData(id, connectablePosition.getFeeder2(), sideEnum);
+            case THREE -> new ConnectablePositionFeederData(id, connectablePosition.getFeeder3(), sideEnum);
+        };
     }
 
     @Override
