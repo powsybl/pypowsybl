@@ -16,8 +16,9 @@ graal_isolate_t* isolate = nullptr;
 void init() {
     graal_isolatethread_t* thread = nullptr;
 
-    if (graal_create_isolate(nullptr, &isolate, &thread) != 0) {
-        throw std::runtime_error("graal_create_isolate error");
+    int c = graal_create_isolate(nullptr, &isolate, &thread);
+    if (c != 0) {
+        throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
     }
 }
 
@@ -32,16 +33,20 @@ public:
 
         thread_ = graal_get_current_thread(isolate);
         if (thread_ == nullptr) {
-            if (graal_attach_thread(isolate, &thread_) != 0) {
-                throw std::runtime_error("graal_create_isolate error");
+            int c = graal_attach_thread(isolate, &thread_);
+            if (c != 0) {
+                throw std::runtime_error("graal_attach_thread error: " + std::to_string(c));
             }
             shouldDetach = true;
        }
     }
 
     ~GraalVmGuard() noexcept(false) {
-        if (shouldDetach && graal_detach_thread(thread_) != 0) {
-            throw std::runtime_error("graal_detach_thread error");
+        if (shouldDetach) {
+            int c = graal_detach_thread(thread_);
+            if (c != 0) {
+                throw std::runtime_error("graal_detach_thread error: " + std::to_string(c));
+            }
         }
     }
 
