@@ -306,6 +306,39 @@ class Network:  # pylint: disable=too-many-public-methods
             result = result[attributes]
         return result
 
+    def get_sub_networks(self, all_attributes: bool = False, attributes: List[str] = None,
+                         **kwargs: ArrayLike) -> DataFrame:
+        """
+        Get a dataframe of sub networks
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of sub networks.
+        """
+        return self.get_elements(ElementType.SUB_NETWORK, all_attributes, attributes, **kwargs)
+
+    def get_sub_network(self, sub_network_id: str) -> Network:
+        """
+        Get a sub network from its parent network.
+
+        Args:
+            sub_network_id: the id of the sub network
+
+        Returns:
+            The sub network.
+        """
+        return Network(_pp.get_sub_network(self._handle, sub_network_id))
+
+    def detach(self) -> None:
+        """
+        Detach a sub network from its parent network.
+        """
+        self._handle = _pp.detach_sub_network(self._handle)
+
     def get_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                   **kwargs: ArrayLike) -> DataFrame:
         r"""

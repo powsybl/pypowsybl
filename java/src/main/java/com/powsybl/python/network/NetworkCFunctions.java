@@ -355,23 +355,15 @@ public final class NetworkCFunctions {
 
     private static DataframeFilter createDataframeFilter(FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, DataframePointer selectedElementsDataframe) {
         List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
-        AttributeFilterType filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-        switch (filterAttributesType) {
-            case ALL_ATTRIBUTES:
-                filterType = AttributeFilterType.ALL_ATTRIBUTES;
-                break;
-            case SELECTION_ATTRIBUTES:
-                filterType = AttributeFilterType.INPUT_ATTRIBUTES;
-                break;
-            case DEFAULT_ATTRIBUTES:
-                filterType = AttributeFilterType.DEFAULT_ATTRIBUTES;
-                break;
-        }
+        AttributeFilterType filterType = switch (filterAttributesType) {
+            case ALL_ATTRIBUTES -> AttributeFilterType.ALL_ATTRIBUTES;
+            case SELECTION_ATTRIBUTES -> AttributeFilterType.INPUT_ATTRIBUTES;
+            case DEFAULT_ATTRIBUTES -> AttributeFilterType.DEFAULT_ATTRIBUTES;
+        };
 
-        DataframeFilter dataframeFilter = selectedElementsDataframe.isNonNull()
+        return selectedElementsDataframe.isNonNull()
                 ? new DataframeFilter(filterType, attributes, createDataframe(selectedElementsDataframe))
                 : new DataframeFilter(filterType, attributes);
-        return dataframeFilter;
     }
 
     @CEntryPoint(name = "createNetworkElementsSeriesArray")
@@ -463,32 +455,28 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
             elementIds.forEach(elementId -> {
-                Identifiable identifiable = network.getIdentifiable(elementId);
+                Identifiable<?> identifiable = network.getIdentifiable(elementId);
                 if (identifiable == null) {
                     throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
                 }
                 if (identifiable instanceof Connectable) {
-                    ((Connectable) identifiable).remove();
-                } else if (identifiable instanceof HvdcLine) {
-                    ((HvdcLine) identifiable).remove();
-                } else if (identifiable instanceof VoltageLevel) {
-                    ((VoltageLevel) identifiable).remove();
-                } else if (identifiable instanceof Substation) {
-                    ((Substation) identifiable).remove();
-                } else if (identifiable instanceof Switch) {
-                    VoltageLevel voltageLevel = ((Switch) identifiable).getVoltageLevel();
+                    ((Connectable<?>) identifiable).remove();
+                } else if (identifiable instanceof HvdcLine hvdcLine) {
+                    hvdcLine.remove();
+                } else if (identifiable instanceof VoltageLevel voltageLevel) {
+                    voltageLevel.remove();
+                } else if (identifiable instanceof Substation substation) {
+                    substation.remove();
+                } else if (identifiable instanceof Switch sw) {
+                    VoltageLevel voltageLevel = sw.getVoltageLevel();
                     switch (voltageLevel.getTopologyKind()) {
-                        case NODE_BREAKER:
-                            voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
-                            break;
-                        case BUS_BREAKER:
-                            voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
-                            break;
-                        default:
-                            throw new PowsyblException("this voltage level does not have a proper topology kind");
+                        case NODE_BREAKER -> voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                        case BUS_BREAKER -> voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                        default ->
+                                throw new PowsyblException("this voltage level does not have a proper topology kind");
                     }
-                } else if (identifiable instanceof TieLine) {
-                    ((TieLine) identifiable).remove();
+                } else if (identifiable instanceof TieLine tieLine) {
+                    tieLine.remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
@@ -507,18 +495,13 @@ public final class NetworkCFunctions {
             PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
-                case STRING_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
-                    break;
-                case DOUBLE_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
-                    break;
-                case INT_SERIES_TYPE:
-                case BOOLEAN_SERIES_TYPE:
-                    updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
+                case STRING_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CStringSeries((CCharPointerPointer) seriesPointer.data().getPtr()));
+                case DOUBLE_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CDoubleSeries((CDoublePointer) seriesPointer.data().getPtr()));
+                case INT_SERIES_TYPE, BOOLEAN_SERIES_TYPE ->
+                        updatingDataframe.addSeries(name, seriesPointer.isIndex(), new CIntSeries((CIntPointer) seriesPointer.data().getPtr()));
+                default -> throw new IllegalStateException("Unexpected series type: " + seriesPointer.getType());
             }
         }
         return updatingDataframe;
@@ -661,7 +644,7 @@ public final class NetworkCFunctions {
                     StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
                     for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
                         String id = idSerie.get(i);
-                        Identifiable identifiable = network.getIdentifiable(id);
+                        Identifiable<?> identifiable = network.getIdentifiable(id);
                         if (identifiable != null) {
                             identifiable.setProperty(seriesName, columnSerie.get(i));
                         } else {
@@ -1016,6 +999,28 @@ public final class NetworkCFunctions {
             res.setDataframesMetadata(dataframeMetadataArray);
             res.setDataframesCount(metadata.size());
             return res;
+        });
+    }
+
+    @CEntryPoint(name = "getSubNetwork")
+    public static ObjectHandle getSubNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer subNetworkId, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String subNetworkIdStr = CTypeUtil.toString(subNetworkId);
+            Network subnetwork = network.getSubnetwork(subNetworkIdStr);
+            if (subnetwork == null) {
+                throw new PowsyblException("Sub network '" + subNetworkIdStr + "' not found");
+            }
+            return ObjectHandles.getGlobal().create(subnetwork);
+        });
+    }
+
+    @CEntryPoint(name = "detachSubNetwork")
+    public static ObjectHandle detachSubNetwork(IsolateThread thread, ObjectHandle subNetworkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
+            Network detachNetwork = subNetwork.detach();
+            return ObjectHandles.getGlobal().create(detachNetwork);
         });
     }
 }
