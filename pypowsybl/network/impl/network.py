@@ -254,6 +254,23 @@ class Network:  # pylint: disable=too-many-public-methods
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
                                                     edge_name_displayed))
 
+    def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, List[str]],
+                                                          depth: int = 0) -> List[str]:
+        """
+        Gathers the name of the displayed voltage levels of a network-area diagram in a list, according to
+        the input voltage level(s) and the depth of the diagram.
+
+        Args:
+            voltage_level_ids: the voltage level ID(s), center(s) of the diagram
+            depth: the diagram depth around the voltage level
+
+        Returns:
+            a list of the displayed voltage levels
+        """
+        if isinstance(voltage_level_ids, str):
+            voltage_level_ids = [voltage_level_ids]
+        return _pp.get_network_area_diagram_displayed_voltage_levels(self._handle, voltage_level_ids, depth)
+
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
