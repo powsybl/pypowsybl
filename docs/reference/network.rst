@@ -217,6 +217,7 @@ Miscellaneous network functions
    Network.write_single_line_diagram_svg
    Network.get_network_area_diagram
    Network.write_network_area_diagram_svg
+   Network.get_network_area_diagram_displayed_voltage_levels
    Network.disconnect
    Network.connect
    Network.open_switch
