@@ -101,7 +101,7 @@ jobs:
           }
         python:
           - {
-            name: cp312,
+            name: cp311,
             version: '3.11',
           }
 
