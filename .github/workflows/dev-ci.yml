@@ -16,9 +16,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp311,
-            abi: cp311,
-            version: '3.11',
+            name: cp312,
+            abi: cp312,
+            version: '3.12',
           }
 
     steps:
@@ -101,8 +101,8 @@ jobs:
           }
         python:
           - {
-            name: cp311,
-            version: '3.11',
+            name: cp312,
+            version: '3.12',
           }
 
     steps:
