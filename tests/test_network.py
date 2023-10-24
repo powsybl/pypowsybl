@@ -853,6 +853,12 @@ def test_sld_nad():
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
 
 
+def test_nad_displayed_voltage_levels():
+    n = pp.network.create_ieee14()
+    list_vl = n.get_network_area_diagram_displayed_voltage_levels('VL1', 1)
+    assert ['VL1', 'VL2', 'VL5'] == list_vl
+
+
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
     assert 9 == len(network.get_current_limits())
@@ -1245,7 +1251,8 @@ def test_network_merge():
     assert 10 == len(merge.get_voltage_levels())
     sub_networks = merge.get_sub_networks()
     expected_sub_networks = pd.DataFrame(index=pd.Series(name='id',
-                                                         data=['urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73', 'urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86']))
+                                                         data=['urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73',
+                                                               'urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86']))
     pd.testing.assert_frame_equal(expected_sub_networks, sub_networks, check_dtype=False)
     be_from_merge = merge.get_sub_network('urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73')
     assert 6 == len(be_from_merge.get_voltage_levels())
@@ -1253,14 +1260,14 @@ def test_network_merge():
     assert 4 == len(nl_from_merge.get_voltage_levels())
     be_from_merge.detach()
     assert 6 == len(be_from_merge.get_voltage_levels())
-    assert 4 == len(merge.get_voltage_levels()) # only remain NL in the merge
+    assert 4 == len(merge.get_voltage_levels())  # only remain NL in the merge
     sub_networks = merge.get_sub_networks()
     expected_sub_networks = pd.DataFrame(index=pd.Series(name='id',
                                                          data=['urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86']))
     pd.testing.assert_frame_equal(expected_sub_networks, sub_networks, check_dtype=False)
     nl_from_merge.detach()
     assert 4 == len(nl_from_merge.get_voltage_levels())
-    assert 0 == len(merge.get_voltage_levels()) # merge is empty
+    assert 0 == len(merge.get_voltage_levels())  # merge is empty
 
 
 def test_linear_shunt_compensator_sections():

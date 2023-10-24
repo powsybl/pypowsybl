@@ -64,3 +64,10 @@ Note that similarly to single-line diagrams, a loadflow can be run before writin
     >>> network = pp.network.create_ieee9()
     >>> result = pp.loadflow.run_ac(network)
     >>> network.write_network_area_diagram_svg('ieee9.svg')
+
+In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee300()
+    >>> list_vl = network.get_network_area_diagram_displayed_voltage_levels('VL1', 1)

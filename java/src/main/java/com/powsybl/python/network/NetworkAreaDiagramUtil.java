@@ -100,6 +100,10 @@ public final class NetworkAreaDiagramUtil {
         return new VoltageLevelFilter(voltageLevels);
     }
 
+    public static List<String> getDisplayedVoltageLevels(Network network, List<String> voltageLevelIds, int depth) {
+        return NetworkAreaDiagram.getDisplayedVoltageLevels(network, voltageLevelIds, depth);
+    }
+
     private static void traverseVoltageLevels(Set<VoltageLevel> voltageLevelsDepth, int depth, Set<VoltageLevel> visitedVoltageLevels,
                                               double highNominalVoltageBound, double lowNominalVoltageBound) {
         if (depth >= 0) {

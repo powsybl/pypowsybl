@@ -384,6 +384,8 @@ void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& sv
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
 
+std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
+
 JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
