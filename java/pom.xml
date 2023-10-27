@@ -188,7 +188,7 @@
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
+            <artifactId>nativeimage</artifactId>
             <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
