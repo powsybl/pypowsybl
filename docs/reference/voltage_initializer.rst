@@ -22,7 +22,8 @@ VoltageInitializerParameters : How to parameterize the tool
     VoltageInitializerParameters.add_variable_shunt_compensators
     VoltageInitializerParameters.add_constant_q_generators
     VoltageInitializerParameters.add_variable_two_windings_transformers
-    VoltageInitializerParameters.add_specific_voltage_limits
+    VoltageInitializerParameters.add_specific_low_voltage_limits
+    VoltageInitializerParameters.add_specific_high_voltage_limits
     VoltageInitializerParameters.add_algorithm_param
     VoltageInitializerParameters.set_objective
     VoltageInitializerParameters.set_objective_distance
