@@ -174,12 +174,14 @@ void voltageInitializerBinding(py::module_& m) {
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
     m.def("create_voltage_initializer_params", &pypowsybl::createVoltageInitializerParams);
-    m.def("create_voltage_limit_override", &pypowsybl::createVoltageLimitOverride, py::arg("min_voltage"), py::arg("max_voltage"));
+    m.def("create_low_voltage_limit_override", &pypowsybl::createLowVoltageLimitOverride, py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
+    m.def("create_high_voltage_limit_override", &pypowsybl::createHighVoltageLimitOverride, py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
 
     m.def("voltage_initializer_add_variable_shunt_compensators", &pypowsybl::voltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
     m.def("voltage_initializer_add_constant_q_generators", &pypowsybl::voltageInitializerAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
     m.def("voltage_initializer_add_variable_two_windings_transformers", &pypowsybl::voltageInitializerAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("voltage_initializer_add_specific_voltage_limits", &pypowsybl::voltageInitializerAddSpecificVoltageLimits, py::arg("id_ptr"), py::arg("min_voltage"), py::arg("params_handle"), py::arg("max_voltage"));
+    m.def("voltage_initializer_add_specific_low_voltage_limits", &pypowsybl::voltageInitializerAddSpecificLowVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
+    m.def("voltage_initializer_add_specific_high_voltage_limits", &pypowsybl::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
 
     m.def("voltage_initializer_add_algorithm_param", &pypowsybl::voltageInitializerAddAlgorithmParam, py::arg("params_handle"), py::arg("key_ptr"), py::arg("value_ptr"));
     m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
