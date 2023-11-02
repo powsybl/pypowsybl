@@ -6,8 +6,10 @@
  */
 package com.powsybl.python.commons;
 
+import com.oracle.svm.core.c.ProjectHeaderFile;
 import org.graalvm.nativeimage.c.CContext;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,6 +19,6 @@ public class Directives implements CContext.Directives {
 
     @Override
     public List<String> getHeaderFiles() {
-        return List.of("<pypowsybl-api.h>");
+        return Collections.singletonList(ProjectHeaderFile.resolve("com.powsybl.python", "pypowsybl-api.h"));
     }
 }
