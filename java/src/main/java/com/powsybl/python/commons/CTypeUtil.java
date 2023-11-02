@@ -6,12 +6,10 @@
  */
 package com.powsybl.python.commons;
 
-import com.oracle.svm.core.SubstrateUtil;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
-
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
@@ -51,7 +49,7 @@ public final class CTypeUtil {
      */
     public static String toString(CCharPointer charPtr) {
         // pybind11 convert std::string and char* to python utf-8 string
-        return CTypeConversion.toJavaString(charPtr, SubstrateUtil.strlen(charPtr), StandardCharsets.UTF_8);
+        return CTypeConversion.utf8ToJavaString(charPtr);
     }
 
     /**

@@ -192,12 +192,6 @@
             <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
-            <artifactId>svm</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <!--
              rdf4j depends on a very old version of mapdb. It is using ObjectStream which is not yet supported
              by GraalVM native image (https://github.com/oracle/graal/issues/2192). New version of mapdb seems to not
