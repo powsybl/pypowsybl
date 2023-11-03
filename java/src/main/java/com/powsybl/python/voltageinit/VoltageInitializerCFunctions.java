@@ -53,32 +53,6 @@ public final class VoltageInitializerCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new OpenReacParameters()));
     }
 
-    @CEntryPoint(name = "createLowVoltageLimitOverride")
-    public static ObjectHandle createLowVoltageLimitOverride(IsolateThread thread,
-                                                          CCharPointer idPtr, boolean isRelative, double limit,
-                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr,
-            () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(
-                    CTypeUtil.toString(idPtr),
-                    VoltageLimitOverride.VoltageLimitType.LOW_VOLTAGE_LIMIT,
-                    isRelative,
-                    limit))
-        );
-    }
-
-    @CEntryPoint(name = "createHighVoltageLimitOverride")
-    public static ObjectHandle createHighVoltageLimitOverride(IsolateThread thread,
-                                                          CCharPointer idPtr, boolean isRelative, double limit,
-                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr,
-                () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(
-                        CTypeUtil.toString(idPtr),
-                        VoltageLimitOverride.VoltageLimitType.HIGH_VOLTAGE_LIMIT,
-                        isRelative,
-                        limit))
-        );
-    }
-
     @CEntryPoint(name = "voltageInitializerAddSpecificLowVoltageLimits")
     public static void addSpecificLowVoltageLimits(IsolateThread thread, ObjectHandle paramsHandle,
                                                    CCharPointer idPtr, boolean isRelative, double limit,

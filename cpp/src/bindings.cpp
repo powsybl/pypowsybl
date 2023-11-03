@@ -174,8 +174,6 @@ void voltageInitializerBinding(py::module_& m) {
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
     m.def("create_voltage_initializer_params", &pypowsybl::createVoltageInitializerParams);
-    m.def("create_low_voltage_limit_override", &pypowsybl::createLowVoltageLimitOverride, py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
-    m.def("create_high_voltage_limit_override", &pypowsybl::createHighVoltageLimitOverride, py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
 
     m.def("voltage_initializer_add_variable_shunt_compensators", &pypowsybl::voltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
     m.def("voltage_initializer_add_constant_q_generators", &pypowsybl::voltageInitializerAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));

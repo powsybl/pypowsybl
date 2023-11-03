@@ -1481,14 +1481,6 @@ JavaHandle createVoltageInitializerParams() {
     return pypowsybl::callJava<JavaHandle>(::createVoltageInitializerParams);
 }
 
-JavaHandle createLowVoltageLimitOverride(const std::string& voltageLevelId, bool isRelative, double limit) {
-    return pypowsybl::callJava<JavaHandle>(::createLowVoltageLimitOverride, (char*) voltageLevelId.c_str(), isRelative, limit);
-}
-
-JavaHandle createHighVoltageLimitOverride(const std::string& voltageLevelId, bool isRelative, double limit) {
-    return pypowsybl::callJava<JavaHandle>(::createHighVoltageLimitOverride, (char*) voltageLevelId.c_str(), isRelative, limit);
-}
-
 void voltageInitializerAddSpecificLowVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit) {
     pypowsybl::callJava(::voltageInitializerAddSpecificLowVoltageLimits, paramsHandle, (char*) voltageLevelId.c_str(), isRelative, limit);
 }
