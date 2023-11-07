@@ -98,30 +98,9 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
 
     private MatrixInfo busVoltageFactorsMatrix;
 
-    void addBranchFlowFactorMatrix(String matrixId, ContingencyContextType contingencyContextType, List<String> branchesIds,
-                                   List<String> variablesIds, List<String> contingencyIds) {
-        if (branchFlowFactorsMatrix.containsKey(matrixId)) {
-            throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
-        }
-        MatrixInfo info = new MatrixInfo(contingencyContextType, SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, branchesIds, variablesIds, contingencyIds);
-        branchFlowFactorsMatrix.put(matrixId, info);
-    }
-
-    void addBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
-        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.ALL, branchesIds, variablesIds, Collections.emptyList());
-    }
-
-    void addPreContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds) {
-        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.NONE, branchesIds, variablesIds, Collections.emptyList());
-    }
-
-    void addPostContingencyBranchFlowFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds, List<String> contingencies) {
-        addBranchFlowFactorMatrix(matrixId, ContingencyContextType.SPECIFIC, branchesIds, variablesIds, contingencies);
-    }
-
     void addBranchFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds,
-                                   List<String> contingencies, ContingencyContextType contingencyContextType,
-                                   SensitivityFunctionType sensitivityFunctionType) {
+                               List<String> contingencies, ContingencyContextType contingencyContextType,
+                               SensitivityFunctionType sensitivityFunctionType) {
         if (branchFlowFactorsMatrix.containsKey(matrixId)) {
             throw new PowsyblException("Matrix '" + matrixId + "' already exists.");
         }

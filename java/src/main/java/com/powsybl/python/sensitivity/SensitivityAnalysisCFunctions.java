@@ -118,53 +118,6 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addBranchFlowFactorMatrix")
-    public static void addBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                 CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                 CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                 CCharPointer matrixIdPtr,
-                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            analysisContext.addBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
-        });
-    }
-
-    @CEntryPoint(name = "addPreContingencyBranchFlowFactorMatrix")
-    public static void addPreContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                               CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                               CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                               CCharPointer matrixIdPtr,
-                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            analysisContext.addPreContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds);
-        });
-    }
-
-    @CEntryPoint(name = "addPostContingencyBranchFlowFactorMatrix")
-    public static void addPostContingencyBranchFlowFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                                CCharPointerPointer branchIdPtrPtr, int branchIdCount,
-                                                                CCharPointerPointer variableIdPtrPtr, int variableIdCount,
-                                                                CCharPointerPointer contingenciesIdPtrPtr, int contingenciesIdCount,
-                                                                CCharPointer matrixIdPtr,
-                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            analysisContext.addPostContingencyBranchFlowFactorMatrix(matrixId, branchesIds, variablesIds, contingencies);
-        });
-    }
-
     @CEntryPoint(name = "setBusVoltageFactorMatrix")
     public static void setBusVoltageFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                  CCharPointerPointer busVoltageIdPtrPtr, int branchIdCount,

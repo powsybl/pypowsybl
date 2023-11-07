@@ -87,10 +87,8 @@ class SensitivityAnalysis(ContingencyContainer):
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
-        _pypowsybl.add_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids, flatten_variables_ids)
-        self.branches_ids[matrix_id] = branches_ids
-        self.branch_data_frame_index[matrix_id] = branch_data_frame_index
+        self.add_branch_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.ALL,
+                                      SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, matrix_id)
 
     def add_precontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
                                                      matrix_id: str = 'default') -> None:
@@ -107,12 +105,8 @@ class SensitivityAnalysis(ContingencyContainer):
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
-
-        _pypowsybl.add_precontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids,
-                                                                flatten_variables_ids)
-        self.branches_ids[matrix_id] = branches_ids
-        self.branch_data_frame_index[matrix_id] = branch_data_frame_index
+        self.add_branch_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.NONE,
+                                      SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, matrix_id)
 
     def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
                                                       contingencies_ids: List[str],
@@ -131,12 +125,8 @@ class SensitivityAnalysis(ContingencyContainer):
             contingencies_ids: List of the IDs of the contingencies to simulate
             matrix_id:         The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
-
-        _pypowsybl.add_postcontingency_branch_flow_factor_matrix(self._handle, matrix_id, branches_ids,
-                                                                 flatten_variables_ids, contingencies_ids)
-        self.branches_ids[matrix_id] = branches_ids
-        self.branch_data_frame_index[matrix_id] = branch_data_frame_index
+        self.add_branch_factor_matrix(branches_ids, variables_ids, contingencies_ids, ContingencyContextType.SPECIFIC,
+                                      SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, matrix_id)
 
     def add_branch_factor_matrix(self, branches_ids: List[str], variables_ids: List[str], contingencies_ids: List[str],
                                  contingency_context_type: ContingencyContextType,

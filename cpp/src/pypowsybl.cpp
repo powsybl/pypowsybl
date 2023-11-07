@@ -871,31 +871,6 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
     callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
 }
 
-void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds) {
-       ToCharPtrPtr branchIdPtr(branchesIds);
-       ToCharPtrPtr variableIdPtr(variablesIds);
-       callJava(::addBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                 variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
-}
-
-void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds) {
-       ToCharPtrPtr branchIdPtr(branchesIds);
-       ToCharPtrPtr variableIdPtr(variablesIds);
-       callJava(::addPreContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
-}
-
-void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds) {
-       ToCharPtrPtr branchIdPtr(branchesIds);
-       ToCharPtrPtr variableIdPtr(variablesIds);
-       ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
-       callJava(::addPostContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), (char*) matrixId.c_str());
-}
-
 void addBranchFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
                             const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType, sensitivity_function_type sensitivityFunctionType) {
        ToCharPtrPtr branchIdPtr(branchesIds);
