@@ -12,6 +12,7 @@ import com.powsybl.commons.reporter.ReporterModelJsonModule;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -36,36 +37,45 @@ public final class ReportCFunctions {
 
     @CEntryPoint(name = "createReporterModel")
     public static ObjectHandle createReporterModel(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String taskKey = CTypeUtil.toString(taskKeyPtr);
-            String defaultName = CTypeUtil.toString(defaultNamePtr);
-            ReporterModel reporterModel = new ReporterModel(taskKey, defaultName);
-            return ObjectHandles.getGlobal().create(reporterModel);
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                String taskKey = CTypeUtil.toString(taskKeyPtr);
+                String defaultName = CTypeUtil.toString(defaultNamePtr);
+                ReporterModel reporterModel = new ReporterModel(taskKey, defaultName);
+                return ObjectHandles.getGlobal().create(reporterModel);
+            }
         });
     }
 
     @CEntryPoint(name = "printReport")
     public static CCharPointer printReport(IsolateThread thread, ObjectHandle reporterModelHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
-            StringWriter reporterOut = new StringWriter();
-            reporterModel.export(reporterOut);
-            return CTypeUtil.toCharPtr(reporterOut.toString());
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() {
+                ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
+                StringWriter reporterOut = new StringWriter();
+                reporterModel.export(reporterOut);
+                return CTypeUtil.toCharPtr(reporterOut.toString());
+            }
         });
     }
 
     @CEntryPoint(name = "jsonReport")
     public static CCharPointer jsonReport(IsolateThread thread, ObjectHandle reporterModelHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
-            StringWriter reporterOut = new StringWriter();
-            ObjectMapper objectMapper = new ObjectMapper().registerModule(new ReporterModelJsonModule());
-            try {
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(reporterOut, reporterModel);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() {
+                ReporterModel reporterModel = ObjectHandles.getGlobal().get(reporterModelHandle);
+                StringWriter reporterOut = new StringWriter();
+                ObjectMapper objectMapper = new ObjectMapper().registerModule(new ReporterModelJsonModule());
+                try {
+                    objectMapper.writerWithDefaultPrettyPrinter().writeValue(reporterOut, reporterModel);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                return CTypeUtil.toCharPtr(reporterOut.toString());
             }
-            return CTypeUtil.toCharPtr(reporterOut.toString());
         });
     }
 }

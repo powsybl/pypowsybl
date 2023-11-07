@@ -13,9 +13,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.loadflow.validation.ValidationType;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.PyPowsyblConfiguration;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.network.Dataframes;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -24,7 +22,6 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 
@@ -47,9 +44,12 @@ public final class LoadFlowValidationCFunctions {
                                                                                   PyPowsyblApiHeader.ValidationType validationType,
                                                                                   PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<ArrayPointer<SeriesPointer>>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
+            }
         });
     }
 
@@ -109,7 +109,12 @@ public final class LoadFlowValidationCFunctions {
 
     @CEntryPoint(name = "createValidationConfig")
     public static LoadFlowValidationParametersPointer createValidationConfig(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowValidationParametersPointer(createValidationConfig()));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<LoadFlowValidationParametersPointer>() {
+            @Override
+            public LoadFlowValidationParametersPointer get() {
+                return convertToLoadFlowValidationParametersPointer(createValidationConfig());
+            }
+        });
     }
 
     public static void copyToCLoadFlowValidationParameters(ValidationConfig parameters, LoadFlowValidationParametersPointer cParameters) {
@@ -139,8 +144,11 @@ public final class LoadFlowValidationCFunctions {
     @CEntryPoint(name = "freeValidationConfig")
     public static void freeValidationConfig(IsolateThread thread, LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr);
+            }
         });
     }
 

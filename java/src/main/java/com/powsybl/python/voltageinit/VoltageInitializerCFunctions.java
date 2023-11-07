@@ -51,14 +51,24 @@ public final class VoltageInitializerCFunctions {
     @CEntryPoint(name = "createVoltageInitializerParams")
     public static ObjectHandle createVoltageInitializerParams(IsolateThread thread,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new OpenReacParameters()));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                return ObjectHandles.getGlobal().create(new OpenReacParameters());
+            }
+        });
     }
 
     @CEntryPoint(name = "createVoltageLimitOverride")
     public static ObjectHandle createVoltageLimitOverride(IsolateThread thread, double minVoltage, double maxVoltage,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr,
-            () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(minVoltage, maxVoltage)));
+                new Util.PointerProvider<ObjectHandle>() {
+                    @Override
+                    public ObjectHandle get() {
+                        return ObjectHandles.getGlobal().create(new VoltageLimitOverride(minVoltage, maxVoltage));
+                    }
+                });
     }
 
     @CEntryPoint(name = "voltageInitializerAddSpecificVoltageLimits")
@@ -67,8 +77,13 @@ public final class VoltageInitializerCFunctions {
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String voltageId = CTypeUtil.toString(idPtr);
-        doCatch(exceptionHandlerPtr, () -> params
-                .addSpecificVoltageLimits(Map.of(voltageId, new VoltageLimitOverride(minVoltage, maxVoltage))));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params
+                        .addSpecificVoltageLimits(Map.of(voltageId, new VoltageLimitOverride(minVoltage, maxVoltage)));
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerAddVariableShuntCompensators")
@@ -76,7 +91,12 @@ public final class VoltageInitializerCFunctions {
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
-        doCatch(exceptionHandlerPtr, () -> params.addVariableShuntCompensators(List.of(id)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params.addVariableShuntCompensators(List.of(id));
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerAddConstantQGenerators")
@@ -84,7 +104,12 @@ public final class VoltageInitializerCFunctions {
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
-        doCatch(exceptionHandlerPtr, () -> params.addConstantQGenerators(List.of(id)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params.addConstantQGenerators(List.of(id));
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerAddVariableTwoWindingsTransformers")
@@ -92,7 +117,12 @@ public final class VoltageInitializerCFunctions {
             CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         String id = CTypeUtil.toString(idPtr);
-        doCatch(exceptionHandlerPtr, () -> params.addVariableTwoWindingsTransformers(List.of(id)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params.addVariableTwoWindingsTransformers(List.of(id));
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerAddAlgorithmParam")
@@ -100,21 +130,36 @@ public final class VoltageInitializerCFunctions {
             CCharPointer valuePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr,
-            () -> params.addAlgorithmParam(CTypeUtil.toString(keyPtr), CTypeUtil.toString(valuePtr)));
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        params.addAlgorithmParam(CTypeUtil.toString(keyPtr), CTypeUtil.toString(valuePtr));
+                    }
+                });
     }
 
     @CEntryPoint(name = "voltageInitializerSetObjective")
     public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
             VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-        doCatch(exceptionHandlerPtr, () -> params.setObjective(Util.convert(cObjective)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params.setObjective(Util.convert(cObjective));
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerSetObjectiveDistance")
     public static void setObjectiveDistance(IsolateThread thread, ObjectHandle paramsHandle, double dist,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-        doCatch(exceptionHandlerPtr, () -> params.setObjectiveDistance(dist));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                params.setObjectiveDistance(dist);
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerApplyAllModifications")
@@ -122,7 +167,12 @@ public final class VoltageInitializerCFunctions {
             ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
         Network network = ObjectHandles.getGlobal().get(networkHandle);
-        doCatch(exceptionHandlerPtr, () -> result.applyAllModifications(network));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                result.applyAllModifications(network);
+            }
+        });
     }
 
     @CEntryPoint(name = "voltageInitializerGetStatus")
@@ -136,22 +186,30 @@ public final class VoltageInitializerCFunctions {
     public static StringMap getIndicators(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.fromStringMap(result.getIndicators()));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<StringMap>() {
+            @Override
+            public StringMap get() {
+                return CTypeUtil.fromStringMap(result.getIndicators());
+            }
+        });
     }
 
     @CEntryPoint(name = "runVoltageInitializer")
     public static ObjectHandle runVoltageInitializer(IsolateThread thread, boolean debug, ObjectHandle networkHandle,
             ObjectHandle paramsHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        return Util.doCatch(exceptionHandlerPtr, new Util.PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
 
-            logger().info("Running voltage initializer");
-            OpenReacResult result = OpenReacRunner.run(network, network.getVariantManager().getWorkingVariantId(), params,
-                    new OpenReacConfig(debug), LocalComputationManager.getDefault());
-            logger().info("Voltage initializer run done");
+                logger().info("Running voltage initializer");
+                OpenReacResult result = OpenReacRunner.run(network, network.getVariantManager().getWorkingVariantId(), params,
+                        new OpenReacConfig(debug), LocalComputationManager.getDefault());
+                logger().info("Voltage initializer run done");
 
-            return ObjectHandles.getGlobal().create(result);
+                return ObjectHandles.getGlobal().create(result);
+            }
         });
     }
 

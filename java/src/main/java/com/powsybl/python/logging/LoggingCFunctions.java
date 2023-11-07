@@ -39,16 +39,22 @@ public final class LoggingCFunctions {
 
     @CEntryPoint(name = "setupLoggerCallback")
     public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            loggerCallback = fpointer;
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                loggerCallback = fpointer;
+            }
         });
     }
 
     @CEntryPoint(name = "setLogLevel")
     public static void setLogLevel(IsolateThread thread, int logLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
-            powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
+                powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+            }
         });
     }
 }

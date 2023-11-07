@@ -52,31 +52,44 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "setDefaultLoadFlowProvider")
     public static void setDefaultLoadFlowProvider(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+            }
         });
     }
 
     @CEntryPoint(name = "getDefaultLoadFlowProvider")
     public static CCharPointer getDefaultLoadFlowProvider(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider()));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider());
+        });
     }
 
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
     public static void freeLoadFlowComponentResultPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> componentResultArrayPtr,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
-                UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
+                    UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+                }
+                freeArrayPointer(componentResultArrayPtr);
             }
-            freeArrayPointer(componentResultArrayPtr);
         });
     }
 
     @CEntryPoint(name = "getLoadFlowProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getLoadFlowProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(LoadFlowProvider.findAll()
-                .stream().map(LoadFlowProvider::getName).collect(Collectors.toList())));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> get() {
+                return createCharPtrArray(LoadFlowProvider.findAll()
+                        .stream().map(LoadFlowProvider::getName).collect(Collectors.toList()));
+            }
+        });
     }
 
     @CEntryPoint(name = "runLoadFlow")
@@ -84,31 +97,42 @@ public final class LoadFlowCFunctions {
                                                                                                                  LoadFlowParametersPointer loadFlowParametersPtr,
                                                                                                                  CCharPointer provider, ObjectHandle reporterHandle,
                                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String providerStr = CTypeUtil.toString(provider);
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
+        return Util.doCatch(exceptionHandlerPtr, new Util.PointerProvider<PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer>>() {
+            @Override
+            public PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String providerStr = CTypeUtil.toString(provider);
+                LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+                logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
 
-            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
-            LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
+                Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+                LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
                         CommonObjects.getComputationManager(), parameters, reporter);
-            return createLoadFlowComponentResultArrayPointer(result);
+                return createLoadFlowComponentResultArrayPointer(result);
+            }
         });
     }
 
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters()));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<LoadFlowParametersPointer>() {
+            @Override
+            public LoadFlowParametersPointer get() {
+                return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters());
+            }
+        });
     }
 
     @CEntryPoint(name = "freeLoadFlowParameters")
     public static void freeLoadFlowParameters(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeLoadFlowParametersPointer(loadFlowParametersPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeLoadFlowParametersPointer(loadFlowParametersPtr);
+            }
         });
     }
 
@@ -168,19 +192,25 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "getLoadFlowProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> get() {
+                String providerStr = CTypeUtil.toString(provider);
+                return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
+            }
         });
     }
 
     @CEntryPoint(name = "createLoadFlowProviderParametersSeriesArray")
     static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createLoadFlowProviderParametersSeriesArray(IsolateThread thread, CCharPointer providerNamePtr,
                                                                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerName = CTypeUtil.toString(providerNamePtr);
-            LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
-            return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer>>() {
+            @Override
+            public PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> get() {
+                String providerName = CTypeUtil.toString(providerNamePtr);
+                LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
+                return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
+            }
         });
     }
 
