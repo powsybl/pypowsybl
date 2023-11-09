@@ -88,7 +88,7 @@ class SensitivityAnalysis(ContingencyContainer):
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
         self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.ALL,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, None, matrix_id)
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
     def add_precontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
                                                      matrix_id: str = 'default') -> None:
@@ -106,7 +106,7 @@ class SensitivityAnalysis(ContingencyContainer):
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
         self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.NONE,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, None, matrix_id)
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
     def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
                                                       contingencies_ids: List[str],
@@ -126,12 +126,12 @@ class SensitivityAnalysis(ContingencyContainer):
             matrix_id:         The matrix unique identifier, to be used to retrieve the sensibility value
         """
         self.add_factor_matrix(branches_ids, variables_ids, contingencies_ids, ContingencyContextType.SPECIFIC,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, None, matrix_id)
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
     def add_factor_matrix(self, functions_ids: List[str], variables_ids: List[str], contingencies_ids: List[str],
                           contingency_context_type: ContingencyContextType,
                           sensitivity_function_type: SensitivityFunctionType,
-                          sensitivity_variable_type: SensitivityVariableType = None,
+                          sensitivity_variable_type: SensitivityVariableType = SensitivityVariableType.AUTO_DETECT,
                           matrix_id: str = 'default') -> None:
         """
         Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
@@ -168,7 +168,7 @@ class SensitivityAnalysis(ContingencyContainer):
             contingencies_ids:          List of the IDs of the contingencies to simulate
             contingency_context_type:   the contingency context type it could be ALL, NONE or SPECIFIC
             sensitivity_function_type:  the function type of sensitivity to compute
-            sensitivity_variable_type:  the variable type of sensitivity to compute, automatically guessed (best effort) if not specified
+            sensitivity_variable_type:  the variable type of sensitivity to compute, automatically guessed (best effort) if value is AUTO_DETECT
             matrix_id:                  The matrix unique identifier, to be used to retrieve the sensibility value
         """
         (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)

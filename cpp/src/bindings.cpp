@@ -691,6 +691,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BUS_VOLTAGE",sensitivity_function_type::BUS_VOLTAGE);
 
     py::enum_<sensitivity_variable_type>(m, "SensitivityVariableType")
+            .value("AUTO_DETECT", sensitivity_variable_type::AUTO_DETECT)
             .value("INJECTION_ACTIVE_POWER", sensitivity_variable_type::INJECTION_ACTIVE_POWER)
             .value("INJECTION_REACTIVE_POWER", sensitivity_variable_type::INJECTION_REACTIVE_POWER)
             .value("TRANSFORMER_PHASE", sensitivity_variable_type::TRANSFORMER_PHASE)

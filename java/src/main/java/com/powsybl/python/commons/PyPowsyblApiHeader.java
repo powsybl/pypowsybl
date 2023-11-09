@@ -657,6 +657,7 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("sensitivity_variable_type")
     public enum SensitivityVariableType {
+        AUTO_DETECT,
         INJECTION_ACTIVE_POWER,
         INJECTION_REACTIVE_POWER,
         TRANSFORMER_PHASE,

@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
@@ -56,7 +55,8 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
+        String message = t.getMessage();
+        String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
@@ -260,6 +260,7 @@ public final class Util {
 
     public static SensitivityVariableType convert(PyPowsyblApiHeader.SensitivityVariableType type) {
         return switch (type) {
+            case AUTO_DETECT -> null;
             case INJECTION_ACTIVE_POWER -> SensitivityVariableType.INJECTION_ACTIVE_POWER;
             case INJECTION_REACTIVE_POWER -> SensitivityVariableType.INJECTION_REACTIVE_POWER;
             case TRANSFORMER_PHASE -> SensitivityVariableType.TRANSFORMER_PHASE;

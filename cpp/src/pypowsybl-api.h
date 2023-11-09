@@ -191,7 +191,8 @@ typedef enum {
 } sensitivity_function_type;
 
 typedef enum {
-    INJECTION_ACTIVE_POWER=0,
+    AUTO_DETECT=0,
+    INJECTION_ACTIVE_POWER,
     INJECTION_REACTIVE_POWER,
     TRANSFORMER_PHASE,
     BUS_TARGET_VOLTAGE,
