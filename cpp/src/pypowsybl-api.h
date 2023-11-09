@@ -187,7 +187,19 @@ typedef enum {
     BRANCH_ACTIVE_POWER_3,
     BRANCH_CURRENT_3,
     BRANCH_REACTIVE_POWER_3,
+    BUS_VOLTAGE,
 } sensitivity_function_type;
+
+typedef enum {
+    INJECTION_ACTIVE_POWER=0,
+    INJECTION_REACTIVE_POWER,
+    TRANSFORMER_PHASE,
+    BUS_TARGET_VOLTAGE,
+    HVDC_LINE_ACTIVE_POWER,
+    TRANSFORMER_PHASE_1,
+    TRANSFORMER_PHASE_2,
+    TRANSFORMER_PHASE_3,
+} sensitivity_variable_type;
 
 typedef enum {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,

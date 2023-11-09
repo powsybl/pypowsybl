@@ -315,12 +315,12 @@ def test_add_branch_factor_matrix():
     network = pp.network.create_four_substations_node_breaker_network()
     analysis = pp.sensitivity.create_ac_analysis()
 
-    analysis.add_branch_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
-                                      SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, 'test')
-    analysis.add_branch_factor_matrix(['LINE_S2S3'], ['GTH1'], [], ContingencyContextType.NONE,
-                                      SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'test1')
-    analysis.add_branch_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
-                                      SensitivityFunctionType.BRANCH_CURRENT_1, 'test2')
+    analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, 'test')
+    analysis.add_factor_matrix(['LINE_S2S3'], ['GTH1'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'test1')
+    analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_CURRENT_1, 'test2')
     result = analysis.run(network)
     pytest.approx(result.get_branch_flows_sensitivity_matrix('test').loc['GTH2']['LINE_S3S4'], 30.5280, 0.001)
     assert 0.8 == result.get_branch_flows_sensitivity_matrix('test1').loc['GTH1']['LINE_S2S3']

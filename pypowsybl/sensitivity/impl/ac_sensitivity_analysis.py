@@ -24,13 +24,27 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
 
     def set_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str]) -> None:
         """
+        .. deprecated:: 1.1.0
+
+       Defines buses voltage sensitivities to be computed.
+
+       Args:
+           bus_ids:            IDs of buses for which voltage sensitivities should be computed
+           target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
+       """
+        self.add_bus_voltage_factor_matrix(bus_ids, target_voltage_ids)
+
+    def add_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str], matrix_id: str = 'default') -> None:
+        """
         Defines buses voltage sensitivities to be computed.
 
         Args:
             bus_ids:            IDs of buses for which voltage sensitivities should be computed
             target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
+            matrix_id:          The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        _pypowsybl.set_bus_voltage_factor_matrix(self._handle, bus_ids, target_voltage_ids)
+        self.add_factor_matrix(bus_ids, target_voltage_ids, [], ContingencyContextType.ALL,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.BUS_TARGET_VOLTAGE, matrix_id)
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 

@@ -586,12 +586,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_zones", &pypowsybl::setZones, "Add zones to sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("zones"));
 
-    m.def("add_branch_factor_matrix", &pypowsybl::addBranchFactorMatrix, "Add a branch factor matrix to a sensitivity analysis",
-              py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"), 
-              py::arg("contingencies_ids"), py::arg("contingency_context_type"), py::arg("sensitivity_function_type"));
-
-    m.def("set_bus_voltage_factor_matrix", &pypowsybl::setBusVoltageFactorMatrix, "Add a bus_voltage factor matrix to a sensitivity analysis",
-          py::arg("sensitivity_analysis_context"), py::arg("bus_ids"), py::arg("target_voltage_ids"));
+    m.def("add_factor_matrix", &pypowsybl::addFactorMatrix, "Add a factor matrix to a sensitivity analysis",
+          py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"),
+          py::arg("contingencies_ids"), py::arg("contingency_context_type"), py::arg("sensitivity_function_type"),
+          py::arg("sensitivity_variable_type"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
@@ -606,17 +604,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
                                        { sizeof(double) * m.column_count, sizeof(double) });
             });
 
-    m.def("get_branch_flows_sensitivity_matrix", &pypowsybl::getBranchFlowsSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+    m.def("get_sensitivity_matrix", &pypowsybl::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
               py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
-    m.def("get_bus_voltages_sensitivity_matrix", &pypowsybl::getBusVoltagesSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
-          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
-
-    m.def("get_reference_flows", &pypowsybl::getReferenceFlows, "Get sensitivity analysis result reference flows for a given contingency",
+    m.def("get_reference_matrix", &pypowsybl::getReferenceMatrix, "Get sensitivity analysis result reference matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
-
-    m.def("get_reference_voltages", &pypowsybl::getReferenceVoltages, "Get sensitivity analysis result reference voltages for a given contingency",
-          py::arg("sensitivity_analysis_result_context"), py::arg("contingency_id"));
 
     py::class_<series>(m, "Series")
             .def_property_readonly("name", [](const series& s) {
@@ -695,7 +687,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BRANCH_REACTIVE_POWER_2",sensitivity_function_type::BRANCH_REACTIVE_POWER_2)
             .value("BRANCH_ACTIVE_POWER_3",sensitivity_function_type::BRANCH_ACTIVE_POWER_3)
             .value("BRANCH_CURRENT_3",sensitivity_function_type::BRANCH_CURRENT_3)
-            .value("BRANCH_REACTIVE_POWER_3",sensitivity_function_type::BRANCH_REACTIVE_POWER_3);
+            .value("BRANCH_REACTIVE_POWER_3",sensitivity_function_type::BRANCH_REACTIVE_POWER_3)
+            .value("BUS_VOLTAGE",sensitivity_function_type::BUS_VOLTAGE);
+
+    py::enum_<sensitivity_variable_type>(m, "SensitivityVariableType")
+            .value("INJECTION_ACTIVE_POWER", sensitivity_variable_type::INJECTION_ACTIVE_POWER)
+            .value("INJECTION_REACTIVE_POWER", sensitivity_variable_type::INJECTION_REACTIVE_POWER)
+            .value("TRANSFORMER_PHASE", sensitivity_variable_type::TRANSFORMER_PHASE)
+            .value("BUS_TARGET_VOLTAGE", sensitivity_variable_type::BUS_TARGET_VOLTAGE)
+            .value("HVDC_LINE_ACTIVE_POWER", sensitivity_variable_type::HVDC_LINE_ACTIVE_POWER)
+            .value("TRANSFORMER_PHASE_1", sensitivity_variable_type::TRANSFORMER_PHASE_1)
+            .value("TRANSFORMER_PHASE_2", sensitivity_variable_type::TRANSFORMER_PHASE_2)
+            .value("TRANSFORMER_PHASE_3", sensitivity_variable_type::TRANSFORMER_PHASE_3);
 
     m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
     m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));

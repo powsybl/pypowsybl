@@ -396,20 +396,15 @@ JavaHandle createSensitivityAnalysis();
 
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
-void addBranchFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                            const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType, sensitivity_function_type sensitivityFunctionType);                               
-
-void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
+void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                     const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
+                     sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType);
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
+matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
-matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
-
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
-
-matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 

@@ -42,8 +42,8 @@ class DcSensitivityAnalysisResult:
         Returns:
             the matrix of branch flows sensitivities
         """
-        matrix = _pypowsybl.get_branch_flows_sensitivity_matrix(self.result_context_ptr, matrix_id,
-                                                                '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_sensitivity_matrix(self.result_context_ptr, matrix_id,
+                                                    '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
@@ -72,7 +72,7 @@ class DcSensitivityAnalysisResult:
         Returns:
             the branches active power flows
         """
-        matrix = _pypowsybl.get_reference_flows(self.result_context_ptr, matrix_id,
+        matrix = _pypowsybl.get_reference_matrix(self.result_context_ptr, matrix_id,
                                                 '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None

@@ -35,8 +35,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
-        matrix = _pypowsybl.get_bus_voltages_sensitivity_matrix(self.result_context_ptr,
-                                                                '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_sensitivity_matrix(self.result_context_ptr,
+                                                   '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
@@ -52,8 +52,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
-        matrix = _pypowsybl.get_reference_voltages(self.result_context_ptr,
-                                                   '' if contingency_id is None else contingency_id)
+        matrix = _pypowsybl.get_reference_matrix(self.result_context_ptr,
+                                                '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
 
