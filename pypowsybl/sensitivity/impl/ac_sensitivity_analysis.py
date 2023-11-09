@@ -9,6 +9,7 @@ from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
 from pypowsybl.report import Reporter
 from pypowsybl.loadflow import Parameters as LfParameters
+from pypowsybl._pypowsybl import ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
 from .ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
 from .sensitivity import SensitivityAnalysis
 from .parameters import Parameters
