@@ -271,7 +271,7 @@ the list of buses for which you want to compute the sensitivity, and a list of r
 .. doctest::
 
     >>> analysis = pp.sensitivity.create_ac_analysis()
-    >>> analysis.set_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
+    >>> analysis.add_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
     >>> result = analysis.run(network)
     >>> result.get_bus_voltages_sensitivity_matrix()
            VLHV1_0  VLLOAD_0
