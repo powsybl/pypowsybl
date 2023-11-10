@@ -33,7 +33,7 @@ class SensitivityAnalysisResult:
         self.function_data_frame_index = function_data_frame_index
 
     @staticmethod
-    def clean_contingency_id(contingency_id: str) -> Optional[str]:
+    def clean_contingency_id(contingency_id: Optional[str]) -> str:
         return '' if contingency_id is None else contingency_id
 
     def process_ptdf(self, df: pd.DataFrame, matrix_id: str) -> pd.DataFrame:

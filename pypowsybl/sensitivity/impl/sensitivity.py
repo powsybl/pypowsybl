@@ -57,6 +57,7 @@ class SensitivityAnalysis(ContingencyContainer):
     def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str]) -> None:
         """
         .. deprecated:: 0.14.0
+        Use :meth:`add_branch_flow_factor_matrix` instead.
 
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 

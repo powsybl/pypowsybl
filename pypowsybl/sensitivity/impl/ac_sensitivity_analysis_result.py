@@ -28,6 +28,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
+        Use :meth:`get_sensitivity_matrix` instead.
 
         Get the matrix of bus voltages sensitivities on the base case or on post contingency state.
 
@@ -41,6 +42,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
+        Use :meth:`get_reference_matrix` instead.
 
         The values of bus voltages on the base case or on post contingency state.
 

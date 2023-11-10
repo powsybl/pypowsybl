@@ -27,12 +27,13 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
     def set_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str]) -> None:
         """
         .. deprecated:: 1.1.0
+        Use :meth:`add_bus_voltage_factor_matrix` instead.
 
-       Defines buses voltage sensitivities to be computed.
+        Defines buses voltage sensitivities to be computed.
 
-       Args:
-           bus_ids:            IDs of buses for which voltage sensitivities should be computed
-           target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
+        Args:
+            bus_ids:            IDs of buses for which voltage sensitivities should be computed
+            target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
        """
         self.add_bus_voltage_factor_matrix(bus_ids, target_voltage_ids)
 
