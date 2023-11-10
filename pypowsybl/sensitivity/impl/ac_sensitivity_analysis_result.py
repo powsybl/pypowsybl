@@ -43,16 +43,17 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         data = np.array(matrix, copy=False)
         return pd.DataFrame(data=data, columns=self.bus_ids, index=self.target_voltage_ids)
 
-    def get_reference_voltages(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+    def get_reference_voltages(self, matrix_id: str = 'default', contingency_id: str = None) -> Optional[pd.DataFrame]:
         """
         The values of bus voltages on the base case or on post contingency state.
 
         Args:
+            matrix_id:      ID of the matrix
             contingency_id: ID of the contingency
         Returns:
             the values of bus voltages
         """
-        matrix = _pypowsybl.get_reference_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_reference_matrix(self.result_context_ptr, matrix_id,
                                                 '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
