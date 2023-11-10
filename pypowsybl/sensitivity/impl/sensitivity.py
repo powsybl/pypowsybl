@@ -9,10 +9,9 @@ from typing import List, Dict, Optional
 
 from pypowsybl import _pypowsybl
 from pypowsybl.security import ContingencyContainer
+from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from pypowsybl._pypowsybl import PyPowsyblError, ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
 from .zone import Zone
-
-TO_REMOVE = 'TO_REMOVE'
 
 
 class SensitivityAnalysis(ContingencyContainer):
@@ -74,7 +73,7 @@ class SensitivityAnalysis(ContingencyContainer):
         self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
 
     def add_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                      matrix_id: str = 'default') -> None:
+                                      matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 
@@ -92,7 +91,7 @@ class SensitivityAnalysis(ContingencyContainer):
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
     def add_precontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                                     matrix_id: str = 'default') -> None:
+                                                     matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
 
@@ -111,7 +110,7 @@ class SensitivityAnalysis(ContingencyContainer):
 
     def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
                                                       contingencies_ids: List[str],
-                                                      matrix_id: str = 'default') -> None:
+                                                      matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
 
@@ -133,7 +132,7 @@ class SensitivityAnalysis(ContingencyContainer):
                           contingency_context_type: ContingencyContextType,
                           sensitivity_function_type: SensitivityFunctionType,
                           sensitivity_variable_type: SensitivityVariableType = SensitivityVariableType.AUTO_DETECT,
-                          matrix_id: str = 'default') -> None:
+                          matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
 

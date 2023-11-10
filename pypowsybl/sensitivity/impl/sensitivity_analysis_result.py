@@ -33,10 +33,10 @@ class SensitivityAnalysisResult:
         self.function_data_frame_index = function_data_frame_index
 
     @staticmethod
-    def clean_contingency_id(contingency_id):
+    def clean_contingency_id(contingency_id: str) -> str:
         return '' if contingency_id is None else contingency_id
 
-    def process_ptdf(self, df, matrix_id):
+    def process_ptdf(self, df: pd.DataFrame, matrix_id: str) -> pd.DataFrame:
         # substract second power transfer zone to first one
         i = 0
         while i < len(self.function_data_frame_index[matrix_id]):

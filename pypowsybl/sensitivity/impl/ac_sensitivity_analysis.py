@@ -11,6 +11,7 @@ from pypowsybl.report import Reporter
 from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl._pypowsybl import ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
 from .ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
+from .sensitivity_analysis_result import DEFAULT_MATRIX_ID
 from .sensitivity import SensitivityAnalysis
 from .parameters import Parameters
 
@@ -35,7 +36,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
        """
         self.add_bus_voltage_factor_matrix(bus_ids, target_voltage_ids)
 
-    def add_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str], matrix_id: str = 'default') -> None:
+    def add_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str], matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines buses voltage sensitivities to be computed.
 
