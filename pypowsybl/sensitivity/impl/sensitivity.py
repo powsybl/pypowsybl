@@ -20,8 +20,8 @@ class SensitivityAnalysis(ContingencyContainer):
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         ContingencyContainer.__init__(self, handle)
-        self.branches_ids: Dict[str, List[str]] = {}
-        self.branch_data_frame_index: Dict[str, List[str]] = {}
+        self.functions_ids: Dict[str, List[str]] = {}
+        self.function_data_frame_index: Dict[str, List[str]] = {}
 
     def set_zones(self, zones: List[Zone]) -> None:
         """
@@ -36,7 +36,8 @@ class SensitivityAnalysis(ContingencyContainer):
                                           list(zone.shift_keys_by_injections_ids.values())))
         _pypowsybl.set_zones(self._handle, _zones)
 
-    def _process_variable_ids(self, variables_ids: List) -> tuple:
+    @staticmethod
+    def _process_variable_ids(variables_ids: List) -> tuple:
         flatten_variables_ids = []
         branch_data_frame_index = []
         for variable_id in variables_ids:
@@ -171,9 +172,9 @@ class SensitivityAnalysis(ContingencyContainer):
             sensitivity_variable_type:  the variable type of sensitivity to compute, automatically guessed (best effort) if value is AUTO_DETECT
             matrix_id:                  The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        (flatten_variables_ids, branch_data_frame_index) = self._process_variable_ids(variables_ids)
+        (flatten_variables_ids, function_data_frame_index) = self._process_variable_ids(variables_ids)
         _pypowsybl.add_factor_matrix(self._handle, matrix_id, functions_ids,
                                      flatten_variables_ids, contingencies_ids, contingency_context_type,
                                      sensitivity_function_type, sensitivity_variable_type)
-        self.branches_ids[matrix_id] = functions_ids
-        self.branch_data_frame_index[matrix_id] = branch_data_frame_index
+        self.functions_ids[matrix_id] = functions_ids
+        self.function_data_frame_index[matrix_id] = function_data_frame_index

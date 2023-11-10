@@ -302,8 +302,8 @@ def test_hvdc():
     analysis = pp.sensitivity.create_dc_analysis()
     analysis.set_branch_flow_factor_matrix(["LINE_S2S3"], ["HVDC1"])
     results = analysis.run(network)
-    assert {'default': ['HVDC1']} == results.branch_data_frame_index
-    assert {'default': ['LINE_S2S3']} == results.branches_ids
+    assert {'default': ['HVDC1']} == results.function_data_frame_index
+    assert {'default': ['LINE_S2S3']} == results.functions_ids
     pytest.approx(results.get_branch_flows_sensitivity_matrix().loc['HVDC1']['LINE_S2S3'], 0.7824, 0.001)
 
 

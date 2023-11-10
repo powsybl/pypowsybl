@@ -69,5 +69,4 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider,
                                                 None if reporter is None else reporter._reporter_model),
             # pylint: disable=protected-access
-            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index,
-            bus_ids=self.bus_voltage_ids, target_voltage_ids=self.target_voltage_ids)
+            functions_ids=self.functions_ids, function_data_frame_index=self.function_data_frame_index)
