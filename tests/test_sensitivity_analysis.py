@@ -10,7 +10,7 @@ import pypowsybl as pp
 import pandas as pd
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
-from pypowsybl.sensitivity import SensitivityFunctionType, ContingencyContextType
+from pypowsybl.sensitivity import SensitivityFunctionType, SensitivityVariableType, ContingencyContextType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -240,10 +240,6 @@ def test_no_output_matrices_available():
     assert (2, 2) == df.shape
 
     with pytest.raises(pp.PyPowsyblError) as errorContext:
-        result.get_bus_voltages_sensitivity_matrix()
-    assert 'bus voltage sensitivity matrix does not exist' == str(errorContext.value)
-
-    with pytest.raises(pp.PyPowsyblError) as errorContext:
         result.get_branch_flows_sensitivity_matrix('')
     assert 'Matrix \'\' not found' == str(errorContext.value)
 
@@ -316,11 +312,11 @@ def test_add_branch_factor_matrix():
     analysis = pp.sensitivity.create_ac_analysis()
 
     analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
-                               SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, 'test')
+                               SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, SensitivityVariableType.BUS_TARGET_VOLTAGE, 'test')
     analysis.add_factor_matrix(['LINE_S2S3'], ['GTH1'], [], ContingencyContextType.NONE,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'test1')
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'test1')
     analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
-                               SensitivityFunctionType.BRANCH_CURRENT_1, 'test2')
+                               SensitivityFunctionType.BRANCH_CURRENT_1, SensitivityVariableType.BUS_TARGET_VOLTAGE, 'test2')
     result = analysis.run(network)
     pytest.approx(result.get_branch_flows_sensitivity_matrix('test').loc['GTH2']['LINE_S3S4'], 30.5280, 0.001)
     assert 0.8 == result.get_branch_flows_sensitivity_matrix('test1').loc['GTH1']['LINE_S2S3']

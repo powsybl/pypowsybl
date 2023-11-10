@@ -26,7 +26,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         self.bus_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def get_bus_voltages_sensitivity_matrix(self, contingency_id: str = None) -> Optional[pd.DataFrame]:
+    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = 'default', contingency_id: str = None) -> Optional[pd.DataFrame]:
         """
         Get the matrix of bus voltages sensitivities on the base case or on post contingency state.
 
@@ -35,7 +35,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
-        matrix = _pypowsybl.get_sensitivity_matrix(self.result_context_ptr,
+        matrix = _pypowsybl.get_sensitivity_matrix(self.result_context_ptr, matrix_id,
                                                    '' if contingency_id is None else contingency_id)
         if matrix is None:
             return None
