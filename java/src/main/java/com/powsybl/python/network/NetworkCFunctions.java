@@ -60,6 +60,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
@@ -210,8 +211,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "dumpNetwork")
-    public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
+    @CEntryPoint(name = "saveNetwork")
+    public static void saveNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                    ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -228,8 +229,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "dumpNetworkToString")
-    public static CCharPointer dumpNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+    @CEntryPoint(name = "saveNetworkToString")
+    public static CCharPointer saveNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
                                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                    ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -258,6 +259,41 @@ public final class NetworkCFunctions {
                 throw new UncheckedIOException(e);
             }
         });
+    }
+
+    @CEntryPoint(name = "saveNetworkToBinaryBuffer")
+    public static ArrayPointer<CCharPointer> saveNetworkToBinaryBuffer(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+                                                             CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                             CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                             ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String formatStr = CTypeUtil.toString(format);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            var exporter = Exporter.find(formatStr);
+            if (exporter == null) {
+                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
+            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            // to support all kind of export: simple file or multiple to an archive,
+            // best is to write to a zip file
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 ZipOutputStream zos = new ZipOutputStream(bos)) {
+                DataSource dataSource = new ZipMemDataSource("file", zos);
+                exporter.export(network, parameters, dataSource, reporter);
+                bos.flush();
+                byte[] bytes = bos.toByteArray();
+                return Util.createByteArray(bytes);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "freeNetworkBinaryBuffer")
+    public static void freeNetworkBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
+                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(byteArrayPtr));
     }
 
     @CEntryPoint(name = "reduceNetwork")
