@@ -10,7 +10,8 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_variable_shunt_compensators,
     voltage_initializer_add_constant_q_generators,
     voltage_initializer_add_variable_two_windings_transformers,
-    voltage_initializer_add_specific_voltage_limits,
+    voltage_initializer_add_specific_low_voltage_limits,
+    voltage_initializer_add_specific_high_voltage_limits,
     voltage_initializer_add_algorithm_param,
     VoltageInitializerObjective,
     voltage_initializer_set_objective,
@@ -63,16 +64,50 @@ class VoltageInitializerParameters:
         for id in transformer_id_list:
             voltage_initializer_add_variable_two_windings_transformers(self._handle, id)
 
+    def add_specific_low_voltage_limits(self, low_limits: List[Tuple[str, bool, float]]) -> None:
+        '''
+        Indicate to voltage initializer to override the network low voltages limits,
+        limit can be given relative to former limit or absolute.
+        High limits can be given for the same voltage level ids using
+        :func:`~VoltageInitializerParameters.add_specific_high_voltage_limits`
+        but it is not necessary to give a high limit as long as each voltage level has its limits
+        defined and consistent after overrides (low limit < high limit, low limit > 0...)
+        Use this if voltage initializer cannot converge because of infeasibility.
+
+        Args:
+            low_limits: A List with elements as (voltage level id, is limit relative, limit value)
+        '''
+        for voltage_level_id, is_relative, limit in low_limits:
+            voltage_initializer_add_specific_low_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
+
+    def add_specific_high_voltage_limits(self, high_limits: List[Tuple[str, bool, float]]) -> None:
+        '''
+        Indicate to voltage initializer to override the network high voltages limits,
+        limit can be given relative to previous limit or absolute.
+        Low limits can be given for the same voltage level ids using
+        :func:`~VoltageInitializerParameters.add_specific_low_voltage_limits`
+        but it is not necessary to give a low limit as long as each voltage level has its limits
+        defined and consistent after overrides (low limit < high limit, low limit > 0...)
+        Use this if voltage initializer cannot converge because of infeasibility.
+
+        Args:
+            high_limits: A List with elements as (voltage level id, is limit relative, limit value)
+        '''
+        for voltage_level_id, is_relative, limit in high_limits:
+            voltage_initializer_add_specific_high_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
+
     def add_specific_voltage_limits(self, limits: Dict[str, Tuple[float, float]]) -> None:
         '''
         Indicate to voltage initializer to override the network voltages limits.
+        Limits are given relative to previous limits.
         Use this if voltage initializer cannot converge because of infeasibility.
 
         Args:
             limits: A dictionary keys are voltage ids, values are (lower limit, upper limit)
         '''
         for key in limits:
-            voltage_initializer_add_specific_voltage_limits(key, limits[key][0], self._handle, limits[key][1])
+            self.add_specific_low_voltage_limits([(key, True, limits[key][0])])
+            self.add_specific_high_voltage_limits([(key, True, limits[key][1])])
 
     def add_algorithm_param(self, parameters_dict: Dict[str, str]) -> None:
         '''
