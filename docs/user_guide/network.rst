@@ -68,13 +68,19 @@ Networks can be written to the filesystem, using one of the available export for
 
 .. code-block:: python
 
-   network.dump('network.xiidm', format='XIIDM')
+   network.save('network.xiidm', format='XIIDM')
 
 You can also serialize networks to a string:
 
 .. code-block:: python
 
-   xiidm_str = network.dump_to_string('XIIDM')
+   xiidm_str = network.save_to_string('XIIDM')
+
+And also to a zip file as a (io.BytesIO) binary buffer.
+
+.. code-block:: python
+
+   zipped_xiidm = network.save_to_binary_buffer('XIIDM')
 
 The supported formats are:
 

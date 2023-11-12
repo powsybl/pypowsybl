@@ -124,7 +124,7 @@ def test_save_matpower():
         assert 'test.mat' in file_names
         n2 = pp.network.load(mat_file)
         assert isinstance(n2, pp.network.Network)
-        # assert n2.dump_to_string() == n.dump_to_string() # problem import/export matpower
+        # assert n2.save_to_string() == n.save_to_string() # problem import/export matpower
 
 
 def test_save_ucte():
