@@ -183,6 +183,8 @@ class Network:  # pylint: disable=too-many-public-methods
     def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
+        In the current implementation, whatever the specified format is (so a format creating a single file or a format
+        creating multiple files), the created binary buffer is a zip file.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'

@@ -277,16 +277,15 @@ public final class NetworkCFunctions {
             Reporter reporter = ReportCUtils.getReporter(reporterHandle);
             // to support all kind of export: simple file or multiple to an archive,
             // best is to write to a zip file
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                 ZipOutputStream zos = new ZipOutputStream(bos)) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (ZipOutputStream zos = new ZipOutputStream(bos)) {
                 DataSource dataSource = new ZipMemDataSource("file", zos);
                 exporter.export(network, parameters, dataSource, reporter);
-                bos.flush();
-                byte[] bytes = bos.toByteArray();
-                return Util.createByteArray(bytes);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+            byte[] bytes = bos.toByteArray();
+            return Util.createByteArray(bytes);
         });
     }
 

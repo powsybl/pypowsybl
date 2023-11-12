@@ -65,7 +65,8 @@ def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
     with zipfile.ZipFile(buffer, 'r') as zip_file:
-        assert [''] == zip_file.namelist()
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+
 
 def test_load_zipped_xiidm():
     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
