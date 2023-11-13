@@ -664,7 +664,7 @@ JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, con
     return networkHandle;
 }
 
-void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -675,11 +675,11 @@ void dumpNetwork(const JavaHandle& network, const std::string& file, const std::
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    callJava(::dumpNetwork, network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    callJava(::saveNetwork, network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
                 parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -690,8 +690,26 @@ std::string dumpNetworkToString(const JavaHandle& network, const std::string& fo
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
-    return toString(callJava<char*>(::dumpNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    return toString(callJava<char*>(::saveNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
              parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter));
+}
+
+py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    array* byteArray = callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+                     parameterValuesPtr.get(), parameterValues.size(), reporter == nullptr ? nullptr : *reporter);
+    py::bytes bytes((char*) byteArray->ptr, byteArray->length);
+    callJava<>(::freeNetworkBinaryBuffer, byteArray);
+    return bytes;
 }
 
 void reduceNetwork(const JavaHandle& network, double v_min, double v_max, const std::vector<std::string>& ids,
@@ -871,37 +889,15 @@ void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::
     callJava(::setZones, sensitivityAnalysisContext, zonesPtr.get(), zones.size());
 }
 
-void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds) {
-       ToCharPtrPtr branchIdPtr(branchesIds);
-       ToCharPtrPtr variableIdPtr(variablesIds);
-       callJava(::addBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                 variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
-}
-
-void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds) {
-       ToCharPtrPtr branchIdPtr(branchesIds);
-       ToCharPtrPtr variableIdPtr(variablesIds);
-       callJava(::addPreContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), (char*) matrixId.c_str());
-}
-
-void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds) {
+void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                     const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
+                     sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType) {
        ToCharPtrPtr branchIdPtr(branchesIds);
        ToCharPtrPtr variableIdPtr(variablesIds);
        ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
-       callJava(::addPostContingencyBranchFlowFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), (char*) matrixId.c_str());
-}
-
-void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds,
-                               const std::vector<std::string>& targetVoltageIds) {
-    ToCharPtrPtr busVoltageIdPtr(busIds);
-    ToCharPtrPtr targetVoltageIdPtr(targetVoltageIds);
-    callJava(::setBusVoltageFactorMatrix, sensitivityAnalysisContext, busVoltageIdPtr.get(),
-                busIds.size(), targetVoltageIdPtr.get(), targetVoltageIds.size());
+       callJava(::addFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), 
+                  (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter) {
@@ -909,24 +905,14 @@ JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, 
     return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
 }
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return callJava<matrix*>(::getBranchFlowsSensitivityMatrix, sensitivityAnalysisResultContext,
+matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    return callJava<matrix*>(::getSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
-matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return callJava<matrix*>(::getBusVoltagesSensitivityMatrix, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
-}
-
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return callJava<matrix*>(::getReferenceFlows, sensitivityAnalysisResultContext,
+matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    return callJava<matrix*>(::getReferenceMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
-}
-
-matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId) {
-    return callJava<matrix*>(::getReferenceVoltages, sensitivityAnalysisResultContext,
-                                (char*) contingencyId.c_str());
 }
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
@@ -1481,12 +1467,12 @@ JavaHandle createVoltageInitializerParams() {
     return pypowsybl::callJava<JavaHandle>(::createVoltageInitializerParams);
 }
 
-JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage) {
-    return pypowsybl::callJava<JavaHandle>(::createVoltageLimitOverride, minVoltage, maxVoltage);
+void voltageInitializerAddSpecificLowVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit) {
+    pypowsybl::callJava(::voltageInitializerAddSpecificLowVoltageLimits, paramsHandle, (char*) voltageLevelId.c_str(), isRelative, limit);
 }
 
-void voltageInitializerAddSpecificVoltageLimits(const std::string& idPtr, double minVoltage, const JavaHandle& paramsHandle, double maxVoltage) {
-    pypowsybl::callJava(::voltageInitializerAddSpecificVoltageLimits, (char*) idPtr.c_str(), minVoltage, paramsHandle, maxVoltage);
+void voltageInitializerAddSpecificHighVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit) {
+    pypowsybl::callJava(::voltageInitializerAddSpecificHighVoltageLimits, paramsHandle, (char*) voltageLevelId.c_str(), isRelative, limit);
 }
 
 void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr) {

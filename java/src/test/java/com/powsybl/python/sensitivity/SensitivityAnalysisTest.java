@@ -33,13 +33,13 @@ class SensitivityAnalysisTest {
         SensitivityAnalysisResultContext result = sensitivityContext.run(network, parameters, "OpenLoadFlow", Reporter.NO_OP);
 
         try {
-            result.createBranchFlowsSensitivityMatrix("", "");
+            result.createSensitivityMatrix("", "");
             fail();
         } catch (PowsyblException ignored) {
         }
 
         try {
-            result.createBusVoltagesSensitivityMatrix("");
+            result.createSensitivityMatrix("m", "");
             fail();
         } catch (PowsyblException ignored) {
         }

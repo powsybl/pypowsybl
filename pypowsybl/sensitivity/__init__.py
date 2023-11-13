@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from pypowsybl._pypowsybl import SensitivityFunctionType, SensitivityVariableType, ContingencyContextType
 from .impl.util import (
     create_empty_zone,
     create_country_zone,

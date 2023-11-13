@@ -10,7 +10,6 @@ package com.powsybl.python.voltageinit;
 import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.List;
-import java.util.Map;
 
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -54,21 +53,34 @@ public final class VoltageInitializerCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new OpenReacParameters()));
     }
 
-    @CEntryPoint(name = "createVoltageLimitOverride")
-    public static ObjectHandle createVoltageLimitOverride(IsolateThread thread, double minVoltage, double maxVoltage,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr,
-            () -> ObjectHandles.getGlobal().create(new VoltageLimitOverride(minVoltage, maxVoltage)));
+    @CEntryPoint(name = "voltageInitializerAddSpecificLowVoltageLimits")
+    public static void addSpecificLowVoltageLimits(IsolateThread thread, ObjectHandle paramsHandle,
+                                                   CCharPointer idPtr, boolean isRelative, double limit,
+                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        String voltageLevelId = CTypeUtil.toString(idPtr);
+        doCatch(exceptionHandlerPtr, () -> params
+                .addSpecificVoltageLimits(List.of(
+                        new VoltageLimitOverride(voltageLevelId,
+                                                 VoltageLimitOverride.VoltageLimitType.LOW_VOLTAGE_LIMIT,
+                                                 isRelative,
+                                                 limit)
+                )));
     }
 
-    @CEntryPoint(name = "voltageInitializerAddSpecificVoltageLimits")
-    public static void addSpecificVoltageLimits(IsolateThread thread, CCharPointer idPtr, double minVoltage,
-            ObjectHandle paramsHandle, double maxVoltage,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "voltageInitializerAddSpecificHighVoltageLimits")
+    public static void addSpecificHighVoltageLimits(IsolateThread thread, ObjectHandle paramsHandle,
+                                                    CCharPointer idPtr, boolean isRelative, double limit,
+                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-        String voltageId = CTypeUtil.toString(idPtr);
+        String voltageLevelId = CTypeUtil.toString(idPtr);
         doCatch(exceptionHandlerPtr, () -> params
-                .addSpecificVoltageLimits(Map.of(voltageId, new VoltageLimitOverride(minVoltage, maxVoltage))));
+                .addSpecificVoltageLimits(List.of(
+                        new VoltageLimitOverride(voltageLevelId,
+                                                 VoltageLimitOverride.VoltageLimitType.HIGH_VOLTAGE_LIMIT,
+                                                 isRelative,
+                                                 limit)
+                )));
     }
 
     @CEntryPoint(name = "voltageInitializerAddVariableShuntCompensators")
