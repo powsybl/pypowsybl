@@ -12,6 +12,7 @@ import re
 import tempfile
 import unittest
 import io
+import zipfile
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -60,25 +61,32 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_save_cgmes_zip():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buffer = n.save_to_binary_buffer(format='CGMES')
+    with zipfile.ZipFile(buffer, 'r') as zip_file:
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+
+
 def test_load_zipped_xiidm():
     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
         assert 2 == len(n.get_substations())
 
 
-def test_dump_to_string():
+def test_save_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     xml = bat_path.read_text()
     n = pp.network.load(str(bat_path))
-    assert xml == n.dump_to_string()
+    assert xml == n.save_to_string()
 
 
-def test_dump_ampl():
+def test_save_ampl():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         ampl_base_file = tmp_dir_path.joinpath('ampl')
-        n.dump(ampl_base_file, format='AMPL')
+        n.save(ampl_base_file, format='AMPL')
         file_names = os.listdir(tmp_dir_path)
         file_names_expected = ['ampl_network_vsc_converter_stations.txt', 'ampl_network_branches.txt',
                                'ampl_network_rtc.txt', 'ampl_network_generators.txt',
@@ -91,41 +99,41 @@ def test_dump_ampl():
             assert file_name in file_names_expected
 
 
-def test_dump_import_iidm():
+def test_save_import_iidm():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         iidm_file = tmp_dir_path.joinpath('test.xiidm')
-        n.dump(iidm_file, format='XIIDM')
+        n.save(iidm_file, format='XIIDM')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.xiidm' in file_names
         n2 = pp.network.load(iidm_file)
-        assert n2.dump_to_string() == n.dump_to_string()
+        assert n2.save_to_string() == n.save_to_string()
         assert isinstance(n2, pp.network.Network)
 
 
-def test_dump_matpower():
+def test_save_matpower():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         mat_file = tmp_dir_path.joinpath('test.mat')
-        n.dump(mat_file, format='MATPOWER')
+        n.save(mat_file, format='MATPOWER')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.mat' in file_names
         n2 = pp.network.load(mat_file)
         assert isinstance(n2, pp.network.Network)
-        # assert n2.dump_to_string() == n.dump_to_string() # problem import/export matpower
+        # assert n2.save_to_string() == n.save_to_string() # problem import/export matpower
 
 
-def test_dump_ucte():
+def test_save_ucte():
     ucte_local_path = TEST_DIR.joinpath('test.uct')
     n = pp.network.load(str(ucte_local_path))
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         ucte_temporary_path = tmp_dir_path.joinpath('test.uct')
-        n.dump(ucte_temporary_path, format='UCTE')
+        n.save(ucte_temporary_path, format='UCTE')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.uct' in file_names
@@ -1708,15 +1716,15 @@ def test_properties():
     assert 'dataframe can not contain NaN values' in str(exc)
 
 
-def test_pathlib_load_dump(tmpdir):
+def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     n_path = pp.network.load(bat_path)
     n_str = pp.network.load(str(bat_path))
-    assert n_path.dump_to_string() == n_str.dump_to_string()
+    assert n_path.save_to_string() == n_str.save_to_string()
     data = tmpdir.mkdir('data')
-    n_path.dump(data.join('test.xiidm'))
+    n_path.save(data.join('test.xiidm'))
     n_path = pp.network.load(data.join('test.xiidm'))
-    assert n_path.dump_to_string() == n_str.dump_to_string()
+    assert n_path.save_to_string() == n_str.save_to_string()
 
 
 def test_write_svg_file(tmpdir):
@@ -1771,7 +1779,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     assert len(report2) > len(report1)
 
 
-def test_dump_to_string_with_report():
+def test_save_to_string_with_report():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     reporter = rp.Reporter()
     report1 = str(reporter)

@@ -21,6 +21,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
@@ -154,6 +155,10 @@ public final class Util {
             intListPtr.write(i, integerList.get(i));
         }
         return allocArrayPointer(intListPtr, integerList.size());
+    }
+
+    public static ArrayPointer<CCharPointer> createByteArray(byte[] bytes) {
+        return allocArrayPointer(CTypeUtil.toCharPtr(bytes), bytes.length);
     }
 
     public static int convert(SeriesDataType type) {
