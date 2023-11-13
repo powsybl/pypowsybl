@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2023-10-22-409125c
+    container: quay.io/pypa/manylinux2014_x86_64:2023-11-13-f6b0c51
     strategy:
       matrix:
         python:
