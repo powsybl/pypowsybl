@@ -636,6 +636,45 @@ public final class PyPowsyblApiHeader {
         public static native RemoveModificationType fromCValue(int value);
     }
 
+    @CEnum("sensitivity_function_type")
+    public enum SensitivityFunctionType {
+        BRANCH_ACTIVE_POWER_1,
+        BRANCH_CURRENT_1,
+        BRANCH_REACTIVE_POWER_1,
+        BRANCH_ACTIVE_POWER_2,
+        BRANCH_CURRENT_2,
+        BRANCH_REACTIVE_POWER_2,
+        BRANCH_ACTIVE_POWER_3,
+        BRANCH_CURRENT_3,
+        BRANCH_REACTIVE_POWER_3,
+        BUS_VOLTAGE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityFunctionType fromCValue(int value);
+    }
+
+    @CEnum("sensitivity_variable_type")
+    public enum SensitivityVariableType {
+        AUTO_DETECT,
+        INJECTION_ACTIVE_POWER,
+        INJECTION_REACTIVE_POWER,
+        TRANSFORMER_PHASE,
+        BUS_TARGET_VOLTAGE,
+        HVDC_LINE_ACTIVE_POWER,
+        TRANSFORMER_PHASE_1,
+        TRANSFORMER_PHASE_2,
+        TRANSFORMER_PHASE_3;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityVariableType fromCValue(int value);
+    }
+
     @CStruct("matrix")
     public interface MatrixPointer extends PointerBase {
 

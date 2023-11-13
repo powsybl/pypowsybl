@@ -39,4 +39,4 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
         return DcSensitivityAnalysisResult(
             _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, True, p, provider,
                                                 None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
-            branches_ids=self.branches_ids, branch_data_frame_index=self.branch_data_frame_index)
+            functions_ids=self.functions_ids, function_data_frame_index=self.function_data_frame_index)

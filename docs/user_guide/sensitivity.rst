@@ -21,10 +21,10 @@ as a result:
     >>> analysis = pp.sensitivity.create_dc_analysis()
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'])
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows()
-                     NHV1_NHV2_1  NHV1_NHV2_2
-    reference_flows        300.0        300.0
-    >>> result.get_branch_flows_sensitivity_matrix()
+    >>> result.get_reference_matrix()
+                      NHV1_NHV2_1  NHV1_NHV2_2
+    reference_values        300.0        300.0
+    >>> result.get_sensitivity_matrix()
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
 
@@ -38,13 +38,13 @@ Several matrix of sensitivity factors can be specified, in that case you must na
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='m1')
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1'], variables_ids=['GEN'], matrix_id='m2')
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows('m1')
-                     NHV1_NHV2_1  NHV1_NHV2_2
-    reference_flows        300.0        300.0
-    >>> result.get_branch_flows_sensitivity_matrix('m1')
+    >>> result.get_reference_matrix('m1')
+                      NHV1_NHV2_1  NHV1_NHV2_2
+    reference_values        300.0        300.0
+    >>> result.get_sensitivity_matrix('m1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
-    >>> result.get_branch_flows_sensitivity_matrix('m2')
+    >>> result.get_sensitivity_matrix('m2')
          NHV1_NHV2_1
     GEN         -0.0
 
@@ -64,7 +64,7 @@ First, we create a zone containing all generators of DE network with a shift key
      >>> sa.set_zones([zone_de])
      >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['DE'], 'm')
      >>> results = sa.run(n, params)
-     >>> m = results.get_branch_flows_sensitivity_matrix('m')
+     >>> m = results.get_sensitivity_matrix('m')
               BBE2AA1  FFR3AA1  1
      DE             -0.45182
 
@@ -87,7 +87,7 @@ In the following example, we compute the sensitivity of a active power transfer 
      >>> sa.set_zones([zone_fr, zone_de])
      >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['FR', 'DE'], 'm')
      >>> results = sa.run(n, params)
-     >>> m = results.get_branch_flows_sensitivity_matrix('m')
+     >>> m = results.get_sensitivity_matrix('m')
               BBE2AA1  FFR3AA1  1
      FR            -0.708461
      DE            -0.451820
@@ -107,7 +107,7 @@ Let's obtain that directly. In the following example, we create four zones based
      >>> sa.set_zones([zone_fr, zone_de, zone_be, zone_nl])
      >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'], 'm')
      >>> result = sa.run(n, params)
-     >>> m = result.get_branch_flows_sensitivity_matrix('m')
+     >>> m = result.get_sensitivity_matrix('m')
                BBE2AA1  FFR3AA1  1  FFR2AA1  DDE3AA1  1
      FR                  -0.708461             0.291539
      FR -> DE            -0.256641             0.743359
@@ -138,7 +138,7 @@ To calculate to sensitivity of X-Node XXXXXX11 on tie line 'BBE2AA1  FFR3AA1  1'
         >>> sa.set_zones([zone_x])
         >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'], 'm')
         >>> result = sa.run(n)
-        >>> result.get_branch_flows_sensitivity_matrix('m')
+        >>> result.get_sensitivity_matrix('m')
            BBE2AA1  FFR3AA1  1
         X             0.176618
 
@@ -271,9 +271,9 @@ the list of buses for which you want to compute the sensitivity, and a list of r
 .. doctest::
 
     >>> analysis = pp.sensitivity.create_ac_analysis()
-    >>> analysis.set_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
+    >>> analysis.add_bus_voltage_factor_matrix(bus_ids=['VLHV1_0', 'VLLOAD_0'], target_voltage_ids=['GEN'])
     >>> result = analysis.run(network)
-    >>> result.get_bus_voltages_sensitivity_matrix()
+    >>> result.get_sensitivity_matrix()
            VLHV1_0  VLLOAD_0
     GEN  17.629602   7.89637
 
@@ -288,10 +288,10 @@ In previous paragraphs, sensitivities were only computed on pre-contingency situ
     >>> analysis.add_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['LOAD'], matrix_id='m')
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
-    >>> result.get_reference_flows('m', 'NHV1_NHV2_1')
-                     NHV1_NHV2_1  NHV1_NHV2_2
-    reference_flows          NaN        600.0
-    >>> result.get_branch_flows_sensitivity_matrix('m', 'NHV1_NHV2_1')
+    >>> result.get_reference_matrix('m', 'NHV1_NHV2_1')
+                      NHV1_NHV2_1  NHV1_NHV2_2
+    reference_values          NaN        600.0
+    >>> result.get_sensitivity_matrix('m', 'NHV1_NHV2_1')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD          0.0         -1.0
 
@@ -308,9 +308,135 @@ and postcontingency_branch_flow_factor_matrix methods.
     >>> analysis.add_postcontingency_branch_flow_factor_matrix(branches_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'], variables_ids=['GEN'], contingencies_ids=['NHV1_NHV2_1'], matrix_id='postcontingency')
     >>> analysis.add_single_element_contingency('NHV1_NHV2_1')
     >>> result = analysis.run(network)
-    >>> result.get_branch_flows_sensitivity_matrix('precontingency')
+    >>> result.get_sensitivity_matrix('precontingency')
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
-    >>> result.get_branch_flows_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
+    >>> result.get_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
          NHV1_NHV2_1  NHV1_NHV2_2
     GEN          0.0          0.0
+
+Advanced sensitivity analysis factors configuration
+---------------------------------------------------
+
+For advanced users, a more generic way to create factors is available allowing to define the function and the variable type
+(sensitivity is defined as the derivative of the function with respect to the variable).
+
+.. doctest::
+
+    >>> analysis = pp.sensitivity.create_ac_analysis()
+    >>> analysis.add_factor_matrix(functions_ids=['NHV1_NHV2_1'], variables_ids=['LOAD'], contingency_context_type=pp.sensitivity.ContingencyContextType.NONE, contingencies_ids=[], sensitivity_function_type=pp.sensitivity.SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, sensitivity_variable_type=pp.sensitivity.SensitivityVariableType.INJECTION_ACTIVE_POWER)
+    >>> result = analysis.run(network)
+    >>> result.get_sensitivity_matrix()
+          NHV1_NHV2_1
+    LOAD     0.501398
+
+Here is a table summarizing the possible functions and variables and if it is supported in AC or DC analysis.
+
+.. list-table:: Supported functions and variables combination
+   :header-rows: 1
+   :stub-columns: 1
+
+   * - Function \\ Variable
+     - INJECTION_ACTIVE_POWER
+     - INJECTION_REACTIVE_POWER
+     - TRANSFORMER_PHASE
+     - BUS_TARGET_VOLTAGE
+     - HVDC_LINE_ACTIVE_POWER
+     - TRANSFORMER_PHASE_1
+     - TRANSFORMER_PHASE_2
+     - TRANSFORMER_PHASE_3
+   * - BRANCH_ACTIVE_POWER_1
+     - AC + DC
+     - N/A
+     - AC + DC
+     - N/A
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_CURRENT_1
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_REACTIVE_POWER_1
+     - N/A
+     - AC
+     - N/A
+     - AC
+     - N/A
+     - N/A
+     - N/A
+     - N/A
+   * - BRANCH_ACTIVE_POWER_2
+     - AC + DC
+     - N/A
+     - AC + DC
+     - N/A
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_CURRENT_2
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_REACTIVE_POWER_2
+     - N/A
+     - AC
+     - N/A
+     - AC
+     - N/A
+     - N/A
+     - N/A
+     - N/A
+   * - BRANCH_ACTIVE_POWER_3
+     - AC + DC
+     - N/A
+     - AC + DC
+     - N/A
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_CURRENT_3
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+     - AC + DC
+   * - BRANCH_REACTIVE_POWER_3
+     - N/A
+     - AC
+     - N/A
+     - AC
+     - N/A
+     - N/A
+     - N/A
+     - N/A
+   * - BUS_VOLTAGE
+     - N/A
+     - AC
+     - N/A
+     - AC
+     - N/A
+     - N/A
+     - N/A
+     - N/A
+
+A special value of `SensitivityVariableType` `AUTO_DETECT` allows to auto detect each of the variable type using its ID.
+It is important to notice that in this case, not all type of sensitivity variable are usable. For instance when an
+ID of a busbar section is given as a variable and function is a current flow, the detected variable will be an active
+power injection. This is an arbitrary choice because it could also have been a voltage.

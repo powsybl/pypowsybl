@@ -19,6 +19,8 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.sensitivity.SensitivityFunctionType;
+import com.powsybl.sensitivity.SensitivityVariableType;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -32,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
@@ -55,7 +56,8 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
+        String message = t.getMessage();
+        String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
@@ -244,6 +246,35 @@ public final class Util {
             case BRANCH -> DataframeElementType.BRANCH;
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
             case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
+        };
+    }
+
+    public static SensitivityFunctionType convert(PyPowsyblApiHeader.SensitivityFunctionType type) {
+        return switch (type) {
+            case BRANCH_ACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_1;
+            case BRANCH_CURRENT_1 -> SensitivityFunctionType.BRANCH_CURRENT_1;
+            case BRANCH_REACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_1;
+            case BRANCH_ACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_2;
+            case BRANCH_CURRENT_2 -> SensitivityFunctionType.BRANCH_CURRENT_2;
+            case BRANCH_REACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_2;
+            case BRANCH_ACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_3;
+            case BRANCH_CURRENT_3 -> SensitivityFunctionType.BRANCH_CURRENT_3;
+            case BRANCH_REACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_3;
+            case BUS_VOLTAGE -> SensitivityFunctionType.BUS_VOLTAGE;
+        };
+    }
+
+    public static SensitivityVariableType convert(PyPowsyblApiHeader.SensitivityVariableType type) {
+        return switch (type) {
+            case AUTO_DETECT -> null;
+            case INJECTION_ACTIVE_POWER -> SensitivityVariableType.INJECTION_ACTIVE_POWER;
+            case INJECTION_REACTIVE_POWER -> SensitivityVariableType.INJECTION_REACTIVE_POWER;
+            case TRANSFORMER_PHASE -> SensitivityVariableType.TRANSFORMER_PHASE;
+            case BUS_TARGET_VOLTAGE -> SensitivityVariableType.BUS_TARGET_VOLTAGE;
+            case HVDC_LINE_ACTIVE_POWER -> SensitivityVariableType.HVDC_LINE_ACTIVE_POWER;
+            case TRANSFORMER_PHASE_1 -> SensitivityVariableType.TRANSFORMER_PHASE_1;
+            case TRANSFORMER_PHASE_2 -> SensitivityVariableType.TRANSFORMER_PHASE_2;
+            case TRANSFORMER_PHASE_3 -> SensitivityVariableType.TRANSFORMER_PHASE_3;
         };
     }
 
