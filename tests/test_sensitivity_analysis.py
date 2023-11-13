@@ -321,3 +321,15 @@ def test_add_branch_factor_matrix():
     pytest.approx(result.get_sensitivity_matrix('test').loc['GTH2']['LINE_S3S4'], 30.5280, 0.001)
     assert 0.8 == result.get_sensitivity_matrix('test1').loc['GTH1']['LINE_S2S3']
     pytest.approx(result.get_sensitivity_matrix('test2').loc['GTH2']['LINE_S3S4'], -0.4668, 0.001)
+
+
+def test_busbar_section_sensi():
+    network = pp.network.create_four_substations_node_breaker_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+    print(network.get_busbar_sections())
+    print(network.get_lines())
+    print(network.get_generators())
+    analysis.add_factor_matrix(['LINE_S2S3'], ['S2VL1_BBS'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
+    result = analysis.run(network)
+    assert result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'] == pytest.approx(0.8, abs=1e-2)
