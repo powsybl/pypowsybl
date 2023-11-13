@@ -7,6 +7,7 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
+import io
 import sys
 
 import datetime
@@ -93,7 +94,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return str(self)
 
     def __getstate__(self) -> Dict[str, str]:
-        return {'xml': self.dump_to_string()}
+        return {'xml': self.save_to_string()}
 
     def __setstate__(self, state: Dict[str, str]) -> None:
         xml = state['xml']
@@ -123,6 +124,13 @@ class Network:  # pylint: disable=too-many-public-methods
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
              reporter: Reporter = None) -> None:
         """
+        Deprecated, use :meth:`save` instead.
+        """
+        self.save(file, format, parameters, reporter)
+
+    def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
+             reporter: Reporter = None) -> None:
+        """
         Save a network to a file using the specified format.
 
         Basic compression formats are also supported:
@@ -139,17 +147,23 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.dump('network.xiidm')
-                network.dump('network.xiidm.gz')  # produces a gzipped file
-                network.dump('/path/to/network.uct', format='UCTE')
+                network.save('network.xiidm')
+                network.save('network.xiidm.gz')  # produces a gzipped file
+                network.save('/path/to/network.uct', format='UCTE')
         """
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters,
+        _pp.save_network(self._handle, file, format, parameters,
                          None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
+        """
+        Deprecated, use :meth:`save_to_string` instead.
+        """
+        return self.save_to_string(format, parameters, reporter)
+
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
         """
         Save a network to a string using a specified format.
 
@@ -163,8 +177,28 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters,
+        return _pp.save_network_to_string(self._handle, format, parameters,
                                           None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> io.BytesIO:
+        """
+        Save a network to a binary buffer using a specified format.
+        In the current implementation, whatever the specified format is (so a format creating a single file or a format
+        creating multiple files), the created binary buffer is a zip file.
+
+        Args:
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+            reporter:   the reporter to be used to create an execution report, default is None (no report)
+
+        Returns:
+            A BytesIO data buffer representing this network
+        """
+        if parameters is None:
+            parameters = {}
+        return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
+                                                            None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
