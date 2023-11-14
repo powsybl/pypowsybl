@@ -137,8 +137,8 @@ class SecurityAnalysis(ContingencyContainer):
                                            branch_ids, voltage_level_ids, three_windings_transformer_ids)
 
     def add_load_active_power_action(self, action_id: str, load_id: str, is_relative: bool, active_power: float) -> None:
-            """
-            """
+        """
+        """
         _pypowsybl.add_load_active_power_action(self._handle, action_id, load_id, is_relative, active_power)
 
     def add_load_reactive_power_action(self, action_id: str, load_id: str, is_relative: bool, reactive_power: float) -> None:
@@ -156,9 +156,9 @@ class SecurityAnalysis(ContingencyContainer):
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
-    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: _List[str],
-                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: _List[str] = None,
-                              violation_types: _List[ViolationType] = None) -> None:
+    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,
+                              violation_types: List[ViolationType] = None) -> None:
         """
         """
         if violation_types is None:
