@@ -68,13 +68,19 @@ Networks can be written to the filesystem, using one of the available export for
 
 .. code-block:: python
 
-   network.dump('network.xiidm', format='XIIDM')
+   network.save('network.xiidm', format='XIIDM')
 
 You can also serialize networks to a string:
 
 .. code-block:: python
 
-   xiidm_str = network.dump_to_string('XIIDM')
+   xiidm_str = network.save_to_string('XIIDM')
+
+And also to a zip file as a (io.BytesIO) binary buffer.
+
+.. code-block:: python
+
+   zipped_xiidm = network.save_to_binary_buffer('XIIDM')
 
 The supported formats are:
 
@@ -754,3 +760,65 @@ The remaining voltage levels VL1 and VL3 are then:
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
 
 On the diagrams, you can see that all the lines that were connecting VL1 to VL2 have been removed as well as their switches. On VL3, nothing was done as nothing was connected between VL2 and VL3.
+
+Network merging
+---------------
+
+Pypowsybl provides methods to merge and detach networks. For example we can merge the 2 CGMES microgrids like this:
+
+.. doctest::
+
+    >>> be = pp.network.create_micro_grid_be_network()
+    >>> nl = pp.network.create_micro_grid_nl_network()
+    >>> be.merge(nl)
+
+After the merge BE network has absorbed the NL network. So NL network is empty and BE network contains all the equipments
+that where in BE network before.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> nl.get_substations()
+    Empty DataFrame
+    Columns: [name, TSO, geo_tags, country]
+    Index: []
+
+    >>> be.get_substations()
+                                                  name TSO         geo_tags country
+    id
+    37e14a0f-5e34-4647-a062-8bfd9305fa9d   PP_Brussels        ELIA-Brussels      BE
+    87f7002b-056f-4a6a-a872-1744eea757e3        Anvers          ELIA-Anvers      BE
+    c49942d6-8b01-4b01-b5e8-f1180f84906c  PP_Amsterdam      TENNET TSO B.V.      NL
+
+Once merged, we can still keep track of original networks. They are called "sub networks" and can be listed from their
+parent networks like this:
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> be.get_sub_networks()
+    Empty DataFrame
+    Columns: []
+    Index: [urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73, urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86]
+
+We can see that the sub network dataframe has not yet columns and contains two rows corresponding to the 2 BE and NL
+sub networks.
+We can also get a sub network from its parent network and then only work and focus on a particular sub network. When we
+get substations from the NL sub network we obviously only get one substation like in the original non merged network.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> nl_sub = be.get_sub_network('urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86')
+    >>> nl_sub.get_substations()
+                                                  name TSO         geo_tags country
+    id
+    c49942d6-8b01-4b01-b5e8-f1180f84906c  PP_Amsterdam      TENNET TSO B.V.      NL
+
+Original networks can be recovered thanks to the "detach" method. In that case the sub network is removed from its
+parent network and become again a standalone network.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> nl_sub.detach()

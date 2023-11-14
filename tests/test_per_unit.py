@@ -4,12 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-
+from pypowsybl import per_unit_view
 import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 import util
-from pypowsybl.perunit import per_unit_view
+import pytest
 
 
 def test_bus_per_unit():
@@ -414,3 +414,14 @@ def test_ratio_tap_changers_per_unit():
                                      'alpha'],
                             data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+
+def test_lines_not_same_nominal_voltage_per_unit():
+    n = pp.network.create_ieee14()
+    n = per_unit_view(n, 100)
+    lines = n.get_lines()
+    assert lines.loc['L7-8-1']['r'] == 0
+    assert lines.loc['L7-8-1']['x'] == pytest.approx(0.17615, rel=1e-5)
+    assert lines.loc['L7-8-1']['g1'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['g2'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['b1'] == pytest.approx(0, rel=1e-16)
+    assert lines.loc['L7-8-1']['b2'] == pytest.approx(0, rel=1e-16)

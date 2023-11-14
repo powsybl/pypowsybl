@@ -11,8 +11,8 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynawaltz.models.automatons.CurrentLimitAutomaton;
-import com.powsybl.dynawaltz.models.generators.GeneratorSynchronous;
-import com.powsybl.dynawaltz.models.loads.LoadAlphaBeta;
+import com.powsybl.dynawaltz.models.generators.SynchronousGenerator;
+import com.powsybl.dynawaltz.models.loads.BaseLoad;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformer;
 import com.powsybl.dynawaltz.models.utils.SideConverter;
 import com.powsybl.iidm.network.Branch;
@@ -55,7 +55,7 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
     public void addAlphaBetaLoad(String staticId, String parameterSetId) {
         dynamicModelList.add(network -> {
             Load load = getLoad(staticId, network);
-            return new LoadAlphaBeta(staticId, load, parameterSetId, "LoadAlphaBeta");
+            return new BaseLoad(staticId, load, parameterSetId, "LoadAlphaBeta");
         });
     }
 
@@ -77,7 +77,7 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
             if (gen == null) {
                 throw new PowsyblException("Generator '" + staticId + "' not found");
             }
-            return new GeneratorSynchronous(staticId, gen, parameterSetId, generatorLib);
+            return new SynchronousGenerator(staticId, gen, parameterSetId, generatorLib);
         });
     }
 

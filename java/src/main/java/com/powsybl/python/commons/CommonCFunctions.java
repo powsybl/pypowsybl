@@ -120,4 +120,15 @@ public final class CommonCFunctions {
     public static void closePypowsybl(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, CommonObjects::close);
     }
+
+    @CEntryPoint(name = "freeStringMap")
+    public static void freeStringMap(IsolateThread thread, StringMap map, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < map.getLength(); i++) {
+                UnmanagedMemory.free(map.getKeys().read(i));
+                UnmanagedMemory.free(map.getValues().read(i));
+            }
+            UnmanagedMemory.free(map);
+        });
+    }
 }

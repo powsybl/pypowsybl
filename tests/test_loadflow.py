@@ -189,7 +189,7 @@ def test_get_provider_parameters_names():
         'slackBusesIds',
         'lowImpedanceBranchMode',
         'voltageRemoteControl',
-        'throwsExceptionInCaseOfSlackDistributionFailure',
+        'slackDistributionFailureBehavior',
         'loadPowerFactorConstant',
         'plausibleActivePowerLimit',
         'slackBusPMaxMismatch',
@@ -214,7 +214,6 @@ def test_get_provider_parameters_names():
         'debugDir',
         'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
         'secondaryVoltageControl',
-        'controllerToPilotPointVoltageSensiEpsilon',
         'reactiveLimitsMaxPqPvSwitch',
         'newtonRaphsonStoppingCriteriaType',
         'maxActivePowerMismatch',
@@ -230,13 +229,24 @@ def test_get_provider_parameters_names():
         'slackBusCountryFilter',
         'actionableSwitchesIds',
         'asymmetrical',
-        'minNominalVoltageTargetVoltageCheck'
+        'minNominalVoltageTargetVoltageCheck',
+        'reactivePowerDispatchMode',
+        'outerLoopNames',
+        'useActiveLimits',
+        'lineSearchStateVectorScalingMaxIteration',
+        'lineSearchStateVectorScalingStepFold',
+        'maxVoltageChangeStateVectorScalingMaxDv',
+        'maxVoltageChangeStateVectorScalingMaxDphi',
+        'linePerUnitMode',
+        'useLoadModel',
+        'dcApproximationType',
+        'simulateAutomationSystems'
     ]
 
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 46 == len(specific_parameters)
+    assert 56 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
@@ -268,3 +278,9 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n2, reporter=reporter)
     report3 = str(reporter)
     assert len(report3) > len(report2)
+
+
+def test_result_status_as_bool():
+    n = pp.network.create_ieee14()
+    r = pp.loadflow.run_ac(n)
+    assert r[0].status

@@ -10,6 +10,7 @@ import pypowsybl as pp
 import pandas as pd
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+from pypowsybl.sensitivity import SensitivityFunctionType, SensitivityVariableType, ContingencyContextType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent.joinpath('data')
@@ -34,7 +35,7 @@ def test_config():
     with pytest.raises(PyPowsyblError, match='No sensitivity analysis provider for name \'provider\''):
         sa.run(n)
     r = sa.run(n, provider='OpenLoadFlow')
-    assert 6 == r.get_branch_flows_sensitivity_matrix().size
+    assert 6 == r.get_sensitivity_matrix().size
     assert 'provider' == pp.sensitivity.get_default_provider()
     pp.sensitivity.set_default_provider('OpenLoadFlow')
     assert 'OpenLoadFlow' == pp.sensitivity.get_default_provider()
@@ -54,7 +55,7 @@ def test_sensitivity_analysis():
     sa.add_postcontingency_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G'], ['L1-2-1'], 'postContingency')
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix('m')
+    df = r.get_sensitivity_matrix('m')
     assert (3, 2) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.080991, abs=1e-6)
@@ -63,12 +64,12 @@ def test_sensitivity_analysis():
     assert df['L2-3-1']['B2-G'] == pytest.approx(0.013675, abs=1e-6)
     assert df['L2-3-1']['B3-G'] == pytest.approx(-0.545682, abs=1e-6)
 
-    df = r.get_reference_flows('m')
+    df = r.get_reference_matrix('m')
     assert df.shape == (1, 2)
-    assert df['L1-5-1']['reference_flows'] == pytest.approx(72.246, abs=1e-3)
-    assert df['L2-3-1']['reference_flows'] == pytest.approx(69.831, abs=1e-3)
+    assert df['L1-5-1']['reference_values'] == pytest.approx(72.246, abs=1e-3)
+    assert df['L2-3-1']['reference_values'] == pytest.approx(69.831, abs=1e-3)
 
-    df = r.get_branch_flows_sensitivity_matrix('m', 'L1-2-1')
+    df = r.get_sensitivity_matrix('m', 'L1-2-1')
     assert df.shape == (3, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L1-5-1']['B2-G'] == pytest.approx(-0.5, abs=1e-6)
@@ -77,18 +78,18 @@ def test_sensitivity_analysis():
     assert df['L2-3-1']['B2-G'] == pytest.approx(0.084423, abs=1e-6)
     assert df['L2-3-1']['B3-G'] == pytest.approx(-0.490385, abs=1e-6)
 
-    df = r.get_reference_flows('m', 'L1-2-1')
+    df = r.get_reference_matrix('m', 'L1-2-1')
     assert df.shape == (1, 2)
-    assert df['L1-5-1']['reference_flows'] == pytest.approx(225.7, abs=1e-3)
-    assert df['L2-3-1']['reference_flows'] == pytest.approx(43.921, abs=1e-3)
+    assert df['L1-5-1']['reference_values'] == pytest.approx(225.7, abs=1e-3)
+    assert df['L2-3-1']['reference_values'] == pytest.approx(43.921, abs=1e-3)
 
-    assert r.get_branch_flows_sensitivity_matrix('m', 'aaa') is None
+    assert r.get_sensitivity_matrix('m', 'aaa') is None
 
-    df = r.get_branch_flows_sensitivity_matrix('preContingency')
+    df = r.get_sensitivity_matrix('preContingency')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
     assert df['L2-3-1']['B1-G'] == pytest.approx(-0.013675, abs=1e-6)
-    df = r.get_branch_flows_sensitivity_matrix('postContingency', 'L1-2-1')
+    df = r.get_sensitivity_matrix('postContingency', 'L1-2-1')
     assert df.shape == (1, 2)
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.5, abs=1e-6)
     assert df['L2-3-1']['B1-G'] == pytest.approx(-0.084423, abs=1e-6)
@@ -97,9 +98,9 @@ def test_sensitivity_analysis():
 def test_voltage_sensitivities():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.sensitivity.create_ac_analysis()
-    sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+    sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
     r = sa.run(n)
-    df = r.get_bus_voltages_sensitivity_matrix()
+    df = r.get_sensitivity_matrix()
     assert df.shape == (1, 1)
     assert df['VLGEN_0']['GEN'] == pytest.approx(1.0, abs=1e-6)
 
@@ -151,16 +152,16 @@ def test_sensi_zone():
     sa.set_zones([zone_fr, zone_be])
     sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'], ['FR', 'BE'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix('m')
+    s = result.get_sensitivity_matrix('m')
     assert s.shape == (2, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['FFR2AA1  DDE3AA1  1']['FR'] == pytest.approx(0.370171, abs=1e-6)
     assert s['BBE2AA1  FFR3AA1  1']['BE'] == pytest.approx(0.378423, abs=1e-6)
     assert s['FFR2AA1  DDE3AA1  1']['BE'] == pytest.approx(0.128423, abs=1e-6)
-    r = result.get_reference_flows('m')
+    r = result.get_reference_matrix('m')
     assert r.shape == (1, 2)
-    assert r['BBE2AA1  FFR3AA1  1']['reference_flows'] == pytest.approx(324.666, abs=1e-3)
-    assert r['FFR2AA1  DDE3AA1  1']['reference_flows'] == pytest.approx(1324.666, abs=1e-3)
+    assert r['BBE2AA1  FFR3AA1  1']['reference_values'] == pytest.approx(324.666, abs=1e-3)
+    assert r['FFR2AA1  DDE3AA1  1']['reference_values'] == pytest.approx(1324.666, abs=1e-3)
 
 
 def test_sensi_power_transfer():
@@ -174,7 +175,7 @@ def test_sensi_power_transfer():
     sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
                                      ['FR', ('FR', 'DE'), ('DE', 'FR'), 'NL'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix('m')
+    s = result.get_sensitivity_matrix('m')
     assert s.shape == (4, 2)
     assert s['BBE2AA1  FFR3AA1  1']['FR'] == pytest.approx(-0.379829, abs=1e-6)
     assert s['BBE2AA1  FFR3AA1  1']['FR -> DE'] == pytest.approx(-0.256641, abs=1e-6)
@@ -195,7 +196,7 @@ def test_xnode_sensi():
     sa.set_zones([zone_x])
     sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['X'], 'm')
     result = sa.run(n)
-    s = result.get_branch_flows_sensitivity_matrix('m')
+    s = result.get_sensitivity_matrix('m')
     assert s.shape == (1, 1)
     assert s['BBE2AA1  FFR3AA1  1']['X'] == pytest.approx(0.176618, abs=1e-6)
 
@@ -211,7 +212,7 @@ def test_variant():
     sa.add_branch_flow_factor_matrix(['L1-5-1'], ['B1-G'], 'm')
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix('m')
+    df = r.get_sensitivity_matrix('m')
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.080991, abs=1e-6)
 
@@ -220,7 +221,7 @@ def test_variant():
     n.update_lines(id='L2-3-1', connected1=False)
     r = sa.run(n)
 
-    df = r.get_branch_flows_sensitivity_matrix('m')
+    df = r.get_sensitivity_matrix('m')
     assert (1, 1) == df.shape
     assert df['L1-5-1']['B1-G'] == pytest.approx(0.078151, abs=1e-6)
 
@@ -235,15 +236,11 @@ def test_no_output_matrices_available():
     analysis.set_branch_flow_factor_matrix(network.get_lines().index.to_list(),
                                            network.get_generators().index.to_list())
     result = analysis.run(network)
-    df = result.get_branch_flows_sensitivity_matrix('default')
+    df = result.get_sensitivity_matrix('default')
     assert (2, 2) == df.shape
 
     with pytest.raises(pp.PyPowsyblError) as errorContext:
-        result.get_bus_voltages_sensitivity_matrix()
-    assert 'bus voltage sensitivity matrix does not exist' == str(errorContext.value)
-
-    with pytest.raises(pp.PyPowsyblError) as errorContext:
-        result.get_branch_flows_sensitivity_matrix('')
+        result.get_sensitivity_matrix('')
     assert 'Matrix \'\' not found' == str(errorContext.value)
 
 
@@ -254,11 +251,11 @@ def test_provider_parameters():
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
-    with pytest.raises(pp.PyPowsyblError, match='Loadflow diverged with status MAX_ITERATION_REACHED'):
+    with pytest.raises(pp.PyPowsyblError, match='Load flow ended with status MAX_ITERATION_REACHED'):
         analysis.run(n, parameters)
     # does not throw
     result = analysis.run(n)
-    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
+    assert result.get_reference_matrix().loc['reference_values', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
 
 
 def test_voltage_sensitivities_with_report():
@@ -267,7 +264,7 @@ def test_voltage_sensitivities_with_report():
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.sensitivity.create_ac_analysis()
-    sa.set_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+    sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
     r = sa.run(n, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) > len(report1)
@@ -283,14 +280,14 @@ def test_sensitivity_parameters():
     parameters.load_flow_parameters.distributed_slack = True
     parameters.load_flow_parameters.balance_type = pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P
     result = analysis.run(n, parameters)
-    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
-    assert result.get_branch_flows_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == 0
+    assert result.get_reference_matrix().loc['reference_values', 'NHV1_NHV2_1'] == pytest.approx(302.45, abs=0.01)
+    assert result.get_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == 0
 
     # 2. distributing on loads
     parameters.load_flow_parameters.balance_type = pp.loadflow.BalanceType.PROPORTIONAL_TO_LOAD
     result = analysis.run(n, parameters)
-    assert result.get_reference_flows().loc['reference_flows', 'NHV1_NHV2_1'] == pytest.approx(605.35, abs=0.01)
-    assert result.get_branch_flows_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == pytest.approx(0.53, abs=0.01)
+    assert result.get_reference_matrix().loc['reference_values', 'NHV1_NHV2_1'] == pytest.approx(605.35, abs=0.01)
+    assert result.get_sensitivity_matrix().loc['GEN', 'NHV1_NHV2_1'] == pytest.approx(0.53, abs=0.01)
 
 
 def test_provider_parameters_names():
@@ -305,6 +302,34 @@ def test_hvdc():
     analysis = pp.sensitivity.create_dc_analysis()
     analysis.set_branch_flow_factor_matrix(["LINE_S2S3"], ["HVDC1"])
     results = analysis.run(network)
-    assert {'default': ['HVDC1']} == results.branch_data_frame_index
-    assert {'default': ['LINE_S2S3']} == results.branches_ids
-    pytest.approx(results.get_branch_flows_sensitivity_matrix().loc['HVDC1']['LINE_S2S3'], 0.7824, 0.001)
+    assert {'default': ['HVDC1']} == results.function_data_frame_index
+    assert {'default': ['LINE_S2S3']} == results.functions_ids
+    pytest.approx(results.get_sensitivity_matrix().loc['HVDC1']['LINE_S2S3'], 0.7824, 0.001)
+
+
+def test_add_branch_factor_matrix():
+    network = pp.network.create_four_substations_node_breaker_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+
+    analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_REACTIVE_POWER_1, SensitivityVariableType.BUS_TARGET_VOLTAGE, 'test')
+    analysis.add_factor_matrix(['LINE_S2S3'], ['GTH1'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'test1')
+    analysis.add_factor_matrix(['LINE_S3S4'], ['GTH2'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_CURRENT_1, SensitivityVariableType.BUS_TARGET_VOLTAGE, 'test2')
+    result = analysis.run(network)
+    assert 30.5280 == pytest.approx(result.get_sensitivity_matrix('test').loc['GTH2']['LINE_S3S4'], 1e-4)
+    assert 0.8 == result.get_sensitivity_matrix('test1').loc['GTH1']['LINE_S2S3']
+    assert -0.4668 == pytest.approx(result.get_sensitivity_matrix('test2').loc['GTH2']['LINE_S3S4'], 1e-4)
+
+
+def test_busbar_section_sensi():
+    network = pp.network.create_four_substations_node_breaker_network()
+    analysis = pp.sensitivity.create_ac_analysis()
+    print(network.get_busbar_sections())
+    print(network.get_lines())
+    print(network.get_generators())
+    analysis.add_factor_matrix(['LINE_S2S3'], ['S2VL1_BBS'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
+    result = analysis.run(network)
+    assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)

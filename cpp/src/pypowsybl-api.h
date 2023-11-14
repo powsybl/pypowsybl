@@ -17,6 +17,12 @@ typedef struct array_struct {
     int length;
 } array;
 
+typedef struct string_map_struct {
+    int length;
+    char** keys;
+    char** values;
+} string_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
@@ -153,6 +159,7 @@ typedef enum {
     INJECTION,
     BRANCH,
     TERMINAL,
+    SUB_NETWORK
 } element_type;
 
 typedef enum {
@@ -193,6 +200,31 @@ typedef enum {
     NONE,
     SPECIFIC,
 } contingency_context_type;
+
+typedef enum {
+    BRANCH_ACTIVE_POWER_1=0,
+    BRANCH_CURRENT_1,
+    BRANCH_REACTIVE_POWER_1,
+    BRANCH_ACTIVE_POWER_2,
+    BRANCH_CURRENT_2,
+    BRANCH_REACTIVE_POWER_2,
+    BRANCH_ACTIVE_POWER_3,
+    BRANCH_CURRENT_3,
+    BRANCH_REACTIVE_POWER_3,
+    BUS_VOLTAGE,
+} sensitivity_function_type;
+
+typedef enum {
+    AUTO_DETECT=0,
+    INJECTION_ACTIVE_POWER,
+    INJECTION_REACTIVE_POWER,
+    TRANSFORMER_PHASE,
+    BUS_TARGET_VOLTAGE,
+    HVDC_LINE_ACTIVE_POWER,
+    TRANSFORMER_PHASE_1,
+    TRANSFORMER_PHASE_2,
+    TRANSFORMER_PHASE_3,
+} sensitivity_variable_type;
 
 typedef enum {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,
@@ -291,14 +323,14 @@ typedef struct flow_decomposition_parameters_struct {
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
 
-typedef struct layout_parameters_struct {
+typedef struct sld_parameters_struct {
     unsigned char use_name;
     unsigned char center_name;
     unsigned char diagonal_label;
-    unsigned char topological_coloring;
     unsigned char nodes_infos;
+    unsigned char topological_coloring;
     char* component_library;
-} layout_parameters;
+} sld_parameters;
 
 typedef enum {
     ALPHA_BETA_LOAD = 0,
@@ -315,3 +347,32 @@ typedef enum {
     ONE = 0,
     TWO,
 } BranchSide;
+
+typedef struct shortcircuit_analysis_parameters_struct {
+    unsigned char with_voltage_result;
+    unsigned char with_feeder_result;
+    unsigned char with_limit_violations;
+    int study_type;
+    unsigned char with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} shortcircuit_analysis_parameters;
+
+typedef enum {
+    BUS_FAULT = 0,
+    BRANCH_FAULT,
+} ShortCircuitFaultType;
+
+typedef enum {
+    OK = 0,
+    NOT_OK,
+} VoltageInitializerStatus;
+
+typedef enum {
+    MIN_GENERATION = 0,
+    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+    SPECIFIC_VOLTAGE_PROFILE,
+} VoltageInitializerObjective;

@@ -91,10 +91,7 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
             contingencies.forEach(contingency -> {
-                if (contingency.equals("")) {
-                    contingency = null;
-                }
-                analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency, convert(contingencyContextType)),
+                analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency.isEmpty() ? null : contingency, convert(contingencyContextType)),
                         Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
                         Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
             });

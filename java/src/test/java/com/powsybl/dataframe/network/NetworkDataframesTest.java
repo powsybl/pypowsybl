@@ -618,4 +618,14 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("element_id", "voltage_level_id", "bus_id", "element_side", "connected");
     }
+
+    @Test
+    void testSubNetworks() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(SUB_NETWORK, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id");
+    }
 }

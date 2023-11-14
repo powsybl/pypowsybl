@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -69,6 +70,27 @@ public final class PyPowsyblApiHeader {
     public static <T extends PointerBase> void freeArrayPointer(ArrayPointer<T> arrayPointer) {
         UnmanagedMemory.free(arrayPointer.getPtr());
         UnmanagedMemory.free(arrayPointer);
+    }
+
+    @CStruct("string_map")
+    public interface StringMap extends PointerBase {
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        @CField("keys")
+        CCharPointerPointer getKeys();
+
+        @CField("keys")
+        void setKeys(CCharPointerPointer keys);
+
+        @CField("values")
+        CCharPointerPointer getValues();
+
+        @CField("values")
+        void setValues(CCharPointerPointer values);
     }
 
     @CStruct("network_metadata")
@@ -572,7 +594,8 @@ public final class PyPowsyblApiHeader {
         IDENTIFIABLE,
         INJECTION,
         BRANCH,
-        TERMINAL;
+        TERMINAL,
+        SUB_NETWORK;
 
         @CEnumValue
         public native int getCValue();
@@ -646,6 +669,45 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native RemoveModificationType fromCValue(int value);
+    }
+
+    @CEnum("sensitivity_function_type")
+    public enum SensitivityFunctionType {
+        BRANCH_ACTIVE_POWER_1,
+        BRANCH_CURRENT_1,
+        BRANCH_REACTIVE_POWER_1,
+        BRANCH_ACTIVE_POWER_2,
+        BRANCH_CURRENT_2,
+        BRANCH_REACTIVE_POWER_2,
+        BRANCH_ACTIVE_POWER_3,
+        BRANCH_CURRENT_3,
+        BRANCH_REACTIVE_POWER_3,
+        BUS_VOLTAGE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityFunctionType fromCValue(int value);
+    }
+
+    @CEnum("sensitivity_variable_type")
+    public enum SensitivityVariableType {
+        AUTO_DETECT,
+        INJECTION_ACTIVE_POWER,
+        INJECTION_REACTIVE_POWER,
+        TRANSFORMER_PHASE,
+        BUS_TARGET_VOLTAGE,
+        HVDC_LINE_ACTIVE_POWER,
+        TRANSFORMER_PHASE_1,
+        TRANSFORMER_PHASE_2,
+        TRANSFORMER_PHASE_3;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityVariableType fromCValue(int value);
     }
 
     @CStruct("matrix")
@@ -932,8 +994,8 @@ public final class PyPowsyblApiHeader {
         void setSensitivityVariableBatchSize(int sensitivityVariableBatchSize);
     }
 
-    @CStruct("layout_parameters")
-    public interface LayoutParametersPointer extends PointerBase {
+    @CStruct("sld_parameters")
+    public interface SldParametersPointer extends PointerBase {
 
         @CField("use_name")
         boolean isUseName();
@@ -953,17 +1015,17 @@ public final class PyPowsyblApiHeader {
         @CField("diagonal_label")
         void setDiagonalLabel(boolean diagonalLabel);
 
-        @CField("topological_coloring")
-        boolean isTopologicalColoring();
-
-        @CField("topological_coloring")
-        void setTopologicalColoring(boolean topologicalColoring);
-
         @CField("nodes_infos")
         boolean isAddNodesInfos();
 
         @CField("nodes_infos")
         void setAddNodesInfos(boolean addNodeInfos);
+
+        @CField("topological_coloring")
+        boolean isTopologicalColoring();
+
+        @CField("topological_coloring")
+        void setTopologicalColoring(boolean topologicalColoring);
 
         @CField("component_library")
         CCharPointer getComponentLibrary();
@@ -1008,10 +1070,112 @@ public final class PyPowsyblApiHeader {
         ALL_VIOLATION_CONDITION,
         ANY_VIOLATION_CONDITION,
         AT_LEAST_ONE_VIOLATION_CONDITION;
+
         @CEnumValue
         public native int getCValue();
 
         @CEnumLookup
         public static native ConditionType fromCValue(int value);
+    }
+
+    @CStruct("shortcircuit_analysis_parameters")
+    public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
+
+        @CField("with_voltage_result")
+        boolean isWithVoltageResult();
+
+        @CField("with_voltage_result")
+        void setWithVoltageResult(boolean withVoltageResult);
+
+        @CField("with_feeder_result")
+        boolean isWithFeederResult();
+
+        @CField("with_feeder_result")
+        void setWithFeederResult(boolean withFeederResult);
+
+        @CField("with_limit_violations")
+        boolean isWithLimitViolations();
+
+        @CField("with_limit_violations")
+        void setWithLimitViolations(boolean withLimitViolations);
+
+        @CField("study_type")
+        int getStudyType();
+
+        @CField("study_type")
+        void setStudyType(int studyType);
+
+        @CField("with_fortescue_result")
+        boolean isWithFortescueResult();
+
+        @CField("with_fortescue_result")
+        void setWithFortescueResult(boolean withFortescueResult);
+
+        @CField("min_voltage_drop_proportional_threshold")
+        double getMinVoltageDropProportionalThreshold();
+
+        @CField("min_voltage_drop_proportional_threshold")
+        void setMinVoltageDropProportionalThreshold(double minVoltageDropProportionalThreshold);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
+    @CEnum("ShortCircuitFaultType")
+    public enum ShortCircuitFaultType {
+        BUS_FAULT,
+        BRANCH_FAULT;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ShortCircuitFaultType fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerObjective")
+    public enum VoltageInitializerObjective {
+        MIN_GENERATION,
+        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
+        SPECIFIC_VOLTAGE_PROFILE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerObjective fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerStatus")
+    public enum VoltageInitializerStatus {
+        OK,
+        NOT_OK;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerStatus fromCValue(int value);
     }
 }
