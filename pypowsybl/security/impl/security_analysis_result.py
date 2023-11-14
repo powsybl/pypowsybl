@@ -58,7 +58,7 @@ class SecurityAnalysisResult:
         return result
 
     @property
-    def operator_strategy_results(self) -> _Dict[str, OperatorStrategyResult]:
+    def operator_strategy_results(self) -> Dict[str, OperatorStrategyResult]:
         """
         Results for the operator strategies, as a dictionary operator strategy ID -> result.
         """
