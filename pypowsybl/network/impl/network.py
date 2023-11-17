@@ -255,7 +255,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
                                        depth: int = 0, high_nominal_voltage_bound: float = -1,
                                        low_nominal_voltage_bound: float = -1,
-                                       edge_name_displayed: bool = False) -> None:
+                                       nad_parameters: NadParameters = None) -> None:
         """
         .. deprecated:: 1.1.0
         Use :meth:`write_network_area_diagram` with `NadParameters` instead.
