@@ -26,7 +26,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters, NadParameters, LayoutParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -850,6 +850,7 @@ def test_sld_nad():
     assert re.search('.*<svg.*', sld.svg)
     sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
     assert re.search('.*<svg.*', sld.svg)
+    sld = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=False))
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
         n.write_network_area_diagram_svg(test_svg, None)
@@ -859,6 +860,7 @@ def test_sld_nad():
                                          depth=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
+        n.write_network_area_diagram_svg(test_svg, nad_parameters=NadParameters(edge_name_displayed=False))
 
 
 def test_nad_displayed_voltage_levels():

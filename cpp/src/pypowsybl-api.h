@@ -308,6 +308,10 @@ typedef struct sld_parameters_struct {
     char* component_library;
 } sld_parameters;
 
+typedef struct nad_parameters_struct {
+    unsigned char edge_name_displayed;
+} nad_parameters;
+
 typedef enum {
     ALPHA_BETA_LOAD = 0,
     ONE_TRANSFORMER_LOAD,
