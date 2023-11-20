@@ -266,3 +266,10 @@ def test_different_equipment_contingency():
     assert 'Load contingency' in sa_result.post_contingency_results.keys()
     assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()
+
+def test_tie_line_contingency():
+    n = pp.network._create_network("eurostag_tutorial_example1_with_tie_line")
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'tie line contingency')
+    sa_result = sa.run_ac(n)
+    assert 'tie line contingency' in sa_result.post_contingency_results.keys()
