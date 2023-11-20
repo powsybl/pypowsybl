@@ -57,6 +57,8 @@ public class ContingencyContainerImpl implements ContingencyContainer {
             return new BatteryContingency(elementId);
         } else if (identifiable instanceof Switch) {
             return new SwitchContingency(elementId);
+        } else if (identifiable instanceof TieLine) {
+            return new TieLineContingency(elementId);
         } else {
             throw new PowsyblException("Element type not supported: " + identifiable.getClass().getSimpleName());
         }
