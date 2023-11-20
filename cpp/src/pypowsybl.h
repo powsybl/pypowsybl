@@ -285,6 +285,8 @@ public:
     void nad_to_c_struct(nad_parameters& params) const;
 
     bool edge_name_displayed;
+    bool edge_info_along_edge;
+    bool id_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);

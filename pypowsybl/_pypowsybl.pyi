@@ -237,6 +237,8 @@ class SldParameters:
 
 class NadParameters:
     edge_name_displayed: bool
+    edge_info_along_edge: bool
+    id_displayed: bool
     def __init__(self) -> None: ...
 
 class LimitType:

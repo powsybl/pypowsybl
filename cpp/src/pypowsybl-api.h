@@ -311,6 +311,8 @@ typedef struct sld_parameters_struct {
 
 typedef struct nad_parameters_struct {
     unsigned char edge_name_displayed;
+    unsigned char edge_info_along_edge;
+    unsigned char id_displayed;
 } nad_parameters;
 
 typedef enum {

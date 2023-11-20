@@ -889,6 +889,8 @@ public final class NetworkCFunctions {
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
+        cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
+        cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -934,7 +936,9 @@ public final class NetworkCFunctions {
     public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         nadParameters.getSvgParameters()
-                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed());
+                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
+                .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
+                .setIdDisplayed(nadParametersPointer.isIdDisplayed());
         return nadParameters;
     }
 

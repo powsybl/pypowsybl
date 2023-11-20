@@ -1252,6 +1252,8 @@ SldParameters::SldParameters(sld_parameters* src) {
 
 NadParameters::NadParameters(nad_parameters* src) {
     edge_name_displayed = (bool) src->edge_name_displayed;
+    edge_info_along_edge = (bool) src->edge_info_along_edge;
+    id_displayed = (bool) src->id_displayed;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1266,6 +1268,8 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.edge_name_displayed = (unsigned char) edge_name_displayed;
+    res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
+    res.id_displayed = (unsigned char) id_displayed;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

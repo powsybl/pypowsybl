@@ -1012,6 +1012,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("edge_name_displayed")
         boolean isEdgeNameDisplayed();
+
+        @CField("id_displayed")
+        void setIdDisplayed(boolean idDisplayed);
+
+        @CField("id_displayed")
+        boolean isIdDisplayed();
+
+        @CField("edge_info_along_edge")
+        void setEdgeInfoAlongEdge(boolean edgeInfoAlongEdge);
+
+        @CField("edge_info_along_edge")
+        boolean isEdgeInfoAlongEdge();
     }
 
     @CEnum("DynamicMappingType")
