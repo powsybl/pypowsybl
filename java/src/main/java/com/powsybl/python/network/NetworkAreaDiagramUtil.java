@@ -183,5 +183,11 @@ public final class NetworkAreaDiagramUtil {
             }
 
         }
+
+        public void visitDanglingLine(DanglingLine danglingLine) {
+            if (danglingLine.isPaired()) {
+                danglingLine.getTieLine().ifPresent(tieline -> visitBranch(tieline, tieline.getSide(danglingLine.getTerminal())));
+            }
+        }
     }
 }
