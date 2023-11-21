@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from __future__ import annotations
+
+import warnings
 from typing import List, Dict
 
 from pypowsybl import _pypowsybl
@@ -71,6 +73,8 @@ class SensitivityAnalysis(ContingencyContainer):
             branches_ids:  IDs of branches for which active power flow sensitivities should be computed
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
         """
+        warnings.warn("set_branch_flow_factor_matrix is deprecated, use add_branch_flow_factor_matrix instead",
+                      DeprecationWarning)
         self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
 
     def add_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
