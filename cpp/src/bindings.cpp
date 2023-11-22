@@ -472,6 +472,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
+    py::class_<pypowsybl::NadParameters>(m, "NadParameters")
+        .def(py::init(&pypowsybl::createNadParameters))
+        .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed);
+
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
@@ -484,10 +488,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
-          py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("edge_name_displayed"));
+          py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
-          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("edge_name_displayed"));
+          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
