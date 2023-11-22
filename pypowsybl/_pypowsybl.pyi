@@ -239,6 +239,10 @@ class NadParameters:
     edge_name_displayed: bool
     edge_info_along_edge: bool
     id_displayed: bool
+    power_value_precision: int
+    angle_value_precision: int
+    current_value_precision: int
+    voltage_value_precision: int
     def __init__(self) -> None: ...
 
 class LimitType:

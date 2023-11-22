@@ -287,6 +287,10 @@ public:
     bool edge_name_displayed;
     bool edge_info_along_edge;
     bool id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
 };
 
 char* copyStringToCharPtr(const std::string& str);

@@ -1254,6 +1254,10 @@ NadParameters::NadParameters(nad_parameters* src) {
     edge_name_displayed = (bool) src->edge_name_displayed;
     edge_info_along_edge = (bool) src->edge_info_along_edge;
     id_displayed = (bool) src->id_displayed;
+    power_value_precision = src->power_value_precision;
+    current_value_precision = src->current_value_precision;
+    angle_value_precision = src->angle_value_precision;
+    voltage_value_precision = src->voltage_value_precision;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1270,6 +1274,10 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.edge_name_displayed = (unsigned char) edge_name_displayed;
     res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
     res.id_displayed = (unsigned char) id_displayed;
+    res.power_value_precision = power_value_precision;
+    res.current_value_precision = current_value_precision;
+    res.angle_value_precision = angle_value_precision;
+    res.voltage_value_precision = voltage_value_precision;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

@@ -313,6 +313,10 @@ typedef struct nad_parameters_struct {
     unsigned char edge_name_displayed;
     unsigned char edge_info_along_edge;
     unsigned char id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
 } nad_parameters;
 
 typedef enum {

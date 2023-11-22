@@ -1024,6 +1024,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("edge_info_along_edge")
         boolean isEdgeInfoAlongEdge();
+
+        @CField("power_value_precision")
+        void setPowerValuePrecision(int powerValuePrecision);
+
+        @CField("power_value_precision")
+        int getPowerValuePrecision();
+
+        @CField("current_value_precision")
+        void setCurrentValuePrecision(int currentValuePrecision);
+
+        @CField("current_value_precision")
+        int getCurrentValuePrecision();
+
+        @CField("angle_value_precision")
+        void setAngleValuePrecision(int angleValuePrecision);
+
+        @CField("angle_value_precision")
+        int getAngleValuePrecision();
+
+        @CField("voltage_value_precision")
+        void setVoltageValuePrecision(int voltageValuePrecision);
+
+        @CField("voltage_value_precision")
+        int getVoltageValuePrecision();
     }
 
     @CEnum("DynamicMappingType")

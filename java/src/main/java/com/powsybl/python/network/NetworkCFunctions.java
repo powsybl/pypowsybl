@@ -891,6 +891,11 @@ public final class NetworkCFunctions {
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
+        cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
+        cParameters.setCurrentValuePrecision(parameters.getSvgParameters().getCurrentValuePrecision());
+        cParameters.setAngleValuePrecision(parameters.getSvgParameters().getAngleValuePrecision());
+        cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
+
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -938,6 +943,10 @@ public final class NetworkCFunctions {
         nadParameters.getSvgParameters()
                 .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
+                .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
+                .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
+                .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
                 .setIdDisplayed(nadParametersPointer.isIdDisplayed());
         return nadParameters;
     }
