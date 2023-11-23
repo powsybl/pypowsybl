@@ -29,6 +29,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
+import com.powsybl.nad.NadParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -879,6 +880,21 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters()));
     }
 
+    public static NadParametersPointer convertToNadParametersPointer(NadParameters parameters) {
+        NadParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(NadParametersPointer.class));
+        copyToCNadParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
+        cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
+    }
+
+    @CEntryPoint(name = "createNadParameters")
+    public static NadParametersPointer createNadParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToNadParametersPointer(NetworkAreaDiagramUtil.createNadParameters()));
+    }
+
     public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
         UnmanagedMemory.free(sldParametersPtr);
     }
@@ -888,6 +904,14 @@ public final class NetworkCFunctions {
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             freeSldParametersPointer(sldParametersPtr);
+        });
+    }
+
+    @CEntryPoint(name = "freeNadParameters")
+    public static void freeNadParameters(IsolateThread thread, NadParametersPointer nadParametersPointer,
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UnmanagedMemory.free(nadParametersPointer);
         });
     }
 
@@ -902,6 +926,13 @@ public final class NetworkCFunctions {
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos());
         return sldParameters;
+    }
+
+    public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer) {
+        NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
+        nadParameters.getSvgParameters()
+                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed());
+        return nadParameters;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
@@ -949,24 +980,26 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
-                                                  double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed,
+                                                  double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramSvg")
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
-                                                        double lowNominalVoltageBound, boolean edgeNameDisplayed, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return CTypeUtil.toCharPtr(svg);
         });
     }
