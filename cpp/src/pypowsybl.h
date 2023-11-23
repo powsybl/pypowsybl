@@ -291,6 +291,8 @@ public:
     int current_value_precision;
     int angle_value_precision;
     int voltage_value_precision;
+    bool bus_legend;
+    bool substation_description_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);

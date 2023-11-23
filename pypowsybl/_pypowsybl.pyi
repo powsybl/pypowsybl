@@ -243,6 +243,8 @@ class NadParameters:
     angle_value_precision: int
     current_value_precision: int
     voltage_value_precision: int
+    substation_description_displayed: bool
+    bus_legend: bool
     def __init__(self) -> None: ...
 
 class LimitType:

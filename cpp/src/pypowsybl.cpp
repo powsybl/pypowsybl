@@ -1258,6 +1258,8 @@ NadParameters::NadParameters(nad_parameters* src) {
     current_value_precision = src->current_value_precision;
     angle_value_precision = src->angle_value_precision;
     voltage_value_precision = src->voltage_value_precision;
+    substation_description_displayed = src->substation_description_displayed;
+    bus_legend = src->bus_legend;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1278,6 +1280,8 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.current_value_precision = current_value_precision;
     res.angle_value_precision = angle_value_precision;
     res.voltage_value_precision = voltage_value_precision;
+    res.substation_description_displayed = substation_description_displayed;
+    res.bus_legend = bus_legend;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

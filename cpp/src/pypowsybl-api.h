@@ -317,6 +317,8 @@ typedef struct nad_parameters_struct {
     int current_value_precision;
     int angle_value_precision;
     int voltage_value_precision;
+    unsigned char substation_description_displayed;
+    unsigned char bus_legend;
 } nad_parameters;
 
 typedef enum {

@@ -895,7 +895,8 @@ public final class NetworkCFunctions {
         cParameters.setCurrentValuePrecision(parameters.getSvgParameters().getCurrentValuePrecision());
         cParameters.setAngleValuePrecision(parameters.getSvgParameters().getAngleValuePrecision());
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
-
+        cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
+        cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -947,7 +948,9 @@ public final class NetworkCFunctions {
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
                 .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
-                .setIdDisplayed(nadParametersPointer.isIdDisplayed());
+                .setIdDisplayed(nadParametersPointer.isIdDisplayed())
+                .setBusLegend(nadParametersPointer.isBusLegend())
+                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed());
         return nadParameters;
     }
 

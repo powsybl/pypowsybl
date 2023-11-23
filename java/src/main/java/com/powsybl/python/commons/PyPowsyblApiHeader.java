@@ -1048,6 +1048,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("voltage_value_precision")
         int getVoltageValuePrecision();
+
+        @CField("bus_legend")
+        void setBusLegend(boolean busLegend);
+
+        @CField("bus_legend")
+        boolean isBusLegend();
+
+        @CField("substation_description_displayed")
+        void setSubstationDescriptionDisplayed(boolean substationDescriptionDisplayed);
+
+        @CField("substation_description_displayed")
+        boolean isSubstationDescriptionDisplayed();
     }
 
     @CEnum("DynamicMappingType")

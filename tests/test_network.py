@@ -857,7 +857,9 @@ def test_nad():
                                                                          power_value_precision=1,
                                                                          angle_value_precision=0,
                                                                          current_value_precision=1,
-                                                                         voltage_value_precision=0
+                                                                         voltage_value_precision=0,
+                                                                         bus_legend=False,
+                                                                         substation_description_displayed=True
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -875,7 +877,9 @@ def test_nad():
                                                                             power_value_precision=1,
                                                                             angle_value_precision=0,
                                                                             current_value_precision=1,
-                                                                            voltage_value_precision=0))
+                                                                            voltage_value_precision=0,
+                                                                            bus_legend=False,
+                                                                            substation_description_displayed=True))
 
 
 def test_nad_displayed_voltage_levels():
