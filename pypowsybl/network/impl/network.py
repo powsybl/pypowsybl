@@ -125,8 +125,10 @@ class Network:  # pylint: disable=too-many-public-methods
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
              reporter: Reporter = None) -> None:
         """
-        Deprecated, use :meth:`save` instead.
+        .. deprecated:: 1.1.0
+        Use :meth:`save` instead.
         """
+        warnings.warn("dump is deprecated, use save instead", DeprecationWarning)
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
@@ -160,8 +162,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
         """
-        Deprecated, use :meth:`save_to_string` instead.
+        .. deprecated:: 1.1.0
+        Use :meth:`save_to_string` instead.
         """
+        warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
     def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
@@ -3239,8 +3243,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_current_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
+        .. deprecated::
+        Use :meth:`get_operational_limits` instead.
         Get the list of all current limits on the network paired with their branch id.
-        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -4455,6 +4460,10 @@ class Network:  # pylint: disable=too-many-public-methods
             _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> DataFrame:
+        """
+        .. deprecated::
+        Use :meth:`get_extensions` instead.
+        """
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
 
