@@ -30,7 +30,7 @@ public final class SingleLineDiagramUtil {
 
     static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
-             Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+             Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
             writeSvg(network, containerId, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

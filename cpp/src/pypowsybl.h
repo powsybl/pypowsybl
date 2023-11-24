@@ -277,6 +277,15 @@ public:
     std::string component_library;
 };
 
+class NadParameters {
+public:
+    NadParameters(nad_parameters* src);
+    std::shared_ptr<nad_parameters> to_c_struct() const;
+    void nad_to_c_struct(nad_parameters& params) const;
+
+    bool edge_name_displayed;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -382,9 +391,9 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -535,6 +544,8 @@ void closePypowsybl();
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter);
 
 SldParameters* createSldParameters();
+
+NadParameters* createNadParameters();
 
 //=======dynamic modeling for dynawaltz package==========
 

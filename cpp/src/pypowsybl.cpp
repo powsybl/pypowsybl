@@ -804,14 +804,16 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
     return svgAndMetadata.get();
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed) {
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get());
 }
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed) {
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed));
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get()));
 }
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth) {
@@ -1247,6 +1249,10 @@ SldParameters::SldParameters(sld_parameters* src) {
     component_library = toString(src->component_library);
 }
 
+NadParameters::NadParameters(nad_parameters* src) {
+    edge_name_displayed = (bool) src->edge_name_displayed;
+}
+
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.use_name = (unsigned char) use_name;
     res.center_name = (unsigned char) center_name;
@@ -1254,6 +1260,10 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.nodes_infos = (unsigned char) nodes_infos;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
+}
+
+void NadParameters::nad_to_c_struct(nad_parameters& res) const {
+    res.edge_name_displayed = (unsigned char) edge_name_displayed;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1265,6 +1275,15 @@ std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
     });
 }
 
+std::shared_ptr<nad_parameters> NadParameters::to_c_struct() const {
+    nad_parameters* res = new nad_parameters();
+    nad_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<nad_parameters>(res, [](nad_parameters* ptr){
+        delete ptr;
+    });
+}
+
 SldParameters* createSldParameters() {
     sld_parameters* parameters_ptr = callJava<sld_parameters*>(::createSldParameters);
     auto parameters = std::shared_ptr<sld_parameters>(parameters_ptr, [](sld_parameters* ptr){
@@ -1272,6 +1291,15 @@ SldParameters* createSldParameters() {
        callJava(::freeSldParameters, ptr);
     });
     return new SldParameters(parameters.get());
+}
+
+NadParameters* createNadParameters() {
+    nad_parameters* parameters_ptr = callJava<nad_parameters*>(::createNadParameters);
+    auto parameters = std::shared_ptr<nad_parameters>(parameters_ptr, [](nad_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeNadParameters, ptr);
+    });
+    return new NadParameters(parameters.get());
 }
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter) {

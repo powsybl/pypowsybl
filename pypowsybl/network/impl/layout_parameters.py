@@ -11,6 +11,9 @@ from .sld_parameters import SldParameters
 
 class LayoutParameters(SldParameters):
     """
+    .. deprecated:: 1.1.0
+    Use :class:`SldParameters` instead.
+
     This class is only used for backward compatibility and represents sld parameters for a single line diagram svg
     generation."""
 

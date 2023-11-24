@@ -36,30 +36,21 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer,
-                         double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed) {
-        SvgParameters svgParameters = new SvgParameters()
-                .setSvgWidthAndHeightAdded(true)
-                .setFixedWidth(800)
-                .setFixedHeight(600)
-                .setEdgeNameDisplayed(edgeNameDisplayed);
-
+                         double highNominalVoltageBound, double lowNominalVoltageBound, NadParameters nadParameters) {
         Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
                 ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
-        NadParameters nadParameters = new NadParameters()
-                .setSvgParameters(svgParameters);
-
         NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
 
-    static String getSvg(Network network, List<String> voltageLevelIds, int depth, boolean edgeNameDisplayed) {
-        return getSvg(network, voltageLevelIds, depth, -1, -1, edgeNameDisplayed);
+    static String getSvg(Network network, List<String> voltageLevelIds, NadParameters nadParameters) {
+        return getSvg(network, voltageLevelIds, 0, -1, -1, nadParameters);
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth,
-                         double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed) {
+                         double highNominalVoltageBound, double lowNominalVoltageBound, NadParameters nadParameters) {
         try (StringWriter writer = new StringWriter()) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -67,12 +58,21 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile,
-                         Double highNominalVoltageBound, Double lowNominalVoltageBound, boolean edgeNameDisplayed) {
+                         Double highNominalVoltageBound, Double lowNominalVoltageBound, NadParameters nadParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    static NadParameters createNadParameters() {
+        SvgParameters svgParameters = new SvgParameters()
+                .setSvgWidthAndHeightAdded(true)
+                .setFixedWidth(800)
+                .setFixedHeight(600);
+        return new NadParameters()
+                .setSvgParameters(svgParameters);
     }
 
     static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds,
@@ -182,6 +182,12 @@ public final class NetworkAreaDiagramUtil {
                 this.nextDepthVoltageLevels.add(voltageLevel);
             }
 
+        }
+
+        public void visitDanglingLine(DanglingLine danglingLine) {
+            if (danglingLine.isPaired()) {
+                danglingLine.getTieLine().ifPresent(tieline -> visitBranch(tieline, tieline.getSide(danglingLine.getTerminal())));
+            }
         }
     }
 }

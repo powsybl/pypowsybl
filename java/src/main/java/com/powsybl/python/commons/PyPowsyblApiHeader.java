@@ -999,6 +999,15 @@ public final class PyPowsyblApiHeader {
         void setComponentLibrary(CCharPointer componentLibrary);
     }
 
+    @CStruct("nad_parameters")
+    public interface NadParametersPointer extends PointerBase {
+        @CField("edge_name_displayed")
+        void setEdgeNameDisplayed(boolean edgeNameDisplayed);
+
+        @CField("edge_name_displayed")
+        boolean isEdgeNameDisplayed();
+    }
+
     @CEnum("DynamicMappingType")
     public enum DynamicMappingType {
         ALPHA_BETA_LOAD,
