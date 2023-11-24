@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import List, Union
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
@@ -35,6 +36,8 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
             bus_ids:            IDs of buses for which voltage sensitivities should be computed
             target_voltage_ids: IDs of regulating equipments to which we should compute sensitivities
        """
+        warnings.warn("set_bus_voltage_factor_matrix is deprecated, use add_bus_voltage_factor_matrix instead",
+                      DeprecationWarning)
         self.add_bus_voltage_factor_matrix(bus_ids, target_voltage_ids)
 
     def add_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str], matrix_id: str = DEFAULT_MATRIX_ID) -> None:
