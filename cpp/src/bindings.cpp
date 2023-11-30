@@ -859,10 +859,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata", py::arg("fault_type"));
     m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"),  py::arg("faultType"));
     m.def("get_fault_results", &pypowsybl::getFaultResults, "gets the fault results computed after short-circuit analysis",
-          py::arg("result"));
+          py::arg("result"), py::arg("with_fortescue_result"));
     m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",
-          py::arg("result"));
+          py::arg("result"), py::arg("with_fortescue_result"));
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
-    m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"));
+    m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
 }

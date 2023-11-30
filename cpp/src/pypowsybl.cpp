@@ -1475,20 +1475,20 @@ void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, Shor
     pypowsybl::callJava<>(::setFaults, analysisContext, faultType, dataframe);
 }
 
-SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult) {
-    return new SeriesArray(callJava<array*>(::getFaultResults, shortCircuitAnalysisResult));
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueValue) {
+    return new SeriesArray(callJava<array*>(::getShortCircuitAnalysisFaultResults, shortCircuitAnalysisResult, withFortescueValue));
 }
 
-SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult) {
-    return new SeriesArray(callJava<array*>(::getMagnitudeFeederResults, shortCircuitAnalysisResult));
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueValue) {
+    return new SeriesArray(callJava<array*>(::getShortCircuitAnalysisFeederResults, shortCircuitAnalysisResult, withFortescueValue));
 }
 
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult) {
-    return new SeriesArray(callJava<array*>(::getLimitViolationsResults, shortCircuitAnalysisResult));
+    return new SeriesArray(callJava<array*>(::getShortCircuitAnalysisLimitViolationsResults, shortCircuitAnalysisResult));
 }
 
-SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult) {
-    return new SeriesArray(callJava<array*>(::getMagnitudeBusResults, shortCircuitAnalysisResult));
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueValue) {
+    return new SeriesArray(callJava<array*>(::getShortCircuitAnalysisBusResults, shortCircuitAnalysisResult, withFortescueValue));
 }
 
 JavaHandle createVoltageInitializerParams() {

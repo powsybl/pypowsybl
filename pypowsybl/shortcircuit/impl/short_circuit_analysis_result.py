@@ -14,22 +14,23 @@ class ShortCircuitAnalysisResult:
     The result of a short-circuit analysis.
     """
 
-    def __init__(self, handle: _pypowsybl.JavaHandle):
+    def __init__(self, handle: _pypowsybl.JavaHandle, with_fortescue_result: bool):
         self._handle = handle
+        self._with_fortescue_result = with_fortescue_result
 
     @property
     def fault_results(self) -> pd.DataFrame:
         """
         contains the results, for each fault, in a dataframe representation.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_fault_results(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_fault_results(self._handle, self._with_fortescue_result))
 
     @property
     def feeder_results(self) -> pd.DataFrame:
         """
         contains the contributions of each feeder to the short circuit current, in a dataframe representation.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle, self._with_fortescue_result))
 
     @property
     def limit_violations(self) -> pd.DataFrame:
@@ -44,4 +45,4 @@ class ShortCircuitAnalysisResult:
         contains a list of all the short circuit voltage bus results, in a dataframe representation.
         It should be empty when the parameter with_voltage_result is set to false
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_bus_results(self._handle))
+        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_bus_results(self._handle, self._with_fortescue_result))
