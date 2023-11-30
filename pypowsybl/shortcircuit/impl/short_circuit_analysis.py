@@ -91,5 +91,5 @@ class ShortCircuitAnalysis:
 
         return ShortCircuitAnalysisResult(
             _pypowsybl.run_shortcircuit_analysis(self._handle, network._handle, p, provider,
-                                                 None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
-        )
+                                                 None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+            p.with_fortescue_result)

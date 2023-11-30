@@ -457,8 +457,8 @@ public final class Dataframes {
     }
 
     // shortcircuit
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper(boolean withFortescueValue) {
-        return withFortescueValue ? SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER = createMagnitudeFaultResultsMapper();
@@ -540,8 +540,8 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper(boolean withFortescueValue) {
-        return withFortescueValue ? SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER = createMagnitudeFeederMapper();
@@ -592,8 +592,8 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper(boolean withFortescueValue) {
-        return withFortescueValue ? SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();

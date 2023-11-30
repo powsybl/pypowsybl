@@ -43,13 +43,15 @@ def test_run_analysis():
     # sets some short-circuit parameters
     pars = pp.shortcircuit.Parameters(with_feeder_result=False, with_limit_violations=False,
                                       with_voltage_result=False, min_voltage_drop_proportional_threshold=0,
-                                      study_type=pp.shortcircuit.ShortCircuitStudyType.TRANSIENT)
+                                      study_type=pp.shortcircuit.ShortCircuitStudyType.TRANSIENT,
+                                      with_fortescue_result=True)
     assert pars is not None
     assert not pars.with_feeder_result
     assert not pars.with_limit_violations
     assert not pars.with_voltage_result
     assert pars.min_voltage_drop_proportional_threshold == 0
     assert pars.study_type == pp.shortcircuit.ShortCircuitStudyType.TRANSIENT
+    assert pars.with_fortescue_result
 
     # create a short-circuit analysis context
     sc = pp.shortcircuit.create_analysis()
