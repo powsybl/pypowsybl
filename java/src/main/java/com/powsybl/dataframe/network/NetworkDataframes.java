@@ -286,10 +286,6 @@ public final class NetworkDataframes {
         } else {
             throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
         }
-        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-            //Not supported for the moment
-            return null;
-        }
         return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
     }
 
@@ -297,11 +293,6 @@ public final class NetworkDataframes {
         Network network = injection.getNetwork();
         Identifiable<?> identifiable = network.getIdentifiable(elementId);
         if (identifiable instanceof Injection) {
-            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
-            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                        ": not currently supported for bus breaker topologies.");
-            }
             if (injection instanceof Generator) {
                 ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
             } else if (injection instanceof VscConverterStation) {

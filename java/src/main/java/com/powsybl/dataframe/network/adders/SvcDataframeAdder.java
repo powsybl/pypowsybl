@@ -11,9 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.StaticVarCompensator;
-import com.powsybl.iidm.network.StaticVarCompensatorAdder;
+import com.powsybl.iidm.network.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +37,8 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("b_min"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q")
+            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.strings("regulating_element_id")
     );
 
     @Override
@@ -56,6 +55,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
         private final StringSeries busOrBusbarSections;
+        private final StringSeries regulatingElements;
 
         StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -66,6 +66,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             this.targetV = dataframe.getDoubles("target_v");
             this.regulationModes = dataframe.getStrings("regulation_mode");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
+            this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
         StaticVarCompensatorAdder createAdder(Network network, int row) {
@@ -77,6 +78,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyIfPresent(targetV, row, adder::setVoltageSetpoint);
             applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+            applyIfPresent(regulatingElements, row, elementId -> Util.setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
             return adder;
         }
     }

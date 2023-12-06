@@ -549,7 +549,7 @@ def test_create_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'bus_id': 'B1', 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'target_v': 400, 'voltage_regulator_on': True}
+         'target_v': 400, 'voltage_regulator_on': True, 'regulating_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 
