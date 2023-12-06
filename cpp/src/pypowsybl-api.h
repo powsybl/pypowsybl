@@ -304,6 +304,7 @@ typedef struct sld_parameters_struct {
     unsigned char center_name;
     unsigned char diagonal_label;
     unsigned char nodes_infos;
+    unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
 } sld_parameters;
