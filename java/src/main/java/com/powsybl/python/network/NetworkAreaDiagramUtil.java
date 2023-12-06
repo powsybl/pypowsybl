@@ -37,8 +37,9 @@ public final class NetworkAreaDiagramUtil {
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer,
                          double highNominalVoltageBound, double lowNominalVoltageBound, NadParameters nadParameters) {
+
         Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
-                ? getNominalVoltageFilter(network, voltageLevelIds, highNominalVoltageBound, lowNominalVoltageBound, depth)
+                ? getNominalVoltageFilter(network, voltageLevelIds, lowNominalVoltageBound, highNominalVoltageBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
         NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
@@ -75,34 +76,23 @@ public final class NetworkAreaDiagramUtil {
                 .setSvgParameters(svgParameters);
     }
 
-    static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds,
-                                                      double highNominalVoltageBound,
-                                                      double lowNominalVoltageBound, int depth) {
-        Objects.requireNonNull(network);
-        Objects.requireNonNull(voltageLevelIds);
-        Set<VoltageLevel> startingSet = new HashSet<>();
-
-        for (String voltageLevelId : voltageLevelIds) {
-            VoltageLevel vl = network.getVoltageLevel(voltageLevelId);
-            if (vl == null) {
-                throw new PowsyblException("Unknown voltage level id '" + voltageLevelId + "'");
-            }
-            if (lowNominalVoltageBound > 0 && vl.getNominalV() < lowNominalVoltageBound ||
-                    highNominalVoltageBound > 0 && vl.getNominalV() > highNominalVoltageBound) {
-                throw new PowsyblException("vl '" + voltageLevelId +
-                        "' has his nominal voltage out of the indicated thresholds");
-            }
-            startingSet.add(vl);
+    static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double lowNominalVoltageBound, double highNominalVoltageBound, int depth) {
+        VoltageLevelFilter voltageLevelFilter = VoltageLevelFilter.NO_FILTER;
+        if (lowNominalVoltageBound >= 0 && highNominalVoltageBound >= 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageFilter(network, voltageLevelIds, lowNominalVoltageBound, highNominalVoltageBound, depth);
+        } else if (lowNominalVoltageBound < 0 && highNominalVoltageBound >= 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageHigherBoundFilter(network, voltageLevelIds, highNominalVoltageBound, depth);
+        } else if (lowNominalVoltageBound >= 0 && highNominalVoltageBound < 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, voltageLevelIds, lowNominalVoltageBound, depth);
+        } else {
+            voltageLevelFilter = VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth);
         }
-
-        Set<VoltageLevel> voltageLevels = new HashSet<>();
-        traverseVoltageLevels(startingSet, depth, voltageLevels, highNominalVoltageBound, lowNominalVoltageBound);
-        return new VoltageLevelFilter(voltageLevels);
     }
 
     public static List<String> getDisplayedVoltageLevels(Network network, List<String> voltageLevelIds, int depth) {
         return NetworkAreaDiagram.getDisplayedVoltageLevels(network, voltageLevelIds, depth);
     }
+<<<<<<< HEAD
 
     private static void traverseVoltageLevels(Set<VoltageLevel> voltageLevelsDepth, int depth, Set<VoltageLevel> visitedVoltageLevels,
                                               double highNominalVoltageBound, double lowNominalVoltageBound) {
