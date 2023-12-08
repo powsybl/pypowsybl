@@ -81,7 +81,7 @@ public final class NetworkAreaDiagramUtil {
         if (lowNominalVoltageBound >= 0 && highNominalVoltageBound >= 0) {
             voltageLevelFilter = VoltageLevelFilter.createNominalVoltageFilter(network, voltageLevelIds, lowNominalVoltageBound, highNominalVoltageBound, depth);
         } else if (lowNominalVoltageBound < 0 && highNominalVoltageBound >= 0) {
-            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageHigherBoundFilter(network, voltageLevelIds, highNominalVoltageBound, depth);
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, voltageLevelIds, highNominalVoltageBound, depth);
         } else if (lowNominalVoltageBound >= 0 && highNominalVoltageBound < 0) {
             voltageLevelFilter = VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, voltageLevelIds, lowNominalVoltageBound, depth);
         } else {
