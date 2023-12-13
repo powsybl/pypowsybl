@@ -174,8 +174,8 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
     public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
-                                                           int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
-                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
@@ -264,9 +264,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "saveNetworkToBinaryBuffer")
     public static ArrayPointer<CCharPointer> saveNetworkToBinaryBuffer(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
-                                                             CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                                             CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                             ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                       CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                                       CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                                       ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String formatStr = CTypeUtil.toString(format);
@@ -866,6 +866,7 @@ public final class NetworkCFunctions {
         cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
     }
 
@@ -901,7 +902,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "freeSldParameters")
     public static void freeSldParameters(IsolateThread thread, SldParametersPointer sldParametersPtr,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             freeSldParametersPointer(sldParametersPtr);
         });
@@ -918,13 +919,15 @@ public final class NetworkCFunctions {
     public static SldParameters convertSldParameters(SldParametersPointer sldParametersPtr) {
         String componentLibraryName = CTypeUtil.toString(sldParametersPtr.getComponentLibrary());
         SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
-                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory() : new NominalVoltageStyleProviderFactory())
+                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory()
+                        : new NominalVoltageStyleProviderFactory())
                 .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
         sldParameters.getSvgParameters()
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos());
+                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled());
         return sldParameters;
     }
 
@@ -962,7 +965,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                                                        SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                       SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);

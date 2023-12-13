@@ -230,6 +230,7 @@ class SldParameters:
     center_name: bool
     diagonal_label: bool
     nodes_infos: bool
+    tooltip_enabled: bool
     topological_coloring: bool
     component_library: str
     def __init__(self) -> None: ...

@@ -813,11 +813,12 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
     sld1 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                            topological_coloring=False))
+                                                            topological_coloring=False, tooltip_enabled=True))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
     sld2 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                            nodes_infos=True, topological_coloring=True))
+                                                            nodes_infos=True, topological_coloring=True,
+                                                            tooltip_enabled=True))
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 
@@ -834,24 +835,24 @@ def test_sld_svg_backward_compatibility():
     assert len(sld1.metadata) > 0
 
 
-def test_sld_nad():
+def test_nad():
     n = pp.network.create_ieee14()
-    sld = n.get_network_area_diagram()
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram(voltage_level_ids=None)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL1')
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram(['VL1', 'VL2'])
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', low_nominal_voltage_bound=10, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True))
-    assert re.search('.*<svg.*', sld.svg)
+    nad = n.get_network_area_diagram()
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram(voltage_level_ids=None)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL1')
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram(['VL1', 'VL2'])
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True))
+    assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
         n.write_network_area_diagram_svg(test_svg, None)
