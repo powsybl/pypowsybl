@@ -31,10 +31,10 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer,
-                         double highNominalVoltageBound, double lowNominalVoltageBound, NadParameters nadParameters) {
+                         double nominalVoltageUpperBound, double nominalVoltageLowerBound, NadParameters nadParameters) {
 
         Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
-                ? getNominalVoltageFilter(network, voltageLevelIds, lowNominalVoltageBound, highNominalVoltageBound, depth)
+                ? getNominalVoltageFilter(network, voltageLevelIds, nominalVoltageLowerBound, nominalVoltageUpperBound, depth)
                 : VoltageLevelFilter.NO_FILTER;
         NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
@@ -44,9 +44,9 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static String getSvg(Network network, List<String> voltageLevelIds, int depth,
-                         double highNominalVoltageBound, double lowNominalVoltageBound, NadParameters nadParameters) {
+                         double nominalVoltageUpperBound, double nominalVoltageLowerBound, NadParameters nadParameters) {
         try (StringWriter writer = new StringWriter()) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            writeSvg(network, voltageLevelIds, depth, writer, nominalVoltageUpperBound, nominalVoltageLowerBound, nadParameters);
             return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -54,9 +54,9 @@ public final class NetworkAreaDiagramUtil {
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile,
-                         Double highNominalVoltageBound, Double lowNominalVoltageBound, NadParameters nadParameters) {
+                         Double nominalVoltageUpperBound, Double nominalVoltageLowerBound, NadParameters nadParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8)) {
-            writeSvg(network, voltageLevelIds, depth, writer, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            writeSvg(network, voltageLevelIds, depth, writer, nominalVoltageUpperBound, nominalVoltageLowerBound, nadParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -71,14 +71,13 @@ public final class NetworkAreaDiagramUtil {
                 .setSvgParameters(svgParameters);
     }
 
-    static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double lowNominalVoltageBound, double highNominalVoltageBound, int depth) {
-        VoltageLevelFilter voltageLevelFilter = VoltageLevelFilter.NO_FILTER;
-        if (lowNominalVoltageBound >= 0 && highNominalVoltageBound >= 0) {
-            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageFilter(network, voltageLevelIds, lowNominalVoltageBound, highNominalVoltageBound, depth);
-        } else if (lowNominalVoltageBound < 0 && highNominalVoltageBound >= 0) {
-            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, voltageLevelIds, highNominalVoltageBound, depth);
-        } else if (lowNominalVoltageBound >= 0 && highNominalVoltageBound < 0) {
-            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, voltageLevelIds, lowNominalVoltageBound, depth);
+    static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double nominalVoltageLowerBound, double nominalVoltageUpperBound, int depth) {
+        if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound >= 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageFilter(network, voltageLevelIds, nominalVoltageLowerBound, nominalVoltageUpperBound, depth);
+        } else if (nominalVoltageLowerBound < 0 && nominalVoltageUpperBound >= 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, voltageLevelIds, nominalVoltageUpperBound, depth);
+        } else if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound < 0) {
+            voltageLevelFilter = VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, voltageLevelIds, nominalVoltageLowerBound, depth);
         } else {
             voltageLevelFilter = VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth);
         }
