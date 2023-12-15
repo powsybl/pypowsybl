@@ -14,6 +14,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VscConverterStationAdder;
+import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +78,8 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(targetV, row, adder::setVoltageSetpoint);
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-            applyIfPresent(regulatingElements, row, elementId -> Util.setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                    .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
             return adder;
         }
     }

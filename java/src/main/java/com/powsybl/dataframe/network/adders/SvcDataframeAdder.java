@@ -12,6 +12,7 @@ import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +79,8 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyIfPresent(targetV, row, adder::setVoltageSetpoint);
             applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
-            applyIfPresent(regulatingElements, row, elementId -> Util.setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                    .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
             return adder;
         }
     }
