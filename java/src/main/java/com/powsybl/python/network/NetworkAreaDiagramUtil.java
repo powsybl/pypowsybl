@@ -6,13 +6,11 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
 import com.powsybl.nad.svg.SvgParameters;
-import com.powsybl.nad.utils.iidm.IidmUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -21,10 +19,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
 
 /**
