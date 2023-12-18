@@ -986,6 +986,12 @@ public final class PyPowsyblApiHeader {
         @CField("nodes_infos")
         void setAddNodesInfos(boolean addNodeInfos);
 
+        @CField("tooltip_enabled")
+        void setTooltipEnabled(boolean tooltipEnabled);
+
+        @CField("tooltip_enabled")
+        boolean getTooltipEnabled();
+
         @CField("topological_coloring")
         boolean isTopologicalColoring();
 

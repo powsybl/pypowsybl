@@ -469,6 +469,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("center_name", &pypowsybl::SldParameters::center_name)
         .def_readwrite("diagonal_label", &pypowsybl::SldParameters::diagonal_label)
         .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
+        .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 

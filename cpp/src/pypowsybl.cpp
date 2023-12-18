@@ -1245,6 +1245,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     center_name = (bool) src->center_name;
     diagonal_label = (bool) src->diagonal_label;
     nodes_infos = (bool) src->nodes_infos;
+    tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
 }
@@ -1258,6 +1259,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.center_name = (unsigned char) center_name;
     res.diagonal_label = (unsigned char) diagonal_label;
     res.nodes_infos = (unsigned char) nodes_infos;
+    res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
 }
