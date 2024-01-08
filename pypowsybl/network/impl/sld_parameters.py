@@ -12,11 +12,13 @@ class SldParameters:
     This class represents sld parameters for a single line diagram svg generation."""
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 nodes_infos: bool = False, topological_coloring: bool = True, component_library: str = 'Convergence'):
+                 nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
+                 component_library: str = 'Convergence'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
         self._nodes_infos = nodes_infos
+        self._tooltip_enabled = tooltip_enabled
         self._topological_coloring = topological_coloring
         self._component_library = component_library
 
@@ -41,6 +43,11 @@ class SldParameters:
         return self._nodes_infos
 
     @property
+    def tool_tip_enabled(self) -> bool:
+        """when True display tooltip"""
+        return self._tooltip_enabled
+
+    @property
     def topological_coloring(self) -> bool:
         """When False, coloring is based only on nominal voltage."""
         return self._topological_coloring
@@ -57,5 +64,6 @@ class SldParameters:
         c_parameters.diagonal_label = self._diagonal_label
         c_parameters.topological_coloring = self._topological_coloring
         c_parameters.nodes_infos = self._nodes_infos
+        c_parameters.tooltip_enabled = self._tooltip_enabled
         c_parameters.component_library = self._component_library
         return c_parameters
