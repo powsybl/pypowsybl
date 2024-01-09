@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dynamicsimulation.Curve;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynawaltz.DynaWaltzCurve;
@@ -40,8 +41,13 @@ public class CurveMappingSupplier implements CurvesSupplier {
     }
 
     @Override
+    public List<Curve> get(Network network, Reporter reporter) {
+        return get(network);
+    }
+
+    @Override
     public List<Curve> get(Network network) {
-        return curvesSupplierList.stream().map(supplier -> supplier.get()).collect(Collectors.toList());
+        return curvesSupplierList.stream().map(Supplier::get).collect(Collectors.toList());
     }
 
 }
