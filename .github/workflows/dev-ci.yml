@@ -48,7 +48,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          python3 setup.py bdist_wheel
+          JAVA_HOME=/usr; python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel
