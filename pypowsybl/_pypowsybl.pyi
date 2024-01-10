@@ -756,10 +756,6 @@ def voltage_initializer_add_specific_low_voltage_limits(
 def voltage_initializer_add_specific_high_voltage_limits(
         params_handle: JavaHandle, voltage_level_id: str, is_relative: bool, limit: float) -> None: ...
 
-def voltage_initializer_add_algorithm_param(
-    params_handle: JavaHandle, key_ptr: str, value_ptr: str) -> None: ...
-
-
 def voltage_initializer_set_objective(
     params_handle: JavaHandle, objective: VoltageInitializerObjective) -> None: ...
 

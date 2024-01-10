@@ -93,7 +93,8 @@ def test_save_ampl():
                                'ampl_network_substations.txt', 'ampl_network_tct.txt', 'ampl_network_loads.txt',
                                'ampl_network_lcc_converter_stations.txt', 'ampl_network_static_var_compensators.txt',
                                'ampl_network_hvdc.txt', 'ampl_network_limits.txt', 'ampl_network_shunts.txt',
-                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt']
+                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt',
+                               'ampl_headers.txt']
         assert len(file_names) == len(file_names_expected)
         for file_name in file_names:
             assert file_name in file_names_expected
