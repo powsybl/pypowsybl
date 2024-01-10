@@ -26,7 +26,7 @@ jobs:
         run: |
           echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
           apt-get update
-          apt install maven
+          apt install -y maven
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
