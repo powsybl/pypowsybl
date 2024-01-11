@@ -979,25 +979,25 @@ public final class NetworkDataframes {
         switch (side) {
             case ONE -> {
                 if (connectable instanceof Branch) {
-                    return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
+                    return ((Branch<?>) connectable).getTerminal(TwoSides.ONE);
                 } else if (connectable instanceof ThreeWindingsTransformer twt) {
-                    return twt.getTerminal(ThreeWindingsTransformer.Side.ONE);
+                    return twt.getTerminal(ThreeSides.ONE);
                 } else {
                     throw new PowsyblException("no side ONE for this element");
                 }
             }
             case TWO -> {
                 if (connectable instanceof Branch) {
-                    return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
+                    return ((Branch<?>) connectable).getTerminal(TwoSides.TWO);
                 } else if (connectable instanceof ThreeWindingsTransformer twt) {
-                    return twt.getTerminal(ThreeWindingsTransformer.Side.TWO);
+                    return twt.getTerminal(ThreeSides.TWO);
                 } else {
                     throw new PowsyblException("no side TWO for this element");
                 }
             }
             case THREE -> {
                 if (connectable instanceof ThreeWindingsTransformer twt) {
-                    return twt.getTerminal(ThreeWindingsTransformer.Side.THREE);
+                    return twt.getTerminal(ThreeSides.THREE);
                 } else {
                     throw new PowsyblException("no side THREE for this element");
                 }
@@ -1017,9 +1017,9 @@ public final class NetworkDataframes {
     private static Terminal getBranchTerminal(Branch<?> branch, String side) {
         if (side.isEmpty()) {
             return null;
-        } else if (side.equals(Branch.Side.ONE.name())) {
+        } else if (side.equals(TwoSides.ONE.name())) {
             return branch.getTerminal1();
-        } else if (side.equals(Branch.Side.TWO.name())) {
+        } else if (side.equals(TwoSides.TWO.name())) {
             return branch.getTerminal2();
         } else {
             throw new PowsyblException("Transformer side must be ONE or TWO");
@@ -1028,9 +1028,9 @@ public final class NetworkDataframes {
 
     private static String getTerminalSideStr(Branch<?> branch, Terminal terminal) {
         if (terminal == branch.getTerminal1()) {
-            return Branch.Side.ONE.name();
+            return TwoSides.ONE.name();
         } else if (terminal == branch.getTerminal2()) {
-            return Branch.Side.TWO.name();
+            return TwoSides.TWO.name();
         }
         return "";
     }

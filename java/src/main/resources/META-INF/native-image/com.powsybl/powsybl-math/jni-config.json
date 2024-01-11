@@ -1,5 +1,17 @@
 [
 {
+  "name":"com.powsybl.math.MathException",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"com.powsybl.math.solver.KinsolContext",
+  "methods":[{"name":"logError","parameterTypes":["int","java.lang.String","java.lang.String","java.lang.String"] }, {"name":"logInfo","parameterTypes":["java.lang.String","java.lang.String","java.lang.String"] }, {"name":"updateFunc","parameterTypes":["double[]"] }, {"name":"updateJac","parameterTypes":[] }]
+},
+{
+  "name":"com.powsybl.math.solver.KinsolResult",
+  "methods":[{"name":"<init>","parameterTypes":["int","long"] }]
+},
+{
   "name":"com.powsybl.math.matrix.SparseMatrix",
   "methods":[{"name":"<init>","parameterTypes":["int","int","int[]","int[]","double[]"] }]
 },
