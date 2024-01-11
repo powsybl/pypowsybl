@@ -889,6 +889,14 @@ public final class NetworkCFunctions {
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
+        cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
+        cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
+        cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
+        cParameters.setCurrentValuePrecision(parameters.getSvgParameters().getCurrentValuePrecision());
+        cParameters.setAngleValuePrecision(parameters.getSvgParameters().getAngleValuePrecision());
+        cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
+        cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
+        cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -934,7 +942,15 @@ public final class NetworkCFunctions {
     public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         nadParameters.getSvgParameters()
-                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed());
+                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
+                .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
+                .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
+                .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
+                .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
+                .setIdDisplayed(nadParametersPointer.isIdDisplayed())
+                .setBusLegend(nadParametersPointer.isBusLegend())
+                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed());
         return nadParameters;
     }
 

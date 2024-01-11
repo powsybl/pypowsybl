@@ -852,7 +852,16 @@ def test_nad():
     assert re.search('.*<svg.*', nad.svg)
     nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
     assert re.search('.*<svg.*', nad.svg)
-    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True))
+    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                         id_displayed=True,
+                                                                         edge_info_along_edge=False,
+                                                                         power_value_precision=1,
+                                                                         angle_value_precision=0,
+                                                                         current_value_precision=1,
+                                                                         voltage_value_precision=0,
+                                                                         bus_legend=False,
+                                                                         substation_description_displayed=True
+                                                                         ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
@@ -863,7 +872,15 @@ def test_nad():
                                          depth=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
-        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True))
+        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                            id_displayed=True,
+                                                                            edge_info_along_edge=False,
+                                                                            power_value_precision=1,
+                                                                            angle_value_precision=0,
+                                                                            current_value_precision=1,
+                                                                            voltage_value_precision=0,
+                                                                            bus_legend=False,
+                                                                            substation_description_displayed=True))
 
 
 def test_nad_displayed_voltage_levels():
