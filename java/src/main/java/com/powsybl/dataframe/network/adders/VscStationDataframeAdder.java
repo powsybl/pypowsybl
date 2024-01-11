@@ -14,6 +14,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VscConverterStationAdder;
+import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +40,8 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.booleans("voltage_regulator_on")
+            SeriesMetadata.booleans("voltage_regulator_on"),
+            SeriesMetadata.strings("regulating_element_id")
     );
 
     @Override
@@ -55,6 +57,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries targetQ;
         private final IntSeries voltageRegulatorOn;
         private final StringSeries busOrBusbarSections;
+        private final StringSeries regulatingElements;
 
         VscStationSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -64,6 +67,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             this.targetQ = dataframe.getDoubles("target_q");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
+            this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
         VscConverterStationAdder createAdder(Network network, int row) {
@@ -74,6 +78,8 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             applyIfPresent(targetV, row, adder::setVoltageSetpoint);
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                    .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
             return adder;
         }
     }

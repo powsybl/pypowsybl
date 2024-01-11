@@ -549,7 +549,7 @@ def test_create_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'bus_id': 'B1', 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'target_v': 400, 'voltage_regulator_on': True}
+         'target_v': 400, 'voltage_regulator_on': True, 'regulating_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 
@@ -561,6 +561,9 @@ def test_create_network_and_run_loadflow():
     assert line.q2 == pytest.approx(-10, abs=1e-2)
     assert line.p1 == pytest.approx(100, abs=1e-1)
     assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+    generator = n.get_generators().loc['GEN']
+    assert generator.regulated_element_id == 'LOAD'
 
 
 def test_create_node_breaker_network_and_run_loadflow():
@@ -605,7 +608,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'node': 3, 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'target_v': 400, 'voltage_regulator_on': True}
+         'target_v': 400, 'voltage_regulator_on': True, 'regulating_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 
@@ -617,6 +620,9 @@ def test_create_node_breaker_network_and_run_loadflow():
     assert line.q2 == pytest.approx(-10, abs=1e-2)
     assert line.p1 == pytest.approx(100, abs=1e-1)
     assert line.q1 == pytest.approx(9.7, abs=1e-1)
+
+    generator = n.get_generators().loc['GEN']
+    assert generator.regulated_element_id == 'LOAD'
 
 
 def test_create_limits():
