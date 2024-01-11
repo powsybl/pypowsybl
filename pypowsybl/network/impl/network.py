@@ -258,7 +258,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                        edge_name_displayed: bool = False) -> None:
         """
         .. deprecated:: 1.1.0
-        Use :meth:`write_network_area_diagram` with `NadParameters` instead.
+        Use :class:`write_network_area_diagram_svg` with  `NadParameters` instead.
 
         Create a network area diagram in SVG format and write it to a file.
         Args:
@@ -271,12 +271,12 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         nad_p = NadParameters(edge_name_displayed=edge_name_displayed)
         self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                            low_nominal_voltage_bound, nad_p)
+                                        low_nominal_voltage_bound, nad_p)
 
     def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
-                                       depth: int = 0, high_nominal_voltage_bound: float = -1,
-                                       low_nominal_voltage_bound: float = -1,
-                                       nad_parameters: NadParameters = None) -> None:
+                                   depth: int = 0, high_nominal_voltage_bound: float = -1,
+                                   low_nominal_voltage_bound: float = -1,
+                                   nad_parameters: NadParameters = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 

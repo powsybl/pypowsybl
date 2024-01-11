@@ -285,6 +285,14 @@ public:
     void nad_to_c_struct(nad_parameters& params) const;
 
     bool edge_name_displayed;
+    bool edge_info_along_edge;
+    bool id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    bool bus_legend;
+    bool substation_description_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);

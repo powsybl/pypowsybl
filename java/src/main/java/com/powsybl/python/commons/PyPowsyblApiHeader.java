@@ -1012,6 +1012,54 @@ public final class PyPowsyblApiHeader {
 
         @CField("edge_name_displayed")
         boolean isEdgeNameDisplayed();
+
+        @CField("id_displayed")
+        void setIdDisplayed(boolean idDisplayed);
+
+        @CField("id_displayed")
+        boolean isIdDisplayed();
+
+        @CField("edge_info_along_edge")
+        void setEdgeInfoAlongEdge(boolean edgeInfoAlongEdge);
+
+        @CField("edge_info_along_edge")
+        boolean isEdgeInfoAlongEdge();
+
+        @CField("power_value_precision")
+        void setPowerValuePrecision(int powerValuePrecision);
+
+        @CField("power_value_precision")
+        int getPowerValuePrecision();
+
+        @CField("current_value_precision")
+        void setCurrentValuePrecision(int currentValuePrecision);
+
+        @CField("current_value_precision")
+        int getCurrentValuePrecision();
+
+        @CField("angle_value_precision")
+        void setAngleValuePrecision(int angleValuePrecision);
+
+        @CField("angle_value_precision")
+        int getAngleValuePrecision();
+
+        @CField("voltage_value_precision")
+        void setVoltageValuePrecision(int voltageValuePrecision);
+
+        @CField("voltage_value_precision")
+        int getVoltageValuePrecision();
+
+        @CField("bus_legend")
+        void setBusLegend(boolean busLegend);
+
+        @CField("bus_legend")
+        boolean isBusLegend();
+
+        @CField("substation_description_displayed")
+        void setSubstationDescriptionDisplayed(boolean substationDescriptionDisplayed);
+
+        @CField("substation_description_displayed")
+        boolean isSubstationDescriptionDisplayed();
     }
 
     @CEnum("DynamicMappingType")
