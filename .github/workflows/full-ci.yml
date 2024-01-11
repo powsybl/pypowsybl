@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2023-11-13-f6b0c51
+    container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
     strategy:
       matrix:
         python:
@@ -43,7 +43,16 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: yum install -y rh-maven33-maven zlib-devel.x86_64
+        run: |
+          echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
+          apt-get update
+          apt install -y wget
+
+      - name: Install Maven
+        run: |
+          wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+          tar xf /tmp/apache-maven-*.tar.gz -C /opt
+          echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -65,7 +74,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          scl enable rh-maven33 'python3 setup.py bdist_wheel'
+          python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel

@@ -6,8 +6,8 @@
  */
 package com.powsybl.dataframe.loadflow.validation;
 
-import com.powsybl.iidm.network.Branch;
 import com.powsybl.iidm.network.StaticVarCompensator;
+import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.util.TwtData;
 import com.powsybl.loadflow.validation.io.ValidationWriter;
 
@@ -82,7 +82,7 @@ public class InMemoryValidationWriter implements ValidationWriter {
     }
 
     @Override
-    public void write(String twtId, double error, double upIncrement, double downIncrement, double rho, double rhoPreviousStep, double rhoNextStep, int tapPosition, int lowTapPosition, int highTapPosition, double targetV, Branch.Side regulatedSide, double v, boolean connected, boolean mainComponent, boolean validated) throws IOException {
+    public void write(String twtId, double error, double upIncrement, double downIncrement, double rho, double rhoPreviousStep, double rhoNextStep, int tapPosition, int lowTapPosition, int highTapPosition, double targetV, TwoSides regulatedSide, double v, boolean connected, boolean mainComponent, boolean validated) throws IOException {
         twtData.add(new TwtValidationData(twtId, error, upIncrement, downIncrement, rho, rhoPreviousStep, rhoNextStep, tapPosition, lowTapPosition, highTapPosition, targetV, regulatedSide, v, connected, mainComponent, validated));
     }
 

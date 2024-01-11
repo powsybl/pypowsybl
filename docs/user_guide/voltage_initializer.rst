@@ -38,7 +38,6 @@ Here is a simple starting example:
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
-    params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
     results = v_init.run(n, params)

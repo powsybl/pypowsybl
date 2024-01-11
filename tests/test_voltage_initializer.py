@@ -18,7 +18,6 @@ def test_parameters():
     params.add_constant_q_generators(["gen1", "gen2"])
     params.add_variable_two_windings_transformers(["twt1", "twt2"])
 
-    params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.add_specific_voltage_limits({"vl_id": (0.5, 1.2)})
 
     params.add_specific_low_voltage_limits([("vl_id", True, 0.5)])

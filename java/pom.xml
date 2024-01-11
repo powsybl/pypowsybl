@@ -68,8 +68,8 @@
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2023.3.2</powsybl-dependencies.version>
-        <powsybl-open-reac.version>0.3.0</powsybl-open-reac.version>
+        <powsybl-dependencies.version>2023.4.0</powsybl-dependencies.version>
+        <powsybl-open-reac.version>0.5.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
 
@@ -313,7 +313,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-xml-converter</artifactId>
+            <artifactId>powsybl-iidm-serde</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
