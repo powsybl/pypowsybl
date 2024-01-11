@@ -47,11 +47,16 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages
+      - name: Install Linux packages (Debian)
+        if: matrix.python.version != '3.12'
         run: |
           echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
           apt-get update
           apt install -y wget
+
+      - name: Install Linux packages (Alma Linux)
+        if: matrix.python.version == '3.12'
+        run: dnf install -y wget
 
       - name: Install Maven
         run: |
