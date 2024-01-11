@@ -8,6 +8,7 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
 import com.powsybl.dynawaltz.models.events.EventInjectionDisconnection;
@@ -72,6 +73,11 @@ public class EventSupplier implements EventModelsSupplier {
                 }
             }
         });
+    }
+
+    @Override
+    public List<EventModel> get(Network network, Reporter reporter) {
+        return get(network);
     }
 
     @Override

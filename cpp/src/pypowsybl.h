@@ -285,6 +285,14 @@ public:
     void nad_to_c_struct(nad_parameters& params) const;
 
     bool edge_name_displayed;
+    bool edge_info_along_edge;
+    bool id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    bool bus_legend;
+    bool substation_description_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -584,7 +592,6 @@ void voltageInitializerAddSpecificHighVoltageLimits(const JavaHandle& paramsHand
 void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
-void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr);
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);

@@ -107,14 +107,6 @@ public final class VoltageInitializerCFunctions {
         doCatch(exceptionHandlerPtr, () -> params.addVariableTwoWindingsTransformers(List.of(id)));
     }
 
-    @CEntryPoint(name = "voltageInitializerAddAlgorithmParam")
-    public static void addAlgorithmParam(IsolateThread thread, ObjectHandle paramsHandle, CCharPointer keyPtr,
-            CCharPointer valuePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-        doCatch(exceptionHandlerPtr,
-            () -> params.addAlgorithmParam(CTypeUtil.toString(keyPtr), CTypeUtil.toString(valuePtr)));
-    }
-
     @CEntryPoint(name = "voltageInitializerSetObjective")
     public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
             VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {

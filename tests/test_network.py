@@ -93,7 +93,8 @@ def test_save_ampl():
                                'ampl_network_substations.txt', 'ampl_network_tct.txt', 'ampl_network_loads.txt',
                                'ampl_network_lcc_converter_stations.txt', 'ampl_network_static_var_compensators.txt',
                                'ampl_network_hvdc.txt', 'ampl_network_limits.txt', 'ampl_network_shunts.txt',
-                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt']
+                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt',
+                               'ampl_headers.txt']
         assert len(file_names) == len(file_names_expected)
         for file_name in file_names:
             assert file_name in file_names_expected
@@ -147,7 +148,7 @@ def test_save_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
+    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
 
 
 def test_get_import_parameters():
@@ -163,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 12 == len(parameters)
+    assert 16 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -174,7 +175,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = set(pp.network.get_export_formats())
-    assert set(['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']).intersection(formats)
+    assert {'AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM', 'JIIDM'}.intersection(formats)
 
 
 def test_load_network():
@@ -851,7 +852,16 @@ def test_nad():
     assert re.search('.*<svg.*', nad.svg)
     nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
     assert re.search('.*<svg.*', nad.svg)
-    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True))
+    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                         id_displayed=True,
+                                                                         edge_info_along_edge=False,
+                                                                         power_value_precision=1,
+                                                                         angle_value_precision=0,
+                                                                         current_value_precision=1,
+                                                                         voltage_value_precision=0,
+                                                                         bus_legend=False,
+                                                                         substation_description_displayed=True
+                                                                         ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
@@ -862,7 +872,15 @@ def test_nad():
                                          depth=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
-        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True))
+        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                            id_displayed=True,
+                                                                            edge_info_along_edge=False,
+                                                                            power_value_precision=1,
+                                                                            angle_value_precision=0,
+                                                                            current_value_precision=1,
+                                                                            voltage_value_precision=0,
+                                                                            bus_legend=False,
+                                                                            substation_description_displayed=True))
 
 
 def test_nad_displayed_voltage_levels():

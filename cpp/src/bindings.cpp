@@ -181,7 +181,6 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_add_specific_low_voltage_limits", &pypowsybl::voltageInitializerAddSpecificLowVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
     m.def("voltage_initializer_add_specific_high_voltage_limits", &pypowsybl::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
 
-    m.def("voltage_initializer_add_algorithm_param", &pypowsybl::voltageInitializerAddAlgorithmParam, py::arg("params_handle"), py::arg("key_ptr"), py::arg("value_ptr"));
     m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
     m.def("voltage_initializer_set_objective_distance", &pypowsybl::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
     m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
@@ -475,7 +474,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
-        .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed);
+        .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
+        .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
+        .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)
+        .def_readwrite("current_value_precision", &pypowsybl::NadParameters::current_value_precision)
+        .def_readwrite("angle_value_precision", &pypowsybl::NadParameters::angle_value_precision)
+        .def_readwrite("voltage_value_precision", &pypowsybl::NadParameters::voltage_value_precision)
+        .def_readwrite("id_displayed", &pypowsybl::NadParameters::id_displayed)
+        .def_readwrite("bus_legend", &pypowsybl::NadParameters::bus_legend)
+        .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));

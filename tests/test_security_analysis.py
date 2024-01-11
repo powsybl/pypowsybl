@@ -47,7 +47,7 @@ def test_ac_security_analysis():
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
         data=[
-            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
+            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', 'permanent', 500, 2147483647, 1, 1047.825769, 'TWO'],
             ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
         ])
     pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
@@ -207,8 +207,8 @@ def test_security_analysis_parameters():
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
-              ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 1008.93, 'ONE'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 456.77, 'ONE'],
+              ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 1008.93, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
@@ -220,7 +220,7 @@ def test_security_analysis_parameters():
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 456.77, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 

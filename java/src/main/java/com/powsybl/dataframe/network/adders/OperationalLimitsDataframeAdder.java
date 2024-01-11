@@ -139,12 +139,12 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     /**
      * Wraps a branch in a flows limits holder view
      */
-    private static FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, Branch.Side side) {
+    private static FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, TwoSides side) {
         return new FlowsLimitsHolder() {
 
             @Override
             public Collection<OperationalLimits> getOperationalLimits() {
-                return side == Branch.Side.ONE ? branch.getOperationalLimits1() : branch.getOperationalLimits2();
+                return side == TwoSides.ONE ? branch.getOperationalLimits1() : branch.getOperationalLimits2();
             }
 
             @Override
@@ -154,7 +154,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimits getNullableCurrentLimits() {
-                return side == Branch.Side.ONE ? branch.getNullableCurrentLimits1() : branch.getNullableCurrentLimits2();
+                return side == TwoSides.ONE ? branch.getNullableCurrentLimits1() : branch.getNullableCurrentLimits2();
             }
 
             @Override
@@ -164,7 +164,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public ActivePowerLimits getNullableActivePowerLimits() {
-                return side == Branch.Side.ONE ? branch.getNullableActivePowerLimits1() : branch.getNullableActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.getNullableActivePowerLimits1() : branch.getNullableActivePowerLimits2();
             }
 
             @Override
@@ -179,25 +179,25 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == Branch.Side.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
             }
 
             @Override
             public ApparentPowerLimitsAdder newApparentPowerLimits() {
-                return side == Branch.Side.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
+                return side == TwoSides.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
             }
 
             @Override
             public ActivePowerLimitsAdder newActivePowerLimits() {
-                return side == Branch.Side.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
             }
         };
     }
 
-    private static Branch.Side toBranchSide(TemporaryLimitData.Side side) {
+    private static TwoSides toBranchSide(TemporaryLimitData.Side side) {
         return switch (side) {
-            case ONE -> Branch.Side.ONE;
-            case TWO -> Branch.Side.TWO;
+            case ONE -> TwoSides.ONE;
+            case TWO -> TwoSides.TWO;
             default -> throw new PowsyblException("Invalid value for branch side: " + side);
         };
     }

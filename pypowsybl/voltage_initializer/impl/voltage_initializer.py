@@ -12,7 +12,6 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_variable_two_windings_transformers,
     voltage_initializer_add_specific_low_voltage_limits,
     voltage_initializer_add_specific_high_voltage_limits,
-    voltage_initializer_add_algorithm_param,
     VoltageInitializerObjective,
     voltage_initializer_set_objective,
     voltage_initializer_set_objective_distance,
@@ -108,16 +107,6 @@ class VoltageInitializerParameters:
         for key in limits:
             self.add_specific_low_voltage_limits([(key, True, limits[key][0])])
             self.add_specific_high_voltage_limits([(key, True, limits[key][1])])
-
-    def add_algorithm_param(self, parameters_dict: Dict[str, str]) -> None:
-        '''
-        Add list of entries to VoltageInitializer. Danger zone as it tweaks the model directly.
-
-        Args:
-            parameters_dict: algorithm params are stored as (key, values) like a dict
-        '''
-        for key in parameters_dict:
-            voltage_initializer_add_algorithm_param(self._handle, key, parameters_dict[key])
 
     def set_objective(self, objective: VoltageInitializerObjective) -> None:
         '''
