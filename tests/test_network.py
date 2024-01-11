@@ -560,7 +560,7 @@ def test_update_generators_data_frame():
     generators = n.get_generators()
     assert 607 == generators['target_p']['GEN']
     assert generators['voltage_regulator_on']['GEN']
-    assert '' == generators['regulated_element_id']['GEN']
+    assert 'GEN' == generators['regulated_element_id']['GEN']
     generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
                                columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
     n.update_generators(generators2)
@@ -587,13 +587,12 @@ def test_regulated_terminal_node_breaker():
 def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
-    assert '' == generators['regulated_element_id']['GEN']
-
+    assert 'GEN' == generators['regulated_element_id']['GEN']
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='NHV1')
-    with pytest.raises(pp.PyPowsyblError):
-        n.update_generators(id='GEN', regulated_element_id='LOAD')
-
+    n.update_generators(id='GEN', regulated_element_id='LOAD')
+    generators = n.get_generators()
+    assert 'LOAD' == generators['regulated_element_id']['GEN']
 
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()

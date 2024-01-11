@@ -14,6 +14,8 @@ import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -217,4 +219,18 @@ public final class NetworkUtil {
         return feeders.build();
     }
 
+    public static void setRegulatingTerminal(Consumer<Terminal> adder, Network network, String elementId) {
+        Identifiable<?> injection = network.getIdentifiable(elementId);
+        if (injection instanceof Injection<?>) {
+            adder.accept(((Injection<?>) injection).getTerminal());
+        } else {
+            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
+                    ": the regulated element may only be a busbar section or an injection.");
+        }
+    }
+
+    public static String getRegulatedElementId(Supplier<Terminal> regulatingTerminalGetter) {
+        Terminal terminal = regulatingTerminalGetter.get();
+        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
 }
