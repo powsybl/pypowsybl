@@ -1533,10 +1533,6 @@ void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& para
     pypowsybl::callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
 }
 
-void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr) {
-    pypowsybl::callJava(::voltageInitializerAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
-}
-
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
     pypowsybl::callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
 }

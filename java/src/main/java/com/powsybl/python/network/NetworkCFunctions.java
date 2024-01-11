@@ -123,7 +123,7 @@ public final class NetworkCFunctions {
         ptr.setName(CTypeUtil.toCharPtr(network.getNameOrId()));
         ptr.setSourceFormat(CTypeUtil.toCharPtr(network.getSourceFormat()));
         ptr.setForecastDistance(network.getForecastDistance());
-        ptr.setCaseDate(network.getCaseDate().getMillis() / 1000.0d);
+        ptr.setCaseDate(network.getCaseDate().toInstant().toEpochMilli() / 1000.0d);
         return ptr;
     }
 

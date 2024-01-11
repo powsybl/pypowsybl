@@ -146,24 +146,24 @@ public final class NetworkAreaDiagramUtil {
             this.visitedVoltageLevels = visitedVoltageLevels;
         }
 
-        public void visitLine(Line line, Branch.Side side) {
+        public void visitLine(Line line, TwoSides side) {
             this.visitBranch(line, side);
         }
 
-        public void visitTwoWindingsTransformer(TwoWindingsTransformer twt, Branch.Side side) {
+        public void visitTwoWindingsTransformer(TwoWindingsTransformer twt, TwoSides side) {
             this.visitBranch(twt, side);
         }
 
-        public void visitThreeWindingsTransformer(ThreeWindingsTransformer twt, ThreeWindingsTransformer.Side side) {
-            if (side == ThreeWindingsTransformer.Side.ONE) {
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.TWO));
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.THREE));
-            } else if (side == ThreeWindingsTransformer.Side.TWO) {
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.ONE));
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.THREE));
+        public void visitThreeWindingsTransformer(ThreeWindingsTransformer twt, ThreeSides side) {
+            if (side == ThreeSides.ONE) {
+                this.visitTerminal(twt.getTerminal(ThreeSides.TWO));
+                this.visitTerminal(twt.getTerminal(ThreeSides.THREE));
+            } else if (side == ThreeSides.TWO) {
+                this.visitTerminal(twt.getTerminal(ThreeSides.ONE));
+                this.visitTerminal(twt.getTerminal(ThreeSides.THREE));
             } else {
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.ONE));
-                this.visitTerminal(twt.getTerminal(ThreeWindingsTransformer.Side.TWO));
+                this.visitTerminal(twt.getTerminal(ThreeSides.ONE));
+                this.visitTerminal(twt.getTerminal(ThreeSides.TWO));
             }
 
         }
@@ -172,7 +172,7 @@ public final class NetworkAreaDiagramUtil {
             converterStation.getOtherConverterStation().ifPresent(c -> this.visitTerminal(c.getTerminal()));
         }
 
-        private void visitBranch(Branch<?> branch, Branch.Side side) {
+        private void visitBranch(Branch<?> branch, TwoSides side) {
             this.visitTerminal(branch.getTerminal(IidmUtils.getOpposite(side)));
         }
 

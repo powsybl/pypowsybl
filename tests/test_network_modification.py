@@ -673,10 +673,10 @@ def test_create_coupling_device():
     ])
     pp.network.create_coupling_device(n, coupling_device)
     switches = n.get_switches()
-    assert len(switches.index) == 7
-    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches.index) == 5
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
-    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == True].index) == 2
     assert len(switches[switches["open"] == False].index) == 3
 
 
@@ -696,10 +696,10 @@ def test_create_coupling_device_kwargs():
     assert len(n.get_switches().index) == 0
     pp.network.create_coupling_device(n, bus_or_busbar_section_id_1='BBS1', bus_or_busbar_section_id_2='BBS2', switch_prefix_id='sw')
     switches = n.get_switches()
-    assert len(switches.index) == 7
-    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches.index) == 5
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
-    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == True].index) == 2
     assert len(switches[switches["open"] == False].index) == 3
 
 
@@ -730,9 +730,9 @@ def test_remove_feeder_bay():
     pp.network.create_line_bays(n, df)
     assert 'new_line' in n.get_lines().index
     assert 'new_line1_BREAKER' in n.get_switches().index
-    assert 'new_line1_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR_25_0' in n.get_switches().index
     assert 'new_line2_BREAKER' in n.get_switches().index
-    assert 'new_line2_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR_8_0' in n.get_switches().index
     pp.network.remove_feeder_bays(n, 'new_line')
     assert 'new_line1_BREAKER' not in n.get_switches().index
     assert 'new_line1_DISCONNECTOR' not in n.get_switches().index

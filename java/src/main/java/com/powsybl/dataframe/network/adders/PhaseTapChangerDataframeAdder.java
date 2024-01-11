@@ -138,7 +138,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
         if (regulatedSideStr.isEmpty()) {
             return;
         }
-        Branch.Side regulatedSide = Branch.Side.valueOf(regulatedSideStr);
+        TwoSides regulatedSide = TwoSides.valueOf(regulatedSideStr);
         adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
     }
 
