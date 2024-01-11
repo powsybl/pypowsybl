@@ -19,26 +19,31 @@ jobs:
             name: cp38,
             abi: cp38,
             version: '3.8',
+            container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
           }
           - {
             name: cp39,
             abi: cp39,
             version: '3.9',
+            container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
           }
           - {
             name: cp310,
             abi: cp310,
             version: '3.10',
+            container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
           }
           - {
             name: cp311,
             abi: cp311,
             version: '3.11',
+            container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
           }
           - {
             name: cp312,
             abi: cp312,
             version: '3.12',
+            container: quay.io/pypa/manylinux_2_28_x86_64:2024-01-08-eb135ed
           }
 
     steps:
