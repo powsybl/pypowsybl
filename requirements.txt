@@ -1,5 +1,6 @@
 # actual dependencies
-pandas==2.0.3
+pandas==2.1.1; python_version == "3.12"
+pandas==2.0.3; python_version < "3.12"
 prettytable==2.0.0
 networkx
 matplotlib
@@ -10,7 +11,7 @@ pydata-sphinx-theme==0.6.3
 
 # CI dependencies
 wheel==0.38.1
-coverage==5.5
+coverage==7.3.2
 pytest>=6.2.5
 mypy==0.982
 pandas-stubs==1.2.0.47
