@@ -11,19 +11,22 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-01-08-eb135ed
+    container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
     strategy:
       matrix:
         python:
           - {
-            name: cp312,
-            abi: cp312,
-            version: '3.12',
+            name: cp38,
+            abi: cp38,
+            version: '3.8',
           }
 
     steps:
-      - name: Install Linux packages (Alma Linux)
-        run: dnf install -y wget
+      - name: Install Linux packages
+        run: |
+          echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
+          apt-get update
+          apt install -y wget
 
       - name: Install Maven
         run: |
@@ -107,8 +110,8 @@ jobs:
           }
         python:
           - {
-            name: cp312,
-            version: '3.12',
+            name: cp38,
+            version: '3.8',
           }
 
     steps:
