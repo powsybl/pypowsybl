@@ -261,7 +261,8 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
+                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -273,48 +274,6 @@ public final class NetworkDataframes {
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
-    }
-
-    private static String getRegulatedElementId(Injection<?> injection) {
-        Terminal terminal;
-        if (injection instanceof Generator generator) {
-            terminal = generator.getRegulatingTerminal();
-        } else if (injection instanceof VscConverterStation converterStation) {
-            terminal = converterStation.getRegulatingTerminal();
-        } else if (injection instanceof StaticVarCompensator svc) {
-            terminal = svc.getRegulatingTerminal();
-        } else {
-            throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
-        }
-        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-            //Not supported for the moment
-            return null;
-        }
-        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
-    }
-
-    private static void setRegulatedElement(Injection<?> injection, String elementId) {
-        Network network = injection.getNetwork();
-        Identifiable<?> identifiable = network.getIdentifiable(elementId);
-        if (identifiable instanceof Injection) {
-            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
-            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                        ": not currently supported for bus breaker topologies.");
-            }
-            if (injection instanceof Generator) {
-                ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else if (injection instanceof VscConverterStation) {
-                ((VscConverterStation) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else if (injection instanceof StaticVarCompensator) {
-                ((StaticVarCompensator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else {
-                throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
-            }
-        } else {
-            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                    ": the regulated element may only be a busbar section or an injection.");
-        }
     }
 
     private static NetworkDataframeMapper subNetworks() {
@@ -656,7 +615,8 @@ public final class NetworkDataframes {
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
+                        (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
@@ -680,7 +640,8 @@ public final class NetworkDataframes {
                 .doubles("target_q", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
+                        (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
