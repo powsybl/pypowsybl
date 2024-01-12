@@ -57,6 +57,24 @@ to control the size of the sub network:
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
 
+Nominal voltage bounds can be defined to further filter the output network:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee300()
+    >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1, low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
+
+.. image:: ../_static/images/ieee300_subnetwork_vl1_filtered.svg
+
+If no voltage level ID is given as an input, only nominal voltage bounds are used to filter the network:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee30()
+    >>> network.write_network_area_diagram_svg('ieee30.svg', low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
+
+.. image:: ../_static/images/ieee30_subnetwork_filtered_no_vl_id.svg
+
 Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers, for instance:
 
 .. code-block:: python
