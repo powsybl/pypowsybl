@@ -48,7 +48,7 @@ def test_ac_security_analysis():
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
         data=[
-            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', '', 500, 2147483647, 1, 1047.825769, 'TWO'],
+            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', 'permanent', 500, 2147483647, 1, 1047.825769, 'TWO'],
             ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
         ])
     pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
@@ -208,8 +208,8 @@ def test_security_analysis_parameters():
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
-              ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 1008.93, 'ONE'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 456.77, 'ONE'],
+              ['First contingency', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 1008.93, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
@@ -221,7 +221,7 @@ def test_security_analysis_parameters():
         index=['contingency_id', 'subject_id'],
         columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
                  'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', '', 400, 2147483647, 1, 456.77, 'ONE'],
+        data=[['', 'NHV1_NHV2_1', '', 'CURRENT', 'permanent', 400, 2147483647, 1, 456.77, 'ONE'],
               ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.26, '']])
     pd.testing.assert_frame_equal(expected, result.limit_violations, check_dtype=False, atol=1e-2)
 
@@ -328,3 +328,10 @@ def test_switch_action():
     assert df.loc['', '', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
     assert df.loc['Breaker contingency', '', 'LINE_S3S4']['p1'] == pytest.approx(0.0, abs=1e-2)
     assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
+
+def test_tie_line_contingency():
+    n = pp.network._create_network("eurostag_tutorial_example1_with_tie_line")
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'tie line contingency')
+    sa_result = sa.run_ac(n)
+    assert 'tie line contingency' in sa_result.post_contingency_results.keys()

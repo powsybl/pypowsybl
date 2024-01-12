@@ -16,7 +16,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
-import com.powsybl.python.dynamic.DynamicModelMapper;
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -59,7 +59,7 @@ public class CurrentLimitAutomatonAdder implements DynamicMappingAdder {
     }
 
     @Override
-    public void addElements(DynamicModelMapper modelMapping, UpdatingDataframe dataframe) {
+    public void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
         CurrentLimitAutomatonSeries series = new CurrentLimitAutomatonSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             modelMapping.addCurrentLimitAutomaton(

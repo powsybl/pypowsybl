@@ -1,6 +1,6 @@
 package com.powsybl.dataframe.loadflow.validation;
 
-import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.TwoSides;
 
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
@@ -17,13 +17,15 @@ class TwtValidationData {
     int lowTapPosition;
     int highTapPosition;
     double targetV;
-    Branch.Side regulatedSide;
+    TwoSides regulatedSide;
     double v;
     boolean connected;
     boolean mainComponent;
     boolean validated;
 
-    TwtValidationData(String id, double error, double upIncrement, double downIncrement, double rho, double rhoPreviousStep, double rhoNextStep, int tapPosition, int lowTapPosition, int highTapPosition, double targetV, Branch.Side regulatedSide, double v, boolean connected, boolean mainComponent, boolean validated) {
+    TwtValidationData(String id, double error, double upIncrement, double downIncrement, double rho, double rhoPreviousStep,
+                      double rhoNextStep, int tapPosition, int lowTapPosition, int highTapPosition, double targetV,
+                      TwoSides regulatedSide, double v, boolean connected, boolean mainComponent, boolean validated) {
         this.id = id;
         this.error = error;
         this.upIncrement = upIncrement;
@@ -86,7 +88,7 @@ class TwtValidationData {
         return targetV;
     }
 
-    Branch.Side getRegulatedSide() {
+    TwoSides getRegulatedSide() {
         return regulatedSide;
     }
 

@@ -8,17 +8,14 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynawaltz.models.automatons.CurrentLimitAutomaton;
 import com.powsybl.dynawaltz.models.generators.SynchronousGenerator;
 import com.powsybl.dynawaltz.models.loads.BaseLoad;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformer;
-import com.powsybl.dynawaltz.models.utils.SideConverter;
-import com.powsybl.iidm.network.Branch;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Load;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -30,10 +27,21 @@ import java.util.stream.Collectors;
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
-public class DynamicModelMapper implements DynamicModelsSupplier {
+public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
     private final List<Function<Network, DynamicModel>> dynamicModelList = new ArrayList<>();
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public List<DynamicModel> get(Network network, Reporter reporter) {
+        return get(network);
+    }
+
+    @Override
     public List<DynamicModel> get(Network network) {
         return dynamicModelList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).collect(Collectors.toList());
     }
@@ -97,13 +105,13 @@ public class DynamicModelMapper implements DynamicModelsSupplier {
         addGeneratorSynchronous(staticId, parameterSetId, "FourWindingsProportionalRegulations");
     }
 
-    public void addCurrentLimitAutomaton(String staticId, String parameterSetId, Branch.Side side) {
+    public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
         dynamicModelList.add(network -> {
             Branch<?> branch = network.getBranch(staticId);
             if (branch == null) {
                 throw new PowsyblException("Branch '" + staticId + "' not found");
             }
-            return new CurrentLimitAutomaton(staticId, parameterSetId, branch, SideConverter.convert(side), "CurrentLimitAutomaton");
+            return new CurrentLimitAutomaton(staticId, parameterSetId, branch, side, "CurrentLimitAutomaton");
         });
     }
 }

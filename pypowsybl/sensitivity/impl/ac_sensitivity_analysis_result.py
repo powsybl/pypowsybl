@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import Dict, List, Optional
 import pandas as pd
 from pypowsybl import _pypowsybl
@@ -25,7 +26,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
                  function_data_frame_index: Dict[str, List[str]]):
         DcSensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
 
-    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
+    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> \
+    Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
         Use :meth:`get_sensitivity_matrix` instead.
@@ -37,9 +39,12 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
+        warnings.warn("get_bus_voltages_sensitivity_matrix is deprecated, use get_sensitivity_matrix instead",
+                      DeprecationWarning)
         return self.get_sensitivity_matrix(matrix_id, contingency_id)
 
-    def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
+    def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[
+        pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
         Use :meth:`get_reference_matrix` instead.
@@ -52,4 +57,6 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
+        warnings.warn("get_reference_voltages is deprecated, use get_reference_matrix instead",
+                      DeprecationWarning)
         return self.get_reference_matrix(matrix_id, contingency_id, 'reference_voltages')

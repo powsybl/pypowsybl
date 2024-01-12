@@ -274,8 +274,26 @@ public:
     bool center_name;
     bool diagonal_label;
     bool nodes_infos;
+    bool tooltip_enabled;
     bool topological_coloring;
     std::string component_library;
+};
+
+class NadParameters {
+public:
+    NadParameters(nad_parameters* src);
+    std::shared_ptr<nad_parameters> to_c_struct() const;
+    void nad_to_c_struct(nad_parameters& params) const;
+
+    bool edge_name_displayed;
+    bool edge_info_along_edge;
+    bool id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    bool bus_legend;
+    bool substation_description_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -383,9 +401,9 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -556,6 +574,8 @@ void removeElementsModification(pypowsybl::JavaHandle network, const std::vector
 
 SldParameters* createSldParameters();
 
+NadParameters* createNadParameters();
+
 //=======dynamic modeling for dynawaltz package==========
 
 //handle creation
@@ -592,7 +612,6 @@ void voltageInitializerAddSpecificHighVoltageLimits(const JavaHandle& paramsHand
 void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
-void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr);
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);

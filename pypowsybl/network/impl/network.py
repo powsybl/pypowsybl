@@ -41,6 +41,7 @@ from pypowsybl.report import Reporter
 from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
+from .nad_parameters import NadParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
@@ -124,8 +125,10 @@ class Network:  # pylint: disable=too-many-public-methods
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
              reporter: Reporter = None) -> None:
         """
-        Deprecated, use :meth:`save` instead.
+        .. deprecated:: 1.1.0
+        Use :meth:`save` instead.
         """
+        warnings.warn("dump is deprecated, use save instead", DeprecationWarning)
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
@@ -159,8 +162,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
         """
-        Deprecated, use :meth:`save_to_string` instead.
+        .. deprecated:: 1.1.0
+        Use :meth:`save_to_string` instead.
         """
+        warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
     def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
@@ -180,7 +185,8 @@ class Network:  # pylint: disable=too-many-public-methods
         return _pp.save_network_to_string(self._handle, format, parameters,
                                           None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
-    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> io.BytesIO:
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
+                              reporter: Reporter = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
         In the current implementation, whatever the specified format is (so a format creating a single file or a format
@@ -198,7 +204,6 @@ class Network:  # pylint: disable=too-many-public-methods
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
                                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
-
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -252,30 +257,58 @@ class Network:  # pylint: disable=too-many-public-methods
                                        low_nominal_voltage_bound: float = -1,
                                        edge_name_displayed: bool = False) -> None:
         """
+        .. deprecated:: 1.1.0
+        Use :class:`write_network_area_diagram_svg` with  `NadParameters` instead.
+
+        Create a network area diagram in SVG format and write it to a file.
+        Args:
+            svg_file: a svg file path
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            edge_name_displayed: if true displays the edge's names
+        """
+        nad_p = NadParameters(edge_name_displayed=edge_name_displayed)
+        self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
+                                        low_nominal_voltage_bound, nad_p)
+
+    def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
+                                   depth: int = 0, high_nominal_voltage_bound: float = -1,
+                                   low_nominal_voltage_bound: float = -1,
+                                   nad_parameters: NadParameters = None) -> None:
+        """
         Create a network area diagram in SVG format and write it to a file.
 
         Args:
             svg_file: a svg file path
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            nad_parameters: parameters for network area diagram
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                           low_nominal_voltage_bound, edge_name_displayed)
+                                           low_nominal_voltage_bound, nad_p)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 edge_name_displayed: bool = False) -> Svg:
+                                 nad_parameters: NadParameters = None) -> Svg:
         """
         Create a network area diagram.
 
         Args:
-            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            voltage_level_ids: the voltage level IDs, centers of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            nad_parameters: parameters for network area diagram
 
         Returns:
             the network area diagram
@@ -284,9 +317,10 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    edge_name_displayed))
+                                                    nad_p))
 
     def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, List[str]],
                                                           depth: int = 0) -> List[str]:
@@ -3209,8 +3243,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_current_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
+        .. deprecated::
+        Use :meth:`get_operational_limits` instead.
         Get the list of all current limits on the network paired with their branch id.
-        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -4425,6 +4460,10 @@ class Network:  # pylint: disable=too-many-public-methods
             _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> DataFrame:
+        """
+        .. deprecated::
+        Use :meth:`get_extensions` instead.
+        """
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
 

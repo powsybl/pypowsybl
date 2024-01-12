@@ -12,7 +12,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
-import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
@@ -302,10 +302,10 @@ public final class Util {
         };
     }
 
-    public static Branch.Side convert(PyPowsyblApiHeader.BranchSide side) {
+    public static TwoSides convert(PyPowsyblApiHeader.BranchSide side) {
         return switch (side) {
-            case ONE -> Branch.Side.ONE;
-            case TWO -> Branch.Side.TWO;
+            case ONE -> TwoSides.ONE;
+            case TWO -> TwoSides.TWO;
         };
     }
 

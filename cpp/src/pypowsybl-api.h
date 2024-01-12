@@ -328,9 +328,22 @@ typedef struct sld_parameters_struct {
     unsigned char center_name;
     unsigned char diagonal_label;
     unsigned char nodes_infos;
+    unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
 } sld_parameters;
+
+typedef struct nad_parameters_struct {
+    unsigned char edge_name_displayed;
+    unsigned char edge_info_along_edge;
+    unsigned char id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    unsigned char substation_description_displayed;
+    unsigned char bus_legend;
+} nad_parameters;
 
 typedef enum {
     ALPHA_BETA_LOAD = 0,

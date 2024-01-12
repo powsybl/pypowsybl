@@ -809,14 +809,16 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
     return svgAndMetadata.get();
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed) {
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+    callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get());
 }
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed) {
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed));
+    return toString(callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get()));
 }
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth) {
@@ -1296,8 +1298,21 @@ SldParameters::SldParameters(sld_parameters* src) {
     center_name = (bool) src->center_name;
     diagonal_label = (bool) src->diagonal_label;
     nodes_infos = (bool) src->nodes_infos;
+    tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
+}
+
+NadParameters::NadParameters(nad_parameters* src) {
+    edge_name_displayed = (bool) src->edge_name_displayed;
+    edge_info_along_edge = (bool) src->edge_info_along_edge;
+    id_displayed = (bool) src->id_displayed;
+    power_value_precision = src->power_value_precision;
+    current_value_precision = src->current_value_precision;
+    angle_value_precision = src->angle_value_precision;
+    voltage_value_precision = src->voltage_value_precision;
+    substation_description_displayed = src->substation_description_displayed;
+    bus_legend = src->bus_legend;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1305,8 +1320,21 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.center_name = (unsigned char) center_name;
     res.diagonal_label = (unsigned char) diagonal_label;
     res.nodes_infos = (unsigned char) nodes_infos;
+    res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
+}
+
+void NadParameters::nad_to_c_struct(nad_parameters& res) const {
+    res.edge_name_displayed = (unsigned char) edge_name_displayed;
+    res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
+    res.id_displayed = (unsigned char) id_displayed;
+    res.power_value_precision = power_value_precision;
+    res.current_value_precision = current_value_precision;
+    res.angle_value_precision = angle_value_precision;
+    res.voltage_value_precision = voltage_value_precision;
+    res.substation_description_displayed = substation_description_displayed;
+    res.bus_legend = bus_legend;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1318,6 +1346,15 @@ std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
     });
 }
 
+std::shared_ptr<nad_parameters> NadParameters::to_c_struct() const {
+    nad_parameters* res = new nad_parameters();
+    nad_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<nad_parameters>(res, [](nad_parameters* ptr){
+        delete ptr;
+    });
+}
+
 SldParameters* createSldParameters() {
     sld_parameters* parameters_ptr = callJava<sld_parameters*>(::createSldParameters);
     auto parameters = std::shared_ptr<sld_parameters>(parameters_ptr, [](sld_parameters* ptr){
@@ -1325,6 +1362,15 @@ SldParameters* createSldParameters() {
        callJava(::freeSldParameters, ptr);
     });
     return new SldParameters(parameters.get());
+}
+
+NadParameters* createNadParameters() {
+    nad_parameters* parameters_ptr = callJava<nad_parameters*>(::createNadParameters);
+    auto parameters = std::shared_ptr<nad_parameters>(parameters_ptr, [](nad_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       callJava(::freeNadParameters, ptr);
+    });
+    return new NadParameters(parameters.get());
 }
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter) {
@@ -1538,10 +1584,6 @@ void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, co
 
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr) {
     pypowsybl::callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
-}
-
-void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr) {
-    pypowsybl::callJava(::voltageInitializerAddAlgorithmParam, paramsHandle, (char*) keyPtr.c_str(), (char*) valuePtr.c_str());
 }
 
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
