@@ -7,6 +7,7 @@ Running a security analysis
     import pandas as pd
     pd.options.display.max_columns = None
     pd.options.display.expand_frame_repr = False
+    from pypowsybl._pypowsybl import ConditionType
 
 You can use the module :mod:`pypowsybl.security` in order to perform a security analysis on a network.
 Please check out the examples below.
