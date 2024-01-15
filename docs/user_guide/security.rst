@@ -143,5 +143,6 @@ The following operator strategy define the application of the switch action 'Swi
     >>> df = sa_result.branch_results
     >>> #Get the detailed results post operator strategy
     >>> df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1']
+    240.00360040333226
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.
