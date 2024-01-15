@@ -108,3 +108,38 @@ It also possible to get flow transfer on monitored branches in case of N-1 branc
 .. testcleanup:: security.monitored_elements
 
     pd.options.display.float_format = None
+
+Operator strategies and remedial actions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pypowsybl security analysis support operator strategies and remedial actions definition.
+You can define several types of actions by calling the add_XXX_action API.
+All actions need a unique id to be referenced later at the operator strategy creation stage.
+The following example define a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_four_substations_node_breaker_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
+
+To enable the application of the action you need to define an operator strategy and add the action to it.
+An operator strategy is a set of actions to be applied after the simulation of a contingency.
+It is defined with an unique id, a reference to the id of the contingency, a list action ids and a condition.
+The following operator strategy define the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied) :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_four_substations_node_breaker_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_single_element_contingency(element_id='S4VL1_BBS_LD6_DISCONNECTOR', contingency_id='Breaker contingency')
+    >>> sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
+    >>> sa.add_operator_strategy(operator_strategy_id='OperatorStrategy1', contingency_id='Breaker contingency', action_ids=['SwitchAction'], condition_type=ConditionType.TRUE_CONDITION)
+    >>> sa.add_monitored_elements(branch_ids=['LINE_S3S4'])
+    >>> sa_result = sa.run_ac(n)
+    >>> df = sa_result.branch_results
+    >>> assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
+
+Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.

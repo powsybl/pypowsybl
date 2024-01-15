@@ -316,9 +316,9 @@ def test_load_action_with_all_violation_condition():
 def test_switch_action():
     n = pp.network.create_four_substations_node_breaker_network()
     sa = pp.security.create_analysis()
-    sa.add_single_element_contingency('S4VL1_BBS_LD6_DISCONNECTOR', 'Breaker contingency')
-    sa.add_switch_action('SwitchAction', 'S4VL1_BBS_LD6_DISCONNECTOR', False)
-    sa.add_operator_strategy('OperatorStrategy1', 'Breaker contingency', ['SwitchAction'], ConditionType.TRUE_CONDITION)
+    sa.add_single_element_contingency(element_id='S4VL1_BBS_LD6_DISCONNECTOR', contingency_id='Breaker contingency')
+    sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
+    sa.add_operator_strategy(operator_strategy_id='OperatorStrategy1', contingency_id='Breaker contingency', action_ids=['SwitchAction'], condition_type=ConditionType.TRUE_CONDITION)
     sa.add_monitored_elements(branch_ids=['LINE_S3S4'])
     sa_result = sa.run_ac(n)
     df = sa_result.branch_results
