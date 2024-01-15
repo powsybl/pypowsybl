@@ -160,7 +160,7 @@ public final class Util {
     }
 
     public static ArrayPointer<CCharPointer> createByteArray(byte[] bytes) {
-        return allocArrayPointer(CTypeUtil.toCharPtr(bytes), bytes.length);
+        return allocArrayPointer(CTypeUtil.toBytePtr(bytes), bytes.length);
     }
 
     public static int convert(SeriesDataType type) {
