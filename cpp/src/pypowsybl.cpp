@@ -712,6 +712,7 @@ py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     array* byteArray = callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
                      parameterValuesPtr.get(), parameterValues.size(), reporter == nullptr ? nullptr : *reporter);
+    py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     callJava<>(::freeNetworkBinaryBuffer, byteArray);
     return bytes;

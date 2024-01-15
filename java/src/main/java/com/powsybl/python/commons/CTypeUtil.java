@@ -37,15 +37,22 @@ public final class CTypeUtil {
         }
         // pybind11 convert std::string and char* to python utf-8 string
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-        return toCharPtr(bytes);
-    }
-
-    public static CCharPointer toCharPtr(byte[] bytes) {
         CCharPointer charPtr = UnmanagedMemory.calloc((bytes.length + 1) * SizeOf.get(CCharPointer.class));
         for (int i = 0; i < bytes.length; ++i) {
             charPtr.write(i, bytes[i]);
         }
         charPtr.write(bytes.length, (byte) 0);
+        return charPtr;
+    }
+
+    public static CCharPointer toBytePtr(byte[] bytes) {
+        if (bytes == null) {
+            return WordFactory.nullPointer();
+        }
+        CCharPointer charPtr = UnmanagedMemory.calloc(bytes.length * SizeOf.get(CCharPointer.class));
+        for (int i = 0; i < bytes.length; ++i) {
+            charPtr.write(i, bytes[i]);
+        }
         return charPtr;
     }
 
