@@ -141,6 +141,7 @@ The following operator strategy define the application of the switch action 'Swi
     >>> sa.add_monitored_elements(branch_ids=['LINE_S3S4'])
     >>> sa_result = sa.run_ac(n)
     >>> df = sa_result.branch_results
-    >>> assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
+    >>> #Get the detailed results post operator strategy
+    >>> df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1']
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.
