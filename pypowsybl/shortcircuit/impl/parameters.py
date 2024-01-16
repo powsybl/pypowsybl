@@ -22,11 +22,19 @@ class Parameters:  # pylint: disable=too-few-public-methods
     .. currentmodule:: pypowsybl.shortcircuit
 
     Args:
-        with_feeder_result: indicates if the contributions of each feeder to the short circuit current at the fault node should be computed
-        with_limit_violations: indicates whether limit violations should be returned after the computation
-        with_voltage_result: indicates if the voltage profile should be computed on every node of the network
-        min_voltage_drop_proportional_threshold: indicates a threshold to filter the voltage results. Only nodes where the voltage drop due to the short circuit is greater than this property are retained
-        study_type: indicates the type of short circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE
+        with_fortescue_result: indicates whether the currents and voltages are to be given in three-phase magnitude or
+            detailed with magnitude and angle on each phase. This parameter also applies to the feeder results and
+            voltage results.
+        with_feeder_result: indicates whether the contributions of each feeder to the short circuit current at the fault
+            node should be calculated.
+        with_limit_violations: indicates whether limit violations should be returned after the calculation. If true, a
+        list of buses where the calculated shortcircuit current is higher than the maximum admissible current (stored in
+        ip_max in the identifiableShortCircuit extension) or lower than the minimum admissible current (stored in ip_min
+        in the identifiableShortCircuit extension).
+        with_voltage_result: indicates whether the voltage profile should be calculated on every node of the network
+        min_voltage_drop_proportional_threshold: specifies a threshold for filtering the voltage results.
+            Only nodes where the voltage drop due to the short circuit is greater than this property are retained.
+        study_type: specifies the type of short circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE.
     """
 
     def __init__(self,
