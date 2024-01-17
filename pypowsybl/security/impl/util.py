@@ -110,5 +110,6 @@ def _operator_strategy_result_repr(self: OperatorStrategyResult) -> str:
            f", limit_violations=[{len(self.limit_violations)}]" \
            f")"
 
+OperatorStrategyResult.__repr__ = _operator_strategy_result_repr  # type: ignore
 
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore
