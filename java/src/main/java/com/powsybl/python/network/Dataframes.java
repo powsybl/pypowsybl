@@ -495,18 +495,18 @@ public final class Dataframes {
                 .enums("status", FaultResult.Status.class, f -> f.getStatus())
                 .doubles("short_circuit_power", FortescueFaultResult::getShortCircuitPower)
                 .strings("time_constant", f -> f.getTimeConstant() != null ? f.getTimeConstant().toString() : null)
-                .doubles("current_negative_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeAngle())
+                .doubles("current_negative_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeAngle(), false)
                 .doubles("current_positive_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getPositiveAngle())
-                .doubles("current_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeMagnitude())
+                .doubles("current_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeMagnitude(), false)
                 .doubles("current_positive_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getPositiveMagnitude())
-                .doubles("current_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroMagnitude())
-                .doubles("current_zero_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroAngle())
-                .doubles("voltage_negative_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeAngle())
+                .doubles("current_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroMagnitude(), false)
+                .doubles("current_zero_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroAngle(), false)
+                .doubles("voltage_negative_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeAngle(), false)
                 .doubles("voltage_positive_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getPositiveAngle())
-                .doubles("voltage_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeMagnitude())
+                .doubles("voltage_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeMagnitude(), false)
                 .doubles("voltage_positive_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getPositiveMagnitude())
-                .doubles("voltage_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroMagnitude())
-                .doubles("voltage_zero_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroAngle())
+                .doubles("voltage_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroMagnitude(), false)
+                .doubles("voltage_zero_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroAngle(), false)
                 .build();
     }
 
@@ -578,17 +578,17 @@ public final class Dataframes {
                 .stringsIndex("id", FortescueFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", FortescueFeederResultContext::getConnectableId)
                 .doubles("current_negative_angle", fortescueFeederResultContext ->
-                        fortescueFeederResultContext.getCurrent().getNegativeAngle())
+                        fortescueFeederResultContext.getCurrent().getNegativeAngle(), false)
                 .doubles("current_positive_angle", fortescueFeederResultContext ->
                         fortescueFeederResultContext.getCurrent().getPositiveAngle())
                 .doubles("current_negative_magnitude", fortescueFeederResultContext ->
-                        fortescueFeederResultContext.getCurrent().getNegativeMagnitude())
+                        fortescueFeederResultContext.getCurrent().getNegativeMagnitude(), false)
                 .doubles("current_positive_magnitude", fortescueFeederResultContext ->
                         fortescueFeederResultContext.getCurrent().getPositiveMagnitude())
                 .doubles("current_zero_magnitude", fortescueFeederResultContext ->
-                        fortescueFeederResultContext.getCurrent().getZeroMagnitude())
+                        fortescueFeederResultContext.getCurrent().getZeroMagnitude(), false)
                 .doubles("current_zero_angle", fortescueFeederResultContext ->
-                        fortescueFeederResultContext.getCurrent().getZeroAngle())
+                        fortescueFeederResultContext.getCurrent().getZeroAngle(), false)
                 .build();
     }
 
@@ -636,17 +636,17 @@ public final class Dataframes {
                 .doubles("initial_voltage_magnitude", FortescueBusResultsContext::getInitialVoltageMagnitude)
                 .doubles("voltage_drop_proportional", FortescueBusResultsContext::getVoltageDropProportional)
                 .doubles("voltage_negative_angle", fortescueBusResultsContext
-                        -> fortescueBusResultsContext.getVoltage().getNegativeAngle())
+                        -> fortescueBusResultsContext.getVoltage().getNegativeAngle(), false)
                 .doubles("voltage_positive_angle", fortescueBusResultsContext
                         -> fortescueBusResultsContext.getVoltage().getPositiveAngle())
                 .doubles("voltage_negative_magnitude", fortescueBusResultsContext
-                        -> fortescueBusResultsContext.getVoltage().getNegativeMagnitude())
+                        -> fortescueBusResultsContext.getVoltage().getNegativeMagnitude(), false)
                 .doubles("voltage_positive_magnitude", fortescueBusResultsContext
                         -> fortescueBusResultsContext.getVoltage().getPositiveMagnitude())
                 .doubles("voltage_zero_magnitude", fortescueBusResultsContext
-                        -> fortescueBusResultsContext.getVoltage().getZeroMagnitude())
+                        -> fortescueBusResultsContext.getVoltage().getZeroMagnitude(), false)
                 .doubles("voltage_zero_angle", fortescueBusResultsContext
-                        -> fortescueBusResultsContext.getVoltage().getZeroAngle())
+                        -> fortescueBusResultsContext.getVoltage().getZeroAngle(), false)
                 .build();
     }
 }

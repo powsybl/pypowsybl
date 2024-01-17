@@ -46,7 +46,7 @@ The parameters available to run a shortcircuit analysis are:
 +----------------------------------------+---------------+
 |*Parameter*                             |*Default value*|
 +========================================+===============+
-|with_fortescue_result                   | true          |
+|with_fortescue_result                   | false         |
 +----------------------------------------+---------------+
 |with_feeder_result                      | true          |
 +----------------------------------------+---------------+
