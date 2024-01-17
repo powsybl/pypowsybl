@@ -535,9 +535,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
 
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
+            .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)
+            .value("APPARENT_POWER", pypowsybl::LimitType::APPARENT_POWER)
             .value("CURRENT", pypowsybl::LimitType::CURRENT)
             .value("LOW_VOLTAGE", pypowsybl::LimitType::LOW_VOLTAGE)
-            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE);
+            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE)
+            .value("LOW_VOLTAGE_ANGLE", pypowsybl::LimitType::LOW_VOLTAGE_ANGLE)
+            .value("HIGH_VOLTAGE_ANGLE", pypowsybl::LimitType::HIGH_VOLTAGE_ANGLE)
+            .value("LOW_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::LOW_SHORT_CIRCUIT_CURRENT)
+            .value("HIGH_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::HIGH_SHORT_CIRCUIT_CURRENT)
+            .value("OTHER", pypowsybl::LimitType::OTHER);
 
     py::enum_<pypowsybl::Side>(m, "Side")
             .value("NONE", pypowsybl::Side::NONE)

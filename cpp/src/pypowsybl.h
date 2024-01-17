@@ -112,9 +112,16 @@ enum class PostContingencyComputationStatus {
 };
 
 enum LimitType {
-    CURRENT = 0,
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
     LOW_VOLTAGE,
     HIGH_VOLTAGE,
+    LOW_VOLTAGE_ANGLE,
+    HIGH_VOLTAGE_ANGLE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER
 };
 
 enum Side {

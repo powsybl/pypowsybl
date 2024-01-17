@@ -81,7 +81,7 @@ class SecurityAnalysisResult:
         table = PrettyTable()
         table.field_names = ["Contingency ID", "Operator strategy ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
-        def print_limit_violation(limit_violations: LimitViolationArray):
+        def print_limit_violation(limit_violations: LimitViolationArray) -> None:
             for limit_violation in limit_violations:
                 table.add_row(['', '', '',
                                limit_violation.subject_id,
