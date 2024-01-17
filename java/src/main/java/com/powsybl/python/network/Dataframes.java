@@ -611,7 +611,7 @@ public final class Dataframes {
         return result.getFaultResults().stream()
                 .flatMap(a -> a.getShortCircuitBusResults()
                         .stream()
-                        .map(ss -> new FortescueBusResultsContext(a.getFault().getId(), (FortescueBusResultsContext) ss)))
+                        .map(ss -> new FortescueBusResultsContext(a.getFault().getId(), (FortescueShortCircuitBusResults) ss)))
                 .collect(Collectors.toList());
     }
 
