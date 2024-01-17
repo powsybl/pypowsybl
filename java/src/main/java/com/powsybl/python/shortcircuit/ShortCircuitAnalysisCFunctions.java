@@ -148,9 +148,7 @@ public final class ShortCircuitAnalysisCFunctions {
     public static DataframeMetadataPointer getFaultsDataframeMetaData(IsolateThread thread,
                                                                       ShortCircuitFaultType mappingType,
                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            return CTypeUtil.createSeriesMetadata(ShortCircuitFaultAdderFactory.getAdder(mappingType).getMetadata());
-        });
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(ShortCircuitFaultAdderFactory.getAdder(mappingType).getMetadata()));
     }
 
     @CEntryPoint(name = "setFaults")
