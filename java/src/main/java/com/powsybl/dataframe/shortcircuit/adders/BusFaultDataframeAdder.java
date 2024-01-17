@@ -74,11 +74,9 @@ public class BusFaultDataframeAdder implements ShortCircuitContextFaultAdder {
             for (int row = 0; row < dataframe.getRowCount(); row++) {
                 String faultId = series.getFaultId().get(row);
                 String elementId = series.getElementId().get(row);
-                double r = series.getR() != null ? series.getR().get(row) : Double.NaN;
-                double x = series.getX() != null ? series.getX().get(row) : Double.NaN;
-                faults.add(r == Double.NaN || x == Double.NaN ?
-                        new BusFault(faultId, elementId) :
-                        new BusFault(faultId, elementId, r, x));
+                double r = series.getR() != null ? series.getR().get(row) : 0;
+                double x = series.getX() != null ? series.getX().get(row) : 0;
+                faults.add(new BusFault(faultId, elementId, r, x));
             }
         }
         context.setFaults(faults);
