@@ -279,6 +279,17 @@ def test_load_action():
     assert len(sa_result.find_post_contingency_result('Line contingency').limit_violations) == 2
     assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
     assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
+    assert str(sa_result.get_table()) == """+------------------+----------------------+-----------+--------------+----------------+-------------+--------+------------+---------------------+-----------------+--------+------+
+|  Contingency ID  | Operator strategy ID |   Status  | Equipment ID | Equipment name |  Limit type | Limit  | Limit name | Acceptable duration | Limit reduction | Value  | Side |
++------------------+----------------------+-----------+--------------+----------------+-------------+--------+------------+---------------------+-----------------+--------+------+
+| Line contingency |                      | CONVERGED |              |                |             |        |            |                     |                 |        |      |
+|                  |                      |           | NHV1_NHV2_2  |                |   CURRENT   | 500.0  | permanent  |      2147483647     |       1.0       | 1047.8 | TWO  |
+|                  |                      |           |    VLHV1     |                | LOW_VOLTAGE | 400.0  |            |      2147483647     |       1.0       | 398.3  | NONE |
+|                  |  OperatorStrategy1   | CONVERGED |              |                |             |        |            |                     |                 |        |      |
+|                  |                      |           | NHV1_NHV2_2  |                |   CURRENT   | 1200.0 |    20'     |          60         |       1.0       | 1316.2 | ONE  |
+|                  |                      |           | NHV1_NHV2_2  |                |   CURRENT   | 500.0  | permanent  |      2147483647     |       1.0       | 1355.4 | TWO  |
+|                  |                      |           |    VLHV1     |                | LOW_VOLTAGE | 400.0  |            |      2147483647     |       1.0       | 394.1  | NONE |
++------------------+----------------------+-----------+--------------+----------------+-------------+--------+------------+---------------------+-----------------+--------+------+"""
 
 def test_load_action_with_any_violation_condition():
     n = pp.network.create_four_substations_node_breaker_network()
