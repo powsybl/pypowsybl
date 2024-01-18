@@ -132,6 +132,11 @@ Array<post_contingency_result>::~Array() {
 }
 
 template<>
+Array<operator_strategy_result>::~Array() {
+    callJava<>(::freeOperatorStrategyResultArrayPointer, delegate_);
+}
+
+template<>
 Array<limit_violation>::~Array() {
     // already freed by contingency_result
 }
@@ -843,6 +848,50 @@ JavaHandle createSensitivityAnalysis() {
     return callJava<JavaHandle>(::createSensitivityAnalysis);
 }
 
+void addLoadActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double activePower) {
+    callJava(::addLoadActivePowerAction, analysisContext, (char*) actionId.data(), (char*) loadId.data(), relativeValue, activePower);
+}
+
+void addLoadReactivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double reactivePower) {
+    callJava(::addLoadReactivePowerAction, analysisContext, (char*) actionId.data(), (char*) loadId.data(), relativeValue, reactivePower);
+}
+
+void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& generatorId, bool relativeValue, double activePower) {
+    callJava(::addGeneratorActivePowerAction, analysisContext, (char*) actionId.data(), (char*) generatorId.data(), relativeValue, activePower);
+}
+
+void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open) {
+    callJava(::addSwitchAction, analysisContext, (char*) actionId.data(), (char*) switchId.data(), open);
+}
+
+void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
+                                      bool isRelative, int tapPosition) {
+    callJava(::addPhaseTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+}
+
+void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
+                                      bool isRelative, int tapPosition) {
+    callJava(::addRatioTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+}
+
+void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId,
+                                       int sectionCount) {
+    callJava(::addShuntCompensatorPositionAction, analysisContext, (char*) actionId.data(), (char*) shuntId.data(), sectionCount);
+}
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
+                         condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters) {
+    ToCharPtrPtr actionsPtr(actionsIds);
+    ToCharPtrPtr subjectIdsPtr(subjectIds);
+    std::vector<int> violationTypes;
+    for(int i = 0; i < violationTypesFilters.size(); ++i) {
+        violationTypes.push_back(violationTypesFilters[i]);
+    }
+    ToIntPtr violationTypesPtr(violationTypes);
+    callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actionsPtr.get(), actionsIds.size(),
+        conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
+}
+
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
     z->id = copyStringToCharPtr(id);
@@ -973,6 +1022,10 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 
 PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult) {
     return new PostContingencyResultArray(callJava<array*>(::getPostContingencyResults, securityAnalysisResult));
+}
+
+OperatorStrategyResultArray* getOperatorStrategyResults(const JavaHandle& securityAnalysisResult) {
+    return new OperatorStrategyResultArray(callJava<array*>(::getOperatorStrategyResults, securityAnalysisResult));
 }
 
 pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult) {

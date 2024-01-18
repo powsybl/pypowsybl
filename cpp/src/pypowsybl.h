@@ -73,6 +73,7 @@ private:
 
 typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
+typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
@@ -111,9 +112,16 @@ enum class PostContingencyComputationStatus {
 };
 
 enum LimitType {
-    CURRENT = 0,
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
     LOW_VOLTAGE,
     HIGH_VOLTAGE,
+    LOW_VOLTAGE_ANGLE,
+    HIGH_VOLTAGE_ANGLE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER
 };
 
 enum Side {
@@ -414,6 +422,23 @@ JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const 
 
 JavaHandle createSensitivityAnalysis();
 
+void addLoadActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double activePower);
+
+void addLoadReactivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double reactivePower);
+
+void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& generatorId, bool relativeValue, double activePower);
+
+void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open);
+
+void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+
+void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+
+void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
+                         condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
+
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
 void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
@@ -455,6 +480,8 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
 PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
+
+OperatorStrategyResultArray* getOperatorStrategyResults(const JavaHandle& securityAnalysisResult);
 
 pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
 

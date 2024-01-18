@@ -8,7 +8,7 @@ from typing import Dict
 import pandas as pd
 from prettytable import PrettyTable
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import PreContingencyResult, PostContingencyResult
+from pypowsybl._pypowsybl import PreContingencyResult, PostContingencyResult, OperatorStrategyResult, LimitViolationArray
 from pypowsybl.utils import create_data_frame_from_series_array
 
 
@@ -21,10 +21,14 @@ class SecurityAnalysisResult:
         self._handle = handle
         self._pre_contingency_result = _pypowsybl.get_pre_contingency_result(self._handle)
         post_contingency_results = _pypowsybl.get_post_contingency_results(self._handle)
+        operator_strategy_results = _pypowsybl.get_operator_strategy_results(self._handle)
         self._post_contingency_results = {}
+        self._operator_strategy_results = {}
         for result in post_contingency_results:
             if result.contingency_id:
                 self._post_contingency_results[result.contingency_id] = result
+        for result in operator_strategy_results:
+            self._operator_strategy_results[result.operator_strategy_id] = result
         self._limit_violations = create_data_frame_from_series_array(_pypowsybl.get_limit_violations(self._handle))
 
     @property
@@ -53,14 +57,33 @@ class SecurityAnalysisResult:
             raise KeyError(f'Contingency {contingency_id} not found')
         return result
 
+    @property
+    def operator_strategy_results(self) -> Dict[str, OperatorStrategyResult]:
+        """
+        Results for the operator strategies, as a dictionary operator strategy ID -> result.
+        """
+
+        return self._operator_strategy_results
+
+    def find_operator_strategy_results(self, operator_strategy_id: str) -> OperatorStrategyResult:
+        """
+        Result for the specified operator strategy
+
+        Returns:
+            Result for the specified operator strategy.
+        """
+        result = self._operator_strategy_results[operator_strategy_id]
+        if not result:
+            raise KeyError(f'Operator strategy {operator_strategy_id} not found')
+        return result
+
     def get_table(self) -> PrettyTable:
         table = PrettyTable()
-        table.field_names = ["Contingency ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
+        table.field_names = ["Contingency ID", "Operator strategy ID", "Status", "Equipment ID", "Equipment name", "Limit type", "Limit",
                              "Limit name", "Acceptable duration", "Limit reduction", "Value", "Side"]
-        for contingency_id, post_contingency_result in self._post_contingency_results.items():
-            table.add_row([contingency_id, post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
-            for limit_violation in post_contingency_result.limit_violations:
-                table.add_row(['', '',
+        def print_limit_violation(limit_violations: LimitViolationArray) -> None:
+            for limit_violation in limit_violations:
+                table.add_row(['', '', '',
                                limit_violation.subject_id,
                                limit_violation.subject_name,
                                limit_violation.limit_type.name,
@@ -70,6 +93,13 @@ class SecurityAnalysisResult:
                                limit_violation.limit_reduction,
                                f'{limit_violation.value:.1f}',
                                limit_violation.side.name])
+        for contingency_id, post_contingency_result in self._post_contingency_results.items():
+            table.add_row([contingency_id, '', post_contingency_result.status.name, '', '', '', '', '', '', '', '', ''])
+            print_limit_violation(post_contingency_result.limit_violations)
+
+        for operator_strategy_id, operator_strategy_result in self._operator_strategy_results.items():
+            table.add_row(['', operator_strategy_id, operator_strategy_result.status.name, '', '', '', '', '', '', '', '', ''])
+            print_limit_violation(operator_strategy_result.limit_violations)
         return table
 
     @property

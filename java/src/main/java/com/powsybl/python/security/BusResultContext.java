@@ -15,12 +15,19 @@ public class BusResultContext extends BusResult {
 
     private final String contingencyId;
 
-    public BusResultContext(BusResult busResults, String contingency) {
+    private final String operatorStrategyId;
+
+    public BusResultContext(BusResult busResults, String contingency, String operatorStrategyId) {
         super(busResults.getVoltageLevelId(), busResults.getBusId(), busResults.getV(), busResults.getAngle());
         this.contingencyId = contingency;
+        this.operatorStrategyId = operatorStrategyId;
     }
 
     public String getContingencyId() {
         return contingencyId;
+    }
+
+    public String getOperatorStrategyId() {
+        return operatorStrategyId;
     }
 }

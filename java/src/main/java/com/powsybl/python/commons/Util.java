@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.commons;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
@@ -19,6 +20,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.security.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
 import com.powsybl.sensitivity.SensitivityVariableType;
 import org.graalvm.nativeimage.UnmanagedMemory;
@@ -374,6 +376,29 @@ public final class Util {
             return Optional.of(CompressionFormat.ZSTD);
         } else {
             return Optional.empty();
+        }
+    }
+
+    public static LimitViolationType convert(PyPowsyblApiHeader.LimitViolationType violationType) {
+        switch (violationType) {
+            case ACTIVE_POWER:
+                return LimitViolationType.ACTIVE_POWER;
+            case APPARENT_POWER:
+                return LimitViolationType.APPARENT_POWER;
+            case CURRENT:
+                return LimitViolationType.CURRENT;
+            case LOW_VOLTAGE:
+                return LimitViolationType.LOW_VOLTAGE;
+            case HIGH_VOLTAGE:
+                return LimitViolationType.HIGH_VOLTAGE;
+            case LOW_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
+            case HIGH_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
+            case OTHER:
+                return LimitViolationType.OTHER;
+            default:
+                throw new PowsyblException("Unknown limit violation type: " + violationType);
         }
     }
 }
