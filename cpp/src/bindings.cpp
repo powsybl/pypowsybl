@@ -25,7 +25,7 @@ void bindArray(py::module_& m, const std::string& className) {
                 if (index >= a.length()) {
                     throw pypowsybl::PyPowsyblError("Index out of bounds.");
                 }
-                return a.begin() + index;
+                return *(a.begin() + index);
             }, py::keep_alive<0, 1>());
 }
 
