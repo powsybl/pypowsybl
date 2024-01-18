@@ -14,7 +14,7 @@ import java.util.List;
  * Provides methods to map an object's data to/from dataframe representation.
  * A dataframe is basically a table of values, where columns have a given type and name,
  * and rows correspond to one item.
- *
+ * <p>
  * The dataframe data can be read by a {@link DataframeHandler},
  * and provided by variants of "indexed series".
  *

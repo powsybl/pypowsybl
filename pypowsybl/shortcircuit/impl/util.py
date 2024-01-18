@@ -5,8 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List
+
+from pandas import DataFrame
+
 from pypowsybl import _pypowsybl
+from util import create_data_frame_from_series_array
 from .short_circuit_analysis import ShortCircuitAnalysis
+from ...utils import _create_c_dataframe
 
 
 def create_analysis() -> ShortCircuitAnalysis:
@@ -65,3 +70,16 @@ def get_provider_parameters_names(provider: str = '') -> List[str]:
         the list of provider's parameters
     """
     return _pypowsybl.get_shortcircuit_provider_parameters_names(provider)
+
+
+def convert_to_three_phase_value(df: DataFrame) -> DataFrame:
+    """
+
+    Take a dataframe containing data on symmetrical components and converts it to data on the three phases.
+
+    """
+    metadata = #TODO
+    c_df = _create_c_dataframe(df, metadata)
+    series_array = _pypowsybl.convert_fortescue_value_to_three_phase(c_df)
+    return create_data_frame_from_series_array(series_array)
+

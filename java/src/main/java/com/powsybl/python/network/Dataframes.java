@@ -161,10 +161,9 @@ public final class Dataframes {
                 .getBranchResults().stream()
                 .map(branchResult -> new BranchResultContext(branchResult, null))
                 .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
+        result.getPostContingencyResults().forEach(postContingencyResult ->
             postContingencyResult.getNetworkResult().getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
-        });
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId()))));
         return branchResults;
     }
 
@@ -189,10 +188,9 @@ public final class Dataframes {
                 .getBusResults().stream()
                 .map(busResult -> new BusResultContext(busResult, null))
                 .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
+        result.getPostContingencyResults().forEach(postContingencyResult ->
             postContingencyResult.getNetworkResult().getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
-        });
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId()))));
         return busResults;
     }
 
@@ -212,12 +210,11 @@ public final class Dataframes {
                 .getNetworkResult().getThreeWindingsTransformerResults().stream()
                 .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
                 .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
+        result.getPostContingencyResults().forEach(postContingencyResult ->
             postContingencyResult.getNetworkResult().getThreeWindingsTransformerResults()
                     .forEach(threeWindingsTransformerResult ->
                             threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
-                                    postContingencyResult.getContingency().getId())));
-        });
+                                    postContingencyResult.getContingency().getId()))));
         return threeWindingsTransformerResults;
     }
 
@@ -269,8 +266,7 @@ public final class Dataframes {
         return IteratorUtils.toList(nodeBreakerView.getSwitches().iterator()).stream().map(switchContext ->
                         new NodeBreakerViewSwitchContext(switchContext,
                                 nodeBreakerView.getNode1(switchContext.getId()),
-                                nodeBreakerView.getNode2(switchContext.getId())))
-                .collect(Collectors.toList());
+                                nodeBreakerView.getNode2(switchContext.getId()))).toList();
     }
 
     private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewSwitchesMapper() {
@@ -295,7 +291,7 @@ public final class Dataframes {
             } else {
                 return new NodeContext(node, terminal.getConnectable().getId());
             }
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewNodes() {
@@ -312,7 +308,7 @@ public final class Dataframes {
         return internalConnectionContextList.stream()
                 .map(internalConnection ->
                         new InternalConnectionContext(internalConnection, internalConnectionContextList.indexOf(internalConnection)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewInternalConnections() {
@@ -328,8 +324,7 @@ public final class Dataframes {
         return IteratorUtils.toList(busBreakerView.getSwitches().iterator()).
                 stream()
                 .map(switchDevice -> new BusBreakerViewSwitchContext(switchDevice,
-                        busBreakerView.getBus1(switchDevice.getId()).getId(), busBreakerView.getBus2(switchDevice.getId()).getId()))
-                .collect(Collectors.toList());
+                        busBreakerView.getBus1(switchDevice.getId()).getId(), busBreakerView.getBus2(switchDevice.getId()).getId())).toList();
     }
 
     private static DataframeMapper<VoltageLevel.BusBreakerView> createBusBreakerViewSwitchesMapper() {
@@ -351,7 +346,7 @@ public final class Dataframes {
                     .findFirst()
                     .orElse(null);
             return new BusBreakerViewBusData(bus, busViewBus);
-        }).collect(Collectors.toList());
+        }).toList();
 
     }
 
@@ -453,7 +448,7 @@ public final class Dataframes {
         return flowDecompositionResults.getDecomposedFlowMap().values().stream()
                 .map(XnecWithDecompositionContext::new)
                 .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // shortcircuit
@@ -465,15 +460,15 @@ public final class Dataframes {
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER = createFortescueFaultResultsMapper();
 
     private static List<MagnitudeFaultResult> getMagnitudeFaultResults(ShortCircuitAnalysisResult result) {
-        return result.getFaultResults().stream().filter(f -> f instanceof MagnitudeFaultResult)
+        return result.getFaultResults().stream().filter(MagnitudeFaultResult.class::isInstance)
                 .map(f -> (MagnitudeFaultResult) f)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static List<FortescueFaultResult> getFortescueFaultResults(ShortCircuitAnalysisResult result) {
-        return result.getFaultResults().stream().filter(f -> f instanceof FortescueFaultResult)
+        return result.getFaultResults().stream().filter(FortescueFaultResult.class::isInstance)
                 .map(f -> (FortescueFaultResult) f)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFaultResultsMapper() {
@@ -521,7 +516,7 @@ public final class Dataframes {
                 .flatMap(a -> a.getLimitViolations()
                         .stream()
                         .map(ss -> new LimitViolationFaultContext(a.getFault().getId(), ss)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createLimitViolationsFaultMapper() {
@@ -552,7 +547,7 @@ public final class Dataframes {
                 .flatMap(a -> a.getFeederResults()
                         .stream()
                         .map(ss -> new MagnitudeFeederResultContext(a.getFault().getId(), (MagnitudeFeederResult) ss)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<FortescueFeederResultContext> getFortescueFeederResultContexts(ShortCircuitAnalysisResult result) {
@@ -560,7 +555,7 @@ public final class Dataframes {
                 .flatMap(a -> a.getFeederResults()
                         .stream()
                         .map(ss -> new FortescueFeederResultContext(a.getFault().getId(), (FortescueFeederResult) ss)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFeederMapper() {
@@ -604,7 +599,7 @@ public final class Dataframes {
                 .flatMap(a -> a.getShortCircuitBusResults()
                         .stream()
                         .map(ss -> new MagnitudeBusResultsContext(a.getFault().getId(), (MagnitudeShortCircuitBusResults) ss)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<FortescueBusResultsContext> getFortescueBusResultsContexts(ShortCircuitAnalysisResult result) {
@@ -612,7 +607,7 @@ public final class Dataframes {
                 .flatMap(a -> a.getShortCircuitBusResults()
                         .stream()
                         .map(ss -> new FortescueBusResultsContext(a.getFault().getId(), (FortescueShortCircuitBusResults) ss)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeBusResultsFaultMapper() {
