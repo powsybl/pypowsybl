@@ -7,7 +7,7 @@
 from typing import List
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import LimitViolation, PreContingencyResult, PostContingencyResult
+from pypowsybl._pypowsybl import LimitViolation, PreContingencyResult, PostContingencyResult, OperatorStrategyResult
 from .security import SecurityAnalysis
 
 
@@ -103,5 +103,13 @@ def _limit_violation_repr(self: LimitViolation) -> str:
            f", side={self.side.name}" \
            f")"
 
+def _operator_strategy_result_repr(self: OperatorStrategyResult) -> str:
+    return f"{self.__class__.__name__}(" \
+           f"operator_strategy_id={self.operator_strategy_id!r}" \
+           f", status={self.status.name}" \
+           f", limit_violations=[{len(self.limit_violations)}]" \
+           f")"
+
+OperatorStrategyResult.__repr__ = _operator_strategy_result_repr  # type: ignore
 
 LimitViolation.__repr__ = _limit_violation_repr  # type: ignore

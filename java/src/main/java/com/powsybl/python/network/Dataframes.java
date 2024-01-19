@@ -159,11 +159,17 @@ public final class Dataframes {
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
         List<BranchResultContext> branchResults = result.getPreContingencyResult().getNetworkResult()
                 .getBranchResults().stream()
-                .map(branchResult -> new BranchResultContext(branchResult, null))
+                .map(branchResult -> new BranchResultContext(branchResult, null, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
             postContingencyResult.getNetworkResult().getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId(), null)));
+        });
+        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
+            operatorStrategyResult.getNetworkResult().getBranchResults()
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult,
+                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
+                            operatorStrategyResult.getOperatorStrategy().getId())));
         });
         return branchResults;
     }
@@ -172,6 +178,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<SecurityAnalysisResult, BranchResultContext>()
                 .itemsProvider(Dataframes::getBranchResults)
                 .stringsIndex("contingency_id", BranchResultContext::getContingencyId)
+                .stringsIndex("operator_strategy_id", BranchResultContext::getOperatorStrategyId)
                 .stringsIndex("branch_id", BranchResultContext::getBranchId)
                 .doubles("p1", BranchResultContext::getP1)
                 .doubles("q1", BranchResultContext::getQ1)
@@ -187,11 +194,17 @@ public final class Dataframes {
         List<BusResultContext> busResults = result.getPreContingencyResult()
                 .getNetworkResult()
                 .getBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null))
+                .map(busResult -> new BusResultContext(busResult, null, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
             postContingencyResult.getNetworkResult().getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId(), null)));
+        });
+        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
+            operatorStrategyResult.getNetworkResult().getBusResults()
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult,
+                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
+                            operatorStrategyResult.getOperatorStrategy().getId())));
         });
         return busResults;
     }
@@ -200,6 +213,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<SecurityAnalysisResult, BusResultContext>()
                 .itemsProvider(Dataframes::getBusResults)
                 .stringsIndex("contingency_id", BusResultContext::getContingencyId)
+                .stringsIndex("operator_strategy_id", BusResultContext::getOperatorStrategyId)
                 .stringsIndex("voltage_level_id", BusResultContext::getVoltageLevelId)
                 .stringsIndex("bus_id", BusResultContext::getBusId)
                 .doubles("v_mag", BusResultContext::getV)

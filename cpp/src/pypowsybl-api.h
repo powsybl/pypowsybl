@@ -120,6 +120,12 @@ typedef struct pre_contingency_result_struct {
     array limit_violations;
 } pre_contingency_result;
 
+typedef struct operator_strategy_result_struct {
+    char* operator_strategy_id;
+    int status;
+    array limit_violations;
+} operator_strategy_result;
+
 typedef enum {
     BUS = 0,
     LINE,
@@ -165,6 +171,24 @@ typedef enum {
     TWTS,
     TWTS3W,
 } validation_type;
+
+typedef enum {
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER,
+} violation_type;
+
+typedef enum {
+    TRUE_CONDITION = 0,
+    ALL_VIOLATION_CONDITION,
+    ANY_VIOLATION_CONDITION,
+    AT_LEAST_ONE_VIOLATION_CONDITION,
+} condition_type;
 
 typedef enum {
     EQUIPMENT = 0,

@@ -7,7 +7,7 @@
 from typing import Union, List
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyContextType
+from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network
 from pypowsybl.report import Reporter
@@ -135,3 +135,34 @@ class SecurityAnalysis(ContingencyContainer):
         """
         return self.add_monitored_elements(ContingencyContextType.SPECIFIC, contingency_ids,
                                            branch_ids, voltage_level_ids, three_windings_transformer_ids)
+
+    def add_load_active_power_action(self, action_id: str, load_id: str, is_relative: bool, active_power: float) -> None:
+        """
+        """
+        _pypowsybl.add_load_active_power_action(self._handle, action_id, load_id, is_relative, active_power)
+
+    def add_load_reactive_power_action(self, action_id: str, load_id: str, is_relative: bool, reactive_power: float) -> None:
+        """
+        """
+        _pypowsybl.add_load_reactive_power_action(self._handle, action_id, load_id, is_relative, reactive_power)
+
+    def add_generator_active_power_action(self, action_id: str, generator_id: str, is_relative: bool, active_power: float) -> None:
+        """
+        """
+        _pypowsybl.add_generator_active_power_action(self._handle, action_id, generator_id, is_relative, active_power)
+
+    def add_switch_action(self, action_id: str, switch_id: str, open: bool) -> None:
+        """
+        """
+        _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
+
+    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,
+                              violation_types: List[ViolationType] = None) -> None:
+        """
+        """
+        if violation_types is None:
+            violation_types = []
+        if violation_subject_ids is None:
+            violation_subject_ids = []
+        _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids, condition_type, violation_subject_ids, violation_types)

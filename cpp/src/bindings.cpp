@@ -20,6 +20,12 @@ void bindArray(py::module_& m, const std::string& className) {
             })
             .def("__iter__", [](T& a) {
                 return py::make_iterator(a.begin(), a.end());
+            }, py::keep_alive<0, 1>())
+            .def("__getitem__", [](T& a, size_t index) {
+                if (index >= a.length()) {
+                    throw pypowsybl::PyPowsyblError("Index out of bounds.");
+                }
+                return *(a.begin() + index);
             }, py::keep_alive<0, 1>());
 }
 
@@ -509,15 +515,63 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
+
+    m.def("add_load_reactive_power_action", &pypowsybl::addLoadReactivePowerAction, "Add a load reactive power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("reactive_power"));
+
+    m.def("add_generator_active_power_action", &pypowsybl::addGeneratorActivePowerAction, "Add a generator active power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("generator_id"), py::arg("is_relative"), py::arg("active_power"));
+
+    m.def("add_switch_action", &pypowsybl::addSwitchAction, "Add a switch action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
+
+    m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+
+    m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+
+    m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
+              py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
+
+    m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
+          py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
+          py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
+
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
+            .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)
+            .value("APPARENT_POWER", pypowsybl::LimitType::APPARENT_POWER)
             .value("CURRENT", pypowsybl::LimitType::CURRENT)
             .value("LOW_VOLTAGE", pypowsybl::LimitType::LOW_VOLTAGE)
-            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE);
+            .value("HIGH_VOLTAGE", pypowsybl::LimitType::HIGH_VOLTAGE)
+            .value("LOW_VOLTAGE_ANGLE", pypowsybl::LimitType::LOW_VOLTAGE_ANGLE)
+            .value("HIGH_VOLTAGE_ANGLE", pypowsybl::LimitType::HIGH_VOLTAGE_ANGLE)
+            .value("LOW_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::LOW_SHORT_CIRCUIT_CURRENT)
+            .value("HIGH_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::HIGH_SHORT_CIRCUIT_CURRENT)
+            .value("OTHER", pypowsybl::LimitType::OTHER);
 
     py::enum_<pypowsybl::Side>(m, "Side")
             .value("NONE", pypowsybl::Side::NONE)
             .value("ONE", pypowsybl::Side::ONE)
             .value("TWO", pypowsybl::Side::TWO);
+
+    py::enum_<violation_type>(m, "ViolationType")
+            .value("ACTIVE_POWER", violation_type::ACTIVE_POWER)
+            .value("APPARENT_POWER", violation_type::APPARENT_POWER)
+            .value("CURRENT", violation_type::CURRENT)
+            .value("LOW_VOLTAGE", violation_type::LOW_VOLTAGE)
+            .value("HIGH_VOLTAGE", violation_type::HIGH_VOLTAGE)
+            .value("LOW_SHORT_CIRCUIT_CURRENT", violation_type::LOW_SHORT_CIRCUIT_CURRENT)
+            .value("HIGH_SHORT_CIRCUIT_CURRENT", violation_type::HIGH_SHORT_CIRCUIT_CURRENT)
+            .value("OTHER", violation_type::OTHER);
+
+    py::enum_<condition_type>(m, "ConditionType")
+            .value("TRUE_CONDITION", condition_type::TRUE_CONDITION)
+            .value("ALL_VIOLATION_CONDITION", condition_type::ALL_VIOLATION_CONDITION)
+            .value("ANY_VIOLATION_CONDITION", condition_type::ANY_VIOLATION_CONDITION)
+            .value("AT_LEAST_ONE_VIOLATION_CONDITION", condition_type::AT_LEAST_ONE_VIOLATION_CONDITION);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {
@@ -578,6 +632,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
             });
     bindArray<pypowsybl::PostContingencyResultArray>(m, "PostContingencyResultArray");
+
+    py::class_<operator_strategy_result>(m, "OperatorStrategyResult")
+            .def_property_readonly("operator_strategy_id", [](const operator_strategy_result& r) {
+                return r.operator_strategy_id;
+            })
+            .def_property_readonly("status", [](const operator_strategy_result& r) {
+                return static_cast<pypowsybl::PostContingencyComputationStatus>(r.status);
+            })
+            .def_property_readonly("limit_violations", [](const operator_strategy_result& r) {
+                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+            });
+    bindArray<pypowsybl::OperatorStrategyResultArray>(m, "OperatorStrategyResultArray");
 
     py::class_<pre_contingency_result>(m, "PreContingencyResult")
             .def_property_readonly("status", [](const pre_contingency_result& r) {
@@ -718,6 +784,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
     m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
+    m.def("get_operator_strategy_results", &pypowsybl::getOperatorStrategyResults, "get operator strategy results of a security analysis", py::arg("result"));
     m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
     m.def("get_node_breaker_view_internal_connections", &pypowsybl::getNodeBreakerViewInternalConnections,
     "get all internal connections for a voltage level", py::arg("network"), py::arg("voltage_level"));
