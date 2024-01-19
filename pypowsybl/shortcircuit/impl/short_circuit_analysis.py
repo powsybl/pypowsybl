@@ -42,7 +42,7 @@ class ShortCircuitAnalysis:
             kwargs: Attributes as keyword arguments.
 
         Notes:
-            The current implementation allows the simulation of three-phased bus faults, where
+            The current implementation allows the simulation of three-phase bus faults, where
             the fault resistance and reactance, when specified, are connected to the ground in series.
 
             Data may be provided as a dataframe or as keyword arguments.
@@ -91,5 +91,5 @@ class ShortCircuitAnalysis:
 
         return ShortCircuitAnalysisResult(
             _pypowsybl.run_shortcircuit_analysis(self._handle, network._handle, p, provider,
-                                                 None if reporter is None else reporter._reporter_model) # pylint: disable=protected-access
-        )
+                                                 None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+            p.with_fortescue_result)

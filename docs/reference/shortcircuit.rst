@@ -32,7 +32,7 @@ The execution of the short-circuit analysis can be customized using short-circui
     Parameters
 
 
-Define faults
+Create faults
 -------------
 
 You can define faults to be simulated with the following methods:

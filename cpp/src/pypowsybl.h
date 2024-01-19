@@ -666,10 +666,10 @@ JavaHandle createShortCircuitAnalysis();
 JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType);
 void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType);
-SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult);
-SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
-SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
 }
 #endif //PYPOWSYBL_H
