@@ -597,7 +597,7 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity);
+void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
 void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent);
 
 // dynamic model mapping

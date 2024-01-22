@@ -17,18 +17,16 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_branch_disconnection(self, static_id: str, event_time: float, disconnect_origin: bool,
-                                 disconnect_extremity: bool) -> None:
+    def add_branch_disconnection(self, static_id: str, event_time: float, disconnect_only: BranchSide) -> None:
         """ Creates a branch disconnection event
 
         Args:
             static_id (str): network element to disconnect
             event_time (float): timestep at which the event happens
-            disconnect_origin (bool): the disconnection is made at the origin
-            disconnect_extremity (bool): the disconnection is made at the extremity
+            disconnect_only (BranchSide) : the disconnection is made on the provided side only
         """
         _pp.add_event_branch_disconnection(
-            self._handle, static_id, event_time, disconnect_origin, disconnect_extremity)
+            self._handle, static_id, event_time, disconnect_only)
 
     def add_injection_disconnection(self, static_id: str, event_time: float, state_event: bool) -> None:
         """ Creates an injection disconnection event
