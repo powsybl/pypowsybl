@@ -63,7 +63,7 @@ The parameters available to run a shortcircuit analysis are:
 
 
 Simple example
--------------
+--------------
 
 .. code-block::
 

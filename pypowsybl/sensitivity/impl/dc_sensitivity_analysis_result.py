@@ -29,7 +29,7 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
         pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
-        Use :meth:`get_sensitivity_matrix` instead.
+          Use :meth:`get_sensitivity_matrix` instead.
 
         Get the matrix of branch flows sensitivities on the base case or on post contingency state.
 
@@ -48,7 +48,7 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
     def get_reference_flows(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
-        Use :meth:`get_reference_matrix` instead.
+          Use :meth:`get_reference_matrix` instead.
 
         The branches active power flows on the base case or on post contingency state.
 
