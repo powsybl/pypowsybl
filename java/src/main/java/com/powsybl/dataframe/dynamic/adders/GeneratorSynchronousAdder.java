@@ -7,16 +7,22 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
-import java.util.List;
-
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynamicsimulation.DynamicModel;
+import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
+
+import java.util.List;
+import java.util.function.Function;
+
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class GeneratorSynchronousAdder implements DynamicMappingAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
@@ -31,37 +37,37 @@ public class GeneratorSynchronousAdder implements DynamicMappingAdder {
 
     private static final class GeneratorSynchronousSeries {
 
-        private final StringSeries staticId;
-        private final StringSeries parameterSetId;
-        private final StringSeries generatorLib;
+        private final StringSeries staticIds;
+        private final StringSeries parameterSetIds;
+        private final StringSeries generatorLibs;
 
         GeneratorSynchronousSeries(UpdatingDataframe dataframe) {
-            this.staticId = SeriesUtils.getRequiredStrings(dataframe, "static_id");
-            this.parameterSetId = SeriesUtils.getRequiredStrings(dataframe, "parameter_set_id");
-            this.generatorLib = SeriesUtils.getRequiredStrings(dataframe, "generator_lib");
+            this.staticIds = dataframe.getStrings("static_id");
+            this.parameterSetIds = dataframe.getStrings("parameter_set_id");
+            this.generatorLibs = dataframe.getStrings("generator_lib");
         }
 
-        public StringSeries getStaticId() {
-            return staticId;
+        public Function<Network, DynamicModel> getModelSupplier(int row) {
+            return network -> {
+                SynchronizedGeneratorBuilder builder = getBuilder(network, row);
+                applyIfPresent(staticIds, row, builder::staticId);
+                applyIfPresent(parameterSetIds, row, builder::parameterSetId);
+                return builder.build();
+            };
         }
 
-        public StringSeries getParameterSetId() {
-            return parameterSetId;
+        private SynchronizedGeneratorBuilder getBuilder(Network network, int row) {
+            String lib = generatorLibs != null ? generatorLibs.get(row) : null;
+            return lib != null ? SynchronizedGeneratorBuilder.of(network, lib)
+                    : SynchronizedGeneratorBuilder.of(network);
         }
-
-        public StringSeries getGeneratorLib() {
-            return generatorLib;
-        }
-
     }
 
     @Override
     public void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
         GeneratorSynchronousSeries series = new GeneratorSynchronousSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            modelMapping.addGeneratorSynchronous(series.getStaticId().get(row),
-                    series.getParameterSetId().get(row),
-                    series.getGeneratorLib().get(row));
+            modelMapping.addModel(series.getModelSupplier(row));
         }
     }
 
