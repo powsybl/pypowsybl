@@ -6,8 +6,8 @@ networkx
 matplotlib
 
 # documentation dependencies
-sphinx==4.2.0
-pydata-sphinx-theme==0.6.3
+sphinx==5.0.2
+pydata-sphinx-theme==0.10.1
 
 # CI dependencies
 wheel==0.38.1
