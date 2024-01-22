@@ -147,13 +147,12 @@ public final class DynamicSimulationCFunctions {
             ObjectHandle eventSupplierHandle,
             CCharPointer staticIdPtr,
             double eventTime,
-            boolean disconnectOrigin,
-            boolean disconnectExtremity,
+            int disconnectOnly,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             String staticId = CTypeUtil.toString(staticIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventBranchDisconnection(staticId, eventTime, disconnectOrigin, disconnectExtremity);
+            eventSupplier.addEventBranchDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.BranchSide.fromCValue(disconnectOnly)));
         });
     }
 

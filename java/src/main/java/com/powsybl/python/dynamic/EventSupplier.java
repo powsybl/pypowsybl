@@ -12,6 +12,7 @@ import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
 import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.TwoSides;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class EventSupplier implements EventModelsSupplier {
 
@@ -32,13 +34,17 @@ public class EventSupplier implements EventModelsSupplier {
      * <p>
      * The event represent the disconnection the given line/transformer
      */
-    public void addEventBranchDisconnection(String staticId, double eventTime, boolean disconnectOrigin, boolean disconnectExtremity) {
-        //TODO handle disconnect side
-        //TODO replace one event with one disconnection event
-        eventSupplierList.add(network -> EventDisconnectionBuilder.of(network)
-                .staticId(staticId)
-                .startTime(eventTime)
-                .build());
+    public void addEventBranchDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
+        //TODO replace with one disconnection event
+        eventSupplierList.add(network -> {
+            EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network)
+                    .staticId(staticId)
+                    .startTime(eventTime);
+            if (disconnectOnly != null) {
+                builder.disconnectOnly(disconnectOnly);
+            }
+            return builder.build();
+        });
     }
 
     /**
