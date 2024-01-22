@@ -7,13 +7,11 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawaltz.models.events.EventInjectionDisconnection;
-import com.powsybl.dynawaltz.models.events.EventQuadripoleDisconnection;
-import com.powsybl.iidm.network.*;
+import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
+import com.powsybl.iidm.network.Network;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +33,12 @@ public class EventSupplier implements EventModelsSupplier {
      * The event represent the disconnection the given line/transformer
      */
     public void addEventBranchDisconnection(String staticId, double eventTime, boolean disconnectOrigin, boolean disconnectExtremity) {
-        eventSupplierList.add(network -> {
-            Branch<?> branch = network.getBranch(staticId);
-            if (branch == null) {
-                throw new PowsyblException("Branch '" + staticId + "' not found");
-            }
-            return new EventQuadripoleDisconnection(branch, eventTime, disconnectOrigin, disconnectExtremity);
-        });
+        //TODO handle disconnect side
+        //TODO replace one event with one disconnection event
+        eventSupplierList.add(network -> EventDisconnectionBuilder.of(network)
+                .staticId(staticId)
+                .startTime(eventTime)
+                .build());
     }
 
     /**
@@ -50,29 +47,10 @@ public class EventSupplier implements EventModelsSupplier {
      * The event represent the disconnection of the given generator, load, static var compensator or shunt compensator
      */
     public void addEventInjectionDisconnection(String staticId, double eventTime, boolean stateEvent) {
-        eventSupplierList.add(network -> {
-            Generator generator = network.getGenerator(staticId);
-            if (generator != null) {
-                return new EventInjectionDisconnection(generator, eventTime, stateEvent);
-            } else {
-                Load load = network.getLoad(staticId);
-                if (load != null) {
-                    return new EventInjectionDisconnection(load, eventTime, stateEvent);
-                } else {
-                    StaticVarCompensator svc = network.getStaticVarCompensator(staticId);
-                    if (svc != null) {
-                        return new EventInjectionDisconnection(svc, eventTime, stateEvent);
-                    } else {
-                        ShuntCompensator sc = network.getShuntCompensator(staticId);
-                        if (sc != null) {
-                            return new EventInjectionDisconnection(sc, eventTime, stateEvent);
-                        } else {
-                            throw new PowsyblException("Generator, load, static var compensator or shunt compensator '" + staticId + "' not found");
-                        }
-                    }
-                }
-            }
-        });
+        eventSupplierList.add(network -> EventDisconnectionBuilder.of(network)
+                .staticId(staticId)
+                .startTime(eventTime)
+                .build());
     }
 
     @Override
