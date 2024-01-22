@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
@@ -67,6 +68,10 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
+    }
+
+    public void addModel(Function<Network, DynamicModel> modelFunction) {
+        dynamicModelList.add(modelFunction);
     }
 
     public void addGeneratorSynchronous(String staticId, String parameterSetId, String generatorLib) {
