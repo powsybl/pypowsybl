@@ -386,11 +386,9 @@ public final class SecurityAnalysisCFunctions {
             String actionIdStr = CTypeUtil.toString(actionId);
             String generatorIdStr = CTypeUtil.toString(generatorId);
             GeneratorActionBuilder builder = new GeneratorActionBuilder().withId(actionIdStr)
-                    .withGeneratorId(generatorIdStr);
-            if (relativeValue) {
-                builder.withActivePowerRelativeValue(relativeValue);
-            }
-            builder.withActivePowerValue(activePower);
+                    .withGeneratorId(generatorIdStr)
+                    .withActivePowerRelativeValue(relativeValue)
+                    .withActivePowerValue(activePower);
             analysisContext.addAction(builder.build());
         });
     }

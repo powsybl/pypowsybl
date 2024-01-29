@@ -324,6 +324,19 @@ def test_load_action_with_all_violation_condition():
     assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
     assert 'OperatorStrategy2' not in sa_result.operator_strategy_results.keys()
 
+def test_generator_action():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'Line contingency')
+    sa.add_generator_active_power_action(action_id='GeneratorActionAbsolute', generator_id='GEN', is_relative=False, active_power=750.0)
+    sa.add_generator_active_power_action(action_id='GeneratorActionRelative', generator_id='GEN', is_relative=True, active_power=150.0)
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['GeneratorActionAbsolute'])
+    sa.add_operator_strategy('OperatorStrategy2', 'Line contingency', ['GeneratorActionRelative'])
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+    assert 'OperatorStrategy2' in sa_result.operator_strategy_results.keys()
+
 def test_switch_action():
     n = pp.network.create_four_substations_node_breaker_network()
     sa = pp.security.create_analysis()
