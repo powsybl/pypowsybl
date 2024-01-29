@@ -152,6 +152,7 @@ def create_micro_grid_nl_network() -> Network:
     """
     return _create_network('micro_grid_nl')
 
+
 def create_metrix_tutorial_six_buses_network() -> Network:
     """
     Create an instance of metrix tutorial six buses test case
@@ -160,6 +161,7 @@ def create_metrix_tutorial_six_buses_network() -> Network:
         a new instance of metrix tutorial six buses test case
     """
     return _create_network('metrix_tutorial_six_buses')
+
 
 def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter: Reporter = None) -> Network:
     """
