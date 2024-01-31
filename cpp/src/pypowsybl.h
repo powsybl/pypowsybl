@@ -402,6 +402,8 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
 
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
 
+void writeMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::string>& containerIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
+
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
 std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters);

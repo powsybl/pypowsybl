@@ -799,6 +799,12 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
+void writeMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::string>& containerIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    ToCharPtrPtr substationIdPtr(containerIds);
+    callJava(::writeMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+}
+
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }

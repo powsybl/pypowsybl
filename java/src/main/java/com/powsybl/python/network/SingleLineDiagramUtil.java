@@ -37,6 +37,15 @@ public final class SingleLineDiagramUtil {
         }
     }
 
+    static void writeMultiSubstationSvg(Network network, List<String> containerIdList, String svgFile, String metadataFile, SldParameters sldParameters) {
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
+             Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+            writeMultiSubstationSvg(network, containerId, writer, metadataWriter, sldParameters);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     static String getSvg(Network network, String containerId) {
         try (StringWriter writer = new StringWriter()) {
             writeSvg(network, containerId, writer);
@@ -70,6 +79,10 @@ public final class SingleLineDiagramUtil {
 
     static void writeSvg(Network network, String containerId, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
+    }
+
+    static void writeMultiSubstationSvg(Network network, List<String containerIdList, Writer writer, Writer metadataWriter, SldParameters sldParameters>) {
+        SingleLineDiagram.draw(network, containerIdList, writer, metadataWriter, sldParameters);
     }
 
     static List<String> getComponentLibraryNames() {

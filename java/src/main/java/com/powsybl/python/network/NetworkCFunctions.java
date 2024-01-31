@@ -968,6 +968,21 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "writeMultiSubstationSingleLineDiagramSvg")
+    public static void writeMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
+                                                                int substationIdCount,
+                                                 CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> substationIdList = toStringList(substationIdsPointer, substationIdCount);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            SingleLineDiagramUtil.writeMultiSubstationSvg(network, substationIdList, svgFileStr, metadataFileStr, sldParameters);
+        });
+    }
+
     @CEntryPoint(name = "getSingleLineDiagramSvg")
     public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
