@@ -40,6 +40,8 @@ import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
+import com.powsybl.sld.cgmes.layout.*;
+import com.powsybl.sld.layout.*;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
@@ -63,6 +65,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
+import static com.powsybl.python.commons.CTypeUtil.toString2DArray;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -868,6 +871,10 @@ public final class NetworkCFunctions {
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
+        cParameters.setZoneLayoutFactory(CTypeUtil.toCharPtr("Matrix"));
+        if (parameters.getZoneLayoutFactory() instanceof CgmesZoneLayoutFactory) {
+            cParameters.setZoneLayoutFactory(CTypeUtil.toCharPtr("Cgmes"));
+        }
     }
 
     public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
@@ -970,7 +977,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "writeMultiSubstationSingleLineDiagramSvg")
     public static void writeMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
-                                                                int substationIdCount,
+                                                                int substationIdCount, int substationIdRowCount,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
@@ -979,6 +986,21 @@ public final class NetworkCFunctions {
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            // ------------------
+            // ZoneLayoutFactory
+            String zoneLayoutFactoryName = CTypeUtil.toString(sldParametersPtr.getZoneLayoutFactory());
+            ZoneLayoutFactory zoneLayoutFactory = new HorizontalZoneLayoutFactory();
+            if (zoneLayoutFactoryName.equals("Cgmes")) {
+                zoneLayoutFactory = new CgmesZoneLayoutFactory(network);
+            } else if (zoneLayoutFactoryName.equals("Matrix")) {
+                if (substationIdRowCount == substationIdList.size()) {
+                    zoneLayoutFactory = new VerticalZoneLayoutFactory();
+                } else {
+                    zoneLayoutFactory = new MatrixZoneLayoutFactory(toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount));
+                }
+            }
+            sldParameters.setZoneLayoutFactory(zoneLayoutFactory);
+            // ------------------
             SingleLineDiagramUtil.writeMultiSubstationSvg(network, substationIdList, svgFileStr, metadataFileStr, sldParameters);
         });
     }

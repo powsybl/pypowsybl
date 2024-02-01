@@ -799,10 +799,18 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
-void writeMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::string>& containerIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+void writeMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& containerIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
     auto c_parameters = parameters.to_c_struct();
-    ToCharPtrPtr substationIdPtr(containerIds);
-    callJava(::writeMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+    int nbRows = containerIds.size();
+    std::vector<std::string> substationIds;
+    for (int row = 0; row < nbRows; ++row) {
+        const std::vector<std::string>& colIds = containerIds[row];
+        for (int col = 0; col < containerIds[row].size(); ++col) {
+            substationIds.push_back(colIds[col]);
+        }
+    }
+    ToCharPtrPtr substationIdPtr(substationIds);
+    callJava(::writeMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
@@ -1308,6 +1316,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
+    zone_layout_factory = toString(src->zone_layout_factory);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1330,6 +1339,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
+    res.zone_layout_factory = copyStringToCharPtr(zone_layout_factory);
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {

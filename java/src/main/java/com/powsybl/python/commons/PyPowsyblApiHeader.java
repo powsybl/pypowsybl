@@ -1039,6 +1039,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("component_library")
         void setComponentLibrary(CCharPointer componentLibrary);
+
+        @CField("zone_layout_factory")
+        CCharPointer getZoneLayoutFactory();
+
+        @CField("zone_layout_factory")
+        void setZoneLayoutFactory(CCharPointer zoneLayoutFactory);
     }
 
     @CStruct("nad_parameters")

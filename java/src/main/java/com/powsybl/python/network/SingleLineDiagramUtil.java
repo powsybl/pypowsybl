@@ -18,7 +18,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -40,7 +39,7 @@ public final class SingleLineDiagramUtil {
     static void writeMultiSubstationSvg(Network network, List<String> containerIdList, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
              Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
-            writeMultiSubstationSvg(network, containerId, writer, metadataWriter, sldParameters);
+            writeMultiSubstationSvg(network, containerIdList, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -81,14 +80,14 @@ public final class SingleLineDiagramUtil {
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
     }
 
-    static void writeMultiSubstationSvg(Network network, List<String containerIdList, Writer writer, Writer metadataWriter, SldParameters sldParameters>) {
-        SingleLineDiagram.draw(network, containerIdList, writer, metadataWriter, sldParameters);
+    static void writeMultiSubstationSvg(Network network, List<String> containerIdList, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
+        SingleLineDiagram.drawMultiSubstations(network, containerIdList, writer, metadataWriter, sldParameters);
     }
 
     static List<String> getComponentLibraryNames() {
         return ComponentLibrary.findAll()
                 .stream()
                 .map(ComponentLibrary::getName)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

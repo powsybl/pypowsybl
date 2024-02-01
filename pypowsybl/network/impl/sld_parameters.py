@@ -13,7 +13,7 @@ class SldParameters:
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
                  nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
-                 component_library: str = 'Convergence'):
+                 component_library: str = 'Convergence', zone_layout_factory: str = 'Matrix'):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
@@ -21,6 +21,7 @@ class SldParameters:
         self._tooltip_enabled = tooltip_enabled
         self._topological_coloring = topological_coloring
         self._component_library = component_library
+        self._zone_layout_factory = zone_layout_factory
 
     @property
     def use_name(self) -> bool:
@@ -57,6 +58,11 @@ class SldParameters:
         """name of the library used for component"""
         return self._component_library
 
+    @property
+    def zone_layout_factory(self) -> str:
+        """name of the zone layout factory"""
+        return self._zone_layout_factory
+
     def _to_c_parameters(self) -> _pp.SldParameters:
         c_parameters = _pp.SldParameters()
         c_parameters.use_name = self._use_name
@@ -66,4 +72,5 @@ class SldParameters:
         c_parameters.nodes_infos = self._nodes_infos
         c_parameters.tooltip_enabled = self._tooltip_enabled
         c_parameters.component_library = self._component_library
+        c_parameters.zone_layout_factory = self._zone_layout_factory
         return c_parameters
