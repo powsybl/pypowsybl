@@ -594,6 +594,7 @@ def test_regulated_terminal_bus_breaker():
     generators = n.get_generators()
     assert 'LOAD' == generators['regulated_element_id']['GEN']
 
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
@@ -1769,8 +1770,8 @@ def test_write_svg_file(tmpdir):
     net.write_single_line_diagram_svg('S1VL1', data.join('test2_sld.svg'), data.join('test2_sld.json'))
     assert exists(data.join('test2_sld.svg'))
     assert exists(data.join('test2_sld.json'))
-    net.write_multi_substation_single_line_diagram_svg([['S1', 'S2'], ['S3', 'S4']],
-                                                       data.join('test_sld_multi_substation.svg'))
+    net.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'], ['S3', 'S4']],
+                                                              data.join('test_sld_multi_substation.svg'))
     assert exists(data.join('test_sld_multi_substation.svg'))
 
 

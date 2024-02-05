@@ -476,7 +476,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
-        .def_readwrite("zone_layout_factory", &pypowsybl::SldParameters::zone_layout_factory);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
@@ -493,8 +492,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
-    m.def("write_multi_substation_single_line_diagram_svg", &pypowsybl::writeMultiSubstationSingleLineDiagramSvg, "Write multi-substation single line diagram SVG",
-          py::arg("network"), py::arg("container_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+    m.def("write_matrix_multi_substation_single_line_diagram_svg", &pypowsybl::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));

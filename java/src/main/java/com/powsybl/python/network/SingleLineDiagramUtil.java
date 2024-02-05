@@ -36,10 +36,10 @@ public final class SingleLineDiagramUtil {
         }
     }
 
-    static void writeMultiSubstationSvg(Network network, List<String> containerIdList, String svgFile, String metadataFile, SldParameters sldParameters) {
+    static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
              Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
-            writeMultiSubstationSvg(network, containerIdList, writer, metadataWriter, sldParameters);
+            writeMatrixMultiSubstationSvg(network, matrixIds, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -80,8 +80,9 @@ public final class SingleLineDiagramUtil {
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
     }
 
-    static void writeMultiSubstationSvg(Network network, List<String> containerIdList, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
-        SingleLineDiagram.drawMultiSubstations(network, containerIdList, writer, metadataWriter, sldParameters);
+    static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
+        sldParameters.setZoneLayoutFactory(new MatrixzoneLayoutFactory(matrixIds));
+        SingleLineDiagram.drawMultiSubstations(network, substationIds, writer, metadataWriter, sldParameters);
     }
 
     static List<String> getComponentLibraryNames() {
