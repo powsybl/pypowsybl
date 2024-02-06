@@ -16,8 +16,7 @@ def set_up():
 
 
 def test_get_possible_events():
-    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.BRANCH_DISCONNECTION,
-                                                           dyn.EventType.SET_POINT_BOOLEAN}
+    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.DISCONNECTION}
 
 
 def test_add_mapping():

@@ -29,13 +29,11 @@ public class EventSupplier implements EventModelsSupplier {
     private final List<Function<Network, EventModel>> eventSupplierList = new ArrayList<>();
 
     /**
-     * According to Dynawaltz staticId must refer to a line or a two winding
-     * transformer
+     * According to Dynawaltz staticId must refer to an injection, branch or hvdc line
      * <p>
-     * The event represent the disconnection the given line/transformer
+     * The event represent the disconnection the given equipment
      */
-    public void addEventBranchDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
-        //TODO replace with one disconnection event
+    public void addEventDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
         eventSupplierList.add(network -> {
             EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network)
                     .staticId(staticId)
@@ -45,18 +43,6 @@ public class EventSupplier implements EventModelsSupplier {
             }
             return builder.build();
         });
-    }
-
-    /**
-     * According to Dynawaltz staticId must refer to a generator
-     * <p>
-     * The event represent the disconnection of the given generator, load, static var compensator or shunt compensator
-     */
-    public void addEventInjectionDisconnection(String staticId, double eventTime, boolean stateEvent) {
-        eventSupplierList.add(network -> EventDisconnectionBuilder.of(network)
-                .staticId(staticId)
-                .startTime(eventTime)
-                .build());
     }
 
     @Override
