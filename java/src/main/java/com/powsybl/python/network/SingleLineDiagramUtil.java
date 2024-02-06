@@ -81,7 +81,8 @@ public final class SingleLineDiagramUtil {
     }
 
     static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
-        sldParameters.setZoneLayoutFactory(new MatrixzoneLayoutFactory(matrixIds));
+        sldParameters.setZoneLayoutFactory(new MatrixZoneLayoutFactory(matrixIds));
+        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).toList();
         SingleLineDiagram.drawMultiSubstations(network, substationIds, writer, metadataWriter, sldParameters);
     }
 

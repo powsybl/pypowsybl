@@ -975,7 +975,7 @@ public final class NetworkCFunctions {
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String[][] matrixIds = toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
