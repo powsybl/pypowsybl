@@ -50,31 +50,33 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-            new_line_id: ID of the new line
-            new_line_r: resistance of the new line, in ohms
-            new_line_x: reactance of the new line, in ohms
-            new_line_b1: shunt susceptance on side 1 of the new line
-            new_line_b2: shunt susceptance on side 2 of the new line
-            new_line_g1: shunt conductance on side 1 of the new line
-            new_line_g2: shunt conductance on side 2 of the new line
-            line_id: the id on of the line on which we want to create a tee point.
-            line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
-            line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
-            line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
-            line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
-            position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
-                        and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-                        between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-            create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
-            fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
-            fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
-            fictitious_substation_id: the ID of the fictitious substation (optional).
-            fictitious_substation_name: the name of the fictitious substation (optional).
+
+          - bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+          - new_line_id: ID of the new line
+          - new_line_r: resistance of the new line, in ohms
+          - new_line_x: reactance of the new line, in ohms
+          - new_line_b1: shunt susceptance on side 1 of the new line
+          - new_line_b2: shunt susceptance on side 2 of the new line
+          - new_line_g1: shunt conductance on side 1 of the new line
+          - new_line_g2: shunt conductance on side 2 of the new line
+          - line_id: the id on of the line on which we want to create a tee point.
+          - line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
+          - line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
+          - line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
+          - line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
+          - position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
+            and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+            between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+          - create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
+          - fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
+          - fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
+          - fictitious_substation_id: the ID of the fictitious substation (optional).
+          - fictitious_substation_name: the name of the fictitious substation (optional).
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-                    bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+                  bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
         deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
         deprecated_new_line_id: this argument is deprecated, use the dataframe instead
         deprecated_new_line_r: this argument is deprecated, use the dataframe instead
@@ -202,13 +204,15 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            line_to_be_merged1_id: The id of the first line connected to the tee point.
-            line_to_be_merged2_id: The id of the second line connected to the tee point.
-            line_to_be_deleted: The tee point line that will be deleted
-            merged_line_id: The id of the new line from the two lines to be merged
-            merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+
+          - line_to_be_merged1_id: The id of the first line connected to the tee point.
+          - line_to_be_merged2_id: The id of the second line connected to the tee point.
+          - line_to_be_deleted: The tee point line that will be deleted
+          - merged_line_id: The id of the new line from the two lines to be merged
+          - merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         deprecated_line_to_be_merged1_id: this argument is deprecated, use the dataframe instead
         deprecated_line_to_be_merged2_id: this argument is deprecated, use the dataframe instead
@@ -263,17 +267,19 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
-            line_id: the ID ot the line on which the voltage level should be connected.
-            position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
+
+          - bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
+          - line_id: the ID ot the line on which the voltage level should be connected.
+          - position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
                               and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
                               between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-            line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
-            line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
-            line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
-            line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+          - line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
+          - line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
+          - line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
+          - line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
         deprecated_line_id: this argument is deprecated, use the dataframe instead
@@ -729,15 +735,17 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
     Args:
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe. It should contain:
-            tee_point_line1: The ID of the existing line connecting the first voltage level to the tee point
-            tee_point_line2: The ID of the existing line connecting the tee point to the second voltage level
-            tee_point_line_to_remove: The ID of the existing line connecting the tee point to the attached voltage level
-            bbs_or_bus_id: The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
-              where we want to connect the new lines new line 1 and new line 2
-            new_line1_id: The ID of the new line connecting the first voltage level to the attached voltage level
-            new_line2_id: The ID of the new line connecting the second voltage level to the attached voltage level
-            new_line1_name: The optional name of the new line connecting the first voltage level to the attached voltage level
-            new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
+
+          - tee_point_line1: The ID of the existing line connecting the first voltage level to the tee point
+          - tee_point_line2: The ID of the existing line connecting the tee point to the second voltage level
+          - tee_point_line_to_remove: The ID of the existing line connecting the tee point to the attached voltage level
+          - bbs_or_bus_id: The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
+            where we want to connect the new lines new line 1 and new line 2
+          - new_line1_id: The ID of the new line connecting the first voltage level to the attached voltage level
+          - new_line2_id: The ID of the new line connecting the second voltage level to the attached voltage level
+          - new_line1_name: The optional name of the new line connecting the first voltage level to the attached voltage level
+          - new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
+
         raise_exception: whether an exception should be raised if a problem occurs. By default, false.
         reporter: an optional reporter to get functional logs.
         deprecated_tee_point_line1: this argument is deprecated, use the dataframe instead
@@ -831,7 +839,8 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
     Examples:
 
     .. code-block:: python
-        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
+
+       pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
                                                 aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
@@ -1054,8 +1063,8 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
     Args:
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
-                raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+                         be logged. Default is False.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
