@@ -142,8 +142,8 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addEventBranchDisconnection")
-    public static void addEventBranchDisconnection(IsolateThread thread,
+    @CEntryPoint(name = "addEventDisconnection")
+    public static void addEventDisconnection(IsolateThread thread,
             ObjectHandle eventSupplierHandle,
             CCharPointer staticIdPtr,
             double eventTime,
@@ -152,21 +152,7 @@ public final class DynamicSimulationCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String staticId = CTypeUtil.toString(staticIdPtr);
             EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventBranchDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.BranchSide.fromCValue(disconnectOnly)));
-        });
-    }
-
-    @CEntryPoint(name = "addEventInjectionDisconnection")
-    public static void addEventInjectionDisconnection(IsolateThread thread,
-            ObjectHandle eventSupplierHandle,
-            CCharPointer staticIdPtr,
-            double eventTime,
-            boolean stateEvent,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventInjectionDisconnection(staticId, eventTime, stateEvent);
+            eventSupplier.addEventDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.BranchSide.fromCValue(disconnectOnly)));
         });
     }
 
