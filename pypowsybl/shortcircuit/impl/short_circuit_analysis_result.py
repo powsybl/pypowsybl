@@ -22,10 +22,10 @@ class ShortCircuitAnalysisResult:
     def fault_results(self) -> pd.DataFrame:
         """
         contains the results, for each fault, in a dataframe representation. The rows are fault ids and the columns are:
-        - status: the status of the computation, can be SUCCESS, NO_SHORTCIRCUIT_DATA (in case the reactances of
+        - status: the status of the computation, can be SUCCESS, NO_SHORT_CIRCUIT_DATA (in case the reactances of
         generators are missing), SOLVER_FAILURE or FAILURE
-        - short_circuit_power: the value of the shortcircuit power (in MVA)
-        - time_constant: the duration before reaching the permanent shortcircuit current
+        - short_circuit_power: the value of the short-circuit power (in MVA)
+        - time_constant: the duration before reaching the permanent short-circuit current
         - current: the current at the fault, either only the three-phase magnitude or detailed with magnitudes and
         angles on each phase (in A)
         - voltage: the voltage at the fault, either only the three-phase magnitude or detailed with magnitudes and
@@ -37,7 +37,7 @@ class ShortCircuitAnalysisResult:
     @property
     def feeder_results(self) -> pd.DataFrame:
         """
-        contains the contributions of each feeder to the short circuit current, in a dataframe representation. The rows
+        contains the contributions of each feeder to the short-circuit current, in a dataframe representation. The rows
         are the ids of contributing connectable ids sorted by faults and the columns is the current, either in
         three-phase magnitude or detailed with magnitude and angle for each phase. The magnitude of the currents are in
         A. It should be empty when the parameter with_feeder_result is set to false
@@ -64,7 +64,7 @@ class ShortCircuitAnalysisResult:
     @property
     def voltage_bus_results(self) -> pd.DataFrame:
         """
-        contains a list of all the short circuit voltage bus results, in a dataframe representation.
+        contains a list of all the short-circuit voltage bus results, in a dataframe representation.
         The rows are for each fault the IDs of the buses sorted by voltage level ID and the columns are:
         - initial_voltage_magnitude: the initial voltage at the bus in kV
         - voltage_drop_proportional: the voltage drop in percent
