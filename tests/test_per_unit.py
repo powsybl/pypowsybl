@@ -199,7 +199,7 @@ def test_dangling_lines_per_unit():
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'bus_id', 'connected', 'pairing_key', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.5, 0.3, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                    True, '', '']])
     dangling_lines = n.get_dangling_lines()
@@ -207,7 +207,7 @@ def test_dangling_lines_per_unit():
     n.update_dangling_lines(pd.DataFrame(index=['DL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'bus_id', 'connected', 'pairing_key', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                    True, '', '']])
     dangling_lines = n.get_dangling_lines()

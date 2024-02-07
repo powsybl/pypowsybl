@@ -40,7 +40,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("x"),
             SeriesMetadata.doubles("g"),
             SeriesMetadata.doubles("b"),
-            SeriesMetadata.strings("ucte_xnode_code")
+            SeriesMetadata.strings("pairing_key")
     );
 
     @Override

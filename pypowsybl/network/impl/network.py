@@ -1130,7 +1130,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
-              - **ucte-xnode-code**: the UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+              - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -3609,7 +3609,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **ucte-xnode-code**: the optional UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+            - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **ucte-x-node-code**: deprecated, use pairing-key instead.
 
         Examples:
             Using keyword arguments:
@@ -3619,6 +3620,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
                                               p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
+        if df is not None:
+            if 'ucte-x-node-code' in df.columns:
+                warnings.warn("ucte-x-node-code is deprecated, use pairing_key", DeprecationWarning)
+                df = df.rename(columns={'ucte-x-node-code': 'pairing_key'})
+
+        ucte_x_node_code = kwargs.get('ucte-x-node-code')
+        if ucte_x_node_code is not None:
+            warnings.warn("ucte-x-node-code is deprecated, use pairing_key", DeprecationWarning)
+            kwargs['pairing_key'] = ucte_x_node_code
+            kwargs.pop('ucte-x-node-code')
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
