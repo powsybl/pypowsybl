@@ -124,11 +124,11 @@ use the dangling line ID as the injection in the zone definition.
 
         >>> n = pp.network.load('simple-eu-xnode.uct')
         >>> n.get_dangling_lines()
-                            name    r     x    g    b   p0   q0   p   q   i voltage_level_id     bus_id  connected ucte-x-node-code isCoupler status_XNode geographicalName
+                            name    r     x    g    b   p0   q0   p   q   i voltage_level_id     bus_id  connected pairing_key isCoupler status_XNode geographicalName
         id
         NNL2AA1  XXXXXX11 1       0.0  10.0  0.0  0.0  0.0  0.0 NaN NaN NaN          NNL2AA1  NNL2AA1_0       True         XXXXXX11     false   EQUIVALENT         >>> zone_x = pp.sensitivity.create_empty_zone("X")
 
-We can see that the dangling line 'NNL2AA1  XXXXXX11 1' correspond to the X-Node XXXXXX11 (see column ucte-x-node-code of dangling line data frame).
+We can see that the dangling line 'NNL2AA1  XXXXXX11 1' correspond to the X-Node XXXXXX11 (see column pairing_key of dangling line data frame).
 To calculate to sensitivity of X-Node XXXXXX11 on tie line 'BBE2AA1  FFR3AA1  1':
 
 .. code-block:: python

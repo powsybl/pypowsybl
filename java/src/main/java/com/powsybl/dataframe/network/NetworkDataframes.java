@@ -564,7 +564,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
