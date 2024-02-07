@@ -34,15 +34,6 @@ jobs:
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
-      - name: Checkout powsybl-optimizer sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-optimizer
-          ref: refs/heads/add_resources_path
-
-      - name: Build and install powsybl-optimizer with Maven
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
-
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
@@ -57,6 +48,15 @@ jobs:
 
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Checkout powsybl-optimizer sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-optimizer
+          ref: refs/heads/add_resources_path
+
+      - name: Build and install powsybl-optimizer with Maven
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
 
       - name: Install dependencies
         run: pip3 install -r requirements.txt
@@ -192,10 +192,3 @@ jobs:
           name: pypowsybl-wheels
           path: |
             download/**/*.whl
-
-      - name: Release on PyPi
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: |
-          python -m pip install --user --upgrade twine
-          python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} download/*/*.whl
