@@ -79,6 +79,12 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
+        
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
+          path: dist/*.whl
 
   package:
     name: Package wheels
