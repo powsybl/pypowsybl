@@ -15,43 +15,51 @@ import com.powsybl.iidm.network.*;
  */
 public final class NetworkUtils {
 
+    private static final String DOES_NOT_EXIST = " does not exist.";
+
     private NetworkUtils() {
     }
 
     public static VoltageLevel getVoltageLevelOrThrow(Network network, String id) {
         VoltageLevel voltageLevel = network.getVoltageLevel(id);
         if (voltageLevel == null) {
-            throw new PowsyblException("Voltage level " + id + " does not exist.");
+            throw new PowsyblException("Voltage level " + id + DOES_NOT_EXIST);
         }
         return voltageLevel;
     }
 
-    public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections) {
+    public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections, boolean throwException) {
         if (voltageLevels == null) {
             if (busOrBusbarSections != null) {
                 Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
-                if (busOrBusbarSection == null) {
+                if (busOrBusbarSection == null && throwException) {
                     throw new PowsyblException(String.format("Bus or busbar section %s not found.", busOrBusbarSections.get(row)));
+
                 }
-                if (busOrBusbarSection instanceof BusbarSection) {
-                    return ((BusbarSection) busOrBusbarSection).getTerminal().getVoltageLevel();
-                } else if (busOrBusbarSection instanceof Bus) {
-                    return ((Bus) busOrBusbarSection).getVoltageLevel();
+                if (busOrBusbarSection instanceof BusbarSection bbs) {
+                    return bbs.getTerminal().getVoltageLevel();
+                } else if (busOrBusbarSection instanceof Bus bus) {
+                    return bus.getVoltageLevel();
                 } else {
-                    throw new PowsyblException(String.format("Unsupported type %s for identifiable %s", busOrBusbarSection.getType(), busOrBusbarSection.getId()));
+                    if (throwException) {
+                        throw new PowsyblException(String.format("Unsupported type %s for identifiable %s", busOrBusbarSection.getType(), busOrBusbarSection.getId()));
+                    }
                 }
             } else {
-                throw new PowsyblException("Voltage level id and bus or busbar section id missing.");
+                if (throwException) {
+                    throw new PowsyblException("Voltage level id and bus or busbar section id missing.");
+                }
             }
         } else {
             return getVoltageLevelOrThrow(network, voltageLevels.get(row));
         }
+        return null;
     }
 
     public static Substation getSubstationOrThrow(Network network, String id) {
         Substation substation = network.getSubstation(id);
         if (substation == null) {
-            throw new PowsyblException("Substation " + id + " does not exist.");
+            throw new PowsyblException("Substation " + id + DOES_NOT_EXIST);
         }
         return substation;
     }
@@ -59,7 +67,7 @@ public final class NetworkUtils {
     public static Identifiable<?> getIdentifiableOrThrow(Network network, String id) {
         Identifiable<?> identifiable = network.getIdentifiable(id);
         if (identifiable == null) {
-            throw new PowsyblException("Network element " + id + " does not exist.");
+            throw new PowsyblException("Network element " + id + DOES_NOT_EXIST);
         }
         return identifiable;
     }

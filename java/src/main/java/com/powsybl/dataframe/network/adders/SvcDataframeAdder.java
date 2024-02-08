@@ -70,18 +70,22 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        StaticVarCompensatorAdder createAdder(Network network, int row) {
-            StaticVarCompensatorAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
-                    .newStaticVarCompensator();
-            setInjectionAttributes(adder, row);
-            applyIfPresent(bMin, row, adder::setBmin);
-            applyIfPresent(bMax, row, adder::setBmax);
-            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
-            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
-                    .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
-            return adder;
+        StaticVarCompensatorAdder createAdder(Network network, int row, boolean throwException) {
+            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl != null) {
+                StaticVarCompensatorAdder adder = vl.newStaticVarCompensator();
+                setInjectionAttributes(adder, row);
+                applyIfPresent(bMin, row, adder::setBmin);
+                applyIfPresent(bMax, row, adder::setBmax);
+                applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+                applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+                applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                return adder;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -89,8 +93,10 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         StaticVarCompensatorSeries series = new StaticVarCompensatorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            StaticVarCompensatorAdder adder = series.createAdder(network, row);
-            addition.add(network, dataframe, adder, row, throwException, reporter);
+            StaticVarCompensatorAdder adder = series.createAdder(network, row, throwException);
+            if (adder != null) {
+                addition.add(network, dataframe, adder, row, throwException, reporter);
+            }
         }
     }
 }

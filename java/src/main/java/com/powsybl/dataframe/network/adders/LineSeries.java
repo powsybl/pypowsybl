@@ -26,7 +26,7 @@ public class LineSeries extends AbstractBranchSeries {
         this.x = dataframe.getDoubles("x");
     }
 
-    LineAdder create(Network network, int row) {
+    LineAdder create(Network network, int row, boolean throwException) {
         LineAdder adder = network.newLine();
         setBranchAttributes(adder, row);
         applyIfPresent(b1, row, adder::setB1);

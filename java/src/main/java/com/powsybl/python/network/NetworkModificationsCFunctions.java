@@ -20,6 +20,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
+import com.powsybl.python.commons.CommonCFunctions;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import org.apache.commons.lang3.Range;
@@ -31,9 +32,10 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -102,8 +104,13 @@ public final class NetworkModificationsCFunctions {
                 dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             DataframeNetworkModificationType type = convert(networkModificationType);
+            logger().debug("throwException in createNetworkModification {}", throwException);
             NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
         });
+    }
+
+    private static Logger logger() {
+        return LoggerFactory.getLogger(CommonCFunctions.class);
     }
 
     @CEntryPoint(name = "getModificationMetadata")
@@ -135,12 +142,12 @@ public final class NetworkModificationsCFunctions {
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
                 UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
                 ids.forEach(hvdcId -> {
-                    List<String> shuntCompensatorList = Collections.EMPTY_LIST;
+                    List<String> shuntCompensatorList = Collections.emptyList();
                     if (extraDataDf != null) {
                         Optional<String> shuntCompensatorOptional = extraDataDf.getStringValue(hvdcId, 0);
                         String shuntCompensator = shuntCompensatorOptional.isEmpty() || shuntCompensatorOptional.get().isEmpty() ? "," :
                                 shuntCompensatorOptional.get();
-                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).collect(Collectors.toList());
+                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).toList();
                     }
                     new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
 

@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -34,9 +35,9 @@ public class CreateTwoWindingsTransformer implements NetworkModification {
         }
         for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
-            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, dataframes.get(0), i);
+            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, dataframes.get(0), i, throwException);
             com.powsybl.iidm.modification.NetworkModification modification = builder.build();
-            modification.apply(network);
+            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
         }
     }
 }

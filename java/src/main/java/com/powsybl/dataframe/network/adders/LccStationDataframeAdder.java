@@ -13,6 +13,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.LccConverterStationAdder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,13 +59,17 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
-        LccConverterStationAdder createAdder(Network network, int row) {
-            LccConverterStationAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
-                    .newLccConverterStation();
-            setInjectionAttributes(adder, row);
-            applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
-            applyIfPresent(powerFactors, row, f -> adder.setPowerFactor((float) f));
-            return adder;
+        LccConverterStationAdder createAdder(Network network, int row, boolean throwException) {
+            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl != null) {
+                LccConverterStationAdder adder = vl.newLccConverterStation();
+                setInjectionAttributes(adder, row);
+                applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+                applyIfPresent(powerFactors, row, f -> adder.setPowerFactor((float) f));
+                return adder;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -72,8 +77,10 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         LccStationSeries series = new LccStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            LccConverterStationAdder adder = series.createAdder(network, row);
-            additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            LccConverterStationAdder adder = series.createAdder(network, row, throwException);
+            if (adder != null) {
+                additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            }
         }
     }
 }

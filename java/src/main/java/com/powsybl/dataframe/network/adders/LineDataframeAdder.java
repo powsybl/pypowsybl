@@ -48,7 +48,7 @@ public class LineDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe) {
         LineSeries series = new LineSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row).add();
+            series.create(network, row, true).add();
         }
     }
 }

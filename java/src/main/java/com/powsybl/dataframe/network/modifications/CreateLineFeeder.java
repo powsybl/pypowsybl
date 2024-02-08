@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
+import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -35,9 +36,11 @@ public class CreateLineFeeder implements NetworkModification {
         }
         for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, dataframes.get(0), i);
-            com.powsybl.iidm.modification.NetworkModification modification = builder.build();
-            modification.apply(network);
+            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, dataframes.get(0), i, throwException);
+            if (builder != null) {
+                com.powsybl.iidm.modification.NetworkModification modification = builder.build();
+                modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            }
         }
     }
 }

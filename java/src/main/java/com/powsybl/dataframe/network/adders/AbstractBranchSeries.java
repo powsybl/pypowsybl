@@ -58,6 +58,6 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
         applyIfPresent(nodes2, row, adder::setNode2);
     }
 
-    abstract BranchAdder create(Network network, int row);
+    abstract BranchAdder create(Network network, int row, boolean throwException);
 
 }

@@ -13,6 +13,7 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.VscConverterStationAdder;
 import com.powsybl.python.network.NetworkUtil;
 
@@ -70,17 +71,21 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        VscConverterStationAdder createAdder(Network network, int row) {
-            VscConverterStationAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
-                    .newVscConverterStation();
-            setInjectionAttributes(adder, row);
-            applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
-            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
-                    .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
-            return adder;
+        VscConverterStationAdder createAdder(Network network, int row, boolean throwException) {
+            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl != null) {
+                VscConverterStationAdder adder = vl.newVscConverterStation();
+                setInjectionAttributes(adder, row);
+                applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+                applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+                applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+                applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                return adder;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -88,8 +93,10 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         VscStationSeries series = new VscStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            VscConverterStationAdder adder = series.createAdder(network, row);
-            additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            VscConverterStationAdder adder = series.createAdder(network, row, throwException);
+            if (adder != null) {
+                additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            }
         }
     }
 }
