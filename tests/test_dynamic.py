@@ -51,12 +51,40 @@ def test_dataframe_mapping():
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_branch_disconnection("test_quadripole_id", 5, True, False)
-    events.add_injection_disconnection("test_generator_id", 3.3, True)
-    events.add_injection_disconnection("test_generator_id", 8.2, False)
+    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.BranchSide.ONE)
+    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.BranchSide.TWO)
+    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.BranchSide.TWO)
 
 
 def test_add_curve():
     timeseries = dyn.CurveMapping()
     timeseries.add_curves("test_load_id_1", ["load_PPu", "load_QPu"])
-    timeseries.add_curves("test_load_id_2", "load_PPu")
+    timeseries.add_curve("test_load_id_2", "load_PPu")
+
+9.246454891873562,
+9.527320884854145,
+-0.2808659929808548,
+14.0922977589576,
+-10.089052870815799,
+12.477016803262893,
+-0.2808659929808055,
+42.021507061321806,
+-11.236223841529872,
+22.47244768305975,
+11.23622384152988,
+-3.3206637439775477e-09,
+0.0,
+0.0,
+0.0,
+0.0,
+0.0,
+0.0,
+0.0,
+0.0,
+-16.854335757313862,
+-16.854335757313862,
+31.651588214128555,
+-32.68012985607644,
+-32.68012985607644,
+33.708671534551655,
+47.40048476563348

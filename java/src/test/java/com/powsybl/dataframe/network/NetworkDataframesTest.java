@@ -22,7 +22,6 @@ import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -188,11 +187,19 @@ class NetworkDataframesTest {
     @Test
     void secondaryVoltageControlExtension() {
         Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
-        SecondaryVoltageControl control = network.newExtension(SecondaryVoltageControlAdder.class)
-                .addControlZone(new SecondaryVoltageControl.ControlZone("z1",
-                        new SecondaryVoltageControl.PilotPoint(List.of("NLOAD"), 15d),
-                        List.of(new SecondaryVoltageControl.ControlUnit("GEN", false))))
-                .add();
+        network.newExtension(SecondaryVoltageControlAdder.class)
+                .newControlZone()
+                    .withName("z1")
+                    .newControlUnit()
+                        .withId("GEN")
+                        .withParticipate(false)
+                        .add()
+                    .newPilotPoint()
+                        .withBusbarSectionsOrBusesIds(List.of("NLOAD"))
+                        .withTargetV(15d)
+                        .add()
+                .add()
+            .add();
 
         List<Series> zoneSeries = createExtensionDataFrame("secondaryVoltageControl", "zones", network);
         assertThat(zoneSeries)

@@ -1056,7 +1056,7 @@ public final class NetworkDataframes {
         return ifExistsInt(t -> getter.apply(t).getPhaseTapChanger(), PhaseTapChanger::getTapPosition);
     }
 
-    private static void setTapPosition(TapChanger<?, ?> tapChanger, int position) {
+    private static void setTapPosition(TapChanger<?, ?, ?, ?> tapChanger, int position) {
         if (tapChanger != null) {
             tapChanger.setTapPosition(position);
         }

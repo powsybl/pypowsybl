@@ -148,7 +148,7 @@ def test_save_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
+    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM'] == formats
 
 
 def test_get_import_parameters():
@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 16 == len(parameters)
+    assert 17 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]

@@ -118,6 +118,7 @@
 .sld-svc {stroke: var(--sld-vl-color, blue); fill: none}
 .sld-vsc {stroke: var(--sld-vl-color, blue); font-size: 7.43px; fill: none}
 .sld-lcc {stroke: var(--sld-vl-color, blue); font-size: 7.43px; fill: none}
+.sld-ground {stroke: var(--sld-vl-color, blue); fill: none}
 /* Stroke none & fill: --sld-vl-color */
 .sld-node-infos {stroke: none; fill: var(--sld-vl-color, black)}
 /* Stroke none & fill: black */
@@ -140,6 +141,12 @@
 .sld-disconnector.sld-fictitious {stroke: maroon}
 .sld-load-break-switch.sld-fictitious {stroke: maroon}
 .sld-busbar-section.sld-fictitious {stroke: var(--sld-vl-color, #c80000); stroke-width: 1}
+/* ground disconnector specific */
+.sld-ground-disconnection-attach {stroke: var(--sld-vl-color, #c80000); fill: none}
+.sld-open .sld-ground-disconnection-ground {stroke: black; fill: none}
+.sld-closed .sld-ground-disconnection-ground {stroke: var(--sld-vl-color, #c80000); fill: none}
+.sld-ground-disconnection .sld-sw-open {stroke: black; fill: none}
+.sld-ground-disconnection .sld-sw-closed {stroke: black; fill: none}
 
 ]]></style>
     <rect class="sld-frame" height="100%" width="100%"/>
@@ -162,13 +169,13 @@
                 <polyline points="65.0,142.0,65.0,84.5"/>
             </g>
             <g class="sld-active-power sld-feeder-info sld-out" id="idLD1_ARROW_ACTIVE" transform="translate(60.0,99.5)">
-                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
                 <polygon class="sld-arrow-out" points="5,0 10,10 0,10"/>
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
                 <text class="sld-label" x="15.0" y="5.0">80</text>
             </g>
             <g class="sld-reactive-power sld-feeder-info sld-out" id="idLD1_ARROW_REACTIVE" transform="translate(60.0,119.5)">
-                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
                 <polygon class="sld-arrow-out" points="5,0 10,10 0,10"/>
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10"/>
                 <text class="sld-label" x="15.0" y="5.0">10</text>
             </g>
             <g class="sld-disconnector sld-closed sld-vl180to300-0" id="idS1VL1_95_BBS_95_LD1_95_DISCONNECTOR" transform="translate(61.0,248.0)">
@@ -206,13 +213,13 @@
                 <polyline points="115.0,362.0,115.0,416.5"/>
             </g>
             <g class="sld-reactive-power sld-feeder-info sld-in" id="idTWT_95_ONE_ARROW_REACTIVE" transform="translate(110.0,391.5)">
-                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
                 <polygon class="sld-arrow-out" points="5,0 10,10 0,10" transform="rotate(180.0,5.0,5.0)"/>
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
                 <text class="sld-label" x="15.0" y="5.0">-10</text>
             </g>
             <g class="sld-active-power sld-feeder-info sld-in" id="idTWT_95_ONE_ARROW_ACTIVE" transform="translate(110.0,371.5)">
-                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
                 <polygon class="sld-arrow-out" points="5,0 10,10 0,10" transform="rotate(180.0,5.0,5.0)"/>
+                <polygon class="sld-arrow-in" points="0,0 10,0 5,10" transform="rotate(180.0,5.0,5.0)"/>
                 <text class="sld-label" x="15.0" y="5.0">-80</text>
             </g>
             <g class="sld-disconnector sld-closed sld-vl180to300-0" id="idS1VL1_95_BBS_95_TWT_95_DISCONNECTOR" transform="translate(111.0,248.0)">
@@ -230,9 +237,9 @@
                 <circle cx="4" cy="4" r="4"/>
             </g>
             <g class="sld-pst sld-bottom-feeder" id="idTWT_95_ONE" transform="translate(108.0,416.5)">
-                <path class="sld-vl180to300-0 sld-pst-arrow" d="M14,0 0,14 M11,0 14,0 14,3" transform="rotate(180.0,7.0,7.5)"/>
                 <circle class="sld-vl180to300-0 sld-winding" cx="7" cy="10" r="5" transform="rotate(180.0,7.0,7.5)"/>
                 <circle class="sld-vl300to500-0 sld-winding" cx="7" cy="5" r="5" transform="rotate(180.0,7.0,7.5)"/>
+                <path class="sld-vl180to300-0 sld-pst-arrow" d="M14,0 0,14 M11,0 14,0 14,3" transform="rotate(180.0,7.0,7.5)"/>
                 <text class="sld-label" id="TWT_ONE_S_LABEL" x="-5.0" y="20.0">TWT</text>
             </g>
         </g>
