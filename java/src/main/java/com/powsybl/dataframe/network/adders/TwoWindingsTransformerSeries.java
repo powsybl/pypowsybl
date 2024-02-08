@@ -45,21 +45,25 @@ public class TwoWindingsTransformerSeries extends AbstractBranchSeries {
         String id = ids.get(row);
         VoltageLevel vl1 = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels1, busOrBusbarSections1, throwException);
         VoltageLevel vl2 = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels2, busOrBusbarSections2, throwException);
-        Substation s1 = vl1.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": no substation."));
-        Substation s2 = vl2.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": no substation."));
-        if (s1 != s2) {
-            throw new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": both voltage ids must be on the same substation");
-        }
+        if (vl1 != null && vl2 != null) {
+            Substation s1 = vl1.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": no substation."));
+            Substation s2 = vl2.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": no substation."));
+            if (s1 != s2) {
+                throw new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": both voltage ids must be on the same substation");
+            }
 
-        var adder = s1.newTwoWindingsTransformer();
-        setBranchAttributes(adder, row);
-        applyIfPresent(ratedU1, row, adder::setRatedU1);
-        applyIfPresent(ratedU2, row, adder::setRatedU2);
-        applyIfPresent(ratedS, row, adder::setRatedS);
-        applyIfPresent(b, row, adder::setB);
-        applyIfPresent(g, row, adder::setG);
-        applyIfPresent(r, row, adder::setR);
-        applyIfPresent(x, row, adder::setX);
-        return adder;
+            var adder = s1.newTwoWindingsTransformer();
+            setBranchAttributes(adder, row);
+            applyIfPresent(ratedU1, row, adder::setRatedU1);
+            applyIfPresent(ratedU2, row, adder::setRatedU2);
+            applyIfPresent(ratedS, row, adder::setRatedS);
+            applyIfPresent(b, row, adder::setB);
+            applyIfPresent(g, row, adder::setG);
+            applyIfPresent(r, row, adder::setR);
+            applyIfPresent(x, row, adder::setX);
+            return adder;
+        } else {
+            return null;
+        }
     }
 }

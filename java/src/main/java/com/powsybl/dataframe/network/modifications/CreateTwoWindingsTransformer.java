@@ -36,8 +36,10 @@ public class CreateTwoWindingsTransformer implements NetworkModification {
         for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
             CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, dataframes.get(0), i, throwException);
-            com.powsybl.iidm.modification.NetworkModification modification = builder.build();
-            modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            if (builder != null) {
+                com.powsybl.iidm.modification.NetworkModification modification = builder.build();
+                modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            }
         }
     }
 }
