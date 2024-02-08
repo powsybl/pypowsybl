@@ -20,7 +20,6 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.CommonCFunctions;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import org.apache.commons.lang3.Range;
@@ -32,8 +31,6 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -104,13 +101,8 @@ public final class NetworkModificationsCFunctions {
                 dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             DataframeNetworkModificationType type = convert(networkModificationType);
-            logger().debug("throwException in createNetworkModification {}", throwException);
             NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
         });
-    }
-
-    private static Logger logger() {
-        return LoggerFactory.getLogger(CommonCFunctions.class);
     }
 
     @CEntryPoint(name = "getModificationMetadata")
