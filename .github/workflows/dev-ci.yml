@@ -22,8 +22,7 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages (Alma Linux)
-        if: matrix.python.version == '3.12'
+      - name: Install Linux packages
         run: dnf install -y wget
 
       - name: Install Maven
