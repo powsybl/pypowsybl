@@ -144,7 +144,7 @@ And then, to build the documentation:
 make html
 ```
 
-Web pages are generated in repository _build/html/ for preview before openning a pull request.
+Web pages are generated in repository _build/html/ for preview before opening a pull request.
 You can for example open it with firefox browser:
 
 ```bash
