@@ -246,7 +246,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
                 .stringsIndex("id", Generator::getId)
                 .strings("name", g -> g.getOptionalName().orElse(""))
-                .enums("energy_source", EnergySource.class, Generator::getEnergySource)
+                .enums("energy_source", EnergySource.class, Generator::getEnergySource, Generator::setEnergySource)
                 .doubles("target_p", Generator::getTargetP, Generator::setTargetP)
                 .doubles("min_p", Generator::getMinP, Generator::setMinP)
                 .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
