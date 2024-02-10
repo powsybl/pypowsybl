@@ -65,7 +65,7 @@ Note that similarly to single-line diagrams, a loadflow can be run before writin
     >>> result = pp.loadflow.run_ac(network)
     >>> network.write_network_area_diagram_svg('ieee9.svg')
 
-Network-area diagrams can be customized through NadParameters :
+Network-area diagrams can be customized through NadParameters:
 
 .. code-block:: python
 
@@ -80,7 +80,7 @@ Network-area diagrams can be customized through NadParameters :
     - current_value_precision: number of digits after the decimal point for current values (default value 0)
     - voltage_value_precision: number of digits after the decimal point for voltage values(default value 1)
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
-    - substation_description_displayed : if true, the substation name is added to the voltage level info on the diagram (default value false)
+    - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 

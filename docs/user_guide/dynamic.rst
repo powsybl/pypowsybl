@@ -48,7 +48,7 @@ Here is an example of a simple config.yaml file. It uses the same configurations
 Parameters
 ----------
 
-To make a dynamic simulation, you need multiple things :
+To make a dynamic simulation, you need multiple things:
 
     1. A dynamic mapping, it links the static elements (generators, loads, lines) to their dynamic behavior (alpha beta load)
     2. A curve mapping, it records the given values to be watch by the simulation tool. Curves are the output of the simulation
