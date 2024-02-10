@@ -199,7 +199,7 @@ public:
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
-    bool no_generator_reactive_limits;
+    bool use_reactive_limits;
     bool phase_shifter_regulation_on;
     bool twt_split_shunt_admittance;
     bool shunt_compensator_voltage_control_on;

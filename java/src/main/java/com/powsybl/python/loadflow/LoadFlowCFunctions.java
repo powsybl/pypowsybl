@@ -137,7 +137,7 @@ public final class LoadFlowCFunctions {
     public static void copyToCLoadFlowParameters(LoadFlowParameters parameters, LoadFlowParametersPointer cParameters) {
         cParameters.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
         cParameters.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
-        cParameters.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
+        cParameters.setUseReactiveLimits(parameters.isUseReactiveLimits());
         cParameters.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
         cParameters.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
         cParameters.setShuntCompensatorVoltageControlOn(parameters.isShuntCompensatorVoltageControlOn());

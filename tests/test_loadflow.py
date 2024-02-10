@@ -60,7 +60,7 @@ def test_lf_parameters():
     attributes = {
         'voltage_init_mode': [lf.VoltageInitMode.DC_VALUES, lf.VoltageInitMode.UNIFORM_VALUES],
         'transformer_voltage_control_on': [True, False],
-        'no_generator_reactive_limits': [True, False],
+        'use_reactive_limits': [True, False],
         'phase_shifter_regulation_on': [True, False],
         'twt_split_shunt_admittance': [True, False],
         'shunt_compensator_voltage_control_on': [True, False],

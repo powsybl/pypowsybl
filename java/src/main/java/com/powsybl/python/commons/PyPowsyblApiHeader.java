@@ -190,11 +190,11 @@ public final class PyPowsyblApiHeader {
         @CField("transformer_voltage_control_on")
         void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
 
-        @CField("no_generator_reactive_limits")
-        boolean isNoGeneratorReactiveLimits();
+        @CField("use_reactive_limits")
+        boolean isUseReactiveLimits();
 
-        @CField("no_generator_reactive_limits")
-        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+        @CField("use_reactive_limits")
+        void setUseReactiveLimits(boolean useReactiveLimits);
 
         @CField("phase_shifter_regulation_on")
         boolean isPhaseShifterRegulationOn();

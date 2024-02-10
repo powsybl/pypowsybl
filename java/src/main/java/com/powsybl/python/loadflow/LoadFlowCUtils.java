@@ -65,7 +65,7 @@ public final class LoadFlowCUtils {
         return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
-                .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
+                .setUseReactiveLimits(loadFlowParametersPtr.isUseReactiveLimits())
                 .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
                 .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
                 .setShuntCompensatorVoltageControlOn(loadFlowParametersPtr.isShuntCompensatorVoltageControlOn())

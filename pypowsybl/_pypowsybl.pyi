@@ -371,7 +371,7 @@ class LoadFlowParameters:
     countries_to_balance: Sequence[str]
     dc_use_transformer_ratio: bool
     distributed_slack: bool
-    no_generator_reactive_limits: bool
+    use_reactive_limits: bool
     phase_shifter_regulation_on: bool
     read_slack_bus: bool
     shunt_compensator_voltage_control_on: bool

@@ -44,7 +44,7 @@ typedef struct loadflow_component_result_struct {
 typedef struct loadflow_parameters_struct {
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
-    unsigned char no_generator_reactive_limits;
+    unsigned char use_reactive_limits;
     unsigned char phase_shifter_regulation_on;
     unsigned char twt_split_shunt_admittance;
     unsigned char shunt_compensator_voltage_control_on;

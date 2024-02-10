@@ -319,7 +319,7 @@ void deleteLoadFlowParameters(loadflow_parameters* ptr) {
 LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
-    no_generator_reactive_limits = (bool) src->no_generator_reactive_limits;
+    use_reactive_limits = (bool) src->use_reactive_limits;
     phase_shifter_regulation_on = (bool) src->phase_shifter_regulation_on;
     twt_split_shunt_admittance = (bool) src->twt_split_shunt_admittance;
     shunt_compensator_voltage_control_on = (bool) src->shunt_compensator_voltage_control_on;
@@ -337,7 +337,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
 void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.voltage_init_mode = voltage_init_mode;
     res.transformer_voltage_control_on = (unsigned char) transformer_voltage_control_on;
-    res.no_generator_reactive_limits = (unsigned char) no_generator_reactive_limits;
+    res.use_reactive_limits = (unsigned char) use_reactive_limits;
     res.phase_shifter_regulation_on = (unsigned char) phase_shifter_regulation_on;
     res.twt_split_shunt_admittance = (unsigned char) twt_split_shunt_admittance;
     res.shunt_compensator_voltage_control_on = (unsigned char) shunt_compensator_voltage_control_on;

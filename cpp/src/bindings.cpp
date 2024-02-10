@@ -417,7 +417,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def(py::init(&pypowsybl::createLoadFlowParameters))
             .def_readwrite("voltage_init_mode", &pypowsybl::LoadFlowParameters::voltage_init_mode)
             .def_readwrite("transformer_voltage_control_on", &pypowsybl::LoadFlowParameters::transformer_voltage_control_on)
-            .def_readwrite("no_generator_reactive_limits", &pypowsybl::LoadFlowParameters::no_generator_reactive_limits)
+            .def_readwrite("use_reactive_limits", &pypowsybl::LoadFlowParameters::use_reactive_limits)
             .def_readwrite("phase_shifter_regulation_on", &pypowsybl::LoadFlowParameters::phase_shifter_regulation_on)
             .def_readwrite("twt_split_shunt_admittance", &pypowsybl::LoadFlowParameters::twt_split_shunt_admittance)
             .def_readwrite("shunt_compensator_voltage_control_on", &pypowsybl::LoadFlowParameters::shunt_compensator_voltage_control_on)
