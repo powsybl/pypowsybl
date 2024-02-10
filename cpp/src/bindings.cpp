@@ -370,11 +370,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("status", [](const loadflow_component_result& r) {
                 return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
+            .def_property_readonly("status_text", [](const loadflow_component_result& r) {
+                return r.status_text;
+            })
             .def_property_readonly("iteration_count", [](const loadflow_component_result& r) {
                 return r.iteration_count;
             })
             .def_property_readonly("slack_bus_id", [](const loadflow_component_result& r) {
                 return r.slack_bus_id;
+            })
+            .def_property_readonly("reference_bus_id", [](const loadflow_component_result& r) {
+                return r.reference_bus_id;
             })
             .def_property_readonly("slack_bus_active_power_mismatch", [](const loadflow_component_result& r) {
                 return r.slack_bus_active_power_mismatch;

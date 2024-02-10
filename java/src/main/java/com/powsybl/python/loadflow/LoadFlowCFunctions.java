@@ -67,7 +67,10 @@ public final class LoadFlowCFunctions {
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
-                UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+                PyPowsyblApiHeader.LoadFlowComponentResultPointer loadFlowComponentResultPointer = componentResultArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(loadFlowComponentResultPointer.getStatusText());
+                UnmanagedMemory.free(loadFlowComponentResultPointer.getReferenceBusId());
+                UnmanagedMemory.free(loadFlowComponentResultPointer.getSlackBusId());
             }
             freeArrayPointer(componentResultArrayPtr);
         });
@@ -126,7 +129,9 @@ public final class LoadFlowCFunctions {
             ptr.setConnectedComponentNum(componentResult.getConnectedComponentNum());
             ptr.setSynchronousComponentNum(componentResult.getSynchronousComponentNum());
             ptr.setStatus(componentResult.getStatus().ordinal());
+            ptr.setStatusText(CTypeUtil.toCharPtr(componentResult.getStatusText()));
             ptr.setIterationCount(componentResult.getIterationCount());
+            ptr.setReferenceBusId(CTypeUtil.toCharPtr(componentResult.getReferenceBusId()));
             ptr.setSlackBusId(CTypeUtil.toCharPtr(componentResult.getSlackBusId()));
             ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
             ptr.setDistributedActivePower(componentResult.getDistributedActivePower());

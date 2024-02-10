@@ -27,6 +27,11 @@ class ComponentResult:
         return self._res.status
 
     @property
+    def status_text(self) -> str:
+        """Status text of the loadflow for this component."""
+        return self._res.status_text
+
+    @property
     def connected_component_num(self) -> int:
         """Number of the connected component."""
         return self._res.connected_component_num
@@ -40,6 +45,11 @@ class ComponentResult:
     def iteration_count(self) -> int:
         """The number of iterations performed by the loadflow."""
         return self._res.iteration_count
+
+    @property
+    def reference_bus_id(self) -> str:
+        """ID of the (angle) reference bus used for this component."""
+        return self._res.reference_bus_id
 
     @property
     def slack_bus_id(self) -> str:
@@ -61,7 +71,9 @@ class ComponentResult:
                f"connected_component_num={self.connected_component_num!r}" \
                f", synchronous_component_num={self.synchronous_component_num!r}" \
                f", status={self.status.name}" \
+               f", status_text={self.status_text}" \
                f", iteration_count={self.iteration_count!r}" \
+               f", reference_bus_id={self.reference_bus_id!r}" \
                f", slack_bus_id={self.slack_bus_id!r}" \
                f", slack_bus_active_power_mismatch={self.slack_bus_active_power_mismatch!r}" \
                f", distributed_active_power={self.distributed_active_power!r}" \

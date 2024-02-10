@@ -148,11 +148,23 @@ public final class PyPowsyblApiHeader {
         @CField("status")
         void setStatus(int status);
 
+        @CField("status_text")
+        CCharPointer getStatusText();
+
+        @CField("status_text")
+        void setStatusText(CCharPointer statusText);
+
         @CField("iteration_count")
         int getIterationCount();
 
         @CField("iteration_count")
         void setIterationCount(int iterationCount);
+
+        @CField("reference_bus_id")
+        CCharPointer getReferenceBusId();
+
+        @CField("reference_bus_id")
+        void setReferenceBusId(CCharPointer referenceBusId);
 
         @CField("slack_bus_id")
         CCharPointer getSlackBusId();
