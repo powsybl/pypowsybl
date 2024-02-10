@@ -68,7 +68,7 @@ public final class LoadFlowCUtils {
                 .setNoGeneratorReactiveLimits(loadFlowParametersPtr.isNoGeneratorReactiveLimits())
                 .setPhaseShifterRegulationOn(loadFlowParametersPtr.isPhaseShifterRegulationOn())
                 .setTwtSplitShuntAdmittance(loadFlowParametersPtr.isTwtSplitShuntAdmittance())
-                .setShuntCompensatorVoltageControlOn(loadFlowParametersPtr.isSimulShunt())
+                .setShuntCompensatorVoltageControlOn(loadFlowParametersPtr.isShuntCompensatorVoltageControlOn())
                 .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
                 .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())

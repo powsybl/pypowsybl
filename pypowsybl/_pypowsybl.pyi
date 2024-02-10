@@ -374,7 +374,7 @@ class LoadFlowParameters:
     no_generator_reactive_limits: bool
     phase_shifter_regulation_on: bool
     read_slack_bus: bool
-    simul_shunt: bool
+    shunt_compensator_voltage_control_on: bool
     transformer_voltage_control_on: bool
     twt_split_shunt_admittance: bool
     voltage_init_mode: VoltageInitMode

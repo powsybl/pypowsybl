@@ -202,7 +202,7 @@ public:
     bool no_generator_reactive_limits;
     bool phase_shifter_regulation_on;
     bool twt_split_shunt_admittance;
-    bool simul_shunt;
+    bool shunt_compensator_voltage_control_on;
     bool read_slack_bus;
     bool write_slack_bus;
     bool distributed_slack;

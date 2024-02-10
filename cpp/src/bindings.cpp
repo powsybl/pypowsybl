@@ -420,7 +420,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("no_generator_reactive_limits", &pypowsybl::LoadFlowParameters::no_generator_reactive_limits)
             .def_readwrite("phase_shifter_regulation_on", &pypowsybl::LoadFlowParameters::phase_shifter_regulation_on)
             .def_readwrite("twt_split_shunt_admittance", &pypowsybl::LoadFlowParameters::twt_split_shunt_admittance)
-            .def_readwrite("simul_shunt", &pypowsybl::LoadFlowParameters::simul_shunt)
+            .def_readwrite("shunt_compensator_voltage_control_on", &pypowsybl::LoadFlowParameters::shunt_compensator_voltage_control_on)
             .def_readwrite("read_slack_bus", &pypowsybl::LoadFlowParameters::read_slack_bus)
             .def_readwrite("write_slack_bus", &pypowsybl::LoadFlowParameters::write_slack_bus)
             .def_readwrite("distributed_slack", &pypowsybl::LoadFlowParameters::distributed_slack)

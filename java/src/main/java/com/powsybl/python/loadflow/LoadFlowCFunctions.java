@@ -140,7 +140,7 @@ public final class LoadFlowCFunctions {
         cParameters.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
         cParameters.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
         cParameters.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
-        cParameters.setSimulShunt(parameters.isSimulShunt());
+        cParameters.setShuntCompensatorVoltageControlOn(parameters.isShuntCompensatorVoltageControlOn());
         cParameters.setReadSlackBus(parameters.isReadSlackBus());
         cParameters.setWriteSlackBus(parameters.isWriteSlackBus());
         cParameters.setDistributedSlack(parameters.isDistributedSlack());

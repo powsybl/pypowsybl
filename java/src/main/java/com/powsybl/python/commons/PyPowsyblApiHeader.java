@@ -208,11 +208,11 @@ public final class PyPowsyblApiHeader {
         @CField("twt_split_shunt_admittance")
         void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
 
-        @CField("simul_shunt")
-        boolean isSimulShunt();
+        @CField("shunt_compensator_voltage_control_on")
+        boolean isShuntCompensatorVoltageControlOn();
 
-        @CField("simul_shunt")
-        void setSimulShunt(boolean simulShunt);
+        @CField("shunt_compensator_voltage_control_on")
+        void setShuntCompensatorVoltageControlOn(boolean shuntCompensatorVoltageControlOn);
 
         @CField("read_slack_bus")
         boolean isReadSlackBus();

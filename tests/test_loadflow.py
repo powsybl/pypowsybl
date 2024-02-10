@@ -63,7 +63,7 @@ def test_lf_parameters():
         'no_generator_reactive_limits': [True, False],
         'phase_shifter_regulation_on': [True, False],
         'twt_split_shunt_admittance': [True, False],
-        'simul_shunt': [True, False],
+        'shunt_compensator_voltage_control_on': [True, False],
         'read_slack_bus': [True, False],
         'write_slack_bus': [True, False],
         'distributed_slack': [True, False],

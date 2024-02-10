@@ -45,7 +45,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
             Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
             one at each side of the serie impedance, use ``True``.
-        simul_shunt: Simulate voltage control of shunt compensators.
+        shunt_compensator_voltage_control_on: Simulate voltage control of shunt compensators.
         read_slack_bus: Read slack bus from the network.
             The slack bus needs to be defined through a dedicate extension. Prefer ``False`` if you want to use
             your loadflow provider selection mechanism, typically the most meshed bus.
@@ -72,7 +72,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  no_generator_reactive_limits: bool = None,
                  phase_shifter_regulation_on: bool = None,
                  twt_split_shunt_admittance: bool = None,
-                 simul_shunt: bool = None,
+                 shunt_compensator_voltage_control_on: bool = None,
                  read_slack_bus: bool = None,
                  write_slack_bus: bool = None,
                  distributed_slack: bool = None,
@@ -92,8 +92,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.phase_shifter_regulation_on = phase_shifter_regulation_on
         if twt_split_shunt_admittance is not None:
             self.twt_split_shunt_admittance = twt_split_shunt_admittance
-        if simul_shunt is not None:
-            self.simul_shunt = simul_shunt
+        if shunt_compensator_voltage_control_on is not None:
+            self.shunt_compensator_voltage_control_on = shunt_compensator_voltage_control_on
         if read_slack_bus is not None:
             self.read_slack_bus = read_slack_bus
         if write_slack_bus is not None:
@@ -117,7 +117,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.no_generator_reactive_limits = c_parameters.no_generator_reactive_limits
         self.phase_shifter_regulation_on = c_parameters.phase_shifter_regulation_on
         self.twt_split_shunt_admittance = c_parameters.twt_split_shunt_admittance
-        self.simul_shunt = c_parameters.simul_shunt
+        self.shunt_compensator_voltage_control_on = c_parameters.shunt_compensator_voltage_control_on
         self.read_slack_bus = c_parameters.read_slack_bus
         self.write_slack_bus = c_parameters.write_slack_bus
         self.distributed_slack = c_parameters.distributed_slack
@@ -138,7 +138,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.no_generator_reactive_limits = self.no_generator_reactive_limits
         c_parameters.phase_shifter_regulation_on = self.phase_shifter_regulation_on
         c_parameters.twt_split_shunt_admittance = self.twt_split_shunt_admittance
-        c_parameters.simul_shunt = self.simul_shunt
+        c_parameters.shunt_compensator_voltage_control_on = self.shunt_compensator_voltage_control_on
         c_parameters.read_slack_bus = self.read_slack_bus
         c_parameters.write_slack_bus = self.write_slack_bus
         c_parameters.distributed_slack = self.distributed_slack
@@ -157,7 +157,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", no_generator_reactive_limits={self.no_generator_reactive_limits!r}" \
                f", phase_shifter_regulation_on={self.phase_shifter_regulation_on!r}" \
                f", twt_split_shunt_admittance={self.twt_split_shunt_admittance!r}" \
-               f", simul_shunt={self.simul_shunt!r}" \
+               f", shunt_compensator_voltage_control_on={self.shunt_compensator_voltage_control_on!r}" \
                f", read_slack_bus={self.read_slack_bus!r}" \
                f", write_slack_bus={self.write_slack_bus!r}" \
                f", distributed_slack={self.distributed_slack!r}" \

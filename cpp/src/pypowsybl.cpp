@@ -322,7 +322,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     no_generator_reactive_limits = (bool) src->no_generator_reactive_limits;
     phase_shifter_regulation_on = (bool) src->phase_shifter_regulation_on;
     twt_split_shunt_admittance = (bool) src->twt_split_shunt_admittance;
-    simul_shunt = (bool) src->simul_shunt;
+    shunt_compensator_voltage_control_on = (bool) src->shunt_compensator_voltage_control_on;
     read_slack_bus = (bool) src->read_slack_bus;
     write_slack_bus = (bool) src->write_slack_bus;
     distributed_slack = (bool) src->distributed_slack;
@@ -340,7 +340,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.no_generator_reactive_limits = (unsigned char) no_generator_reactive_limits;
     res.phase_shifter_regulation_on = (unsigned char) phase_shifter_regulation_on;
     res.twt_split_shunt_admittance = (unsigned char) twt_split_shunt_admittance;
-    res.simul_shunt = (unsigned char) simul_shunt;
+    res.shunt_compensator_voltage_control_on = (unsigned char) shunt_compensator_voltage_control_on;
     res.read_slack_bus = (unsigned char) read_slack_bus;
     res.write_slack_bus = (unsigned char) write_slack_bus;
     res.distributed_slack = (unsigned char) distributed_slack;
