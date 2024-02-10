@@ -99,8 +99,8 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map);
 enum class LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
-    SOLVER_FAILED,
     FAILED,
+    NO_CALCULATION,
 };
 
 enum class PostContingencyComputationStatus {

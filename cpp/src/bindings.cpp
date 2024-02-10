@@ -348,7 +348,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")
             .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
             .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
-            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
+            .value("NO_CALCULATION", pypowsybl::LoadFlowComponentStatus::NO_CALCULATION, "The component was not calculated.")
             .def("__bool__", [](const pypowsybl::LoadFlowComponentStatus& status) {
                 return status == pypowsybl::LoadFlowComponentStatus::CONVERGED;
             });
