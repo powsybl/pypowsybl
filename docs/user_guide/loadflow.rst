@@ -107,7 +107,7 @@ included in the computation:
 .. doctest::
 
     >>> results
-    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763, distributed_active_power=0.0)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596837558763)], distributed_active_power=0.0)]
 
 Component results provides general information about the loadflow: was it successful ? how many iterations did
 it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance
@@ -115,7 +115,7 @@ on the main component of the network:
 
 .. doctest::
 
-    >>> results[0].slack_bus_active_power_mismatch
+    >>> results[0].slack_bus_results[0].active_power_mismatch
     -606.5596837558763
 
 Then, the main output of the loadflow is actually the updated data in the network itself:

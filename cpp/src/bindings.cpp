@@ -360,6 +360,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SOLVER_FAILED", pypowsybl::PostContingencyComputationStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
             .value("NO_IMPACT", pypowsybl::PostContingencyComputationStatus::NO_IMPACT, "The contingency has no impact.");
 
+    py::class_<slack_bus_result>(m, "SlackBusResult")
+            .def_property_readonly("id", [](const slack_bus_result& v) {
+                return v.id;
+            })
+            .def_property_readonly("active_power_mismatch", [](const slack_bus_result& v) {
+                return v.active_power_mismatch;
+            });
+
+    bindArray<pypowsybl::SlackBusResultArray>(m, "SlackBusResultArray");
+
     py::class_<loadflow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const loadflow_component_result& r) {
                 return r.connected_component_num;
@@ -376,14 +386,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("iteration_count", [](const loadflow_component_result& r) {
                 return r.iteration_count;
             })
-            .def_property_readonly("slack_bus_id", [](const loadflow_component_result& r) {
-                return r.slack_bus_id;
+            .def_property_readonly("slack_bus_results", [](const loadflow_component_result& r) {
+                return pypowsybl::SlackBusResultArray((array *) & r.slack_bus_results);
             })
             .def_property_readonly("reference_bus_id", [](const loadflow_component_result& r) {
                 return r.reference_bus_id;
-            })
-            .def_property_readonly("slack_bus_active_power_mismatch", [](const loadflow_component_result& r) {
-                return r.slack_bus_active_power_mismatch;
             })
             .def_property_readonly("distributed_active_power", [](const loadflow_component_result& r) {
                 return r.distributed_active_power;

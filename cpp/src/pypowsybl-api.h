@@ -31,6 +31,11 @@ typedef struct network_metadata_struct {
     int forecast_distance;
 } network_metadata;
 
+typedef struct slack_bus_result_struct {
+    char* id;
+    double active_power_mismatch;
+} slack_bus_result;
+
 typedef struct loadflow_component_result_struct {
     int connected_component_num;
     int synchronous_component_num;
@@ -38,8 +43,7 @@ typedef struct loadflow_component_result_struct {
     char* status_text;
     int iteration_count;
     char* reference_bus_id;
-    char* slack_bus_id;
-    double slack_bus_active_power_mismatch;
+    array slack_bus_results;
     double distributed_active_power;
 } loadflow_component_result;
 

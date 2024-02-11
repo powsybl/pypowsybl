@@ -34,7 +34,7 @@ def test_config():
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
 
 
-def test_run_lf():
+def test_run_lf_ac():
     n = pp.network.create_ieee14()
     results = lf.run_ac(n)
     assert 1 == len(results)
@@ -43,10 +43,29 @@ def test_run_lf():
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
     assert 'VL1_0' == results[0].reference_bus_id
-    assert 'VL1_0' == results[0].slack_bus_id
-    assert abs(results[0].slack_bus_active_power_mismatch) < 0.01
+    assert 1 == len(results[0].slack_bus_results)
+    assert 'VL1_0' == results[0].slack_bus_results[0].id
+    assert abs(results[0].slack_bus_results[0].active_power_mismatch) < 0.01
     assert 3 == results[0].iteration_count
 
+
+def test_run_lf_ac_2slacks():
+    n = pp.network.create_ieee14()
+    p = lf.Parameters(read_slack_bus=False, distributed_slack=False, provider_parameters={'maxSlackBusCount': '2'})
+    results = lf.run_ac(n, p)
+    assert 1 == len(results)
+    assert lf.ComponentStatus.CONVERGED == results[0].status
+    assert 2 == len(results[0].slack_bus_results)
+    sbr0 = results[0].slack_bus_results[0]
+    sbr1 = results[0].slack_bus_results[1]
+    assert 'VL4_0' == sbr0.id
+    assert abs(-0.75 - sbr0.active_power_mismatch) < 0.01
+    assert 'VL2_0' == sbr1.id
+    assert abs(-0.75 - sbr1.active_power_mismatch) < 0.01
+
+
+def test_run_lf_dc():
+    n = pp.network.create_ieee14()
     parameters = lf.Parameters(distributed_slack=False)
     results = lf.run_dc(n, parameters)
     assert 1 == len(results)

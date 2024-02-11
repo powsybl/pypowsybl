@@ -71,6 +71,7 @@ private:
     array* delegate_;
 };
 
+typedef Array<slack_bus_result> SlackBusResultArray;
 typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<operator_strategy_result> OperatorStrategyResultArray;

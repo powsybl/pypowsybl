@@ -127,6 +127,24 @@ public final class PyPowsyblApiHeader {
         void setForecastDistance(int forecastDistance);
     }
 
+    @CStruct("slack_bus_result")
+    public interface SlackBusResultPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("active_power_mismatch")
+        double getActivePowerMismatch();
+
+        @CField("active_power_mismatch")
+        void setActivePowerMismatch(double activePowerMismatch);
+
+        SlackBusResultPointer addressOf(int index);
+    }
+
     @CStruct("loadflow_component_result")
     public interface LoadFlowComponentResultPointer extends PointerBase {
 
@@ -166,17 +184,8 @@ public final class PyPowsyblApiHeader {
         @CField("reference_bus_id")
         void setReferenceBusId(CCharPointer referenceBusId);
 
-        @CField("slack_bus_id")
-        CCharPointer getSlackBusId();
-
-        @CField("slack_bus_id")
-        void setSlackBusId(CCharPointer slackBusId);
-
-        @CField("slack_bus_active_power_mismatch")
-        double getSlackBusActivePowerMismatch();
-
-        @CField("slack_bus_active_power_mismatch")
-        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+        @CFieldAddress("slack_bus_results")
+        ArrayPointer<SlackBusResultPointer> slackBusResults();
 
         @CField("distributed_active_power")
         double getDistributedActivePower();

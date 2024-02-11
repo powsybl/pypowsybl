@@ -84,10 +84,6 @@ Information can be obtained on buses, branches and three windings transformers.
                                         NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
     NHV1_NHV2_1                         NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83            NaN
 
-
-
-.. testcleanup:: security.monitored_elements
-
 It also possible to get flow transfer on monitored branches in case of N-1 branch contingencies:
 
 .. doctest::

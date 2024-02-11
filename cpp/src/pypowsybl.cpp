@@ -127,6 +127,11 @@ Array<loadflow_component_result>::~Array() {
 }
 
 template<>
+Array<slack_bus_result>::~Array() {
+    // already freed by loadflow_component_result
+}
+
+template<>
 Array<post_contingency_result>::~Array() {
     callJava<>(::freeContingencyResultArrayPointer, delegate_);
 }
