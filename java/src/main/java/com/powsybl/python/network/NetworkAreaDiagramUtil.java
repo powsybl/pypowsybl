@@ -91,7 +91,7 @@ public final class NetworkAreaDiagramUtil {
         } else if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound < 0) {
             VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, nominalVoltageLowerBound);
         } else {
-            return VoltageLevelFilter.NO_FILTER;
+            return VoltageLevelFilter.createNominalVoltageFilterWithPredicate(network, VoltageLevelFilter.NO_FILTER);
         }
     }
 
