@@ -1179,7 +1179,7 @@ def test_exception_create_element_with_bay():
                       data=[['new_line', 'S1VL2_BBS', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
                              50.0]])
     with pytest.raises(PyPowsyblError) as exc:
-        pp.network.create_line_bays(n, df_line_wrong_bbs)
+        pp.network.create_line_bays(n, df_line_wrong_bbs, raise_exception=True)
     assert exc.match('Bus or busbar section S1VL2_BBS not found')
 
     pp.network.create_line_bays(network=n, df=df_line_wrong_bbs, raise_exception=False)

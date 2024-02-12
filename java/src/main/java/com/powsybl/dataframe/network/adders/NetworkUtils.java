@@ -34,7 +34,6 @@ public final class NetworkUtils {
                 Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
                 if (busOrBusbarSection == null && throwException) {
                     throw new PowsyblException(String.format("Bus or busbar section %s not found.", busOrBusbarSections.get(row)));
-
                 }
                 if (busOrBusbarSection instanceof BusbarSection bbs) {
                     return bbs.getTerminal().getVoltageLevel();
