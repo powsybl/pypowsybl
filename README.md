@@ -21,7 +21,7 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.7 to 3.11, on Linux, Windows and MacOS.
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.8 to 3.12, on Linux, Windows and MacOS.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
@@ -144,7 +144,7 @@ And then, to build the documentation:
 make html
 ```
 
-Web pages are generated in repository _build/html/ for preview before openning a pull request.
+Web pages are generated in repository _build/html/ for preview before opening a pull request.
 You can for example open it with firefox browser:
 
 ```bash
