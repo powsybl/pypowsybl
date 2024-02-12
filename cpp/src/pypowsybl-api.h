@@ -199,6 +199,7 @@ typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,
+    ONLY_CONTINGENCIES,
 } contingency_context_type;
 
 typedef enum {

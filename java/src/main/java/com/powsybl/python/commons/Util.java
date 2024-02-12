@@ -285,6 +285,7 @@ public final class Util {
             case ALL -> ContingencyContextType.ALL;
             case NONE -> ContingencyContextType.NONE;
             case SPECIFIC -> ContingencyContextType.SPECIFIC;
+            case ONLY_CONTINGENCIES -> ContingencyContextType.ONLY_CONTINGENCIES;
         };
     }
 

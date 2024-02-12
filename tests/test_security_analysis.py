@@ -93,7 +93,6 @@ def test_monitored_elements():
 
     assert bus_results.index.to_frame().columns.tolist() == ['contingency_id', 'operator_strategy_id', 'voltage_level_id', 'bus_id']
     assert bus_results.columns.tolist() == ['v_mag', 'v_angle']
-    print(bus_results)
     assert len(bus_results) == 1
     assert bus_results.loc['', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(389.95, abs=1e-2)
 

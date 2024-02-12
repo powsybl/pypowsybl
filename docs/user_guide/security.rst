@@ -66,7 +66,6 @@ Information can be obtained on buses, branches and three windings transformers.
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
     >>> security_analysis.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
     >>> security_analysis.add_monitored_elements(voltage_level_ids=['VLHV2'])
-    >>> security_analysis.add_monitored_elements(voltage_level_ids=['VLHV2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
     >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
     >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
     >>> security_analysis.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
@@ -75,8 +74,6 @@ Information can be obtained on buses, branches and three windings transformers.
                                                                   v_mag  v_angle
     contingency_id operator_strategy_id voltage_level_id bus_id
                                         VLHV2            NHV2   389.95    -3.51
-    NGEN_NHV1                           VLHV2            NHV2   569.04    -1.71
-    NHV1_NHV2_1                         VLHV2            NHV2   366.58    -7.50
     >>> results.branch_results
                                                         p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id operator_strategy_id branch_id

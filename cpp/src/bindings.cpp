@@ -756,7 +756,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<contingency_context_type>(m, "ContingencyContextType")
             .value("ALL", contingency_context_type::ALL)
             .value("NONE", contingency_context_type::NONE)
-            .value("SPECIFIC", contingency_context_type::SPECIFIC);
+            .value("SPECIFIC", contingency_context_type::SPECIFIC)
+            .value("ONLY_CONTINGENCIES", contingency_context_type::ONLY_CONTINGENCIES);
 
     py::enum_<sensitivity_function_type>(m, "SensitivityFunctionType")
             .value("BRANCH_ACTIVE_POWER_1", sensitivity_function_type::BRANCH_ACTIVE_POWER_1)
