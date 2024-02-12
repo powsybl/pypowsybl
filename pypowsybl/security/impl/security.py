@@ -86,8 +86,7 @@ class SecurityAnalysis(ContingencyContainer):
         """
 
         if contingency_context_type in (ContingencyContextType.ALL, ContingencyContextType.NONE) and contingency_ids:
-            raise ValueError('Contingencies list must be empty when defining monitored elements '
-                             'for NONE or ALL contingencies')
+            contingency_context_type = ContingencyContextType.SPECIFIC
 
         if three_windings_transformer_ids is None:
             three_windings_transformer_ids = []
