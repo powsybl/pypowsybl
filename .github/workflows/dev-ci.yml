@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_24_x86_64:2022-12-26-0d38463
+    container: quay.io/pypa/manylinux_2_28_x86_64:2024-01-08-eb135ed
     strategy:
       matrix:
         python:
@@ -23,10 +23,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: |
-          echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
-          apt-get update
-          apt install -y wget
+        run: dnf install -y wget
 
       - name: Install Maven
         run: |
