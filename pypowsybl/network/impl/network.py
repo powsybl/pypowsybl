@@ -3620,16 +3620,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
                                               p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
+        ucte_xnode_code_str = 'ucte_xnode_code'
         if df is not None:
-            if 'ucte-x-node-code' in df.columns:
-                warnings.warn("ucte-x-node-code is deprecated, use pairing_key", DeprecationWarning)
-                df = df.rename(columns={'ucte-x-node-code': 'pairing_key'})
-
-        ucte_x_node_code = kwargs.get('ucte-x-node-code')
+            if ucte_xnode_code_str in df.columns:
+                warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+                df = df.rename(columns={ucte_xnode_code_str: 'pairing_key'})
+        ucte_x_node_code = kwargs.get(ucte_xnode_code_str)
         if ucte_x_node_code is not None:
-            warnings.warn("ucte-x-node-code is deprecated, use pairing_key", DeprecationWarning)
+            warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
             kwargs['pairing_key'] = ucte_x_node_code
-            kwargs.pop('ucte-x-node-code')
+            kwargs.pop(ucte_xnode_code_str)
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
