@@ -77,7 +77,7 @@ class ShortCircuitAnalysis:
 
     def run(self, network: Network, parameters: Parameters = None,
             provider: str = '', reporter: Reporter = None) -> ShortCircuitAnalysisResult:
-        """ Runs an short-circuit analysis.
+        """ Runs a short-circuit analysis.
 
         Args:
             network:    Network on which the short-circuit analysis will be computed
