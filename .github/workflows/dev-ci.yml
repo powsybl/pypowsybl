@@ -36,15 +36,6 @@ jobs:
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
-      - name: Checkout powsybl-optimizer sources
-        uses: actions/checkout@v1
-        with:
-          repository: powsybl/powsybl-optimizer
-          ref: refs/heads/add_resources_path
-
-      - name: Build and install powsybl-optimizer with Maven
-        run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
-
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
@@ -56,6 +47,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Checkout powsybl-optimizer sources
+        uses: actions/checkout@v1
+        with:
+          repository: powsybl/powsybl-optimizer
+          ref: refs/heads/add_resources_path
+
+      - name: Build and install powsybl-optimizer with Maven
+        run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
 
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
