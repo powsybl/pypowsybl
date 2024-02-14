@@ -21,8 +21,8 @@ jobs:
             version: '3.8',
           }
           - {
-            name: cp310,
-            version: '3.10',
+            name: cp39,
+            version: '3.9',
           }
 
     steps:
@@ -115,8 +115,8 @@ jobs:
             version: '3.8',
           }
           - {
-            name: cp310,
-            version: '3.10',
+            name: cp39,
+            version: '3.9',
           }
 
     steps:
