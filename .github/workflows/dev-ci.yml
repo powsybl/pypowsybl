@@ -190,7 +190,7 @@ jobs:
   package:
     name: Package wheels
     runs-on: ubuntu-latest
-    needs: [macos_windows_build, manylinux_build]
+    needs: [manylinux_build]
 
     steps:
       - name: Download wheels
