@@ -22,6 +22,7 @@ jobs:
           }
           - {
             name: cp39,
+            abi: cp39,
             version: '3.9',
           }
 
