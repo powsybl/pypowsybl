@@ -878,6 +878,9 @@ def test_tie_line_creation_fail_if_xnodes_are_different():
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
         index='id')
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_tie_lines(df)
+    assert exc.match("AC tie Line 'TIE_LINE_TEST': pairingKey is not consistent")
 
 
 def test_tie_line_kwargs():
