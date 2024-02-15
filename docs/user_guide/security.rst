@@ -21,7 +21,7 @@ AC security analysis
 To perform a security analysis, you need at least a network and a contingency on this network.
 In the result there are violations detected with the initial loadflow on the network.
 These violations are collected in pre_contingency_result. The results contain also
-the violations created by the contingency, they are collected by contingency in post_contingency_results :
+the violations created by the contingency, they are collected by contingency in post_contingency_results:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -128,7 +128,7 @@ The following example define a switch closing action with id 'SwitchAction' on t
 To enable the application of the action you need to define an operator strategy and add the action to it.
 An operator strategy is a set of actions to be applied after the simulation of a contingency.
 It is defined with an unique id, a reference to the id of the contingency, a list action ids and a condition.
-The following operator strategy define the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied) :
+The following operator strategy define the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied):
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE

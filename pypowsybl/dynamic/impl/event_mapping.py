@@ -24,8 +24,8 @@ class EventMapping:
         Args:
             static_id (str): network element to disconnect
             event_time (float): timestep at which the event happens
-            disconnect_origin (bool) : the disconnection is made at the origin
-            disconnect_extremity (bool) : the disconnection is made at the extremity
+            disconnect_origin (bool): the disconnection is made at the origin
+            disconnect_extremity (bool): the disconnection is made at the extremity
         """
         _pp.add_event_branch_disconnection(
             self._handle, static_id, event_time, disconnect_origin, disconnect_extremity)

@@ -11,7 +11,7 @@ The network model
 
 
 The :class:`Network` object is the main data structure of pypowsybl.
-It contains all the data of a power network : substations, generators, lines,
+It contains all the data of a power network: substations, generators, lines,
 transformers, ...
 
 pypowsybl provides methods to create networks, and to access and modify their data.
@@ -21,13 +21,13 @@ Create a network
 ----------------
 
 pypowsybl provides several factory methods to create well known network models.
-For example, you can create the IEEE 9-bus network case :
+For example, you can create the IEEE 9-bus network case:
 
 .. doctest::
 
     >>> network = pp.network.create_ieee9()
 
-Another common way of creating a network is to load it from a file :
+Another common way of creating a network is to load it from a file:
 
 .. code-block:: python
 
@@ -136,7 +136,7 @@ For example, you can retrieve generators data as follows:
     GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      NaN              MIN_MAX      24.5     301.0                  True                 GEN2 NaN NaN NaN            VLGEN  VLGEN_0       True
 
 Most dataframes are indexed on the ID of the elements.
-However, some more complex dataframes have a multi-index : for example,
+However, some more complex dataframes have a multi-index: for example,
 ratio and phase tap changer steps are indexed on their transformer ID together with
 the step position:
 
@@ -209,7 +209,7 @@ Basic topology changes
 ----------------------
 
 Most elements dataframes contain information about "is this element connected?" and "where is it connected?".
-That information appears as the ``connected`` and ``bus_id`` columns :
+That information appears as the ``connected`` and ``bus_id`` columns:
 
 .. doctest::
 

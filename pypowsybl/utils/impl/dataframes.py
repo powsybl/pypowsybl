@@ -162,7 +162,7 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError(f'properties creation/update : all arguments must have the same size, '
+            raise ValueError(f'properties creation/update: all arguments must have the same size, '
                              f'got size {size} for series {key}, expected {expected_size}')
         columns[key] = col
     index_name = 'id'
