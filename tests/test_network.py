@@ -877,6 +877,8 @@ def test_nad():
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10,
                                          depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50)
+        n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
         n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
