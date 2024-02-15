@@ -85,11 +85,11 @@ public final class NetworkAreaDiagramUtil {
 
     static VoltageLevelFilter getNominalVoltageFilter(Network network, double nominalVoltageLowerBound, double nominalVoltageUpperBound) {
         if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound >= 0) {
-            VoltageLevelFilter.createNominalVoltageFilter(network, nominalVoltageLowerBound, nominalVoltageUpperBound);
+            return VoltageLevelFilter.createNominalVoltageFilter(network, nominalVoltageLowerBound, nominalVoltageUpperBound);
         } else if (nominalVoltageLowerBound < 0 && nominalVoltageUpperBound >= 0) {
-            VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, nominalVoltageUpperBound);
+            return VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, nominalVoltageUpperBound);
         } else if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound < 0) {
-            VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, nominalVoltageLowerBound);
+            return VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, nominalVoltageLowerBound);
         } else {
             return VoltageLevelFilter.createNominalVoltageFilterWithPredicate(network, VoltageLevelFilter.NO_FILTER);
         }
