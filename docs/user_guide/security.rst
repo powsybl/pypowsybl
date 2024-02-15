@@ -74,8 +74,6 @@ Information can be obtained on buses, branches and three windings transformers.
                                                                   v_mag  v_angle
     contingency_id operator_strategy_id voltage_level_id bus_id
                                         VLHV2            NHV2   389.95    -3.51
-    NGEN_NHV1                           VLHV2            NHV2   569.04    -1.71
-    NHV1_NHV2_1                         VLHV2            NHV2   366.58    -7.50
     >>> results.branch_results
                                                         p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id operator_strategy_id branch_id

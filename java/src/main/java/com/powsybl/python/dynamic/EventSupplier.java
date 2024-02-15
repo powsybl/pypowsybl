@@ -7,13 +7,12 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.reporter.Reporter;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawaltz.models.events.EventInjectionDisconnection;
-import com.powsybl.dynawaltz.models.events.EventQuadripoleDisconnection;
-import com.powsybl.iidm.network.*;
+import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.TwoSides;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,55 +22,26 @@ import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class EventSupplier implements EventModelsSupplier {
 
     private final List<Function<Network, EventModel>> eventSupplierList = new ArrayList<>();
 
     /**
-     * According to Dynawaltz staticId must refer to a line or a two winding
-     * transformer
+     * According to Dynawaltz staticId must refer to an injection, branch or hvdc line
      * <p>
-     * The event represent the disconnection the given line/transformer
+     * The event represent the disconnection the given equipment
      */
-    public void addEventBranchDisconnection(String staticId, double eventTime, boolean disconnectOrigin, boolean disconnectExtremity) {
+    public void addEventDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
         eventSupplierList.add(network -> {
-            Branch<?> branch = network.getBranch(staticId);
-            if (branch == null) {
-                throw new PowsyblException("Branch '" + staticId + "' not found");
+            EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network)
+                    .staticId(staticId)
+                    .startTime(eventTime);
+            if (disconnectOnly != null) {
+                builder.disconnectOnly(disconnectOnly);
             }
-            return new EventQuadripoleDisconnection(branch, eventTime, disconnectOrigin, disconnectExtremity);
-        });
-    }
-
-    /**
-     * According to Dynawaltz staticId must refer to a generator
-     * <p>
-     * The event represent the disconnection of the given generator, load, static var compensator or shunt compensator
-     */
-    public void addEventInjectionDisconnection(String staticId, double eventTime, boolean stateEvent) {
-        eventSupplierList.add(network -> {
-            Generator generator = network.getGenerator(staticId);
-            if (generator != null) {
-                return new EventInjectionDisconnection(generator, eventTime, stateEvent);
-            } else {
-                Load load = network.getLoad(staticId);
-                if (load != null) {
-                    return new EventInjectionDisconnection(load, eventTime, stateEvent);
-                } else {
-                    StaticVarCompensator svc = network.getStaticVarCompensator(staticId);
-                    if (svc != null) {
-                        return new EventInjectionDisconnection(svc, eventTime, stateEvent);
-                    } else {
-                        ShuntCompensator sc = network.getShuntCompensator(staticId);
-                        if (sc != null) {
-                            return new EventInjectionDisconnection(sc, eventTime, stateEvent);
-                        } else {
-                            throw new PowsyblException("Generator, load, static var compensator or shunt compensator '" + staticId + "' not found");
-                        }
-                    }
-                }
-            }
+            return builder.build();
         });
     }
 

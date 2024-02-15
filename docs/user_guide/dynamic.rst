@@ -72,19 +72,20 @@ To run a Dynawaltz simulation:
     import pypowsybl as pp
 
     # load a network
-    network = pp.network.load("./network.iidm")
+    network = pp.network.create_eurostag_tutorial_example1_network()
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load("LOAD_1", "LAB") # and so on
+    model_mapping.add_alpha_beta_load("LOAD", "LAB") # and so on
 
     # events mapping
     events = dyn.EventMapping()
-    events.add_event("EQD", dyn.EventType.BRANCH_DISCONNECTION, "BRANCH_1")
+    events.add_event("GEN_DISCONNECTION", dyn.EventType.DISCONNECTION, "GEN")
+    events.add_event("LINE_DISCONNECTION", dyn.EventType.DISCONNECTION, "NHV1_NHV2_1", BranchSide.ONE)
 
     # curves mapping
     curves = dyn.CurveMapping()
-    curves.add_curves("LOAD_2", ["load_PPu", "load_QPu"])
+    curves.add_curves("LOAD", ["load_PPu", "load_QPu"])
 
     # simulations parameters
     start_time = 0

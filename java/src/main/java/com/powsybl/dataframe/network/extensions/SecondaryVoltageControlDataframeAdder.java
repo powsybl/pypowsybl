@@ -15,10 +15,8 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
+import com.powsybl.iidm.network.extensions.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,24 +69,23 @@ public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
             var adder = network.newExtension(SecondaryVoltageControlAdder.class);
             for (int zone = 0; zone < zoneCount; zone++) {
                 String name = zoneName.get(zone);
-                SecondaryVoltageControl.PilotPoint pilotPoint = new SecondaryVoltageControl.PilotPoint(List.of(busIds.get(zone).split(",")),
-                        targetV.get(zone));
+                ControlZoneAdder controlZoneAdder = adder.newControlZone();
+                controlZoneAdder.withName(name);
+                controlZoneAdder.newPilotPoint()
+                    .withBusbarSectionsOrBusesIds(List.of(busIds.get(zone).split(",")))
+                    .withTargetV(targetV.get(zone))
+                    .add();
 
-                List<SecondaryVoltageControl.ControlUnit> controlUnits = new ArrayList<>();
                 for (int unit = 0; unit < unitsCount; unit++) {
                     if (unitZoneName.get(unit).equals(name)) {
-                        controlUnits.add(new SecondaryVoltageControl.ControlUnit(unitId.get(unit), participate.get(unit) == 1));
+                        controlZoneAdder.newControlUnit()
+                            .withId(unitId.get(unit))
+                            .withParticipate(participate.get(unit) == 1)
+                            .add();
                     }
                 }
-
-                SecondaryVoltageControl.ControlZone newZone = new SecondaryVoltageControl.ControlZone(
-                        name,
-                        pilotPoint,
-                        controlUnits
-                );
-                adder.addControlZone(newZone);
+                controlZoneAdder.add();
             }
-
             adder.add();
         }
     }

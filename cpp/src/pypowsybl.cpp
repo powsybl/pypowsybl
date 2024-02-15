@@ -1408,12 +1408,8 @@ void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string 
     callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
-void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity) {
-    callJava<>(::addEventBranchDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, disconnectOrigin, disconnectExtremity);
-}
-
-void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent) {
-    callJava<>(::addEventInjectionDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, stateEvent);
+void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly) {
+    callJava<>(::addEventDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, disconnectOnly);
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
