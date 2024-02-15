@@ -475,7 +475,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
-        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
+        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
