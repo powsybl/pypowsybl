@@ -24,7 +24,7 @@ class EventMapping:
         Args:
             static_id (str): network element to disconnect
             event_time (float): timestep at which the event happens
-            disconnect_only (BranchSide) : the disconnection is made on the provided side only
+            disconnect_only (BranchSide): the disconnection is made on the provided side only
         """
         _pp.add_event_disconnection(
             self._handle, static_id, event_time, disconnect_only)

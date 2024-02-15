@@ -922,7 +922,6 @@ public final class PyPowsyblApiHeader {
         ALL,
         NONE,
         SPECIFIC,
-
         ONLY_CONTINGENCIES;
 
         @CEnumValue
