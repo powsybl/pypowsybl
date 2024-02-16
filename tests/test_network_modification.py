@@ -1222,12 +1222,12 @@ def test_exception_create_element_with_bay():
     ])
     with pytest.raises(PyPowsyblError) as exc:
         pp.network.create_voltage_level_topology(n, df, raise_exception=True)
-    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+    assert exc.match('Voltage level VL_TES is not found')
 
     # Check that it also raises an exception if boolean is missing
     with pytest.raises(PyPowsyblError) as exc:
         pp.network.create_voltage_level_topology(n, df)
-    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+    assert exc.match('Voltage level VL_TES is not found')
 
     pp.network.create_voltage_level_topology(n, df, raise_exception=False)
     assert not 'VL_TEST' in n.get_busbar_sections()['voltage_level_id'].values
