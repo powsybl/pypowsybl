@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.VoltageLevel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -63,17 +64,17 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
         }
 
-        LoadAdder createAdder(Network network, int row, boolean throwException) {
-            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
-            if (vl != null) {
-                LoadAdder adder = vl.newLoad();
+        Optional<LoadAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                LoadAdder adder = vl.get().newLoad();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(p0, row, adder::setP0);
                 applyIfPresent(q0, row, adder::setQ0);
                 applyIfPresent(type, row, LoadType.class, adder::setLoadType);
-                return adder;
+                return Optional.of(adder);
             }
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -81,9 +82,9 @@ public class LoadDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         LoadSeries series = new LoadSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            LoadAdder adder = series.createAdder(network, row, throwException);
-            if (adder != null) {
-                addition.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<LoadAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                addition.add(network, dataframe, adder.get(), row, throwException, reporter);
             }
         }
     }

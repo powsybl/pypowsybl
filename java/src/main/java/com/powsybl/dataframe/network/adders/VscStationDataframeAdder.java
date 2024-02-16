@@ -19,6 +19,7 @@ import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
@@ -71,10 +72,10 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        VscConverterStationAdder createAdder(Network network, int row, boolean throwException) {
-            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
-            if (vl != null) {
-                VscConverterStationAdder adder = vl.newVscConverterStation();
+        Optional<VscConverterStationAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                VscConverterStationAdder adder = vl.get().newVscConverterStation();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
@@ -82,10 +83,9 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
                 applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
                         .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
-                return adder;
-            } else {
-                return null;
+                return Optional.of(adder);
             }
+            return Optional.empty();
         }
     }
 
@@ -93,9 +93,9 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         VscStationSeries series = new VscStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            VscConverterStationAdder adder = series.createAdder(network, row, throwException);
-            if (adder != null) {
-                additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<VscConverterStationAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reporter);
             }
         }
     }

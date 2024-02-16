@@ -17,6 +17,7 @@ import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
@@ -80,10 +81,10 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        GeneratorAdder createAdder(Network network, int row, boolean throwException) {
-            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
-            if (vl != null) {
-                GeneratorAdder adder = vl.newGenerator();
+        Optional<GeneratorAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                GeneratorAdder adder = vl.get().newGenerator();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(maxP, row, adder::setMaxP);
                 applyIfPresent(minP, row, adder::setMinP);
@@ -95,10 +96,9 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
                 applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
                         .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
-                return adder;
-            } else {
-                return null;
+                return Optional.of(adder);
             }
+            return Optional.empty();
         }
     }
 
@@ -106,9 +106,9 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
         GeneratorSeries series = new GeneratorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            GeneratorAdder adder = series.createAdder(network, row, throwException);
-            if (adder != null) {
-                addition.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<GeneratorAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                addition.add(network, dataframe, adder.get(), row, throwException, reporter);
             }
         }
     }

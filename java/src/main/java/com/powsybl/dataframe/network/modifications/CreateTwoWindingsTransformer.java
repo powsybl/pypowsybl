@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Coline Piloquet <coline.piloquet at rte-france.com>
@@ -35,9 +36,9 @@ public class CreateTwoWindingsTransformer implements NetworkModification {
         }
         for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysTwtSeries fbTwtSeries = new FeederBaysTwtSeries();
-            CreateBranchFeederBaysBuilder builder = fbTwtSeries.createBuilder(network, dataframes.get(0), i, throwException);
-            if (builder != null) {
-                com.powsybl.iidm.modification.NetworkModification modification = builder.build();
+            Optional<CreateBranchFeederBaysBuilder> builder = fbTwtSeries.createBuilder(network, dataframes.get(0), i, throwException);
+            if (builder.isPresent()) {
+                com.powsybl.iidm.modification.NetworkModification modification = builder.get().build();
                 modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
             }
         }

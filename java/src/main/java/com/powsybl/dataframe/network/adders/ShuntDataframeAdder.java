@@ -21,10 +21,7 @@ import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalInt;
+import java.util.*;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -85,13 +82,13 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe sectionsDf = dataframes.get(2);
         ShuntCompensatorSeries series = new ShuntCompensatorSeries(shuntsDf, linearModelsDf, sectionsDf);
         for (int row = 0; row < shuntsDf.getRowCount(); row++) {
-            ShuntCompensatorAdder adder = series.createAdder(network, row, throwException);
-            if (adder != null) {
+            Optional<ShuntCompensatorAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
                 String busOrBusbarSectionId = shuntsDf.getStrings("bus_or_busbar_section_id").get(row);
                 OptionalInt injectionPositionOrder = shuntsDf.getIntValue("position_order", row);
                 ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(shuntsDf.getStringValue("direction", row).orElse("BOTTOM"));
                 CreateFeederBayBuilder builder = new CreateFeederBayBuilder()
-                        .withInjectionAdder(adder)
+                        .withInjectionAdder(adder.get())
                         .withBusOrBusbarSectionId(busOrBusbarSectionId)
                         .withInjectionDirection(direction);
                 if (injectionPositionOrder.isPresent()) {
@@ -153,11 +150,11 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             }
         }
 
-        ShuntCompensatorAdder createAdder(Network network, int row, boolean throwException) {
+        Optional<ShuntCompensatorAdder> createAdder(Network network, int row, boolean throwException) {
             String shuntId = ids.get(row);
-            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
-            if (vl != null) {
-                ShuntCompensatorAdder adder = vl.newShuntCompensator();
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                ShuntCompensatorAdder adder = vl.get().newShuntCompensator();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(sectionCount, row, adder::setSectionCount);
                 applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
@@ -192,16 +189,16 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 } else {
                     throw new PowsyblException("shunt model type non valid");
                 }
-                return adder;
+                return Optional.of(adder);
             } else {
-                return null;
+                return Optional.empty();
             }
         }
 
         void create(Network network, int row, boolean throwException) {
-            ShuntCompensatorAdder adder = createAdder(network, row, throwException);
-            if (adder != null) {
-                adder.add();
+            Optional<ShuntCompensatorAdder> adder = createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                adder.get().add();
             }
         }
 

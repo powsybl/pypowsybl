@@ -10,6 +10,8 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.iidm.network.*;
 
+import java.util.Optional;
+
 /**
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
@@ -28,7 +30,7 @@ public final class NetworkUtils {
         return voltageLevel;
     }
 
-    public static VoltageLevel getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections, boolean throwException) {
+    public static Optional<VoltageLevel> getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections, boolean throwException) {
         if (voltageLevels == null) {
             if (busOrBusbarSections != null) {
                 Identifiable<?> busOrBusbarSection = network.getIdentifiable(busOrBusbarSections.get(row));
@@ -36,9 +38,9 @@ public final class NetworkUtils {
                     throw new PowsyblException(String.format("Bus or busbar section %s not found.", busOrBusbarSections.get(row)));
                 }
                 if (busOrBusbarSection instanceof BusbarSection bbs) {
-                    return bbs.getTerminal().getVoltageLevel();
+                    return Optional.of(bbs.getTerminal().getVoltageLevel());
                 } else if (busOrBusbarSection instanceof Bus bus) {
-                    return bus.getVoltageLevel();
+                    return Optional.of(bus.getVoltageLevel());
                 } else {
                     if (throwException) {
                         throw new PowsyblException(String.format("Unsupported type %s for identifiable %s", busOrBusbarSection.getType(), busOrBusbarSection.getId()));
@@ -50,9 +52,9 @@ public final class NetworkUtils {
                 }
             }
         } else {
-            return getVoltageLevelOrThrow(network, voltageLevels.get(row));
+            return Optional.of(getVoltageLevelOrThrow(network, voltageLevels.get(row)));
         }
-        return null;
+        return Optional.empty();
     }
 
     public static Substation getSubstationOrThrow(Network network, String id) {

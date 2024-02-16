@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.VoltageLevel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -74,11 +75,11 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             this.pairingKey = dataframe.getStrings("pairing_key");
         }
 
-        DanglingLineAdder createAdder(Network network, int row, boolean throwException) {
-            VoltageLevel vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels,
+        Optional<DanglingLineAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels,
                 busOrBusbarSections, throwException);
-            if (vl != null) {
-                DanglingLineAdder adder = vl.newDanglingLine();
+            if (vl.isPresent()) {
+                DanglingLineAdder adder = vl.get().newDanglingLine();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(p0, row, adder::setP0);
                 applyIfPresent(q0, row, adder::setQ0);
@@ -87,9 +88,9 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(g, row, adder::setG);
                 applyIfPresent(b, row, adder::setB);
                 applyIfPresent(pairingKey, row, adder::setPairingKey);
-                return adder;
+                return Optional.of(adder);
             } else {
-                return null;
+                return Optional.empty();
             }
         }
     }
@@ -98,9 +99,9 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
         DanglingLineSeries series = new DanglingLineSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            DanglingLineAdder adder = series.createAdder(network, row, throwException);
-            if (adder != null) {
-                additionStrategy.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<DanglingLineAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reporter);
             }
         }
     }

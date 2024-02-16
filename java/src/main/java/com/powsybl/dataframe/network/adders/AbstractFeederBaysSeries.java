@@ -13,27 +13,28 @@ import com.powsybl.iidm.network.BranchAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 
+import java.util.Optional;
+
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 public abstract class AbstractFeederBaysSeries {
 
     abstract AbstractBranchSeries createTypedSeries(UpdatingDataframe dataframe);
 
-    public CreateBranchFeederBaysBuilder createBuilder(Network n, UpdatingDataframe dataframe, int row, boolean throwException) {
+    public Optional<CreateBranchFeederBaysBuilder> createBuilder(Network n, UpdatingDataframe dataframe, int row, boolean throwException) {
         AbstractBranchSeries series = createTypedSeries(dataframe);
         CreateBranchFeederBaysBuilder builder = new CreateBranchFeederBaysBuilder();
-        BranchAdder<?, ?> lAdder = series.create(n, row, throwException);
-        if (lAdder != null) {
-            builder.withBranchAdder(lAdder);
+        Optional<BranchAdder> lineAdder = series.create(n, row, throwException);
+        if (lineAdder.isPresent()) {
+            builder.withBranchAdder(lineAdder.get());
             applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_1"), row, builder::withBusOrBusbarSectionId1);
             applyIfPresent(dataframe.getStrings("bus_or_busbar_section_id_2"), row, builder::withBusOrBusbarSectionId2);
             applyIfPresent(dataframe.getInts("position_order_1"), row, builder::withPositionOrder1);
             applyIfPresent(dataframe.getInts("position_order_2"), row, builder::withPositionOrder2);
             applyIfPresent(dataframe.getStrings("direction_1"), row, ConnectablePosition.Direction.class, builder::withDirection1);
             applyIfPresent(dataframe.getStrings("direction_2"), row, ConnectablePosition.Direction.class, builder::withDirection2);
-            return builder;
-        } else {
-            return null;
+            return Optional.of(builder);
         }
+        return Optional.empty();
     }
 }

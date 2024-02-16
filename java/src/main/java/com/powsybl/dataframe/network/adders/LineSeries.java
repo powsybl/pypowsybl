@@ -2,8 +2,11 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.network.BranchAdder;
 import com.powsybl.iidm.network.LineAdder;
 import com.powsybl.iidm.network.Network;
+
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
@@ -26,7 +29,7 @@ public class LineSeries extends AbstractBranchSeries {
         this.x = dataframe.getDoubles("x");
     }
 
-    LineAdder create(Network network, int row, boolean throwException) {
+    Optional<BranchAdder> create(Network network, int row, boolean throwException) {
         LineAdder adder = network.newLine();
         setBranchAttributes(adder, row);
         applyIfPresent(b1, row, adder::setB1);
@@ -35,6 +38,6 @@ public class LineSeries extends AbstractBranchSeries {
         applyIfPresent(g2, row, adder::setG2);
         applyIfPresent(r, row, adder::setR);
         applyIfPresent(x, row, adder::setX);
-        return adder;
+        return Optional.of(adder);
     }
 }

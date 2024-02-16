@@ -49,7 +49,7 @@ public class TwtDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe) {
         TwoWindingsTransformerSeries series = new TwoWindingsTransformerSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(network, row, true).add();
+            series.create(network, row).add();
         }
     }
 }
