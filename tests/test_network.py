@@ -594,6 +594,7 @@ def test_regulated_terminal_bus_breaker():
     generators = n.get_generators()
     assert 'LOAD' == generators['regulated_element_id']['GEN']
 
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
@@ -782,13 +783,18 @@ def test_sld_parameters():
     assert not parameters.diagonal_label
     assert not parameters.nodes_infos
     assert parameters.topological_coloring
-    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
-                               nodes_infos=True)
+    assert parameters.component_library == 'Convergence'
+
+    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
+                               nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
+                               component_library='FlatDesign')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert parameters.nodes_infos
+    assert parameters.tool_tip_enabled
     assert not parameters.topological_coloring
+    assert parameters.component_library == 'FlatDesign'
 
 
 def test_layout_parameters():
@@ -1764,6 +1770,9 @@ def test_write_svg_file(tmpdir):
     net.write_single_line_diagram_svg('S1VL1', data.join('test2_sld.svg'), data.join('test2_sld.json'))
     assert exists(data.join('test2_sld.svg'))
     assert exists(data.join('test2_sld.json'))
+    net.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'], ['S3', 'S4']],
+                                                              data.join('test_sld_multi_substation.svg'))
+    assert exists(data.join('test_sld_multi_substation.svg'))
 
 
 def test_get_single_line_diagram_component_library_names():

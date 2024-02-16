@@ -214,6 +214,7 @@ Miscellaneous network functions
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
+   Network.write_matrix_multi_substation_single_line_diagram_svg
    Network.get_network_area_diagram
    Network.write_network_area_diagram_svg
    Network.get_network_area_diagram_displayed_voltage_levels

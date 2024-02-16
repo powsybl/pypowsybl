@@ -15,7 +15,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
-import org.graalvm.word.WordFactory;
+import org.graalvm.word.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -70,6 +70,20 @@ public final class CTypeUtil {
     public static String toStringOrNull(CCharPointer charPtr) {
         String str = toString(charPtr);
         return str.isEmpty() ? null : str;
+    }
+
+    public static String[][] toString2DArray(CCharPointerPointer charPtrPtr, int length, int rows) {
+        int cols = length / rows;
+        String[][] string2DArray = new String[rows][length / cols];
+        int index = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                CCharPointer charPtr = charPtrPtr.read(index++);
+                String str = toString(charPtr);
+                string2DArray[i][j] = str;
+            }
+        }
+        return string2DArray;
     }
 
     public static List<String> toStringList(CCharPointerPointer charPtrPtr, int length) {
