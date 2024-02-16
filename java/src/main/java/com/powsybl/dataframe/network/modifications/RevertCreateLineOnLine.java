@@ -24,11 +24,13 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 public class RevertCreateLineOnLine implements NetworkModification {
 
+    private static final String MERGED_LINE_ID = "merged_line_id";
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("line_to_be_merged1_id"),
             SeriesMetadata.strings("line_to_be_merged2_id"),
             SeriesMetadata.strings("line_to_be_deleted"),
-            SeriesMetadata.strings("merged_line_id"),
+            SeriesMetadata.strings(MERGED_LINE_ID),
             SeriesMetadata.strings("merged_line_name")
     );
 
@@ -42,10 +44,10 @@ public class RevertCreateLineOnLine implements NetworkModification {
         applyIfPresent(dataframe.getStrings("line_to_be_merged1_id"), row, builder::withLineToBeMerged1Id);
         applyIfPresent(dataframe.getStrings("line_to_be_merged2_id"), row, builder::withLineToBeMerged2Id);
         applyIfPresent(dataframe.getStrings("line_to_be_deleted"), row, builder::withLineToBeDeletedId);
-        applyIfPresent(dataframe.getStrings("merged_line_id"), row, builder::withMergedLineId);
+        applyIfPresent(dataframe.getStrings(MERGED_LINE_ID), row, builder::withMergedLineId);
         Optional<String> mergedLineName = dataframe.getStringValue("merged_line_name", row);
         if (mergedLineName.isEmpty()) {
-            applyIfPresent(dataframe.getStrings("merged_line_id"), row, builder::withMergedLineName);
+            applyIfPresent(dataframe.getStrings(MERGED_LINE_ID), row, builder::withMergedLineName);
         } else {
             builder.withMergedLineName(mergedLineName.get());
         }
