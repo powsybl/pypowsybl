@@ -53,6 +53,21 @@ with the following methods:
     SecurityAnalysis.add_precontingency_monitored_elements
     SecurityAnalysis.add_postcontingency_monitored_elements
 
+Define operator strategies and remedial actions
+------------------------------------------------
+
+You can define operator strategies and remedial actions with the following methods:
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+    SecurityAnalysis.add_load_active_power_action
+    SecurityAnalysis.add_load_reactive_power_action
+    SecurityAnalysis.add_generator_active_power_action
+    SecurityAnalysis.add_switch_action
+    SecurityAnalysis.add_operator_strategy
+
 Results
 -------
 
@@ -66,7 +81,9 @@ When the security analysis is completed, you can inspect its results:
     SecurityAnalysisResult.limit_violations
     SecurityAnalysisResult.pre_contingency_result
     SecurityAnalysisResult.post_contingency_results
+    SecurityAnalysisResult.operator_strategy_results
     SecurityAnalysisResult.find_post_contingency_result
+    SecurityAnalysisResult.find_operator_strategy_results
     SecurityAnalysisResult.branch_results
     SecurityAnalysisResult.bus_results
     SecurityAnalysisResult.three_windings_transformer_results
