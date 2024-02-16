@@ -784,11 +784,10 @@ def test_sld_parameters():
     assert not parameters.nodes_infos
     assert parameters.topological_coloring
     assert parameters.component_library == 'Convergence'
-    assert parameters.zone_layout_factory == 'Matrix'
 
     parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
-                               component_library='FlatDesign', zone_layout_factory='Cgmes')
+                               component_library='FlatDesign')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
@@ -796,7 +795,6 @@ def test_sld_parameters():
     assert parameters.tool_tip_enabled
     assert not parameters.topological_coloring
     assert parameters.component_library == 'FlatDesign'
-    assert parameters.zone_layout_factory == 'Cgmes'
 
 
 def test_layout_parameters():

@@ -1316,7 +1316,6 @@ SldParameters::SldParameters(sld_parameters* src) {
     tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
-    zone_layout_factory = toString(src->zone_layout_factory);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1339,7 +1338,6 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
-    res.zone_layout_factory = copyStringToCharPtr(zone_layout_factory);
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {

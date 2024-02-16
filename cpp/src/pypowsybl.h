@@ -284,7 +284,6 @@ public:
     bool tooltip_enabled;
     bool topological_coloring;
     std::string component_library;
-    std::string zone_layout_factory;
 };
 
 class NadParameters {

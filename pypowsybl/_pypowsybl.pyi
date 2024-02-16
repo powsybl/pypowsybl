@@ -248,7 +248,6 @@ class SldParameters:
     tooltip_enabled: bool
     topological_coloring: bool
     component_library: str
-    zone_layout_factory: str
     def __init__(self) -> None: ...
 
 class NadParameters:
