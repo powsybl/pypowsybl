@@ -17,10 +17,10 @@ def define_test_load_flow_parameters():
     return pp.loadflow.Parameters(
         voltage_init_mode=pp.loadflow.VoltageInitMode.UNIFORM_VALUES,
         transformer_voltage_control_on=False,
-        no_generator_reactive_limits=False,
+        use_reactive_limits=False,
         phase_shifter_regulation_on=False,
         twt_split_shunt_admittance=False,
-        simul_shunt=False,
+        shunt_compensator_voltage_control_on=False,
         read_slack_bus=True,
         write_slack_bus=False,
         distributed_slack=True,

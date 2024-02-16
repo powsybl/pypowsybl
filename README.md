@@ -48,7 +48,7 @@ print(results)
 ```
 
 ```bash
-[LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)]
+[ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VL1_0', slack_bus_results=[SlackBusResult(id='VL1_0', active_power_mismatch=-0.006730108618313579)], distributed_active_power=0.0)]
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:

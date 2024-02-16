@@ -25,4 +25,5 @@ from .impl.validation_parameters import (
 )
 from .impl.validation_result import ValidationResult
 from .impl.parameters import Parameters
+from .impl.slack_bus_result import SlackBusResult
 from .impl.component_result import ComponentResult, ComponentStatus

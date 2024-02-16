@@ -347,7 +347,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")
             .value("FAILED", pypowsybl::LoadFlowComponentStatus::FAILED, "The loadflow has failed.")
             .value("MAX_ITERATION_REACHED", pypowsybl::LoadFlowComponentStatus::MAX_ITERATION_REACHED, "The loadflow has reached its maximum iterations count.")
-            .value("SOLVER_FAILED", pypowsybl::LoadFlowComponentStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
+            .value("NO_CALCULATION", pypowsybl::LoadFlowComponentStatus::NO_CALCULATION, "The component was not calculated.")
             .def("__bool__", [](const pypowsybl::LoadFlowComponentStatus& status) {
                 return status == pypowsybl::LoadFlowComponentStatus::CONVERGED;
             });
@@ -359,6 +359,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SOLVER_FAILED", pypowsybl::PostContingencyComputationStatus::SOLVER_FAILED, "The loadflow numerical solver has failed.")
             .value("NO_IMPACT", pypowsybl::PostContingencyComputationStatus::NO_IMPACT, "The contingency has no impact.");
 
+    py::class_<slack_bus_result>(m, "SlackBusResult")
+            .def_property_readonly("id", [](const slack_bus_result& v) {
+                return v.id;
+            })
+            .def_property_readonly("active_power_mismatch", [](const slack_bus_result& v) {
+                return v.active_power_mismatch;
+            });
+
+    bindArray<pypowsybl::SlackBusResultArray>(m, "SlackBusResultArray");
+
     py::class_<loadflow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const loadflow_component_result& r) {
                 return r.connected_component_num;
@@ -369,14 +379,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("status", [](const loadflow_component_result& r) {
                 return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
+            .def_property_readonly("status_text", [](const loadflow_component_result& r) {
+                return r.status_text;
+            })
             .def_property_readonly("iteration_count", [](const loadflow_component_result& r) {
                 return r.iteration_count;
             })
-            .def_property_readonly("slack_bus_id", [](const loadflow_component_result& r) {
-                return r.slack_bus_id;
+            .def_property_readonly("slack_bus_results", [](const loadflow_component_result& r) {
+                return pypowsybl::SlackBusResultArray((array *) & r.slack_bus_results);
             })
-            .def_property_readonly("slack_bus_active_power_mismatch", [](const loadflow_component_result& r) {
-                return r.slack_bus_active_power_mismatch;
+            .def_property_readonly("reference_bus_id", [](const loadflow_component_result& r) {
+                return r.reference_bus_id;
             })
             .def_property_readonly("distributed_active_power", [](const loadflow_component_result& r) {
                 return r.distributed_active_power;
@@ -416,10 +429,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def(py::init(&pypowsybl::createLoadFlowParameters))
             .def_readwrite("voltage_init_mode", &pypowsybl::LoadFlowParameters::voltage_init_mode)
             .def_readwrite("transformer_voltage_control_on", &pypowsybl::LoadFlowParameters::transformer_voltage_control_on)
-            .def_readwrite("no_generator_reactive_limits", &pypowsybl::LoadFlowParameters::no_generator_reactive_limits)
+            .def_readwrite("use_reactive_limits", &pypowsybl::LoadFlowParameters::use_reactive_limits)
             .def_readwrite("phase_shifter_regulation_on", &pypowsybl::LoadFlowParameters::phase_shifter_regulation_on)
             .def_readwrite("twt_split_shunt_admittance", &pypowsybl::LoadFlowParameters::twt_split_shunt_admittance)
-            .def_readwrite("simul_shunt", &pypowsybl::LoadFlowParameters::simul_shunt)
+            .def_readwrite("shunt_compensator_voltage_control_on", &pypowsybl::LoadFlowParameters::shunt_compensator_voltage_control_on)
             .def_readwrite("read_slack_bus", &pypowsybl::LoadFlowParameters::read_slack_bus)
             .def_readwrite("write_slack_bus", &pypowsybl::LoadFlowParameters::write_slack_bus)
             .def_readwrite("distributed_slack", &pypowsybl::LoadFlowParameters::distributed_slack)
