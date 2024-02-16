@@ -505,6 +505,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
+    m.def("write_matrix_multi_substation_single_line_diagram_svg", &pypowsybl::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 

@@ -804,6 +804,20 @@ void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& con
     callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
 }
 
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    int nbRows = matrixIds.size();
+    std::vector<std::string> substationIds;
+    for (int row = 0; row < nbRows; ++row) {
+        const std::vector<std::string>& colIds = matrixIds[row];
+        for (int col = 0; col < matrixIds[row].size(); ++col) {
+            substationIds.push_back(colIds[col]);
+        }
+    }
+    ToCharPtrPtr substationIdPtr(substationIds);
+    callJava(::writeMatrixMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), substationIds.size(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+}
+
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }

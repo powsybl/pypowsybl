@@ -235,6 +235,26 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
                                           '' if metadata_file is None else path_to_str(metadata_file), p)
 
+    def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
+                                                              metadata_file: PathOrStr = None,
+                                                              parameters: SldParameters = None) -> None:
+        """
+        Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            svg_file: a svg file path
+            metadata_file: a json metadata file path
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
+        """
+
+        svg_file = path_to_str(svg_file)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+        _pp.write_matrix_multi_substation_single_line_diagram_svg(self._handle, matrix_ids, svg_file,
+                                                                  '' if metadata_file is None else path_to_str(
+                                                                      metadata_file),
+                                                                  p)
+
     def get_single_line_diagram(self, container_id: str, parameters: SldParameters = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
