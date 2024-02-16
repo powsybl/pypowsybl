@@ -511,7 +511,7 @@ Done but fastidious! That is why Pypowsybl provides ready-for-use methods to cre
 The switches are created implicitly. The methods take a busbar section on which the disconnector is
 closed as an argument (note that switches on the other parallel busbar sections are open). You also need to fill the position of the equipment on the voltage level
 as well as its characteristics. Optionally, you can indicate the direction of the equipment drawing - by default, on the bottom for injections and on top for lines and two windings transformers -,
-if an exception should be raised in case of problem - by default, False - and a reporter to get logs.
+if an exception should be raised in case of problem - by default, True - and a reporter to get logs.
 
 You can add a load and connect it to *BBS3* between the line and the load1 (order position between 10 and 20) with:
 

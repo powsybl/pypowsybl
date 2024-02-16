@@ -1169,6 +1169,12 @@ def test_exception_create_element_with_bay():
         pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=True)
     assert exc.match('Bus or busbar section S1VL1_BB not found.')
 
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_load_bay(network=n, df=df_load_wrong_bbs)
+    assert exc.match('Bus or busbar section S1VL1_BB not found.')
+
+
     pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=False)
     assert 'new_load' not in n.get_loads().index
 
@@ -1180,6 +1186,11 @@ def test_exception_create_element_with_bay():
                              50.0]])
     with pytest.raises(PyPowsyblError) as exc:
         pp.network.create_line_bays(n, df_line_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_line_bays(n, df_line_wrong_bbs)
     assert exc.match('Bus or busbar section S1VL2_BBS not found')
 
     pp.network.create_line_bays(network=n, df=df_line_wrong_bbs, raise_exception=False)
@@ -1196,6 +1207,45 @@ def test_exception_create_element_with_bay():
         pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=True)
     assert exc.match('Bus or busbar section S1VL2_BBS not found.')
 
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+
     pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=False)
     assert 'new_twt' not in n.get_2_windings_transformers().index
+
+    # voltage level topology
+    n.create_voltage_levels(id='VL_TEST', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
+    df = pd.DataFrame.from_records(index="id", data=[
+        {'id': 'VL_TES', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
+    ])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_voltage_level_topology(n, df, raise_exception=True)
+    assert exc.match('Voltage level VL_TES is not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_voltage_level_topology(n, df)
+    assert exc.match('Voltage level VL_TES is not found')
+
+    pp.network.create_voltage_level_topology(n, df, raise_exception=False)
+    assert not 'VL_TEST' in n.get_busbar_sections()['voltage_level_id'].values
+
+    # coupling device
+    coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
+        {'bus_or_busbar_section_id_1': 'S1VL2_BBS', 'bus_or_busbar_section_id_2': 'S1VL2_BBS2'},
+    ])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_coupling_device(n, coupling_device, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_coupling_device(n, coupling_device)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+
+
+
 
