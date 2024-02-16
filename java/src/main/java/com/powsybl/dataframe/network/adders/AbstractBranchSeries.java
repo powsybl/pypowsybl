@@ -12,6 +12,8 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.BranchAdder;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Optional;
+
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -58,6 +60,10 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
         applyIfPresent(nodes2, row, adder::setNode2);
     }
 
-    abstract BranchAdder create(Network network, int row);
+    BranchAdder create(Network network, int row) {
+        return create(network, row, true).orElseThrow();
+    }
+
+    abstract Optional<BranchAdder> create(Network network, int row, boolean throwException);
 
 }
