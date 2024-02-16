@@ -1238,12 +1238,12 @@ def test_exception_create_element_with_bay():
     ])
     with pytest.raises(PyPowsyblError) as exc:
         pp.network.create_coupling_device(n, coupling_device, raise_exception=True)
-    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
 
     # Check that it also raises an exception if boolean is missing
     with pytest.raises(PyPowsyblError) as exc:
         pp.network.create_coupling_device(n, coupling_device)
-    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
 
 
 
