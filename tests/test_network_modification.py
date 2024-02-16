@@ -3,6 +3,7 @@ import pytest
 import pypowsybl as pp
 import pandas as pd
 import pathlib
+from pypowsybl import PyPowsyblError
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -1157,3 +1158,44 @@ def test_remove_hvdc():
 
     assert 'HVDC1' not in n.get_hvdc_lines().index
     assert n.get_vsc_converter_stations().empty
+
+
+def test_exception_create_element_with_bay():
+    #load (works the same for every injection)
+    n = pp.network.create_four_substations_node_breaker_network()
+    df_load_wrong_bbs = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
+                                     data=[["new_load", 10.0, 3.0, "S1VL1_BB", 0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL1_BB not found.')
+
+    pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=False)
+    assert 'new_load' not in n.get_loads().index
+
+    #line
+    df_line_wrong_bbs = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_line_bays(n, df_line_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    pp.network.create_line_bays(network=n, df=df_line_wrong_bbs, raise_exception=False)
+    assert 'new_line' not in n.get_loads().index
+
+    #two winding transformer
+    df_twt_wrong_bbs = pd.DataFrame(index=['new_twt'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
+                               'rated_u2', 'rated_s'],
+                      data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
+                             400.0, 1.0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+
+    pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=False)
+    assert 'new_twt' not in n.get_2_windings_transformers().index
+

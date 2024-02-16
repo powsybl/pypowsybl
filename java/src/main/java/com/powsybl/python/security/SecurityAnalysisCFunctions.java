@@ -65,14 +65,13 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "getSecurityAnalysisProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSecurityAnalysisProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SecurityAnalysisProvider.findAll()
-                .stream().map(SecurityAnalysisProvider::getName).collect(Collectors.toList())));
+                .stream().map(SecurityAnalysisProvider::getName).toList()));
     }
 
     @CEntryPoint(name = "setDefaultSecurityAnalysisProvider")
     public static void setDefaultSecurityAnalysisProvider(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider));
-        });
+        doCatch(exceptionHandlerPtr, () ->
+            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider)));
     }
 
     @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
@@ -90,11 +89,9 @@ public final class SecurityAnalysisCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
-            contingencies.forEach(contingency -> {
-                analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency.isEmpty() ? null : contingency, convert(contingencyContextType)),
-                        Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
-                        Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount))));
-            });
+            contingencies.forEach(contingency -> analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency.isEmpty() ? null : contingency, convert(contingencyContextType)),
+                    Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
+                    Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount)))));
         });
     }
 

@@ -23,15 +23,20 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 public class ReplaceTeePointByVoltageLevelOnLine implements NetworkModification {
 
+    private static final String NEW_LINE1_ID = "new_line1_id";
+    private static final String NEW_LINE2_ID = "new_line2_id";
+    private static final String NEW_LINE1_NAME = "new_line1_name";
+    private static final String NEW_LINE2_NAME = "new_line2_name";
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("tee_point_line1"),
             SeriesMetadata.strings("tee_point_line2"),
             SeriesMetadata.strings("tee_point_line_to_remove"),
             SeriesMetadata.strings("bbs_or_bus_id"),
-            SeriesMetadata.strings("new_line1_id"),
-            SeriesMetadata.strings("new_line2_id"),
-            SeriesMetadata.strings("new_line1_name"),
-            SeriesMetadata.strings("new_line2_name")
+            SeriesMetadata.strings(NEW_LINE1_ID),
+            SeriesMetadata.strings(NEW_LINE2_ID),
+            SeriesMetadata.strings(NEW_LINE1_NAME),
+            SeriesMetadata.strings(NEW_LINE2_NAME)
     );
 
     @Override
@@ -45,15 +50,15 @@ public class ReplaceTeePointByVoltageLevelOnLine implements NetworkModification 
         applyIfPresent(dataframe.getStrings("tee_point_line2"), row, builder::withTeePointLine2);
         applyIfPresent(dataframe.getStrings("tee_point_line_to_remove"), row, builder::withTeePointLineToRemove);
         applyIfPresent(dataframe.getStrings("bbs_or_bus_id"), row, builder::withBbsOrBusId);
-        applyIfPresent(dataframe.getStrings("new_line1_id"), row, builder::withNewLine1Id);
-        applyIfPresent(dataframe.getStrings("new_line2_id"), row, builder::withNewLine2Id);
-        applyIfPresent(dataframe.getStrings("new_line1_name"), row, builder::withNewLine1Name);
-        applyIfPresent(dataframe.getStrings("new_line2_name"), row, builder::withNewLine2Id);
-        if (dataframe.getStringValue("new_line1_name", row).isEmpty()) {
-            applyIfPresent(dataframe.getStrings("new_line1_id"), row, builder::withNewLine1Name);
+        applyIfPresent(dataframe.getStrings(NEW_LINE1_ID), row, builder::withNewLine1Id);
+        applyIfPresent(dataframe.getStrings(NEW_LINE2_ID), row, builder::withNewLine2Id);
+        applyIfPresent(dataframe.getStrings(NEW_LINE1_NAME), row, builder::withNewLine1Name);
+        applyIfPresent(dataframe.getStrings(NEW_LINE2_NAME), row, builder::withNewLine2Id);
+        if (dataframe.getStringValue(NEW_LINE1_NAME, row).isEmpty()) {
+            applyIfPresent(dataframe.getStrings(NEW_LINE1_ID), row, builder::withNewLine1Name);
         }
-        if (dataframe.getStringValue("new_line2_name", row).isEmpty()) {
-            applyIfPresent(dataframe.getStrings("new_line2_id"), row, builder::withNewLine2Name);
+        if (dataframe.getStringValue(NEW_LINE2_NAME, row).isEmpty()) {
+            applyIfPresent(dataframe.getStrings(NEW_LINE2_ID), row, builder::withNewLine2Name);
         }
         return builder;
     }
