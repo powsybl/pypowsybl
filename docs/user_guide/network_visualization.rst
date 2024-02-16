@@ -27,7 +27,15 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 
 .. image:: ../_static/images/ieee14_vl4.svg
 
+It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee14()
+    >>> result = pp.loadflow.run_ac(network)
+    >>> network.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'],['S3','S4']], 's1_s2_s3_s4.svg')
+
+.. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
 
 Network area diagram
 --------------------
