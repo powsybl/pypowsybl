@@ -71,6 +71,7 @@ private:
     array* delegate_;
 };
 
+typedef Array<slack_bus_result> SlackBusResultArray;
 typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<operator_strategy_result> OperatorStrategyResultArray;
@@ -99,8 +100,8 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map);
 enum class LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
-    SOLVER_FAILED,
     FAILED,
+    NO_CALCULATION,
 };
 
 enum class PostContingencyComputationStatus {
@@ -199,10 +200,10 @@ public:
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
-    bool no_generator_reactive_limits;
+    bool use_reactive_limits;
     bool phase_shifter_regulation_on;
     bool twt_split_shunt_admittance;
-    bool simul_shunt;
+    bool shunt_compensator_voltage_control_on;
     bool read_slack_bus;
     bool write_slack_bus;
     bool distributed_slack;

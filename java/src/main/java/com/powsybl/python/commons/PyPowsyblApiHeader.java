@@ -127,6 +127,24 @@ public final class PyPowsyblApiHeader {
         void setForecastDistance(int forecastDistance);
     }
 
+    @CStruct("slack_bus_result")
+    public interface SlackBusResultPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("active_power_mismatch")
+        double getActivePowerMismatch();
+
+        @CField("active_power_mismatch")
+        void setActivePowerMismatch(double activePowerMismatch);
+
+        SlackBusResultPointer addressOf(int index);
+    }
+
     @CStruct("loadflow_component_result")
     public interface LoadFlowComponentResultPointer extends PointerBase {
 
@@ -148,23 +166,26 @@ public final class PyPowsyblApiHeader {
         @CField("status")
         void setStatus(int status);
 
+        @CField("status_text")
+        CCharPointer getStatusText();
+
+        @CField("status_text")
+        void setStatusText(CCharPointer statusText);
+
         @CField("iteration_count")
         int getIterationCount();
 
         @CField("iteration_count")
         void setIterationCount(int iterationCount);
 
-        @CField("slack_bus_id")
-        CCharPointer getSlackBusId();
+        @CField("reference_bus_id")
+        CCharPointer getReferenceBusId();
 
-        @CField("slack_bus_id")
-        void setSlackBusId(CCharPointer slackBusId);
+        @CField("reference_bus_id")
+        void setReferenceBusId(CCharPointer referenceBusId);
 
-        @CField("slack_bus_active_power_mismatch")
-        double getSlackBusActivePowerMismatch();
-
-        @CField("slack_bus_active_power_mismatch")
-        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+        @CFieldAddress("slack_bus_results")
+        ArrayPointer<SlackBusResultPointer> slackBusResults();
 
         @CField("distributed_active_power")
         double getDistributedActivePower();
@@ -190,11 +211,11 @@ public final class PyPowsyblApiHeader {
         @CField("transformer_voltage_control_on")
         void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
 
-        @CField("no_generator_reactive_limits")
-        boolean isNoGeneratorReactiveLimits();
+        @CField("use_reactive_limits")
+        boolean isUseReactiveLimits();
 
-        @CField("no_generator_reactive_limits")
-        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+        @CField("use_reactive_limits")
+        void setUseReactiveLimits(boolean useReactiveLimits);
 
         @CField("phase_shifter_regulation_on")
         boolean isPhaseShifterRegulationOn();
@@ -208,11 +229,11 @@ public final class PyPowsyblApiHeader {
         @CField("twt_split_shunt_admittance")
         void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
 
-        @CField("simul_shunt")
-        boolean isSimulShunt();
+        @CField("shunt_compensator_voltage_control_on")
+        boolean isShuntCompensatorVoltageControlOn();
 
-        @CField("simul_shunt")
-        void setSimulShunt(boolean simulShunt);
+        @CField("shunt_compensator_voltage_control_on")
+        void setShuntCompensatorVoltageControlOn(boolean shuntCompensatorVoltageControlOn);
 
         @CField("read_slack_bus")
         boolean isReadSlackBus();

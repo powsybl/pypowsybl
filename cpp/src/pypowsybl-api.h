@@ -31,23 +31,29 @@ typedef struct network_metadata_struct {
     int forecast_distance;
 } network_metadata;
 
+typedef struct slack_bus_result_struct {
+    char* id;
+    double active_power_mismatch;
+} slack_bus_result;
+
 typedef struct loadflow_component_result_struct {
     int connected_component_num;
     int synchronous_component_num;
     int status;
+    char* status_text;
     int iteration_count;
-    char* slack_bus_id;
-    double slack_bus_active_power_mismatch;
+    char* reference_bus_id;
+    array slack_bus_results;
     double distributed_active_power;
 } loadflow_component_result;
 
 typedef struct loadflow_parameters_struct {
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
-    unsigned char no_generator_reactive_limits;
+    unsigned char use_reactive_limits;
     unsigned char phase_shifter_regulation_on;
     unsigned char twt_split_shunt_admittance;
-    unsigned char simul_shunt;
+    unsigned char shunt_compensator_voltage_control_on;
     unsigned char read_slack_bus;
     unsigned char write_slack_bus;
     unsigned char distributed_slack;
