@@ -21,7 +21,7 @@ ComputationStatus.__module__ = __name__
 
 class SecurityAnalysis(ContingencyContainer):
     """
-    Allows to run a sensitivity analysis on a network.
+    Allows to run a security analysis on a network.
     """
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
@@ -29,16 +29,16 @@ class SecurityAnalysis(ContingencyContainer):
 
     def run_ac(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
                provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
-        """ Runs an AC sensitivity analysis.
+        """ Runs an AC security analysis.
 
         Args:
-            network:    Network on which the sensitivity analysis will be computed
+            network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters
-            provider:   Name of the sensitivity analysis implementation provider to be used,
+            provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
 
         Returns:
-            A sensitivity analysis result, containing information about violations and monitored elements
+            A security analysis result, containing information about violations and monitored elements
         """
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
@@ -49,16 +49,16 @@ class SecurityAnalysis(ContingencyContainer):
 
     def run_dc(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
                provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
-        """ Runs an DC sensitivity analysis.
+        """ Runs a DC security analysis.
 
         Args:
-            network:    Network on which the sensitivity analysis will be computed
+            network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters
-            provider:   Name of the sensitivity analysis implementation provider to be used,
+            provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
 
         Returns:
-            A sensitivity analysis result, containing information about violations and monitored elements
+            A security analysis result, containing information about violations and monitored elements
         """
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
@@ -73,7 +73,7 @@ class SecurityAnalysis(ContingencyContainer):
                                branch_ids: List[str] = None,
                                voltage_level_ids: List[str] = None,
                                three_windings_transformer_ids: List[str] = None) -> None:
-        """ Add elements to be monitored by the sensitivity analysis. The sensitivity analysis result
+        """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
         Args:
@@ -107,7 +107,7 @@ class SecurityAnalysis(ContingencyContainer):
                                               branch_ids: List[str] = None,
                                               voltage_level_ids: List[str] = None,
                                               three_windings_transformer_ids: List[str] = None) -> None:
-        """ Add elements to be monitored by the sensitivity analysis on precontingency state. The sensitivity analysis result
+        """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
         Args:
@@ -124,8 +124,8 @@ class SecurityAnalysis(ContingencyContainer):
                                                branch_ids: List[str] = None,
                                                voltage_level_ids: List[str] = None,
                                                three_windings_transformer_ids: List[str] = None) -> None:
-        """ Add elements to be monitored by the sensitivity analysis for specific contingencies.
-        The sensitivity analysis result will provide additional information for those elements, like the power and current values.
+        """ Add elements to be monitored by the security analysis for specific contingencies.
+        The security analysis result will provide additional information for those elements, like the power and current values.
 
         Args:
             contingency_ids: list of contingencies for which we want to monitor additional elements

@@ -148,7 +148,7 @@ def test_save_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
+    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM'] == formats
 
 
 def test_get_import_parameters():
@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 16 == len(parameters)
+    assert 19 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -869,6 +869,8 @@ def test_nad():
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10,
                                          depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50)
+        n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
         n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
@@ -954,18 +956,18 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
-                                   '', '']])
+                                   '', '', '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                    'bus_id',
-                                    'connected', 'ucte-x-node-code', 'tie_line_id'],
-                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '', '']])
+                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False,
+                                  '', '', '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])

@@ -57,6 +57,24 @@ to control the size of the sub network:
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
 
+Nominal voltage bounds can be defined to further filter the output network:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee300()
+    >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1, low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
+
+.. image:: ../_static/images/ieee300_subnetwork_vl1_filtered.svg
+
+If no voltage level ID is given as an input, only nominal voltage bounds are used to filter the network:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee30()
+    >>> network.write_network_area_diagram_svg('ieee30.svg', low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
+
+.. image:: ../_static/images/ieee30_subnetwork_filtered_no_vl_id.svg
+
 Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers, for instance:
 
 .. code-block:: python
@@ -65,7 +83,7 @@ Note that similarly to single-line diagrams, a loadflow can be run before writin
     >>> result = pp.loadflow.run_ac(network)
     >>> network.write_network_area_diagram_svg('ieee9.svg')
 
-Network-area diagrams can be customized through NadParameters :
+Network-area diagrams can be customized through NadParameters:
 
 .. code-block:: python
 
@@ -80,7 +98,7 @@ Network-area diagrams can be customized through NadParameters :
     - current_value_precision: number of digits after the decimal point for current values (default value 0)
     - voltage_value_precision: number of digits after the decimal point for voltage values(default value 1)
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
-    - substation_description_displayed : if true, the substation name is added to the voltage level info on the diagram (default value false)
+    - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 

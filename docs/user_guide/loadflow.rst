@@ -55,7 +55,7 @@ Let's have a look at the default ones:
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+All parameters are also fully described in `Powsybl load flow parameters documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
 
 Parameters specific to a provider
 ---------------------------------
@@ -73,7 +73,7 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
-And get more detailed informations about theses parameters using:
+And get more detailed information about theses parameters using:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -109,8 +109,8 @@ included in the computation:
     >>> results
     [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596837558763)], distributed_active_power=0.0)]
 
-Component results provides general information about the loadflow: was it successful ? how many iterations did
-it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance
+Component results provides general information about the loadflow execution: was it successful? How many iterations did
+it need? What is the remaining active power imbalance? For example, let's have a look at the imbalance
 on the main component of the network:
 
 .. doctest::
@@ -136,7 +136,7 @@ the voltage magnitudes (rounded to 2 digits here):
 DC Load Flow
 ------------
 
-In order to run an AC loadflow, simply use the :func:`run_dc` method.
+In order to run a DC loadflow, simply use the :func:`run_dc` method.
 
 For that example, we will use a distributed slack, with imbalance distributed on generators,
 proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:

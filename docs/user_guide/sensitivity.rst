@@ -28,7 +28,7 @@ as a result:
           NHV1_NHV2_1  NHV1_NHV2_2
     LOAD         -0.5         -0.5
 
-Several matrix of sensitivity factors can be specified, in that case you must name your matrix at creation and reuse this name to query you results :
+Several matrix of sensitivity factors can be specified, in that case you must name your matrix at creation and reuse this name to query you results:
 
 .. doctest::
 
@@ -124,11 +124,13 @@ use the dangling line ID as the injection in the zone definition.
 
         >>> n = pp.network.load('simple-eu-xnode.uct')
         >>> n.get_dangling_lines()
-                            name    r     x    g    b   p0   q0   p   q   i voltage_level_id     bus_id  connected ucte-x-node-code isCoupler status_XNode geographicalName
+                            name    r     x    g    b   p0   q0   p   q   i voltage_level_id     bus_id  connected pairing_key ucte_xnode_code isCoupler status_XNode geographicalName
         id
-        NNL2AA1  XXXXXX11 1       0.0  10.0  0.0  0.0  0.0  0.0 NaN NaN NaN          NNL2AA1  NNL2AA1_0       True         XXXXXX11     false   EQUIVALENT         >>> zone_x = pp.sensitivity.create_empty_zone("X")
+        NNL2AA1         XXXXXX11    1   0.0 10.0  0.0  0.0  0.0 0.0 NaN NaN              NaN    NNL2AA1       True   NNL2AA1_0       NNL2AA1_0    True       XXXXXX11       EQUIVALENT
 
-We can see that the dangling line 'NNL2AA1  XXXXXX11 1' correspond to the X-Node XXXXXX11 (see column ucte-x-node-code of dangling line data frame).
+        >>> zone_x = pp.sensitivity.create_empty_zone("X")
+
+We can see that the dangling line 'NNL2AA1  XXXXXX11 1' correspond to the X-Node XXXXXX11 (see column pairing_key of dangling line data frame).
 To calculate to sensitivity of X-Node XXXXXX11 on tie line 'BBE2AA1  FFR3AA1  1':
 
 .. code-block:: python
@@ -180,7 +182,7 @@ Shift keys from UCTE glsk files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Alternatively zones can also be created with weighted injections defined in ucte GLSK files. Two ways of creating zones are available.
-The first one use a glsk file and create a list of Zone objects with all the areas defined within :
+The first one use a glsk file and create a list of Zone objects with all the areas defined within:
 
 .. code-block:: python
 
@@ -192,7 +194,7 @@ The first one use a glsk file and create a list of Zone objects with all the are
      >>> sa.add_branch_flow_factor_matrix(['BBE2AA1  FFR3AA1  1'], ['10YCB-GERMANY--8'], 'm')
      >>> results = sa.run(n, params)
 
-The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation :
+The second one allows a more refined zone creation by separating the glsk file data loading and the zone creation:
 
 .. code-block:: python
 

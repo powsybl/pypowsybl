@@ -564,7 +564,8 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("ucte_xnode_code", dl -> Objects.toString(dl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
@@ -577,6 +578,7 @@ public final class NetworkDataframes {
                 .strings("name", tl -> tl.getOptionalName().orElse(""))
                 .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
                 .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
+                .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
@@ -1054,7 +1056,7 @@ public final class NetworkDataframes {
         return ifExistsInt(t -> getter.apply(t).getPhaseTapChanger(), PhaseTapChanger::getTapPosition);
     }
 
-    private static void setTapPosition(TapChanger<?, ?> tapChanger, int position) {
+    private static void setTapPosition(TapChanger<?, ?, ?, ?> tapChanger, int position) {
         if (tapChanger != null) {
             tapChanger.setTapPosition(position);
         }

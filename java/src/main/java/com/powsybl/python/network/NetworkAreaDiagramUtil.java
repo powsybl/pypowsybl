@@ -35,7 +35,7 @@ public final class NetworkAreaDiagramUtil {
 
         Predicate<VoltageLevel> filter = !voltageLevelIds.isEmpty()
                 ? getNominalVoltageFilter(network, voltageLevelIds, nominalVoltageLowerBound, nominalVoltageUpperBound, depth)
-                : VoltageLevelFilter.NO_FILTER;
+                : getNominalVoltageFilter(network, nominalVoltageLowerBound, nominalVoltageUpperBound);
         NetworkAreaDiagram.draw(network, writer, nadParameters, filter);
     }
 
@@ -80,6 +80,18 @@ public final class NetworkAreaDiagramUtil {
             return VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, voltageLevelIds, nominalVoltageLowerBound, depth);
         } else {
             return VoltageLevelFilter.createVoltageLevelsDepthFilter(network, voltageLevelIds, depth);
+        }
+    }
+
+    static VoltageLevelFilter getNominalVoltageFilter(Network network, double nominalVoltageLowerBound, double nominalVoltageUpperBound) {
+        if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound >= 0) {
+            return VoltageLevelFilter.createNominalVoltageFilter(network, nominalVoltageLowerBound, nominalVoltageUpperBound);
+        } else if (nominalVoltageLowerBound < 0 && nominalVoltageUpperBound >= 0) {
+            return VoltageLevelFilter.createNominalVoltageUpperBoundFilter(network, nominalVoltageUpperBound);
+        } else if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound < 0) {
+            return VoltageLevelFilter.createNominalVoltageLowerBoundFilter(network, nominalVoltageLowerBound);
+        } else {
+            return VoltageLevelFilter.createNominalVoltageFilterWithPredicate(network, VoltageLevelFilter.NO_FILTER);
         }
     }
 

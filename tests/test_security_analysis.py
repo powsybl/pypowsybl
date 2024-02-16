@@ -93,10 +93,8 @@ def test_monitored_elements():
 
     assert bus_results.index.to_frame().columns.tolist() == ['contingency_id', 'operator_strategy_id', 'voltage_level_id', 'bus_id']
     assert bus_results.columns.tolist() == ['v_mag', 'v_angle']
-    assert len(bus_results) == 3
+    assert len(bus_results) == 1
     assert bus_results.loc['', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(389.95, abs=1e-2)
-    assert bus_results.loc['NGEN_NHV1', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(569.038987, abs=1e-2)
-    assert bus_results.loc['NHV1_NHV2_1', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(366.58, abs=1e-2)
 
     assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'operator_strategy_id', 'branch_id']
     assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']

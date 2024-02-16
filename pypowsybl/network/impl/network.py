@@ -534,7 +534,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
               - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
-              - **rated_s** : The rated nominal power (MVA)
+              - **rated_s**: The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
@@ -1130,7 +1130,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
-              - **ucte-xnode-code**: the UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+              - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
+              - **ucte-xnode-code**: deprecated for pairing key.
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -2373,7 +2374,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `target_v`
             - `target_q`
             - `voltage_regulator_on`
-            - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
+            - `regulated_element_id`: you may define any injection or busbar section as the regulated location.
                Only supported in node breaker voltage levels.
             - `p`
             - `q`
@@ -3083,7 +3084,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are :
 
-            - `connected` : element_side must be provided if it is a sided network element
+            - `connected`: element_side must be provided if it is a sided network element
 
         See Also:
             :meth:`get_terminals`
@@ -3609,7 +3610,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **ucte-xnode-code**: the optional UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+            - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **ucte-x-node-code**: deprecated, use pairing-key instead.
 
         Examples:
             Using keyword arguments:
@@ -3619,6 +3621,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
                                               p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
+        ucte_xnode_code_str = 'ucte_xnode_code'
+        if df is not None:
+            if ucte_xnode_code_str in df.columns:
+                warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+                df = df.rename(columns={ucte_xnode_code_str: 'pairing_key'})
+        ucte_x_node_code = kwargs.get(ucte_xnode_code_str)
+        if ucte_x_node_code is not None:
+            warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+            kwargs['pairing_key'] = ucte_x_node_code
+            kwargs.pop(ucte_xnode_code_str)
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
@@ -4191,7 +4203,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
-            - **is_fictitious** : fictitious limit ?
+            - **is_fictitious**: fictitious limit ?
 
             For each location of the network defined by a couple (element_id, side):
 

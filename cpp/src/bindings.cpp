@@ -160,8 +160,7 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_branch_disconnection", &pypowsybl::addEventBranchDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOrigin"), py::arg("disconnectExtremity"));
-    m.def("add_event_injection_disconnection", &pypowsybl::addEventInjectionDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("stateEvent"));
+    m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
@@ -770,7 +769,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<contingency_context_type>(m, "ContingencyContextType")
             .value("ALL", contingency_context_type::ALL)
             .value("NONE", contingency_context_type::NONE)
-            .value("SPECIFIC", contingency_context_type::SPECIFIC);
+            .value("SPECIFIC", contingency_context_type::SPECIFIC)
+            .value("ONLY_CONTINGENCIES", contingency_context_type::ONLY_CONTINGENCIES);
 
     py::enum_<sensitivity_function_type>(m, "SensitivityFunctionType")
             .value("BRANCH_ACTIVE_POWER_1", sensitivity_function_type::BRANCH_ACTIVE_POWER_1)

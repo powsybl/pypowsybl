@@ -16,8 +16,9 @@ import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.ControlUnit;
+import com.powsybl.iidm.network.extensions.ControlZone;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControl.ControlZone;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -150,15 +151,15 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
     }
 
     private static class ControlUnitWithZone {
-        private final SecondaryVoltageControl.ControlUnit unit;
+        private final ControlUnit unit;
         private final String zoneName;
 
-        public ControlUnitWithZone(SecondaryVoltageControl.ControlUnit unit, String zoneName) {
+        public ControlUnitWithZone(ControlUnit unit, String zoneName) {
             this.unit = Objects.requireNonNull(unit);
             this.zoneName = Objects.requireNonNull(zoneName);
         }
 
-        public SecondaryVoltageControl.ControlUnit getUnit() {
+        public ControlUnit getUnit() {
             return unit;
         }
 
