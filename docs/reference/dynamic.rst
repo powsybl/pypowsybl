@@ -28,8 +28,7 @@ EventMapping
 
     EventMapping
     EventMapping.get_possible_events
-    EventMapping.add_branch_disconnection
-    EventMapping.add_injection_disconnection
+    EventMapping.add_disconnection
 
 CurveMapping
 ------------

@@ -137,29 +137,64 @@ class SecurityAnalysis(ContingencyContainer):
                                            branch_ids, voltage_level_ids, three_windings_transformer_ids)
 
     def add_load_active_power_action(self, action_id: str, load_id: str, is_relative: bool, active_power: float) -> None:
-        """
+        """ Add a load action, modifying the load active power
+
+        Args:
+            action_id: unique ID for the action
+            load_id: load identifier
+            is_relative: whether the active power change specified is absolute, or relative to current load active power
+            active_power: the active power change
+
         """
         _pypowsybl.add_load_active_power_action(self._handle, action_id, load_id, is_relative, active_power)
 
     def add_load_reactive_power_action(self, action_id: str, load_id: str, is_relative: bool, reactive_power: float) -> None:
-        """
+        """ Add a load action, modifying the load reactive power
+
+        Args:
+            action_id: unique ID for the action
+            load_id: load identifier
+            is_relative: whether the reactive power change specified is absolute, or relative to current load reactive power
+            reactive_power: the reactive power change
+
         """
         _pypowsybl.add_load_reactive_power_action(self._handle, action_id, load_id, is_relative, reactive_power)
 
     def add_generator_active_power_action(self, action_id: str, generator_id: str, is_relative: bool, active_power: float) -> None:
-        """
+        """ Add a generator action, modifying the generator active power
+
+        Args:
+            action_id: unique ID for the action
+            generator_id: generator identifier
+            is_relative: whether the active power change specified is absolute, or relative to current generator active power
+            active_power: the active power change
+
         """
         _pypowsybl.add_generator_active_power_action(self._handle, action_id, generator_id, is_relative, active_power)
 
     def add_switch_action(self, action_id: str, switch_id: str, open: bool) -> None:
-        """
+        """ Add a switch action, modifying the switch open/close status
+
+        Args:
+            action_id: unique ID for the action
+            switch_id: switch identifier
+            open: True to open the switch, False to close
+
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
     def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
                               condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,
                               violation_types: List[ViolationType] = None) -> None:
-        """
+        """ Add an operator strategy to the specified contingency
+
+        Args:
+            operator_strategy_id: unique ID for the operator strategy
+            contingency_id: the contingency on which the operator strategy applies
+            action_ids: the list of actions to be applied as part of the strategy
+            condition_type: the type of condition
+            violation_subject_ids: identifiers of network elements monitored to apply the operator strategy
+            violation_types: type of violations to consider to apply the operator strategy
         """
         if violation_types is None:
             violation_types = []
