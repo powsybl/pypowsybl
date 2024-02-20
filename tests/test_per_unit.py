@@ -38,9 +38,9 @@ def test_bus_per_unit():
 
 
 def test_generator_per_unit():
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    net = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(net)
+    n = per_unit_view(net, 100)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s', 'reactive_limits_kind',
@@ -66,6 +66,12 @@ def test_generator_per_unit():
                -1.12641, NaN, 'VLGEN', '', False],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+    all_attributes_generators = n.get_generators(True)
+    assert 'min_q_at_target_p' in all_attributes_generators.columns
+    assert all_attributes_generators.loc['GEN']['min_q_at_target_p'] == -9.999990e+01
+    assert 'max_q_at_target_p' in all_attributes_generators.columns
+    assert 'min_q_at_p' in all_attributes_generators.columns
+    assert 'max_q_at_p' in all_attributes_generators.columns
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
 
 
@@ -125,8 +131,8 @@ def test_hvdc_per_unit():
 
 
 def test_lines_per_unit():
-    n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    net = pp.network.create_four_substations_node_breaker_network()
+    n = per_unit_view(net, 100)
     lines = n.get_lines()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
                             columns=['name', 'r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
@@ -409,7 +415,7 @@ def test_ratio_tap_changers_per_unit():
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, NaN]])
+                            data=[[1, 0, 2, 3, True, True, 1.0533, 0.0, 'VLLOAD_0', 1.00, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 def test_lines_not_same_nominal_voltage_per_unit():

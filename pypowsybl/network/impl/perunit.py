@@ -141,42 +141,44 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_angle(buses, ['v_angle'])
         return buses
 
-    def get_generators(self) -> pd.DataFrame:
+    def get_generators(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of generators.
 
         Returns:
             a per-united dataframe of generators.
         """
-        generators = self._network.get_generators()
+        generators = self._network.get_generators(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(generators)
         self._per_unit_p(generators, ['target_p', 'target_q', 'min_p', 'min_q', 'max_p', 'max_q', 'p', 'q'])
         self._per_unit_v(generators, ['target_v'], nominal_v)
+        if all_attributes:
+            self._per_unit_p(generators, ['min_q_at_target_p', 'max_q_at_target_p', 'min_q_at_p', 'max_q_at_p'])
         self._per_unit_i(generators, ['i'], nominal_v)
         return generators
 
-    def get_loads(self) -> pd.DataFrame:
+    def get_loads(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of loads.
 
         Returns:
             a per-united dataframe of loads.
         """
-        loads = self._network.get_loads()
+        loads = self._network.get_loads(all_attributes=all_attributes)
         self._per_unit_p(loads, ['p0', 'q0', 'p', 'q'])
         nominal_v = pd.merge(loads, self._get_nominal_v(),
                              left_on='voltage_level_id', right_index=True)['nominal_v']
         self._per_unit_i(loads, ['i'], nominal_v)
         return loads
 
-    def get_lines(self) -> pd.DataFrame:
+    def get_lines(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of lines.
 
         Returns:
             a per-united dataframe of lines.
         """
-        lines = self._network.get_lines()
+        lines = self._network.get_lines(all_attributes=all_attributes)
         nominal_v1 = self._get_indexed_nominal_v(lines, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(lines, 'voltage_level2_id')
         self._per_unit_p(lines, ['p1', 'p2', 'q1', 'q2'])
@@ -190,14 +192,14 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_b_not_same_nom_v(lines, 'b2', ytr, nominal_v2, nominal_v1)
         return lines
 
-    def get_2_windings_transformers(self) -> pd.DataFrame:
+    def get_2_windings_transformers(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of 2 windings transformers.
 
         Returns:
             a per-united dataframe of 2 windings transformers.
         """
-        two_windings_transformers = self._network.get_2_windings_transformers()
+        two_windings_transformers = self._network.get_2_windings_transformers(all_attributes=all_attributes)
         self._per_unit_p(two_windings_transformers, ['p1', 'q1', 'p2', 'q2'])
         nominal_v1 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(two_windings_transformers, 'voltage_level2_id')
@@ -209,14 +211,14 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         two_windings_transformers['rated_u2'] /= nominal_v2
         return two_windings_transformers
 
-    def get_3_windings_transformers(self) -> pd.DataFrame:
+    def get_3_windings_transformers(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of 3 windings transformers.
 
         Returns:
             a per-united dataframe of 3 windings transformers.
         """
-        three_windings_transformers = self._network.get_3_windings_transformers()
+        three_windings_transformers = self._network.get_3_windings_transformers(all_attributes=all_attributes)
         self._per_unit_p(three_windings_transformers, ['p1', 'q1', 'p2', 'q2', 'p3', 'q3'])
         nominal_v1 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level1_id')
         nominal_v2 = self._get_indexed_nominal_v(three_windings_transformers, 'voltage_level2_id')
@@ -233,28 +235,28 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         three_windings_transformers['rated_u0'] = 1
         return three_windings_transformers
 
-    def get_shunt_compensators(self) -> pd.DataFrame:
+    def get_shunt_compensators(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of shunt compensators.
 
         Returns:
             a per-united dataframe of shunt compensators.
         """
-        shunt_compensators = self._network.get_shunt_compensators()
+        shunt_compensators = self._network.get_shunt_compensators(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(shunt_compensators)
         self._per_unit_p(shunt_compensators, ['p', 'q'])
         self._per_unit_g(shunt_compensators, ['g', 'b'], nominal_v)
         self._per_unit_i(shunt_compensators, ['i'], nominal_v)
         return shunt_compensators
 
-    def get_dangling_lines(self) -> pd.DataFrame:
+    def get_dangling_lines(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of dangling lines.
 
         Returns:
             a per-united dataframe of dangling lines.
         """
-        dangling_lines = self._network.get_dangling_lines()
+        dangling_lines = self._network.get_dangling_lines(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(dangling_lines)
         self._per_unit_p(dangling_lines, ['p', 'q', 'q0', 'p0'])
         self._per_unit_i(dangling_lines, ['i'], nominal_v)
@@ -262,20 +264,20 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_g(dangling_lines, ['g', 'b'], nominal_v)
         return dangling_lines
 
-    def get_lcc_converter_stations(self) -> pd.DataFrame:
+    def get_lcc_converter_stations(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of LCC converter stations.
 
         Returns:
             a per-united dataframe of LCC converter stations.
         """
-        lcc_converter_stations = self._network.get_lcc_converter_stations()
+        lcc_converter_stations = self._network.get_lcc_converter_stations(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(lcc_converter_stations)
         self._per_unit_p(lcc_converter_stations, ['p', 'q'])
         self._per_unit_i(lcc_converter_stations, ['i'], nominal_v)
         return lcc_converter_stations
 
-    def get_vsc_converter_stations(self) -> pd.DataFrame:
+    def get_vsc_converter_stations(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of VSC converter stations.
 
@@ -285,32 +287,34 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         vsc_converter_stations = self._network.get_vsc_converter_stations()
         nominal_v = self._get_indexed_nominal_v(vsc_converter_stations)
         self._per_unit_p(vsc_converter_stations, ['p', 'q', 'target_q', 'max_q', 'min_q'])
+        if all_attributes:
+            self._per_unit_p(vsc_converter_stations, ['min_q_at_target_p', 'max_q_at_target_p', 'min_q_at_p', 'max_q_at_p'])
         self._per_unit_i(vsc_converter_stations, ['i'], nominal_v)
         self._per_unit_v(vsc_converter_stations, ['target_v'], nominal_v)
         return vsc_converter_stations
 
-    def get_static_var_compensators(self) -> pd.DataFrame:
+    def get_static_var_compensators(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of static var compensators.
 
         Returns:
             a per-united dataframe of static var compensators.
         """
-        static_var_compensators = self._network.get_static_var_compensators()
+        static_var_compensators = self._network.get_static_var_compensators(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(static_var_compensators)
         self._per_unit_p(static_var_compensators, ['p', 'q', 'target_q'])
         self._per_unit_i(static_var_compensators, ['i'], nominal_v)
         self._per_unit_v(static_var_compensators, ['target_v'], nominal_v)
         return static_var_compensators
 
-    def get_voltage_levels(self) -> pd.DataFrame:
+    def get_voltage_levels(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of voltage levels.
 
         Returns:
             a per-united dataframe of voltage levels.
         """
-        voltage_levels = self._network.get_voltage_levels()
+        voltage_levels = self._network.get_voltage_levels(all_attributes=all_attributes)
         self._per_unit_v(voltage_levels, ['low_voltage_limit', 'high_voltage_limit'], voltage_levels['nominal_v'])
         return voltage_levels
 
@@ -327,50 +331,50 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._per_unit_angle(busbar_sections, ['angle'])
         return busbar_sections
 
-    def get_hvdc_lines(self) -> pd.DataFrame:
+    def get_hvdc_lines(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of HVDC lines.
 
         Returns:
             a per-united dataframe of HVDC lines.
         """
-        hvdc_lines = self._network.get_hvdc_lines()
+        hvdc_lines = self._network.get_hvdc_lines(all_attributes=all_attributes)
         self._per_unit_p(hvdc_lines, ['max_p', 'target_p'])
         self._per_unit_r(hvdc_lines, ['r'], hvdc_lines['nominal_v'])
         return hvdc_lines
 
-    def get_reactive_capability_curve_points(self) -> pd.DataFrame:
+    def get_reactive_capability_curve_points(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of reactive capability curves.
 
         Returns:
             A per-united dataframe of reactive capability curves.
         """
-        reactive_capability_curve_points = self._network.get_reactive_capability_curve_points()
+        reactive_capability_curve_points = self._network.get_reactive_capability_curve_points(all_attributes=all_attributes)
         self._per_unit_p(reactive_capability_curve_points, ['p', 'min_q', 'max_q'])
         return reactive_capability_curve_points
 
-    def get_batteries(self) -> pd.DataFrame:
+    def get_batteries(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of batteries.
 
         Returns:
             A per-united dataframe of batteries.
         """
-        batteries = self._network.get_batteries()
+        batteries = self._network.get_batteries(all_attributes=all_attributes)
         nominal_v = self._get_indexed_nominal_v(batteries)
         self._per_unit_p(batteries, ['target_p', 'target_q', 'p', 'q', 'min_p', 'max_p', 'min_q', 'max_q'])
         self._per_unit_i(batteries, ['i'], nominal_v)
         return batteries
 
-    def get_ratio_tap_changers(self) -> pd.DataFrame:
+    def get_ratio_tap_changers(self, all_attributes: bool = False) -> pd.DataFrame:
         """
         A per-united dataframe of ratio tap changers.
 
         Returns:
             A per-united dataframe of ratio tap changers.
         """
-        ratio_tap_changers = self._network.get_ratio_tap_changers()
+        ratio_tap_changers = self._network.get_ratio_tap_changers(all_attributes=all_attributes)
         voltage_levels = ratio_tap_changers[[]].merge(
             self.get_2_windings_transformers()[['voltage_level1_id', 'voltage_level2_id']],
             left_index=True, right_index=True)
@@ -378,6 +382,11 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         nominal_v2 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level2_id')
         ratio_tap_changers['rho'] *= nominal_v1 / nominal_v2
         self._per_unit_angle(ratio_tap_changers, ['alpha'])
+        regulated_side_nominal_voltage = nominal_v2
+        if all_attributes:
+            regulated_side_nominal_voltage = np.where(ratio_tap_changers['regulated_side'] == 'ONE', # type: ignore
+                                                      nominal_v1, nominal_v2)
+        self._per_unit_v(ratio_tap_changers, ['target_v'], regulated_side_nominal_voltage)
         return ratio_tap_changers
 
     def update_buses(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
